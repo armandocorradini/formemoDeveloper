@@ -2,9 +2,36 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
+
+    <!-- Nome app visibile (FONDAMENTALE per Siri) -->
+    <key>CFBundleDisplayName</key>
+    <string>ForMemo</string>
+
+    <!-- Nome bundle -->
+    <key>CFBundleName</key>
+    <string>ForMemo</string>
+
+    <!-- Identificatore -->
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+
+    <!-- Versione -->
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+
+    <!-- Build -->
+    <key>CFBundleVersion</key>
+    <string>1</string>
+
+    <!-- Lingua -->
+    <key>CFBundleDevelopmentRegion</key>
+    <string>$(DEVELOPMENT_LANGUAGE)</string>
+
+    <!-- Background mode per notifiche -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
+
 </dict>
 </plist>

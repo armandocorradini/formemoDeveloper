@@ -1,9 +1,4 @@
-//
-//  Item.swift
-//  ForMemo
-//
-//  Created by Armando Corradini on 02/04/2026.
-//
+
 
 import Foundation
 import SwiftData
