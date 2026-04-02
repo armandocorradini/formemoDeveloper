@@ -1104,7 +1104,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade tareas rápidamente con Siri. Prueba a decir:\n\n• Añade una tarea en %1$@\n• Crea una tarea en %2$@\n• Recuérdame en %3$@\n\nSiri te pedirá los detalles y creará automáticamente la tarea con un recordatorio."
+            "value" : "Añade tareas rápidamente con Siri. Prueba a decir:\n\n• Añadir una tarea en %1$@\n• Crea una tarea en %2$@\n• Recuérdame en %3$@\n\nSiri te pedirá los detalles y creará automáticamente la tarea con un recordatorio."
           }
         },
         "fr" : {
@@ -1116,7 +1116,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi attività rapidamente con Siri. Prova a dire:\n\n• Aggiungi un’attività in %1$@\n• Crea un’attività in %2$@\n• Ricordami con %3$@\n\nSiri ti chiederà i dettagli e creerà automaticamente l’attività con un promemoria."
+            "value" : "Aggiungi attività rapidamente con Siri. Prova a dire:\n\n• Aggiungi un’attività in %1$@\n• Crea un’attività in %2$@\n• Ricordami in %3$@\n\nSiri ti chiederà i dettagli e creerà automaticamente l’attività con un promemoria."
           }
         }
       }
@@ -1888,7 +1888,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea un'attività in %@"
+            "value" : "Crea attività in %@"
           }
         }
       }
@@ -5237,13 +5237,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recuérdame usando %@"
+            "value" : "Recuérdame en %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rappelle-moi en utilisant %@"
+            "value" : "Rappelle-moi dans %@"
           }
         },
         "it" : {
