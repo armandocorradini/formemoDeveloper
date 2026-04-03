@@ -68,12 +68,19 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             
             let now = Date()
             
-            // 👇 usa già la tua proprietà esistente!
-            if now.timeIntervalSince(NotificationManager.shared.lastPushHandled) < 3 {
+            // 🔥 filtro forte anti-spam CloudKit
+            if now.timeIntervalSince(NotificationManager.shared.lastPushHandled) <= 5 {
+        #if DEBUG
+                print("⏭️ CloudKit push ignorato (debounce)")
+        #endif
                 return
             }
             
             NotificationManager.shared.lastPushHandled = now
+            
+        #if DEBUG
+            print("☁️ CloudKit UI refresh (safe)")
+        #endif
             
             NotificationManager.shared.refresh()
         }

@@ -7312,7 +7312,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I task cambiano colore automaticamente in base alla loro tipologia. Le scadenze passate e quelle imminenti rimangono evidenziate visivamente."
+            "value" : "Le attività cambiano colore automaticamente in base alla loro tipologia. Le scadenze passate e quelle imminenti rimangono evidenziate visivamente."
           }
         }
       }
@@ -8010,7 +8010,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Visualizza i tuoi impegni a colpo d'occhio. I puntini evidenziano i giorni con attività aperte, mentre swipe intuitivi ti permettono di completare o eliminare i task all'istante.\n\nI giorni festivi e le domeniche sono indicati in rosso."
+            "value" : "Visualizza i tuoi impegni a colpo d'occhio. I puntini evidenziano i giorni con attività aperte, mentre swipe intuitivi ti permettono di completare o eliminare le attività all'istante.\n\nI giorni festivi e le domeniche sono indicati in rosso."
           }
         }
       }

@@ -52,6 +52,17 @@ struct ForMemoApp: App {
     
     init() {
         
+        let defaults = UserDefaults.standard
+
+        if defaults.object(forKey: "badgeIncludeExpired") == nil {
+            defaults.set(true, forKey: "badgeIncludeExpired")
+        }
+
+        if defaults.object(forKey: "showAppBadge") == nil {
+            defaults.set(true, forKey: "showAppBadge")
+        }
+        
+        
         let sharedContainer = Persistence.shared
         self.container = sharedContainer
         

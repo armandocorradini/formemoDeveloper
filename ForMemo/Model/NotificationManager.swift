@@ -13,6 +13,7 @@ final class NotificationManager: NSObject {
     private var lastTasksSignature: String = ""
     private var rebuildTask: Task<Void, Never>?
     private var lastRebuild: Date = .distantPast
+    private var pendingRefresh = false
     
     var lastPushHandled: Date = .distantPast
     
@@ -71,49 +72,49 @@ final class NotificationManager: NSObject {
         
         let tasks = fetchTasks(using: context)
         
-        // 🔥 BADGE immediato
+        // 🔥 1. Badge immediato (NON CAMBIA)
         let badge = computeBadgeCount(from: tasks)
-        applyBadge(badge)
-        
-        // 🔥 debounce rebuild notifiche
-        let now = Date()
-        guard force || now.timeIntervalSince(lastRebuild) > 2 else { return }
-        
-        lastRebuild = now
-        rebuildTask?.cancel()
+        let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
 
+        applyBadge(showBadge ? badge : 0)
+        
+        // 🔥 2. evita loop multipli
+        if pendingRefresh && !force {
+            return
+        }
+        
+        pendingRefresh = true
+        
+        rebuildTask?.cancel()
+        
         rebuildTask = Task { [weak self] in
             guard let self else { return }
             
-            try? await Task.sleep(for: .seconds(2))
+            // debounce
+            try? await Task.sleep(for: .seconds(force ? 0.5 : 1.5))
+            
             guard !Task.isCancelled else { return }
             
-#if DEBUG
-            print("🔔 Debounced refresh")
-#endif
+    #if DEBUG
+            print("🔔 Optimized refresh")
+    #endif
             
             guard let context = self.modelContainer?.mainContext else { return }
             
             let tasks = self.fetchTasks(using: context)
-
-            if tasks.isEmpty {
-                if !force && self.lastTasksSignature == "EMPTY" {
-                    return
-                }
-                self.lastTasksSignature = "EMPTY"
-                await self.rebuild([])
-                return
-            }
-
+            
             let signature = self.signature(for: tasks)
-
+            
             if !force && signature == self.lastTasksSignature {
+                self.pendingRefresh = false
                 return
             }
             
             self.lastTasksSignature = signature
             
             await self.rebuild(tasks)
+            
+            self.pendingRefresh = false
         }
     }
     
@@ -339,9 +340,7 @@ final class NotificationManager: NSObject {
             forKey: "notificationLeadTimeDays"
         ) as? Int ?? 1
         
-        let includeExpired = UserDefaults.standard.object(
-            forKey: "showExpiredBadge"
-        ) as? Bool ?? true
+        let includeExpired = UserDefaults.standard.bool(forKey: "badgeIncludeExpired")
         
         return TaskBadgePolicy.badgeCount(
             tasks: tasks,

@@ -36,6 +36,8 @@ struct TaskListView: View {
     
     @State private var taskPendingDeletion: TodoTask?
     
+    @State private var refreshID = UUID()
+    
     private var filteredTasks: [TodoTask] {
         
         let signature = computeFilterSignature()
@@ -145,10 +147,14 @@ struct TaskListView: View {
                                                   tasks: completedTasks,
                                                   modelContext: modelContext
                             )
+                            
                         }
                     }
-
+                    .id(refreshID)
                     
+                    .onReceive(NotificationCenter.default.publisher(for: .attachmentsShouldRefresh)) { _ in
+                        refreshID = UUID()
+                    }
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
                     .listRowInsets(

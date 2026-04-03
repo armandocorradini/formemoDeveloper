@@ -135,6 +135,8 @@ struct TaskListAppearanceView: View {
         String(localized: "Style 9")
     ]
     
+    @State private var refreshID = UUID()
+    
     var body: some View {
         
         ZStack {
@@ -163,6 +165,7 @@ struct TaskListAppearanceView: View {
                 .padding(.top, 10)
                 
             }
+            .id(refreshID)
             .listRowInsets(
                 .init(top: 2, leading: 2, bottom: 2, trailing: 2)
             )
@@ -187,7 +190,12 @@ struct TaskListAppearanceView: View {
                     }
                 }
             }
+            .onChange(of: dueIconEffectRaw) { _, _ in
+                refreshID = UUID()
+            }
         }
+        
+        
     }
     
     @ViewBuilder

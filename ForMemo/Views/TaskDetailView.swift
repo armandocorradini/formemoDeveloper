@@ -197,7 +197,7 @@ struct TaskDetailView: View {
                         Button {
                             dismiss()
                         } label: {
-                            Label("", systemImage: "chevron.left")
+                            Image(systemName: "chevron.left")
                         }
                     }
                 }
@@ -530,7 +530,10 @@ struct TaskDetailView: View {
             modelContext.delete(attachment)
             modelContext.processPendingChanges() // 🔥 sync UI immediata
         }
-
+        NotificationCenter.default.post(
+            name: .attachmentsShouldRefresh,
+            object: nil
+        )
     }
     
     

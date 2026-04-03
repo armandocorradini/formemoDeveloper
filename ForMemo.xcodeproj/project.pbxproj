@@ -160,6 +160,10 @@
 				INFOPLIST_FILE = ForMemo/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ForMemo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to take photos and scan documents to attach them to your tasks.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location to assign places to your tasks.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to record audio notes for your tasks.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app lets you attach photos from your library to your tasks.";
 				INFOPLIST_KEY_NSSiriUsageDescription = "This app uses Siri to add tasks";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -199,6 +203,10 @@
 				INFOPLIST_FILE = ForMemo/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ForMemo;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to take photos and scan documents to attach them to your tasks.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location to assign places to your tasks.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to record audio notes for your tasks.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app lets you attach photos from your library to your tasks.";
 				INFOPLIST_KEY_NSSiriUsageDescription = "This app uses Siri to add tasks";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
