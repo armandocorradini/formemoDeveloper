@@ -67,6 +67,10 @@ struct AddTaskIntent: AppIntent {
         }
         
         let task = TodoTask(title: finalTitle, deadLine: dueDate)
+
+        if let inferredTag = TagInference.infer(from: finalTitle) {
+            task.mainTag = inferredTag
+        }
         
         let reminder = Self.computeReminder(
             now: now,
@@ -284,5 +288,283 @@ private extension AddTaskIntent {
     }
 }
 
-
-
+// MARK: - Tag inference
+//private let tagKeywords: [TaskMainTag: [String]] = [
+//    
+//    .work: [
+//        // EN
+//        "work","job","office","meeting","client","project","email","call","deadline","report","business","team","manager","presentation","task",
+//        "conference","agenda","contract","invoice","salary","colleague","boss","appointment","planning","strategy","analysis","review","briefing","schedule",
+//        "startup","company","corporate","proposal","document","spreadsheet","excel","powerpoint","zoom","teams","slack","call","followup","milestone",
+//        
+//        // IT
+//        "lavoro","ufficio","riunione","cliente","progetto","email","chiamata","scadenza","relazione","azienda","team","manager","presentazione",
+//        "contratto","fattura","stipendio","collega","capo","appuntamento","pianificazione","strategia","analisi","revisione","agenda","documento",
+//        
+//        // FR
+//        "travail","bureau","réunion","client","projet","email","appel","échéance","rapport","entreprise","équipe",
+//        "contrat","facture","salaire","collègue","patron","rendezvous","planification","stratégie",
+//        
+//        // ES
+//        "trabajo","oficina","reunión","cliente","proyecto","correo","llamada","fecha límite","informe","empresa",
+//        "contrato","factura","salario","compañero","jefe","cita","planificación","estrategia",
+//        
+//        // DE
+//        "arbeit","büro","meeting","kunde","projekt","email","anruf","frist","bericht","firma",
+//        "vertrag","rechnung","gehalt","kollege","chef","termin","planung","strategie"
+//    ],
+//    
+//    .health: [
+//        "doctor","health","dentist","pharmacy","medicine","gym","workout","exercise","fitness","therapy","hospital","checkup",
+//        "appointment","diet","nutrition","vitamins","injury","pain","rehab","massage","yoga","running","cardio","training","wellness",
+//        
+//        "medico","salute","dentista","farmacia","medicina","palestra","allenamento","esercizio","terapia","ospedale",
+//        "appuntamento","dieta","nutrizione","vitamine","infortunio","dolore","riabilitazione","massaggio","yoga","corsa",
+//        
+//        "médecin","santé","dentiste","pharmacie","médicament","sport","hôpital","rendezvous","nutrition",
+//        "médico","salud","dentista","farmacia","ejercicio","gimnasio","hospital","cita","nutrición",
+//        "arzt","gesundheit","zahnarzt","apotheke","medizin","fitness","krankenhaus","termin"
+//    ],
+//    
+//    .home: [
+//        "home","house","clean","cleaning","groceries","shopping","cook","kitchen","laundry","bills","repair","maintenance",
+//        "rent","mortgage","utilities","electricity","water","gas","internet","wifi","furniture","garden","plants","tools",
+//        
+//        "casa","pulizie","spesa","cucinare","lavatrice","bollette","riparare","manutenzione",
+//        "affitto","mutuo","utenze","luce","acqua","gas","internet","wifi","mobili","giardino","piante",
+//        
+//        "maison","ménage","courses","cuisine","linge","factures","loyer","électricité",
+//        "casa","limpieza","compras","cocinar","lavandería","facturas","alquiler","electricidad",
+//        "haus","putzen","einkaufen","kochen","wäsche","rechnungen","miete","strom"
+//    ],
+//    
+//    .family: [
+//        "family","parents","kids","children","wife","husband","mom","dad","brother","sister","birthday",
+//        "anniversary","school","homework","baby","grandparents","uncle","aunt","cousin","party","celebration",
+//        
+//        "famiglia","genitori","figli","moglie","marito","mamma","papà","compleanno",
+//        "anniversario","scuola","compiti","bambino","nonni","zio","zia","cugino","festa",
+//        
+//        "famille","parents","enfants","mari","femme","anniversaire","école",
+//        "familia","padres","niños","esposa","marido","cumpleaños","escuela",
+//        "familie","eltern","kinder","frau","mann","geburtstag","schule"
+//    ],
+//    
+//    .travel: [
+//        "travel","trip","flight","hotel","booking","airport","vacation","holiday","tour","luggage",
+//        "ticket","passport","visa","boarding","departure","arrival","reservation","guide","map","destination",
+//        
+//        "viaggio","volo","hotel","prenotazione","aeroporto","vacanza","tour",
+//        "biglietto","passaporto","visto","partenza","arrivo","destinazione","guida",
+//        
+//        "voyage","vol","hôtel","réservation","aéroport","vacances","billet",
+//        "viaje","vuelo","hotel","reserva","aeropuerto","vacaciones","billete",
+//        "reise","flug","hotel","buchung","flughafen","urlaub","ticket"
+//    ],
+//    
+//    .transport: [
+//        "car","train","bus","metro","taxi","uber","drive","parking","fuel","ticket",
+//        "license","traffic","road","highway","garage","mechanic","service","engine","insurance",
+//        
+//        "auto","treno","bus","metro","taxi","guidare","parcheggio","benzina","biglietto",
+//        "patente","traffico","strada","autostrada","garage","meccanico","assicurazione",
+//        
+//        "voiture","train","bus","métro","taxi","parking","billet","route",
+//        "coche","tren","bus","metro","taxi","aparcamiento","billete","carretera",
+//        "auto","zug","bus","metro","taxi","parken","ticket","straße"
+//    ],
+//    
+//    .pet: [
+//        "dog","cat","pet","vet","food","walk","litter","animal",
+//        "grooming","toy","leash","vaccination","care","feeding","training",
+//        
+//        "cane","gatto","animale","veterinario","cibo","passeggiata",
+//        "toelettatura","giocattolo","guinzaglio","vaccino","cura",
+//        
+//        "chien","chat","animal","vétérinaire",
+//        "perro","gato","animal","veterinario",
+//        "hund","katze","tier","tierarzt"
+//    ],
+//    
+//    .freetime: [
+//        "movie","cinema","music","concert","game","sport","hobby","relax","party","dinner","friends",
+//        "bar","restaurant","drink","beer","wine","festival","event","show","netflix","tv","series","gaming",
+//        
+//        "film","cinema","musica","concerto","gioco","sport","hobby","relax","festa","cena","amici",
+//        "bar","ristorante","bere","birra","vino","evento","serie","tv",
+//        
+//        "film","cinéma","musique","concert","jeu","loisir","fête",
+//        "película","cine","música","concierto","juego","ocio","fiesta",
+//        "film","kino","musik","konzert","spiel","freizeit","party"
+//    ]
+//]
+//private func inferTag(from text: String) -> TaskMainTag? {
+//    
+//    let input = text.lowercased()
+//    
+//    for (tag, keywords) in tagKeywords {
+//        if keywords.contains(where: { input.contains($0) }) {
+//            return tag
+//        }
+//    }
+//    
+//    return nil
+//}
+private enum TagInference {
+    
+    static let keywords: [TaskMainTag: [String]] = [
+        
+        .work: [
+            // EN
+            "work","job","office","meeting","client","project","email","call","deadline","report","business","team","manager","presentation","task",
+            "conference","agenda","contract","invoice","salary","colleague","boss","appointment","planning","strategy","analysis","review",
+            "briefing","schedule","milestone","startup","company","corporate","proposal","document","spreadsheet","excel","powerpoint",
+            "zoom","teams","slack","followup","deliverable","workflow","budget","forecast","marketing","sales","support","ticket",
+            
+            // IT
+            "lavoro","ufficio","riunione","cliente","progetto","email","chiamata","scadenza","relazione","azienda","team","manager","presentazione",
+            "contratto","fattura","stipendio","collega","capo","appuntamento","pianificazione","strategia","analisi","revisione","agenda",
+            "documento","bilancio","marketing","vendite","assistenza","ticket",
+            
+            // FR / ES / DE
+            "travail","bureau","réunion","client","projet","email","appel","rapport",
+            "trabajo","oficina","cliente","proyecto","correo","llamada","informe",
+            "arbeit","büro","kunde","projekt","email","anruf","bericht"
+        ],
+        
+        .health: [
+            // EN
+            "doctor","health","dentist","pharmacy","medicine","gym","workout","exercise","fitness","therapy","hospital","checkup",
+            "diet","nutrition","vitamins","injury","pain","rehab","massage","yoga","running","training","wellness","clinic",
+            "appointment","prescription","treatment","mental","psychologist","physio",
+            
+            // IT
+            "medico","salute","dentista","farmacia","medicina","palestra","allenamento","esercizio","terapia","ospedale",
+            "dieta","nutrizione","vitamine","dolore","riabilitazione","massaggio","yoga","corsa","clinica",
+            "psicologo","fisioterapia",
+            
+            // FR / ES / DE
+            "médecin","santé","dentiste","pharmacie","hôpital",
+            "médico","salud","dentista","farmacia","hospital",
+            "arzt","gesundheit","zahnarzt","apotheke","krankenhaus"
+        ],
+        
+        .home: [
+            // EN
+            "home","house","clean","cleaning","groceries","shopping","cook","kitchen","laundry","bills","repair","maintenance",
+            "rent","mortgage","utilities","electricity","water","gas","internet","wifi","furniture","garden","plants","tools",
+            "vacuum","dishwasher","fridge","oven","bedroom","bathroom",
+            
+            // IT
+            "casa","pulizie","spesa","cucinare","lavatrice","bollette","riparare","manutenzione",
+            "affitto","mutuo","utenze","luce","acqua","gas","internet","wifi","mobili","giardino","piante",
+            "aspirapolvere","lavastoviglie","frigo","forno",
+            
+            // FR / ES / DE
+            "maison","ménage","courses","cuisine","factures",
+            "casa","limpieza","compras","cocinar","facturas",
+            "haus","putzen","einkaufen","kochen","rechnungen"
+        ],
+        
+        .family: [
+            // EN
+            "family","parents","kids","children","wife","husband","mom","dad","brother","sister","birthday",
+            "anniversary","school","homework","baby","grandparents","uncle","aunt","cousin","celebration",
+            
+            // IT
+            "famiglia","genitori","figli","moglie","marito","mamma","papà","compleanno",
+            "anniversario","scuola","compiti","bambino","nonni","zio","zia","cugino","festa",
+            
+            // FR / ES / DE
+            "famille","parents","enfants","anniversaire",
+            "familia","padres","niños","cumpleaños",
+            "familie","eltern","kinder","geburtstag"
+        ],
+        
+        .travel: [
+            // EN
+            "travel","trip","flight","hotel","booking","airport","vacation","holiday","tour","luggage",
+            "ticket","passport","visa","boarding","departure","arrival","reservation","guide","map","destination",
+            "airbnb","checkin","checkout","itinerary",
+            
+            // IT
+            "viaggio","volo","hotel","prenotazione","aeroporto","vacanza","tour",
+            "biglietto","passaporto","visto","partenza","arrivo","destinazione","guida",
+            "checkin","checkout","itinerario",
+            
+            // FR / ES / DE
+            "voyage","vol","hôtel","aéroport",
+            "viaje","vuelo","hotel","aeropuerto",
+            "reise","flug","hotel","flughafen"
+        ],
+        
+        .transport: [
+            // EN
+            "car","train","bus","metro","taxi","uber","drive","parking","fuel","ticket",
+            "license","traffic","road","highway","garage","mechanic","service","engine","insurance",
+            "ride","commute","transport","vehicle",
+            
+            // IT
+            "auto","treno","bus","metro","taxi","guidare","parcheggio","benzina","biglietto",
+            "patente","traffico","strada","autostrada","garage","meccanico","assicurazione",
+            
+            // FR / ES / DE
+            "voiture","train","bus","métro","taxi",
+            "coche","tren","bus","metro","taxi",
+            "auto","zug","bus","metro","taxi"
+        ],
+        
+        .pet: [
+            // EN
+            "dog","cat","pet","vet","food","walk","litter","animal",
+            "grooming","toy","leash","vaccination","care","feeding","training","puppy","kitten",
+            
+            // IT
+            "cane","gatto","animale","veterinario","cibo","passeggiata",
+            "toelettatura","giocattolo","guinzaglio","vaccino","cura","cucciolo",
+            
+            // FR / ES / DE
+            "chien","chat","animal","vétérinaire",
+            "perro","gato","animal","veterinario",
+            "hund","katze","tier","tierarzt"
+        ],
+        
+        .freetime: [
+            // EN
+            "movie","cinema","music","concert","game","sport","hobby","relax","party","dinner","friends",
+            "bar","restaurant","drink","beer","wine","festival","event","show","netflix","tv","series","gaming",
+            "weekend","outing","fun","club",
+            
+            // IT
+            "film","cinema","musica","concerto","gioco","sport","hobby","relax","festa","cena","amici",
+            "bar","ristorante","bere","birra","vino","evento","serie","tv","weekend",
+            
+            // FR / ES / DE
+            "film","cinéma","musique","concert","fête",
+            "película","cine","música","concierto","fiesta",
+            "film","kino","musik","konzert","party"
+        ]
+    ]
+    
+    static func infer(from text: String) -> TaskMainTag? {
+        
+        let words = text
+            .lowercased()
+            .components(separatedBy: CharacterSet.whitespacesAndNewlines)
+        
+        var scores: [TaskMainTag: Int] = [:]
+        
+        for (tag, keywords) in keywords {
+            
+            let matchCount = words.filter { word in
+                keywords.contains(word)
+            }.count
+            
+            if matchCount > 0 {
+                scores[tag] = matchCount
+            }
+        }
+        
+        return scores.max(by: { $0.value < $1.value })?.key
+    }
+}
