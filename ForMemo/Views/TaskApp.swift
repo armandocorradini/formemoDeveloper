@@ -75,6 +75,9 @@ struct ForMemoApp: App {
             // 1️⃣ Setup notifiche (PRIMA DI TUTTO)
             await NotificationManager.shared.configure()
             
+            // 🔥 REGISTRA APP SHORTCUTS (QUI)
+             AppShortcuts.updateAppShortcutParameters()
+            
             // 2️⃣ Applica azioni da notifiche (app chiusa/background)
             NotificationActionProcessor.shared.processAll(using: context)
             
