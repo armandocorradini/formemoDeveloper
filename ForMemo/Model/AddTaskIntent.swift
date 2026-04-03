@@ -25,13 +25,13 @@ struct AddTaskIntent: AppIntent {
         title: "Date",
         requestValueDialog: IntentDialog("When should I schedule it?")
     )
-    var date: Date
+    var date: Date?
     
     static var parameterSummary: some ParameterSummary {
         Summary("Add \(\.$input)")
     }
     
-    // MARK: - Init intelligente
+    // MARK: - Init
     
     init() {}
     
@@ -45,7 +45,7 @@ struct AddTaskIntent: AppIntent {
         } else if let date {
             self.date = date
         } else {
-            self.date = Date() // fallback (non verrà usato perché Siri chiederà)
+            self.date = nil // 🔥 fondamentale per far chiedere Siri
         }
     }
     
@@ -59,15 +59,21 @@ struct AddTaskIntent: AppIntent {
         
         let parsed = NaturalLanguageParser.parse(input)
         let finalTitle = parsed.title
-        let dueDate = date
         
-        // Validazione minima
+        // 🔥 FIX CRITICO
+        let dueDate = date ?? parsed.date
+        
+        guard let dueDate else {
+            throw $date.needsValueError()
+        }
+        
+        // Validazione
         guard dueDate > now else {
             return .result(dialog: IntentDialog("That time is in the past."))
         }
         
         let task = TodoTask(title: finalTitle, deadLine: dueDate)
-
+        
         if let inferredTag = TagInference.infer(from: finalTitle) {
             task.mainTag = inferredTag
         }
@@ -82,7 +88,6 @@ struct AddTaskIntent: AppIntent {
         
         context.insert(task)
         try context.save()
-
         
         NotificationManager.shared.refresh()
         
