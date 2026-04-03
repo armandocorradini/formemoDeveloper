@@ -28,25 +28,17 @@ struct TaskListView: View {
     
     @State private var selectedTagFilter: TaskMainTag? = nil
     @State private var selectedPriorityFilter: TaskPriority? = nil
-    @State private var cachedFiltered: [TodoTask] = []
-    @State private var lastFilterSignature: String = ""
+
     
     @AppStorage("TaskListStyle")
     private var listStyleChoice: TaskListStyle = .cards
     
     @State private var taskPendingDeletion: TodoTask?
     
-    @State private var refreshID = UUID()
     
     private var filteredTasks: [TodoTask] {
         
-        let signature = computeFilterSignature()
-        
-        if signature == lastFilterSignature {
-            return cachedFiltered
-        }
-        
-        let result = tasks.filter { task in
+        tasks.filter { task in
             
             let matchesSearch =
             searchText.isEmpty ||
@@ -62,13 +54,6 @@ struct TaskListView: View {
             
             return matchesSearch && matchesTag && matchesPriority
         }
-        
-        DispatchQueue.main.async {
-            cachedFiltered = result
-            lastFilterSignature = signature
-        }
-        
-        return result
     }
     
     
@@ -150,11 +135,7 @@ struct TaskListView: View {
                             
                         }
                     }
-                    .id(refreshID)
-                    
-                    .onReceive(NotificationCenter.default.publisher(for: .attachmentsShouldRefresh)) { _ in
-                        refreshID = UUID()
-                    }
+
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
                     .listRowInsets(
@@ -410,12 +391,6 @@ struct TaskListView: View {
     }
     
 
-    private func computeFilterSignature() -> String {
-        tasks.map {
-            "\($0.id.uuidString)-\($0.isCompleted)-\($0.deadLine?.timeIntervalSince1970 ?? 0)"
-        }.joined()
-        + "|\(searchText)|\(selectedTagFilter?.rawValue ?? "nil")|\(selectedPriorityFilter?.rawValue ?? -1)"
-    }
 }
 
 
@@ -722,7 +697,7 @@ struct TodoSectionView: View {
             ForEach(tasks) { t in
                 
                 TaskRow(task: t)
-                    .id(t.persistentModelID)
+
                     .modifier(RowCardStyle(task: t, style: listStyleChoice))
                 
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
@@ -850,8 +825,7 @@ struct CompletedSectionView: View {
             ForEach(tasks) { t in
                 
                 TaskRow(task: t)
-                    .id(t.persistentModelID)
-                //                    .opacity(0.8)
+
                     .modifier(RowCardStyle( task: t, style: listStyleChoice))
                 
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {

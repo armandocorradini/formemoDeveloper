@@ -168,6 +168,16 @@ private extension AddTaskIntent {
             return (0, description(forMinutes: 0))
         }
         
+        let calendar = Calendar.autoupdatingCurrent
+        let currentHour = calendar.component(.hour, from: now)
+        let deadlineHour = calendar.component(.hour, from: deadline)
+        
+        // 🔥 1. Se la scadenza è di notte → niente anticipo
+        if deadlineHour >= 22 || deadlineHour < 7 {
+            return (0, description(forMinutes: 0))
+        }
+        
+        // 🔥 2. Regole base
         let rules: [(threshold: TimeInterval, offsetHours: Int)] = [
             (3600, 0),
             (4 * 3600, 1),
@@ -182,6 +192,7 @@ private extension AddTaskIntent {
             .first(where: { secondsRemaining <= $0.threshold })?
             .offsetHours ?? 0
         
+        // 🔧 Personalizzazione utente
         if leadTimeDays == 0 {
             baseOffsetHours = (secondsRemaining > 3600) ? 1 : 0
         } else {
@@ -193,6 +204,7 @@ private extension AddTaskIntent {
             }
         }
         
+        // 🔥 Se offset supera il tempo → annulla
         if Double(baseOffsetHours * 3600) >= secondsRemaining {
             baseOffsetHours = 0
         }
@@ -201,8 +213,7 @@ private extension AddTaskIntent {
             return (0, description(forMinutes: 0))
         }
         
-        let calendar = Calendar.autoupdatingCurrent
-        
+        // 🔥 Calcolo reminder teorico
         guard let baseReminderDate = calendar.date(
             byAdding: .hour,
             value: -baseOffsetHours,
@@ -211,18 +222,25 @@ private extension AddTaskIntent {
             return (baseOffsetHours * 60, description(forMinutes: baseOffsetHours * 60))
         }
         
-        let finalReminderDate: Date = {
-            if isNight(date: baseReminderDate, calendar: calendar) {
-                return adjustedDateAvoidingNight(
-                    from: baseReminderDate,
-                    deadline: deadline,
-                    calendar: calendar
-                ) ?? baseReminderDate
-            } else {
-                return baseReminderDate
+        // 🔥 3. Se reminder cade di notte
+        if isNight(date: baseReminderDate, calendar: calendar) {
+            
+            // Se siamo già di notte → niente anticipo
+            if currentHour < 7 {
+                return (0, description(forMinutes: 0))
             }
-        }()
+        }
         
+        // 🔥 4. Adattamento fascia 7–21
+        let adjustedReminderDate = adjustedDateAvoidingNight(
+            from: baseReminderDate,
+            deadline: deadline,
+            calendar: calendar
+        )
+        
+        let finalReminderDate = adjustedReminderDate ?? baseReminderDate
+        
+        // 🔥 5. Evita passato
         guard finalReminderDate > now else {
             return (0, description(forMinutes: 0))
         }
@@ -246,24 +264,42 @@ private extension AddTaskIntent {
         calendar: Calendar
     ) -> Date? {
         
+        let startHour = 7
+        let endHour = 21
+        
         let hour = calendar.component(.hour, from: date)
+        
         var components = calendar.dateComponents([.year, .month, .day], from: date)
         
-        if hour >= 22 {
-            components.hour = 21
+        // Caso notte tarda → porta a 21 stesso giorno
+        if hour >= endHour {
+            components.hour = endHour
             components.minute = 0
-        } else if hour < 7 {
-            components.hour = 7
-            components.minute = 0
+            
+            guard let candidate = calendar.date(from: components),
+                  candidate < deadline else {
+                return nil
+            }
+            
+            return candidate
         }
         
-        guard let candidate = calendar.date(from: components),
-              candidate < deadline else {
-            return nil
+        // Caso notte mattina → porta alle 7
+        if hour < startHour {
+            components.hour = startHour
+            components.minute = 0
+            
+            guard let candidate = calendar.date(from: components),
+                  candidate < deadline else {
+                return nil
+            }
+            
+            return candidate
         }
         
-        return candidate
+        return date
     }
+    
     
     static func description(forMinutes minutes: Int) -> String {
         
