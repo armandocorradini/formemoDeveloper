@@ -844,7 +844,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir una tarea en %@"
+            "value" : "Añade una tarea en %@"
           }
         },
         "fr" : {
@@ -856,7 +856,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi un’attività in %@"
+            "value" : "Aggiungi un promemoria in %@"
           }
         }
       }
@@ -1104,7 +1104,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añade tareas rápidamente con Siri. Prueba a decir:\n\n• Añadir una tarea en %1$@\n• Crea una tarea en %2$@\n• Recuérdame en %3$@\n\nSiri te pedirá los detalles y creará automáticamente la tarea con un recordatorio."
+            "value" : "Añade tareas rápidamente con Siri. Prueba a decir:\n\n• Añade una tarea en %1$@\n• Crea una tarea en %2$@\n• Recordatorio en %3$@\n\nSiri te pedirá los detalles y creará automáticamente la tarea con un recordatorio."
           }
         },
         "fr" : {
@@ -1116,7 +1116,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi attività rapidamente con Siri. Prova a dire:\n\n• Aggiungi un’attività in %1$@\n• Crea un’attività in %2$@\n• Ricordami in %3$@\n\nSiri ti chiederà i dettagli e creerà automaticamente l’attività con un promemoria."
+            "value" : "Aggiungi attività rapidamente con Siri. Prova a dire:\n\n• Aggiungi un promemoria in %1$@\n• Crea un promemoria in %2$@\n• Promemoria in %3$@\n\nSiri ti chiederà i dettagli e creerà automaticamente l’attività con un promemoria."
           }
         }
       }
@@ -1876,7 +1876,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crear una tarea en %@"
+            "value" : "Crea una tarea en %@"
           }
         },
         "fr" : {
@@ -1888,7 +1888,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea attività in %@"
+            "value" : "Crea promemoria in %@"
           }
         }
       }
@@ -5249,7 +5249,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ricordami con %@"
+            "value" : "Promemoria in %@"
           }
         }
       }

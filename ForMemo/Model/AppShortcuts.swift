@@ -14,9 +14,9 @@ struct AppShortcuts: AppShortcutsProvider {
                 AppShortcutPhrase("Remind me in \(.applicationName)"),
                 
                 // 🇮🇹 Italiano
-                AppShortcutPhrase("Aggiungi attività in \(.applicationName)"),
-                AppShortcutPhrase("Crea attività in \(.applicationName)"),
-                AppShortcutPhrase("Ricordami in \(.applicationName)"),
+                AppShortcutPhrase("Aggiungi promemoria in \(.applicationName)"),
+                AppShortcutPhrase("Crea promemoria in \(.applicationName)"),
+                AppShortcutPhrase("Promemoria in \(.applicationName)"),
                 
                 // 🇩🇪 Deutsch
                 AppShortcutPhrase("Füge eine Aufgabe in \(.applicationName) hinzu"),
@@ -29,9 +29,9 @@ struct AppShortcuts: AppShortcutsProvider {
                 AppShortcutPhrase("Rappelle-moi dans \(.applicationName)"),
                 
                 // 🇪🇸 Español (España)
-                AppShortcutPhrase("Añadir una tarea en \(.applicationName)"),
-                AppShortcutPhrase("Crear una tarea en \(.applicationName)"),
-                AppShortcutPhrase("Recuérdame en \(.applicationName)")
+                AppShortcutPhrase("Añade una tarea en \(.applicationName)"),
+                AppShortcutPhrase("Crea una tarea en \(.applicationName)"),
+                AppShortcutPhrase("Recordatorio en \(.applicationName)")
             ],
             shortTitle: LocalizedStringResource("Add Task"),
             systemImageName: "plus.circle.fill"
