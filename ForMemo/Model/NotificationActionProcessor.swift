@@ -1,5 +1,6 @@
 import SwiftData
 import Foundation
+import os
 
 @MainActor
 final class NotificationActionProcessor {
@@ -28,6 +29,8 @@ final class NotificationActionProcessor {
         
         if let task = try? context.fetch(descriptor).first {
             task.snoozeUntil = Date().addingTimeInterval(interval)
+        } else {
+            AppLogger.notifications.error("Snooze failed: task not found")
         }
         
         try? context.save()
