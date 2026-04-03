@@ -80,7 +80,7 @@ struct AddTaskIntent: AppIntent {
         try context.save()
 
         
-        NotificationManager.shared.refresh(force: true)
+        NotificationManager.shared.refresh()
         
         let shortResponse = UserDefaults.standard.bool(forKey: "siriShortConfirmation")
         

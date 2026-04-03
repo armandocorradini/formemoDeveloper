@@ -172,7 +172,7 @@ struct TaskListView: View {
                             withAnimation {
                                 deleteTask(task, in: modelContext)
                             }
-                            NotificationManager.shared.refresh(force: true)
+                            NotificationManager.shared.refresh()
                             taskPendingDeletion = nil
                         }
                         Button("Cancel", role: .cancel) {
@@ -736,7 +736,7 @@ struct TodoSectionView: View {
                                 withAnimation {
                                     deleteTask(t, in: modelContext)
                                 }
-                                NotificationManager.shared.refresh(force: true)
+                                NotificationManager.shared.refresh()
                             }
                         } label: {
                             Label("Delete", systemImage: "trash")
@@ -867,7 +867,7 @@ struct CompletedSectionView: View {
                                 withAnimation {
                                     deleteTask(t, in: modelContext)
                                 }
-                                NotificationManager.shared.refresh(force: true)
+                                NotificationManager.shared.refresh()
                             }
                             
                         } label: {

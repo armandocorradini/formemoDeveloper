@@ -88,6 +88,8 @@ struct TaskDetailView: View {
         BadgeColorStyle(rawValue: badgeColorRaw) ?? .default
     }
     
+    @State private var cloudKitDebounceTask: Task<Void, Never>?
+    
     @State private var refreshID = UUID()
     
     private var rowModel: TaskRowDisplayModel {
@@ -193,13 +195,9 @@ struct TaskDetailView: View {
                 if isSheet  {
                     ToolbarItem(placement: .navigationBarLeading) { // 2. Posiziona a sinistra
                         Button {
-                            dismiss() // 3. Chiude lo sheet
+                            dismiss()
                         } label: {
-                            HStack(spacing: 3) {
-                                Image(systemName: "chevron.left")
-                                    .font(.body.weight(.semibold))
-                                Text("")
-                            }
+                            Label("", systemImage: "chevron.left")
                         }
                     }
                 }
@@ -290,11 +288,6 @@ struct TaskDetailView: View {
             )) {
                 ActivityView(items: shareItems)
             }
-#if !targetEnvironment(macCatalyst)
-            .sheet(item: $previewItem) { item in
-                QuickLookPreview(url: item.url)
-            }
-#endif
             
             .sheet(isPresented: $showingScanner) {
                 DocumentScannerView { images in
@@ -303,7 +296,9 @@ struct TaskDetailView: View {
                     }
                 }
             }
-            
+            .sheet(item: $previewItem) { item in
+                QuickLookPreview(url: item.url)
+            }
             .sheet(isPresented: $showingLocationPicker) {
                 LocationPickerView { name, coordinate in
                     task.locationName = name
@@ -320,9 +315,12 @@ struct TaskDetailView: View {
                     NotificationManager.shared.refresh(force: true)
                 }
             }
+
             .onReceive(NotificationCenter.default.publisher(for: .attachmentsShouldRefresh)) { _ in
-                handleCloudKitUpdate()
+                debounceCloudKitUpdate()
             }
+            
+            
             .onChange(of: task.title) { _, _ in
                 scheduleDebouncedSave()
             }
@@ -332,6 +330,7 @@ struct TaskDetailView: View {
             .onChange(of: task.taskDescription) { _, _ in
                 scheduleDebouncedSave()
             }
+            
             .fileImporter(
                 isPresented: $showingFileImporter,
                 allowedContentTypes: [.item],
@@ -361,6 +360,7 @@ struct TaskDetailView: View {
             }
             .onAppear {
                 preloadAttachments()
+                removeGhostAttachments()
             }
             
             .onChange(of: photoItems) { _, newItems in
@@ -450,6 +450,21 @@ struct TaskDetailView: View {
     }
     
     @MainActor
+    private func debounceCloudKitUpdate() {
+        
+        cloudKitDebounceTask?.cancel()
+        
+        cloudKitDebounceTask = Task { @MainActor in
+            
+            try? await Task.sleep(for: .seconds(1))
+            
+            guard !Task.isCancelled else { return }
+            
+            handleCloudKitUpdate()
+        }
+    }
+    
+    @MainActor
     private func scheduleDebouncedSave() {
         
         saveTaskDebounce?.cancel()
@@ -490,7 +505,7 @@ struct TaskDetailView: View {
                 
                 try? FileManager.default.startDownloadingUbiquitousItem(at: url)
                 
-                _ = try? Data(contentsOf: url)
+                _ = try? url.checkResourceIsReachable()
             }
         }
     }
@@ -499,12 +514,6 @@ struct TaskDetailView: View {
     @MainActor
     private func removeGhostAttachments() {
         
-        _ = taskAttachments.filter { attachment in
-            
-            guard let url = attachment.fileURL else { return false }
-            
-            return FileManager.default.fileExists(atPath: url.path)
-        }
         
         let ghostAttachments = taskAttachments.filter { attachment in
             
@@ -1409,7 +1418,7 @@ struct TaskDetailView: View {
             // 🔥 wrapper navigation
             let nav = UINavigationController(rootViewController: controller)
             
-            // 🔥 bottone close (FONDAMENTALE SU CATALYST)
+
             controller.navigationItem.rightBarButtonItem = UIBarButtonItem(
                 barButtonSystemItem: .close,
                 target: context.coordinator,
@@ -1516,7 +1525,7 @@ struct AttachmentList: View {
     }
 }
 struct AttachmentRowView: View {
-    
+    @State private var hasLoaded = false
     let attachment: TaskAttachment
     let image: UIImage?
     
@@ -1562,13 +1571,13 @@ struct AttachmentRowView: View {
             Spacer()
             
             Button {
-                guard let url = attachment.fileURL else { return }
-                
-#if targetEnvironment(macCatalyst)
-                UIApplication.shared.open(url)
-#else
+                guard let url = attachment.fileURL,
+                      FileManager.default.fileExists(atPath: url.path) else {
+                    return
+                }
+
                 onPreview(url)
-#endif
+
                 
             } label: {
                 Image(systemName: "eye")
@@ -1595,9 +1604,41 @@ struct AttachmentRowView: View {
     }
     
     private func load() async {
-        if let data = await attachment.loadDataAsync(),
-           let image = UIImage(data: data) {
-            onImageLoaded(image)
+        
+        if hasLoaded { return }
+        hasLoaded = true
+        
+        if image != nil { return }
+        
+        try? await Task.sleep(nanoseconds: 80_000_000)
+        
+        guard let data = await attachment.loadDataAsync() else { return }
+        
+        let thumbnail = await Task.detached(priority: .utility) {
+            downsample(data: data, to: CGSize(width: 52, height: 52))
+        }.value
+        
+        guard let thumbnail else { return }
+        
+        await MainActor.run {
+            onImageLoaded(thumbnail)
         }
     }
+    nonisolated private func downsample(data: Data, to size: CGSize) -> UIImage? {
+        
+        let cfData = data as CFData
+        
+        guard let source = CGImageSourceCreateWithData(cfData, nil) else { return nil }
+        
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceThumbnailMaxPixelSize: max(size.width, size.height) * 2,
+            kCGImageSourceCreateThumbnailWithTransform: true
+        ]
+        
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+        
+        return UIImage(cgImage: cgImage)
+    }
+    
 }

@@ -157,7 +157,6 @@ extension TaskAttachment {
         
         guard let url = fileURL else { return nil }
         
-        // forza download se necessario (iCloud)
         try? FileManager.default.startDownloadingUbiquitousItem(at: url)
         
         return await Task.detached(priority: .utility) {

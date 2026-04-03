@@ -17,6 +17,6 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
     } catch {
         assertionFailure("Delete failed: \(error)")
     }
-    NotificationManager.shared.refresh(force: true)
+    NotificationManager.shared.refresh()
 }
 

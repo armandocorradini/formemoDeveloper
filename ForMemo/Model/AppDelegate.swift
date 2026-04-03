@@ -10,11 +10,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
     ) -> Bool {
         
-        // 🔥 NON impostare delegate qui (lo fa NotificationManager)
-        // 🔥 NON creare actions qui (lo fa NotificationManager)
-        
-        requestNotificationPermission()
-        
         application.registerForRemoteNotifications()
         
         return true
@@ -70,6 +65,16 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 #endif
         
         await MainActor.run {
+            
+            let now = Date()
+            
+            // 👇 usa già la tua proprietà esistente!
+            if now.timeIntervalSince(NotificationManager.shared.lastPushHandled) < 3 {
+                return
+            }
+            
+            NotificationManager.shared.lastPushHandled = now
+            
             NotificationManager.shared.refresh()
         }
         

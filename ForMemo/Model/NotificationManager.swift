@@ -121,9 +121,7 @@ final class NotificationManager: NSObject {
         refresh(force: true)
     }
     
-    func invalidateCache() {
-        lastTasksSignature = ""
-    }
+
     
     // MARK: - FETCH
     
@@ -189,9 +187,13 @@ final class NotificationManager: NSObject {
             expectedIDs.insert(id)
             
             if let existingReq = existing[id] {
-                if existingReq.content.body == content.body {
+                
+                // 🔥 controlla TUTTO, non solo body
+                if existingReq.content.body == content.body &&
+                   existingReq.content.title == content.title {
                     return
                 }
+                
                 center.removePendingNotificationRequests(withIdentifiers: [id])
             }
             
