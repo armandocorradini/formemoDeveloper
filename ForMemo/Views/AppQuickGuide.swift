@@ -132,7 +132,7 @@ struct AppQuickGuideView: View {
         
             .init(
                 title: String(localized: "Smart Notifications"),
-                description: String(localized: "Stay on track with timely reminders. Long-press a notification to quickly snooze a task or mark it as done."),
+                description: String(localized: "Stay on track with timely reminders. Long-press a notification to quickly snooze a task or open the app."),
                 icon: "deskclock",
                 tint: .orange
             ),
