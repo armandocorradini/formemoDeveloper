@@ -34,6 +34,13 @@ struct TaskRowContent: View, TaskRowBaseLogic {
     
     let rowStyle: TaskRowStyle
     
+    @AppStorage("dueIconEffect") private var selectedEffectRaw: String = DueIconEffect.none.rawValue
+    
+    private var selectedEffect: DueIconEffect {
+        DueIconEffect(rawValue: selectedEffectRaw) ?? .none
+    }
+    
+    
     var body: some View {
         content
             .padding(.vertical, rowStyle == .style0 ? 6 : 10)
@@ -498,7 +505,10 @@ extension TaskRowContent {
                             : AnyShapeStyle(.primary)
                         )
                         .opacity(0.9)
-                    
+                        .dueIconEffect(
+                            deadline: model.deadLine,
+                            effect: selectedEffect
+                        )
                     Text(model.title)
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(model.isCompleted ? .secondary : .primary)

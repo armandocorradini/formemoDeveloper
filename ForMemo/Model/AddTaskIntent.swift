@@ -131,7 +131,7 @@ struct NaturalLanguageParser {
         let stopWords = [
             "add", "create", "remind me", "schedule",
             "aggiungi", "crea", "ricordami", "segnami", "metti",
-            "añade", "crea", "recuérdame", "apunta", "pon",
+            "añade", "crea", "recordatorio", "apunta", "pon",
             "ajoute", "crée", "rappelle-moi", "planifie",
             "hinzufügen", "erstelle", "erinnere mich", "plane"
         ]

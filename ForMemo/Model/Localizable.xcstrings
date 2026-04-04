@@ -5237,7 +5237,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recuérdame en %@"
+            "value" : "Recordatorio en %@"
           }
         },
         "fr" : {
