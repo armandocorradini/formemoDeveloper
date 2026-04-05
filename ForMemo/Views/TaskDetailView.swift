@@ -309,7 +309,7 @@ struct TaskDetailView: View {
                         try modelContext.save()
                         
                     } catch {
-                        assertionFailure("Failed to save context: \(error)")
+                        AppLogger.persistence.fault("Failed to save context: \(error)")
                     }
                     
                     NotificationManager.shared.refresh(force: true)
@@ -349,7 +349,7 @@ struct TaskDetailView: View {
                         try modelContext.save()
                         
                     } catch {
-                        assertionFailure("Failed to save context: \(error)")
+                        AppLogger.persistence.fault("Failed to save context: \(error)")
                     }
                     
                     NotificationManager.shared.refresh(force: true)
@@ -376,7 +376,7 @@ struct TaskDetailView: View {
                     try modelContext.save()
                     NotificationManager.shared.refresh(force: true)
                 } catch {
-                    assertionFailure("Failed to save context: \(error)")
+                    AppLogger.persistence.fault("Failed to save context: \(error)")
                 }
                 
             }
@@ -385,7 +385,7 @@ struct TaskDetailView: View {
                     try modelContext.save()
                     NotificationManager.shared.refresh(force: true)
                 } catch {
-                    assertionFailure("Failed to save context: \(error)")
+                    AppLogger.persistence.fault("Failed to save context: \(error)")
                 }
                 
             }
@@ -394,7 +394,7 @@ struct TaskDetailView: View {
                     try modelContext.save()
                     NotificationManager.shared.refresh(force: true)
                 } catch {
-                    assertionFailure("Failed to save context: \(error)")
+                    AppLogger.persistence.fault("Failed to save context: \(error)")
                 }
                 
             }
@@ -404,7 +404,7 @@ struct TaskDetailView: View {
                     NotificationManager.shared.refresh(force: true)
                     
                 } catch {
-                    assertionFailure("Failed to save context: \(error)")
+                    AppLogger.persistence.fault("Failed to save context: \(error)")
                 }
                 
             }
@@ -413,7 +413,7 @@ struct TaskDetailView: View {
                     try modelContext.save()
                     NotificationManager.shared.refresh(force: true)
                 } catch {
-                    assertionFailure("Failed to save context: \(error)")
+                    AppLogger.persistence.fault("Failed to save context: \(error)")
                 }
                 
                 
@@ -423,7 +423,7 @@ struct TaskDetailView: View {
                     try modelContext.save()
                     NotificationManager.shared.refresh(force: true)
                 } catch {
-                    assertionFailure("Failed to save context: \(error)")
+                    AppLogger.persistence.fault("Failed to save context: \(error)")
                 }
             }
             
@@ -441,11 +441,11 @@ struct TaskDetailView: View {
             try modelContext.save()
             NotificationManager.shared.refresh(force: true)
 #if DEBUG
-            print("💾 Saved")
+            AppLogger.notifications.info("💾 Saved")
 #endif
             
         } catch {
-            assertionFailure("Save error: \(error)")
+            AppLogger.persistence.fault("Save error: \(error)")
         }
     }
     
@@ -486,7 +486,7 @@ struct TaskDetailView: View {
         preloadAttachments()
         
     #if DEBUG
-        print("☁️ CloudKit UI refresh (safe)")
+        AppLogger.notifications.debug("CloudKit UI refresh (safe)")
     #endif
     }
     
@@ -524,7 +524,7 @@ struct TaskDetailView: View {
         
         guard !ghostAttachments.isEmpty else { return }
         
-        print("👻 Removing ghost attachments:", ghostAttachments.map { $0.originalName })
+        AppLogger.notifications.info("👻 Removing ghost attachments: \(ghostAttachments.map { $0.originalName })")
         
         for attachment in ghostAttachments {
             modelContext.delete(attachment)
@@ -861,7 +861,7 @@ struct TaskDetailView: View {
                         NotificationManager.shared.refresh(force: true)
                         
                     } catch {
-                        assertionFailure("Failed to save context: \(error)")
+                        AppLogger.persistence.fault("Failed to save context: \(error)")
                     }
 
                 }
@@ -986,7 +986,7 @@ struct TaskDetailView: View {
                             
                             NotificationManager.shared.refresh(force: true)
                         } catch {
-                            assertionFailure("Failed to save context: \(error)")
+                            AppLogger.persistence.fault("Failed to save context: \(error)")
                         }
                     }
                    )
@@ -1057,7 +1057,7 @@ struct TaskDetailView: View {
                                 
                                 NotificationManager.shared.refresh(force: true)
                             } catch {
-                                assertionFailure("Failed to save context: \(error)")
+                                AppLogger.persistence.fault("Failed to save context: \(error)")
                             }
                         }
                         
@@ -1305,7 +1305,7 @@ struct TaskDetailView: View {
                 object: nil
             )
 #if DEBUG
-            print("Attachment saved:", url.lastPathComponent)
+            AppLogger.notifications.info("Attachment saved: \( url.lastPathComponent)")
 #endif
         } catch {
             AppLogger.app.error("Attachment import error:\(error.localizedDescription))")
@@ -1347,30 +1347,30 @@ struct TaskDetailView: View {
     private func loadImageAsync(for attachment: TaskAttachment) async {
         
         guard imageCache[attachment.id] == nil else {
-            print("⚡️ CACHE HIT:", attachment.originalName)
+            AppLogger.notifications.info("⚡️ CACHE HIT: \( attachment.originalName)")
             return
         }
         
-        print("📂 TRY LOAD:", attachment.originalName)
+        AppLogger.notifications.info("📂 TRY LOAD: \( attachment.originalName)")
         
         if let data = await attachment.loadDataAsync() {
             
-            print("📦 DATA OK:", attachment.originalName, "size:", data.count)
+            AppLogger.persistence.info("DATA OK: \(attachment.originalName) size: \(data.count)")
             
             if let image = UIImage(data: data) {
                 
-                print("✅ IMAGE CREATED:", attachment.originalName)
+                AppLogger.notifications.info("✅ IMAGE CREATED: \( attachment.originalName)")
                 
                 await MainActor.run {
                     imageCache[attachment.id] = image
                 }
                 
             } else {
-                print("❌ IMAGE DECODE FAILED:", attachment.originalName)
+                AppLogger.notifications.info("❌ IMAGE DECODE FAILED: \(attachment.originalName)")
             }
             
         } else {
-            print("❌ DATA NIL:", attachment.originalName)
+            AppLogger.notifications.info("❌ DATA NIL: \( attachment.originalName)")
         }
     }
     // MARK: - Helpers

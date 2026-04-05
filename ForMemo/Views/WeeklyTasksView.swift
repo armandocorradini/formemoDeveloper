@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct WeeklyTasksView: View {
     
@@ -282,10 +283,9 @@ private struct WeeklyTaskRow: View {
             try modelContext.save()
             
             NotificationManager.shared.refresh(force: true)
-            
-            
+
         } catch {
-            assertionFailure("Failed to save completion: \(error)")
+            AppLogger.persistence.fault("Failed to save completion: \(error)")
         }
     }
     

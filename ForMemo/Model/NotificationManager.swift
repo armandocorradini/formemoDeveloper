@@ -2,6 +2,7 @@ import Foundation
 import UIKit
 import SwiftData
 @preconcurrency import UserNotifications
+import os
 
 
 final class NotificationManager: NSObject {
@@ -96,7 +97,7 @@ final class NotificationManager: NSObject {
             guard !Task.isCancelled else { return }
             
     #if DEBUG
-            print("🔔 Optimized refresh")
+            AppLogger.notifications.debug("Optimized refresh")
     #endif
             
             guard let context = self.modelContainer?.mainContext else { return }
@@ -355,7 +356,7 @@ final class NotificationManager: NSObject {
         UNUserNotificationCenter.current().setBadgeCount(count) { error in
 #if DEBUG
             if let error {
-                print("Badge error:", error.localizedDescription)
+                AppLogger.notifications.error("Badge error: \(error.localizedDescription)")
             }
 #endif
         }

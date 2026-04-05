@@ -3,6 +3,7 @@ import SwiftData
 import UserNotifications
 import CoreData   // 🔥 serve per NSPersistentStoreRemoteChange
 import AppIntents
+import os
 
 @main
 struct ForMemoApp: App {
@@ -106,8 +107,8 @@ struct ForMemoApp: App {
             TaskTabView()
                 .preferredColorScheme(selectedTheme.colorScheme)
         }
-        .modelContainer(container)
         
+        .modelContainer(container)
         .onChange(of: scenePhase) { _, newPhase in
             
             switch newPhase {
@@ -115,7 +116,7 @@ struct ForMemoApp: App {
             case .active:
                 Task { @MainActor in
                     
-                    print("🟢 App became active")
+                    AppLogger.notifications.info("🟢 App became active")
                     
                     let context = container.mainContext
                     
@@ -166,7 +167,7 @@ struct ForMemoApp: App {
             Task { @MainActor in
                 
     #if DEBUG
-                print("🔥 CLOUDKIT PUSH ARRIVATO")
+                AppLogger.notifications.info("🔥 CLOUDKIT PUSH ARRIVATO")
     #endif
                 
                 let context = self.container.mainContext

@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import AVFoundation
+import os
 
 actor ImageCache {
     static let shared = ImageCache()
@@ -182,7 +183,7 @@ struct AttachmentRow: View {
         
         // ❌ file non esiste
         guard fm.fileExists(atPath: url.path) else {
-            print("❌ FILE NOT FOUND:", url.lastPathComponent)
+            AppLogger.notifications.info("❌ FILE NOT FOUND:\(url.lastPathComponent)")
             state = .failed
             return
         }
@@ -226,7 +227,7 @@ struct AttachmentRow: View {
             try? await Task.sleep(nanoseconds: delay)
         }
         
-        print("❌ LOAD FAILED:", attachment.originalName)
+        AppLogger.notifications.info("❌ LOAD FAILED:\( attachment.originalName)")
         state = .failed
     }
     

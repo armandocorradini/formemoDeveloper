@@ -71,8 +71,6 @@ struct AddAttachmentView: View {
                 
             } catch {
                 AppLogger.app.error("Attachment import failed:\(error)")
-                
-                
             }
         }
     }

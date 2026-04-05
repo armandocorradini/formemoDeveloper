@@ -1,30 +1,36 @@
 import SwiftData
+import SwiftUI
 import Foundation
+import os
 
 enum Persistence {
     
     static let shared: ModelContainer = {
+        
+        let schema = Schema([
+            TodoTask.self,
+            TaskAttachment.self
+        ])
+        
+        let storeURL = URL.documentsDirectory.appendingPathComponent("local.store")
+        
         do {
-            let schema = Schema([
-                TodoTask.self,
-                TaskAttachment.self
-            ])
-            
-            // 🔥 CONFIGURAZIONE SOLO LOCALE (NO CLOUDKIT)
             let configuration = ModelConfiguration(
                 schema: schema,
-                url: URL.documentsDirectory.appendingPathComponent("local.store")
+                url: storeURL
             )
             
-            let container = try ModelContainer(
+            return try ModelContainer(
                 for: schema,
                 configurations: [configuration]
             )
             
-            return container
-            
         } catch {
-            fatalError("ModelContainer error: \(error)")
+            AppLogger.persistence.fault("ModelContainer error: \(error.localizedDescription)")
+            AppLogger.persistence.error("Store URL: \(storeURL.path)")
+            
+            // 🚨 QUI è giusto crashare (caso rarissimo)
+            fatalError("ModelContainer initialization failed")
         }
     }()
 }

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import os
 
 @MainActor
 final class AttachmentMaintenanceManager {
@@ -34,26 +35,21 @@ final class AttachmentMaintenanceManager {
         for task in tasks {
             
             guard let completion = task.completedAt else {
-#if DEBUG
-                print("⚠️ Missing completedAt:", task.title)
-#endif
+                
+                AppLogger.persistence.error("Missing completedAt:\( task.title)")
                 continue
             }
             
             guard completion < cutoff else { continue }
             
             guard let attachments = task.attachments, !attachments.isEmpty else { continue }
-            
-#if DEBUG
-            print("🧹 Cleaning task:", task.title)
-#endif
+
+            AppLogger.persistence.info("Cleaning task:\(task.title)")
             
             for attachment in attachments {
-                
-#if DEBUG
-                print("Deleting attachment:", attachment.originalName)
-#endif
-                
+
+                AppLogger.persistence.info("Deleting attachment: \(attachment.originalName)")
+        
                 attachment.deleteFileIfNeeded()
                 context.delete(attachment)
                 context.processPendingChanges() // 🔥 sync UI immediata

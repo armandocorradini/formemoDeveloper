@@ -1,5 +1,7 @@
 import UIKit
+import SwiftUI
 @preconcurrency import UserNotifications
+import os
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
     
@@ -23,12 +25,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             
-#if DEBUG
-            print("🔔 Permission granted:", granted)
-#endif
+
+            AppLogger.notifications.info("Permission granted: \(granted)")
+
             
             if let error {
-                print("❌ Permission error:", error.localizedDescription)
+                AppLogger.notifications.error("Permission error: \(error.localizedDescription)")
             }
         }
     }
@@ -42,7 +44,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
         
 #if DEBUG
-        print("📱 APNs token:", token)
+        AppLogger.notifications.debug("APNs token: \(token)")
 #endif
     }
     
@@ -50,7 +52,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFailToRegisterForRemoteNotificationsWithError error: Error
     ) {
-        print("❌ APNs error:", error.localizedDescription)
+        AppLogger.notifications.error("APNs error: \(error.localizedDescription)")
     }
     
     // MARK: - Silent Push (CloudKit)
@@ -61,7 +63,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     ) async -> UIBackgroundFetchResult {
         
 #if DEBUG
-        print("🔥 CLOUDKIT PUSH ARRIVATO")
+        await AppLogger.notifications.debug("CloudKit push received")
 #endif
         
         await MainActor.run {
@@ -71,7 +73,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             // 🔥 filtro forte anti-spam CloudKit
             if now.timeIntervalSince(NotificationManager.shared.lastPushHandled) <= 5 {
         #if DEBUG
-                print("⏭️ CloudKit push ignorato (debounce)")
+                AppLogger.notifications.debug("CloudKit push ignored (debounce)")
         #endif
                 return
             }
@@ -79,7 +81,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
             NotificationManager.shared.lastPushHandled = now
             
         #if DEBUG
-            print("☁️ CloudKit UI refresh (safe)")
+            AppLogger.notifications.debug("CloudKit UI refresh")
+            
         #endif
             
             NotificationManager.shared.refresh()

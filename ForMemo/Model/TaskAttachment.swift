@@ -1,6 +1,7 @@
 
 import SwiftData
 import Foundation
+import os
 
 @Model
 final class TaskAttachment {
@@ -140,12 +141,12 @@ extension TaskAttachment {
                     try FileManager.default.removeItem(at: safeURL)
                 }
             } catch {
-                assertionFailure("Delete failed: \(error)")
+                AppLogger.persistence.error("Delete failed: \(error.localizedDescription)")
             }
         }
         
         if let error {
-            assertionFailure("Coordination failed: \(error)")
+            AppLogger.persistence.fault("Coordination failed: \(error)")
         }
     }
 }

@@ -1,5 +1,6 @@
 import SwiftData
 import Foundation
+import os
 
 @MainActor
 
@@ -15,7 +16,7 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
     do {
         try context.save()
     } catch {
-        assertionFailure("Delete failed: \(error)")
+        AppLogger.persistence.error("Delete failed: \(error.localizedDescription)")
     }
     NotificationManager.shared.refresh()
 }

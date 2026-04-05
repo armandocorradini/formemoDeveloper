@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 //import EventKit
 
 struct TaskCalendarView: View {
@@ -665,7 +666,7 @@ private extension TaskCalendarView {
             try modelContext.save()
             
         } catch {
-            assertionFailure("Failed to save context: \(error)")
+            AppLogger.persistence.fault("Failed to save context: \(error)")
         }
         
         NotificationManager.shared.refresh(force: true)

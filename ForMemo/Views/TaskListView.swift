@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 import Observation
+import os
 
 // MARK: - TaskListView
 struct TaskListView: View {
@@ -336,47 +337,7 @@ struct TaskListView: View {
             }
         }
     }
-    
-    
-//    // MARK: - DEBUG BULK ACTIONS
-//
-//    @MainActor
-//    private func createTestTasks() {
-//        
-//        for _ in 0..<3000 {
-//            let task = TodoTask(
-//                title: "ProvaProva"
-//            )
-//            modelContext.insert(task)
-//        }
-//        
-//        do {
-//            try modelContext.save()
-//        } catch {
-//            assertionFailure("Bulk create failed: \(error)")
-//        }
-//        
-//        NotificationManager.shared.refresh(force: true)
-//    }
-//
-//    @MainActor
-//    private func deleteTestTasks() {
-//        
-//        let tasksToDelete = tasks.filter { $0.title == "ProvaProva" }
-//        
-//        for task in tasksToDelete {
-//            modelContext.delete(task)
-//        }
-//        
-//        do {
-//            try modelContext.save()
-//        } catch {
-//            assertionFailure("Bulk delete failed: \(error)")
-//        }
-//        
-//        NotificationManager.shared.refresh(force: true)
-//    }
-//    
+     
     @ViewBuilder
     private func listWithStyle<Content: View>(
         @ViewBuilder content: () -> Content
@@ -895,7 +856,7 @@ struct CompletedSectionView: View {
         do {
             try modelContext.save()
         } catch {
-            assertionFailure("Failed to save context: \(error)")
+            AppLogger.persistence.fault("Failed to save context: \(error)")
         }
         
         NotificationManager.shared.refresh(force: true)
