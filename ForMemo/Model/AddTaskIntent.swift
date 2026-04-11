@@ -118,8 +118,7 @@ struct AddTaskIntent: AppIntent {
             
             let minutes: Int?
             
-            // MARK: - NONE
-            
+
             // MARK: - NONE
 
             let words = normalized.components(separatedBy: CharacterSet.whitespacesAndNewlines)
@@ -148,7 +147,7 @@ struct AddTaskIntent: AppIntent {
             // MARK: - HOURS
             
             else if [
-                "hour", "ora", "ore",
+                "hour", "hours", "ora", "ore",
                 "heure", "heures",
                 "hora", "horas",
                 "stunde", "stunden"
