@@ -27,8 +27,15 @@ struct AddTaskIntent: AppIntent {
     )
     var date: Date?
     
+    @Parameter(
+        title: "Reminder",
+        requestValueDialog: IntentDialog("When should I remind you?")
+    )
+    var reminderText: String?
+    
+    
     static var parameterSummary: some ParameterSummary {
-        Summary("Add \(\.$input)")
+        Summary("Add \(\.$input) at \(\.$date) with reminder \(\.$reminderText)")
     }
     
     // MARK: - Init
@@ -60,14 +67,12 @@ struct AddTaskIntent: AppIntent {
         let parsed = NaturalLanguageParser.parse(input)
         let finalTitle = parsed.title
         
-        // 🔥 FIX CRITICO
         let dueDate = date ?? parsed.date
         
         guard let dueDate else {
             throw $date.needsValueError()
         }
         
-        // Validazione
         guard dueDate > now else {
             return .result(dialog: IntentDialog("That time is in the past."))
         }
@@ -78,14 +83,115 @@ struct AddTaskIntent: AppIntent {
             task.mainTag = inferredTag
         }
         
-        let reminder = Self.computeReminder(
-            now: now,
-            deadline: dueDate,
-            leadTimeDays: notificationLeadTimeDays
-        )
+        let autoReminderEnabled = UserDefaults.standard.bool(forKey: "siriAutoReminderEnabled")
         
-        task.reminderOffsetMinutes = reminder.offsetMinutes
+        var reminderInfo: String
         
+        // MARK: - AUTO
+        
+        if autoReminderEnabled {
+            
+            let reminder = Self.computeReminder(
+                now: now,
+                deadline: dueDate,
+                leadTimeDays: notificationLeadTimeDays
+            )
+            
+            task.reminderOffsetMinutes = reminder.offsetMinutes
+            reminderInfo = reminder.info
+            
+        }
+        
+        // MARK: - MANUAL (Siri)
+        
+        else {
+            
+            // 🔥 Apple style: UNA domanda sola
+            
+            guard let reminderText, !reminderText.isEmpty else {
+                throw $reminderText.needsValueError()
+            }
+            
+            let normalized = reminderText
+                .folding(options: .diacriticInsensitive, locale: .current)
+                .lowercased()
+            
+            let minutes: Int?
+            
+            // MARK: - NONE
+            
+            // MARK: - NONE
+
+            let words = normalized.components(separatedBy: CharacterSet.whitespacesAndNewlines)
+
+            let noKeywords = [
+                "no", "none",
+                "nessun", "nessuno", "niente",
+                "aucun",
+                "ningun",
+                "kein"
+            ]
+
+            if words.contains(where: { word in
+                noKeywords.contains(where: { word.hasPrefix($0) })
+            }) {
+                minutes = nil
+            }
+            
+            // MARK: - MINUTES
+            
+            else if normalized.contains("min") {
+                let value = extractNumber(from: normalized)
+                minutes = max(1, min(59, value))
+            }
+            
+            // MARK: - HOURS
+            
+            else if [
+                "hour", "ora", "ore",
+                "heure", "heures",
+                "hora", "horas",
+                "stunde", "stunden"
+            ].contains(where: { normalized.contains($0) }) {
+                
+                let value = extractNumber(from: normalized)
+                let clamped = max(1, min(23, value))
+                minutes = clamped * 60
+            }
+            
+            // MARK: - DAYS
+            
+            else if [
+                "day", "days",
+                "giorno", "giorni",
+                "dia", "dias",
+                "jour", "jours",
+                "tag", "tage"
+            ].contains(where: { normalized.contains($0) }) {
+                
+                let value = extractNumber(from: normalized)
+                let clamped = max(1, min(7, value))
+                minutes = clamped * 1440
+            }
+            
+            // MARK: - FALLBACK
+            
+            else {
+                minutes = 0
+            }
+            
+            // 🔥 APPLY (coerente con ReminderScrubberControl)
+            
+            task.reminderOffsetMinutes = minutes
+            
+            if minutes == nil {
+                reminderInfo = String(localized: "No reminder")
+            } else {
+                reminderInfo = Self.description(forMinutes: minutes!)
+            }
+        }
+        print("INPUT:", input)
+        print("REMINDER:", reminderText ?? "nil")
         context.insert(task)
         try context.save()
         
@@ -96,11 +202,52 @@ struct AddTaskIntent: AppIntent {
         if shortResponse {
             return .result(dialog: "Done")
         }
-        
+
+        if task.reminderOffsetMinutes == nil {
+            return .result(
+                dialog: IntentDialog("Done. \(finalTitle) is scheduled.")
+            )
+        }
+
         return .result(
-            dialog: IntentDialog("Done. \(finalTitle) is scheduled. I’ll remind you \(reminder.info).")
+            dialog: IntentDialog("Done. \(finalTitle) is scheduled. I’ll remind you \(reminderInfo).")
         )
     }
+}
+
+func extractNumber(from text: String) -> Int {
+    
+    // 🔥 1. numeri diretti (2, 10, ecc)
+    let numbers = text.components(separatedBy: CharacterSet.decimalDigits.inverted)
+    if let first = numbers.first(where: { !$0.isEmpty }),
+       let value = Int(first) {
+        return value
+    }
+    
+    // 🔥 2. prova con NumberFormatter spellOut
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .spellOut
+    
+    let locales = [
+        "en_US", "it_IT", "fr_FR", "es_ES", "de_DE"
+    ]
+    
+    let words = text
+        .lowercased()
+        .replacingOccurrences(of: "'", with: " ")
+        .components(separatedBy: CharacterSet.whitespacesAndNewlines)
+    
+    for localeID in locales {
+        formatter.locale = Locale(identifier: localeID)
+        
+        for word in words {
+            if let number = formatter.number(from: word) {
+                return number.intValue
+            }
+        }
+    }
+    
+    return 0
 }
 
 struct NaturalLanguageParser {
@@ -304,7 +451,7 @@ private extension AddTaskIntent {
     static func description(forMinutes minutes: Int) -> String {
         
         if minutes == 0 {
-            return String(localized: "At time of event")
+            return String(localized: "at time of event")
         }
         
         if minutes < 60 {

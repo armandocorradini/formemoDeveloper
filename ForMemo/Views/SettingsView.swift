@@ -29,6 +29,9 @@ struct SettingsView: View {
     @AppStorage("siriShortConfirmation")
     private var siriShortConfirmation: Bool = false
     
+    @AppStorage("siriAutoReminderEnabled")
+    private var siriAutoReminderEnabled: Bool = true
+    
     @AppStorage("attachmentRetentionDays")
     private var attachmentRetentionDays: Int = 30
     
@@ -252,6 +255,10 @@ struct SettingsView: View {
                                     .padding(.leading, 6)
                             }
                         }
+                        Toggle(
+                            "Automatic reminder from Siri",
+                            isOn: $siriAutoReminderEnabled
+                        )
                         
                         Toggle(
                             "Reduce Siri confirmation message",
