@@ -1,11 +1,23 @@
 import SwiftUI
+import EventKit
 import SwiftData
 import UserNotifications
+
+enum ActiveSheet: Identifiable {
+    case export
+    case `import`
+    
+    var id: Int { hashValue }
+}
+
+
 
 // MARK: - SettingsView
 struct SettingsView: View {
     
     @Environment(\.modelContext) private var modelContext
+    @State private var tasks: [TodoTask] = []
+    
     @AppStorage("navigationApp")
     private var navigationAppRaw: String = NavigationApp.appleMaps.rawValue
     @State private var showQuickGuide = false
@@ -13,7 +25,7 @@ struct SettingsView: View {
     @State private var showDataManagement = false
     @State private var showOtherSettings = false
     @State private var showSiri = false
-    
+    @State private var activeSheet: ActiveSheet?
     
     @State private var showDeleteAllAlert = false
     
@@ -316,6 +328,24 @@ struct SettingsView: View {
                     
                     .padding(.top,15)
                     
+                    Section("Reminders") {
+                        
+                        Button {
+                            Task { @MainActor in
+                                await Task.yield()   // 🔥 fondamentale
+                                activeSheet = .export
+                            }
+                        }label: {
+                            Label("Export to Reminders", systemImage: "arrow.up.circle")
+                        }
+                        Button {
+                            activeSheet = .import
+                        } label: {
+                            Label("Import from Reminders", systemImage: "arrow.down.circle")
+                        }
+                    }
+
+
                     Section("Data Management") {
                         Button {
                             showDataManagement = true
@@ -333,13 +363,17 @@ struct SettingsView: View {
                         }
                     }
                 }
-                
+
                 .navigationTitle("Settings")
                 .navigationBarTitleDisplayMode(.inline)
                 .scrollContentBackground(.hidden)
+                .task {
+                    loadTasks()
+                }
                 .fullScreenCover(isPresented: $showSoundPicker) {
                     NotificationSoundPickerView()
-                }            .fullScreenCover(isPresented: $showQuickGuide) {
+                }
+                .fullScreenCover(isPresented: $showQuickGuide) {
                     // BackupView()
                     AppQuickGuideView()
                 }
@@ -361,6 +395,15 @@ struct SettingsView: View {
                 }
             }
         }
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .export:
+                ExportTasksView(tasks: tasks)
+                
+            case .import:
+                ImportTasksView()
+            }
+        }
     }
     
     
@@ -378,6 +421,32 @@ struct SettingsView: View {
             UIApplication.shared.open(url)
         }
     }
+    
+    private func loadTasks() {
+        
+        let descriptor = FetchDescriptor<TodoTask>()
+        let all = (try? modelContext.fetch(descriptor)) ?? []
+        
+        tasks = all
+            .filter { !$0.isCompleted }
+            .sorted {
+                switch ($0.deadLine, $1.deadLine) {
+                case let (d1?, d2?):
+                    return d1 < d2
+                    
+                case (nil, nil):
+                    return $0.createdAt < $1.createdAt
+                    
+                case (nil, _?):
+                    return false // nil in fondo
+                    
+                case (_?, nil):
+                    return true
+                }
+            }
+    }
+    
+    
 }
 
 // MARK: - App Theme
@@ -401,4 +470,52 @@ extension AppTheme {
         case .dark: return .dark
         }
     }
+}
+
+
+@MainActor
+func createTestReminder() async {
+    
+    do {
+        let access = RemindersAccess()
+        try await access.requestAccess()
+        
+        let store = access.getStore()
+        
+        let reminder = EKReminder(eventStore: store)
+        reminder.title = "Test ForMemo"
+        
+        // 🔥 usa calendario dedicato
+        reminder.calendar = getOrCreateForMemoCalendar(store: store)
+        
+        try store.save(reminder, commit: true)
+        
+        print("✅ Reminder created in ForMemo list")
+        
+    } catch {
+        print("❌ Error:", error.localizedDescription)
+    }
+}
+
+
+
+func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
+    
+    // 1️⃣ cerca se esiste già
+    let calendars = store.calendars(for: .reminder)
+    
+    if let existing = calendars.first(where: { $0.title == "ForMemo" }) {
+        return existing
+    }
+    
+    // 2️⃣ crea nuovo calendario
+    let calendar = EKCalendar(for: .reminder, eventStore: store)
+    calendar.title = "ForMemo"
+    
+    // 🔥 IMPORTANTISSIMO: assegna source
+    calendar.source = store.defaultCalendarForNewReminders()?.source
+    
+    try? store.saveCalendar(calendar, commit: true)
+    
+    return calendar
 }

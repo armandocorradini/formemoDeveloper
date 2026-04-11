@@ -171,6 +171,30 @@
         }
       }
     },
+    "NSRemindersFullAccessUsageDescription" : {
+      "comment" : "Privacy - Reminders Full Access Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This app needs access to your Reminders to sync your tasks."
+          }
+        }
+      }
+    },
+    "NSRemindersUsageDescription" : {
+      "comment" : "Privacy - Reminders Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This app needs access to your Reminders to sync your tasks."
+          }
+        }
+      }
+    },
     "NSSiriUsageDescription" : {
       "comment" : "Privacy - Siri Usage Description",
       "extractionState" : "extracted_with_value",

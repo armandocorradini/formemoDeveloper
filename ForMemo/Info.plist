@@ -8,5 +8,7 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSRemindersUsageDescription</key>
+	<string>This app needs access to your Reminders to sync your tasks.</string>
 </dict>
 </plist>
