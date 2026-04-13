@@ -331,11 +331,11 @@ struct SettingsView: View {
                         } label: {
                             HStack(spacing: 12) {
                                 Image(systemName: "arrow.down.circle")
-                                    .foregroundStyle(.blue)
+                                    .foregroundColor(.blue)
                                     .frame(width: iconWidth)
                                 
                                 Text("Import from Apple Reminders")
-                                    .foregroundStyle(.primary)
+                                    .foregroundColor(.primary)
                                     .padding(.leading, 6)
                             }
                         }
@@ -500,14 +500,14 @@ func createTestReminder() async {
         let store = access.getStore()
         
         let reminder = EKReminder(eventStore: store)
-        reminder.title = "Test ForMemo"
+        reminder.title = "Test \(appName)"
         
         // 🔥 usa calendario dedicato
         reminder.calendar = getOrCreateForMemoCalendar(store: store)
         
         try store.save(reminder, commit: true)
         
-        print("✅ Reminder created in ForMemo list")
+        print("✅ Reminder created in \(appName) list")
         
     } catch {
         print("❌ Error:", error.localizedDescription)
@@ -520,13 +520,13 @@ func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
     
     let calendars = store.calendars(for: .reminder)
     
-    if let existing = calendars.first(where: { $0.title == "ForMemo" }) {
+    if let existing = calendars.first(where: { $0.title == "\(appName)" }) {
         UserDefaults.standard.set(existing.calendarIdentifier, forKey: "ForMemoCalendarID")
         return existing
     }
     
     let calendar = EKCalendar(for: .reminder, eventStore: store)
-    calendar.title = "ForMemo"
+    calendar.title = "\(appName)"
     calendar.source = store.defaultCalendarForNewReminders()?.source
     
     try? store.saveCalendar(calendar, commit: true)

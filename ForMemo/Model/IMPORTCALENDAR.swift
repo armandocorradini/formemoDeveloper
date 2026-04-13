@@ -143,17 +143,31 @@ private extension CalendarImportView {
     }
     
     func computeOffset(_ event: EKEvent) -> Int? {
-        guard let alarm = event.alarms?.first else { return nil }
         
-        if alarm.relativeOffset != 0 {
-            return Int(abs(alarm.relativeOffset) / 60)
+        // 🔥 Se NON ci sono reminder → reminder alla scadenza
+        guard let alarms = event.alarms, !alarms.isEmpty else {
+            return 0
         }
         
-        if let date = alarm.absoluteDate {
-            return Int(event.startDate.timeIntervalSince(date) / 60)
+        for alarm in alarms {
+            
+            // 🔥 offset relativo (caso migliore)
+            if alarm.relativeOffset != 0 {
+                return Int(abs(alarm.relativeOffset) / 60)
+            }
+            
+            // 🔥 offset assoluto
+            if let date = alarm.absoluteDate {
+                let diff = event.startDate.timeIntervalSince(date)
+                
+                if diff > 0 {
+                    return Int(diff / 60)
+                }
+            }
         }
         
-        return nil
+        // 🔥 fallback → alla scadenza
+        return 0
     }
 }
 

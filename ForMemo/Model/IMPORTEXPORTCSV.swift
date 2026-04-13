@@ -62,7 +62,7 @@ struct CSVExporter {
         }
         
         let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("ForMemo_\(Date().timeIntervalSince1970).csv")
+            .appendingPathComponent("\(appName)_\(Date().timeIntervalSince1970).csv")
         
         try? csv.write(to: url, atomically: true, encoding: .utf8)
         return url
@@ -303,11 +303,11 @@ struct CSVIntegrationView: View {
             .sheet(isPresented: $showImportInfo) {
                 VStack(spacing: 20) {
                     
-                    Text("Import into ForMemo")
+                    Text("Import into \(appName)")
                         .font(.title2)
                         .bold()
                     
-                    Text("Select a CSV file to import your tasks into ForMemo.")
+                    Text("Select a CSV file to import your tasks into \(appName).")
                         .multilineTextAlignment(.center)
                     
                     Button("Continue") {
