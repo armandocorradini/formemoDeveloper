@@ -475,7 +475,7 @@ private extension AddTaskIntent {
     }
 }
 
-private enum TagInference {
+ enum TagInference {
     
     static let keywords: [TaskMainTag: [String]] = [
         

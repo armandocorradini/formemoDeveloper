@@ -3,15 +3,6 @@ import EventKit
 import SwiftData
 import UserNotifications
 
-enum ActiveSheet: Identifiable {
-    case export
-    case `import`
-    
-    var id: Int { hashValue }
-}
-
-
-
 // MARK: - SettingsView
 struct SettingsView: View {
     
@@ -25,7 +16,6 @@ struct SettingsView: View {
     @State private var showDataManagement = false
     @State private var showOtherSettings = false
     @State private var showSiri = false
-    @State private var activeSheet: ActiveSheet?
     
     @State private var showDeleteAllAlert = false
     
@@ -55,6 +45,9 @@ struct SettingsView: View {
     
     @AppStorage("notificationSoundName")
     private var notificationSoundName: String = ""
+    
+    @State private var showImportReminders = false
+    
     
     func checkNotificationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
@@ -328,32 +321,28 @@ struct SettingsView: View {
                     
                     .padding(.top,15)
                     
-                    Section("Reminders") {
+                    Section("Data Management") {
                         
                         Button {
-                            Task { @MainActor in
-                                await Task.yield()   // 🔥 fondamentale
-                                activeSheet = .export
-                            }
-                        }label: {
-                            Label("Export to Reminders", systemImage: "arrow.up.circle")
-                        }
-                        Button {
-                            activeSheet = .import
+                            showImportReminders = true
                         } label: {
-                            Label("Import from Reminders", systemImage: "arrow.down.circle")
+                            HStack(spacing: 12) {
+                                Image(systemName: "arrow.down.circle")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                
+                                Text("Import from Apple Reminders")
+                                    .foregroundStyle(.primary)
+                                    .padding(.leading, 6)
+                            }
                         }
-                    }
-
-
-                    Section("Data Management") {
+                        
                         Button {
                             showDataManagement = true
                         } label: {
-                            
                             HStack(spacing: 12) {
                                 Image(systemName: "trash.circle")
-                                    .foregroundStyle(.blue) //
+                                    .foregroundStyle(.blue)
                                     .frame(width: iconWidth)
                                 
                                 Text("Erase all Data")
@@ -393,15 +382,9 @@ struct SettingsView: View {
                         ShortList()
                     }
                 }
-            }
-        }
-        .sheet(item: $activeSheet) { sheet in
-            switch sheet {
-            case .export:
-                ExportTasksView(tasks: tasks)
-                
-            case .import:
-                ImportTasksView()
+                .fullScreenCover(isPresented: $showImportReminders) {
+                    RemindersImportView()
+                }
             }
         }
     }
@@ -501,21 +484,20 @@ func createTestReminder() async {
 
 func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
     
-    // 1️⃣ cerca se esiste già
     let calendars = store.calendars(for: .reminder)
     
     if let existing = calendars.first(where: { $0.title == "ForMemo" }) {
+        UserDefaults.standard.set(existing.calendarIdentifier, forKey: "ForMemoCalendarID")
         return existing
     }
     
-    // 2️⃣ crea nuovo calendario
     let calendar = EKCalendar(for: .reminder, eventStore: store)
     calendar.title = "ForMemo"
-    
-    // 🔥 IMPORTANTISSIMO: assegna source
     calendar.source = store.defaultCalendarForNewReminders()?.source
     
     try? store.saveCalendar(calendar, commit: true)
+    
+    UserDefaults.standard.set(calendar.calendarIdentifier, forKey: "ForMemoCalendarID")
     
     return calendar
 }

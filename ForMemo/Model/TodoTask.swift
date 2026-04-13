@@ -35,6 +35,7 @@ final class TodoTask {
         locationName: String? = nil,
         locationLatitude: Double? = nil,
         locationLongitude: Double? = nil,
+        priorityRaw: Int = 0,
         attachments: [TaskAttachment] = []
     ) {
         let now = Date.now
@@ -50,7 +51,7 @@ final class TodoTask {
         self.locationLatitude = locationLatitude
         self.locationLongitude = locationLongitude
         self.attachments = attachments.isEmpty ? nil : attachments
-        self.priorityRaw = 0
+        self.priorityRaw = priorityRaw
         self.mainTagRaw = nil
     }
     
@@ -235,4 +236,3 @@ extension TodoTask {
         showBadge && (!showBadgeOnlyWithPriority || self.priority != .none)
     }
 }
-
