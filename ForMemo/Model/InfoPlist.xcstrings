@@ -31,10 +31,34 @@
       "comment" : "Privacy - Calendars Full Access Usage Description",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App greift auf Ihren Kalender zu, um Ereignisse als Aufgaben zu importieren und Ihnen zu helfen, alles an einem Ort zu verwalten."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "This app accesses your calendar to import events as tasks, helping you manage everything in one place."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación accede a tu calendario para importar eventos como tareas, ayudándote a gestionar todo en un solo lugar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application accède à votre calendrier pour importer des événements en tant que tâches, vous aidant à tout gérer en un seul endroit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app accede al tuo calendario per importare eventi come attività, aiutandoti a gestire tutto in un unico posto."
           }
         }
       }
@@ -187,10 +211,34 @@
       "comment" : "Privacy - Reminders Full Access Usage Description",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App benötigt Zugriff auf Ihre Erinnerungen, um Ihre Aufgaben zu synchronisieren."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "This app needs access to your Reminders to sync your tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación necesita acceder a tus recordatorios para sincronizar tus tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application a besoin d’accéder à vos rappels pour synchroniser vos tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app necessita di accedere ai tuoi promemoria per sincronizzare le tue attività."
           }
         }
       }
@@ -199,10 +247,34 @@
       "comment" : "Privacy - Reminders Usage Description",
       "extractionState" : "extracted_with_value",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App benötigt Zugriff auf Ihre Erinnerungen, um Ihre Aufgaben zu synchronisieren."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "This app needs access to your Reminders to sync your tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación necesita acceder a tus recordatorios para sincronizar tus tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application a besoin d’accéder à vos rappels pour synchroniser vos tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app necessita di accedere ai tuoi promemoria per sincronizzare le tue attività."
           }
         }
       }
