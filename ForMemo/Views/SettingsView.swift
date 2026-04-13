@@ -47,6 +47,9 @@ struct SettingsView: View {
     private var notificationSoundName: String = ""
     
     @State private var showImportReminders = false
+    @State private var showCalendarImport = false
+    @State private var showCSV = false
+    
     
     
     func checkNotificationStatus() {
@@ -335,6 +338,37 @@ struct SettingsView: View {
                                     .foregroundStyle(.primary)
                                     .padding(.leading, 6)
                             }
+                        }
+                        Button {
+                            showCalendarImport = true
+                        } label: {
+                            Label {
+                                Text("Import from Calendar")
+                                    .tint(.primary)
+                            } icon: {
+                                Image(systemName: "calendar.badge.plus")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+                        .fullScreenCover(isPresented: $showCalendarImport) {
+                            CalendarImportView()
+                        }
+                        
+                        Button {
+                            showCSV = true
+                        } label: {
+                            Label {
+                                Text("Import / Export CSV")
+                                    .tint(.primary)
+                            } icon: {
+                                Image(systemName: "arrow.up.arrow.down.circle")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+                        .fullScreenCover(isPresented: $showCSV) {
+                            CSVIntegrationView()
                         }
                         
                         Button {

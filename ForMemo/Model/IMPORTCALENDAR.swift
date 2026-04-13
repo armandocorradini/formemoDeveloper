@@ -1,0 +1,241 @@
+import SwiftUI
+import EventKit
+import SwiftData
+
+// MARK: - DTO
+
+struct CalendarEventDTO: Identifiable, Hashable, Sendable {
+    let id: String
+    let title: String
+    let notes: String?
+    let startDate: Date
+    let reminderOffsetMinutes: Int?
+    let tag: String?
+    let locationName: String?
+}
+
+// MARK: - VIEW
+
+struct CalendarImportView: View {
+    
+    @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var events: [CalendarEventDTO] = []
+    @State private var selection = Set<String>()
+    @State private var isLoading = false
+    @State private var error: String?
+    
+    private let store = EKEventStore()
+    
+    var body: some View {
+        NavigationStack {
+            
+            Group {
+                if isLoading {
+                    ProgressView("Loading events...")
+                }
+                else if let error {
+                    ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
+                }
+                else if events.isEmpty {
+                    ContentUnavailableView("No upcoming events", systemImage: "calendar")
+                }
+                else {
+                    List(events, selection: $selection) { item in
+                        EventRow(item: item)
+                    }
+                    .environment(\.editMode, .constant(.active))
+                }
+            }
+            .navigationTitle("Import Calendar")
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Import") { importSelected() }
+                        .disabled(selection.isEmpty)
+                }
+            }
+            .task { await load() }
+        }
+    }
+}
+
+// MARK: - LOAD
+
+private extension CalendarImportView {
+    
+    func load() async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            try await requestAccess()
+            let fetched = fetchEvents()
+            events = filterAlreadyImportedEvents(fetched, context: context)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+    
+    func requestAccess() async throws {
+        
+        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+            
+            store.requestFullAccessToEvents { granted, error in
+                
+                if let error {
+                    cont.resume(throwing: error)
+                    return
+                }
+                
+                guard granted else {
+                    cont.resume(throwing: NSError(
+                        domain: "Calendar",
+                        code: 1,
+                        userInfo: [NSLocalizedDescriptionKey: "Access denied"]
+                    ))
+                    return
+                }
+                
+                cont.resume()
+            }
+        }
+    }
+    
+    func fetchEvents() -> [CalendarEventDTO] {
+        
+        let calendars = store.calendars(for: .event)
+        
+        let now = Date()
+        let end = now.addingTimeInterval(365 * 86400)
+        
+        let predicate = store.predicateForEvents(withStart: now, end: end, calendars: calendars)
+        
+        let events = store.events(matching: predicate)
+        
+        return events
+            .filter { $0.startDate > now }
+            .map { map($0) }
+    }
+}
+
+// MARK: - MAPPING
+
+private extension CalendarImportView {
+    
+    func map(_ event: EKEvent) -> CalendarEventDTO {
+        
+        let combinedText = (event.title ?? "") + " " + (event.notes ?? "")
+        let inferredTag = TagInference.infer(from: combinedText.lowercased())
+        
+        return CalendarEventDTO(
+            id: event.eventIdentifier,
+            title: event.title ?? "",
+            notes: event.notes,
+            startDate: event.startDate,
+            reminderOffsetMinutes: computeOffset(event),
+            tag: inferredTag?.rawValue,
+            locationName: event.location
+        )
+    }
+    
+    func computeOffset(_ event: EKEvent) -> Int? {
+        guard let alarm = event.alarms?.first else { return nil }
+        
+        if alarm.relativeOffset != 0 {
+            return Int(abs(alarm.relativeOffset) / 60)
+        }
+        
+        if let date = alarm.absoluteDate {
+            return Int(event.startDate.timeIntervalSince(date) / 60)
+        }
+        
+        return nil
+    }
+}
+
+// MARK: - IMPORT
+
+private extension CalendarImportView {
+    
+    func importSelected() {
+        
+        let descriptor = FetchDescriptor<TodoTask>()
+        let existing = (try? context.fetch(descriptor)) ?? []
+        
+        let existingKeys = Set(existing.map {
+            buildKey(title: $0.title, date: $0.deadLine)
+        })
+        
+        let items = events.lazy.filter { selection.contains($0.id) }
+        
+        for item in items {
+            
+            guard !item.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
+            
+            let key = buildKey(title: item.title, date: item.startDate)
+            if existingKeys.contains(key) { continue }
+            
+            let task = TodoTask(
+                title: item.title,
+                taskDescription: item.notes ?? "",
+                deadLine: item.startDate,
+                reminderOffsetMinutes: item.reminderOffsetMinutes,
+                locationName: item.locationName,
+                priorityRaw: 0
+            )
+            
+            if let tag = item.tag,
+               let mapped = TaskMainTag(rawValue: tag) {
+                task.mainTag = mapped
+            }
+            
+            context.insert(task)
+        }
+        
+        try? context.save()
+        NotificationManager.shared.refresh()
+        dismiss()
+    }
+}
+
+// MARK: - ROW
+
+private struct EventRow: View {
+    let item: CalendarEventDTO
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(item.title).font(.headline)
+            
+            if let notes = item.notes, !notes.isEmpty {
+                Text(notes).font(.subheadline).foregroundStyle(.secondary)
+            }
+            
+            Text(item.startDate, style: .date)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - FILTER
+
+func filterAlreadyImportedEvents(_ items: [CalendarEventDTO], context: ModelContext) -> [CalendarEventDTO] {
+    
+    let descriptor = FetchDescriptor<TodoTask>()
+    let existing = (try? context.fetch(descriptor)) ?? []
+    
+    let existingKeys = Set(existing.map {
+        buildKey(title: $0.title, date: $0.deadLine)
+    })
+    
+    return items.filter {
+        let key = buildKey(title: $0.title, date: $0.startDate)
+        return !existingKeys.contains(key)
+    }
+}
