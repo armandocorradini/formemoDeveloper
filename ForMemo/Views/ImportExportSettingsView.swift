@@ -179,11 +179,14 @@ struct ImportExportSettingsView: View {
                                 .foregroundStyle(.blue)
                             Text("Import CSV")
                                 .foregroundStyle(.primary)
+                                Spacer()
                         }
+                        .contentShape(Rectangle())
                     }
+                    
                     .buttonStyle(.plain)
                 }
-                
+
                 
                 // MARK: - EXPORT
                 
@@ -197,25 +200,26 @@ struct ImportExportSettingsView: View {
                                 ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
                             }
                         
-                        CSVExportSelectionView(tasks: tasks) { selected in
-                            
-                            
-                            Task {
-                                let engine = CalendarExportEngine()
-                                
-                                try? await engine.requestAccess()
-                                
-                                let available = engine.availableCalendars()
-                                
-                                await MainActor.run {
-                                    self.selectedExportTasks = selected
-                                    self.calendars = available
-                                    self.showCalendarPicker = true
+                        CSVExportSelectionView(
+                            tasks: tasks,
+                            onExport: { selected in
+                                Task {
+                                    let engine = CalendarExportEngine()
+                                    try? await engine.requestAccess()
+                                    let available = engine.availableCalendars()
+                                    
+                                    await MainActor.run {
+                                        self.selectedExportTasks = selected
+                                        self.calendars = available
+                                        self.showCalendarPicker = true
+                                    }
                                 }
-                            }
-                        } onComplete: { count in
-                            showToast(count, action: "exported")
-                        }
+                            },
+                            onComplete: { count in
+                                showToast(count, action: "exported")
+                            },
+                            modeTitle: String(localized: "To Calendar")
+                        )
                         
                     } label: {
                         Label("Export to Calendar", systemImage: "calendar.badge.plus")
@@ -228,12 +232,18 @@ struct ImportExportSettingsView: View {
                                 ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
                             }
                         
-                        CSVExportSelectionView(tasks: tasks) { selected in
-                            let exporter = TaskExportService()
-                            exporter.export(tasks: selected, format: .csv)
-                        } onComplete: { count in
-                            showToast(count, action: "exported")
-                        }
+                        CSVExportSelectionView(
+                            tasks: tasks,
+                            onExport: { selected in
+                                let exporter = TaskExportService()
+                                exporter.export(tasks: selected, format: .csv)
+                            },
+                            onComplete: { count in
+                                showToast(count, action: "exported")
+                            },
+                            modeTitle: String(localized:"To file .CSV       ")
+                        )
+                        
                     } label: {
                         Label("Export CSV", systemImage: "arrow.up.doc")
                     }
@@ -245,12 +255,17 @@ struct ImportExportSettingsView: View {
                                 ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
                             }
                         
-                        CSVExportSelectionView(tasks: tasks) { selected in
-                            let exporter = TaskExportService()
-                            exporter.export(tasks: selected, format: .ics)
-                        } onComplete: { count in
-                            showToast(count, action: "exported")
-                        }
+                        CSVExportSelectionView(
+                            tasks: tasks,
+                            onExport: { selected in
+                                let exporter = TaskExportService()
+                                exporter.export(tasks: selected, format: .ics)
+                            },
+                            onComplete: { count in
+                                showToast(count, action: "exported")
+                            },
+                            modeTitle: String(localized:"To file .ICS       ")
+                        )
                     } label: {
                         Label("Export ICS file", systemImage: "doc")
                     }
@@ -434,14 +449,36 @@ struct CSVImportPreviewView: View {
                 toggle(item.id)
             }
         }
-        .navigationTitle("Select to Import")
+        .navigationTitle("Select Tasks to Import")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Cancel") {
+            ToolbarItem(placement:.topBarLeading) {
+                Button {
                     dismiss()
+                } label: {
+                    Text("")
+                        .fontWeight(.semibold)
+                    Image(systemName: "chevron.backward.circle")
                 }
             }
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement:.topBarLeading) {
+                Button {
+                    
+                } label: {
+                    Text("From file CSV")
+                        .fontWeight(.semibold)
+                }
+            }
+            
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                
+                Button("Import") {
+                    let selected = items.filter { selection.contains($0.id) }
+                    onImport(selected)
+                }
+                .disabled(selection.isEmpty)
+                
                 Button(selection.count == items.count ? "Deselect All" : "Select All") {
                     if selection.count == items.count {
                         selection.removeAll()
@@ -449,13 +486,11 @@ struct CSVImportPreviewView: View {
                         selection = Set(items.map { $0.id })
                     }
                 }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Button("Import") {
-                    let selected = items.filter { selection.contains($0.id) }
-                    onImport(selected)
+
+                    Button("Cancel") {
+                        dismiss()
+
                 }
-                .disabled(selection.isEmpty)
             }
         }
     }
@@ -491,6 +526,7 @@ struct CSVExportSelectionView: View {
     let tasks: [TodoTask]
     let onExport: ([TodoTask]) -> Void
     let onComplete: (Int) -> Void
+    let modeTitle: String
     
     @Environment(\.dismiss) private var dismiss
     
@@ -546,22 +582,17 @@ struct CSVExportSelectionView: View {
         }
         
         .navigationTitle("Select Tasks")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Cancel") {
-                    dismiss()
+                Button(modeTitle) {
+                 
                 }
             }
-            ToolbarItem(placement: .topBarLeading) {
-                Button(selection.count == tasks.count ? "Deselect All" : "Select All") {
-                    if selection.count == tasks.count {
-                        selection.removeAll()
-                    } else {
-                        selection = Set(tasks.map { $0.id })
-                    }
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
+            
+            ToolbarItemGroup(placement: .topBarTrailing) {
+
                 Button("Export") {
                     let selectedTasks = tasks.filter { selection.contains($0.id) }
                     onExport(selectedTasks)
@@ -569,6 +600,20 @@ struct CSVExportSelectionView: View {
                     dismiss()
                 }
                 .disabled(selection.isEmpty)
+                
+                Button(selection.count == tasks.count ? "Deselect All" : "Select All") {
+                    if selection.count == tasks.count {
+                        selection.removeAll()
+                    } else {
+                        selection = Set(tasks.map { $0.id })
+                    }
+                }
+   
+                    Button("Cancel") {
+                        dismiss()
+       
+                }
+                
             }
         }
     }

@@ -113,7 +113,6 @@ struct SettingsView: View {
                     }
                 }
                 
-                
                 // MARK: - Preferences
                 Section("Preferences") {
                     Button {
@@ -200,24 +199,18 @@ struct SettingsView: View {
                                 .opacity(0.7)
                         }
                     }
-                    
                     .buttonStyle(.plain)
-                    
                     .disabled(!isNotificationEnabled)
-                    
                     .task {
                         let settings = await UNUserNotificationCenter.current().notificationSettings()
                         isNotificationEnabled =
                         settings.authorizationStatus == .authorized ||
                         settings.authorizationStatus == .provisional
                     }
-
-                    
                     LabeledContent {
                         Picker("", selection: $navigationAppRaw) {
                             ForEach(NavigationApp.allCases) { app in
                                 Text(app.title).tag(app.rawValue)
-                                
                             }
                         }
                         .pickerStyle(.menu)
@@ -226,9 +219,7 @@ struct SettingsView: View {
                     } label: {
                         Label("Navigator", systemImage: "map")
                     }
-                    
                 }
-                
                 Section {
                     
                     Button {
@@ -262,8 +253,6 @@ struct SettingsView: View {
                         "When enabled, Siri will reply only with \"Done\" after creating a task."
                     )
                 }
-                
-                
                 
                 Section("Attachment Maintenance") {
                     
@@ -303,9 +292,7 @@ struct SettingsView: View {
                     } message: {
                         Text("This action will permanently remove all attachments of completed tasks. This cannot be undone.")
                     }                    }
-                
                 .padding(.top,15)
-                
                 Section("Data Management") {
                     
                     NavigationLink {
@@ -320,7 +307,6 @@ struct SettingsView: View {
                                 .frame(width: iconWidth)
                         }
                     }
-                    
                     Button {
                         showDataManagement = true
                     } label: {
@@ -336,14 +322,37 @@ struct SettingsView: View {
                     }
                 }
             }
-            .background(
-                LinearGradient(
-                    colors: [backColor1, backColor2],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-            )
+            .background {
+                ZStack {
+                    LinearGradient(
+                        colors: [backColor1, backColor2],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .ignoresSafeArea()
+                    
+                    MeshGradient(
+                        width: 3,
+                        height: 3,
+                        points: [
+                            [0, 0], [0.5, 0], [1, 0],
+                            [0, 0.5], [0.5, 0.5], [1, 0.5],
+                            [0, 1], [0.5, 1], [1, 1]
+                        ],
+                        colors: [
+                            .cyan.opacity(0.1), .blue.opacity(0.05), .blue.opacity(0.1),
+                            .clear, .clear, .clear,
+                            .blue.opacity(0.1), .clear, .cyan.opacity(0.1)
+                        ]
+                    )
+                    .opacity(0.3)
+                    .ignoresSafeArea()
+                    
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .ignoresSafeArea()
+                }
+            }
             .scrollContentBackground(.hidden)
             .navigationTitle("Settings")
 
@@ -376,16 +385,13 @@ struct SettingsView: View {
                 RemindersImportView()
             }
         }
-
     }
-
     // MARK: - Helpers
     private func openNotificationSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
         }
     }
-    
     private func openLanguageSettings() {
         // iOS non permette aprire direttamente la lingua,
         // quindi apriamo le impostazioni generali
@@ -393,7 +399,6 @@ struct SettingsView: View {
             UIApplication.shared.open(url)
         }
     }
-    
 }
 
 // MARK: - App Theme
@@ -419,7 +424,6 @@ extension AppTheme {
     }
 }
 
-
 @MainActor
 func createTestReminder() async {
     
@@ -444,8 +448,6 @@ func createTestReminder() async {
     }
 }
 
-
-
 func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
     
     let calendars = store.calendars(for: .reminder)
@@ -465,8 +467,6 @@ func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
     
     return calendar
 }
-
-
 
 struct CalendarPickerLoaderView: View {
     

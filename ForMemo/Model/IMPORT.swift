@@ -65,16 +65,11 @@ struct RemindersImportView: View {
             }
             .navigationTitle("Import Reminders")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(selection.count == reminders.count ? "Deselect All" : "Select All") {
-                        if selection.count == reminders.count {
-                            selection.removeAll()
-                        } else {
-                            selection = Set(reminders.map { $0.id })
-                        }
+                ToolbarItem(placement:.topBarLeading) {
+                    Button {
+                    } label: {
+                        Text("From Reminders")
+                            .fontWeight(.semibold)
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -85,6 +80,20 @@ struct RemindersImportView: View {
                             .fontWeight(.semibold)
                     }
                     .disabled(selection.isEmpty)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(selection.count == reminders.count ? "Deselect All" : "Select All") {
+                        if selection.count == reminders.count {
+                            selection.removeAll()
+                        } else {
+                            selection = Set(reminders.map { $0.id })
+                        }
+                    }
+                }
+
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
                 }
             }
             .task { await load() }

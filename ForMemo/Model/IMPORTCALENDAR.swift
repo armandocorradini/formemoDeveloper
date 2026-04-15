@@ -29,7 +29,7 @@ struct CalendarImportView: View {
     private let store = EKEventStore()
     
     var body: some View {
-        NavigationStack {
+      NavigationStack {
             
             Group {
                 if isLoading {
@@ -52,14 +52,24 @@ struct CalendarImportView: View {
                             toggle(item.id)
                         }
                     }
-                    .listStyle(.plain)
+//                    .listStyle(.plain)
                     .environment(\.editMode, .constant(.active))
                 }
             }
+
+            }
+
             .navigationTitle("Import Calendar")
+            .navigationBarTitleDisplayMode(.inline)
+
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { dismiss() }
+                ToolbarItem(placement:.topBarLeading) {
+                    Button {
+                        
+                    } label: {
+                        Text("From Calendar")
+                            .fontWeight(.semibold)
+                    }
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -71,7 +81,7 @@ struct CalendarImportView: View {
                     }
                     .disabled(selection.isEmpty)
                 }
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .topBarTrailing) {
                     Button(selection.count == events.count ? "Deselect All" : "Select All") {
                         if selection.count == events.count {
                             selection.removeAll()
@@ -80,12 +90,14 @@ struct CalendarImportView: View {
                         }
                     }
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
+                }
             }
             .task { await load() }
-        }
-        
-        
-    }
+       }
+
+    
 
 func toggle(_ id: String) {
     if selection.contains(id) {
