@@ -58,7 +58,7 @@ struct AppQuickGuideView: View {
                 icon: "app.badge",
                 tint: .orange
             ),
-        
+
             .init(
                 title: String(localized:"Rich Attachments"),
                 description: String(localized:"Attach photos, documents and scanned pages. All files remain linked to the related task."),
@@ -79,7 +79,7 @@ struct AppQuickGuideView: View {
                 icon: "square.and.arrow.up",
                 tint: .purple
             ),
-        
+
             .init(
                 title: String(localized: "Interactive Calendar"),
                 description: String(localized:
@@ -100,7 +100,7 @@ struct AppQuickGuideView: View {
                 • Create a task in \(appName)
                 • Remind me in \(appName)
                 
-                Siri will ask for the task details and automatically create it with a reminder.
+                You can let Siri decide the best reminder automatically or choose it yourself.
                 """
                                ),
             icon: "waveform.circle",
@@ -132,7 +132,7 @@ struct AppQuickGuideView: View {
         
             .init(
                 title: String(localized: "Smart Notifications"),
-                description: String(localized: "Stay on track with timely reminders. Long-press a notification to quickly snooze a task or open the app."),
+                description: String(localized: "Stay on track with intelligent reminders. Notifications adapt to your schedule and let you quickly snooze or open tasks."),
                 icon: "deskclock",
                 tint: .orange
             ),
@@ -147,6 +147,20 @@ struct AppQuickGuideView: View {
             """),
                 icon: "list.bullet.circle",
                 tint: .indigo
+            ),
+        
+            .init(
+                title: String(localized:"Import Your Data"),
+                description: String(localized:"Import tasks from Apple Reminders, Calendar or CSV files. Avoid duplicates and keep everything in one place.\n\nNote: attachments are not included in imports."),
+                icon: "arrow.down.circle",
+                tint: .blue
+            ),
+        
+            .init(
+                title: String(localized:"Export Anywhere"),
+                description: String(localized:"Export your tasks to Calendar, CSV or ICS format to share or reuse them in other apps.\n\nNote: attachments are not included in exports."),
+                icon: "arrow.up.circle",
+                tint: .purple
             )
     ]
     
