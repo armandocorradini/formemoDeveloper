@@ -71,9 +71,20 @@ struct CalendarImportView: View {
                     }
                     .disabled(selection.isEmpty)
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(selection.count == events.count ? "Deselect All" : "Select All") {
+                        if selection.count == events.count {
+                            selection.removeAll()
+                        } else {
+                            selection = Set(events.map { $0.id })
+                        }
+                    }
+                }
             }
             .task { await load() }
         }
+        
+        
     }
 
 func toggle(_ id: String) {

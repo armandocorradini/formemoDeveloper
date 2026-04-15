@@ -70,9 +70,19 @@ enum CSVImporter {
     
     static func importTasks(_ items: [CSVTask], context: ModelContext) throws {
         
+        let descriptor = FetchDescriptor<TodoTask>()
+        let existing = (try? context.fetch(descriptor)) ?? []
+
+        let existingKeys = Set(existing.map {
+            "\($0.title.lowercased())|\($0.deadLine?.timeIntervalSince1970 ?? 0)"
+        })
+
         for item in items {
             
             guard !item.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
+            
+            let key = "\(item.title.lowercased())|\(item.deadline?.timeIntervalSince1970 ?? 0)"
+            if existingKeys.contains(key) { continue }
             
             let task = TodoTask(
                 title: item.title,
@@ -92,7 +102,7 @@ enum CSVImporter {
             
             context.insert(task)
         }
-        
+
         try context.save()
     }
     private static func parseRow(_ row: String) -> [String] {
@@ -189,6 +199,7 @@ struct ImportExportSettingsView: View {
                         
                         CSVExportSelectionView(tasks: tasks) { selected in
                             
+                            
                             Task {
                                 let engine = CalendarExportEngine()
                                 
@@ -202,6 +213,8 @@ struct ImportExportSettingsView: View {
                                     self.showCalendarPicker = true
                                 }
                             }
+                        } onComplete: { count in
+                            showToast(count, action: "exported")
                         }
                         
                     } label: {
@@ -218,7 +231,8 @@ struct ImportExportSettingsView: View {
                         CSVExportSelectionView(tasks: tasks) { selected in
                             let exporter = TaskExportService()
                             exporter.export(tasks: selected, format: .csv)
-                            showToast(selected.count, action: "exported")
+                        } onComplete: { count in
+                            showToast(count, action: "exported")
                         }
                     } label: {
                         Label("Export CSV", systemImage: "arrow.up.doc")
@@ -234,7 +248,8 @@ struct ImportExportSettingsView: View {
                         CSVExportSelectionView(tasks: tasks) { selected in
                             let exporter = TaskExportService()
                             exporter.export(tasks: selected, format: .ics)
-                            showToast(selected.count, action: "exported")
+                        } onComplete: { count in
+                            showToast(count, action: "exported")
                         }
                     } label: {
                         Label("Export ICS file", systemImage: "doc")
@@ -475,6 +490,7 @@ struct CSVExportSelectionView: View {
     
     let tasks: [TodoTask]
     let onExport: ([TodoTask]) -> Void
+    let onComplete: (Int) -> Void
     
     @Environment(\.dismiss) private var dismiss
     
@@ -549,6 +565,7 @@ struct CSVExportSelectionView: View {
                 Button("Export") {
                     let selectedTasks = tasks.filter { selection.contains($0.id) }
                     onExport(selectedTasks)
+                    onComplete(selectedTasks.count)
                     dismiss()
                 }
                 .disabled(selection.isEmpty)

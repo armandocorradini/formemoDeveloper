@@ -68,7 +68,15 @@ struct RemindersImportView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }
                 }
-                
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(selection.count == reminders.count ? "Deselect All" : "Select All") {
+                        if selection.count == reminders.count {
+                            selection.removeAll()
+                        } else {
+                            selection = Set(reminders.map { $0.id })
+                        }
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         importSelected()
