@@ -65,14 +65,18 @@ struct RemindersImportView: View {
             }
             .navigationTitle("Import Reminders")
             .toolbar {
-                
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Import") { importSelected() }
-                        .disabled(selection.isEmpty)
+                    Button {
+                        importSelected()
+                    } label: {
+                        Text("Import")
+                            .fontWeight(.semibold)
+                    }
+                    .disabled(selection.isEmpty)
                 }
             }
             .task { await load() }

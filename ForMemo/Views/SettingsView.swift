@@ -1,13 +1,14 @@
 import SwiftUI
 import EventKit
 import SwiftData
-import UserNotifications
+import CoreData
+
 
 // MARK: - SettingsView
 struct SettingsView: View {
     
     @Environment(\.modelContext) private var modelContext
-    @State private var tasks: [TodoTask] = []
+
     
     @AppStorage("navigationApp")
     private var navigationAppRaw: String = NavigationApp.appleMaps.rawValue
@@ -16,7 +17,7 @@ struct SettingsView: View {
     @State private var showDataManagement = false
     @State private var showOtherSettings = false
     @State private var showSiri = false
-    
+
     @State private var showDeleteAllAlert = false
     
     private var navigationApp: NavigationApp {
@@ -49,9 +50,8 @@ struct SettingsView: View {
     @State private var showImportReminders = false
     @State private var showCalendarImport = false
     @State private var showCSV = false
-    
-    
-    
+    @State private var showCalendarSelection = false
+
     func checkNotificationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             Task { @MainActor in
@@ -66,364 +66,319 @@ struct SettingsView: View {
         
         let iconWidth: CGFloat = 28
         NavigationStack {
-            
-            ZStack {
-                // 1. IL GRADIENTE (Sotto a tutto)
-                LinearGradient(colors: [backColor1, backColor2],
-                               startPoint: .topLeading,
-                               endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+            List {
                 
-                // 2. IL MATERIAL (Effetto vetro)
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .ignoresSafeArea()
+                // MARK: - Account
+                Section("Account and info") {
+                    HStack(spacing: 12){
+                        Image(systemName: "person.circle").foregroundStyle(.blue)
+                            .frame(width: iconWidth)
+                        Text("Signed in with Apple ID")
+                        Spacer()
+                    }
+                    Button {
+                        showDisclaimer = true
+                    } label: {
+                        Label {
+                            Text("Disclaimer")
+                                .tint(.primary)
+                        } icon: {
+                            Image(systemName: "exclamationmark.shield")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                        }
+                    }
+                    .sheet(isPresented: $showDisclaimer) {
+                        DisclaimerView()
+                    }
+                    
+                }
                 
-                List {
-                    
-                    // MARK: - Account
-                    Section("Account and info") {
-                        HStack(spacing: 12){
-                            Image(systemName: "person.circle").foregroundStyle(.blue)
+                Section("Help") {
+                    Button {
+                        
+                        showQuickGuide = true
+                        
+                    } label: {
+                        // Usiamo il componente Label per separare i colori
+                        HStack(spacing: 12) {
+                            Image(systemName: "questionmark.circle")
+                                .foregroundStyle(.blue) //
                                 .frame(width: iconWidth)
-                            Text("Signed in with Apple ID")
-                            Spacer()
-                        }
-                        Button {
-                            showDisclaimer = true
-                        } label: {
-                            Label {
-                                Text("Disclaimer")
-                                    .tint(.primary)
-                            } icon: {
-                                Image(systemName: "exclamationmark.shield")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
-                        }
-                        .sheet(isPresented: $showDisclaimer) {
-                            DisclaimerView()
-                        }
-                        
-                    }
-                    
-                    Section("Help") {
-                        Button {
                             
-                            showQuickGuide = true
-                            
-                        } label: {
-                            // Usiamo il componente Label per separare i colori
-                            HStack(spacing: 12) {
-                                Image(systemName: "questionmark.circle")
-                                    .foregroundStyle(.blue) //
-                                    .frame(width: iconWidth)
-                                
-                                Text("Quick Guide")
-                                    .tint(.primary)
-                                    .padding(.leading,6)
-                            }
-                        }
-                    }
-                    
-                    
-                    // MARK: - Preferences
-                    Section("Preferences") {
-                        Button {
-                            showOtherSettings = true
-                        } label: {
-                            Label {
-                                Text("General")
-                                    .tint(.primary)
-                            } icon: {
-                                Image(systemName: "gear")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
-                        }
-                        Button {
-                            openLanguageSettings()
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "globe")
-                                    .frame(width: iconWidth)
-                                Text("Language")
-                                    .tint(.primary)
-                                Spacer()
-                                Text(Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? "")
-                                    .foregroundStyle(.blue).opacity(0.7)
-                            }
-                            
-                        }
-                        HStack(spacing: 12){
-                            Image(systemName: "paintbrush").foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                            Text("Theme")
-                            Spacer()
-                            Picker("", selection: $selectedTheme) {
-                                ForEach(AppTheme.allCases) { theme in
-                                    Text(theme.description).tag(theme)  //
-                                    
-                                }
-                            }
-                            .foregroundStyle(.blue)
-                            .pickerStyle(.menu)
-                            .opacity(0.7)
-                        }
-                        Button {
-                            showCustomizationView = true
-                        } label: {
-                            Label {
-                                Text("Customize list")
-                                    .tint(.primary)
-                            } icon: {
-                                Image(systemName: "list.bullet.circle")//app.badge")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
-                        }
-                        Button {
-                            openNotificationSettings()
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: isNotificationEnabled ? "bell.badge" : "bell.badge.slash").tint(.blue)
-                                    .frame(width: iconWidth)
-                                Text("Notifications & Reminders").tint(.primary)
-                            }
-                        }
-                        //                        .listRowSeparator(.hidden)
-                        Button {
-                            showSoundPicker = true
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: isNotificationEnabled ? "music.note" : "music.note.slash")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                                //                                    .frame(width: 24)
-                                // Testo principale sempre leggibile
-                                Text("Sound")
-                                    .foregroundStyle(isNotificationEnabled ? .primary : .secondary)
-                                    .opacity(0.7)
-                                
-                                Spacer()
-                                
-                                // Valore a destra
-                                Text(notificationSoundName.isEmpty ? "Default" : notificationSoundName)
-                                    .foregroundStyle(isNotificationEnabled ? .primary : .secondary)
-                                    .opacity(0.7)
-                            }
-                        }
-                        
-                        .buttonStyle(.plain)
-                        
-                        .disabled(!isNotificationEnabled)
-                        
-                        .onAppear {
-                            UNUserNotificationCenter.current().getNotificationSettings { settings in
-                                Task { @MainActor in
-                                    self.isNotificationEnabled =
-                                    settings.authorizationStatus == .authorized
-                                    || settings.authorizationStatus == .provisional
-                                }
-                            }
-                        }
-                        // 2. Fondamentale: controlla ogni volta che torni dalle Impostazioni (o riapri l'app)
-                        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-                            checkNotificationStatus()
-                        }
-                        
-                        LabeledContent {
-                            Picker("", selection: $navigationAppRaw) {
-                                ForEach(NavigationApp.allCases) { app in
-                                    Text(app.title).tag(app.rawValue)
-                                    
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .labelsHidden()
-                            .opacity(0.7)
-                        } label: {
-                            Label("Navigator", systemImage: "map")
-                        }
-                        
-                    }
-                    
-                    Section {
-                        
-                        Button {
-                            showSiri = true
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "waveform.circle")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                                
-                                Text("Ask to Siri")
-                                    .foregroundStyle(.primary)
-                                    .padding(.leading, 6)
-                            }
-                        }
-                        Toggle(
-                            "Automatic reminder from Siri",
-                            isOn: $siriAutoReminderEnabled
-                        )
-                        
-                        Toggle(
-                            "Reduce Siri confirmation message",
-                            isOn: $siriShortConfirmation
-                        )
-                        
-                    } header: {
-                        Text("Siri")
-                    } footer: {
-                        Text(
-                            "When enabled, Siri will reply only with \"Done\" after creating a task."
-                        )
-                    }
-                    
-                    
-                    
-                    Section("Attachment Maintenance") {
-                        
-                        Toggle(
-                            "Enable automatic deletion",
-                            isOn: $autoDeleteCompletedAttachments
-                        )
-                        
-                        Stepper(
-                            "Delete after \(attachmentRetentionDays) days",
-                            value: $attachmentRetentionDays,
-                            in: 1...90,
-                            step: 1
-                        )
-                        .disabled(!autoDeleteCompletedAttachments)
-                        .foregroundStyle(autoDeleteCompletedAttachments ? .primary : .secondary)
-                        
-                        
-                        Button(role: .destructive) {
-                            showDeleteAllAlert = true
-                        } label: {
-                            Text("Delete all attachments of completed tasks now")
-                        }
-                        .alert(
-                            "Are you sure? This cannot be undone.",
-                            isPresented: $showDeleteAllAlert
-                        ) {
-                            Button("Cancel", role: .cancel) { }
-                            
-                            Button("Delete", role: .destructive) {
-                                Task {
-                                    let context = modelContext
-                                    try? AttachmentMaintenanceManager.shared
-                                        .deleteAllCompletedTaskAttachments(context: context)
-                                }
-                            }
-                        } message: {
-                            Text("This action will permanently remove all attachments of completed tasks. This cannot be undone.")
-                        }                    }
-                    
-                    .padding(.top,15)
-                    
-                    Section("Data Management") {
-                        
-                        Button {
-                            showImportReminders = true
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "arrow.down.circle")
-                                    .foregroundColor(.blue)
-                                    .frame(width: iconWidth)
-                                
-                                Text("Import from Apple Reminders")
-                                    .foregroundColor(.primary)
-                                    .padding(.leading, 6)
-                            }
-                        }
-                        Button {
-                            showCalendarImport = true
-                        } label: {
-                            Label {
-                                Text("Import from Calendar")
-                                    .tint(.primary)
-                            } icon: {
-                                Image(systemName: "calendar.badge.plus")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
-                        }
-                        .fullScreenCover(isPresented: $showCalendarImport) {
-                            CalendarImportView()
-                        }
-                        
-                        Button {
-                            showCSV = true
-                        } label: {
-                            Label {
-                                Text("Import / Export CSV")
-                                    .tint(.primary)
-                            } icon: {
-                                Image(systemName: "arrow.up.arrow.down.circle")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
-                        }
-                        .fullScreenCover(isPresented: $showCSV) {
-                            CSVIntegrationView()
-                        }
-                        
-                        Button {
-                            showDataManagement = true
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "trash.circle")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                                
-                                Text("Erase all Data")
-                                    .tint(.red)
-                                    .padding(.leading,6)
-                            }
+                            Text("Quick Guide")
+                                .tint(.primary)
+                                .padding(.leading,6)
                         }
                     }
                 }
+                
+                
+                // MARK: - Preferences
+                Section("Preferences") {
+                    Button {
+                        showOtherSettings = true
+                    } label: {
+                        Label {
+                            Text("General")
+                                .tint(.primary)
+                        } icon: {
+                            Image(systemName: "gear")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                        }
+                    }
+                    Button {
+                        openLanguageSettings()
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "globe")
+                                .frame(width: iconWidth)
+                            Text("Language")
+                                .tint(.primary)
+                            Spacer()
+                            Text(Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? "")
+                                .foregroundStyle(.blue).opacity(0.7)
+                        }
+                        
+                    }
+                    HStack(spacing: 12){
+                        Image(systemName: "paintbrush").foregroundStyle(.blue)
+                            .frame(width: iconWidth)
+                        Text("Theme")
+                        Spacer()
+                        Picker("", selection: $selectedTheme) {
+                            ForEach(AppTheme.allCases) { theme in
+                                Text(theme.description).tag(theme)  //
+                                
+                            }
+                        }
+                        .foregroundStyle(.blue)
+                        .pickerStyle(.menu)
+                        .opacity(0.7)
+                    }
+                    Button {
+                        showCustomizationView = true
+                    } label: {
+                        Label {
+                            Text("Customize list")
+                                .tint(.primary)
+                        } icon: {
+                            Image(systemName: "list.bullet.circle")//app.badge")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                        }
+                    }
+                    Button {
+                        openNotificationSettings()
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: isNotificationEnabled ? "bell.badge" : "bell.badge.slash").tint(.blue)
+                                .frame(width: iconWidth)
+                            Text("Notifications & Reminders").tint(.primary)
+                        }
+                    }
+                    //                        .listRowSeparator(.hidden)
+                    Button {
+                        showSoundPicker = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: isNotificationEnabled ? "music.note" : "music.note.slash")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                            //                                    .frame(width: 24)
+                            // Testo principale sempre leggibile
+                            Text("Sound")
+                                .foregroundStyle(isNotificationEnabled ? .primary : .secondary)
+                                .opacity(0.7)
+                            
+                            Spacer()
+                            
+                            // Valore a destra
+                            Text(notificationSoundName.isEmpty ? "Default" : notificationSoundName)
+                                .foregroundStyle(isNotificationEnabled ? .primary : .secondary)
+                                .opacity(0.7)
+                        }
+                    }
+                    
+                    .buttonStyle(.plain)
+                    
+                    .disabled(!isNotificationEnabled)
+                    
+                    .task {
+                        let settings = await UNUserNotificationCenter.current().notificationSettings()
+                        isNotificationEnabled =
+                        settings.authorizationStatus == .authorized ||
+                        settings.authorizationStatus == .provisional
+                    }
 
-                .navigationTitle("Settings")
-                .navigationBarTitleDisplayMode(.inline)
-                .scrollContentBackground(.hidden)
-                .task {
-                    loadTasks()
-                }
-                .fullScreenCover(isPresented: $showSoundPicker) {
-                    NotificationSoundPickerView()
-                }
-                .fullScreenCover(isPresented: $showQuickGuide) {
-                    // BackupView()
-                    AppQuickGuideView()
-                }
-                .fullScreenCover(isPresented: $showDataManagement) {
-                    ResetAppView()
-                }
-                .fullScreenCover(isPresented: $showCustomizationView) {
-                    NavigationStack {TaskListAppearanceView()}
-                }
-                .fullScreenCover(isPresented: $showOtherSettings) {
-                    NavigationStack {
-                        OtherSettingsView()
+                    
+                    LabeledContent {
+                        Picker("", selection: $navigationAppRaw) {
+                            ForEach(NavigationApp.allCases) { app in
+                                Text(app.title).tag(app.rawValue)
+                                
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .opacity(0.7)
+                    } label: {
+                        Label("Navigator", systemImage: "map")
                     }
+                    
                 }
-                .fullScreenCover(isPresented: $showSiri) {
-                    NavigationStack {
-                        ShortList()
+                
+                Section {
+                    
+                    Button {
+                        showSiri = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "waveform.circle")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                            
+                            Text("Ask to Siri")
+                                .foregroundStyle(.primary)
+                                .padding(.leading, 6)
+                        }
                     }
+                    .buttonStyle(.plain)
+                    Toggle(
+                        "Automatic reminder from Siri",
+                        isOn: $siriAutoReminderEnabled
+                    )
+                    
+                    Toggle(
+                        "Reduce Siri confirmation message",
+                        isOn: $siriShortConfirmation
+                    )
+                    
+                } header: {
+                    Text("Siri")
+                } footer: {
+                    Text(
+                        "When enabled, Siri will reply only with \"Done\" after creating a task."
+                    )
                 }
-                .fullScreenCover(isPresented: $showImportReminders) {
-                    RemindersImportView()
+                
+                
+                
+                Section("Attachment Maintenance") {
+                    
+                    Toggle(
+                        "Enable automatic deletion",
+                        isOn: $autoDeleteCompletedAttachments
+                    )
+                    
+                    Stepper(
+                        "Delete after \(attachmentRetentionDays) days",
+                        value: $attachmentRetentionDays,
+                        in: 1...90,
+                        step: 1
+                    )
+                    .disabled(!autoDeleteCompletedAttachments)
+                    .foregroundStyle(autoDeleteCompletedAttachments ? .primary : .secondary)
+                    
+                    
+                    Button(role: .destructive) {
+                        showDeleteAllAlert = true
+                    } label: {
+                        Text("Delete all attachments of completed tasks now")
+                    }
+                    .alert(
+                        "Are you sure? This cannot be undone.",
+                        isPresented: $showDeleteAllAlert
+                    ) {
+                        Button("Cancel", role: .cancel) { }
+                        
+                        Button("Delete", role: .destructive) {
+                            Task {
+                                let context = modelContext
+                                try? AttachmentMaintenanceManager.shared
+                                    .deleteAllCompletedTaskAttachments(context: context)
+                            }
+                        }
+                    } message: {
+                        Text("This action will permanently remove all attachments of completed tasks. This cannot be undone.")
+                    }                    }
+                
+                .padding(.top,15)
+                
+                Section("Data Management") {
+                    
+                    NavigationLink {
+                        ImportExportSettingsView()
+                    } label: {
+                        Label {
+                            Text("Import & Export")
+                                .tint(.primary)
+                        } icon: {
+                            Image(systemName: "arrow.left.arrow.right")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                        }
+                    }
+                    
+                    Button {
+                        showDataManagement = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "trash.circle")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                            
+                            Text("Erase all Data")
+                                .tint(.red)
+                                .padding(.leading,6)
+                        }
+                    }
                 }
             }
+            .background(
+                LinearGradient(
+                    colors: [backColor1, backColor2],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            )
+            .scrollContentBackground(.hidden)
+            .navigationTitle("Settings")
+
+            .navigationBarTitleDisplayMode(.inline)
+
+            .fullScreenCover(isPresented: $showSoundPicker) {
+                NotificationSoundPickerView()
+            }
+            .fullScreenCover(isPresented: $showQuickGuide) {
+                // BackupView()
+                AppQuickGuideView()
+            }
+            .fullScreenCover(isPresented: $showDataManagement) {
+                ResetAppView()
+            }
+            .fullScreenCover(isPresented: $showCustomizationView) {
+                NavigationStack {TaskListAppearanceView()}
+            }
+            .fullScreenCover(isPresented: $showOtherSettings) {
+                NavigationStack {
+                    OtherSettingsView()
+                }
+            }
+            .fullScreenCover(isPresented: $showSiri) {
+                NavigationStack {
+                    ShortList()
+                }
+            }
+            .fullScreenCover(isPresented: $showImportReminders) {
+                RemindersImportView()
+            }
         }
+
     }
-    
-    
+
     // MARK: - Helpers
     private func openNotificationSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -438,31 +393,6 @@ struct SettingsView: View {
             UIApplication.shared.open(url)
         }
     }
-    
-    private func loadTasks() {
-        
-        let descriptor = FetchDescriptor<TodoTask>()
-        let all = (try? modelContext.fetch(descriptor)) ?? []
-        
-        tasks = all
-            .filter { !$0.isCompleted }
-            .sorted {
-                switch ($0.deadLine, $1.deadLine) {
-                case let (d1?, d2?):
-                    return d1 < d2
-                    
-                case (nil, nil):
-                    return $0.createdAt < $1.createdAt
-                    
-                case (nil, _?):
-                    return false // nil in fondo
-                    
-                case (_?, nil):
-                    return true
-                }
-            }
-    }
-    
     
 }
 
@@ -534,4 +464,54 @@ func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
     UserDefaults.standard.set(calendar.calendarIdentifier, forKey: "ForMemoCalendarID")
     
     return calendar
+}
+
+
+
+struct CalendarPickerLoaderView: View {
+    
+    @Binding var calendars: [EKCalendar]
+    let onSelect: (EKCalendar) -> Void
+    
+    @State private var isLoading = true
+    
+    var body: some View {
+        NavigationStack {
+            
+            Group {
+                if isLoading {
+                    ProgressView("Loading calendars...")
+                } else {
+                    CalendarPickerView(
+                        calendars: calendars,
+                        onSelect: onSelect
+                    )
+                }
+            }
+            .task {
+                await load()
+            }
+        }
+    }
+    
+    private func load() async {
+        
+        let engine = CalendarExportEngine()
+        
+        do {
+            try await engine.requestAccess()
+            
+            let all = engine.availableCalendars()
+            
+            await MainActor.run {
+                calendars = all
+                isLoading = false
+            }
+            
+        } catch {
+            await MainActor.run {
+                isLoading = false
+            }
+        }
+    }
 }

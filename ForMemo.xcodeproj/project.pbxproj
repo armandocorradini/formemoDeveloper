@@ -162,6 +162,8 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "This app accesses your calendar to import events as tasks, helping you manage everything in one place.";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app accesses your calendar to import events as tasks, helping you manage everything in one place.";
+				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "This app accesses your calendar to export events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to take photos and scan documents to attach them to your tasks.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location to assign places to your tasks.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to record audio notes for your tasks.";
@@ -211,6 +213,8 @@
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "This app accesses your calendar to import events as tasks, helping you manage everything in one place.";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app accesses your calendar to import events as tasks, helping you manage everything in one place.";
+				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "This app accesses your calendar to export events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to take photos and scan documents to attach them to your tasks.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location to assign places to your tasks.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to record audio notes for your tasks.";

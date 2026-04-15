@@ -326,7 +326,13 @@ final class NotificationManager: NSObject {
         c.title = title              // 🔥 UI ORIGINALE
         c.body = task.title         // 🔥 UI ORIGINALE
         
-        c.sound = .default
+        let soundName = UserDefaults.standard.string(forKey: "notificationSoundName") ?? ""
+        
+        if soundName.isEmpty {
+            c.sound = .default
+        } else {
+            c.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: soundName))
+        }
         c.categoryIdentifier = "TASK_REMINDER"
         c.userInfo = ["taskID": task.id.uuidString]
         

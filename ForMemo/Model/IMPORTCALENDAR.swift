@@ -42,9 +42,17 @@ struct CalendarImportView: View {
                     ContentUnavailableView("No upcoming events", systemImage: "calendar")
                 }
                 else {
-                    List(events, selection: $selection) { item in
-                        EventRow(item: item)
+                    List(events) { item in
+                        EventRow(
+                            item: item,
+                            isSelected: selection.contains(item.id)
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            toggle(item.id)
+                        }
                     }
+                    .listStyle(.plain)
                     .environment(\.editMode, .constant(.active))
                 }
             }
@@ -53,16 +61,29 @@ struct CalendarImportView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }
                 }
+                
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Import") { importSelected() }
-                        .disabled(selection.isEmpty)
+                    Button {
+                        importSelected()
+                    } label: {
+                        Text("Import")
+                            .fontWeight(.semibold)
+                    }
+                    .disabled(selection.isEmpty)
                 }
             }
             .task { await load() }
         }
     }
-}
 
+func toggle(_ id: String) {
+    if selection.contains(id) {
+        selection.remove(id)
+    } else {
+        selection.insert(id)
+    }
+}
+}
 // MARK: - LOAD
 
 private extension CalendarImportView {
@@ -219,21 +240,49 @@ private extension CalendarImportView {
 // MARK: - ROW
 
 private struct EventRow: View {
+    
     let item: CalendarEventDTO
+    let isSelected: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(item.title).font(.headline)
+        ImportCard(isSelected: isSelected) {
             
-            if let notes = item.notes, !notes.isEmpty {
-                Text(notes).font(.subheadline).foregroundStyle(.secondary)
+            HStack(alignment: .top, spacing: 12) {
+                
+                Image(systemName: "calendar.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(.blue)
+                
+                VStack(alignment: .leading, spacing: 6) {
+                    
+                    Text(item.title)
+                        .font(.headline)
+                    
+                    if let notes = item.notes, !notes.isEmpty {
+                        Text(notes)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                    
+                    HStack(spacing: 10) {
+                        
+                        Label(
+                            item.startDate.formatted(date: .abbreviated, time: .shortened),
+                            systemImage: "clock"
+                        )
+                        
+                        if let location = item.locationName {
+                            Label(location, systemImage: "mappin")
+                        }
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
             }
-            
-            Text(item.startDate, style: .date)
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 4)
     }
 }
 

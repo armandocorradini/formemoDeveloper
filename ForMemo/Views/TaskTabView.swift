@@ -59,6 +59,7 @@ struct TaskTabView: View {
             .listStyle(.sidebar)
             .navigationTitle("Tasks")
             
+            
         } detail: {
             
             switch selectedTab {
@@ -75,7 +76,9 @@ struct TaskTabView: View {
             default:
                 HomeView()
             }
+            
         }
+        
     }
     
     
@@ -145,6 +148,7 @@ struct TaskTabView: View {
             .listStyle(.sidebar)
             .navigationTitle("Tasks")
             
+            
         } detail: {
             
             switch selectedTab {
@@ -161,7 +165,11 @@ struct TaskTabView: View {
             default:
                 NavigationStack { HomeView() }
             }
+            
+            
         }
+        
+        
     }
     
     // MARK: - Sidebar Row (iPad)
