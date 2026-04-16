@@ -4,10 +4,7 @@ struct ExportICSView: View {
     
     var body: some View {
         NavigationStack {
-            ContentUnavailableView(
-                "ICS export coming soon",
-                systemImage: "doc"
-            )
+            AppUnavailableView.empty("ICS export coming soon", systemImage: "doc")
             .navigationTitle("Export ICS")
         }
     }

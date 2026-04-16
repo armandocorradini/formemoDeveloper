@@ -17,3 +17,12 @@ let appName: String = {
 
 
 
+import UIKit
+
+enum AppSettingsOpener {
+    
+    static func open() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+    }
+}

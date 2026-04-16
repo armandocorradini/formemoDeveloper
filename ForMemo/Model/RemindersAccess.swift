@@ -20,13 +20,7 @@ final class RemindersAccess {
                     if granted {
                         cont.resume(returning: ())
                     } else {
-                        cont.resume(throwing: NSError(
-                            domain: "Reminders",
-                            code: 1,
-                            userInfo: [
-                                NSLocalizedDescriptionKey: String(localized: "error.reminders.accessDenied")
-                            ]
-                        ))
+                        cont.resume(throwing: AppError.remindersAccessDenied)
                     }
                 }
                 
@@ -42,13 +36,7 @@ final class RemindersAccess {
                     if granted {
                         cont.resume(returning: ())
                     } else {
-                        cont.resume(throwing: NSError(
-                            domain: "Reminders",
-                            code: 1,
-                            userInfo: [
-                                NSLocalizedDescriptionKey: String(localized: "error.reminders.accessDenied")
-                            ]
-                        ))
+                        cont.resume(throwing: AppError.remindersAccessDenied)
                     }
                 }
             }

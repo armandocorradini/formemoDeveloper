@@ -30,10 +30,7 @@ struct ExportToCalendarView: View {
             Group {
                 
                 if tasks.isEmpty {
-                    ContentUnavailableView(
-                        "No tasks to export",
-                        systemImage: "tray"
-                    )
+                    AppUnavailableView.empty(String(localized:"No tasks to export"))
                 } else {
                     List(sortedTasks, id: \.id) { task in
                         

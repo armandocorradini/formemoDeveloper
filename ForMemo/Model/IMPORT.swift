@@ -28,7 +28,7 @@ struct RemindersImportView: View {
     @State private var reminders: [ReminderDTO] = []
     @State private var selection = Set<String>()
     @State private var isLoading = false
-    @State private var error: String?
+    @State private var error: AppError?
     
     private let store = EKEventStore()
     
@@ -42,18 +42,15 @@ struct RemindersImportView: View {
                 }
                 
                 else if let error {
-                    ContentUnavailableView(
-                        "Error",
-                        systemImage: "exclamationmark.triangle",
-                        description: Text(error)
-                    )
+                    if error.isPermissionError {
+                        AppUnavailableView.permissionError(error.localizedDescription)
+                    } else {
+                        AppUnavailableView.error(error.localizedDescription)
+                    }
                 }
                 
                 else if reminders.isEmpty {
-                    ContentUnavailableView(
-                        "No reminders",
-                        systemImage: "tray"
-                    )
+                    AppUnavailableView.empty(String(localized:"No reminders"))
                 }
                 
                 else {
@@ -101,6 +98,7 @@ struct RemindersImportView: View {
     }
 }
 
+
 // MARK: - LOAD
 
 private extension RemindersImportView {
@@ -114,7 +112,11 @@ private extension RemindersImportView {
             let fetched = try await fetchReminders()
             reminders = filterAlreadyImported(fetched, context: context)
         } catch {
-            self.error = error.localizedDescription
+            if let appError = error as? AppError {
+                self.error = appError
+            } else {
+                self.error = .generic(error.localizedDescription)
+            }
         }
     }
     
@@ -131,13 +133,7 @@ private extension RemindersImportView {
                     }
                     
                     guard granted else {
-                        cont.resume(throwing: NSError(
-                            domain: "Reminders",
-                            code: 1,
-                            userInfo: [
-                                NSLocalizedDescriptionKey: String(localized: "error.reminders.accessDenied")
-                            ]
-                        ))
+                        cont.resume(throwing: AppError.remindersAccessDenied)
                         return
                     }
                     
@@ -152,13 +148,7 @@ private extension RemindersImportView {
                     }
                     
                     guard granted else {
-                        cont.resume(throwing: NSError(
-                            domain: "Reminders",
-                            code: 1,
-                            userInfo: [
-                                NSLocalizedDescriptionKey: String(localized: "error.reminders.accessDenied")
-                            ]
-                        ))
+                        cont.resume(throwing: AppError.remindersAccessDenied)
                         return
                     }
                     

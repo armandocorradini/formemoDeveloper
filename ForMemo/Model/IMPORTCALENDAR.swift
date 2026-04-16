@@ -24,7 +24,7 @@ struct CalendarImportView: View {
     @State private var events: [CalendarEventDTO] = []
     @State private var selection = Set<String>()
     @State private var isLoading = false
-    @State private var error: String?
+    @State private var error: AppError?
     
     private let store = EKEventStore()
     
@@ -36,10 +36,14 @@ struct CalendarImportView: View {
                     ProgressView("Loading events...")
                 }
                 else if let error {
-                    ContentUnavailableView("Error", systemImage: "exclamationmark.triangle", description: Text(error))
+                    if error.isPermissionError {
+                        AppUnavailableView.permissionError(error.localizedDescription)
+                    } else {
+                        AppUnavailableView.error(error.localizedDescription)
+                    }
                 }
                 else if events.isEmpty {
-                    ContentUnavailableView("No upcoming events", systemImage: "calendar")
+                    AppUnavailableView.empty(String(localized:"No upcoming events"), systemImage: "calendar")
                 }
                 else {
                     List(events) { item in
@@ -120,7 +124,11 @@ private extension CalendarImportView {
             let fetched = fetchEvents()
             events = filterAlreadyImportedEvents(fetched, context: context)
         } catch {
-            self.error = error.localizedDescription
+            if let appError = error as? AppError {
+                self.error = appError
+            } else {
+                self.error = .generic(error.localizedDescription)
+            }
         }
     }
     
@@ -136,13 +144,7 @@ private extension CalendarImportView {
                 }
                 
                 guard granted else {
-                    cont.resume(throwing: NSError(
-                        domain: "Calendar",
-                        code: 1,
-                        userInfo: [
-                            NSLocalizedDescriptionKey: String(localized: "error.calendar.accessDenied")
-                        ]
-                    ))
+                    cont.resume(throwing: AppError.calendarAccessDenied)
                     return
                 }
                 

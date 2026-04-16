@@ -85,8 +85,8 @@ struct WeeklyTasksView: View {
                     
                     if weeklyTasks.isEmpty {
                         
-                        ContentUnavailableView(
-                            taskWeekDays == 1 ? "No tasks today" : "No tasks these days",
+                        AppUnavailableView.empty(
+                            taskWeekDays == 1 ? String(localized:"No tasks today") : String(localized:"No tasks these days"),
                             systemImage: "ellipsis.calendar"
                         )
                         
