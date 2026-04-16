@@ -56,7 +56,8 @@ struct CalendarImportView: View {
                             toggle(item.id)
                         }
                     }
-//                    .listStyle(.plain)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
+                    .listRowSpacing(4)
                     .environment(\.editMode, .constant(.active))
                 }
             }
@@ -274,20 +275,22 @@ private struct EventRow: View {
     var body: some View {
         ImportCard(isSelected: isSelected) {
             
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .top, spacing: 10) {
                 
                 Image(systemName: "calendar.circle.fill")
                     .font(.title2)
                     .foregroundStyle(.blue)
                 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
                     
                     Text(item.title)
                         .font(.headline)
                     
-                    if let notes = item.notes, !notes.isEmpty {
+                    if let notes = item.notes?.trimmingCharacters(in: .whitespacesAndNewlines),
+                       !notes.isEmpty {
                         Text(notes)
                             .font(.subheadline)
+                            .lineSpacing(1)
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
                     }
