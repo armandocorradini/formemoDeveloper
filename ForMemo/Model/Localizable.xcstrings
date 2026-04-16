@@ -3326,7 +3326,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esporta nel calendario"
+            "value" : "Esporta in Calendario"
           }
         }
       }
@@ -8840,7 +8840,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "In calendario"
+            "value" : "In Calendario"
           }
         }
       }

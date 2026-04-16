@@ -127,15 +127,20 @@ enum CSVImporter {
 }
 
 struct ImportExportSettingsView: View {
-    
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
     @State private var showCSVImportAlert = false
     @State private var showCSVImporter = false
-    @State private var showCalendarPicker = false
     @State private var selectedExportTasks: [TodoTask] = []
     @State private var calendars: [EKCalendar] = []
     @State private var toastMessage: String?
+    enum ExportRoute: Hashable {
+        case selection
+        case calendarPicker
+        case permissionError
+    }
+    @State private var route: ExportRoute?
     @Query private var allTasks: [TodoTask]
     
     // Helper to show toast for export/import actions
@@ -150,8 +155,6 @@ struct ImportExportSettingsView: View {
     }
     
     var body: some View {
-        
-        NavigationStack {
             
             List {
                 
@@ -174,12 +177,20 @@ struct ImportExportSettingsView: View {
                     Button {
                         showCSVImportAlert = true
                     } label: {
-                        HStack {
+                        HStack(spacing: 12) {
                             Image(systemName: "arrow.down.doc")
                                 .foregroundStyle(.blue)
+                            
                             Text("Import CSV")
                                 .foregroundStyle(.primary)
-                                Spacer()
+                                .padding(.leading,8)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(.tertiary)
+                                .padding(.trailing,3)
                         }
                         .contentShape(Rectangle())
                     }
@@ -192,38 +203,47 @@ struct ImportExportSettingsView: View {
                 
                 Section("Export") {
                     
-                    NavigationLink {
-                        
-                        let tasks = allTasks
-                            .filter { !$0.isCompleted }
-                            .sorted {
-                                ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
-                            }
-                        
-                        CSVExportSelectionView(
-                            tasks: tasks,
-                            onExport: { selected in
-                                Task {
-                                    let engine = CalendarExportEngine()
-                                    try? await engine.requestAccess()
-                                    let available = engine.availableCalendars()
-                                    
-                                    await MainActor.run {
-                                        self.selectedExportTasks = selected
-                                        self.calendars = available
-                                        self.showCalendarPicker = true
+                    Button {
+                        Task {
+                            let engine = CalendarExportEngine()
+                            
+                            do {
+                                try await engine.requestAccess()
+                                
+                                let tasks = allTasks
+                                    .filter { !$0.isCompleted }
+                                    .sorted {
+                                        ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
                                     }
+                                
+                                await MainActor.run {
+                                    self.selectedExportTasks = tasks
+                                    self.route = .selection
                                 }
-                            },
-                            onComplete: { count in
-                                showToast(count, action: "exported")
-                            },
-                            modeTitle: String(localized: "To Calendar")
-                        )
-                        
+                                
+                            } catch {
+                                await MainActor.run {
+                                    self.route = .permissionError
+                                }
+                            }
+                        }
                     } label: {
-                        Label("Export to Calendar", systemImage: "calendar.badge.plus")
+                        HStack(spacing: 12) {
+                            Image(systemName: "calendar.badge.plus")
+                                .foregroundStyle(.blue)
+                            
+                            Text("Export to Calendar")
+                                .foregroundStyle(.primary)
+                                .padding(.leading,8)
+                            Spacer()
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(.tertiary)
+                                .padding(.trailing,3)
+                        }
                     }
+                    .buttonStyle(.plain)
                     
                     NavigationLink {
                         let tasks = allTasks
@@ -272,6 +292,19 @@ struct ImportExportSettingsView: View {
                 }
             }
             .navigationTitle("Import & Export")
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.backward")
+                            Text("Settings")
+                        }
+                    }
+                }
+            }
             .alert("Import CSV", isPresented: $showCSVImportAlert) {
                 
                 Button("Cancel", role: .cancel) {}
@@ -289,21 +322,47 @@ struct ImportExportSettingsView: View {
                     showToast(count, action: "imported")
                 }
             }
-            .navigationDestination(isPresented: $showCalendarPicker) {
-                
-                CalendarPickerView(calendars: calendars) { calendar in
+            .navigationDestination(item: $route) { route in
+                switch route {
                     
-                    let exporter = TaskExportService()
-                    
-                    exporter.exportToCalendar(
+                case .selection:
+                    CSVExportSelectionView(
                         tasks: selectedExportTasks,
-                        calendar: calendar
-                    ) { count in
-                        showToast(count, action: "added to calendar")
+                        onExport: { selected in
+                            Task {
+                                let engine = CalendarExportEngine()
+                                let available = engine.availableCalendars()
+                                
+                                await MainActor.run {
+                                    self.selectedExportTasks = selected
+                                    self.calendars = available
+                                    self.route = .calendarPicker
+                                }
+                            }
+                        },
+                        onComplete: { count in
+                            showToast(count, action: "exported")
+                        },
+                        modeTitle: String(localized: "To Calendar")
+                    )
+                    
+                case .calendarPicker:
+                    CalendarPickerView(calendars: calendars) { calendar in
+                        let exporter = TaskExportService()
+                        exporter.exportToCalendar(
+                            tasks: selectedExportTasks,
+                            calendar: calendar
+                        ) { count in
+                            showToast(count, action: "added to calendar")
+                        }
                     }
+                    
+                case .permissionError:
+                    AppUnavailableView.permissionError(
+                        String(localized: "error.calendar.accessDenied")
+                    )
                 }
             }
-        }
    
         .overlay(alignment: .top) {
             if let message = toastMessage {
