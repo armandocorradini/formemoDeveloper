@@ -23,7 +23,9 @@ final class RemindersAccess {
                         cont.resume(throwing: NSError(
                             domain: "Reminders",
                             code: 1,
-                            userInfo: [NSLocalizedDescriptionKey: "Access denied"]
+                            userInfo: [
+                                NSLocalizedDescriptionKey: String(localized: "error.reminders.accessDenied")
+                            ]
                         ))
                     }
                 }
@@ -43,7 +45,9 @@ final class RemindersAccess {
                         cont.resume(throwing: NSError(
                             domain: "Reminders",
                             code: 1,
-                            userInfo: [NSLocalizedDescriptionKey: "Access denied"]
+                            userInfo: [
+                                NSLocalizedDescriptionKey: String(localized: "error.reminders.accessDenied")
+                            ]
                         ))
                     }
                 }

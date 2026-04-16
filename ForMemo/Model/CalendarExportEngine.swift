@@ -22,7 +22,9 @@ final class CalendarExportEngine {
                     cont.resume(throwing: NSError(
                         domain: "Calendar",
                         code: 1,
-                        userInfo: [NSLocalizedDescriptionKey: "Access denied"]
+                        userInfo: [
+                            NSLocalizedDescriptionKey: String(localized: "error.calendar.accessDenied")
+                        ]
                     ))
                     return
                 }

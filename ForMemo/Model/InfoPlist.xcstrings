@@ -27,124 +27,354 @@
       },
       "shouldTranslate" : false
     },
-
     "NSCalendarsFullAccessUsageDescription" : {
       "comment" : "Privacy - Calendars Full Access Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app accesses your calendar to import and manage events as tasks." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app accede al tuo calendario per importare e gestire eventi come attività." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application accède à votre calendrier pour importer et gérer des événements comme des tâches." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App greift auf Ihren Kalender zu, um Ereignisse als Aufgaben zu importieren und zu verwalten." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación accede a tu calendario para importar y gestionar eventos como tareas." }}
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App greift auf Ihren Kalender zu, um Ereignisse als Aufgaben zu importieren und zu verwalten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app accesses your calendar to import and manage events as tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación accede a tu calendario para importar y gestionar eventos como tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application accède à votre calendrier pour importer et gérer des événements comme des tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app accede al tuo calendario per importare e gestire eventi come attività."
+          }
+        }
       }
     },
-
     "NSCalendarsUsageDescription" : {
       "comment" : "Privacy - Calendars Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app accesses your calendar to import events as tasks." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app accede al tuo calendario per importare eventi come attività." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application accède à votre calendrier pour importer des événements comme des tâches." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App greift auf Ihren Kalender zu, um Ereignisse als Aufgaben zu importieren." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación accede a tu calendario para importar eventos como tareas." }}
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App greift auf Ihren Kalender zu, um Ereignisse als Aufgaben zu importieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app accesses your calendar to import events as tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación accede a tu calendario para importar eventos como tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application accède à votre calendrier pour importer des événements comme des tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app accede al tuo calendario per importare eventi come attività."
+          }
+        }
       }
     },
-
     "NSCalendarsWriteOnlyAccessUsageDescription" : {
       "comment" : "Privacy - Calendars Write Only Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app accesses your calendar to export tasks as events." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app accede al tuo calendario per esportare attività come eventi." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application accède à votre calendrier pour exporter des tâches en événements." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App greift auf Ihren Kalender zu, um Aufgaben als Ereignisse zu exportieren." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación accede a tu calendario para exportar tareas como eventos." }}
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App greift auf Ihren Kalender zu, um Aufgaben als Ereignisse zu exportieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app accesses your calendar to export tasks as events."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación accede a tu calendario para exportar tareas como eventos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application accède à votre calendrier pour exporter des tâches en événements."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app accede al tuo calendario per esportare attività come eventi."
+          }
+        }
       }
     },
-
     "NSCameraUsageDescription" : {
       "comment" : "Privacy - Camera Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app uses the camera to scan documents and attach photos to your tasks." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app usa la fotocamera per scansionare documenti e allegare foto alle tue attività." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application utilise l’appareil photo pour scanner des documents et joindre des photos à vos tâches." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App nutzt die Kamera, um Dokumente zu scannen und Fotos an Ihre Aufgaben anzuhängen." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación utiliza la cámara para escanear documentos y adjuntar fotos a tus tareas." }}
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App nutzt die Kamera, um Dokumente zu scannen und Fotos an Ihre Aufgaben anzuhängen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app uses the camera to scan documents and attach photos to your tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación utiliza la cámara para escanear documentos y adjuntar fotos a tus tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application utilise l’appareil photo pour scanner des documents et joindre des photos à vos tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app usa la fotocamera per scansionare documenti e allegare foto alle tue attività."
+          }
+        }
       }
     },
-
-    "NSPhotoLibraryUsageDescription" : {
-      "comment" : "Privacy - Photo Library Usage Description",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app lets you attach photos from your library to your tasks." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app ti consente di allegare foto dalla tua libreria alle tue attività." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application vous permet de joindre des photos de votre bibliothèque à vos tâches." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App ermöglicht es Ihnen, Fotos aus Ihrer Mediathek an Ihre Aufgaben anzuhängen." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación te permite adjuntar fotos de tu biblioteca a tus tareas." }}
-      }
-    },
-
     "NSLocationWhenInUseUsageDescription" : {
       "comment" : "Privacy - Location Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app uses your location to assign places to your tasks." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app usa la tua posizione per associare luoghi alle tue attività." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application utilise votre position pour associer des lieux à vos tâches." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App nutzt Ihren Standort, um Ihren Aufgaben Orte zuzuweisen." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación utiliza tu ubicación para asignar lugares a tus tareas." }}
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App nutzt Ihren Standort, um Ihren Aufgaben Orte zuzuweisen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app uses your location to assign places to your tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación utiliza tu ubicación para asignar lugares a tus tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application utilise votre position pour associer des lieux à vos tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app usa la tua posizione per associare luoghi alle tue attività."
+          }
+        }
       }
     },
-
     "NSMicrophoneUsageDescription" : {
       "comment" : "Privacy - Microphone Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app may use the microphone for voice input or audio features." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app può usare il microfono per input vocale o funzionalità audio." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application peut utiliser le microphone pour la saisie vocale ou des fonctionnalités audio." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App kann das Mikrofon für Spracheingabe oder Audiofunktionen verwenden." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación puede utilizar el micrófono para entrada de voz o funciones de audio." }}
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App kann das Mikrofon für Spracheingabe oder Audiofunktionen verwenden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app may use the microphone for voice input or audio features."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación puede utilizar el micrófono para entrada de voz o funciones de audio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application peut utiliser le microphone pour la saisie vocale ou des fonctionnalités audio."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app può usare il microfono per input vocale o funzionalità audio."
+          }
+        }
       }
     },
-
+    "NSPhotoLibraryUsageDescription" : {
+      "comment" : "Privacy - Photo Library Usage Description",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App ermöglicht es Ihnen, Fotos aus Ihrer Mediathek an Ihre Aufgaben anzuhängen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app lets you attach photos from your library to your tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación te permite adjuntar fotos de tu biblioteca a tus tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application vous permet de joindre des photos de votre bibliothèque à vos tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app ti consente di allegare foto dalla tua libreria alle tue attività."
+          }
+        }
+      }
+    },
     "NSRemindersFullAccessUsageDescription" : {
       "comment" : "Privacy - Reminders Full Access Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app accesses your Reminders to import tasks." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app accede ai tuoi promemoria per importare attività." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application accède à vos rappels pour importer des tâches." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App greift auf Ihre Erinnerungen zu, um Aufgaben zu importieren." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación accede a tus recordatorios para importar tareas." }}
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App greift auf Ihre Erinnerungen zu, um Aufgaben zu importieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app accesses your Reminders to import tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación accede a tus recordatorios para importar tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application accède à vos rappels pour importer des tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app accede ai tuoi promemoria per importare attività."
+          }
+        }
       }
     },
-
     "NSRemindersUsageDescription" : {
       "comment" : "Privacy - Reminders Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app accesses your Reminders to import tasks." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app accede ai tuoi promemoria per importare attività." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application accède à vos rappels pour importer des tâches." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App greift auf Ihre Erinnerungen zu, um Aufgaben zu importieren." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación accede a tus recordatorios para importar tareas." }}
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App greift auf Ihre Erinnerungen zu, um Aufgaben zu importieren."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app accesses your Reminders to import tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación accede a tus recordatorios para importar tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application accède à vos rappels pour importer des tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app accede ai tuoi promemoria per importare attività."
+          }
+        }
       }
     },
-
     "NSSiriUsageDescription" : {
       "comment" : "Privacy - Siri Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "This app uses Siri to create tasks using voice commands." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Questa app usa Siri per creare attività tramite comandi vocali." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Cette application utilise Siri pour créer des tâches avec des commandes vocales." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Diese App verwendet Siri, um Aufgaben per Sprachbefehl zu erstellen." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esta aplicación utiliza Siri para crear tareas mediante comandos de voz." }}
-      }
-    },
-
-    "NSUserNotificationsUsageDescription" : {
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Used to send reminders about your tasks." }},
-        "it" : { "stringUnit" : { "state" : "translated", "value" : "Usate per ricordarti le tue attività." }},
-        "fr" : { "stringUnit" : { "state" : "translated", "value" : "Utilisées pour vous rappeler vos tâches." }},
-        "de" : { "stringUnit" : { "state" : "translated", "value" : "Wird verwendet, um Sie an Ihre Aufgaben zu erinnern." }},
-        "es" : { "stringUnit" : { "state" : "translated", "value" : "Se utilizan para recordarte tus tareas." }}
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App verwendet Siri, um Aufgaben per Sprachbefehl zu erstellen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This app uses Siri to create tasks using voice commands."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta aplicación utiliza Siri para crear tareas mediante comandos de voz."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette application utilise Siri pour créer des tâches avec des commandes vocales."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app usa Siri per creare attività tramite comandi vocali."
+          }
+        }
       }
     }
   },

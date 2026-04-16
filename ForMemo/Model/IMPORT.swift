@@ -134,7 +134,9 @@ private extension RemindersImportView {
                         cont.resume(throwing: NSError(
                             domain: "Reminders",
                             code: 1,
-                            userInfo: [NSLocalizedDescriptionKey: "Access denied"]
+                            userInfo: [
+                                NSLocalizedDescriptionKey: String(localized: "error.reminders.accessDenied")
+                            ]
                         ))
                         return
                     }
@@ -153,7 +155,9 @@ private extension RemindersImportView {
                         cont.resume(throwing: NSError(
                             domain: "Reminders",
                             code: 1,
-                            userInfo: [NSLocalizedDescriptionKey: "Access denied"]
+                            userInfo: [
+                                NSLocalizedDescriptionKey: String(localized: "error.reminders.accessDenied")
+                            ]
                         ))
                         return
                     }
