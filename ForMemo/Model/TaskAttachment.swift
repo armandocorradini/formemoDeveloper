@@ -1,4 +1,3 @@
-
 import SwiftData
 import Foundation
 import os
@@ -55,6 +54,40 @@ extension TaskAttachment {
             
             let directory = localURL
                 .appendingPathComponent("TaskAttachments", isDirectory: true)
+            
+            if !fm.fileExists(atPath: directory.path) {
+                try? fm.createDirectory(at: directory, withIntermediateDirectories: true)
+            }
+            
+            return directory
+        }
+        
+        return nil
+    }()
+    
+    static let trashDirectory: URL? = {
+        
+        let fm = FileManager.default
+        
+        // 🔵 iCloud se disponibile
+        if let containerURL = fm.url(forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask") {
+            
+            let directory = containerURL
+                .appendingPathComponent("Documents", isDirectory: true)
+                .appendingPathComponent("TaskAttachments_Trash", isDirectory: true)
+            
+            if !fm.fileExists(atPath: directory.path) {
+                try? fm.createDirectory(at: directory, withIntermediateDirectories: true)
+            }
+            
+            return directory
+        }
+        
+        // 🟡 fallback locale
+        if let localURL = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
+            
+            let directory = localURL
+                .appendingPathComponent("TaskAttachments_Trash", isDirectory: true)
             
             if !fm.fileExists(atPath: directory.path) {
                 try? fm.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -125,28 +158,48 @@ extension TaskAttachment {
     
     func deleteFileIfNeeded() {
         
-        guard let url = fileURL else { return }
+        guard let sourceURL = fileURL else { return }
+        
+        let fm = FileManager.default
+        
+        // Se il file non esiste già → nessuna azione
+        guard fm.fileExists(atPath: sourceURL.path) else {
+            return
+        }
+        
+        // Se non abbiamo la Trash → fallback delete (comportamento originale)
+        guard let trashDir = Self.trashDirectory else {
+            try? fm.removeItem(at: sourceURL)
+            return
+        }
+        
+        // Nome unico per evitare collisioni
+        let uniqueName = UUID().uuidString + "_" + sourceURL.lastPathComponent
+        let destinationURL = trashDir.appendingPathComponent(uniqueName)
         
         let coordinator = NSFileCoordinator()
-        var error: NSError?
+        var coordError: NSError?
         
         coordinator.coordinate(
-            writingItemAt: url,
-            options: .forDeleting,
-            error: &error
+            writingItemAt: sourceURL,
+            options: .forMoving,
+            error: &coordError
         ) { safeURL in
             
             do {
-                if FileManager.default.fileExists(atPath: safeURL.path) {
-                    try FileManager.default.removeItem(at: safeURL)
-                }
+                try fm.moveItem(at: safeURL, to: destinationURL)
             } catch {
-                AppLogger.persistence.error("Delete failed: \(error.localizedDescription)")
+                // Fallback: se move fallisce → delete (mai peggio di prima)
+                do {
+                    try fm.removeItem(at: safeURL)
+                } catch {
+                    AppLogger.persistence.error("Move & delete failed: \(error.localizedDescription)")
+                }
             }
         }
         
-        if let error {
-            AppLogger.persistence.fault("Coordination failed: \(error)")
+        if let coordError {
+            AppLogger.persistence.fault("File coordination failed: \(coordError.localizedDescription)")
         }
     }
 }
