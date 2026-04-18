@@ -17,6 +17,7 @@ struct SettingsView: View {
     @State private var showDataManagement = false
     @State private var showOtherSettings = false
     @State private var showSiri = false
+    @State private var showRecentlyDeleted = false
 
     @State private var showDeleteAllAlert = false
     
@@ -308,6 +309,19 @@ struct SettingsView: View {
                         }
                     }
                     Button {
+                        showRecentlyDeleted = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                            
+                            Text("Recently Deleted")
+                                .tint(.primary)
+                                .padding(.leading, 6)
+                        }
+                    }
+                    Button {
                         showDataManagement = true
                     } label: {
                         HStack(spacing: 12) {
@@ -383,6 +397,11 @@ struct SettingsView: View {
             }
             .fullScreenCover(isPresented: $showImportReminders) {
                 RemindersImportView()
+            }
+            .fullScreenCover(isPresented: $showRecentlyDeleted) {
+                NavigationStack {
+                    RecentlyDeletedView()
+                }
             }
         }
     }

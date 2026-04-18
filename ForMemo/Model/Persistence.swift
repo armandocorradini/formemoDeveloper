@@ -9,7 +9,8 @@ enum Persistence {
         
         let schema = Schema([
             TodoTask.self,
-            TaskAttachment.self
+            TaskAttachment.self,
+            DeletedItem.self   // ✅ AGGIUNTO
         ])
         
         let storeURL = URL.documentsDirectory.appendingPathComponent("local.store")

@@ -49,8 +49,16 @@ final class AttachmentMaintenanceManager {
             for attachment in attachments {
 
                 AppLogger.persistence.info("Deleting attachment: \(attachment.originalName)")
-        
-                attachment.deleteFileIfNeeded()
+                let trashName = attachment.deleteFileIfNeeded()
+
+                let item = DeletedItem(type: "attachment")
+                item.taskID = task.id
+                item.fileName = attachment.originalName
+                item.relativePath = attachment.relativePath
+                item.trashFileName = trashName
+
+                context.insert(item)
+
                 context.delete(attachment)
                 context.processPendingChanges() // 🔥 sync UI immediata
             }
@@ -79,7 +87,16 @@ final class AttachmentMaintenanceManager {
         }
         
         for attachment in attachments {
-            attachment.deleteFileIfNeeded()
+            let trashName = attachment.deleteFileIfNeeded()
+
+            let item = DeletedItem(type: "attachment")
+            item.taskID = attachment.task?.id
+            item.fileName = attachment.originalName
+            item.relativePath = attachment.relativePath
+            item.trashFileName = trashName
+
+            context.insert(item)
+
             context.delete(attachment)
             context.processPendingChanges() // 🔥 sync UI immediata
         }
@@ -96,6 +113,16 @@ final class AttachmentMaintenanceManager {
     ) throws {
         
         for attachment in attachments {
+            let trashName = attachment.deleteFileIfNeeded()
+
+            let item = DeletedItem(type: "attachment")
+            item.taskID = attachment.task?.id
+            item.fileName = attachment.originalName
+            item.relativePath = attachment.relativePath
+            item.trashFileName = trashName
+
+            context.insert(item)
+
             context.delete(attachment)
             context.processPendingChanges() // 🔥 sync UI immediata
         }

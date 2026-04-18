@@ -527,6 +527,16 @@ struct TaskDetailView: View {
         AppLogger.notifications.info("👻 Removing ghost attachments: \(ghostAttachments.map { $0.originalName })")
         
         for attachment in ghostAttachments {
+            let trashName = attachment.deleteFileIfNeeded()
+
+            let item = DeletedItem(type: "attachment")
+            item.taskID = attachment.task?.id
+            item.fileName = attachment.originalName
+            item.relativePath = attachment.relativePath
+            item.trashFileName = trashName
+
+            modelContext.insert(item)
+
             modelContext.delete(attachment)
             modelContext.processPendingChanges() // 🔥 sync UI immediata
         }
@@ -1313,28 +1323,33 @@ struct TaskDetailView: View {
     }
     
     // MARK: - Delete
-    
     private func deleteAttachment(_ attachment: TaskAttachment) {
         
-        // 1️⃣ Elimina file fisico
-        if let url = attachment.fileURL {
-            try? FileManager.default.removeItem(at: url)
-        }
+        // 🔥 Move file to Trash and capture real name
+        let trashName = attachment.deleteFileIfNeeded()
         
-        // 2️⃣ Rimuovi dalla task
-        attachment.task?.attachments?.removeAll { $0.id == attachment.id }
+        // 🔥 Create DeletedItem with correct data
+        let item = DeletedItem(type: "attachment")
+        item.taskID = task.id
+        item.fileName = attachment.originalName
+        item.relativePath = attachment.relativePath
+        item.trashFileName = trashName
         
-        // 3️⃣ Elimina dal context
+        modelContext.insert(item)
+        
+        // 🔹 Remove from relationship
+        task.attachments?.removeAll { $0.id == attachment.id }
+        
+        // 🔹 Delete from context
         modelContext.delete(attachment)
-        modelContext.processPendingChanges() // 🔥 sync UI immediata
+        modelContext.processPendingChanges()
         
-        // 4️⃣ Salva (senza try?)
+        // 🔹 Save
         do {
             try modelContext.save()
             NotificationManager.shared.refresh(force: true)
         } catch {
-            AppLogger.app.error("Save error:\(error))")
-            
+            AppLogger.app.error("Save error: \(error)")
         }
         
         NotificationCenter.default.post(

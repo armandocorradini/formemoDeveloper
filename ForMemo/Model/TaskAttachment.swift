@@ -1,4 +1,5 @@
 import SwiftData
+import UniformTypeIdentifiers
 import Foundation
 import os
 
@@ -156,21 +157,21 @@ extension TaskAttachment {
     }
     
     
-    func deleteFileIfNeeded() {
+    func deleteFileIfNeeded() -> String? {
         
-        guard let sourceURL = fileURL else { return }
+        guard let sourceURL = fileURL else { return nil }
         
         let fm = FileManager.default
         
         // Se il file non esiste già → nessuna azione
         guard fm.fileExists(atPath: sourceURL.path) else {
-            return
+            return nil
         }
         
         // Se non abbiamo la Trash → fallback delete (comportamento originale)
         guard let trashDir = Self.trashDirectory else {
             try? fm.removeItem(at: sourceURL)
-            return
+            return nil
         }
         
         // Nome unico per evitare collisioni
@@ -179,6 +180,7 @@ extension TaskAttachment {
         
         let coordinator = NSFileCoordinator()
         var coordError: NSError?
+        var result: String? = nil
         
         coordinator.coordinate(
             writingItemAt: sourceURL,
@@ -188,6 +190,7 @@ extension TaskAttachment {
             
             do {
                 try fm.moveItem(at: safeURL, to: destinationURL)
+                result = destinationURL.lastPathComponent
             } catch {
                 // Fallback: se move fallisce → delete (mai peggio di prima)
                 do {
@@ -201,6 +204,7 @@ extension TaskAttachment {
         if let coordError {
             AppLogger.persistence.fault("File coordination failed: \(coordError.localizedDescription)")
         }
+        return result
     }
 }
 
@@ -248,4 +252,186 @@ enum FileStatus {
     case notDownloaded
     case downloading
     case ready
+}
+
+// MARK: - DeletedItem (Single source of truth for Trash)
+
+@Model
+final class DeletedItem {
+
+    var id: UUID = UUID()
+    var type: String = "" // "task" or "attachment"
+    
+    var deletedAt: Date = Date()
+    
+    // TASK SNAPSHOT
+    var taskID: UUID?
+    var title: String?
+    var taskDescription: String?
+    var deadLine: Date?
+    var createdAt: Date?
+    var isCompleted: Bool?
+    var completedAt: Date?
+    var reminderOffsetMinutes: Int?
+    var locationName: String?
+    var locationLatitude: Double?
+    var locationLongitude: Double?
+    var priorityRaw: Int?
+    var mainTagRaw: String?
+    
+    // ATTACHMENT
+    var fileName: String?
+    var relativePath: String?
+    var trashFileName: String?
+    
+    init(type: String) {
+        self.type = type
+    }
+}
+
+// MARK: - Trash Helpers
+
+extension TaskAttachment {
+    
+    @MainActor
+    static func createDeletedAttachmentRecord(
+        from attachment: TaskAttachment,
+        in context: ModelContext
+    ) {
+        let item = DeletedItem(type: "attachment")
+        
+        item.taskID = attachment.task?.id
+        item.fileName = attachment.originalName
+        item.relativePath = attachment.relativePath
+        item.trashFileName = nil // will be set AFTER move
+        
+        context.insert(item)
+    }
+}
+
+extension TodoTask {
+    
+    @MainActor
+    static func createDeletedTaskRecord(
+        from task: TodoTask,
+        in context: ModelContext
+    ) {
+        let item = DeletedItem(type: "task")
+        
+        item.taskID = task.id
+        item.title = task.title
+        item.taskDescription = task.taskDescription
+        item.deadLine = task.deadLine
+        item.createdAt = task.createdAt
+        item.isCompleted = task.isCompleted
+        item.completedAt = task.completedAt
+        item.reminderOffsetMinutes = task.reminderOffsetMinutes
+        item.locationName = task.locationName
+        item.locationLatitude = task.locationLatitude
+        item.locationLongitude = task.locationLongitude
+        item.priorityRaw = task.priorityRaw
+        item.mainTagRaw = task.mainTagRaw
+        
+        context.insert(item)
+    }
+}
+
+// MARK: - Restore Logic
+
+extension DeletedItem {
+    
+    @MainActor
+    func restore(in context: ModelContext) {
+        
+        if type == "task" {
+            
+            let task = TodoTask(
+                id: taskID ?? UUID(),
+                title: title ?? "",
+                taskDescription: taskDescription ?? "",
+                deadLine: deadLine,
+                isCompleted: isCompleted ?? false,
+                completedAt: completedAt,
+                reminderOffsetMinutes: reminderOffsetMinutes,
+                locationName: locationName,
+                locationLatitude: locationLatitude,
+                locationLongitude: locationLongitude,
+                priorityRaw: priorityRaw ?? 0
+            )
+            
+            task.mainTagRaw = mainTagRaw
+            
+            context.insert(task)
+            
+            guard let currentTaskID = taskID else { return }
+            
+            let attachmentsDescriptor = FetchDescriptor<DeletedItem>()
+            
+            if let relatedAttachments = try? context.fetch(attachmentsDescriptor) {
+                for item in relatedAttachments where item.type == "attachment" && item.taskID == currentTaskID {
+                    item.restore(in: context)
+                    context.delete(item)
+                }
+            }
+        }
+        
+        if type == "attachment",
+           let taskID,
+           let relativePath,
+           let fileName,
+           let trashFileName,
+           let trashDir = TaskAttachment.trashDirectory,
+           let attachmentsDir = TaskAttachment.attachmentsDirectory {
+            
+            let descriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate { $0.id == taskID }
+            )
+            
+            if let task = try? context.fetch(descriptor).first {
+                
+                let fm = FileManager.default
+                
+                // 🔥 Find file in trash
+                if let fileURL = try? fm.contentsOfDirectory(at: trashDir, includingPropertiesForKeys: nil)
+                    .first(where: { $0.lastPathComponent == trashFileName }) {
+                    
+                    let destinationURL = attachmentsDir.appendingPathComponent(relativePath)
+                    
+                    // 🔒 ensure no collision
+                    if fm.fileExists(atPath: destinationURL.path) {
+                        try? fm.removeItem(at: destinationURL)
+                    }
+                    
+                    // 🔥 Move back to attachments folder
+                    try? fm.moveItem(at: fileURL, to: destinationURL)
+                }
+                
+                let ext = (fileName as NSString).pathExtension.lowercased()
+
+                let resolvedType: String
+                if ["jpg","jpeg","png","heic","heif","gif"].contains(ext) {
+                    resolvedType = "image/\(ext == "jpg" ? "jpeg" : ext)"
+                } else if ext == "pdf" {
+                    resolvedType = "application/pdf"
+                } else if let ut = UTType(filenameExtension: ext),
+                          let mime = ut.preferredMIMEType {
+                    resolvedType = mime
+                } else {
+                    resolvedType = "application/octet-stream"
+                }
+
+                let attachment = TaskAttachment(
+                    originalName: fileName,
+                    relativePath: relativePath,
+                    contentType: resolvedType,
+                    task: task
+                )
+                
+                context.insert(attachment)
+                task.attachments?.append(attachment)
+            }
+        }
+        
+        try? context.save()
+    }
 }

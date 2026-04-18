@@ -119,7 +119,10 @@ struct ResetAppView: View {
                         }
                     }
                 }
-                
+                TaskAttachment.createDeletedAttachmentRecord(
+                    from: attachment,
+                    in: modelContext
+                )
                 modelContext.delete(attachment)
             }
             
