@@ -1,12 +1,6 @@
 import SwiftUI
 import UserNotifications
 
-// MARK: - DESTINAZIONE
-
-enum GuideStart {
-    case normal
-    case siri
-}
 
 // MARK: - MODEL
 
@@ -24,28 +18,32 @@ struct AppQuickGuideView: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    @State private var currentStep: Int
-    
-    // MARK: - INIT
-    
-    init(start: GuideStart = .normal) {
-        
-        let steps = Self.stepsData
-        let siriIndex = steps.firstIndex { $0.icon == "waveform.circle" } ?? 0
-        
-        switch start {
-        case .normal:
-            _currentStep = State(initialValue: 0)
-        case .siri:
-            _currentStep = State(initialValue: siriIndex)
-        }
-    }
+    // let start: GuideStart
     
     // MARK: - DATA
     
     private static let stepsData: [AppQuickGuide] = [
         
+        // ⭐ SIRI
         .init(
+            title: String(localized: "Use Siri Shortcuts"),
+            description: String(localized:
+                """
+                Add tasks quickly using Siri. Try saying:
+                
+                • Add a task in \(appName)
+                • Create a task in \(appName)
+                • Remind me in \(appName)
+                • New \(appName)     
+                
+                You can let Siri decide the best reminder automatically or choose it yourself.
+                """
+                               ),
+            icon: "waveform.circle",
+            tint: .teal
+        ),
+        
+            .init(
             title: String(localized:"Smart Priorities"),
             description: String(localized:"Tasks change color automatically based on their category. Overdue tasks and upcoming deadlines are visually highlighted."),
             icon: "exclamationmark.circle",
@@ -88,24 +86,6 @@ struct AppQuickGuideView: View {
                 icon: "calendar",
                 tint: .pink
             ),
-        
-        // ⭐ SIRI
-        .init(
-            title: String(localized: "Use Siri Shortcuts"),
-            description: String(localized:
-                """
-                Add tasks quickly using Siri. Try saying:
-                
-                • Add a task in \(appName)
-                • Create a task in \(appName)
-                • Remind me in \(appName)
-                
-                You can let Siri decide the best reminder automatically or choose it yourself.
-                """
-                               ),
-            icon: "waveform.circle",
-            tint: .teal
-        ),
         
             .init(
                 title: String(localized:"Automatic iCloud Login"),
@@ -195,7 +175,7 @@ struct AppQuickGuideView: View {
                     .padding(.vertical, 8)
                     .foregroundStyle(.secondary)
                 
-                TabView(selection: $currentStep) {
+                TabView {
                     
                     ForEach(steps.indices, id: \.self) { index in
                         
@@ -218,25 +198,16 @@ struct AppQuickGuideView: View {
                                 .multilineTextAlignment(index == steps.count - 1 ? .leading : .center)
                                 .padding(.horizontal, 32)
                         }
-                        .tag(index)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 
-                Button {
-                    if currentStep < steps.count - 1 {
-                        withAnimation {
-                            currentStep += 1
-                        }
-                    } else {
-                        dismiss()
-                    }
-                } label: {
-                    Text(currentStep == steps.count - 1 ? "Get Started" : "Next")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
+                Button("Get Started") {
+                    dismiss()
                 }
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding()
                 .padding(.horizontal, 40)
                 .padding(.vertical, 24)
             }

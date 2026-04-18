@@ -30,6 +30,7 @@ struct ShortList: View {
                             
                             Text(String(localized: "Remind me using \(appName)"))
                             
+                            Text(String(localized: "New \(appName)"))
                         }
                     }
                     header: {

@@ -38,6 +38,9 @@ struct SettingsView: View {
     
     @AppStorage("attachmentRetentionDays")
     private var attachmentRetentionDays: Int = 30
+
+    @AppStorage("recentlyDeletedRetentionDays")
+    private var recentlyDeletedRetentionDays: Int = 30
     
     @State private var isNotificationEnabled: Bool = false
     
@@ -270,8 +273,7 @@ struct SettingsView: View {
                     )
                     .disabled(!autoDeleteCompletedAttachments)
                     .foregroundStyle(autoDeleteCompletedAttachments ? .primary : .secondary)
-                    
-                    
+
                     Button(role: .destructive) {
                         showDeleteAllAlert = true
                     } label: {
@@ -292,7 +294,8 @@ struct SettingsView: View {
                         }
                     } message: {
                         Text("This action will permanently remove all attachments of completed tasks. This cannot be undone.")
-                    }                    }
+                    }
+                }
                 .padding(.top,15)
                 Section("Data Management") {
                     
@@ -321,6 +324,13 @@ struct SettingsView: View {
                                 .padding(.leading, 6)
                         }
                     }
+                    Stepper(
+                        "Delete after \(recentlyDeletedRetentionDays) days",
+                        value: $recentlyDeletedRetentionDays,
+                        in: 1...90,
+                        step: 1
+                    )
+                    .foregroundStyle(.secondary)
                     Button {
                         showDataManagement = true
                     } label: {
@@ -368,6 +378,9 @@ struct SettingsView: View {
                 }
             }
             .scrollContentBackground(.hidden)
+            .task {
+                cleanupRecentlyDeleted()
+            }
             .navigationTitle("Settings")
 
             .navigationBarTitleDisplayMode(.inline)
@@ -417,6 +430,39 @@ struct SettingsView: View {
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
         }
+    }
+    @MainActor
+    private func cleanupRecentlyDeleted() {
+        
+        let cutoff = Calendar.current.date(
+            byAdding: .day,
+            value: -recentlyDeletedRetentionDays,
+            to: .now
+        )!
+        
+        let descriptor = FetchDescriptor<DeletedItem>()
+        
+        guard let items = try? modelContext.fetch(descriptor) else { return }
+        
+        for item in items {
+            
+            let deletedAt = item.deletedAt
+            
+            if deletedAt < cutoff {
+                
+                // 🔥 delete file if exists
+                if let trashName = item.trashFileName,
+                   let trashDir = TaskAttachment.trashDirectory {
+                    
+                    let url = trashDir.appendingPathComponent(trashName)
+                    try? FileManager.default.removeItem(at: url)
+                }
+                
+                modelContext.delete(item)
+            }
+        }
+        
+        try? modelContext.save()
     }
 }
 

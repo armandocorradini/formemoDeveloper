@@ -24,9 +24,12 @@ struct ForMemoApp: App {
     
     @AppStorage("autoDeleteCompletedAttachments")
     private var autoDeleteCompletedAttachments: Bool = false
-    
+
     @AppStorage("attachmentRetentionDays")
     private var attachmentRetentionDays: Int = 30
+
+    @AppStorage("recentlyDeletedRetentionDays")
+    private var recentlyDeletedRetentionDays: Int = 30
     
     @AppStorage("selectedTheme")
     private var selectedTheme: AppTheme = .system
@@ -130,6 +133,9 @@ struct ForMemoApp: App {
                             retentionDays: attachmentRetentionDays
                         )
                     }
+
+                    // 3️⃣ 🔥 CLEANUP RECENTLY DELETED (task + attachments)
+                    cleanupRecentlyDeleted(context: context)
                     
                     // 3️⃣ UI refresh
                     NotificationCenter.default.post(
@@ -291,5 +297,39 @@ struct ForMemoApp: App {
         )
         
         center.setBadgeCount(count)
+    }
+    // MARK: - 🔥 CLEANUP RECENTLY DELETED
+    @MainActor
+    private func cleanupRecentlyDeleted(context: ModelContext) {
+        
+        let cutoff = Calendar.current.date(
+            byAdding: .day,
+            value: -recentlyDeletedRetentionDays,
+            to: .now
+        )!
+        
+        let descriptor = FetchDescriptor<DeletedItem>()
+        
+        guard let items = try? context.fetch(descriptor) else { return }
+        
+        for item in items {
+            
+            let deletedAt = item.deletedAt
+            
+            if deletedAt < cutoff {
+                
+                // 🔥 delete file if exists
+                if let trashName = item.trashFileName,
+                   let trashDir = TaskAttachment.trashDirectory {
+                    
+                    let url = trashDir.appendingPathComponent(trashName)
+                    try? FileManager.default.removeItem(at: url)
+                }
+                
+                context.delete(item)
+            }
+        }
+        
+        try? context.save()
     }
 }
