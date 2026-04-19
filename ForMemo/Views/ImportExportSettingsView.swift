@@ -165,7 +165,7 @@ struct ImportExportSettingsView: View {
                     NavigationLink {
                         CalendarImportView()
                     } label: {
-                        Label("Import from Calendar", systemImage: "calendar.badge.plus")
+                        Label("Import from Calendar", systemImage: "calendar.badge.checkmark")
                     }
                     
                     NavigationLink {

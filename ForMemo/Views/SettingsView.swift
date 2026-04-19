@@ -117,8 +117,8 @@ struct SettingsView: View {
                     }
                 }
                 
-                // MARK: - Preferences
-                Section("Preferences") {
+                // MARK: - General
+                Section("General") {
                     Button {
                         showOtherSettings = true
                     } label: {
@@ -131,6 +131,7 @@ struct SettingsView: View {
                                 .frame(width: iconWidth)
                         }
                     }
+                    
                     Button {
                         openLanguageSettings()
                     } label: {
@@ -143,8 +144,8 @@ struct SettingsView: View {
                             Text(Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? "")
                                 .foregroundStyle(.blue).opacity(0.7)
                         }
-                        
                     }
+                    
                     HStack(spacing: 12){
                         Image(systemName: "paintbrush").foregroundStyle(.blue)
                             .frame(width: iconWidth)
@@ -152,65 +153,71 @@ struct SettingsView: View {
                         Spacer()
                         Picker("", selection: $selectedTheme) {
                             ForEach(AppTheme.allCases) { theme in
-                                Text(theme.description).tag(theme)  //
-                                
+                                Text(theme.description).tag(theme)
                             }
                         }
                         .foregroundStyle(.blue)
                         .pickerStyle(.menu)
                         .opacity(0.7)
                     }
-                    Button {
-                        showCustomizationView = true
-                    } label: {
-                        Label {
-                            Text("Customize list")
-                                .tint(.primary)
-                        } icon: {
-                            Image(systemName: "list.bullet.circle")//app.badge")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                        }
-                    }
+                }
+
+                // MARK: - Notifications
+                Section {
+                    
                     Button {
                         openNotificationSettings()
                     } label: {
                         HStack(spacing: 12) {
-                            Image(systemName: isNotificationEnabled ? "bell.badge" : "bell.badge.slash").tint(.blue)
+                            Image(systemName: isNotificationEnabled ? "bell.badge" : "bell.badge.slash")
+                                .foregroundStyle(.blue)
                                 .frame(width: iconWidth)
-                            Text("Notifications & Reminders").tint(.primary)
+                            Text("Notifications")
+                                .tint(.primary)
                         }
                     }
-                    //                        .listRowSeparator(.hidden)
+                    
                     Button {
                         showSoundPicker = true
                     } label: {
                         HStack(spacing: 12) {
-                            Image(systemName: isNotificationEnabled ? "music.note" : "music.note.slash")
+                            Image(systemName: "music.note")
                                 .foregroundStyle(.blue)
                                 .frame(width: iconWidth)
-                            //                                    .frame(width: 24)
-                            // Testo principale sempre leggibile
+                            
                             Text("Sound")
-                                .foregroundStyle(isNotificationEnabled ? .primary : .secondary)
-                                .opacity(0.7)
+                                .foregroundStyle(.primary)
                             
                             Spacer()
                             
-                            // Valore a destra
                             Text(notificationSoundName.isEmpty ? "Default" : notificationSoundName)
-                                .foregroundStyle(isNotificationEnabled ? .primary : .secondary)
-                                .opacity(0.7)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     .buttonStyle(.plain)
                     .disabled(!isNotificationEnabled)
-                    .task {
-                        let settings = await UNUserNotificationCenter.current().notificationSettings()
-                        isNotificationEnabled =
-                        settings.authorizationStatus == .authorized ||
-                        settings.authorizationStatus == .provisional
+                } header: {
+                    Text("Notifications")
+                } footer: {
+                    Text("Notifications must be enabled in system settings to receive alerts and sounds.")
+                }
+
+                // MARK: - Tasks & Appearance
+                Section("Tasks & Appearance") {
+                    
+                    Button {
+                        showCustomizationView = true
+                    } label: {
+                        Label {
+                            Text("Customize")
+                                .tint(.primary)
+                        } icon: {
+                            Image(systemName: "list.bullet.circle")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                        }
                     }
+                    
                     LabeledContent {
                         Picker("", selection: $navigationAppRaw) {
                             ForEach(NavigationApp.allCases) { app in
@@ -221,7 +228,7 @@ struct SettingsView: View {
                         .labelsHidden()
                         .opacity(0.7)
                     } label: {
-                        Label("Navigator", systemImage: "map")
+                        Label("Navigation app", systemImage: "map")
                     }
                 }
                 Section {
@@ -234,34 +241,33 @@ struct SettingsView: View {
                                 .foregroundStyle(.blue)
                                 .frame(width: iconWidth)
                             
-                            Text("Ask to Siri")
+                            Text("Use with Siri")
                                 .foregroundStyle(.primary)
                                 .padding(.leading, 6)
                         }
                     }
                     .buttonStyle(.plain)
                     Toggle(
-                        "Automatic reminder from Siri",
+                        "Add reminders automatically",
                         isOn: $siriAutoReminderEnabled
                     )
                     
                     Toggle(
-                        "Reduce Siri confirmation message",
+                        "Short confirmation",
                         isOn: $siriShortConfirmation
                     )
                     
                 } header: {
-                    Text("Siri")
+                    Text("Siri & Shortcuts")
                 } footer: {
                     Text(
-                        "When enabled, Siri will reply only with \"Done\" after creating a task."
+                        "Siri replies briefly after creating a task."
                     )
                 }
                 
-                Section("Attachment Maintenance") {
-                    
+                Section {
                     Toggle(
-                        "Enable automatic deletion",
+                        "Auto-delete attachments",
                         isOn: $autoDeleteCompletedAttachments
                     )
                     
@@ -277,7 +283,7 @@ struct SettingsView: View {
                     Button(role: .destructive) {
                         showDeleteAllAlert = true
                     } label: {
-                        Text("Delete all attachments of completed tasks now")
+                        Text("Delete all attachments now")
                     }
                     .alert(
                         "Are you sure? This cannot be undone.",
@@ -293,11 +299,14 @@ struct SettingsView: View {
                             }
                         }
                     } message: {
-                        Text("This action will permanently remove all attachments of completed tasks. This cannot be undone.")
+                        Text("This permanently removes all attachments. This action cannot be undone.")
                     }
+                } header: {
+                    Text("Completed Tasks")
+                } footer: {
+                    Text("Attachments of completed tasks are automatically removed after the selected period. To-do tasks are not affected.")
                 }
-                .padding(.top,15)
-                Section("Data Management") {
+                Section {
                     
                     NavigationLink {
                         ImportExportSettingsView()
@@ -331,19 +340,27 @@ struct SettingsView: View {
                         step: 1
                     )
                     .foregroundStyle(.secondary)
-                    Button {
+                } header: {
+                    Text("Data Management")
+                } footer: {
+                    Text("Items in Recently Deleted are permanently removed after the selected period. You can restore them before that.")
+                }
+
+                Section {
+                    Button(role: .destructive) {
                         showDataManagement = true
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "trash.circle")
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(.red)
                                 .frame(width: iconWidth)
                             
                             Text("Erase all Data")
-                                .tint(.red)
-                                .padding(.leading,6)
+                                .foregroundStyle(.red)
                         }
                     }
+                } footer: {
+                    Text("This permanently deletes all tasks, attachments, and data from this device. This action cannot be undone.")
                 }
             }
             .background {
@@ -380,10 +397,14 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .task {
                 cleanupRecentlyDeleted()
+                checkNotificationStatus()
             }
             .navigationTitle("Settings")
 
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                checkNotificationStatus()
+            }
 
             .fullScreenCover(isPresented: $showSoundPicker) {
                 NotificationSoundPickerView()

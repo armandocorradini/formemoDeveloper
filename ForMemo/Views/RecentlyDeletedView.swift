@@ -18,6 +18,12 @@ struct RecentlyDeletedView: View {
                     systemImage: "trash",
                     description: Text("Deleted items will appear here.")
                 )
+                .symbolRenderingMode(.hierarchical)
+                .imageScale(.small)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             } else {
                 ForEach(items.filter { item in
                     if item.type == "task" { return true }

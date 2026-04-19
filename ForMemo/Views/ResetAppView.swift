@@ -9,62 +9,76 @@ struct ResetAppView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
-    @State private var showConfirm = false
     @State private var isDeleting = false
     @State private var deletionMessage: String?
+    @State private var confirmationText: String = ""
+    @State private var lastWasValid: Bool = false
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            List {
                 
-                Text("Reset App")
-                    .font(.title)
-                    .fontWeight(.bold)
-                
-                Text("This will permanently delete all your tasks and attachments. This cannot be undone. Changes will sync automatically with iCloud.")
-                    .multilineTextAlignment(.center)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal)
-                
-                Button(role: .destructive) {
-                    showConfirm = true
-                } label: {
-                    Text("Delete All Data")
-                        .bold()
-                        .padding()
-                        .background(Color.red.opacity(0.8))
-                        .foregroundStyle(.white)
-                        .cornerRadius(10)
+                // MARK: - Info
+                Section {
+                    Label {
+                        Text("Erase All Data")
+                            .font(.headline)
+                    } icon: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(.red)
+                    }
+                    
+                    Text("This will permanently delete all your tasks, attachments, and data from this device. This action cannot be undone.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
-                .padding(.horizontal)
-                .disabled(isDeleting)
                 
-                if isDeleting {
-                    ProgressView("Deleting…")
-                        .padding()
+                // MARK: - Confirmation
+                Section {
+                    TextField("Type DELETE", text: Binding(
+                        get: { confirmationText },
+                        set: { confirmationText = $0.uppercased() }
+                    ))
+                    .textInputAutocapitalization(.characters)
+                    .autocorrectionDisabled(true)
+                } footer: {
+                    Text("Enter DELETE to confirm.")
+                }
+                
+                // MARK: - Action
+                Section {
+                    Button(role: .destructive) {
+                        startDelete()
+                    } label: {
+                        if isDeleting {
+                            HStack {
+                                Spacer()
+                                ProgressView()
+                                Spacer()
+                            }
+                        } else {
+                            Text("Erase All Data")
+                        }
+                    }
+                    .disabled(confirmationText != "DELETE" || isDeleting)
                 }
             }
-
-            .alert("Are you sure?", isPresented: $showConfirm) {
-                
-                Button("Cancel", role: .cancel) {}
-                
-                Button("Delete Everything", role: .destructive) {
-                    startDelete()
+            .listStyle(.insetGrouped)
+            .navigationTitle("Erase Data")
+            .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: confirmationText) { _, newValue in
+                let isValid = newValue == "DELETE"
+                if isValid && !lastWasValid {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 }
-                
-            } message: {
-                Text("This will permanently remove all tasks and attachments.")
+                lastWasValid = isValid
             }
-            
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "xmark")
-                            .foregroundStyle(.primary)
-                            .font(.title2)
                     }
                 }
             }
@@ -78,7 +92,7 @@ struct ResetAppView: View {
         
         isDeleting = true
         
-        Task {
+        Task { @MainActor in
             await deleteAllData()
             
             try? await Task.sleep(for: .milliseconds(300))
@@ -94,7 +108,6 @@ struct ResetAppView: View {
         print("🔥 deleteAllData CALLED")
         
         let center = UNUserNotificationCenter.current()
-        let coordinator = NSFileCoordinator()
         let fileManager = FileManager.default
         
         do {
@@ -108,21 +121,11 @@ struct ResetAppView: View {
             
             for attachment in attachments {
                 
-                if let url = attachment.fileURL {
-                    coordinator.coordinate(
-                        writingItemAt: url,
-                        options: .forDeleting,
-                        error: nil
-                    ) { safeURL in
-                        if fileManager.fileExists(atPath: safeURL.path) {
-                            try? fileManager.removeItem(at: safeURL)
-                        }
-                    }
+                if let url = attachment.fileURL,
+                   fileManager.fileExists(atPath: url.path) {
+                    try? fileManager.removeItem(at: url)
                 }
-                TaskAttachment.createDeletedAttachmentRecord(
-                    from: attachment,
-                    in: modelContext
-                )
+                
                 modelContext.delete(attachment)
             }
             
@@ -137,21 +140,10 @@ struct ResetAppView: View {
             try modelContext.save()
             
             // 🔴 Clean directory
-            if let directory = TaskAttachment.attachmentsDirectory {
-                coordinator.coordinate(
-                    writingItemAt: directory,
-                    options: .forDeleting,
-                    error: nil
-                ) { safeURL in
-                    
-                    guard let files = try? fileManager.contentsOfDirectory(
-                        at: safeURL,
-                        includingPropertiesForKeys: nil
-                    ) else { return }
-                    
-                    for file in files {
-                        try? fileManager.removeItem(at: file)
-                    }
+            if let directory = TaskAttachment.attachmentsDirectory,
+               let files = try? fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
+                for file in files {
+                    try? fileManager.removeItem(at: file)
                 }
             }
             

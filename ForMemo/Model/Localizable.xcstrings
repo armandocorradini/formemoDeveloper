@@ -1087,6 +1087,34 @@
         }
       }
     },
+    "Add reminders automatically" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erinnerungen automatisch hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir recordatorios automáticamente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter automatiquement des rappels"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi promemoria automaticamente"
+          }
+        }
+      }
+    },
     "Add Task" : {
       "localizations" : {
         "de" : {
@@ -1259,34 +1287,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aspetto"
-          }
-        }
-      }
-    },
-    "Are you sure?" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sind Sie sicher?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Estás seguro?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Êtes-vous sûr ?"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sei sicuro?"
           }
         }
       }
@@ -1466,34 +1466,6 @@
         }
       }
     },
-    "Attachment Maintenance" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wartung von Anhängen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantenimiento de archivos adjuntos"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maintenance des pièces jointes"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Manutenzione allegati"
-          }
-        }
-      }
-    },
     "Attachments" : {
       "localizations" : {
         "de" : {
@@ -1518,6 +1490,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Allegati"
+          }
+        }
+      }
+    },
+    "Attachments of completed tasks are automatically removed after the selected period. To-do tasks are not affected." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhänge abgeschlossener Aufgaben werden nach dem ausgewählten Zeitraum automatisch entfernt. Offene Aufgaben sind nicht betroffen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los archivos adjuntos de las tareas completadas se eliminan automáticamente después del período seleccionado. Las tareas pendientes no se ven afectadas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pièces jointes des tâches terminées sont automatiquement supprimées après la période sélectionnée. Les tâches à faire ne sont pas affectées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli allegati delle attività completate vengono rimossi automaticamente dopo il periodo selezionato. Le attività da fare non sono interessate."
           }
         }
       }
@@ -1552,6 +1552,34 @@
         }
       }
     },
+    "Auto-delete attachments" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhänge automatisch löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar automáticamente los archivos adjuntos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer automatiquement les pièces jointes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina automaticamente gli allegati"
+          }
+        }
+      }
+    },
     "Automatic iCloud Login" : {
       "localizations" : {
         "de" : {
@@ -1576,34 +1604,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accesso iCloud automatico"
-          }
-        }
-      }
-    },
-    "Automatic reminder from Siri" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatische Erinnerung von Siri"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recordatorio automático de Siri"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rappel automatique de Siri"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Promemoria automatico di Siri"
           }
         }
       }
@@ -1888,6 +1888,34 @@
         }
       }
     },
+    "Completed Tasks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abgeschlossene Aufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas completadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches terminées"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività completate"
+          }
+        }
+      }
+    },
     "Confirm task deletion" : {
       "localizations" : {
         "de" : {
@@ -2087,30 +2115,30 @@
         }
       }
     },
-    "Customize list" : {
+    "Customize" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Liste anpassen"
+            "value" : "Anpassen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Personalizar lista"
+            "value" : "Personalizar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Personnaliser la liste"
+            "value" : "Personnaliser"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Personalizza lista"
+            "value" : "Personalizza"
           }
         }
       }
@@ -2477,86 +2505,30 @@
         }
       }
     },
-    "Delete all attachments of completed tasks now" : {
+    "Delete all attachments now" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lösche jetzt alle Anhänge von abgeschlossenen Aufgaben."
+            "value" : "Alle Anhänge jetzt löschen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar ahora todos los archivos adjuntos de las tareas completadas"
+            "value" : "Eliminar todos los archivos adjuntos ahora"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Supprimer maintenant toutes le pièces jointes des tâches terminées"
+            "value" : "Supprimer toutes les pièces jointes maintenant"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elimina ora tutti gli allegati delle attività completate"
-          }
-        }
-      }
-    },
-    "Delete All Data" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alle Daten löschen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminar todos los datos"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer toutes les données"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elimina tutti i dati"
-          }
-        }
-      }
-    },
-    "Delete Everything" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alles löschen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminar todo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tout supprimer"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elimina tutto"
+            "value" : "Elimina tutti gli allegati ora"
           }
         }
       }
@@ -2643,34 +2615,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gli elementi eliminati appariranno qui."
-          }
-        }
-      }
-    },
-    "Deleting…" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Löschen…"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminando…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suppression…"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminazione…"
           }
         }
       }
@@ -2969,34 +2913,6 @@
         }
       }
     },
-    "Enable automatic deletion" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatisches Löschen aktivieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activar la eliminación automática"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activer la suppression automatique"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Attiva eliminazione automatica"
-          }
-        }
-      }
-    },
     "Enable notifications" : {
       "localizations" : {
         "de" : {
@@ -3025,6 +2941,36 @@
         }
       }
     },
+    "Enter DELETE to confirm." : {
+      "comment" : "A footer for the confirmation field in the erase data view.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geben Sie DELETE ein, um zu bestätigen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce DELETE para confirmar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez DELETE pour confirmer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci DELETE per confermare."
+          }
+        }
+      }
+    },
     "Erase all Data" : {
       "localizations" : {
         "de" : {
@@ -3049,6 +2995,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancella tutti i dati"
+          }
+        }
+      }
+    },
+    "Erase All Data" : {
+      "comment" : "A warning message displayed before erasing all data.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Daten löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar todos los datos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer toutes les données"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancella tutti i dati"
+          }
+        }
+      }
+    },
+    "Erase Data" : {
+      "comment" : "A title for a screen that lets the user erase all data from their device.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar datos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer les données"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancella dati"
           }
         }
       }
@@ -4334,6 +4340,34 @@
         }
       }
     },
+    "Items in Recently Deleted are permanently removed after the selected period. You can restore them before that." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elemente in „Zuletzt gelöscht“ werden nach dem ausgewählten Zeitraum dauerhaft entfernt. Sie können sie bis dahin wiederherstellen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los elementos en Eliminados recientemente se eliminan definitivamente tras el período seleccionado. Puedes restaurarlos antes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les éléments dans « Supprimés récemment » sont définitivement supprimés après la période sélectionnée. Vous pouvez les restaurer avant."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli elementi in Eliminati di recente vengono rimossi definitivamente dopo il periodo selezionato. Puoi ripristinarli prima."
+          }
+        }
+      }
+    },
     "Language" : {
       "localizations" : {
         "de" : {
@@ -4843,30 +4877,30 @@
         }
       }
     },
-    "Navigator" : {
+    "Navigation app" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Navigator"
+            "value" : "Navigations-App"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Navegador"
+            "value" : "App de navegación"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Navigateur"
+            "value" : "App de navigation"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Navigatore"
+            "value" : "App di navigazione"
           }
         }
       }
@@ -5529,30 +5563,58 @@
         }
       }
     },
-    "Notifications & Reminders" : {
+    "Notifications" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Benachrichtigungen & Erinnerungen"
+            "value" : "Mitteilungen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notificaciones y recordatorios"
+            "value" : "Notificaciones"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notifications et rappels"
+            "value" : "Notifications"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notifiche e promemoria"
+            "value" : "Notifiche"
+          }
+        }
+      }
+    },
+    "Notifications must be enabled in system settings to receive alerts and sounds." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungen müssen in den Systemeinstellungen aktiviert sein, um Hinweise und Töne zu erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las notificaciones deben estar activadas en los ajustes del sistema para recibir alertas y sonidos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notifications doivent être activées dans les réglages système pour recevoir des alertes et des sons."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le notifiche devono essere abilitate nelle impostazioni di sistema per ricevere avvisi e suoni."
           }
         }
       }
@@ -5835,34 +5897,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Policromatico"
-          }
-        }
-      }
-    },
-    "Preferences" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einstellungen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preferencias"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Préférences"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preferenze"
           }
         }
       }
@@ -6347,34 +6381,6 @@
         }
       }
     },
-    "Reduce Siri confirmation message" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siri-Bestätigungsnachricht reduzieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reducir el mensaje de confirmación de Siri"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Réduire le message de confirmation de Siri"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Riduce il messaggio di conferma di Siri"
-          }
-        }
-      }
-    },
     "Remind me using %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6540,34 +6546,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rimuovere la posizione?"
-          }
-        }
-      }
-    },
-    "Reset App" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Reset"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset aplicación"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset l'application"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reset App"
           }
         }
       }
@@ -7224,6 +7202,34 @@
         }
       }
     },
+    "Short confirmation" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurze Bestätigung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmación breve"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmation brève"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conferma breve"
+          }
+        }
+      }
+    },
     "Show app badge" : {
       "localizations" : {
         "de" : {
@@ -7448,10 +7454,61 @@
         }
       }
     },
-    "Siri" : {
-      "comment" : "The section header for Siri-related settings in the \"Other\" settings view.",
-      "isCommentAutoGenerated" : true,
-      "shouldTranslate" : false
+    "Siri & Shortcuts" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri & Kurzbefehle"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri y Atajos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri et Raccourcis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri e Comandi rapidi"
+          }
+        }
+      }
+    },
+    "Siri replies briefly after creating a task." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri antwortet kurz nach dem Erstellen einer Aufgabe."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri responde brevemente tras crear una tarea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri répond brièvement après avoir créé une tâche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri risponde brevemente dopo aver creato un’attività."
+          }
+        }
+      }
     },
     "Siri will ask for the activity title and due date, then create the record with an automatic reminder." : {
       "localizations" : {
@@ -8539,6 +8596,34 @@
         }
       }
     },
+    "Tasks & Appearance" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgaben & Darstellung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas y apariencia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches et apparence"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività e aspetto"
+          }
+        }
+      }
+    },
     "Tasks change color automatically based on their category. Overdue tasks and upcoming deadlines are visually highlighted." : {
       "localizations" : {
         "de" : {
@@ -8861,30 +8946,58 @@
         }
       }
     },
-    "This action will permanently remove all attachments of completed tasks. This cannot be undone." : {
+    "This permanently deletes all tasks, attachments, and data from this device. This action cannot be undone." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diese Aktion entfernt dauerhaft alle Anhänge abgeschlossener Aufgaben. Dies kann nicht rückgängig gemacht werden."
+            "value" : "Dadurch werden alle Aufgaben, Anhänge und Daten auf diesem Gerät dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta acción eliminará de forma permanente todos los archivos adjuntos de las tareas completadas. Esta acción non se puede deshacer."
+            "value" : "Esto elimina permanentemente todas las tareas, archivos adjuntos y datos de este dispositivo. Esta acción no se puede deshacer."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette action supprimera définitivement toutes les pièces jointes des tâches terminées. Cette opération est irréversible."
+            "value" : "Cela supprime définitivement toutes les tâches, pièces jointes et données de cet appareil. Cette action est irréversible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa azione rimuoverà permanentemente tutti gli allegati delle attività completate. L'operazione non può essere annullata."
+            "value" : "Questa azione elimina definitivamente tutte le attività, gli allegati e i dati da questo dispositivo. Non può essere annullata."
+          }
+        }
+      }
+    },
+    "This permanently removes all attachments. This action cannot be undone." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dadurch werden alle Anhänge dauerhaft entfernt. Diese Aktion kann nicht rückgängig gemacht werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esto elimina permanentemente todos los archivos adjuntos. Esta acción no se puede deshacer."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cela supprime définitivement toutes les pièces jointes. Cette action est irréversible."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa azione elimina definitivamente tutti gli allegati. Non può essere annullata."
           }
         }
       }
@@ -8919,58 +9032,32 @@
         }
       }
     },
-    "This will permanently delete all your tasks and attachments. This cannot be undone. Changes will sync automatically with iCloud." : {
+    "This will permanently delete all your tasks, attachments, and data from this device. This action cannot be undone." : {
+      "comment" : "A description of the data that will be erased when the user deletes their data.",
+      "isCommentAutoGenerated" : true,
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dies wird all Ihre Aufgaben und Anhänge dauerhaft löschen. Dies kann nicht rückgängig gemacht werden. Änderungen werden automatisch mit iCloud synchronisiert."
+            "value" : "Dadurch werden alle Ihre Aufgaben, Anhänge und Daten auf diesem Gerät dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esto eliminará de forma permanente todas tus tareas y adjuntos. No se puede deshacer. Los cambios se sincronizarán automáticamente con iCloud."
+            "value" : "Esto eliminará permanentemente todas tus tareas, archivos adjuntos y datos de este dispositivo. Esta acción no se puede deshacer."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cela supprimera définitivement toutes vos tâches et pièces jointes. Cette opération est irréversible. Les modifications seront synchronisées automatiquement avec iCloud."
+            "value" : "Cela supprimera définitivement toutes vos tâches, pièces jointes et données de cet appareil. Cette action est irréversible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questo eliminerà permanentemente tutte le tue attività e gli allegati. L'azione non può essere annullata. Le modifiche verranno sincronizzate automaticamente con iCloud."
-          }
-        }
-      }
-    },
-    "This will permanently remove all tasks and attachments." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dies wird alle Aufgaben und Anhänge dauerhaft entfernen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esto eliminará de forma permanente todas las tareas y adjuntos."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cela supprimera définitivement toutes les tâches et pièces jointes."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Questo rimuoverà permanentemente tutte le attività e gli allegati."
+            "value" : "Questa operazione eliminerà definitivamente tutte le tue attività, gli allegati e i dati da questo dispositivo. Non può essere annullata."
           }
         }
       }
@@ -9239,6 +9326,36 @@
         }
       }
     },
+    "Type DELETE" : {
+      "comment" : "A label for the text field that asks the user to type \"DELETE\" to confirm.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DELETE eingeben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escribe DELETE"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez DELETE"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digita DELETE"
+          }
+        }
+      }
+    },
     "Use Siri Shortcuts" : {
       "localizations" : {
         "de" : {
@@ -9263,6 +9380,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usa scorciatoie Siri"
+          }
+        }
+      }
+    },
+    "Use with Siri" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Siri verwenden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar con Siri"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser avec Siri"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa con Siri"
           }
         }
       }
@@ -9459,34 +9604,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cosa vuoi aggiungere?"
-          }
-        }
-      }
-    },
-    "When enabled, Siri will reply only with \"Done\" after creating a task." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wenn aktiviert, antwortet Siri nach dem Erstellen einer Aufgabe nur mit “Done”."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cuando está activado, Siri responderá solo con “Hecho” después de crear una tarea."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lorsqu’elle est activée, Siri répondra uniquement par “Done” après la création d’une tâche."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quando abilitato, Siri risponde solo con ‘Fatto’ dopo aver creato una attività."
           }
         }
       }

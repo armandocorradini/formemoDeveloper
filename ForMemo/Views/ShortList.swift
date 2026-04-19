@@ -23,14 +23,17 @@ struct ShortList: View {
                         VStack(alignment: .leading, spacing: 24) {
                             
                             Text(String(localized: "Add a task in \(appName)"))
+                                .padding(.top, 15)
                             Divider()
                             
                             Text(String(localized: "Create a task in \(appName)"))
                             Divider()
                             
                             Text(String(localized: "Remind me using \(appName)"))
+                            Divider()
                             
                             Text(String(localized: "New \(appName)"))
+                                .padding(.bottom, 15)
                         }
                     }
                     header: {
