@@ -17,6 +17,7 @@ final class TodoTask {
     var locationName: String? = nil // Corretto da locaMonName
     var locationLatitude: Double? = nil // Corretto da locaMonLaMtude
     var locationLongitude: Double? = nil // Corretto da locaMonLongitude
+    var locationReminderEnabled: Bool = false
     var priorityRaw: Int = 0
     var mainTagRaw: String? = nil
     var snoozeUntil: Date? = nil

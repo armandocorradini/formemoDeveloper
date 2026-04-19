@@ -1,9 +1,12 @@
 import SwiftUI
 import SwiftData
 import UserNotifications
-import CoreData   // 🔥 serve per NSPersistentStoreRemoteChange
+import CoreData
 import AppIntents
 import os
+import CoreLocation
+
+
 
 @main
 struct ForMemoApp: App {
@@ -112,14 +115,32 @@ struct ForMemoApp: App {
         }
         
         .modelContainer(container)
-        .onChange(of: scenePhase) { _, newPhase in
+        .onChange(of: scenePhase) {
             
-            switch newPhase {
+            switch scenePhase {
                 
             case .active:
                 Task { @MainActor in
-                    
+
                     AppLogger.notifications.info("🟢 App became active")
+                    
+                    // 🔥 AUTO-FIX LOCATION PERMISSIONS
+                    let status = CLLocationManager().authorizationStatus
+
+                    if status != .authorizedAlways {
+                        let wasEnabled = UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
+                        
+                        if wasEnabled {
+                            UserDefaults.standard.set(false, forKey: "locationRemindersEnabled")
+                            
+                            NotificationCenter.default.post(
+                                name: .locationPermissionAutoDisabled,
+                                object: nil
+                            )
+                        }
+                    }
+                    
+                    LocationReminderManager.shared.requestPermissionIfNeeded()
                     
                     let context = container.mainContext
                     
@@ -332,4 +353,8 @@ struct ForMemoApp: App {
         
         try? context.save()
     }
+}
+
+extension Notification.Name {
+    static let locationPermissionAutoDisabled = Notification.Name("locationPermissionAutoDisabled")
 }

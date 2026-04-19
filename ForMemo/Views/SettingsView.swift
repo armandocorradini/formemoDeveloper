@@ -2,6 +2,7 @@ import SwiftUI
 import EventKit
 import SwiftData
 import CoreData
+import CoreLocation
 
 
 // MARK: - SettingsView
@@ -52,6 +53,12 @@ struct SettingsView: View {
     @AppStorage("notificationSoundName")
     private var notificationSoundName: String = ""
     
+    @AppStorage("locationRemindersEnabled")
+    private var locationRemindersEnabled: Bool = false
+
+    @State private var showLocationPermissionAlert = false
+    @State private var showLocationIntroAlert = false
+
     @State private var showImportReminders = false
     @State private var showCalendarImport = false
     @State private var showCSV = false
@@ -197,6 +204,52 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(!isNotificationEnabled)
+
+                    Toggle("Location Reminders", isOn: Binding(
+                        get: { locationRemindersEnabled },
+                        set: { newValue in
+                            if newValue {
+                                showLocationIntroAlert = true
+                            } else {
+                                locationRemindersEnabled = false
+                            }
+                        }
+                    ))
+                    .alert("Enable Location Access", isPresented: $showLocationPermissionAlert) {
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        Button("Cancel", role: .cancel) { }
+                    } message: {
+                        Text("To use location reminders, please allow Always access to your location in Settings.")
+                    }
+                    .alert("Location Reminders", isPresented: $showLocationIntroAlert) {
+                        Button("Continue") {
+                            let status = CLLocationManager().authorizationStatus
+
+                            switch status {
+                            case .notDetermined:
+                                LocationReminderManager.shared.requestPermissionIfNeeded()
+
+                            case .authorizedAlways:
+                                locationRemindersEnabled = true
+
+                            case .authorizedWhenInUse, .denied, .restricted:
+                                showLocationPermissionAlert = true
+                                locationRemindersEnabled = false
+
+                            @unknown default:
+                                locationRemindersEnabled = false
+                            }
+                        }
+                        Button("Cancel", role: .cancel) {
+                            locationRemindersEnabled = false
+                        }
+                    } message: {
+                        Text("Get reminders when you arrive at a place.")
+                    }
                 } header: {
                     Text("Notifications")
                 } footer: {

@@ -167,6 +167,42 @@
         }
       }
     },
+    "NSLocationAlwaysAndWhenInUseUsageDescription" : {
+      "comment" : "Privacy - Location Always and When In Use Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese App benötigt Zugriff auf Ihren Standort im Hintergrund, um Sie zu benachrichtigen, wenn Sie an einem gespeicherten Ort ankommen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This app needs background location access to notify you when you arrive at a saved location."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta app necesita acceso a tu ubicación en segundo plano para avisarte cuando llegues a un lugar guardado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette app a besoin d’un accès à votre position en arrière-plan pour vous notifier lorsque vous arrivez à un lieu enregistré."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app necessita dell’accesso alla posizione in background per notificarti quando arrivi in un luogo salvato."
+          }
+        }
+      }
+    },
     "NSLocationWhenInUseUsageDescription" : {
       "comment" : "Privacy - Location Usage Description",
       "localizations" : {

@@ -1093,6 +1093,32 @@ struct TaskDetailView: View {
                     }
                 }
             }
+
+            // 🔔 Location Reminder Toggle
+            if task.locationLatitude != nil && task.locationLongitude != nil {
+                let isGlobalEnabled = UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
+
+                Toggle("Location Reminder", isOn: Binding(
+                    get: { task.locationReminderEnabled },
+                    set: { newValue in
+                        task.locationReminderEnabled = newValue
+                        do {
+                            try modelContext.save()
+                            NotificationManager.shared.refresh(force: true)
+                        } catch {
+                            AppLogger.persistence.fault("Failed to save context: \(error)")
+                        }
+                    }
+                ))
+                .disabled(!isGlobalEnabled)
+                .opacity(isGlobalEnabled ? 1 : 0.4)
+
+                if !isGlobalEnabled {
+                    Text("Enable Location Reminders in Settings")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
             
             // ----- Tags -----
             

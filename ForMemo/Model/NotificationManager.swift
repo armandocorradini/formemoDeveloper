@@ -72,6 +72,7 @@ final class NotificationManager: NSObject {
         guard let context = modelContainer?.mainContext else { return }
         
         let tasks = fetchTasks(using: context)
+        LocationReminderManager.shared.updateRegions(tasks: tasks)
         
         // 🔥 1. Badge immediato (NON CAMBIA)
         let badge = computeBadgeCount(from: tasks)

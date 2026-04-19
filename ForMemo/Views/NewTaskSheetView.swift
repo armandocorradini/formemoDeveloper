@@ -272,14 +272,19 @@ struct NewTaskSheetView: View {
                             .foregroundStyle(.red)
                     }
                 }
-                
             } else {
-                
                 Button {
                     showingLocationPicker = true
                 } label: {
                     Label("Add location", systemImage: "mappin.and.ellipse")
                 }
+            }
+
+            // Location Reminder Toggle
+            if draftTask.locationLatitude != nil && draftTask.locationLongitude != nil {
+                Toggle("Location Reminder", isOn: $draftTask.locationReminderEnabled)
+                .disabled(!UserDefaults.standard.bool(forKey: "locationRemindersEnabled"))
+                .opacity(UserDefaults.standard.bool(forKey: "locationRemindersEnabled") ? 1 : 0.4)
             }
             
             Picker("Tag", selection: $draftTask.mainTag) {
