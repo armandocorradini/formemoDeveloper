@@ -34,7 +34,9 @@ struct AppQuickGuideView: View {
                 • Add a task in \(appName)
                 • Create a task in \(appName)
                 • Remind me in \(appName)
-                • New \(appName)     
+                
+                Best option:
+                • New \(appName)   
                 
                 You can let Siri decide the best reminder automatically or choose it yourself.
                 """

@@ -33,6 +33,7 @@ struct ShortList: View {
                             Divider()
                             
                             Text(String(localized: "New \(appName)"))
+                                .foregroundStyle(.green)
                                 .padding(.bottom, 15)
                         }
                     }
