@@ -15,6 +15,7 @@ enum TaskRowStyle: Int {
     case style7 = 7
     case style8 = 8
     case style9 = 9
+    case style10 = 10
     case today = 100
 }
 
@@ -66,8 +67,71 @@ extension TaskRowContent {
         case .style7: layoutStyle7()
         case .style8: layoutStyle8()
         case .style9: layoutStyle9()
+        case .style10: layoutStyle10()
         case .today:  layoutToday()
         }
+    }
+    private func layoutStyle10() -> some View {
+        HStack(spacing: 12) {
+            
+            // ICONA (sinistra)
+            icon
+                .scaleEffect(0.9)
+                .frame(minWidth: 40)
+                .offset(x: -4)
+            
+            // CONTENUTO (titolo + meta)
+            VStack(alignment: .leading, spacing: 4) {
+                
+                // TITOLO
+                Text(model.title)
+                    .font(.headline)
+                    .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                    .strikethrough(model.isCompleted)
+                    .lineLimit(1)
+                
+                // META (remind + flags)
+                HStack(spacing: 8) {
+                    
+                    if model.reminderOffsetMinutes != nil {
+                        HStack(spacing: 4) {
+                            Image(systemName: "bell")
+                            Text(formattedOffset(model: model))
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    flags(vertical: false)
+                }
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            }
+            
+            Spacer()
+            
+            // DATA (destra, compatta Apple style)
+            if let d = model.deadLine {
+                VStack(spacing: 2) {
+                    
+                    Text(d, format: .dateTime.day())
+                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    
+                    Text(d, format: .dateTime.month(.abbreviated))
+                        .font(.system(size: 10, weight: .bold))
+                        .textCase(.uppercase)
+                    
+                    Text(d, format: .dateTime.hour().minute())
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .opacity(0.8)
+                }
+                .frame(width: 44)
+                .foregroundStyle(model.statusColor)
+                .pulseEffect(active: isUrgent(model: model))
+            }
+        }
+        .padding(.vertical, 6)
+        .padding(.leading, 8)
     }
 }
 

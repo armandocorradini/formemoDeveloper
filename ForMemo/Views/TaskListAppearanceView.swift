@@ -132,7 +132,8 @@ struct TaskListAppearanceView: View {
         String(localized: "Style 6"),
         String(localized: "Style 7"),
         String(localized: "Style 8"),
-        String(localized: "Style 9")
+        String(localized: "Style 9"),
+        String(localized: "Style 10")
     ]
     
     @State private var refreshID = UUID()
