@@ -43,6 +43,7 @@ struct SettingsView: View {
     private var recentlyDeletedRetentionDays: Int = 30
     
     @State private var isNotificationEnabled: Bool = false
+    @Environment(\.scenePhase) private var scenePhase
     
     @State private var showSoundPicker = false
     
@@ -404,6 +405,11 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 checkNotificationStatus()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    checkNotificationStatus()
+                }
             }
 
             .fullScreenCover(isPresented: $showSoundPicker) {

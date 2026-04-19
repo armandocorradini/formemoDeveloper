@@ -43,8 +43,7 @@ struct TaskRowContent: View, TaskRowBaseLogic {
     
     var body: some View {
         content
-            .padding(.vertical, rowStyle == .style0 ? 6 : 10)
-            .padding(.horizontal, 4)
+            .padding(.vertical, rowStyle == .style0 ? 0 : 0)
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
     }
@@ -423,7 +422,9 @@ extension TaskRowContent {
     private func layoutToday() -> some View {
         
         let notExp = (model.deadLine ?? .now) > Date()
+        let isCritical = model.prioritySystemImage  == "flame"
         
+
         return HStack(spacing: 12) {
             
             VStack {
@@ -437,31 +438,43 @@ extension TaskRowContent {
                 }
             }
             .frame(width: 50, height: 77)
-            .foregroundStyle(model.statusColor)
+            .foregroundStyle(isCritical ? .white : model.statusColor)
             
             VStack(alignment: .leading, spacing: 4) {
                 
                 Text(notExp ? "⏳ Today ⏳" : "⚠️ Expired ⚠️")
                     .bold()
-                    .foregroundStyle(notExp ? .orange : .red)
+                    .foregroundStyle(isCritical ? .white : (notExp ? .orange : .red))
                 
                 Text(model.title)
                     .font(.headline)
                     .bold()
+                    .foregroundStyle(isCritical ? .white : .primary)
                 
                 if let deadline = model.deadLine {
                     HStack {
                         Image(systemName: "clock")
                         Text(deadline, format: .dateTime.hour().minute())
                     }
-                    .foregroundStyle(model.statusColor)
+                    .foregroundStyle(isCritical ? .white.opacity(0.9) : model.statusColor)
                 }
             }
             
             Spacer()
             
             flags(vertical: true)
+                .foregroundStyle(isCritical ? .white.opacity(0.8) : .secondary)
         }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            isCritical
+            ? Color.red
+            : Color.clear
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, -8)
     }
     
     private func layoutStyle9() -> some View {

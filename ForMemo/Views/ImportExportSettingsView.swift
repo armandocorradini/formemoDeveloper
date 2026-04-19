@@ -179,6 +179,7 @@ struct ImportExportSettingsView: View {
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "arrow.down.doc")
+                                .imageScale(.large)
                                 .foregroundStyle(.blue)
                             
                             Text("Import CSV")
@@ -230,8 +231,9 @@ struct ImportExportSettingsView: View {
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "calendar.badge.plus")
+                                .imageScale(.large)
                                 .foregroundStyle(.blue)
-                            
+                        
                             Text("Export to Calendar")
                                 .foregroundStyle(.primary)
                                 .padding(.leading,8)
