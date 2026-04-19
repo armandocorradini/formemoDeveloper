@@ -14,6 +14,7 @@ struct SettingsView: View {
     @AppStorage("navigationApp")
     private var navigationAppRaw: String = NavigationApp.appleMaps.rawValue
     @State private var showQuickGuide = false
+    @State private var showFAQ = false
     @State private var showCustomizationView = false
     @State private var showDataManagement = false
     @State private var showOtherSettings = false
@@ -108,9 +109,7 @@ struct SettingsView: View {
                 
                 Section("Help") {
                     Button {
-                        
                         showQuickGuide = true
-                        
                     } label: {
                         // Usiamo il componente Label per separare i colori
                         HStack(spacing: 12) {
@@ -119,6 +118,19 @@ struct SettingsView: View {
                                 .frame(width: iconWidth)
                             
                             Text("Quick Guide")
+                                .tint(.primary)
+                                .padding(.leading,6)
+                        }
+                    }
+                    Button {
+                        showFAQ = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "text.book.closed")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                            
+                            Text("FAQ")
                                 .tint(.primary)
                                 .padding(.leading,6)
                         }
@@ -472,6 +484,11 @@ struct SettingsView: View {
                 // BackupView()
                 AppQuickGuideView()
             }
+            .fullScreenCover(isPresented: $showFAQ) {
+                NavigationStack {
+                    FAQView()
+                }
+            }
             .fullScreenCover(isPresented: $showDataManagement) {
                 ResetAppView()
             }
@@ -658,5 +675,266 @@ struct CalendarPickerLoaderView: View {
                 isLoading = false
             }
         }
+    }
+}
+
+// MARK: - FAQ View
+struct FAQItem: Identifiable {
+    let id = UUID()
+    let question: String
+    let answer: String
+}
+struct FAQSection: Identifiable {
+    let id = UUID()
+    let title: String
+    let items: [FAQItem]
+}
+
+struct FAQView: View {
+    
+    @State private var searchText: String = ""
+    @Environment(\.dismiss) private var dismiss
+    
+    // MARK: - DATA
+    private let sections: [FAQSection] = [
+
+        // MARK: - GENERAL
+        FAQSection(title: String(localized: "General"), items: [
+            FAQItem(
+                question: String(localized:"How does task creation work?"),
+                answer: String(localized:"You can create tasks manually or with Siri. When using Siri, you are guided step by step: first what to add, then when, and finally which reminder to set. The app saves the task using the information you provide.")
+            ),
+            FAQItem(
+                question: String(localized:"How are tags assigned automatically?"),
+                answer: String(localized:"This feature applies only to tasks created with Siri. The app analyzes the task title using a multilingual keyword system. Each category has its own keywords, and the best match is applied automatically.")
+            ),
+            FAQItem(
+                question: String(localized:"Does the app work offline?"),
+                answer: String(localized:"Yes. All features work offline and data is stored locally on your device.")
+            )
+        ]),
+
+        // MARK: - NOTIFICATIONS
+        FAQSection(title: String(localized: "Notifications & Reminders"), items: [
+            FAQItem(
+                question: String(localized:"How are notifications managed?"),
+                answer: String(localized:"Notifications are kept up to date automatically. When a task changes, the app removes outdated alerts and keeps only the correct ones.")
+            ),
+            FAQItem(
+                question: String(localized:"Why am I not receiving notifications?"),
+                answer: String(localized:"Check system permissions, Focus modes, and app settings. Notifications are only scheduled when valid and allowed.")
+            ),
+            FAQItem(
+                question: String(localized:"Why did a notification disappear?"),
+                answer: String(localized:"It may no longer be relevant. If a task changes, old notifications are removed and replaced with updated ones if needed.")
+            ),
+            FAQItem(
+                question: String(localized:"Why do I receive fewer notifications than expected?"),
+                answer: String(localized:"The app avoids duplicates, past alerts, and night-time notifications to reduce noise.")
+            ),
+            // --- ADDED FAQItems ---
+            FAQItem(
+                question: String(localized:"Why are my notifications not working?"),
+                answer: String(localized:"Make sure notifications are enabled in iOS Settings, Focus modes are not blocking alerts, and the task has a valid date or reminder. The app only schedules notifications when they are meaningful.")
+            ),
+            FAQItem(
+                question: String(localized:"Why do notifications seem inconsistent?"),
+                answer: String(localized:"Notifications are updated dynamically. If a task changes, old notifications are removed and replaced with new ones, which can make them appear different.")
+            ),
+            FAQItem(
+                question: String(localized:"Why do I receive notifications at unexpected times?"),
+                answer: String(localized:"Notification times depend on the task date, reminder settings, and system adjustments. The app avoids past or invalid times and schedules only valid future alerts.")
+            )
+        ]),
+
+        // MARK: - SNOOZE
+        FAQSection(title: String(localized: "Snooze"), items: [
+            FAQItem(
+                question: String(localized:"How does snooze work?"),
+                answer: String(localized:"Snooze delays a notification. The current alert is removed and a new one is scheduled for the selected time.")
+            ),
+            FAQItem(
+                question: String(localized:"Why does snooze seem to disappear?"),
+                answer: String(localized:"Snooze is temporary. Once its time passes or the task changes, it is no longer shown.")
+            ),
+            FAQItem(
+                question: String(localized:"Why did my snooze not trigger?"),
+                answer: String(localized:"The snooze time may be invalid, in the past, or overridden by a task update.")
+            )
+        ]),
+
+        // MARK: - BADGE
+        FAQSection(title: String(localized: "Badges & Indicators"), items: [
+            FAQItem(
+                question: String(localized:"How is the app badge calculated?"),
+                answer: String(localized:"The badge shows only tasks that need attention, based on their timing and your settings.")
+            ),
+            FAQItem(
+                question: String(localized:"Why does the badge change suddenly?"),
+                answer: String(localized:"The badge is dynamic and updates based on time, deadlines, and task status.")
+            ),
+            FAQItem(
+                question: String(localized:"Why does the badge decrease without completing tasks?"),
+                answer: String(localized:"If you have chosen to exclude overdue tasks from the badge, some tasks may no longer be counted as time passes and they become overdue.")
+            ),
+            FAQItem(
+                question: String(localized:"What do badges in task rows mean?"),
+                answer: String(localized:"They indicate the task status, for example if it is approaching its deadline, but only if a priority is set.")
+            ),
+            // --- ADDED FAQItems ---
+            FAQItem(
+                question: String(localized:"Why is the badge not updating?"),
+                answer: String(localized:"The badge updates automatically based on task changes and time. If it seems incorrect, try reopening the app or checking your notification settings.")
+            ),
+            FAQItem(
+                question: String(localized:"Why is the badge different from what I expect?"),
+                answer: String(localized:"The badge shows only tasks that require attention based on your settings. Completed tasks and some overdue tasks may be excluded.")
+            )
+        ]),
+
+        // MARK: - LOCATION
+        FAQSection(title: String(localized: "Location Reminders"), items: [
+            FAQItem(
+                question: String(localized:"How do location reminders work?"),
+                answer: String(localized:"The app reminds you when you arrive at a place. It focuses on the most relevant tasks based on distance and timing.")
+            ),
+            FAQItem(
+                question: String(localized:"Why is a location task not monitored?"),
+                answer: String(localized:"iOS limits monitored regions, so only top-priority tasks are active.")
+            ),
+            FAQItem(
+                question: String(localized:"Why does a location reminder not trigger?"),
+                answer: String(localized:"Check permissions, accuracy, and whether the task is actively monitored.")
+            ),
+            // --- ADDED FAQItem ---
+            FAQItem(
+                question: String(localized:"Why does location reminder not trigger when I arrive?"),
+                answer: String(localized:"Location accuracy, permissions, or system limits may affect this. Make sure location access is set to Always and that the task is actively monitored.")
+            )
+        ]),
+
+        // MARK: - SIRI & AUTOMATIONS
+        FAQSection(title: String(localized: "Siri & Automations"), items: [
+            FAQItem(
+                question: String(localized:"What is “Add reminders automatically”?"),
+                answer: String(localized:"When using Siri, if “Add reminders automatically” is enabled, Siri adds a reminder automatically based on the task. If disabled, Siri will ask you which reminder to set.")
+            )
+        ]),
+
+        // MARK: - ATTACHMENTS / COMPLETED TASKS
+        FAQSection(title: String(localized: "Completed Tasks & Attachments"), items: [
+            FAQItem(
+                question: String(localized:"Can I add attachments to tasks?"),
+                answer: String(localized:"Yes. You can attach files, images, documents, and record audio.")
+            ),
+            FAQItem(
+                question: String(localized:"Are attachments deleted automatically?"),
+                answer: String(localized:"Only attachments of completed tasks are deleted automatically if the option is enabled in settings.")
+            ),
+            FAQItem(
+                question: String(localized:"After how many days are attachments deleted?"),
+                answer: String(localized:"You can choose after how many days attachments of completed tasks are automatically removed.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I delete all attachments at once?"),
+                answer: String(localized:"Yes. You can manually delete all attachments of completed tasks from settings.")
+            )
+        ]),
+
+        // MARK: - DATA
+        FAQSection(title: String(localized: "Data & Recovery"), items: [
+            FAQItem(
+                question: String(localized:"What is Recently Deleted?"),
+                answer: String(localized:"Deleted items are temporarily stored and can be restored before permanent removal.")
+            ),
+            FAQItem(
+                question: String(localized:"Why do things change automatically?"),
+                answer: String(localized:"The app reacts to time, task updates, and system events to keep everything consistent.")
+            )
+        ])
+    ]
+    
+    // MARK: - FILTER
+    
+    private var filteredSections: [FAQSection] {
+        if searchText.isEmpty { return sections }
+        
+        return sections.compactMap { section in
+            let filteredItems = section.items.filter {
+                $0.question.localizedCaseInsensitiveContains(searchText)
+                || $0.answer.localizedCaseInsensitiveContains(searchText)
+            }
+            return filteredItems.isEmpty ? nil : FAQSection(title: section.title, items: filteredItems)
+        }
+    }
+    
+    // MARK: - HIGHLIGHT
+    
+    private func highlight(_ text: String) -> Text {
+        guard !searchText.isEmpty else { return Text(text) }
+        
+        var attributed = AttributedString(text)
+        
+        if let range = attributed.range(of: searchText, options: .caseInsensitive) {
+            attributed[range].foregroundColor = .blue
+            attributed[range].font = .body.bold()
+        }
+        
+        return Text(attributed)
+    }
+    
+    // MARK: - UI
+    var body: some View {
+        List {
+            ForEach(filteredSections) { section in
+                Section(section.title) {
+                    ForEach(section.items) { item in
+                        DisclosureGroup {
+                            Text(item.answer)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 4)
+                        } label: {
+                            highlight(item.question)
+                                .font(.body)
+                        }
+                    }
+                }
+            }
+        }
+        .searchable(text: $searchText, prompt: String(localized:"Search FAQ"))
+        .navigationTitle(String(localized:"Help"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(String(localized: "Done")) {
+                    dismiss()
+                }
+            }
+        }
+    }
+}
+
+// MARK: - DETAIL VIEW
+
+struct FAQDetailView: View {
+    
+    let item: FAQItem
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                
+                Text(item.question)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                
+                Text(item.answer)
+                    .foregroundStyle(.secondary)
+            }
+            .padding()
+        }
+        .navigationTitle(String(localized:"FAQ"))
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -1179,6 +1179,34 @@
         }
       }
     },
+    "After how many days are attachments deleted?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach wie vielen Tagen werden Anhänge gelöscht?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Después de cuántos días se eliminan los archivos adjuntos?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Après combien de jours les pièces jointes sont-elles supprimées ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dopo quanti giorni vengono eliminati gli allegati?"
+          }
+        }
+      }
+    },
     "All" : {
       "localizations" : {
         "de" : {
@@ -1287,6 +1315,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aspetto"
+          }
+        }
+      }
+    },
+    "Are attachments deleted automatically?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werden Anhänge automatisch gelöscht?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Se eliminan automáticamente los archivos adjuntos?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pièces jointes sont-elles supprimées automatiquement ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli allegati vengono eliminati automaticamente?"
           }
         }
       }
@@ -1608,6 +1664,34 @@
         }
       }
     },
+    "Badges & Indicators" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abzeichen und Anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insignias e indicadores"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badges et indicateurs"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badge e indicatori"
+          }
+        }
+      }
+    },
     "Blink" : {
       "localizations" : {
         "de" : {
@@ -1720,6 +1804,62 @@
         }
       }
     },
+    "Can I add attachments to tasks?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Aufgaben Anhänge hinzufügen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo añadir archivos adjuntos a las tareas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je ajouter des pièces jointes aux tâches ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso aggiungere allegati alle attività?"
+          }
+        }
+      }
+    },
+    "Can I delete all attachments at once?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich alle Anhänge auf einmal löschen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo eliminar todos los archivos adjuntos a la vez?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je supprimer toutes les pièces jointes en une seule fois ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso eliminare tutti gli allegati in una volta?"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "de" : {
@@ -1744,6 +1884,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annulla"
+          }
+        }
+      }
+    },
+    "Check permissions, accuracy, and whether the task is actively monitored." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überprüfen Sie Berechtigungen, Genauigkeit und ob die Aufgabe aktiv überwacht wird."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprueba los permisos, la precisión y que la tarea esté siendo monitorizada activamente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifiez les autorisations, la précision et si la tâche est activement surveillée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica i permessi, la precisione e che l’attività sia attivamente monitorata."
+          }
+        }
+      }
+    },
+    "Check system permissions, Focus modes, and app settings. Notifications are only scheduled when valid and allowed." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überprüfen Sie Systemberechtigungen, Fokusmodi und App-Einstellungen. Benachrichtigungen werden nur geplant, wenn sie gültig und erlaubt sind."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprueba los permisos del sistema, los modos de concentración y los ajustes de la app. Las notificaciones solo se programan cuando son válidas y están permitidas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifiez les autorisations système, les modes Concentration et les réglages de l’app. Les notifications ne sont planifiées que lorsqu’elles sont valides et autorisées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica i permessi di sistema, le modalità Focus e le impostazioni dell’app. Le notifiche vengono pianificate solo quando sono valide e consentite."
           }
         }
       }
@@ -1912,6 +2108,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attività completate"
+          }
+        }
+      }
+    },
+    "Completed Tasks & Attachments" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abgeschlossene Aufgaben und Anhänge"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas completadas y archivos adjuntos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches terminées et pièces jointes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività completate e allegati"
           }
         }
       }
@@ -2223,6 +2447,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scuro"
+          }
+        }
+      }
+    },
+    "Data & Recovery" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten und Wiederherstellung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos y recuperación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Données et récupération"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dati e recupero"
           }
         }
       }
@@ -2589,6 +2841,34 @@
         }
       }
     },
+    "Deleted items are temporarily stored and can be restored before permanent removal." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelöschte Elemente werden vorübergehend gespeichert und können vor der endgültigen Löschung wiederhergestellt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los elementos eliminados se guardan temporalmente y pueden restaurarse antes de su eliminación definitiva."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les éléments supprimés sont temporairement conservés et peuvent être restaurés avant leur suppression définitive."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli elementi eliminati vengono conservati temporaneamente e possono essere ripristinati prima della rimozione definitiva."
+          }
+        }
+      }
+    },
     "Deleted items will appear here." : {
       "comment" : "A description of the content of the view.",
       "isCommentAutoGenerated" : true,
@@ -2789,6 +3069,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Disclaimer e Termini di Utilizzo\n\nL’app %1$@ (\"App\") è progettata per la gestione personale delle attività e la produttività.\n\nUtilizzando l’App, dichiari di aver letto, compreso e accettato quanto segue:\n\n1. Scopo dell’App: L’App è destinata esclusivamente all’organizzazione personale. Tutte le informazioni, i suggerimenti e le funzionalità sono forniti a scopo informativo e non costituiscono alcuna garanzia di esecuzione o risultato.\n\n2. Responsabilità dell’utente: L’App è fornita “così com’è”, senza garanzie di alcun tipo, esplicite o implicite. Sei l’unico responsabile delle tue decisioni, azioni e attività derivanti dall’uso dell’App.\n\n3. Notifiche, badge e promemoria: Notifiche, badge dell’app, promemoria e funzioni di snooze sono forniti esclusivamente a scopo informativo. La loro consegna e accuratezza dipendono da servizi di sistema, impostazioni del dispositivo e fattori esterni. L’App non garantisce la consegna puntuale, l’accuratezza o il corretto funzionamento. Non dovresti fare affidamento esclusivo su queste funzionalità per attività critiche o sensibili al tempo.\n\n4. Dati e archiviazione: I dati possono essere salvati localmente sul dispositivo o sincronizzati tramite iCloud. Sei responsabile della gestione e del backup dei tuoi dati. Gli sviluppatori non sono responsabili per perdita di dati, corruzione, accessi non autorizzati o problemi legati a ritardi o errori di sincronizzazione iCloud.\n\n5. Servizi di terze parti: L’App può utilizzare servizi di terze parti (come iCloud). Gli sviluppatori non sono responsabili per disponibilità, prestazioni, compatibilità o pratiche sulla privacy di tali servizi.\n\n6. Disponibilità delle funzionalità: Il funzionamento dell’App può dipendere dalle condizioni del dispositivo, dalle impostazioni di sistema, dai permessi concessi e dalla connettività di rete. Non è garantita la disponibilità continua o il corretto funzionamento di tutte le funzionalità.\n\n7. Funzionalità di importazione ed esportazione: Le funzioni di importazione ed esportazione sono fornite per comodità. L’App non garantisce la completa fedeltà, completezza o compatibilità dei dati con formati o servizi di terze parti. Gli allegati non sono inclusi nelle operazioni di importazione o esportazione.\n\n8. Aggiornamenti e modifiche: L’App e il presente Disclaimer possono essere aggiornati o modificati nel tempo senza preavviso. L’uso continuato dell’App implica l’accettazione di tali modifiche.\n\n9. Limitazione di responsabilità: Nei limiti massimi consentiti dalla legge applicabile, gli sviluppatori non sono responsabili per eventuali danni derivanti dall’uso o dall’impossibilità di utilizzo dell’App.\n\nUtilizzando %2$@, confermi di aver letto, compreso e accettato integralmente il presente Disclaimer."
+          }
+        }
+      }
+    },
+    "Does the app work offline?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funktioniert die App offline?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿La app funciona sin conexión?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app fonctionne-t-elle hors ligne ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app funziona offline?"
           }
         }
       }
@@ -3521,6 +3829,34 @@
         }
       }
     },
+    "FAQ" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FAQ"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FAQ"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FAQ"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FAQ"
+          }
+        }
+      }
+    },
     "from" : {
       "shouldTranslate" : false
     },
@@ -3890,6 +4226,202 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ore prima"
+          }
+        }
+      }
+    },
+    "How are notifications managed?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie werden Benachrichtigungen verwaltet?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo se gestionan las notificaciones?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment les notifications sont-elles gérées ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come vengono gestite le notifiche?"
+          }
+        }
+      }
+    },
+    "How are tags assigned automatically?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie werden Tags automatisch zugewiesen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo se asignan automáticamente las etiquetas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment les étiquettes sont-elles attribuées automatiquement ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come vengono assegnati automaticamente i tag?"
+          }
+        }
+      }
+    },
+    "How do location reminders work?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie funktionieren ortsbasierte Erinnerungen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo funciona posponer?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment fonctionnent les rappels de localisation ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come funzionano i promemoria di posizione?"
+          }
+        }
+      }
+    },
+    "How does snooze work?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie funktioniert Snooze?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo funciona la creación de tareas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment fonctionne le report (snooze) ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come funziona lo snooze?"
+          }
+        }
+      }
+    },
+    "How does task creation work?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie funktioniert das Erstellen von Aufgaben?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo funciona la creación de tareas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment fonctionne la création de tâche ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come funziona la creazione di un’attività?"
+          }
+        }
+      }
+    },
+    "How is the app badge calculated?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie wird das App-Badge berechnet?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo se calcula la insignia de la app?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment le badge de l’app est-il calculé ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come viene calcolato il badge dell’app?"
+          }
+        }
+      }
+    },
+    "If you have chosen to exclude overdue tasks from the badge, some tasks may no longer be counted as time passes and they become overdue." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn Sie überfällige Aufgaben vom Badge ausgeschlossen haben, werden einige Aufgaben im Laufe der Zeit nicht mehr gezählt, sobald sie überfällig sind."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si has elegido excluir las tareas vencidas de la insignia, algunas tareas dejarán de contarse a medida que pase el tiempo y se vuelvan vencidas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si vous avez choisi d’exclure les tâches expirées du badge, certaines tâches ne sont plus comptabilisées lorsqu’elles deviennent en retard."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se hai scelto di escludere le attività scadute dal badge, alcune attività non vengono più conteggiate quando diventano scadute."
           }
         }
       }
@@ -4426,6 +4958,62 @@
         }
       }
     },
+    "iOS limits monitored regions, so only top-priority tasks are active." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS begrenzt die Anzahl der überwachten Regionen, daher sind nur Aufgaben mit hoher Priorität aktiv."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS limita las regiones monitorizadas, por lo que solo las tareas con mayor prioridad están activas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS limite les régions surveillées, seules les tâches prioritaires sont actives."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS limita il numero di regioni monitorate, quindi sono attive solo le attività con priorità più alta."
+          }
+        }
+      }
+    },
+    "It may no longer be relevant. If a task changes, old notifications are removed and replaced with updated ones if needed." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie ist möglicherweise nicht mehr relevant. Wenn sich eine Aufgabe ändert, werden alte Benachrichtigungen entfernt und bei Bedarf durch aktualisierte ersetzt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puede que ya no sea relevante. Si una tarea cambia, las notificaciones anteriores se eliminan y, si es necesario, se sustituyen por otras actualizadas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elle peut ne plus être pertinente. Si une tâche change, les anciennes notifications sont supprimées et remplacées si nécessaire."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Potrebbe non essere più rilevante. Se un’attività cambia, le notifiche vecchie vengono rimosse e sostituite, se necessario, con quelle aggiornate."
+          }
+        }
+      }
+    },
     "Items in Recently Deleted are permanently removed after the selected period. You can restore them before that." : {
       "localizations" : {
         "de" : {
@@ -4683,6 +5271,34 @@
         }
       }
     },
+    "Location accuracy, permissions, or system limits may affect this. Make sure location access is set to Always and that the task is actively monitored." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standortgenauigkeit, Berechtigungen oder Systemgrenzen können dies beeinflussen. Stellen Sie sicher, dass der Standortzugriff auf „Immer“ gesetzt ist und die Aufgabe aktiv überwacht wird."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La precisión de la ubicación, los permisos o los límites del sistema pueden influir. Asegúrate de que el acceso a la ubicación esté configurado en “Siempre” y que la tarea esté siendo monitorizada activamente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La précision de la localisation, les autorisations ou les limites du système peuvent influencer ce comportement. Assurez-vous que l’accès à la localisation est défini sur “Toujours” et que la tâche est activement surveillée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La precisione della posizione, i permessi o i limiti del sistema possono influire. Assicurati che l’accesso alla posizione sia impostato su “Sempre” e che l’attività sia monitorata attivamente."
+          }
+        }
+      }
+    },
     "Location Reminder" : {
       "comment" : "A toggle that enables or disables location reminders for a task.",
       "isCommentAutoGenerated" : true,
@@ -4765,6 +5381,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stile icona"
+          }
+        }
+      }
+    },
+    "Make sure notifications are enabled in iOS Settings, Focus modes are not blocking alerts, and the task has a valid date or reminder. The app only schedules notifications when they are meaningful." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stellen Sie sicher, dass Benachrichtigungen in den iOS-Einstellungen aktiviert sind, Fokusmodi keine Hinweise blockieren und die Aufgabe ein gültiges Datum oder eine Erinnerung hat. Die App plant nur sinnvolle Benachrichtigungen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Asegúrate de que las notificaciones estén activadas en los ajustes de iOS, que los modos de concentración no bloqueen los avisos y que la tarea tenga una fecha o recordatorio válido. La app solo programa notificaciones cuando son útiles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assurez-vous que les notifications sont activées dans les réglages iOS, que les modes Concentration ne bloquent pas les alertes et que la tâche possède une date ou un rappel valide. L’app ne planifie des notifications que lorsqu’elles sont pertinentes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assicurati che le notifiche siano attive nelle impostazioni iOS, che le modalità Focus non blocchino gli avvisi e che l’attività abbia una data o un promemoria valido. L’app pianifica notifiche solo quando sono utili."
           }
         }
       }
@@ -5707,6 +6351,34 @@
         }
       }
     },
+    "Notification times depend on the task date, reminder settings, and system adjustments. The app avoids past or invalid times and schedules only valid future alerts." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Zeiten der Benachrichtigungen hängen vom Aufgabendatum, den Erinnerungseinstellungen und Systemanpassungen ab. Die App vermeidet vergangene oder ungültige Zeiten und plant nur gültige zukünftige Hinweise."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los horarios de las notificaciones dependen de la fecha de la tarea, de los ajustes de recordatorio y de ajustes del sistema. La app evita horarios pasados o no válidos y programa solo avisos futuros válidos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les horaires des notifications dépendent de la date de la tâche, des réglages de rappel et des ajustements du système. L’app évite les horaires passés ou invalides et ne planifie que des alertes futures valides."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli orari delle notifiche dipendono dalla data dell’attività, dalle impostazioni dei promemoria e da eventuali correzioni del sistema. L’app evita orari passati o non validi e pianifica solo notifiche future valide."
+          }
+        }
+      }
+    },
     "Notifications" : {
       "localizations" : {
         "de" : {
@@ -5731,6 +6403,90 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notifiche"
+          }
+        }
+      }
+    },
+    "Notifications & Reminders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benachrichtigungen und Erinnerungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones y recordatorios"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications et rappels"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifiche e promemoria"
+          }
+        }
+      }
+    },
+    "Notifications are kept up to date automatically. When a task changes, the app removes outdated alerts and keeps only the correct ones." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benachrichtigungen werden automatisch aktuell gehalten. Wenn sich eine Aufgabe ändert, entfernt die App veraltete Hinweise und behält nur die korrekten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las notificaciones se mantienen actualizadas automáticamente. Cuando una tarea cambia, la app elimina los avisos obsoletos y mantiene solo los correctos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notifications sont mises à jour automatiquement. Lorsqu’une tâche change, l’app supprime les alertes obsolètes et conserve uniquement celles qui sont correctes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le notifiche vengono aggiornate automaticamente. Quando un’attività cambia, l’app rimuove gli avvisi non più validi e mantiene solo quelli corretti."
+          }
+        }
+      }
+    },
+    "Notifications are updated dynamically. If a task changes, old notifications are removed and replaced with new ones, which can make them appear different." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benachrichtigungen werden dynamisch aktualisiert. Wenn sich eine Aufgabe ändert, werden alte Hinweise entfernt und durch neue ersetzt, was sie unterschiedlich erscheinen lassen kann."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las notificaciones se actualizan dinámicamente. Si una tarea cambia, las anteriores se eliminan y se sustituyen por nuevas, lo que puede hacer que parezcan diferentes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notifications sont mises à jour dynamiquement. Si une tâche change, les anciennes notifications sont supprimées et remplacées par de nouvelles, ce qui peut les faire paraître différentes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le notifiche vengono aggiornate dinamicamente. Se un’attività cambia, quelle vecchie vengono rimosse e sostituite con nuove, quindi possono sembrare diverse."
           }
         }
       }
@@ -5815,6 +6571,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "un ora prima"
+          }
+        }
+      }
+    },
+    "Only attachments of completed tasks are deleted automatically if the option is enabled in settings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur Anhänge abgeschlossener Aufgaben werden automatisch gelöscht, wenn die Option in den Einstellungen aktiviert ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo los archivos adjuntos de tareas completadas se eliminan automáticamente si la opción está activada en los ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seules les pièces jointes des tâches terminées sont supprimées automatiquement si l’option est activée dans les réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo gli allegati delle attività completate vengono eliminati automaticamente se l’opzione è attiva nelle impostazioni"
           }
         }
       }
@@ -6948,6 +7732,36 @@
         }
       }
     },
+    "Search FAQ" : {
+      "comment" : "A label for a search bar.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FAQ durchsuchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar en FAQ"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher dans la FAQ"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca nelle FAQ"
+          }
+        }
+      }
+    },
     "Search location" : {
       "localizations" : {
         "de" : {
@@ -7598,6 +8412,34 @@
         }
       }
     },
+    "Siri & Automations" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri und Automationen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri y automatizaciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri et automatisations"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri e automazioni"
+          }
+        }
+      }
+    },
     "Siri & Shortcuts" : {
       "localizations" : {
         "de" : {
@@ -7766,6 +8608,34 @@
         }
       }
     },
+    "Snooze" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snooze"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posponer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report (snooze)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snooze"
+          }
+        }
+      }
+    },
     "Snooze 1 hour" : {
       "localizations" : {
         "de" : {
@@ -7874,6 +8744,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posticipa di 30 minuti"
+          }
+        }
+      }
+    },
+    "Snooze delays a notification. The current alert is removed and a new one is scheduled for the selected time." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snooze verschiebt eine Benachrichtigung. Der aktuelle Hinweis wird entfernt und ein neuer für die gewählte Zeit geplant."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posponer retrasa una notificación. El aviso actual se elimina y se programa uno nuevo para la hora seleccionada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le report retarde une notification. L’alerte actuelle est supprimée et une nouvelle est programmée pour l’heure choisie."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo snooze rimanda una notifica. L’avviso attuale viene rimosso e ne viene programmato uno nuovo per l’orario scelto."
+          }
+        }
+      }
+    },
+    "Snooze is temporary. Once its time passes or the task changes, it is no longer shown." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Snooze ist temporär. Sobald die Zeit abgelaufen ist oder sich die Aufgabe ändert, wird es nicht mehr angezeigt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posponer es temporal. Cuando pasa el tiempo o la tarea cambia, deja de mostrarse."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le report est temporaire. Une fois expiré ou si la tâche change, il n’est plus affiché."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo snooze è temporaneo. Quando il tempo passa o l’attività cambia, non viene più mostrato."
           }
         }
       }
@@ -8217,7 +9143,32 @@
       }
     },
     "Style 10" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stil 10"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estilo 10"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Style 10"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stile 10"
+          }
+        }
+      }
     },
     "switch your list view." : {
       "localizations" : {
@@ -8911,6 +9862,34 @@
         }
       }
     },
+    "The app avoids duplicates, past alerts, and night-time notifications to reduce noise." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App vermeidet doppelte, vergangene und nächtliche Benachrichtigungen, um Störungen zu reduzieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app evita duplicados, avisos pasados y notificaciones nocturnas para reducir molestias."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app évite les doublons, les alertes passées et les notifications nocturnes afin de réduire le bruit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app evita duplicati, notifiche passate e notifiche notturne per ridurre il disturbo."
+          }
+        }
+      }
+    },
     "The app icon shows the number of urgent tasks. Inside the app, each task shows how many days are left." : {
       "localizations" : {
         "de" : {
@@ -8939,6 +9918,174 @@
         }
       }
     },
+    "The app reacts to time, task updates, and system events to keep everything consistent." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App reagiert auf Zeit, Aufgabenänderungen und Systemereignisse, um alles konsistent zu halten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app reacciona al tiempo, a los cambios en las tareas y a los eventos del sistema para mantener todo coherente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app réagit au temps, aux modifications des tâches et aux événements système pour garantir la cohérence."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app reagisce al tempo, alle modifiche delle attività e agli eventi di sistema per mantenere tutto coerente."
+          }
+        }
+      }
+    },
+    "The app reminds you when you arrive at a place. It focuses on the most relevant tasks based on distance and timing." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die App erinnert dich, wenn du an einem Ort ankommst. Sie konzentriert sich auf die relevantesten Aufgaben basierend auf Entfernung und Zeitpunkt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La app te avisa cuando llegas a un lugar. Se centra en las tareas más relevantes según la distancia y el momento."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app vous rappelle lorsque vous arrivez à un endroit. Elle se concentre sur les tâches les plus pertinentes selon la distance et le moment."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app ti avvisa quando arrivi in un luogo. Si concentra sulle attività più rilevanti in base alla distanza e al momento."
+          }
+        }
+      }
+    },
+    "The badge is dynamic and updates based on time, deadlines, and task status." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The badge is dynamic and updates based on time, deadlines, and task status."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La insignia es dinámica y se actualiza según el tiempo, las fechas y el estado de las tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le badge est dynamique et se met à jour selon le temps, les échéances et l’état des tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il badge è dinamico e si aggiorna in base al tempo, alle scadenze e allo stato delle attività."
+          }
+        }
+      }
+    },
+    "The badge shows only tasks that need attention, based on their timing and your settings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Badge zeigt nur Aufgaben, die Aufmerksamkeit erfordern, basierend auf Zeit und Einstellungen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La insignia muestra solo las tareas que requieren atención según el momento y tus ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le badge affiche uniquement les tâches nécessitant votre attention, selon leur échéance et vos réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il badge mostra solo le attività che richiedono attenzione, in base al momento e alle impostazioni."
+          }
+        }
+      }
+    },
+    "The badge shows only tasks that require attention based on your settings. Completed tasks and some overdue tasks may be excluded." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Badge zeigt nur Aufgaben, die Aufmerksamkeit erfordern. Abgeschlossene Aufgaben und einige überfällige Aufgaben können ausgeschlossen sein."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La insignia muestra solo las tareas que requieren atención según tus ajustes. Las tareas completadas y algunas vencidas pueden excluirse."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le badge affiche uniquement les tâches nécessitant votre attention selon vos réglages. Les tâches terminées et certaines tâches en retard peuvent être exclues."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il badge mostra solo le attività che richiedono attenzione in base alle impostazioni. Le attività completate e alcune scadute possono essere escluse."
+          }
+        }
+      }
+    },
+    "The badge updates automatically based on task changes and time. If it seems incorrect, try reopening the app or checking your notification settings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Badge wird automatisch basierend auf Aufgabenänderungen und Zeit aktualisiert. Wenn es nicht korrekt erscheint, öffne die App erneut oder überprüfe die Benachrichtigungseinstellungen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La insignia se actualiza automáticamente según los cambios en las tareas y el tiempo. Si parece incorrecta, intenta reabrir la app o revisar los ajustes de notificaciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le badge se met à jour automatiquement selon les modifications des tâches et le temps. S’il semble incorrect, essayez de rouvrir l’app ou de vérifier les réglages des notifications."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il badge si aggiorna automaticamente in base alle modifiche delle attività e al tempo. Se sembra errato, prova a riaprire l’app o controllare le impostazioni delle notifiche."
+          }
+        }
+      }
+    },
     "The set date will be permanently removed." : {
       "localizations" : {
         "de" : {
@@ -8963,6 +10110,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La data impostata sarà rimossa definitivamente."
+          }
+        }
+      }
+    },
+    "The snooze time may be invalid, in the past, or overridden by a task update." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Snooze-Zeit kann ungültig, in der Vergangenheit oder durch eine Aufgabenänderung überschrieben sein."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El tiempo de posponer puede ser inválido, estar en el pasado o haber sido reemplazado por una actualización de la tarea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’heure du report peut être invalide, dans le passé ou remplacée après une modification de la tâche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’orario dello snooze può essere non valido, nel passato o sovrascritto da una modifica dell’attività."
           }
         }
       }
@@ -9065,6 +10240,34 @@
         }
       }
     },
+    "They indicate the task status, for example if it is approaching its deadline, but only if a priority is set." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie zeigen den Status der Aufgabe an, zum Beispiel wenn sich eine Frist nähert, aber nur wenn eine Priorität gesetzt ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indican el estado de la tarea, por ejemplo si se acerca la fecha límite, pero solo si hay una prioridad establecida."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ils indiquent l’état de la tâche, par exemple si elle approche de son échéance, uniquement si une priorité est définie."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indicano lo stato dell’attività, ad esempio se si avvicina alla scadenza, ma solo se è impostata una priorità."
+          }
+        }
+      }
+    },
     "This action cannot be undone." : {
       "localizations" : {
         "de" : {
@@ -9089,6 +10292,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Questa azione non può essere annullata."
+          }
+        }
+      }
+    },
+    "This feature applies only to tasks created with Siri. The app analyzes the task title using a multilingual keyword system. Each category has its own keywords, and the best match is applied automatically." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Funktion gilt nur für mit Siri erstellte Aufgaben. Die App analysiert den Titel mit einem mehrsprachigen Schlüsselwortsystem und weist automatisch die beste Kategorie zu."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta función se aplica solo a tareas creadas con Siri. La app analiza el título usando un sistema multilingüe de palabras clave y aplica automáticamente la mejor coincidencia."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette fonctionnalité s’applique uniquement aux tâches créées avec Siri. L’app analyse le titre à l’aide d’un système de mots-clés multilingue et applique automatiquement la meilleure correspondance."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa funzionalità si applica solo alle attività create con Siri. L’app analizza il titolo usando un sistema di parole chiave multilingua e applica automaticamente la corrispondenza migliore."
           }
         }
       }
@@ -9755,6 +10986,34 @@
         }
       }
     },
+    "What do badges in task rows mean?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was bedeuten die Badges in Aufgabenzeilen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué indican las insignias en las filas de tareas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Que signifient les badges dans les lignes de tâches ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cosa indicano i badge nelle righe delle attività?"
+          }
+        }
+      }
+    },
     "What do you want to add?" : {
       "localizations" : {
         "de" : {
@@ -9779,6 +11038,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cosa vuoi aggiungere?"
+          }
+        }
+      }
+    },
+    "What is “Add reminders automatically”?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was bedeutet „Erinnerungen automatisch hinzufügen“?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué es “Añadir recordatorios automáticamente”?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qu’est-ce que « Ajouter des rappels automatiquement » ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cos’è “Aggiungi promemoria automaticamente”?"
+          }
+        }
+      }
+    },
+    "What is Recently Deleted?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was ist „Zuletzt gelöscht“?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué es “Eliminados recientemente”?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qu’est-ce que « Supprimés récemment » ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cos’è “Eliminati di recente”?"
           }
         }
       }
@@ -9869,6 +11184,482 @@
         }
       }
     },
+    "When using Siri, if “Add reminders automatically” is enabled, Siri adds a reminder automatically based on the task. If disabled, Siri will ask you which reminder to set." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn „Erinnerungen automatisch hinzufügen“ aktiviert ist, fügt Siri automatisch eine Erinnerung hinzu. Andernfalls fragt Siri, welche Erinnerung gesetzt werden soll."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Al usar Siri, si “Añadir recordatorios automáticamente” está activado, Siri añade un recordatorio automáticamente. Si está desactivado, Siri te preguntará cuál establecer."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lorsque vous utilisez Siri, si l’option est activée, un rappel est ajouté automatiquement. Sinon, Siri vous demandera quel rappel définir."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando usi Siri, se “Aggiungi promemoria automaticamente” è attivo, Siri aggiunge automaticamente un promemoria. Se disattivato, Siri ti chiederà quale promemoria impostare."
+          }
+        }
+      }
+    },
+    "Why am I not receiving notifications?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum erhalte ich keine Benachrichtigungen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué no recibo notificaciones?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi ne reçois-je pas de notifications ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché non ricevo notifiche?"
+          }
+        }
+      }
+    },
+    "Why are my notifications not working?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum funktionieren meine Benachrichtigungen nicht?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué no funcionan mis notificaciones?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi mes notifications ne fonctionnent-elles pas ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché le notifiche non funzionano?"
+          }
+        }
+      }
+    },
+    "Why did a notification disappear?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum ist eine Benachrichtigung verschwunden?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué desapareció una notificación?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi une notification a-t-elle disparu ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché una notifica è scomparsa?"
+          }
+        }
+      }
+    },
+    "Why did my snooze not trigger?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum wurde mein Snooze nicht ausgelöst?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué no se activó posponer?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi mon report ne s’est-il pas déclenché ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché lo snooze non è partito?"
+          }
+        }
+      }
+    },
+    "Why do I receive fewer notifications than expected?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum erhalte ich weniger Benachrichtigungen als erwartet?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué recibo menos notificaciones de las esperadas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi je reçois moins de notifications que prévu ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché ricevo meno notifiche del previsto?"
+          }
+        }
+      }
+    },
+    "Why do I receive notifications at unexpected times?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum erhalte ich Benachrichtigungen zu unerwarteten Zeiten?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué recibo notificaciones en momentos inesperados?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi je reçois des notifications à des moments inattendus ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché ricevo notifiche in orari inaspettati?"
+          }
+        }
+      }
+    },
+    "Why do notifications seem inconsistent?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum wirken Benachrichtigungen inkonsistent?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué las notificaciones parecen incoherentes?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi les notifications semblent incohérentes ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché le notifiche sembrano incoerenti?"
+          }
+        }
+      }
+    },
+    "Why do things change automatically?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum ändern sich Dinge automatisch?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué algunas cosas cambian automáticamente?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi certaines choses changent automatiquement ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché alcune cose cambiano automaticamente?"
+          }
+        }
+      }
+    },
+    "Why does a location reminder not trigger?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum wird eine ortsbasierte Erinnerung nicht ausgelöst?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué no se activa un recordatorio de ubicación?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi un rappel de localisation ne se déclenche-t-il pas ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché un promemoria di posizione non si attiva?"
+          }
+        }
+      }
+    },
+    "Why does location reminder not trigger when I arrive?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum wird die ortsbasierte Erinnerung bei Ankunft nicht ausgelöst?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué no se activa el recordatorio de ubicación cuando llego?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi le rappel de localisation ne se déclenche-t-il pas à mon arrivée ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché il promemoria di posizione non si attiva quando arrivo?"
+          }
+        }
+      }
+    },
+    "Why does snooze seem to disappear?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum scheint Snooze zu verschwinden?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué parece que posponer desaparece?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi le report semble disparaître ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché lo snooze sembra scomparire?"
+          }
+        }
+      }
+    },
+    "Why does the badge change suddenly?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum ändert sich das Badge plötzlich?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué cambia la insignia de repente?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi le badge change-t-il soudainement ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché il badge cambia improvvisamente?"
+          }
+        }
+      }
+    },
+    "Why does the badge decrease without completing tasks?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum wird das Badge kleiner, ohne Aufgaben abzuschließen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué disminuye la insignia sin completar tareas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi le badge diminue sans terminer de tâches ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché il badge diminuisce senza completare attività?"
+          }
+        }
+      }
+    },
+    "Why is a location task not monitored?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum wird eine Standort-Aufgabe nicht überwacht?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué una tarea con ubicación no se monitoriza?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi une tâche avec localisation n’est-elle pas surveillée ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché una attività con posizione non viene monitorata?"
+          }
+        }
+      }
+    },
+    "Why is the badge different from what I expect?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum ist das Badge anders als erwartet?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué la insignia es diferente de lo que esperaba?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi le badge est-il différent de ce que j’attends ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché il badge è diverso da quello che mi aspetto?"
+          }
+        }
+      }
+    },
+    "Why is the badge not updating?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum wird das Badge nicht aktualisiert?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué no se actualiza la insignia?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi le badge ne se met-il pas à jour ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché il badge non si aggiorna?"
+          }
+        }
+      }
+    },
     "Yellow" : {
       "localizations" : {
         "de" : {
@@ -9893,6 +11684,146 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Giallo"
+          }
+        }
+      }
+    },
+    "Yes. All features work offline and data is stored locally on your device." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Alle Funktionen funktionieren offline und die Daten werden lokal auf dem Gerät gespeichert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Todas las funciones funcionan sin conexión y los datos se guardan localmente en el dispositivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Toutes les fonctionnalités fonctionnent hors ligne et les données sont stockées localement sur votre appareil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Tutte le funzionalità funzionano offline e i dati sono salvati localmente sul dispositivo."
+          }
+        }
+      }
+    },
+    "Yes. You can attach files, images, documents, and record audio." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Du kannst Dateien, Bilder, Dokumente anhängen und Audio aufnehmen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yes. You can attach files, images, documents, and record audio.\nSí. Puedes adjuntar archivos, imágenes, documentos y grabar audio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez joindre des fichiers, des images, des documents et enregistrer un audio."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi allegare file, immagini, documenti e registrare un audio."
+          }
+        }
+      }
+    },
+    "Yes. You can manually delete all attachments of completed tasks from settings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Du kannst alle Anhänge abgeschlossener Aufgaben manuell in den Einstellungen löschen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes eliminar manualmente todos los archivos adjuntos de tareas completadas desde los ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez supprimer manuellement tous les fichiers des tâches terminées depuis les réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi eliminare manualmente tutti gli allegati delle attività completate dalle impostazioni."
+          }
+        }
+      }
+    },
+    "You can choose after how many days attachments of completed tasks are automatically removed." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kannst festlegen, nach wie vielen Tagen Anhänge abgeschlossener Aufgaben automatisch gelöscht werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes elegir después de cuántos días se eliminan automáticamente los archivos adjuntos de tareas completadas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez choisir après combien de jours les pièces jointes des tâches terminées sont supprimées automatiquement."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi scegliere dopo quanti giorni gli allegati delle attività completate vengono rimossi automaticamente."
+          }
+        }
+      }
+    },
+    "You can create tasks manually or with Siri. When using Siri, you are guided step by step: first what to add, then when, and finally which reminder to set. The app saves the task using the information you provide." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kannst Aufgaben manuell oder mit Siri erstellen. Mit Siri wirst du Schritt für Schritt geführt: was hinzufügen, wann und welche Erinnerung setzen. Die App speichert die Aufgabe mit deinen Angaben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes crear tareas manualmente o con Siri. Al usar Siri, se te guía paso a paso: primero qué añadir, luego cuándo y finalmente qué recordatorio establecer. La app guarda la tarea con la información proporcionada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez créer des tâches manuellement ou avec Siri. Avec Siri, vous êtes guidé étape par étape : quoi ajouter, quand, puis quel rappel définir. L’app enregistre la tâche avec les informations fournies."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi creare attività manualmente o con Siri. Quando usi Siri, vieni guidato passo dopo passo: prima cosa aggiungere, poi quando e infine quale promemoria impostare. L’app salva l’attività con le informazioni fornite."
           }
         }
       }
