@@ -36,6 +36,9 @@ struct TaskRowContent: View, TaskRowBaseLogic {
     let rowStyle: TaskRowStyle
     
     @AppStorage("dueIconEffect") private var selectedEffectRaw: String = DueIconEffect.none.rawValue
+
+    @AppStorage("tasklist.highlightCriticalOverdue")
+    private var highlightCriticalOverdue: Bool = true
     
     private var selectedEffect: DueIconEffect {
         DueIconEffect(rawValue: selectedEffectRaw) ?? .none
@@ -533,7 +536,7 @@ extension TaskRowContent {
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            isCritical
+            (highlightCriticalOverdue && isCritical)
             ? Color.red
             : Color.clear
         )

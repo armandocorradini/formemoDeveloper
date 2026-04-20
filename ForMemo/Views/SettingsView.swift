@@ -857,7 +857,17 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"Why is the badge different from what I expect?"),
                 answer: String(localized:"The badge shows only tasks that require attention based on your settings. Completed tasks and some overdue tasks may be excluded.")
+            ),
+            // --- BEGIN NEW FAQItems ---
+            FAQItem(
+                question: String(localized:"Why are some tasks highlighted in red?"),
+                answer: String(localized:"Tasks with critical priority that are due today or overdue can be highlighted to draw your attention. This helps you quickly identify the most urgent tasks.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I disable the red highlight for critical tasks?"),
+                answer: String(localized:"Yes. You can enable or disable this behavior in Customize > Visible elements by turning off the highlight option for critical tasks.")
             )
+            // --- END NEW FAQItems ---
         ]),
 
         // MARK: - LOCATION

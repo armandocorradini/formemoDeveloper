@@ -82,6 +82,7 @@ enum TaskListAppearanceKeys {
     static let showLocation = "tasklist.showLocation"
     static let showPriority = "tasklist.showPriority"
     static let showBadgeOnlyWithPriority = "tasklist.showBadgeOnlyWithPriority"
+    static let highlightCriticalOverdue = "tasklist.highlightCriticalOverdue"
 }
 
 
@@ -89,6 +90,9 @@ struct TaskListAppearanceView: View {
     
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
+    
+    @AppStorage(TaskListAppearanceKeys.highlightCriticalOverdue)
+    private var highlightCriticalOverdue = true
     
     @Environment(\.dismiss) private var dismiss
     
@@ -258,6 +262,10 @@ struct TaskListAppearanceView: View {
             Toggle("Show attachments icon", isOn: $showAttachments)
             Toggle("Show location icon", isOn: $showLocation)
             Toggle("Show priority icon", isOn: $showPriority)
+            Toggle(
+                "Highlight overdue & today (critical priority)",
+                isOn: $highlightCriticalOverdue
+            )
         }
     }
     
@@ -272,6 +280,7 @@ struct TaskListAppearanceView: View {
         showLocation = true
         showPriority = true
         showBadgeOnlyWithPriority = true
+        highlightCriticalOverdue = true
         selectedRowStyle = 0
     }
 }
