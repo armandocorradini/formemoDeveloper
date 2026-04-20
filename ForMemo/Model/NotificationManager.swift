@@ -136,6 +136,8 @@ final class NotificationManager: NSObject {
         var needsSave = false
         
         for task in tasks {
+            // 🔴 Skip debug stress-test tasks (no notifications)
+            if task.isDebugTask { continue }
             if let snooze = task.snoozeUntil, snooze < now {
                 task.snoozeUntil = nil
                 needsSave = true

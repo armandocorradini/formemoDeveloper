@@ -10,6 +10,10 @@ struct SettingsView: View {
     
     @Environment(\.modelContext) private var modelContext
 
+#if DEBUG
+    @State private var hasTestData: Bool = false
+#endif
+
     
     @AppStorage("navigationApp")
     private var navigationAppRaw: String = NavigationApp.appleMaps.rawValue
@@ -498,6 +502,23 @@ struct SettingsView: View {
                 } footer: {
                     Text("This permanently deletes all tasks, attachments, and data from this device. This action cannot be undone.")
                 }
+#if DEBUG
+                Section("Debug") {
+                    Button(hasTestData ? "Elimina" : "Genera") {
+                        withAnimation(.none) {
+                            if hasTestData {
+                                DebugTools.deleteTasks(context: modelContext)
+                            } else {
+                                DebugTools.generateTasks(context: modelContext)
+                            }
+                        }
+                        hasTestData = DebugTools.hasTestTasks(context: modelContext)
+                    }
+                }
+                .onAppear {
+                    hasTestData = DebugTools.hasTestTasks(context: modelContext)
+                }
+#endif
             }
             .background {
                 ZStack {

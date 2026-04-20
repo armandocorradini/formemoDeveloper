@@ -22,6 +22,8 @@ final class TodoTask {
     var mainTagRaw: String? = nil
     var snoozeUntil: Date? = nil
     
+    var isDebugTask: Bool = false
+    
     @Relationship(deleteRule: .cascade, inverse: \TaskAttachment.task)
     var attachments: [TaskAttachment]? = nil
     
