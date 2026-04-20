@@ -474,6 +474,7 @@ struct SettingsView: View {
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
                     checkNotificationStatus()
+                    cleanupRecentlyDeleted()
                 }
             }
 
@@ -537,26 +538,23 @@ struct SettingsView: View {
             to: .now
         )!
         
-        let descriptor = FetchDescriptor<DeletedItem>()
+        let descriptor = FetchDescriptor<DeletedItem>(
+            predicate: #Predicate { $0.deletedAt <= cutoff }
+        )
         
         guard let items = try? modelContext.fetch(descriptor) else { return }
         
         for item in items {
             
-            let deletedAt = item.deletedAt
-            
-            if deletedAt < cutoff {
+            // 🔥 delete file if exists
+            if let trashName = item.trashFileName,
+               let trashDir = TaskAttachment.trashDirectory {
                 
-                // 🔥 delete file if exists
-                if let trashName = item.trashFileName,
-                   let trashDir = TaskAttachment.trashDirectory {
-                    
-                    let url = trashDir.appendingPathComponent(trashName)
-                    try? FileManager.default.removeItem(at: url)
-                }
-                
-                modelContext.delete(item)
+                let url = trashDir.appendingPathComponent(trashName)
+                try? FileManager.default.removeItem(at: url)
             }
+            
+            modelContext.delete(item)
         }
         
         try? modelContext.save()

@@ -85,7 +85,7 @@ struct RecentlyDeletedView: View {
                             }
                         }
                     }
-                    .swipeActions {
+                    .swipeActions (edge: .leading) {
                         
                         Button {
                             item.restore(in: context)
@@ -94,8 +94,19 @@ struct RecentlyDeletedView: View {
                             Label("Restore", systemImage: "arrow.uturn.backward")
                         }
                         .tint(.green)
-                        
+                    }
+                    .swipeActions (edge: .trailing) {
                         Button(role: .destructive) {
+                            
+                            func deleteFile(_ item: DeletedItem) {
+                                if let trashName = item.trashFileName,
+                                   let dir = TaskAttachment.trashDirectory {
+                                    
+                                    let url = dir.appendingPathComponent(trashName)
+                                    try? FileManager.default.removeItem(at: url)
+                                }
+                            }
+                            
                             if item.type == "task" {
                                 
                                 let relatedAttachments = items.filter {
@@ -104,11 +115,15 @@ struct RecentlyDeletedView: View {
                                 }
                                 
                                 for att in relatedAttachments {
+                                    deleteFile(att)     // 🔥 fondamentale
                                     context.delete(att)
                                 }
                             }
 
+                            deleteFile(item)          // 🔥 fondamentale
                             context.delete(item)
+                            
+                            try? context.save()       // 🔥 stabilità
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
