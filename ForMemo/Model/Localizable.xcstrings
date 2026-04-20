@@ -390,6 +390,9 @@
         }
       }
     },
+    "%lld m" : {
+      "shouldTranslate" : false
+    },
     "%lld minutes before" : {
       "localizations" : {
         "de" : {
@@ -10700,6 +10703,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Oggi"
+          }
+        }
+      }
+    },
+    "Trigger Distance" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auslöseabstand"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distancia de activación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distance de déclenchement"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Distanza di attivazione"
           }
         }
       }

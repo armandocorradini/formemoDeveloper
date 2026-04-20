@@ -14,7 +14,7 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
     
     private var lastKnownLocation: CLLocation?
 
-    private var triggeredRecently: Set<String> = []
+    private var triggeredRecently: [String: Date] = [:]
     
     private override init() {
         super.init()
@@ -74,7 +74,7 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
         
         let validTasks = tasks
             .filter { !$0.isCompleted }
-            .filter { $0.locationReminderEnabled } 
+            .filter { $0.locationReminderEnabled }
             .filter { $0.locationLatitude != nil && $0.locationLongitude != nil }
         
         let scoredTasks = validTasks.map { task -> (task: TodoTask, score: Double) in
@@ -119,7 +119,9 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
             
             let region = CLCircularRegion(
                 center: center,
-                radius: 100, // 🔥 100 metri
+                radius: CLLocationDistance(
+                    max(100, UserDefaults.standard.integer(forKey: "locationRadius"))
+                ),
                 identifier: task.id.uuidString
             )
             
@@ -145,8 +147,21 @@ extension LocationReminderManager {
     
     private func triggerNotification(for id: String) {
         
-        guard !triggeredRecently.contains(id) else { return }
-        triggeredRecently.insert(id)
+        let now = Date()
+        
+        // 🔥 cleanup old entries (> 2 days)
+        triggeredRecently = triggeredRecently.filter {
+            Calendar.current.dateComponents([.day], from: $0.value, to: now).day ?? 0 < 2
+        }
+        
+        if let lastTrigger = triggeredRecently[id] {
+            let calendar = Calendar.current
+            if calendar.isDate(lastTrigger, inSameDayAs: now) {
+                return // 🔥 already triggered today
+            }
+        }
+        
+        triggeredRecently[id] = now
         
         var titleText = "You have a task to complete here."
         
@@ -184,17 +199,17 @@ extension LocationReminderManager {
 
 //extension LocationReminderManager {
 //
-//    
+//
 //
 //    func debugTrigger(for task: TodoTask) {
 //
 //        guard let id = task.id.uuidString as String? else { return }
 //
-//        
+//
 //
 //        print("🧪 DEBUG: Simulating region entry for \(task.title)")
 //
-//        
+//
 //
 //        triggerNotification(for: id)
 //

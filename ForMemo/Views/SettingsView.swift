@@ -56,6 +56,8 @@ struct SettingsView: View {
     
     @AppStorage("locationRemindersEnabled")
     private var locationRemindersEnabled: Bool = false
+    @AppStorage("locationRadius")
+    private var locationRadius: Int = 200
 
     @State private var showLocationPermissionAlert = false
     @State private var showLocationIntroAlert = false
@@ -217,16 +219,38 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                     .disabled(!isNotificationEnabled)
 
-                    Toggle("Location Reminders", isOn: Binding(
-                        get: { locationRemindersEnabled },
-                        set: { newValue in
-                            if newValue {
-                                showLocationIntroAlert = true
-                            } else {
-                                locationRemindersEnabled = false
+                    Group {
+                        Toggle("Location Reminders", isOn: Binding(
+                            get: { locationRemindersEnabled },
+                            set: { newValue in
+                                if newValue {
+                                    showLocationIntroAlert = true
+                                } else {
+                                    locationRemindersEnabled = false
+                                }
                             }
+                        ))
+
+                        if locationRemindersEnabled {
+                            HStack(spacing: 12) {
+                                Image(systemName: "location.circle")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                Text("Trigger Distance")
+                                    .tint(.primary)
+                                Spacer()
+                                Text("\(locationRadius) m")
+                                    .foregroundStyle(.secondary)
+                            }
+
+                            Stepper(
+                                "",
+                                value: $locationRadius,
+                                in: 100...500,
+                                step: 50
+                            )
                         }
-                    ))
+                    }
                     .alert("Enable Location Access", isPresented: $showLocationPermissionAlert) {
                         Button("Open Settings") {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -262,6 +286,52 @@ struct SettingsView: View {
                     } message: {
                         Text("Get reminders when you arrive at a place.")
                     }
+
+#if DEBUG
+                    Button {
+                        Task {
+                            let center = UNUserNotificationCenter.current()
+                            let requests = await center.pendingNotificationRequests()
+
+                            print("🔔 DEBUG NOTIFICATIONS START ------------------")
+
+                            for req in requests {
+
+                                let id = req.identifier
+                                let title = req.content.title
+                                let body = req.content.body
+
+                                var triggerInfo = "unknown"
+
+                                if let t = req.trigger as? UNCalendarNotificationTrigger,
+                                   let next = t.nextTriggerDate() {
+                                    triggerInfo = "📅 \(next)"
+                                } else if let t = req.trigger as? UNTimeIntervalNotificationTrigger {
+                                    triggerInfo = "⏱ in \(Int(t.timeInterval))s"
+                                }
+
+                                print("""
+                                ID: \(id)
+                                Title: \(title)
+                                Task: \(body)
+                                Trigger: \(triggerInfo)
+                                ------------------
+                                """)
+                            }
+
+                            print("🔔 DEBUG NOTIFICATIONS END --------------------")
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "ladybug")
+                                .foregroundStyle(.red)
+                                .frame(width: iconWidth)
+
+                            Text("Debug Notifications")
+                                .foregroundStyle(.red)
+                        }
+                    }
+#endif
                 } header: {
                     Text("Notifications")
                 } footer: {

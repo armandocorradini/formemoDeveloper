@@ -192,7 +192,23 @@ final class NotificationManager: NSObject {
             if let existingReq = existing[id] {
                 
                 // 🔥 controlla TUTTO, non solo body
-                if existingReq.content.body == content.body &&
+                // 🔥 FIX: considera anche il trigger (data)
+
+                var isSame = false
+
+                if let oldTrigger = existingReq.trigger as? UNCalendarNotificationTrigger,
+                   let newTrigger = trigger as? UNCalendarNotificationTrigger {
+                    
+                    isSame = oldTrigger.nextTriggerDate() == newTrigger.nextTriggerDate()
+                }
+                else if let oldTrigger = existingReq.trigger as? UNTimeIntervalNotificationTrigger,
+                        let newTrigger = trigger as? UNTimeIntervalNotificationTrigger {
+                    
+                    isSame = abs(oldTrigger.timeInterval - newTrigger.timeInterval) < 1
+                }
+
+                if isSame &&
+                   existingReq.content.body == content.body &&
                    existingReq.content.title == content.title {
                     return
                 }
