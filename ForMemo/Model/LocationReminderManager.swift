@@ -180,9 +180,14 @@ extension LocationReminderManager {
         }
         
         let content = UNMutableNotificationContent()
-        content.title = "📍 You're near your task"
+        content.title = String(localized:"📍 You're near your task")
         content.body = titleText
-        content.sound = .default
+        let soundName = UserDefaults.standard.string(forKey: "notificationSoundName") ?? ""
+        if soundName.isEmpty {
+            content.sound = .default
+        } else {
+            content.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: soundName))
+        }
         
         let request = UNNotificationRequest(
             identifier: "location.\(id)",

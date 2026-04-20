@@ -145,10 +145,11 @@ struct ImportExportSettingsView: View {
     
     // Helper to show toast for export/import actions
     private func showToast(_ count: Int, action: String) {
-        toastMessage = count == 1
-        ? "1 task \(action)"
-        : "\(count) tasks \(action)"
+        let key = "toast.\(action)"
+        let format = NSLocalizedString(key, comment: "")
         
+        toastMessage = String(format: format, count)
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             toastMessage = nil
         }
@@ -355,7 +356,7 @@ struct ImportExportSettingsView: View {
                             tasks: selectedExportTasks,
                             calendar: calendar
                         ) { count in
-                            showToast(count, action: "added to calendar")
+                            showToast(count, action: "exported")
                         }
                     }
                     

@@ -537,7 +537,7 @@ extension TaskRowContent {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             (highlightCriticalOverdue && isCritical)
-            ? Color.red
+            ? Color.red.opacity(0.35)
             : Color.clear
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
