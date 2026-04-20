@@ -12,6 +12,7 @@ struct SettingsView: View {
 
 #if DEBUG
     @State private var hasTestData: Bool = false
+    @State private var areTestTasksCompleted: Bool = false
 #endif
 
     
@@ -384,9 +385,12 @@ struct SettingsView: View {
                             Text("Use with Siri")
                                 .foregroundStyle(.primary)
                                 .padding(.leading, 6)
+                            Spacer()
                         }
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    
                     Toggle(
                         "Add reminders automatically",
                         isOn: $siriAutoReminderEnabled
@@ -504,19 +508,31 @@ struct SettingsView: View {
                 }
 #if DEBUG
                 Section("Debug") {
-                    Button(hasTestData ? "Elimina" : "Genera") {
+                    Button {
                         withAnimation(.none) {
-                            if hasTestData {
-                                DebugTools.deleteTasks(context: modelContext)
-                            } else {
+                            if !hasTestData {
                                 DebugTools.generateTasks(context: modelContext)
+                            } else if !areTestTasksCompleted {
+                                DebugTools.completeTasks(context: modelContext)
+                            } else {
+                                DebugTools.deleteTasks(context: modelContext)
                             }
                         }
                         hasTestData = DebugTools.hasTestTasks(context: modelContext)
+                        areTestTasksCompleted = DebugTools.areTestTasksCompleted(context: modelContext)
+                    } label: {
+                        if !hasTestData {
+                            Text("Genera")
+                        } else if !areTestTasksCompleted {
+                            Text("Completa")
+                        } else {
+                            Text("Elimina")
+                        }
                     }
                 }
                 .onAppear {
                     hasTestData = DebugTools.hasTestTasks(context: modelContext)
+                    areTestTasksCompleted = DebugTools.areTestTasksCompleted(context: modelContext)
                 }
 #endif
             }

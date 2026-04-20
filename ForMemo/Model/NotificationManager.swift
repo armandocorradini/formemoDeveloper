@@ -15,6 +15,8 @@ final class NotificationManager: NSObject {
     private var rebuildTask: Task<Void, Never>?
     private var lastRebuild: Date = .distantPast
     private var pendingRefresh = false
+    private var cloudKitDebounceTask: Task<Void, Never>?
+    private var isAppLaunching = true
     
     var lastPushHandled: Date = .distantPast
     
@@ -63,11 +65,29 @@ final class NotificationManager: NSObject {
         )
         
         center.setNotificationCategories([category])
+
+        // 🔵 Mark end of launch phase after short delay
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1.0))
+            self?.isAppLaunching = false
+        }
     }
     
     // MARK: - PUBLIC REFRESH
     
     func refresh(force: Bool = false) {
+        let now = Date()
+
+        // 🔴 Throttle globale anti-loop (CloudKit push storm safe)
+
+        if !force && now.timeIntervalSince(lastRebuild) < 1.0 {
+
+            return
+
+        }
+
+        lastRebuild = now
+        
         
         guard let context = modelContainer?.mainContext else { return }
         
@@ -89,7 +109,7 @@ final class NotificationManager: NSObject {
         
         rebuildTask?.cancel()
         
-        rebuildTask = Task { [weak self] in
+        rebuildTask = Task(priority: .utility) { [weak self] in
             guard let self else { return }
             
             // debounce
@@ -124,13 +144,40 @@ final class NotificationManager: NSObject {
         refresh(force: true)
     }
     
+    // MARK: - CloudKit Optimized Refresh (coalescing)
+
+    func refreshFromCloudKit() {
+        // 🔵 Avoid heavy work during initial app launch
+        if isAppLaunching {
+            return
+        }
+        
+        cloudKitDebounceTask?.cancel()
+        
+        cloudKitDebounceTask = Task { [weak self] in
+            guard let self else { return }
+            
+            // aspetta eventuali altri push (coalescing)
+            try? await Task.sleep(for: .seconds(1.5))
+            
+            guard !Task.isCancelled else { return }
+            
+            await MainActor.run {
+                self.refresh()
+            }
+        }
+    }
+    
 
     
     // MARK: - FETCH
     
     private func fetchTasks(using context: ModelContext) -> [TodoTask] {
         
-        let tasks = (try? context.fetch(FetchDescriptor<TodoTask>())) ?? []
+        let tasks = (try? context.fetch(FetchDescriptor<TodoTask>(
+            predicate: #Predicate { !$0.isCompleted }
+
+        ))) ?? []
         
         let now = Date()
         var needsSave = false
@@ -160,7 +207,7 @@ final class NotificationManager: NSObject {
         let body = tasks
             .sorted { $0.id.uuidString < $1.id.uuidString }
             .map {
-                "\($0.id.uuidString)-\($0.isCompleted)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)"
+                "\($0.id.uuidString)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)"
             }
             .joined(separator: "|")
         

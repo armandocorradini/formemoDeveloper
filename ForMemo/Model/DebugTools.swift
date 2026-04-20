@@ -8,7 +8,7 @@ enum DebugTools {
     
     // MARK: - Generate
     
-    static func generateTasks(context: ModelContext, count: Int = 2000) {
+    static func generateTasks(context: ModelContext, count: Int = 1000) {
         let start = Date()
         let calendar = Calendar.current
         let now = Date()
@@ -33,6 +33,28 @@ enum DebugTools {
         print("✅ Generated \(count) tasks in \(Date().timeIntervalSince(start)) sec")
     }
     
+    // MARK: - Complete
+
+    static func completeTasks(context: ModelContext) {
+        let start = Date()
+        
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate { $0.title == testTitle }
+        )
+        
+        if let tasks = try? context.fetch(descriptor) {
+            for task in tasks {
+                task.isCompleted = true
+                task.completedAt = .now
+                task.snoozeUntil = nil
+            }
+        }
+        
+        try? context.save()
+        
+        print("✅ Completed debug tasks in \(Date().timeIntervalSince(start)) sec")
+    }
+
     // MARK: - Delete
     
     static func deleteTasks(context: ModelContext) {
@@ -62,6 +84,18 @@ enum DebugTools {
         
         let count = (try? context.fetchCount(descriptor)) ?? 0
         return count > 0
+    }
+
+    static func areTestTasksCompleted(context: ModelContext) -> Bool {
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate { $0.title == testTitle }
+        )
+        
+        guard let tasks = try? context.fetch(descriptor), !tasks.isEmpty else {
+            return false
+        }
+        
+        return tasks.allSatisfy { $0.isCompleted }
     }
 }
 #endif

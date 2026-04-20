@@ -12,8 +12,11 @@ struct TaskListView: View {
     @Environment(\.scenePhase) private var scenePhase
     
     
-    @Query(sort: [SortDescriptor(\TodoTask.deadLine, order: .forward)])
-    private var tasks: [TodoTask]
+    @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
+    private var todoQuery: [TodoTask]
+
+    @Query(filter: #Predicate<TodoTask> { $0.isCompleted })
+    private var completedQuery: [TodoTask]
     
     @State private var draftTask: TodoTask?
     
@@ -38,9 +41,9 @@ struct TaskListView: View {
     
     
     private var filteredTasks: [TodoTask] {
+        let source = showCompleted ? completedQuery : todoQuery
         
-        tasks.filter { task in
-            
+        return source.filter { task in
             let matchesSearch =
             searchText.isEmpty ||
             task.title.localizedCaseInsensitiveContains(searchText)
@@ -56,41 +59,61 @@ struct TaskListView: View {
             return matchesSearch && matchesTag && matchesPriority
         }
     }
-    
-    
-    
-    
-    
-    private var splitTasks: (todo: [TodoTask], completed: [TodoTask]) {
-        
-        let filtered = filteredTasks
-        
-        var todo: [TodoTask] = []
-        var completed: [TodoTask] = []
-        
-        for task in filtered {
-            if task.isCompleted {
-                completed.append(task)
-            } else {
-                todo.append(task)
+    @State private var cachedTodo: [TodoTask] = []
+    @State private var cachedCompleted: [TodoTask] = []
+
+    private func recomputeSections() {
+        // Sempre calcola TODO
+        var todo = todoQuery.filter { task in
+            let matchesSearch =
+                searchText.isEmpty ||
+                task.title.localizedCaseInsensitiveContains(searchText)
+
+            let matchesTag =
+                selectedTagFilter == nil ||
+                task.mainTag == selectedTagFilter
+
+            let matchesPriority =
+                selectedPriorityFilter == nil ||
+                task.priority == selectedPriorityFilter
+
+            return matchesSearch && matchesTag && matchesPriority
+        }
+
+        todo.sort {
+            ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
+        }
+        cachedTodo = todo
+
+        // Calcola COMPLETED solo se serve
+        if showCompleted {
+            var completed = completedQuery.filter { task in
+                let matchesSearch =
+                    searchText.isEmpty ||
+                    task.title.localizedCaseInsensitiveContains(searchText)
+
+                let matchesTag =
+                    selectedTagFilter == nil ||
+                    task.mainTag == selectedTagFilter
+
+                let matchesPriority =
+                    selectedPriorityFilter == nil ||
+                    task.priority == selectedPriorityFilter
+
+                return matchesSearch && matchesTag && matchesPriority
             }
+
+            completed.sort {
+                ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast)
+            }
+            cachedCompleted = completed
+        } else {
+            cachedCompleted = []
         }
-        
-        todo.sort { ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture) }
-        
-        completed.sort {
-            ($0.deadLine ?? .distantPast) > ($1.deadLine ?? .distantPast)
-        }
-        
-        return (todo, completed)
     }
-    private var todoTasks: [TodoTask] {
-        splitTasks.todo
-    }
-    
-    private var completedTasks: [TodoTask] {
-        splitTasks.completed
-    }
+
+    private var todoTasks: [TodoTask] { cachedTodo }
+    private var completedTasks: [TodoTask] { cachedCompleted }
     private static let backgroundGradient =
     LinearGradient(
         colors: [backColor1, backColor2],
@@ -116,7 +139,7 @@ struct TaskListView: View {
                     
                     List {
                         
-                        if tasks.isEmpty && !showNewTask {
+                        if todoQuery.isEmpty && completedQuery.isEmpty && !showNewTask {
                             EmptySectionView(showQuickGuide: $showQuickGuide)
                         }
                         
@@ -175,6 +198,7 @@ struct TaskListView: View {
                         AppQuickGuideView()
                     }
                     .listRowSpacing(listStyleChoice == .plain ? 0 : 7) // spazio tra le righe
+                    .transaction { $0.animation = nil }
                 }
                 .navigationDestination(for: TodoTask.self) { task in
                     TaskDetailView(task: task)
@@ -182,11 +206,11 @@ struct TaskListView: View {
                 .scrollDismissesKeyboard(.immediately)
                 
                 .searchableIf(
-                    !tasks.isEmpty && !showNewTask,
+                    !(todoQuery.isEmpty && completedQuery.isEmpty) && !showNewTask,
                     text: $searchText,
                     prompt: "Search task"
                 )
-                .navigationTitle(tasks.isEmpty ? "" : String(localized:"My Tasks"))
+                .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
                 .navigationBarTitleDisplayMode(.inline)
                 .sheet(item: $draftTask) { task in
                     NewTaskSheetView(draftTask: task)
@@ -201,9 +225,9 @@ struct TaskListView: View {
                         
 //                        Button {
 //                            withAnimation(.snappy) {
-//                                
+//
 //                                let testTasks = tasks.filter { $0.title == "ProvaProva" }
-//                                
+//
 //                                if testTasks.isEmpty {
 //                                    createTestTasks()
 //                                } else {
@@ -215,8 +239,8 @@ struct TaskListView: View {
 //                                .foregroundStyle(.green)
 //                                .font(.title2)
 //                        }
-//                        
-//                        
+//
+//
                         
                         
                         
@@ -241,7 +265,7 @@ struct TaskListView: View {
                                 .font(.title2)
                         }
                     }
-                    if !tasks.isEmpty {
+                    if !(todoQuery.isEmpty && completedQuery.isEmpty) {
                         ToolbarItem(placement: .topBarLeading) {
                             Menu {
                                 // Sezione per rimuovere tutti i filtri
@@ -335,6 +359,27 @@ struct TaskListView: View {
                     }
                 }
             }
+        }
+        .onAppear {
+            recomputeSections()
+        }
+        .onChange(of: todoQuery.count) {
+            recomputeSections()
+        }
+        .onChange(of: completedQuery.count) {
+            recomputeSections()
+        }
+        .onChange(of: searchText) {
+            recomputeSections()
+        }
+        .onChange(of: selectedTagFilter) {
+            recomputeSections()
+        }
+        .onChange(of: selectedPriorityFilter) {
+            recomputeSections()
+        }
+        .onChange(of: showCompleted) {
+            recomputeSections()
         }
     }
      
@@ -655,7 +700,7 @@ struct TodoSectionView: View {
         
         Section(String(localized:"To do (\(tasks.count))")) {
             
-            ForEach(tasks) { t in
+            ForEach(tasks, id: \.id) { t in
                 
                 TaskRow(task: t)
 
@@ -719,10 +764,10 @@ struct TodoSectionView: View {
     
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {
+        let newValue = !task.isCompleted
+        task.isCompleted = newValue
         
-        task.isCompleted.toggle()
-        
-        if task.isCompleted {
+        if newValue {
             task.completedAt = .now
             task.snoozeUntil = nil
         } else {
@@ -732,7 +777,10 @@ struct TodoSectionView: View {
         
         try? modelContext.save()
         
-        NotificationManager.shared.refresh(force: true)
+        // 🔴 Fix swipe crash: delay refresh to let swipe close
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            NotificationManager.shared.refresh(force: true)
+        }
     }
 }
 
@@ -783,7 +831,7 @@ struct CompletedSectionView: View {
         Section(String(localized:"Completed (\(tasks.count))")) {
             
             
-            ForEach(tasks) { t in
+            ForEach(tasks, id: \.id) { t in
                 
                 TaskRow(task: t)
 
@@ -842,10 +890,10 @@ struct CompletedSectionView: View {
     
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {
+        let newValue = !task.isCompleted
+        task.isCompleted = newValue
         
-        task.isCompleted.toggle()
-        
-        if task.isCompleted {
+        if newValue {
             task.completedAt = .now
             task.snoozeUntil = nil
         } else {
@@ -859,6 +907,9 @@ struct CompletedSectionView: View {
             AppLogger.persistence.fault("Failed to save context: \(error)")
         }
         
-        NotificationManager.shared.refresh(force: true)
+        // 🔴 Fix swipe crash
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            NotificationManager.shared.refresh(force: true)
+        }
     }
 }

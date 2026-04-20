@@ -35,13 +35,18 @@ struct HomeView: View {
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(.cyan, .blue)
                     
-                        .symbolEffect(.rotate.clockwise, options: .repeat(1).speed(1))
-                        .symbolEffect(.pulse, options: .repeat(nil).speed(0.3))
+                        .symbolEffect(.rotate.clockwise, options: .repeat(1).speed(1), value: isAnimating)
+                        .symbolEffect(.pulse, options: .repeat(nil).speed(0.3), value: isAnimating)
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                isAnimating = true
+                            }
+                        }
                         .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
                     
                     
                     // Contenuto riempitivo per forzare lo scroll (opzionale)
-                    // Se la vista è corta, la barra non si minimizzerà
+                    // Se la vista è corto, la barra non si minimizzerà
                     Text("Manage your tasks with ease.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)

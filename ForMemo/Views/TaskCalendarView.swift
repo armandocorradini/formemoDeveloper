@@ -6,7 +6,7 @@ import os
 struct TaskCalendarView: View {
     
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \TodoTask.deadLine) private var tasks: [TodoTask]
+    @Query(sort: \TodoTask.deadLine, animation: .default) private var tasks: [TodoTask]
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     
     @State private var draftTask: TodoTask?
@@ -46,7 +46,7 @@ struct TaskCalendarView: View {
     }()
     
     @State private var holidayDates: Set<Date> = []
-    
+    @State private var tasksCache: [Date: [TodoTask]] = [:]
     
     
     
@@ -159,9 +159,13 @@ struct TaskCalendarView: View {
         
         .onAppear {
             Task { @MainActor in await loadHolidays(for: displayedMonth) }
+            rebuildCache()
         }
         .onChange(of: displayedMonth) { _, newValue in
             Task { @MainActor in await loadHolidays(for: newValue) }
+        }
+        .onChange(of: tasks) { _, _ in
+            rebuildCache()
         }
         .sheet(item: $draftTask) { task in
             NewTaskSheetView(draftTask: task)
@@ -368,10 +372,8 @@ private extension TaskCalendarView {
     
     func tasksForDay(_ day: Date) -> [TodoTask] {
         
-        let dayTasks = tasks.filter {
-            guard let deadline = $0.deadLine else { return false }
-            return calendar.isDate(deadline, inSameDayAs: day)
-        }
+        let dayKey = calendar.startOfDay(for: day)
+        let dayTasks = tasksCache[dayKey] ?? []
         
         if showCompletedTasks {
             return dayTasks
@@ -379,6 +381,20 @@ private extension TaskCalendarView {
             return dayTasks.filter { !$0.isCompleted }
         }
     }
+    
+    func rebuildCache() {
+        
+        var newCache: [Date: [TodoTask]] = [:]
+        
+        for task in tasks {
+            guard let deadline = task.deadLine else { continue }
+            let day = calendar.startOfDay(for: deadline)
+            newCache[day, default: []].append(task)
+        }
+        
+        tasksCache = newCache
+    }
+    
     
     func makeDaysForMonth(_ date: Date) -> [Date] {
         

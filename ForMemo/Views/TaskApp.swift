@@ -211,11 +211,11 @@ struct ForMemoApp: App {
                 // ✅ refresh notifiche (safe)
                 let now = Date()
 
-                if now.timeIntervalSince(NotificationManager.shared.lastPushHandled) > 1 {
+                if now.timeIntervalSince(NotificationManager.shared.lastPushHandled) > 2 {
                     
                     NotificationManager.shared.lastPushHandled = now
                     
-                    NotificationManager.shared.refresh()
+                    NotificationManager.shared.refreshFromCloudKit()
                 }
             }
         }
@@ -231,8 +231,6 @@ struct ForMemoApp: App {
 
         // 🔥 FONDAMENTALE — PRIMA DI TUTTO
         await NotificationManager.shared.configure()
-
-        _ = try? context.fetch(FetchDescriptor<TodoTask>())
 
         try? await Task.sleep(for: .milliseconds(200))
 

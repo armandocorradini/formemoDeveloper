@@ -34,7 +34,10 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
             // 🔥 ricalcola regioni dinamicamente
             if let container = NotificationManager.shared.modelContainer {
                 let context = container.mainContext
-                let tasks = (try? context.fetch(FetchDescriptor<TodoTask>())) ?? []
+                let tasks = (try? context.fetch(FetchDescriptor<TodoTask>(
+                    predicate: #Predicate { !$0.isCompleted }
+
+                ))) ?? []
                 updateRegions(tasks: tasks)
             }
         }
