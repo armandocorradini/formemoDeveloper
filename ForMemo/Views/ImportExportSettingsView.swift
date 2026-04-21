@@ -145,10 +145,14 @@ struct ImportExportSettingsView: View {
     
     // Helper to show toast for export/import actions
     private func showToast(_ count: Int, action: String) {
-        let key = "toast.\(action)"
-        let format = NSLocalizedString(key, comment: "")
-        
-        toastMessage = String(format: format, count)
+        switch action {
+        case "imported":
+            toastMessage = String(localized: "toast.imported \(count)")
+        case "exported":
+            toastMessage = String(localized: "toast.exported \(count)")
+        default:
+            toastMessage = "\(count)"
+        }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             toastMessage = nil

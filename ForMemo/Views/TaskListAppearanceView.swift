@@ -300,7 +300,7 @@ struct TaskListAppearanceView: View {
                 isOn: $highlightCriticalOverdue
             )
             Toggle(
-                "Show “Today / Expired” label",
+                "Show “Today/Expired”",
                 isOn: $showTodayExpiredLabel
             )
         }

@@ -1,36 +1,449 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "" : {
-      "shouldTranslate" : false
-    },
-    "\nLocation: %@\n" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\nStandort: %@\n"
+
+  "sourceLanguage": "en",
+
+  "strings": {
+
+    "toast.imported %lld": {
+
+      "extractionState": "manual",
+
+      "localizations": {
+
+        "it": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld attività importata"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld attività importate"
+
+                }
+
+              }
+
+            }
+
           }
+
         },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\nUbicación: %@\n"
+
+        "en": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld task imported"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tasks imported"
+
+                }
+
+              }
+
+            }
+
           }
+
         },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\nEmplacement: %@\n"
+
+        "fr": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tâche importée"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tâches importées"
+
+                }
+
+              }
+
+            }
+
           }
+
         },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\nPosizione: %@\n"
+
+        "de": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld Aufgabe importiert"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld Aufgaben importiert"
+
+                }
+
+              }
+
+            }
+
           }
+
+        },
+
+        "es": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tarea importada"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tareas importadas"
+
+                }
+
+              }
+
+            }
+
+          }
+
         }
+
       }
+
+    },
+
+    "toast.exported %lld": {
+
+      "extractionState": "manual",
+
+      "localizations": {
+
+        "it": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld attività esportata"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld attività esportate"
+
+                }
+
+              }
+
+            }
+
+          }
+
+        },
+
+        "en": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld task exported"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tasks exported"
+
+                }
+
+              }
+
+            }
+
+          }
+
+        },
+
+        "fr": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tâche exportée"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tâches exportées"
+
+                }
+
+              }
+
+            }
+
+          }
+
+        },
+
+        "de": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld Aufgabe exportiert"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld Aufgaben exportiert"
+
+                }
+
+              }
+
+            }
+
+          }
+
+        },
+
+        "es": {
+
+          "variations": {
+
+            "plural": {
+
+              "one": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tarea exportada"
+
+                }
+
+              },
+
+              "other": {
+
+                "stringUnit": {
+
+                  "state": "translated",
+
+                  "value": "%lld tareas exportadas"
+
+                }
+
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+
+    },
+
+    "" : {
+
+      "shouldTranslate" : false
+
+    },
+
+    "\nLocation: %@\n" : {
+
+      "localizations" : {
+
+        "de" : {
+
+          "stringUnit" : {
+
+            "state" : "translated",
+
+            "value" : "\nStandort: %@\n"
+
+          }
+
+        },
+
+        "es" : {
+
+          "stringUnit" : {
+
+            "state" : "translated",
+
+            "value" : "\nUbicación: %@\n"
+
+          }
+
+        },
+
+        "fr" : {
+
+          "stringUnit" : {
+
+            "state" : "translated",
+
+            "value" : "\nEmplacement : %@\n"
+
+          }
+
+        },
+
+        "it" : {
+
+          "stringUnit" : {
+
+            "state" : "translated",
+
+            "value" : "\nPosizione: %@\n"
+
+          }
+
+        }
+
+      }
+
     },
     "…" : {
       "comment" : "An ellipsis used to indicate that there are more tasks hidden.",
@@ -8279,9 +8692,35 @@
         }
       }
     },
-    "Show “Today / Expired” label" : {
-      "comment" : "A toggle that shows a label for tasks that are either today or expired.",
-      "isCommentAutoGenerated" : true
+    "Show “Today/Expired”" : {
+      "comment" : "A toggle that shows/hides the label that indicates if a task is overdue or is due today.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„Heute / Abgelaufen“ anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar « Hoy / Caducado »"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher « Aujourd’hui / Expiré »"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra “Oggi / Scaduto”"
+          }
+        }
+      }
     },
     "Show app badge" : {
       "localizations" : {
