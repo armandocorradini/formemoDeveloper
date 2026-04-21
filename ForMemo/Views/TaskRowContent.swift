@@ -16,7 +16,6 @@ enum TaskRowStyle: Int {
     case style8 = 8
     case style9 = 9
     case style10 = 10
-    case today = 100
 }
 
 // MARK: - MAIN ROW
@@ -37,14 +36,39 @@ struct TaskRowContent: View, TaskRowBaseLogic {
     
     @AppStorage("dueIconEffect") private var selectedEffectRaw: String = DueIconEffect.none.rawValue
 
-    @AppStorage("tasklist.highlightCriticalOverdue")
-    private var highlightCriticalOverdue: Bool = true
+    let highlightCriticalOverdue: Bool
+    let showTodayExpiredLabel: Bool
     
     private var selectedEffect: DueIconEffect {
         DueIconEffect(rawValue: selectedEffectRaw) ?? .none
     }
-    
-    
+
+    private var isToday: Bool {
+        guard let d = model.deadLine else { return false }
+        let now = Date()
+        return Calendar.current.isDateInToday(d) && d >= now
+    }
+
+    private var isOverdue: Bool {
+        guard let d = model.deadLine else { return false }
+        return d < Date()
+    }
+
+    @ViewBuilder
+    private func todayExpiredLabel() -> some View {
+        if showTodayExpiredLabel {
+            if isToday {
+                Text("⏳ Today ⏳")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.orange)
+            } else if isOverdue {
+                Text("⚠️ Expired ⚠️")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.red)
+            }
+        }
+    }
+
     var body: some View {
         content
             .padding(.vertical, rowStyle == .style0 ? 0 : 0)
@@ -71,7 +95,6 @@ extension TaskRowContent {
         case .style8: layoutStyle8()
         case .style9: layoutStyle9()
         case .style10: layoutStyle10()
-        case .today:  layoutToday()
         }
     }
     private func layoutStyle10() -> some View {
@@ -87,6 +110,7 @@ extension TaskRowContent {
             VStack(alignment: .leading, spacing: 4) {
                 
                 // TITOLO
+                todayExpiredLabel()
                 Text(model.title)
                     .font(.headline)
                     .foregroundStyle(model.isCompleted ? .secondary : .primary)
@@ -231,8 +255,8 @@ extension TaskRowContent {
                 .frame(minWidth: 40)
                 .offset(x: -4)
             
-            VStack(alignment: .leading, spacing: 4) {
-                
+            VStack(alignment: .leading, spacing: 6) {
+                todayExpiredLabel()
                 Text(model.title)
                     .font(.headline)
                     .foregroundStyle(model.isCompleted ? .secondary : .primary)
@@ -268,32 +292,27 @@ extension TaskRowContent {
             
             timeColumn(style: 1)
             
-            VStack(alignment: .leading, spacing: 4) {
-                
-                HStack {
-                    Text(model.title)
-                        .font(.headline)
-                        .strikethrough(model.isCompleted)
-                    
-                    Spacer()
-                    
-                    icon.scaleEffect(0.72)
-                }
-                
+            VStack(alignment: .leading, spacing: 1) {
+                todayExpiredLabel()
+
+                Text(model.title)
+                    .font(.headline)
+                    .strikethrough(model.isCompleted)
+
                 HStack(spacing: 8) {
-                    
                     if model.reminderOffsetMinutes != nil {
                         Image(systemName: "bell")
                         Text(formattedOffset(model: model))
                     }
-                    
+
                     Spacer()
-                    
+
                     flags(vertical: false)
                 }
                 .font(.caption2)
                 .foregroundStyle(.secondary)
             }
+            icon.scaleEffect(0.72)
         }
         .padding(1)
     }
@@ -304,31 +323,27 @@ extension TaskRowContent {
             timeColumn(style: 2)
                 .frame(width: 50)
             
-            VStack(alignment: .leading) {
-                
-                HStack {
-                    Text(model.title)
-                        .font(.headline)
-                        .strikethrough(model.isCompleted)
-                    
-                    Spacer()
-                    
-                    icon.scaleEffect(0.85)
-                }
-                
-                HStack {
+            VStack(alignment: .leading, spacing: 1) {
+                todayExpiredLabel()
+
+                Text(model.title)
+                    .font(.headline)
+                    .strikethrough(model.isCompleted)
+
+                HStack(spacing: 8) {
                     if model.reminderOffsetMinutes != nil {
                         Image(systemName: "bell")
                         Text(formattedOffset(model: model))
                     }
-                    
+
                     Spacer()
-                    
+
                     flags(vertical: false)
                 }
                 .font(.caption2)
                 .foregroundStyle(.secondary)
             }
+            icon.scaleEffect(0.85)
         }
     }
     
@@ -342,7 +357,7 @@ extension TaskRowContent {
             .frame(width: 36)
             
             VStack(alignment: .leading, spacing: 6) {
-                
+                todayExpiredLabel()
                 Text(model.title)
                     .font(.headline)
                     .strikethrough(model.isCompleted)
@@ -369,8 +384,8 @@ extension TaskRowContent {
             
             icon
             
-            VStack(alignment: .leading, spacing: 4) {
-                
+            VStack(alignment: .leading, spacing: 6) {
+                todayExpiredLabel()
                 Text(model.title)
                     .font(.headline)
                     .strikethrough(model.isCompleted)
@@ -399,7 +414,7 @@ extension TaskRowContent {
             icon
             
             VStack(alignment: .leading) {
-                
+                todayExpiredLabel()
                 Text(model.title)
                     .font(.headline)
                     .strikethrough(model.isCompleted)
@@ -423,6 +438,8 @@ extension TaskRowContent {
                 .frame(width: 50)
             
             VStack(alignment: .leading) {
+                
+                todayExpiredLabel()
                 
                 if let d = model.deadLine {
                     Text(d, format: .dateTime.weekday(.wide))
@@ -449,6 +466,8 @@ extension TaskRowContent {
             
             VStack(alignment: .leading) {
                 
+                todayExpiredLabel()
+                
                 if let d = model.deadLine {
                     Text(d, format: .dateTime.hour().minute())
                 }
@@ -471,6 +490,8 @@ extension TaskRowContent {
             
             VStack(alignment: .leading) {
                 
+                todayExpiredLabel()
+                
                 if let d = model.deadLine {
                     Text(d, format: .dateTime.weekday(.wide))
                 }
@@ -486,63 +507,6 @@ extension TaskRowContent {
         }
     }
     
-    private func layoutToday() -> some View {
-        
-        let notExp = (model.deadLine ?? .now) > Date()
-        let isCritical = model.prioritySystemImage  == "flame"
-        
-
-        return HStack(spacing: 12) {
-            
-            VStack {
-                if let d = model.deadLine {
-                    Text(d, format: .dateTime.day())
-                        .font(.title2.bold())
-                    
-                    Text(d, format: .dateTime.month(.abbreviated))
-                        .font(.caption.bold())
-                        .textCase(.uppercase)
-                }
-            }
-            .frame(width: 50, height: 77)
-            .foregroundStyle(isCritical ? .white : model.statusColor)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                
-                Text(notExp ? "⏳ Today ⏳" : "⚠️ Expired ⚠️")
-                    .bold()
-                    .foregroundStyle(isCritical ? .white : (notExp ? .orange : .red))
-                
-                Text(model.title)
-                    .font(.headline)
-                    .bold()
-                    .foregroundStyle(isCritical ? .white : .primary)
-                
-                if let deadline = model.deadLine {
-                    HStack {
-                        Image(systemName: "clock")
-                        Text(deadline, format: .dateTime.hour().minute())
-                    }
-                    .foregroundStyle(isCritical ? .white.opacity(0.9) : model.statusColor)
-                }
-            }
-            
-            Spacer()
-            
-            flags(vertical: true)
-                .foregroundStyle(isCritical ? .white.opacity(0.8) : .secondary)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            (highlightCriticalOverdue && isCritical)
-            ? Color.red.opacity(0.35)
-            : Color.clear
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .padding(.horizontal, -8)
-    }
     
     private func layoutStyle9() -> some View {
         
@@ -565,7 +529,7 @@ extension TaskRowContent {
             
             // 📌 CONTENUTO
             VStack(alignment: .leading, spacing: 6) {
-                
+                todayExpiredLabel()
                 // 🏷️ TAG ICON + TITLE + BADGE
                 HStack(alignment: .top, spacing: 8) {
                     

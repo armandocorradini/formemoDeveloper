@@ -502,53 +502,68 @@ import SwiftData
 struct TaskRow: View {
     // Riceviamo il task direttamente. SwiftData gestisce la relazione in modo efficiente.
     let task: TodoTask
-    
+
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
-    
+
     @AppStorage(TaskListAppearanceKeys.badgeColor)
     private var badgeColorRaw: String = BadgeColorStyle.default.rawValue
-    
+
     @AppStorage(TaskListAppearanceKeys.showBadge)
     private var showBadge = true
-    
+
     @AppStorage(TaskListAppearanceKeys.showAttachments)
     private var showAttachments = true
-    
+
     @AppStorage(TaskListAppearanceKeys.showLocation)
     private var showLocation = true
-    
+
     @AppStorage(TaskListAppearanceKeys.showPriority)
     private var showPriority = true
-    
+
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
     
+    @AppStorage("tasklist.highlightCriticalOverdue")
+    private var highlightCriticalOverdue: Bool = true
+
+    @AppStorage("tasklist.showTodayExpiredLabel")
+    private var showTodayExpiredLabel: Bool = true
+
     private var badgeStyle: BadgeColorStyle {
         BadgeColorStyle(rawValue: badgeColorRaw) ?? .default
     }
-    
+
     @AppStorage("selectedTaskRowStyle") private var selectedRowStyle: Int = 0
-    
-    
-    var rowStyleToUse: Int {
+
+
+    private var isToday: Bool {
+        guard let d = task.deadLine else { return false }
+        let now = Date()
+        let startOfToday = Calendar.current.startOfDay(for: now)
         
-        let calendar = Calendar.current
-        let startOfTomorrow = calendar.startOfDay(
-            for: calendar.date(byAdding: .day, value: 1, to: Date())!
-        )
-        
-        if let deadline = task.deadLine,
-           deadline < startOfTomorrow && !task.isCompleted {
-            
-            return 100
+        return d >= startOfToday && d >= now
+    }
+
+    private var isOverdue: Bool {
+        guard let d = task.deadLine else { return false }
+        return d < Date()
+    }
+
+    private var dynamicRowHeight: CGFloat {
+        if showTodayExpiredLabel && (isToday || isOverdue) {
+            return 54
         } else {
-            return selectedRowStyle
+            return 46
         }
     }
-        
-    private var model: TaskRowDisplayModel {
+    // --- END PATCH ---
 
+    var rowStyleToUse: Int {
+        return selectedRowStyle
+    }
+
+    private var model: TaskRowDisplayModel {
         let shouldDisplayBadge =
             showBadge && (!showBadgeOnlyWithPriority || task.priority != .none)
 
@@ -578,7 +593,7 @@ struct TaskRow: View {
                 EmptyView()
             }
             .opacity(0)
-            
+
             TaskRowContent(
                 model: model,
                 iconStyle: iconStyle,
@@ -587,18 +602,18 @@ struct TaskRow: View {
                 showAttachments: showAttachments,
                 showLocation: showLocation,
                 showPriority: showPriority,
-                showBadgeOnlyWithPriority: showBadgeOnlyWithPriority, rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0 )
+                showBadgeOnlyWithPriority: showBadgeOnlyWithPriority, rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
+                highlightCriticalOverdue: highlightCriticalOverdue,
+                showTodayExpiredLabel: showTodayExpiredLabel)
         }
-        
+
         .contentShape(Rectangle())
         .alignmentGuide(.listRowSeparatorLeading) { d in d[.leading] }
-        .frame(height: rowStyleToUse == 100 ? 60 : 46)//altezza ROW
+        .frame(height: dynamicRowHeight)
         .padding(.vertical, 2)
         .buttonStyle(.plain)
         // Tint della linea di separazione basato sullo stato del task
         .listRowSeparatorTint(task.status.color.opacity(0.35))
-
-        
     }
 }
 
@@ -638,61 +653,78 @@ struct TodoSectionView: View {
     let modelContext: ModelContext
     
     struct RowCardStyle: ViewModifier {
-        
+        @Environment(\.colorScheme) private var colorScheme
         let task: TodoTask
         let style: TaskListStyle
-        
+
+        @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
+        @AppStorage("tasklist.highlightCriticalOverdue") var highlightBackground: Bool = true
+
         func body(content: Content) -> some View {
-            
-            if style == .cards {
-                
-                content
-                    .listRowInsets(
-                        EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
-                    )
-                    .listRowBackground(cardBackground(for: task))
-                
+            content
+                .padding(.horizontal, style == .plain ? 12 : 0)
+                .listRowInsets(
+                    style == .cards
+                    ? EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
+                    : EdgeInsets(top: 20, leading: 0, bottom: 20, trailing: 0)
+                )
+                .listRowBackground(cardBackground(for: task))
+        }
+
+        @ViewBuilder
+        private func cardBackground(for task: TodoTask) -> some View {
+            let isToday = isTaskToday(task.deadLine)
+            let isOverdue = isTaskOverdue(task.deadLine)
+            let isCritical = task.priority.systemImage == "flame"
+
+            let strokeColor: Color = {
+                if isOverdue { return .red }
+                if isToday { return .orange }
+                return .secondary
+            }()
+
+            let lineWidth: CGFloat =
+                (isToday || isOverdue) ? 2.5 : 0.7
+
+            let baseBackground = Color(uiColor: .secondarySystemBackground).opacity(0.5)
+
+            let fillColor: Color = {
+                guard highlightBackground, isCritical else {
+                    return baseBackground
+                }
+                if isOverdue || isToday {
+                    return Color.red.opacity(colorScheme == .dark ? 0.18 : 0.08)
+                }
+                return baseBackground
+            }()
+
+            if style == .plain {
+                RoundedRectangle(cornerRadius: 0, style: .continuous)
+                    .fill(fillColor)
             } else {
-                
-                content
-                    .listRowInsets(
-                        EdgeInsets(top: 20, leading: 4, bottom: 20, trailing: 4)
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(fillColor)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 26, style: .continuous)
+                            .strokeBorder(strokeColor, lineWidth: lineWidth)
                     )
-                    .listRowBackground(Color.clear)
             }
         }
-        
-        private func cardBackground(for task: TodoTask) -> some View {
-            
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(
-                    Color(uiColor: .secondarySystemBackground).opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 26, style: .continuous)
-                        .stroke(
-                            isTaskOverdue(task.deadLine) || isTaskOverdueNow(task.deadLine) ? .red :
-                                isTaskToday(task.deadLine) ? .orange :
-                                    .secondary,
-                            lineWidth:
-                                (isTaskToday(task.deadLine) || isTaskOverdue(task.deadLine))
-                            ? 2.5 : 0.7
-                        )
-                )
-        }
-        
+
         private func isTaskToday(_ date: Date?) -> Bool {
             guard let date else { return false }
-            return Calendar.current.isDateInToday(date)
+            let now = Date()
+            return Calendar.current.isDateInToday(date) && date >= now
         }
-        
+
         private func isTaskOverdue(_ date: Date?) -> Bool {
             guard let date else { return false }
-            return date < Calendar.current.startOfDay(for: Date())
+            return date < Date()
         }
-        
+
         private func isTaskOverdueNow(_ date: Date?) -> Bool {
             guard let date = date else { return false }
-            return date < Date() // Se la data del task è "minore" di adesso, è scaduta
+            return date < Date()
         }
     }
     
@@ -913,3 +945,4 @@ struct CompletedSectionView: View {
         }
     }
 }
+

@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct TaskRowPreview: View {
@@ -8,6 +7,13 @@ struct TaskRowPreview: View {
     
     @AppStorage("selectedTaskRowStyle")
     private var selectedRowStyle: Int = 0
+
+    @AppStorage("tasklist.highlightCriticalOverdue")
+    private var highlightCriticalOverdue: Bool = true
+
+    @AppStorage("tasklist.showTodayExpiredLabel")
+    private var showTodayExpiredLabel: Bool = true
+    
     
     let iconStyle: TaskIconStyle
     let badgeStyle: BadgeColorStyle
@@ -61,7 +67,9 @@ struct TaskRowPreview: View {
                     showLocation: showLocation,
                     showPriority: showPriority,
                     showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
-                    rowStyle: rowStyle
+                    rowStyle: rowStyle,
+                    highlightCriticalOverdue: highlightCriticalOverdue,
+                    showTodayExpiredLabel: showTodayExpiredLabel
                 )
                 .listRowSeparator(.hidden)
                 .listRowInsets(rowInsets)              // ✅ fondamentale
@@ -90,8 +98,19 @@ private extension TaskRowPreview {
     var rowBackground: some View {
         switch listStyleChoice {
         case .cards:
+            let deadline = model.deadLine ?? .distantFuture
+            let isToday = Calendar.current.isDateInToday(deadline) && deadline >= Date()
+            let isOverdue = deadline < Date()
+            let isCritical = model.prioritySystemImage == "flame"
+
+            let shouldHighlight = highlightCriticalOverdue && isCritical && (isToday || isOverdue)
+
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(
+                    shouldHighlight
+                    ? AnyShapeStyle(Color.red.opacity(0.12))
+                    : AnyShapeStyle(.ultraThinMaterial)
+                )
         case .plain:
             Color.clear
         }

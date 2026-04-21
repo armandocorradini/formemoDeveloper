@@ -40,7 +40,7 @@ struct ShortList: View {
                     header: {
                         Text("Try saying 'Hey Siri,' followed by:")
                     } footer: {
-                        Text("Siri will ask for the activity title and due date, then create the record with an automatic reminder.")
+                        Text("Siri will ask for the activity title and due date, then create the record. Choose whether to set a reminder automatically or have Siri ask you.")
                     }
                 }
                 .scrollContentBackground(.hidden)

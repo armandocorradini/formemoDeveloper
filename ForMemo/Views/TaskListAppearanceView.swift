@@ -83,16 +83,22 @@ enum TaskListAppearanceKeys {
     static let showPriority = "tasklist.showPriority"
     static let showBadgeOnlyWithPriority = "tasklist.showBadgeOnlyWithPriority"
     static let highlightCriticalOverdue = "tasklist.highlightCriticalOverdue"
+    static let showTodayExpiredLabel = "tasklist.showTodayExpiredLabel"
 }
 
 
 struct TaskListAppearanceView: View {
     
+    @AppStorage("TaskListStyle")
+    private var listStyleChoice: TaskListStyle = .cards
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
     
     @AppStorage(TaskListAppearanceKeys.highlightCriticalOverdue)
     private var highlightCriticalOverdue = true
+    
+    @AppStorage(TaskListAppearanceKeys.showTodayExpiredLabel)
+    private var showTodayExpiredLabel = true
     
     @Environment(\.dismiss) private var dismiss
     
@@ -198,24 +204,51 @@ struct TaskListAppearanceView: View {
             .onChange(of: dueIconEffectRaw) { _, _ in
                 refreshID = UUID()
             }
+            .onChange(of: highlightCriticalOverdue) { _, _ in
+                refreshID = UUID()
+            }
+            .onChange(of: showTodayExpiredLabel) { _, _ in
+                refreshID = UUID()
+            }
         }
         
         
     }
     
+    private var previewTask: TodoTask {
+        let task = TodoTask()
+        task.title = String(localized: "Preview")
+        task.taskDescription = "Meeting with the medical team"
+        task.priority = .critical
+        task.deadLine = Date().addingTimeInterval(3600)
+        task.reminderOffsetMinutes = 60
+        task.isCompleted = false
+        return task
+    }
+    
+    
     @ViewBuilder
     private var previewRow: some View {
-        
-        TaskRowPreview(
-            iconStyle: iconStyle,
-            badgeStyle: badgeStyle,
-            showBadge: showBadge,
-            showAttachments: showAttachments,
-            showLocation: showLocation,
-            showPriority: showPriority,
-            showBadgeOnlyWithPriority: showBadgeOnlyWithPriority
-        )
-        .frame(height: 128)
+
+        List {
+            TaskRow(task: previewTask)
+                .modifier(TodoSectionView.RowCardStyle(
+                    task: previewTask,
+                    style: listStyleChoice
+                ))
+                .padding(.horizontal, listStyleChoice == .plain ? 12 : 0)
+                .listRowInsets(
+                    listStyleChoice == .cards
+                    ? EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
+                    : EdgeInsets(top: 20, leading: 0, bottom: 20, trailing: 0)
+                )
+                .listRowSeparator(.hidden)
+        }
+        .scrollDisabled(true)
+        .contentMargins(.top, 18, for: .scrollContent)
+        .contentMargins(.horizontal, 8, for: .scrollContent)
+        .frame(height: 140)
+        .modifier(ListStyleModifier(style: listStyleChoice))
     }
     
     private var appearanceSection: some View {
@@ -266,6 +299,10 @@ struct TaskListAppearanceView: View {
                 "Highlight overdue & today (critical priority)",
                 isOn: $highlightCriticalOverdue
             )
+            Toggle(
+                "Show “Today / Expired” label",
+                isOn: $showTodayExpiredLabel
+            )
         }
     }
     
@@ -281,7 +318,19 @@ struct TaskListAppearanceView: View {
         showPriority = true
         showBadgeOnlyWithPriority = true
         highlightCriticalOverdue = true
+        showTodayExpiredLabel = true
         selectedRowStyle = 0
     }
 }
 
+private struct ListStyleModifier: ViewModifier {
+    let style: TaskListStyle
+
+    func body(content: Content) -> some View {
+        if style == .cards {
+            content.listStyle(.insetGrouped)
+        } else {
+            content.listStyle(.plain)
+        }
+    }
+}

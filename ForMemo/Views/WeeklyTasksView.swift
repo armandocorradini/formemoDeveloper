@@ -187,10 +187,15 @@ private struct WeeklyTaskRow: View {
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
     
+    @AppStorage("tasklist.highlightCriticalOverdue")
+    private var highlightCriticalOverdue: Bool = true
+    
     @Binding var taskPendingDeletion: TodoTask?
     
     @Environment(\.modelContext)
     private var modelContext
+
+    @Environment(\.colorScheme) private var colorScheme
     
     let task: TodoTask
     
@@ -344,9 +349,27 @@ private struct WeeklyTaskRow: View {
                 if let date = task.deadLine {
                     Image(systemName: "clock")
                     Text(date, format: .dateTime.hour().minute())
-                        .foregroundStyle(
-                            Calendar.current.isDateInToday(task.deadLine ?? .distantPast) ? (task.deadLine! < .now ? .red : .orange) : .secondary)
-                    
+                        .foregroundStyle({
+                            if let deadline = task.deadLine {
+                                let now = Date()
+                                let calendar = Calendar.current
+                                let isToday = calendar.isDateInToday(deadline) && deadline >= now
+                                let isOverdue = deadline < now
+                                let isCritical = task.priority.systemImage == "flame"
+                                
+                                if highlightCriticalOverdue && isCritical && (isToday || isOverdue) {
+                                    return Color.red
+                                } else if isToday {
+                                    return Color.orange
+                                } else if isOverdue {
+                                    return Color.red
+                                } else {
+                                    return Color.secondary
+                                }
+                            } else {
+                                return Color.secondary
+                            }
+                        }())
                 }
                 
                 if let minutes = task.reminderOffsetMinutes {
@@ -364,15 +387,30 @@ private struct WeeklyTaskRow: View {
     
     private var cardBackground: some View {
         
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(Color(uiColor: .secondarySystemBackground).opacity(0.5))
+        let deadline = task.deadLine ?? .distantFuture
+        
+      
+        let isCritical = task.priority.systemImage == "flame"
+        let isToday = Calendar.current.isDateInToday(deadline) && deadline >= Date()
+        let isOverdue = deadline < Date()
+        let shouldHighlight = highlightCriticalOverdue && isCritical && (isToday || isOverdue)
+        
+        return RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .fill(
+                shouldHighlight
+                ? Color.red.opacity(colorScheme == .dark ? 0.18 : 0.08)
+                : Color(uiColor: .secondarySystemBackground).opacity(0.5)
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(
-                        Calendar.current.isDateInToday(task.deadLine ?? .distantPast) ? (task.deadLine! < .now ? .red : .orange) : .secondary,
-                        lineWidth: Calendar.current.isDateInToday(task.deadLine ?? .distantPast) ? 1.4 : 0.3
+                        isOverdue
+                            ? Color.red
+                            : isToday
+                                ? Color.orange
+                                : Color.secondary,
+                        lineWidth: (isToday || isOverdue) ? 1.4 : 0.3
                     )
-                
             )
     }
     

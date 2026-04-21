@@ -396,17 +396,17 @@ struct SettingsView: View {
                         isOn: $siriAutoReminderEnabled
                     )
                     
-                    Toggle(
-                        "Short confirmation",
-                        isOn: $siriShortConfirmation
-                    )
+                    Toggle(isOn: $siriShortConfirmation) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Short confirmation")
+                            Text("Siri replies briefly after creating a task.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                     
                 } header: {
                     Text("Siri & Shortcuts")
-                } footer: {
-                    Text(
-                        "Siri replies briefly after creating a task."
-                    )
                 }
                 
                 Section {

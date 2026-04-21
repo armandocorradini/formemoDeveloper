@@ -163,15 +163,6 @@ struct AppQuickGuideView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                
-                HStack {
-                    Spacer()
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .padding()
-                }
-                
                 Text("Quick Guide")
                     .font(.title3)
                     .padding(.vertical, 8)
