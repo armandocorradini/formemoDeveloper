@@ -435,3 +435,14 @@ extension DeletedItem {
         try? context.save()
     }
 }
+extension TaskAttachment {
+    
+    static var previewMock: TaskAttachment {
+        TaskAttachment(
+            originalName: "preview.jpg",
+            relativePath: "preview.jpg",
+            contentType: "image/jpeg",
+            task: nil
+        )
+    }
+}

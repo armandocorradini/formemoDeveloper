@@ -223,6 +223,10 @@ struct TaskListAppearanceView: View {
         task.deadLine = Date().addingTimeInterval(3600)
         task.reminderOffsetMinutes = 60
         task.isCompleted = false
+        task.locationName = "Office"
+        task.attachments = [TaskAttachment.previewMock]
+
+
         return task
     }
     

@@ -183,11 +183,12 @@ extension TaskRowContent {
         if showPriority, let image = model.prioritySystemImage {
             Image(systemName: image)
         }
-        if showAttachments {
+        if showAttachments && model.hasValidAttachments {
             Image(systemName: "paperclip")
         }
-        if showLocation {
+        if showLocation && model.hasLocation {
             Image(systemName: "location.fill")
+
         }
     }
     

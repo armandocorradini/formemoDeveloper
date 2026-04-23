@@ -340,7 +340,7 @@ final class NotificationManager: NSObject {
                     value: -minutes,
                     to: deadline
                ),
-               date > now {
+               date.addingTimeInterval(1) > now {
                 
                 let id = "\(base).reminder"
                 

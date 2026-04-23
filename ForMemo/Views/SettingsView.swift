@@ -292,13 +292,15 @@ struct SettingsView: View {
                         Text("Get reminders when you arrive at a place.")
                     }
 
-#if DEBUG
+                    #if DEBUG
                     Button {
                         Task {
                             let center = UNUserNotificationCenter.current()
                             let requests = await center.pendingNotificationRequests()
 
                             print("🔔 DEBUG NOTIFICATIONS START ------------------")
+
+                            var seenDates: [Date: [String]] = [:]
 
                             for req in requests {
 
@@ -310,19 +312,46 @@ struct SettingsView: View {
 
                                 if let t = req.trigger as? UNCalendarNotificationTrigger,
                                    let next = t.nextTriggerDate() {
-                                    triggerInfo = "📅 \(next)"
+                                    let formatter = DateFormatter()
+                                    formatter.dateStyle = .medium
+                                    formatter.timeStyle = .short
+                                    triggerInfo = "📅 \(formatter.string(from: next))"
+                                    seenDates[next, default: []].append(id)
                                 } else if let t = req.trigger as? UNTimeIntervalNotificationTrigger {
                                     triggerInfo = "⏱ in \(Int(t.timeInterval))s"
+                                } else if let t = req.trigger as? UNLocationNotificationTrigger {
+                                    let region = t.region
+                                    if let circular = region as? CLCircularRegion {
+                                        let name = region.identifier.isEmpty ? "unknown" : region.identifier
+                                        triggerInfo = "📍 \(name) | lat: \(circular.center.latitude), lon: \(circular.center.longitude), radius: \(Int(circular.radius))m"
+                                    } else {
+                                        let name = region.identifier.isEmpty ? "unknown" : region.identifier
+                                        triggerInfo = "📍 \(name) | location trigger"
+                                    }
                                 }
+
+                                let type: String = {
+                                    if id.contains(".deadline") { return "⏱ DEADLINE (-notificationLeadTimeDays)" }
+                                    if id.contains(".reminder") { return "🔔 REMINDER" }
+                                    return "❓ UNKNOWN"
+                                }()
 
                                 print("""
                                 ID: \(id)
+                                Type: \(type)
                                 Title: \(title)
                                 Task: \(body)
                                 Trigger: \(triggerInfo)
                                 ------------------
                                 """)
                             }
+
+                            print("🔍 COLLISIONS ------------------")
+                            for (date, ids) in seenDates where ids.count > 1 {
+                                print("⚠️ Same trigger date:", date)
+                                ids.forEach { print("   -> \($0)") }
+                            }
+                            print("🔍 END COLLISIONS --------------")
 
                             print("🔔 DEBUG NOTIFICATIONS END --------------------")
                         }
@@ -336,7 +365,7 @@ struct SettingsView: View {
                                 .foregroundStyle(.red)
                         }
                     }
-#endif
+                    #endif
                 } header: {
                     Text("Notifications")
                 } footer: {

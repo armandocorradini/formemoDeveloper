@@ -157,7 +157,7 @@ struct WeeklyTasksView: View {
                 
                 Text("Expired in previous days: \(expiredTasks.count)")
                     .font(.body)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(expiredTasks.count > 0 ? .red : .primary)
                 
                 Spacer()
             }
