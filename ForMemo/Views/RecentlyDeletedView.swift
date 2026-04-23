@@ -9,6 +9,8 @@ struct RecentlyDeletedView: View {
     @Query(sort: \DeletedItem.deletedAt, order: .reverse)
     private var items: [DeletedItem]
     
+    @State private var selection = Set<DeletedItem.ID>()
+    
     var body: some View {
         List {
             
@@ -35,6 +37,16 @@ struct RecentlyDeletedView: View {
                 }) { item in
                     
                     HStack(spacing: 12) {
+                        
+                        Image(systemName: selection.contains(item.id) ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(selection.contains(item.id) ? .blue : .secondary)
+                            .onTapGesture {
+                                if selection.contains(item.id) {
+                                    selection.remove(item.id)
+                                } else {
+                                    selection.insert(item.id)
+                                }
+                            }
                         
                         if item.type == "attachment" {
                             AttachmentPreviewView(
@@ -78,13 +90,28 @@ struct RecentlyDeletedView: View {
                                 
                                 let count = attachmentCount(for: item)
                                 if count > 0 {
-                                    Text("\(count) attachment\(count > 1 ? "s" : "")")
+                                    Text("\(count) attachment")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
+                                
+                                Text("Deleted: \(item.deletedAt.formatted(date: .abbreviated, time: .shortened))")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .padding(.vertical, 4)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.secondarySystemBackground))
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     .swipeActions (edge: .leading) {
                         
                         Button {
@@ -135,9 +162,70 @@ struct RecentlyDeletedView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Close") {
+                Button {
                     dismiss()
+                } label: {
+                    Image(systemName: "xmark")
                 }
+            }
+            
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                
+                Button(selection.count == items.count ? "Deselect All" : "Select All") {
+                    if selection.count == items.count {
+                        selection.removeAll()
+                    } else {
+                        selection = Set(items.map { $0.id })
+                    }
+                }
+                
+                Button {
+                    for id in selection {
+                        if let item = items.first(where: { $0.id == id }) {
+                            item.restore(in: context)
+                            context.delete(item)
+                        }
+                    }
+                    try? context.save()
+                    selection.removeAll()
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .disabled(selection.isEmpty)
+                
+                Button(role: .destructive) {
+                    for id in selection {
+                        if let item = items.first(where: { $0.id == id }) {
+                            
+                            func deleteFile(_ item: DeletedItem) {
+                                if let trashName = item.trashFileName,
+                                   let dir = TaskAttachment.trashDirectory {
+                                    let url = dir.appendingPathComponent(trashName)
+                                    try? FileManager.default.removeItem(at: url)
+                                }
+                            }
+
+                            if item.type == "task" {
+                                let relatedAttachments = items.filter {
+                                    $0.type == "attachment" &&
+                                    $0.taskID == item.taskID
+                                }
+                                for att in relatedAttachments {
+                                    deleteFile(att)
+                                    context.delete(att)
+                                }
+                            }
+
+                            deleteFile(item)
+                            context.delete(item)
+                        }
+                    }
+                    try? context.save()
+                    selection.removeAll()
+                } label: {
+                    Image(systemName: "trash")
+                }
+                .disabled(selection.isEmpty)
             }
         }
     }

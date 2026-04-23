@@ -284,17 +284,10 @@ struct TaskListAppearanceView: View {
         }
     }
     
-    
-    
     private var visibleElementsSection: some View {
         
         Section("Visible elements") {
             
-            Toggle("Show days badge", isOn: $showBadge)
-            Toggle("Show badge only when priority is set", isOn: $showBadgeOnlyWithPriority)
-            Toggle("Show attachments icon", isOn: $showAttachments)
-            Toggle("Show location icon", isOn: $showLocation)
-            Toggle("Show priority icon", isOn: $showPriority)
             Toggle(
                 "Highlight overdue & today (critical priority)",
                 isOn: $highlightCriticalOverdue
@@ -303,6 +296,12 @@ struct TaskListAppearanceView: View {
                 "Show “Today/Expired”",
                 isOn: $showTodayExpiredLabel
             )
+            Toggle("Show days badge", isOn: $showBadge)
+            Toggle("Show badge only when priority is set", isOn: $showBadgeOnlyWithPriority)
+            Toggle("Show attachments icon", isOn: $showAttachments)
+            Toggle("Show location icon", isOn: $showLocation)
+            Toggle("Show priority icon", isOn: $showPriority)
+
         }
     }
     

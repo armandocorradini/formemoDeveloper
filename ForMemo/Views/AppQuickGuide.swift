@@ -118,7 +118,17 @@ struct AppQuickGuideView: View {
                 icon: "deskclock",
                 tint: .orange
             ),
-        
+        .init(
+
+            title: String(localized: "Location-Based Reminders"),
+
+            description: String(localized: "Get notified when you arrive at a place. Associate a location with a task and receive a reminder at the right moment."),
+
+            icon: "mappin.and.ellipse",
+
+            tint: .blue
+
+        ),
             .init(
                 title: String(localized:"Customize your task list"),
                 description: String(localized:"""

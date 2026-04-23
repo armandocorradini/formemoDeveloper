@@ -1,449 +1,36 @@
 {
-
-  "sourceLanguage": "en",
-
-  "strings": {
-
-    "toast.imported %lld": {
-
-      "extractionState": "manual",
-
-      "localizations": {
-
-        "it": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld attività importata"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld attività importate"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        },
-
-        "en": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld task imported"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tasks imported"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        },
-
-        "fr": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tâche importée"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tâches importées"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        },
-
-        "de": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld Aufgabe importiert"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld Aufgaben importiert"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        },
-
-        "es": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tarea importada"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tareas importadas"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        }
-
-      }
-
-    },
-
-    "toast.exported %lld": {
-
-      "extractionState": "manual",
-
-      "localizations": {
-
-        "it": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld attività esportata"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld attività esportate"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        },
-
-        "en": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld task exported"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tasks exported"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        },
-
-        "fr": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tâche exportée"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tâches exportées"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        },
-
-        "de": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld Aufgabe exportiert"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld Aufgaben exportiert"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        },
-
-        "es": {
-
-          "variations": {
-
-            "plural": {
-
-              "one": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tarea exportada"
-
-                }
-
-              },
-
-              "other": {
-
-                "stringUnit": {
-
-                  "state": "translated",
-
-                  "value": "%lld tareas exportadas"
-
-                }
-
-              }
-
-            }
-
-          }
-
-        }
-
-      }
-
-    },
-
+  "sourceLanguage" : "en",
+  "strings" : {
     "" : {
-
       "shouldTranslate" : false
-
     },
-
     "\nLocation: %@\n" : {
-
       "localizations" : {
-
         "de" : {
-
           "stringUnit" : {
-
             "state" : "translated",
-
             "value" : "\nStandort: %@\n"
-
           }
-
         },
-
         "es" : {
-
           "stringUnit" : {
-
             "state" : "translated",
-
             "value" : "\nUbicación: %@\n"
-
           }
-
         },
-
         "fr" : {
-
           "stringUnit" : {
-
             "state" : "translated",
-
             "value" : "\nEmplacement : %@\n"
-
           }
-
         },
-
         "it" : {
-
           "stringUnit" : {
-
             "state" : "translated",
-
             "value" : "\nPosizione: %@\n"
-
           }
-
         }
-
       }
-
     },
     "…" : {
       "comment" : "An ellipsis used to indicate that there are more tasks hidden.",
@@ -535,38 +122,96 @@
       },
       "shouldTranslate" : false
     },
-    "%lld attachment%@" : {
-      "comment" : "A label displaying the number of attachments for a task. The argument is the count of attachments.",
-      "isCommentAutoGenerated" : true,
+    "%lld attachment" : {
       "localizations" : {
         "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld Anhang %2$@"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "    %lld Anhang"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "    %lld Anhänge"
+                }
+              }
+            }
           }
         },
         "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld attachment%2$@"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attachment"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attachments"
+                }
+              }
+            }
           }
         },
         "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld archivo adjunto %2$@"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld adjunto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld adjuntos"
+                }
+              }
+            }
           }
         },
         "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld pièce jointe %2$@"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pièce jointe"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pièces jointes"
+                }
+              }
+            }
           }
         },
         "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld allegato %2$@"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld allegato"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld allegati"
+                }
+              }
+            }
           }
         }
       }
@@ -1132,32 +777,32 @@
         }
       }
     },
-    "📍 You're near your task" : {
-      "comment" : "Title of a notification when a task is nearby.",
+    "📍 Nearby" : {
+      "comment" : "Title of a notification that is triggered when a task is nearby.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "📍 Du bist in der Nähe deiner Aufgabe"
+            "value" : "📍 In der Nähe"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "📍 Estás cerca de tu tarea"
+            "value" : "📍 Cerca"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "📍 Vous êtes à proximité de votre tâche"
+            "value" : "📍 À proximité"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "📍 Sei vicino alla tua attività"
+            "value" : "📍 Nelle vicinanze"
           }
         }
       }
@@ -3373,6 +3018,34 @@
         }
       }
     },
+    "Deleted: %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelöscht: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminado: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimé : %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminato: %@"
+          }
+        }
+      }
+    },
     "Deletion" : {
       "localizations" : {
         "de" : {
@@ -4331,6 +4004,34 @@
         }
       }
     },
+    "ForMemo lets you create, organize, and manage tasks in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo hilft dir, Aufgaben einfach und intuitiv zu erstellen, zu organisieren und zu verwalten.\n\nDu kannst Aufgaben schnell erstellen, auch mit Siri. Anhänge (Fotos, Dokumente, Audio) können direkt in der App hinzugefügt werden.\n\nWenn du ein Fälligkeitsdatum festlegst, plant die App automatisch eine Benachrichtigung: zum Zeitpunkt der Fälligkeit oder im Voraus (1 bis 7 Tage), je nach Einstellungen.\nDu kannst außerdem eine eigene Erinnerung und eine standortbasierte Benachrichtigung hinzufügen.\n\nBei Erinnerungen kannst du selbst wählen, wann du benachrichtigt werden möchtest, oder mit Siri den optimalen Zeitpunkt automatisch festlegen lassen.\n\nDu kannst einer Aufgabe einen Ort zuweisen und wirst benachrichtigt, wenn du dort ankommst. Navigations-Apps können direkt geöffnet werden.\n\nDie App bietet Anpassungsoptionen, einen hellen oder dunklen Modus sowie verschiedene Ansichten.\n\nDu kannst Aufgaben aus Kalender, Apple Erinnerungen oder CSV-Dateien importieren und in Kalender, CSV oder im ICS-Format exportieren.\n\nVerfügbar in Englisch, Italienisch, Französisch, Deutsch und Spanisch.\n\nDeine Daten bleiben auf deinem Gerät (oder in iCloud, wenn aktiviert). Kein Konto erforderlich und kein Tracking."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo te permite crear, organizar y gestionar tareas de forma sencilla e intuitiva.\n\nPuedes crear tareas rápidamente, incluso con Siri. Los archivos adjuntos (fotos, documentos, audio) se pueden añadir directamente en la app.\n\nCuando estableces una fecha de vencimiento, la app programa automáticamente una notificación: en el momento indicado o con antelación (de 1 a 7 días), según la configuración.\nTambién puedes añadir un recordatorio personalizado y una notificación basada en la ubicación.\n\nCon los recordatorios puedes elegir cuándo recibir la notificación o, usando Siri, dejar que se configure automáticamente.\n\nPuedes asociar una ubicación a una tarea y recibir una notificación al llegar, con la opción de abrir apps de navegación.\n\nLa app ofrece opciones de personalización, modo claro u oscuro y diferentes vistas.\n\nPuedes importar tareas desde Calendario, Recordatorios de Apple o archivos CSV, y exportarlas a Calendario, CSV o formato ICS.\n\nDisponible en inglés, italiano, francés, alemán y español.\n\nTus datos permanecen en tu dispositivo (o en iCloud si está activado). No se requiere cuenta ni hay seguimiento."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo vous permet de créer, organiser et gérer vos tâches de manière simple et intuitive.\n\nVous pouvez créer rapidement des tâches, même avec Siri. Les pièces jointes (photos, documents, audio) peuvent être ajoutées directement dans l’app.\n\nLorsque vous définissez une date d’échéance, l’app programme automatiquement une notification : à l’heure prévue ou à l’avance (de 1 à 7 jours), selon vos réglages.\nVous pouvez également ajouter un rappel personnalisé et une notification basée sur la position.\n\nAvec les rappels, vous pouvez choisir quand être averti ou, en utilisant Siri, laisser l’app définir automatiquement le meilleur moment.\n\nVous pouvez associer un lieu à une tâche et recevoir une notification lorsque vous arrivez, avec la possibilité d’ouvrir des apps de navigation pour vous y rendre.\n\nL’app propose des options de personnalisation, un mode clair ou sombre et différentes vues.\n\nVous pouvez importer des tâches depuis Calendrier, Rappels Apple ou des fichiers CSV, et les exporter vers Calendrier, CSV ou au format ICS.\n\nDisponible en anglais, italien, français, allemand et espagnol.\n\nVos données restent sur votre appareil (ou sur iCloud si activé). Aucun compte requis et aucun suivi."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo ti permette di creare, organizzare e gestire attività in modo semplice e intuitivo.\n\nPuoi creare attività rapidamente, anche con Siri. Gli allegati (foto, documenti, audio) possono essere aggiunti direttamente nell’app.\n\nQuando imposti una scadenza, l’app crea automaticamente una notifica: alla scadenza oppure in anticipo (da 1 a 7 giorni), in base alle impostazioni.\nPuoi anche aggiungere un promemoria personalizzato e una notifica basata sulla posizione.\n\nCon i promemoria puoi scegliere manualmente quando essere avvisato oppure, usando Siri, lasciare che venga impostato automaticamente.\n\nPuoi associare un luogo a un’attività e ricevere una notifica quando arrivi a destinazione, con possibilità di aprire app di navigazione.\n\nL’app offre opzioni di personalizzazione, tema chiaro o scuro e diverse modalità di visualizzazione.\n\nPuoi importare attività da Calendario, Promemoria Apple o file CSV, ed esportarle in Calendario, CSV o formato ICS.\n\nDisponibile in italiano, inglese, francese, tedesco e spagnolo.\n\nI tuoi dati restano sul dispositivo (o su iCloud, se attivo). Nessun account richiesto e nessun tracciamento."
+          }
+        }
+      }
+    },
     "from" : {
       "shouldTranslate" : false
     },
@@ -4476,6 +4177,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Generali"
+          }
+        }
+      }
+    },
+    "Get notified when you arrive at a place. Associate a location with a task and receive a reminder at the right moment." : {
+      "comment" : "Text describing how to use location-based reminders in the app.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erhalten Sie eine Benachrichtigung, wenn Sie an einem Ort ankommen. Verknüpfen Sie einen Ort mit einer Aufgabe und werden Sie zur richtigen Zeit erinnert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recibe una notificación cuando llegues a un lugar. Asocia una ubicación a una tarea y recibe un recordatorio en el momento adecuado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recevez une notification lorsque vous arrivez à un endroit. Associez un lieu à une tâche et soyez averti au bon moment."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricevi una notifica quando arrivi in un luogo. Associa una posizione a un’attività e ricevi un promemoria al momento giusto."
           }
         }
       }
@@ -5851,6 +5582,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rappels de lieu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Promemoria basati sulla posizione"
+          }
+        }
+      }
+    },
+    "Location-Based Reminders" : {
+      "comment" : "Notification type for location-based reminders.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standortbasierte Erinnerungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordatorios basados en la ubicación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rappels basés sur la position"
           }
         },
         "it" : {
@@ -11234,6 +10995,196 @@
         }
       }
     },
+    "toast.exported %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Aufgabe exportiert"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Aufgaben exportiert"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld task exported"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tasks exported"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tarea exportada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tareas exportadas"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tâche exportée"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tâches exportées"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attività esportata"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attività esportate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "toast.imported %lld" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Aufgabe importiert"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Aufgaben importiert"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld task imported"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tasks imported"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tarea importada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tareas importadas"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tâche importée"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tâches importées"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attività importata"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attività importate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Today" : {
       "localizations" : {
         "de" : {
@@ -11630,6 +11581,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cosa vuoi aggiungere?"
+          }
+        }
+      }
+    },
+    "What features does this app offer?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welche Funktionen bietet diese App?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué funciones ofrece esta app?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelles sont les fonctionnalités de cette app ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Che funzioni ha questa App?"
           }
         }
       }

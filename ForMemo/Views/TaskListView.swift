@@ -551,7 +551,7 @@ struct TaskRow: View {
     }
 
     private var dynamicRowHeight: CGFloat {
-        if showTodayExpiredLabel && (isToday || isOverdue) {
+        if showTodayExpiredLabel && !task.isCompleted && (isToday || isOverdue) {
             return 54
         } else {
             return 46
@@ -602,9 +602,11 @@ struct TaskRow: View {
                 showAttachments: showAttachments,
                 showLocation: showLocation,
                 showPriority: showPriority,
-                showBadgeOnlyWithPriority: showBadgeOnlyWithPriority, rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
+                showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
+                rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
                 highlightCriticalOverdue: highlightCriticalOverdue,
-                showTodayExpiredLabel: showTodayExpiredLabel)
+                showTodayExpiredLabel: showTodayExpiredLabel && !task.isCompleted
+            )
         }
 
         .contentShape(Rectangle())
