@@ -91,6 +91,12 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
     func updateRegions(tasks: [TodoTask]) {
         guard !tasks.isEmpty else { return }
         
+        let newIDs = Set(tasks.map { $0.id })
+
+        if newIDs == monitoredTaskIDs {
+            return
+        }
+        
         let enabled = UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
         guard enabled else {
             manager.monitoredRegions.forEach {

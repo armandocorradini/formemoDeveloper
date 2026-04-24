@@ -49,7 +49,7 @@ struct LocationPickerView: View {
     @State private var userLocation: CLLocation?
     @State private var locationDelegate: LocationDelegate?
 
-    private let locationManager = CLLocationManager()
+    @State private var locationManager = CLLocationManager()
     
     
     
@@ -85,7 +85,11 @@ struct LocationPickerView: View {
                 searchCompleter.update(query: newValue)
             }
             .onAppear {
-                locationManager.requestWhenInUseAuthorization()
+                guard userLocation == nil else { return }
+
+                if locationManager.authorizationStatus == .notDetermined {
+                    locationManager.requestWhenInUseAuthorization()
+                }
 
                 let delegate = LocationDelegate { location in
                     self.userLocation = location
@@ -189,17 +193,26 @@ struct DistanceView: View {
 
     @State private var distanceText: String = ""
 
+    static var cache: [String: String] = [:]
+    
     var body: some View {
         Text(distanceText)
             .font(.caption2)
             .foregroundStyle(.secondary)
-            .task {
+            .task(id: "\(completion.title)|\(completion.subtitle)") {
                 await calculateDistance()
             }
     }
 
     private func calculateDistance() async {
         guard distanceText.isEmpty else { return }
+
+        let key = "\(completion.title)|\(completion.subtitle)"
+
+        if let cached = Self.cache[key] {
+            distanceText = cached
+            return
+        }
 
         let request = MKLocalSearch.Request(completion: completion)
         let search = MKLocalSearch(request: request)
@@ -208,7 +221,6 @@ struct DistanceView: View {
               let item = response.mapItems.first else { return }
 
         let location = item.location
-
         let distance = userLocation.distance(from: location)
 
         let text: String
@@ -217,6 +229,9 @@ struct DistanceView: View {
         } else {
             text = String(format: "%.1f km", distance / 1000)
         }
+
+        // cache result
+        Self.cache[key] = text
 
         await MainActor.run {
             distanceText = text
