@@ -1021,21 +1021,23 @@ struct TaskDetailView: View {
             // 🔔 Location Reminder Toggle
             if task.locationLatitude != nil && task.locationLongitude != nil {
                 let isGlobalEnabled = UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
-
-                Toggle("Location Reminder", isOn: Binding(
-                    get: { task.locationReminderEnabled },
-                    set: { newValue in
-                        task.locationReminderEnabled = newValue
-                        saveTask()
+                VStack(alignment: .leading) {
+                    Toggle("Location Reminder", isOn: Binding(
+                        get: { task.locationReminderEnabled },
+                        set: { newValue in
+                            task.locationReminderEnabled = newValue
+                            saveTask()
+                        }
+                    ))
+                    .disabled(!isGlobalEnabled)
+                    .opacity(isGlobalEnabled ? 1 : 0.4)
+                    
+                    if !isGlobalEnabled {
+                        Text("Enable Location Reminders in Settings")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.top,6)
                     }
-                ))
-                .disabled(!isGlobalEnabled)
-                .opacity(isGlobalEnabled ? 1 : 0.4)
-
-                if !isGlobalEnabled {
-                    Text("Enable Location Reminders in Settings")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
             }
             

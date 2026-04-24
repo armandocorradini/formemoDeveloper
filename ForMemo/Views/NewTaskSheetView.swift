@@ -293,6 +293,7 @@ struct NewTaskSheetView: View {
                         Text("Enable Location Reminders in Settings")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                            .padding(.top,6)
                     }
                 }
             }
