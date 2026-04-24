@@ -844,6 +844,7 @@ struct TaskDetailView: View {
                     set: { newValue in
                         if newValue {
                             task.deadLine = .now
+                            task.snoozeUntil = nil
                         } else {
                             showingDeleteDeadlineAlert = true
                         }
@@ -863,9 +864,9 @@ struct TaskDetailView: View {
                                 get: { task.deadLine ?? .now },
                                 set: { newDate in
                                     task.deadLine = newDate
+                                    task.snoozeUntil = nil
                                     Task {
                                         saveTask()
-
                                     }
                                 }
                             ),
@@ -893,6 +894,7 @@ struct TaskDetailView: View {
                             get: { task.reminderOffsetMinutes },
                             set: { newValue in
                                 task.reminderOffsetMinutes = newValue
+                                task.snoozeUntil = nil
                                 validateReminder()
                             }
                         ),

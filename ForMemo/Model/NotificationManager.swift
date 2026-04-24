@@ -16,7 +16,7 @@ final class NotificationManager: NSObject {
     private var rebuildTask: Task<Void, Never>?
     private var lastRebuild: Date = .distantPast
     private var pendingRefresh = false
-    private let refreshLock = NSLock()
+  
     private var cloudKitDebounceTask: Task<Void, Never>?
     private var isAppLaunching = true
     
@@ -79,77 +79,78 @@ final class NotificationManager: NSObject {
     
     // MARK: - PUBLIC REFRESH
     
+
     func refresh(force: Bool = false) {
         let now = Date()
 
         // 🔴 Throttle globale anti-loop (CloudKit push storm safe)
-
         if !force && now.timeIntervalSince(lastRebuild) < 1.0 {
-
             return
-
         }
 
         lastRebuild = now
-        
-        
-        guard let context = modelContainer?.mainContext else { return }
-        
-        let tasks = fetchTasks(using: context)
-        LocationReminderManager.shared.refreshMonitoring(tasks: tasks)
-        
-        // 🔥 1. Badge immediato (NON CAMBIA)
-        let badge = computeBadgeCount(from: tasks)
-        let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
 
+        guard let context = modelContainer?.mainContext else { return }
+
+        let tasksInitial = fetchTasks(using: context)
+        LocationReminderManager.shared.refreshMonitoring(tasks: tasksInitial)
+
+        // 🔥 Badge immediato
+        let badge = computeBadgeCount(from: tasksInitial)
+        let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
         applyBadge(showBadge ? badge : 0)
-        
-        // 🔥 2. evita loop multipli (thread-safe)
-        var shouldReturn = false
-        
-        refreshQueue.sync {
-            if pendingRefresh && !force {
-                shouldReturn = true
-            } else {
-                pendingRefresh = true
-            }
+
+        // 🔥 evita loop multipli
+        if pendingRefresh && !force {
+            return
         }
-        
-        if shouldReturn { return }
-        
+
+        pendingRefresh = true
+
         rebuildTask?.cancel()
-        
+
         rebuildTask = Task(priority: .utility) { [weak self] in
             guard let self else { return }
-            
+
             try? await Task.sleep(for: .seconds(force ? 0.5 : 1.5))
             guard !Task.isCancelled else { return }
-            
+
+            // --- MAIN ACTOR: fetch + signature ---
+            var tasks: [TodoTask] = []
+            var shouldRebuild = false
+
             await MainActor.run {
-                
 #if DEBUG
                 AppLogger.notifications.debug("Optimized refresh")
 #endif
-                
-                guard let context = self.modelContainer?.mainContext else { return }
-                
-                let tasks = self.fetchTasks(using: context)
-                let signature = self.signature(for: tasks)
-                
-                if !force && signature == self.lastTasksSignature {
-                    self.pendingRefresh = false
+
+                guard let context = self.modelContainer?.mainContext else {
                     return
                 }
-                
-                self.lastTasksSignature = signature
-                
-                Task {
-                    await self.rebuild(tasks)
+
+                let fetched = self.fetchTasks(using: context)
+                let signature = self.signature(for: fetched)
+
+                if !force && signature == self.lastTasksSignature {
+                    self.refreshQueue.sync {
+                        self.pendingRefresh = false
+                    }
+                    return
                 }
-                
-                self.refreshLock.lock()
+
+                self.lastTasksSignature = signature
+                tasks = fetched
+                shouldRebuild = true
+            }
+
+            // --- OUTSIDE MAIN ACTOR: heavy work ---
+            if shouldRebuild {
+                await self.rebuild(tasks)
+            }
+
+            // --- CLEANUP ---
+            await MainActor.run {
                 self.pendingRefresh = false
-                self.refreshLock.unlock()
             }
         }
     }
@@ -231,7 +232,7 @@ final class NotificationManager: NSObject {
     // MARK: - REBUILD
     
     private func rebuild(_ tasks: [TodoTask]) async {
-        
+        let rebuildStart = Date()
         let center = UNUserNotificationCenter.current()
         let now = Date()
         
@@ -380,6 +381,9 @@ final class NotificationManager: NSObject {
                 await addOrUpdate(id: id, content: content, trigger: trigger)
             }
         }
+        
+        // 🚨 evita che rebuild vecchi sovrascrivano nuovi (SNOOZE FIX)
+        guard rebuildStart >= self.lastRebuild else { return }
         
         let toRemove = existing.keys.filter { id in
             id.starts(with: "task.") && !expectedIDs.contains(id)
