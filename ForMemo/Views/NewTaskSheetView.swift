@@ -282,9 +282,19 @@ struct NewTaskSheetView: View {
 
             // Location Reminder Toggle
             if draftTask.locationLatitude != nil && draftTask.locationLongitude != nil {
-                Toggle("Location Reminder", isOn: $draftTask.locationReminderEnabled)
-                .disabled(!UserDefaults.standard.bool(forKey: "locationRemindersEnabled"))
-                .opacity(UserDefaults.standard.bool(forKey: "locationRemindersEnabled") ? 1 : 0.4)
+                let isGlobalEnabled = UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Toggle("Location Reminder", isOn: $draftTask.locationReminderEnabled)
+                        .disabled(!isGlobalEnabled)
+                        .opacity(isGlobalEnabled ? 1 : 0.4)
+                    
+                    if !isGlobalEnabled {
+                        Text("Enable Location Reminders in Settings")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
             
             Picker("Tag", selection: $draftTask.mainTag) {
