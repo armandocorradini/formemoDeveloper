@@ -16,34 +16,17 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
 
     private var triggeredRecently: [String: Date] = [:]
     
+    private var isMonitoringActive = false
+    
+    private var lastLocationRequest: Date = .distantPast
+
     private override init() {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         manager.distanceFilter = 50
-        manager.startUpdatingLocation()
     }
-    
-    func locationManager(
-        _ manager: CLLocationManager,
-        didUpdateLocations locations: [CLLocation]
-    ) {
-        lastKnownLocation = locations.last
-        
-        Task { @MainActor in
-            // 🔥 ricalcola regioni dinamicamente
-            if let container = NotificationManager.shared.modelContainer {
-                let context = container.mainContext
-                let tasks = (try? context.fetch(FetchDescriptor<TodoTask>(
-                    predicate: #Predicate { !$0.isCompleted }
 
-                ))) ?? []
-                updateRegions(tasks: tasks)
-            }
-        }
-    }
-    
-    
     // MARK: - Permissions
     
     func requestPermissionIfNeeded() {
@@ -54,10 +37,59 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
         }
     }
     
+    func refreshMonitoring(tasks: [TodoTask]) {
+        
+        let enabled = UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
+        
+        guard enabled else {
+            stopAllMonitoring()
+            return
+        }
+        
+        let validTasks = tasks
+            .filter { !$0.isCompleted }
+            .filter { $0.locationReminderEnabled }
+            .filter { $0.locationLatitude != nil && $0.locationLongitude != nil }
+        
+        guard !validTasks.isEmpty else {
+            stopAllMonitoring()
+            return
+        }
+        
+        requestPermissionIfNeeded()
+        
+        if !isMonitoringActive {
+            manager.startMonitoringSignificantLocationChanges()
+            isMonitoringActive = true
+        }
+
+        if lastKnownLocation == nil ||
+           Date().timeIntervalSince(lastLocationRequest) > 60 {
+            manager.requestLocation()
+            lastLocationRequest = Date()
+        }
+        
+        updateRegions(tasks: validTasks)
+    }
+
+    private func stopAllMonitoring() {
+        
+        manager.monitoredRegions.forEach {
+            manager.stopMonitoring(for: $0)
+        }
+        
+        if isMonitoringActive {
+            manager.stopMonitoringSignificantLocationChanges()
+            isMonitoringActive = false
+        }
+        
+        monitoredTaskIDs.removeAll()
+    }
+    
     // MARK: - Setup Regions
     
     func updateRegions(tasks: [TodoTask]) {
-        
+        guard !tasks.isEmpty else { return }
         
         let enabled = UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
         guard enabled else {
@@ -120,11 +152,11 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
             
             let center = CLLocationCoordinate2D(latitude: lat, longitude: lon)
             
+            let radius = max(150, UserDefaults.standard.integer(forKey: "locationRadius"))
+            
             let region = CLCircularRegion(
                 center: center,
-                radius: CLLocationDistance(
-                    max(100, UserDefaults.standard.integer(forKey: "locationRadius"))
-                ),
+                radius: CLLocationDistance(radius),
                 identifier: task.id.uuidString
             )
             
@@ -135,6 +167,43 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
             monitoredTaskIDs.insert(task.id)
         }
     }
+    func locationManager(
+        _ manager: CLLocationManager,
+        didUpdateLocations locations: [CLLocation]
+    ) {
+        if let newLocation = locations.last {
+            
+            if let old = lastKnownLocation,
+               newLocation.distance(from: old) < 50 {
+                return
+            }
+            
+            lastKnownLocation = newLocation
+        }
+        
+        Task { @MainActor in
+            if let container = NotificationManager.shared.modelContainer {
+                let context = container.mainContext
+                
+                let tasks = (try? context.fetch(FetchDescriptor<TodoTask>(
+                    predicate: #Predicate { !$0.isCompleted }
+                ))) ?? []
+                
+                updateRegions(tasks: tasks)
+            }
+        }
+    }
+
+    func locationManager(
+        _ manager: CLLocationManager,
+        didFailWithError error: Error
+    ) {
+        // Required for requestLocation() – prevents crash
+#if DEBUG
+        print("Location error: \(error.localizedDescription)")
+#endif
+    }
+    
 }
 
 extension LocationReminderManager {
@@ -162,6 +231,8 @@ extension LocationReminderManager {
             if calendar.isDate(lastTrigger, inSameDayAs: now) {
                 return // 🔥 already triggered today
             }
+            
+            
         }
         
         triggeredRecently[id] = now
@@ -178,6 +249,10 @@ extension LocationReminderManager {
             )
             
             if let task = try? context.fetch(descriptor).first {
+                
+                guard !task.isCompleted,
+                      task.locationReminderEnabled else { return }
+                
                 titleText = task.title
             }
         }

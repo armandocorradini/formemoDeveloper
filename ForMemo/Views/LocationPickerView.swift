@@ -46,30 +46,55 @@ struct LocationPickerView: View {
     
     @State private var searchCompleter = LocationSearchCompleter()
     
+    @State private var userLocation: CLLocation?
+    @State private var locationDelegate: LocationDelegate?
+
+    private let locationManager = CLLocationManager()
+    
+    
+    
     let onSelect: (String, CLLocationCoordinate2D) -> Void
     
     var body: some View {
         
         NavigationStack {
             
-            List(searchCompleter.results, id: \.self) { item in
+            List(Array(searchCompleter.results.prefix(6)), id: \.self) { item in
                 Button {
                     resolve(item)
                 } label: {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(item.title)
+                            .foregroundStyle(.primary)
+
                         if !item.subtitle.isEmpty {
                             Text(item.subtitle)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+                        if let userLocation {
+                            DistanceView(completion: item, userLocation: userLocation)
+                        }
                     }
                 }
+                .buttonStyle(.plain)
             }
             .navigationTitle("Search location")
             .searchable(text: $query)
             .onChange(of: query) { _, newValue in
                 searchCompleter.update(query: newValue)
+            }
+            .onAppear {
+                locationManager.requestWhenInUseAuthorization()
+
+                let delegate = LocationDelegate { location in
+                    self.userLocation = location
+                }
+
+                locationManager.delegate = delegate
+                self.locationDelegate = delegate
+
+                locationManager.requestLocation()
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -134,6 +159,67 @@ private struct CompleterWrapper: UIViewControllerRepresentable {
             
             self.results = completer.results
             
+        }
+    }
+}
+
+
+final class LocationDelegate: NSObject, CLLocationManagerDelegate {
+    let onUpdate: (CLLocation) -> Void
+
+    init(onUpdate: @escaping (CLLocation) -> Void) {
+        self.onUpdate = onUpdate
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let loc = locations.last {
+            onUpdate(loc)
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        // evita crash
+    }
+}
+
+
+struct DistanceView: View {
+    let completion: MKLocalSearchCompletion
+    let userLocation: CLLocation
+
+    @State private var distanceText: String = ""
+
+    var body: some View {
+        Text(distanceText)
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .task {
+                await calculateDistance()
+            }
+    }
+
+    private func calculateDistance() async {
+        guard distanceText.isEmpty else { return }
+
+        let request = MKLocalSearch.Request(completion: completion)
+        let search = MKLocalSearch(request: request)
+
+        guard let response = try? await search.start(),
+              let item = response.mapItems.first else { return }
+
+        let location = item.location
+
+        let distance = userLocation.distance(from: location)
+
+        let text: String
+        if distance < 1000 {
+            text = "\(Int(distance)) m"
+        } else {
+            text = String(format: "%.1f km", distance / 1000)
+        }
+
+        await MainActor.run {
+            distanceText = text
         }
     }
 }

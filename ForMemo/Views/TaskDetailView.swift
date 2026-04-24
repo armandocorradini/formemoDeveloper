@@ -305,14 +305,7 @@ struct TaskDetailView: View {
                     task.locationLatitude = coordinate.latitude
                     task.locationLongitude = coordinate.longitude
                     
-                    do {
-                        try modelContext.save()
-                        
-                    } catch {
-                        AppLogger.persistence.fault("Failed to save context: \(error)")
-                    }
-                    
-                    NotificationManager.shared.refresh(force: true)
+                    saveTask()
                 }
             }
 
@@ -325,7 +318,7 @@ struct TaskDetailView: View {
                 scheduleDebouncedSave()
             }
             .onChange(of: notificationLeadTimeDays) { _, _ in
-                NotificationManager.shared.refresh(force: true)
+                NotificationManager.shared.refresh()
             }
             .onChange(of: task.taskDescription) { _, _ in
                 scheduleDebouncedSave()
@@ -345,14 +338,7 @@ struct TaskDetailView: View {
                     task.deadLine = nil
                     task.reminderOffsetMinutes = nil   // ✅ fondamentale
                     
-                    do {
-                        try modelContext.save()
-                        
-                    } catch {
-                        AppLogger.persistence.fault("Failed to save context: \(error)")
-                    }
-                    
-                    NotificationManager.shared.refresh(force: true)
+                    saveTask()
                 }
                 Button("Cancel", role: .cancel) { }
             } message: {
@@ -371,60 +357,24 @@ struct TaskDetailView: View {
                 }
             }
             
-            .onChange(of: task.deadLine) { _, _ in
-                do {
-                    try modelContext.save()
-                    NotificationManager.shared.refresh(force: true)
-                } catch {
-                    AppLogger.persistence.fault("Failed to save context: \(error)")
-                }
-                
-            }
             .onChange(of: task.reminderOffsetMinutes, initial: false) { _, _ in
-                do {
-                    try modelContext.save()
-                    NotificationManager.shared.refresh(force: true)
-                } catch {
-                    AppLogger.persistence.fault("Failed to save context: \(error)")
-                }
+                saveTask()
                 
             }
             .onChange(of: task.locationName) { _, _ in
-                do {
-                    try modelContext.save()
-                    NotificationManager.shared.refresh(force: true)
-                } catch {
-                    AppLogger.persistence.fault("Failed to save context: \(error)")
-                }
-                
+                saveTask()
             }
             .onChange(of: task.locationLatitude) { _, _ in
-                do {
-                    try modelContext.save()
-                    NotificationManager.shared.refresh(force: true)
-                    
-                } catch {
-                    AppLogger.persistence.fault("Failed to save context: \(error)")
-                }
+                saveTask()
                 
             }
             .onChange(of: task.locationLongitude) { _, _ in
-                do {
-                    try modelContext.save()
-                    NotificationManager.shared.refresh(force: true)
-                } catch {
-                    AppLogger.persistence.fault("Failed to save context: \(error)")
-                }
+                saveTask()
                 
                 
             }
             .onChange(of: task.isCompleted) { _, _ in
-                do {
-                    try modelContext.save()
-                    NotificationManager.shared.refresh(force: true)
-                } catch {
-                    AppLogger.persistence.fault("Failed to save context: \(error)")
-                }
+                saveTask()
             }
             
         }
@@ -439,7 +389,7 @@ struct TaskDetailView: View {
         
         do {
             try modelContext.save()
-            NotificationManager.shared.refresh(force: true)
+            NotificationManager.shared.refresh()
 #if DEBUG
             AppLogger.notifications.info("💾 Saved")
 #endif
@@ -866,13 +816,7 @@ struct TaskDetailView: View {
                     task.isCompleted = newValue
                     task.completedAt = newValue ? .now : nil
                     task.snoozeUntil = nil
-                    do {
-                        try modelContext.save()
-                        NotificationManager.shared.refresh(force: true)
-                        
-                    } catch {
-                        AppLogger.persistence.fault("Failed to save context: \(error)")
-                    }
+                    saveTask()
 
                 }
             )) {
@@ -920,14 +864,7 @@ struct TaskDetailView: View {
                                 set: { newDate in
                                     task.deadLine = newDate
                                     Task {
-                                        do {
-                                            try modelContext.save()
-                                            NotificationManager.shared.refresh(force: true)
-                                            
-                                        } catch {
-                                            AppLogger.app.error("Errore salvataggio deadline:\(error))")
-                                            
-                                        }
+                                        saveTask()
 
                                     }
                                 }
@@ -991,13 +928,7 @@ struct TaskDetailView: View {
                     get: { task.priority },
                     set: { newValue in
                         task.priority = newValue
-                        do {
-                            try modelContext.save()
-                            
-                            NotificationManager.shared.refresh(force: true)
-                        } catch {
-                            AppLogger.persistence.fault("Failed to save context: \(error)")
-                        }
+                        saveTask()
                     }
                    )
             ) {
@@ -1061,14 +992,7 @@ struct TaskDetailView: View {
                             task.locationName = nil
                             task.locationLatitude = nil
                             task.locationLongitude = nil
-                            
-                            do {
-                                try modelContext.save()
-                                
-                                NotificationManager.shared.refresh(force: true)
-                            } catch {
-                                AppLogger.persistence.fault("Failed to save context: \(error)")
-                            }
+                            saveTask()
                         }
                         
                         // ⚠️ niente role: .cancel
@@ -1102,12 +1026,7 @@ struct TaskDetailView: View {
                     get: { task.locationReminderEnabled },
                     set: { newValue in
                         task.locationReminderEnabled = newValue
-                        do {
-                            try modelContext.save()
-                            NotificationManager.shared.refresh(force: true)
-                        } catch {
-                            AppLogger.persistence.fault("Failed to save context: \(error)")
-                        }
+                        saveTask()
                     }
                 ))
                 .disabled(!isGlobalEnabled)
@@ -1334,8 +1253,7 @@ struct TaskDetailView: View {
                 in: modelContext
             )
             
-            try modelContext.save()
-            NotificationManager.shared.refresh(force: true)
+            saveTask()
             NotificationCenter.default.post(
                 name: .attachmentsShouldRefresh,
                 object: nil
@@ -1371,12 +1289,7 @@ struct TaskDetailView: View {
         modelContext.processPendingChanges()
         
         // 🔹 Save
-        do {
-            try modelContext.save()
-            NotificationManager.shared.refresh(force: true)
-        } catch {
-            AppLogger.app.error("Save error: \(error)")
-        }
+        saveTask()
         
         NotificationCenter.default.post(
             name: .attachmentsShouldRefresh,
@@ -1518,7 +1431,7 @@ struct TaskDetailView: View {
             FetchDescriptor<TodoTask>()
         )) ?? []
         
-        NotificationManager.shared.refresh(force: true)
+        NotificationManager.shared.refresh()
     }
     
     @MainActor

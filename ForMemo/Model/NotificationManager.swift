@@ -5,6 +5,7 @@ import SwiftData
 import os
 
 
+@MainActor
 final class NotificationManager: NSObject {
     
     static let shared = NotificationManager()
@@ -92,7 +93,7 @@ final class NotificationManager: NSObject {
         guard let context = modelContainer?.mainContext else { return }
         
         let tasks = fetchTasks(using: context)
-        LocationReminderManager.shared.updateRegions(tasks: tasks)
+        LocationReminderManager.shared.refreshMonitoring(tasks: tasks)
         
         // 🔥 1. Badge immediato (NON CAMBIA)
         let badge = computeBadgeCount(from: tasks)
@@ -112,31 +113,33 @@ final class NotificationManager: NSObject {
         rebuildTask = Task(priority: .utility) { [weak self] in
             guard let self else { return }
             
-            // debounce
             try? await Task.sleep(for: .seconds(force ? 0.5 : 1.5))
-            
             guard !Task.isCancelled else { return }
             
-    #if DEBUG
-            AppLogger.notifications.debug("Optimized refresh")
-    #endif
-            
-            guard let context = self.modelContainer?.mainContext else { return }
-            
-            let tasks = self.fetchTasks(using: context)
-            
-            let signature = self.signature(for: tasks)
-            
-            if !force && signature == self.lastTasksSignature {
+            await MainActor.run {
+                
+#if DEBUG
+                AppLogger.notifications.debug("Optimized refresh")
+#endif
+                
+                guard let context = self.modelContainer?.mainContext else { return }
+                
+                let tasks = self.fetchTasks(using: context)
+                let signature = self.signature(for: tasks)
+                
+                if !force && signature == self.lastTasksSignature {
+                    self.pendingRefresh = false
+                    return
+                }
+                
+                self.lastTasksSignature = signature
+                
+                Task {
+                    await self.rebuild(tasks)
+                }
+                
                 self.pendingRefresh = false
-                return
             }
-            
-            self.lastTasksSignature = signature
-            
-            await self.rebuild(tasks)
-            
-            self.pendingRefresh = false
         }
     }
     
@@ -489,7 +492,7 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 context.processPendingChanges()
             }
             
-            NotificationManager.shared.refresh(force: true)
+            NotificationManager.shared.refresh()
             
             NotificationCenter.default.post(
                 name: .attachmentsShouldRefresh,
