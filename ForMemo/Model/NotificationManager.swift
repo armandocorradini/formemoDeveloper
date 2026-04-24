@@ -16,8 +16,11 @@ final class NotificationManager: NSObject {
     private var rebuildTask: Task<Void, Never>?
     private var lastRebuild: Date = .distantPast
     private var pendingRefresh = false
+    private let refreshLock = NSLock()
     private var cloudKitDebounceTask: Task<Void, Never>?
     private var isAppLaunching = true
+    
+    private let refreshQueue = DispatchQueue(label: "notification.refresh.serial")
     
     var lastPushHandled: Date = .distantPast
     
@@ -101,12 +104,18 @@ final class NotificationManager: NSObject {
 
         applyBadge(showBadge ? badge : 0)
         
-        // 🔥 2. evita loop multipli
-        if pendingRefresh && !force {
-            return
+        // 🔥 2. evita loop multipli (thread-safe)
+        var shouldReturn = false
+        
+        refreshQueue.sync {
+            if pendingRefresh && !force {
+                shouldReturn = true
+            } else {
+                pendingRefresh = true
+            }
         }
         
-        pendingRefresh = true
+        if shouldReturn { return }
         
         rebuildTask?.cancel()
         
@@ -138,7 +147,9 @@ final class NotificationManager: NSObject {
                     await self.rebuild(tasks)
                 }
                 
+                self.refreshLock.lock()
                 self.pendingRefresh = false
+                self.refreshLock.unlock()
             }
         }
     }
@@ -274,7 +285,13 @@ final class NotificationManager: NSObject {
                 trigger: trigger
             )
             
-            try? await center.add(request)
+            do {
+                try await center.add(request)
+            } catch {
+            #if DEBUG
+                AppLogger.notifications.error("Notification scheduling failed: \(error.localizedDescription)")
+            #endif
+            }
         }
         
         for task in tasks {

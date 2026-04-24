@@ -14,7 +14,13 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
     
     private var lastKnownLocation: CLLocation?
 
-    private var triggeredRecently: [String: Date] = [:]
+private var triggeredRecently: [String: Date] = {
+    if let data = UserDefaults.standard.data(forKey: "locationTriggers"),
+       let decoded = try? JSONDecoder().decode([String: Date].self, from: data) {
+        return decoded
+    }
+    return [:]
+}()
     
     private var isMonitoringActive = false
     
@@ -60,6 +66,7 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
         
         if !isMonitoringActive {
             manager.startMonitoringSignificantLocationChanges()
+            manager.startUpdatingLocation()
             isMonitoringActive = true
         }
 
@@ -80,6 +87,7 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
         
         if isMonitoringActive {
             manager.stopMonitoringSignificantLocationChanges()
+            manager.stopUpdatingLocation()
             isMonitoringActive = false
         }
         
@@ -187,16 +195,24 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
             lastKnownLocation = newLocation
         }
         
-        Task { @MainActor in
-            if let container = NotificationManager.shared.modelContainer {
-                let context = container.mainContext
-                
-                let tasks = (try? context.fetch(FetchDescriptor<TodoTask>(
-                    predicate: #Predicate { !$0.isCompleted }
-                ))) ?? []
-                
-                updateRegions(tasks: tasks)
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            guard let container = NotificationManager.shared.modelContainer else { return }
+            
+            let context = container.mainContext
+            
+            let tasks: [TodoTask]
+            do {
+                tasks = try context.fetch(
+                    FetchDescriptor<TodoTask>(
+                        predicate: #Predicate { !$0.isCompleted }
+                    )
+                )
+            } catch {
+                return
             }
+            
+            self.updateRegions(tasks: tasks)
         }
     }
 
@@ -231,6 +247,9 @@ extension LocationReminderManager {
         triggeredRecently = triggeredRecently.filter {
             Calendar.current.dateComponents([.day], from: $0.value, to: now).day ?? 0 < 2
         }
+        if let data = try? JSONEncoder().encode(triggeredRecently) {
+            UserDefaults.standard.set(data, forKey: "locationTriggers")
+        }
         
         if let lastTrigger = triggeredRecently[id] {
             let calendar = Calendar.current
@@ -242,6 +261,9 @@ extension LocationReminderManager {
         }
         
         triggeredRecently[id] = now
+        if let data = try? JSONEncoder().encode(triggeredRecently) {
+            UserDefaults.standard.set(data, forKey: "locationTriggers")
+        }
         
         var titleText = "You have a task to complete here."
         
@@ -250,11 +272,19 @@ extension LocationReminderManager {
             
             let context = container.mainContext
             
-            let descriptor = FetchDescriptor<TodoTask>(
+            var descriptor = FetchDescriptor<TodoTask>(
                 predicate: #Predicate { $0.id == uuid }
             )
+            descriptor.fetchLimit = 1
             
-            if let task = try? context.fetch(descriptor).first {
+            let result: [TodoTask]
+            do {
+                result = try context.fetch(descriptor)
+            } catch {
+                return
+            }
+            
+            if let task = result.first {
                 
                 guard !task.isCompleted,
                       task.locationReminderEnabled else { return }
@@ -279,7 +309,13 @@ extension LocationReminderManager {
             trigger: nil
         )
         
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+#if DEBUG
+            if let error {
+                print("Notification scheduling error: \(error.localizedDescription)")
+            }
+#endif
+        }
     }
 }
 
