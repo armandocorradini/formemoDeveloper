@@ -54,7 +54,7 @@ struct AppQuickGuideView: View {
         
             .init(
                 title: String(localized:"Smart Badges"),
-                description: String(localized:"The app icon shows the number of urgent tasks. Inside the app, each task shows how many days are left."),
+                description: String(localized:"The app icon shows the number of overdue tasks. Inside the app, each task shows how many days are left."),
                 icon: "app.badge",
                 tint: .orange
             ),
