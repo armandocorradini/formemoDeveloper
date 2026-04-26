@@ -5,6 +5,12 @@ import CoreData
 import CoreLocation
 
 
+// MARK: - SoundPickerContext
+enum SoundPickerContext {
+    case task
+    case location
+}
+
 // MARK: - SettingsView
 struct SettingsView: View {
     
@@ -53,11 +59,15 @@ struct SettingsView: View {
     @Environment(\.scenePhase) private var scenePhase
     
     @State private var showSoundPicker = false
+    @State private var soundPickerContext: SoundPickerContext = .task
     
     @State private var showDisclaimer = false
     
     @AppStorage("notificationSoundName")
     private var notificationSoundName: String = ""
+
+    @AppStorage("locationNotificationSoundName")
+    private var locationNotificationSoundName: String = ""
     
     @AppStorage("locationRemindersEnabled")
     private var locationRemindersEnabled: Bool = false
@@ -205,6 +215,7 @@ struct SettingsView: View {
                     }
                     
                     Button {
+                        soundPickerContext = .task
                         showSoundPicker = true
                     } label: {
                         HStack(spacing: 12) {
@@ -223,6 +234,7 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(!isNotificationEnabled)
+
 
                     Group {
                         Toggle("Location Reminders", isOn: Binding(
@@ -254,6 +266,27 @@ struct SettingsView: View {
                                 in: 100...500,
                                 step: 50
                             )
+
+                            Button {
+                                soundPickerContext = .location
+                                showSoundPicker = true
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "location.fill")
+                                        .foregroundStyle(.blue)
+                                        .frame(width: iconWidth)
+
+                                    Text("Location sound")
+                                        .foregroundStyle(.primary)
+
+                                    Spacer()
+
+                                    Text(locationNotificationSoundName.isEmpty ? "Default" : locationNotificationSoundName)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(!isNotificationEnabled)
                         }
                     }
                     .alert("Enable Location Access", isPresented: $showLocationPermissionAlert) {
@@ -645,7 +678,7 @@ Attivazione: \(triggerInfo)
             }
 
             .fullScreenCover(isPresented: $showSoundPicker) {
-                NotificationSoundPickerView()
+                NotificationSoundPickerView(context: soundPickerContext)
             }
             .fullScreenCover(isPresented: $showQuickGuide) {
                 // BackupView()

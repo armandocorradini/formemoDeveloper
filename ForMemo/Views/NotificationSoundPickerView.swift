@@ -4,13 +4,18 @@ import AudioToolbox
 import os
 
 struct NotificationSoundPickerView: View {
+    let context: SoundPickerContext
+    
     @Environment(\.dismiss) private var dismiss
     
-    @AppStorage("notificationSoundName")
-    private var selectedSound: String = ""
+    @State private var selectedSound: String = ""
     
     @State private var sounds: [String] = []
     @State private var player: AVAudioPlayer?
+    
+    private var storageKey: String {
+        context == .task ? "notificationSoundName" : "locationNotificationSoundName"
+    }
     
     var body: some View {
         NavigationStack {
@@ -31,6 +36,7 @@ struct NotificationSoundPickerView: View {
                     .contentShape(Rectangle())
                     .onTapGesture {
                         selectedSound = ""
+                        UserDefaults.standard.set("", forKey: storageKey)
                         play(sound: "") // Riproduce il suono di sistema
                     }
                 }
@@ -52,13 +58,14 @@ struct NotificationSoundPickerView: View {
                         .contentShape(Rectangle())
                         .onTapGesture {
                             selectedSound = sound
+                            UserDefaults.standard.set(sound, forKey: storageKey)
                             play(sound: sound)
                         }
                     }
                 }
             }
             
-            .navigationTitle("Notification sound")
+            .navigationTitle(context == .task ? "Notification sound" : "Location sound")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -72,7 +79,10 @@ struct NotificationSoundPickerView: View {
                     }
                 }
             }
-            .onAppear(perform: loadSounds)
+            .onAppear {
+                loadSounds()
+                selectedSound = UserDefaults.standard.string(forKey: storageKey) ?? ""
+            }
         }
     }
     

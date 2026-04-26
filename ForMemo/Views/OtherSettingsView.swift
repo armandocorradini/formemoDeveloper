@@ -13,6 +13,7 @@ struct OtherSettingsView: View {
     private var notificationLeadTimeDays: Int = 1
     
     @AppStorage("badgeIncludeExpired") private var badgeIncludeExpired: Bool = true
+    @AppStorage("badgeIncludeExpiredMigrated") private var badgeIncludeExpiredMigrated: Bool = false
     @AppStorage("showAppBadge") private var showAppBadge: Bool = true
     @AppStorage("TaskWeekDays")
     private var taskWeekDays: Int = 3
@@ -75,19 +76,20 @@ struct OtherSettingsView: View {
                         ForEach(NotificationLeadTime.allCases) { value in
                             Text(value.title).tag(value.rawValue)
                         }
-                        Text(notificationLeadTimeDays == 0
-                             ? String(localized: "Notification and updating badge: \nAt time of event")
-                             : String(localized: "Notification and updating badge: \n\(notificationLeadTimeDays) days before"))
-                        .foregroundStyle(.blue)
-                        .font(.footnote)
-                        
                     }
-                    .pickerStyle(.navigationLink)
-                    //                .labelsHidden()
+                    .pickerStyle(.menu)
+                    
+                    Text(
+                        notificationLeadTimeDays == -1
+                        ? String(localized: "You’ll be notified at the exact time of the task. The badge updates when it’s due.")
+                        : String(localized: "You’ll be notified \(notificationLeadTimeDays) day(s) before the deadline. This is your early reminder. The badge updates when it’s due.")
+                    )
+                    .foregroundStyle(.blue)
+                    .font(.footnote)
                     
                     Toggle("Show app badge", isOn: $showAppBadge)
-                    
-                    Toggle("Include expired tasks in badge", isOn: $badgeIncludeExpired)
+//
+//                    Toggle("Include expired tasks in badge", isOn: $badgeIncludeExpired)
                 }
                 Section("Deletion") {
                     
@@ -121,6 +123,15 @@ struct OtherSettingsView: View {
                             .font(.title2)
                     }
                 }
+            }
+        }
+        .onAppear {
+            // 🔄 Migration: old behavior disabled expired tasks in badge
+            if !badgeIncludeExpiredMigrated {
+                if badgeIncludeExpired == false {
+                    badgeIncludeExpired = true
+                }
+                badgeIncludeExpiredMigrated = true
             }
         }
     }
