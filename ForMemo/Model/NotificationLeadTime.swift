@@ -2,7 +2,7 @@ import SwiftUI
 
 enum NotificationLeadTime: Int, CaseIterable, Identifiable {
     
-    case sameDay = 0
+    case none = -1
     case oneDay = 1
     case twoDays = 2
     case threeDays = 3
@@ -11,17 +11,29 @@ enum NotificationLeadTime: Int, CaseIterable, Identifiable {
     case sixDays = 6
     case sevenDays = 7
     
+    static var selectableCases: [NotificationLeadTime] {
+        return [.none, .oneDay, .twoDays, .threeDays, .fourDays, .fiveDays, .sixDays, .sevenDays]
+    }
+    
+    init(safeRawValue: Int) {
+        self = NotificationLeadTime(rawValue: safeRawValue) ?? .oneDay
+    }
+    
     var id: Int { rawValue }
     
     var title: String {
         switch self {
-        case .sameDay:
-            return String(localized: "At time of event")
+        case .none:
+            return String(localized: "None")
         case .oneDay:
             return String(localized: "1 day before")
         default:
-            // Forza la traduzione di una chiave generica usando un parametro
-            return String(localized: "\(rawValue) days before")
+            let days = rawValue
+            return String(localized: "\(days) days before")
         }
+    }
+    
+    var isNone: Bool {
+        self == .none
     }
 }

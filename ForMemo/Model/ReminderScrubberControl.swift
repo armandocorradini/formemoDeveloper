@@ -1,10 +1,9 @@
-
 import SwiftUI
 
 struct ReminderScrubberControl: View {
     
     enum Mode: Int, CaseIterable {
-        case none, atTime, minutes, hours, days
+        case none, minutes, hours, days
     }
     
     @Binding var reminderOffsetMinutes: Int?
@@ -13,7 +12,6 @@ struct ReminderScrubberControl: View {
     // Computed mode e value calcolati direttamente dal binding
     private var mode: Mode {
         guard let offset = reminderOffsetMinutes else { return .none }
-        if offset == 0 { return .atTime }
         if offset <= 59 { return .minutes }
         if offset <= 1439 { return .hours }
         return .days
@@ -54,7 +52,6 @@ struct ReminderScrubberControl: View {
                 set: { newMode in applyMode(newMode) }
             )) {
                 Text("None").tag(Mode.none)
-                Text("At time of event").tag(Mode.atTime)
                 Text("Minutes before").tag(Mode.minutes)
                 Text("Hours before").tag(Mode.hours)
                 Text("Days before").tag(Mode.days)
@@ -76,7 +73,6 @@ struct ReminderScrubberControl: View {
     private func applyMode(_ newMode: Mode) {
         switch newMode {
         case .none: reminderOffsetMinutes = nil
-        case .atTime: reminderOffsetMinutes = 0
         case .minutes: reminderOffsetMinutes = 1
         case .hours: reminderOffsetMinutes = 60
         case .days: reminderOffsetMinutes = 1440

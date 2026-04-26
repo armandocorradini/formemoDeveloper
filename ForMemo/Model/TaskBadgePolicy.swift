@@ -5,32 +5,22 @@ struct TaskBadgePolicy {
     
     static func badgeCount(
         tasks: [TodoTask],
-        referenceDate: Date,
-        leadDays: Int,
-        includeExpired: Bool
+        referenceDate: Date
     ) -> Int {
         
-        let calendar = Calendar.autoupdatingCurrent
-        
-        return tasks.reduce(0) { count, task in
+        tasks.reduce(0) { count, task in
             
             guard !task.isCompleted,
-                  let deadline = task.deadLine,
-                  let trigger = calendar.date(
-                    byAdding: .day,
-                    value: -leadDays,
-                    to: deadline
-                  )
-            else { return count }
-            
-            if includeExpired {
-                return referenceDate >= trigger ? count + 1 : count
-            } else {
-                return (referenceDate >= trigger && referenceDate <= deadline)
-                ? count + 1
-                : count
+                  let deadline = task.deadLine else {
+                return count
             }
+
+            if deadline <= referenceDate {
+                // 🔵 Option B: always count overdue tasks, even if snoozed
+                return count + 1
+            }
+            
+            return count
         }
     }
 }
-

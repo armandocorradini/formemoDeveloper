@@ -191,7 +191,6 @@ final class NotificationManager: NSObject {
         
         let tasks = (try? context.fetch(FetchDescriptor<TodoTask>(
             predicate: #Predicate { !$0.isCompleted }
-
         ))) ?? []
         
         let now = Date()
@@ -200,8 +199,14 @@ final class NotificationManager: NSObject {
         for task in tasks {
             // 🔴 Skip debug stress-test tasks (no notifications)
             if task.isDebugTask { continue }
-            if let snooze = task.snoozeUntil, snooze < now {
+            if let snooze = task.snoozeUntil, snooze <= now {
                 task.snoozeUntil = nil
+                needsSave = true
+            }
+            
+            // 🔵 MIGRATION: remove legacy "at deadline"
+            if task.reminderOffsetMinutes == 0 {
+                task.reminderOffsetMinutes = nil
                 needsSave = true
             }
         }
@@ -229,13 +234,66 @@ final class NotificationManager: NSObject {
         return "\(tasks.count)-" + body
     }
     
+    // MARK: - NEXT TRIGGER (single source of truth)
+
+    private func nextTrigger(for task: TodoTask, now: Date) -> (id: String, date: Date, type: String)? {
+        
+        guard let deadline = task.deadLine else { return nil }
+        // 🔥 RUNTIME SAFETY: clean expired snooze also here (defensive)
+        if let snooze = task.snoozeUntil, snooze <= now {
+            task.snoozeUntil = nil
+        }
+        if let snooze = task.snoozeUntil,
+           snooze <= now {
+            task.snoozeUntil = nil
+        }
+        
+        // 🔥 DEFINITIVE FIX: snooze domina SEMPRE e blocca tutta la pipeline
+        if let snooze = task.snoozeUntil, snooze > now {
+            return ("task.\(task.id.uuidString).snooze", snooze, "snooze")
+        }
+
+        var events: [(id: String, date: Date, type: String)] = []
+
+        let leadDays = UserDefaults.standard.object(
+            forKey: "notificationLeadTimeDays"
+        ) as? Int
+
+        // GLOBAL (skip when none / disabled)
+        if let leadDays, leadDays >= 1,
+           let globalDate = Calendar.current.date(byAdding: .day, value: -leadDays, to: deadline) {
+            if globalDate > now {
+                events.append(("task.\(task.id.uuidString).global", globalDate, "global"))
+            }
+        }
+
+        // REMINDER
+        if let minutes = task.reminderOffsetMinutes,
+           let reminderDate = Calendar.current.date(byAdding: .minute, value: -minutes, to: deadline) {
+            if reminderDate > now {
+                events.append(("task.\(task.id.uuidString).reminder", reminderDate, "reminder"))
+            }
+        }
+
+        // DEADLINE (only if no snooze already returned above)
+        let delta = deadline.timeIntervalSince(now)
+        if deadline > now {
+            events.append(("task.\(task.id.uuidString).deadline", deadline, "deadline"))
+        }
+
+        events.sort { $0.date < $1.date }
+
+        return events.first
+    }
+    
+    
     // MARK: - REBUILD
     
     private func rebuild(_ tasks: [TodoTask]) async {
         let rebuildStart = Date()
         let center = UNUserNotificationCenter.current()
         let now = Date()
-        
+        let badge = computeBadgeCount(from: tasks)
         let requests = await center.pendingNotificationRequests()
         
         var existing: [String: UNNotificationRequest] = [:]
@@ -297,89 +355,65 @@ final class NotificationManager: NSObject {
         
         for task in tasks {
             
+            // 🔥 SAFETY: rimuovi TUTTE le notifiche esistenti per questo task
+            let taskPrefix = "task.\(task.id.uuidString)"
+            let existingForTask = existing.keys.filter { $0.hasPrefix(taskPrefix) }
+            center.removePendingNotificationRequests(withIdentifiers: existingForTask)
+            
             guard !task.isCompleted else { continue }
             
-            let base = "task.\(task.id.uuidString)"
-            
-            // MARK: - SNOOZE
-            
-            if let snooze = task.snoozeUntil, snooze > now {
-                
-                let id = "\(base).snooze"
-                
-                let content = baseContent(
-                    task,
-                    title: String(localized: "⏰ Snoozed")
-                )
-                
-                let trigger = UNTimeIntervalNotificationTrigger(
-                    timeInterval: max(60, snooze.timeIntervalSinceNow),
-                    repeats: false
-                )
-                
-                await addOrUpdate(id: id, content: content, trigger: trigger)
+            guard let next = nextTrigger(for: task, now: now) else {
                 continue
             }
             
-            guard let deadline = task.deadLine else { continue }
+            let content: UNMutableNotificationContent
             
-            let leadDays = UserDefaults.standard.object(
-                forKey: "notificationLeadTimeDays"
-            ) as? Int ?? 1
-            
-            // MARK: - DEADLINE
-            
-            if let triggerDate = Calendar.current.date(
-                byAdding: .day,
-                value: -leadDays,
-                to: deadline
-            ), triggerDate > now {
+            switch next.type {
+            case "snooze":
+                content = baseContent(task, title: String(localized: "⏰ Snoozed"))
                 
-                let id = "\(base).deadline"
+            case "reminder":
+                content = baseContent(task, title: String(localized: "🔔 Reminder"))
                 
-                let content = baseContent(
-                    task,
-                    title: String(localized: "⏱️ \(leadDays) days before!")
-                )
+            case "global":
+                let leadDays = UserDefaults.standard.object(
+                    forKey: "notificationLeadTimeDays"
+                ) as? Int ?? 1
+                let title: String
+                if leadDays == 1 {
+                    title = String(localized: "⏱️ 1 day before!")
+                } else {
+                    title = String(localized: "⏱️ \(leadDays) days before!")
+                }
+                content = baseContent(task, title: title)
                 
-                let trigger = UNCalendarNotificationTrigger(
-                    dateMatching: Calendar.current.dateComponents(
-                        [.year, .month, .day, .hour, .minute],
-                        from: triggerDate
-                    ),
-                    repeats: false
-                )
+            case "deadline":
+                content = baseContent(task, title: String(localized: "⏱️ Due now"))
+                content.badge = NSNumber(value: badge)
                 
-                await addOrUpdate(id: id, content: content, trigger: trigger)
+            default:
+                content = baseContent(task, title: String(localized: "Reminder"))
             }
+            content.userInfo["type"] = next.type
             
-            // MARK: - REMINDER
-            
-            if let minutes = task.reminderOffsetMinutes,
-               let date = Calendar.current.date(
-                    byAdding: .minute,
-                    value: -minutes,
-                    to: deadline
-               ),
-               date.addingTimeInterval(1) > now {
-                
-                let id = "\(base).reminder"
-                
-                let content = baseContent(
-                    task,
-                    title: String(localized: "🔔 Reminder")
-                )
-                
-                let trigger = UNCalendarNotificationTrigger(
-                    dateMatching: Calendar.current.dateComponents(
-                        [.year, .month, .day, .hour, .minute],
-                        from: date
-                    ),
-                    repeats: false
-                )
-                
-                await addOrUpdate(id: id, content: content, trigger: trigger)
+            let interval = next.date.timeIntervalSinceNow
+
+            // 🔥 FIX: avoid immediate triggers ONLY for reminder/global
+            // Deadline must ALWAYS fire
+            if (next.type == "reminder" || next.type == "global") && interval <= 2 {
+                continue
             }
+
+            let trigger = UNTimeIntervalNotificationTrigger(
+                timeInterval: interval,
+                repeats: false
+            )
+            
+            await addOrUpdate(
+                id: next.id,
+                content: content,
+                trigger: trigger
+            )
         }
         
         // 🚨 evita che rebuild vecchi sovrascrivano nuovi (SNOOZE FIX)
@@ -390,21 +424,15 @@ final class NotificationManager: NSObject {
         }
         
         center.removePendingNotificationRequests(withIdentifiers: toRemove)
+
+        // 🔥 FINAL SYNC: ensure badge always matches latest state
+        let finalBadge = computeBadgeCount(from: tasks)
+        let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
+        applyBadge(showBadge ? finalBadge : 0)
     }
     
     // MARK: - ACTIONS
     
-    private func setSnooze(taskID: String, interval: TimeInterval) {
-        
-        let payload: [String: Any] = [
-            "id": taskID,
-            "interval": interval
-        ]
-        
-        if let data = try? JSONSerialization.data(withJSONObject: payload) {
-            UserDefaults.standard.set(data, forKey: "snoozeTaskFromNotification")
-        }
-    }
     
     
     // MARK: - CONTENT (UI IDENTICA)
@@ -424,7 +452,7 @@ final class NotificationManager: NSObject {
             c.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: soundName))
         }
         c.categoryIdentifier = "TASK_REMINDER"
-        c.userInfo = ["taskID": task.id.uuidString]
+        c.userInfo["taskID"] = task.id.uuidString
         
         return c
     }
@@ -433,17 +461,9 @@ final class NotificationManager: NSObject {
     
     private func computeBadgeCount(from tasks: [TodoTask]) -> Int {
         
-        let leadDays = UserDefaults.standard.object(
-            forKey: "notificationLeadTimeDays"
-        ) as? Int ?? 1
-        
-        let includeExpired = UserDefaults.standard.bool(forKey: "badgeIncludeExpired")
-        
-        return TaskBadgePolicy.badgeCount(
+        TaskBadgePolicy.badgeCount(
             tasks: tasks,
-            referenceDate: Date(),
-            leadDays: leadDays,
-            includeExpired: includeExpired
+            referenceDate: Date()
         )
     }
     
@@ -477,6 +497,8 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         
         guard let taskID = response.notification.request.content.userInfo["taskID"] as? String else { return }
         
+        let type = response.notification.request.content.userInfo["type"] as? String
+        
         // 1️⃣ salva azione (come già fai)
         switch response.actionIdentifier {
             
@@ -487,17 +509,51 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         case "OPEN_APP":
             break // iOS apre già l'app automaticamente
             
-        case "SNOOZE_5":
-            self.setSnooze(taskID: taskID, interval: 300)
-            
-        case "SNOOZE_15":
-            self.setSnooze(taskID: taskID, interval: 900)
-            
-        case "SNOOZE_30":
-            self.setSnooze(taskID: taskID, interval: 1800)
-            
-        case "SNOOZE_60":
-            self.setSnooze(taskID: taskID, interval: 3600)
+        case "SNOOZE_5", "SNOOZE_15", "SNOOZE_30", "SNOOZE_60":
+            if let container = self.modelContainer {
+                let context = container.mainContext
+                
+                let interval: TimeInterval
+                switch response.actionIdentifier {
+                case "SNOOZE_5": interval = 300
+                case "SNOOZE_15": interval = 900
+                case "SNOOZE_30": interval = 1800
+                case "SNOOZE_60": interval = 3600
+                default: interval = 300
+                }
+                
+                if let uuid = UUID(uuidString: taskID) {
+                    let descriptor = FetchDescriptor<TodoTask>(
+                        predicate: #Predicate { $0.id == uuid }
+                    )
+                    
+                    if let task = try? context.fetch(descriptor).first {
+                        let newDate = Date().addingTimeInterval(interval)
+                        
+                        if let deadline = task.deadLine {
+                            
+                            if type == "deadline" {
+                                // 🔴 deadline snooze: allow but NEVER beyond deadline + grace?
+                                task.snoozeUntil = newDate
+                            } else {
+                                // 🟡 reminder/global: block if exceeds deadline
+                                if newDate >= deadline {
+                                    task.snoozeUntil = nil
+                                    // opzionale: log o flag
+                                } else {
+                                    task.snoozeUntil = newDate
+                                }
+                            }
+                            
+                        } else {
+                            task.snoozeUntil = newDate
+                        }
+                        
+                        try? context.save()
+                        context.processPendingChanges()
+                    }
+                }
+            }
             
         default:
             break
@@ -511,6 +567,12 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 
                 NotificationActionProcessor.shared.processAll(using: context)
                 context.processPendingChanges()
+                
+                // 🔥 HARDCORE: aggiorna badge IMMEDIATAMENTE
+                let tasks = self.fetchTasks(using: context)
+                let badge = self.computeBadgeCount(from: tasks)
+                let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
+                self.applyBadge(showBadge ? badge : 0)
             }
             
             NotificationManager.shared.refresh()

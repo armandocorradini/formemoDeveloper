@@ -307,6 +307,22 @@ struct SettingsView: View {
                                 let id = req.identifier
                                 let title = req.content.title
                                 let body = req.content.body
+                                
+                                var pipelineInfo: [String] = []
+
+                                if id.contains(".global") {
+                                    pipelineInfo.append("Prossimo: GLOBAL")
+                                    pipelineInfo.append("Poi: REMINDER → DEADLINE")
+                                } else if id.contains(".reminder") {
+                                    pipelineInfo.append("Prossimo: REMINDER")
+                                    pipelineInfo.append("Poi: DEADLINE")
+                                } else if id.contains(".deadline") {
+                                    pipelineInfo.append("Prossimo: DEADLINE")
+                                    pipelineInfo.append("GLOBAL non valida o passata")
+                                } else if id.contains(".snooze") {
+                                    pipelineInfo.append("Prossimo: SNOOZE")
+                                }
+                                
 
                                 var triggerInfo = "unknown"
 
@@ -331,19 +347,33 @@ struct SettingsView: View {
                                 }
 
                                 let type: String = {
-                                    if id.contains(".deadline") { return "⏱ DEADLINE (-notificationLeadTimeDays)" }
+                                    if id.contains(".deadline") { return "⏱ DEADLINE" }
+                                    if id.contains(".global") { return "🌍 GLOBAL" }
                                     if id.contains(".reminder") { return "🔔 REMINDER" }
+                                    if id.contains(".snooze") { return "⏰ SNOOZE" }
+
+                                    // 🔵 fallback detection (GLOBAL via title)
+                                    if title.contains("Manca") || title.contains("days") {
+                                        return "🌍 GLOBAL"
+                                    }
+
                                     return "❓ UNKNOWN"
                                 }()
 
+                                print("🔎 RAW ID:", id)
+
                                 print("""
-                                ID: \(id)
-                                Type: \(type)
-                                Title: \(title)
-                                Task: \(body)
-                                Trigger: \(triggerInfo)
-                                ------------------
-                                """)
+ID: \(id)
+Tipo: \(type)
+Titolo: \(title)
+Task: \(body)
+Attivazione: \(triggerInfo)
+➡️ Notifica attiva (PROSSIMA per il task)
+📊 Pipeline:
+\(pipelineInfo.joined(separator: "\n"))
+------------------
+""")
+                                print("ℹ️ Sistema: 1 notifica per task (le altre verranno schedulate dopo)")
                             }
 
                             print("🔍 COLLISIONS ------------------")

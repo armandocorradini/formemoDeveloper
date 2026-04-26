@@ -226,8 +226,6 @@ struct ForMemoApp: App {
     
     @MainActor
     private func appStartup() async {
-        
-        let context = container.mainContext
 
         // 🔥 FONDAMENTALE — PRIMA DI TUTTO
         await NotificationManager.shared.configure()
@@ -236,7 +234,7 @@ struct ForMemoApp: App {
 
         NotificationManager.shared.refresh(force: true)
         
-        updateBadge(using: context)
+      
     }
     
     
@@ -259,7 +257,7 @@ struct ForMemoApp: App {
         
         NotificationManager.shared.refresh()
         
-        updateBadge(using: context)
+        
     }
     
     
@@ -304,15 +302,10 @@ struct ForMemoApp: App {
         
         let tasks = (try? context.fetch(descriptor)) ?? []
         
-        let leadDays = UserDefaults.standard.object(
-            forKey: "notificationLeadTimeDays"
-        ) as? Int ?? 1
-        
+
         let count = TaskBadgePolicy.badgeCount(
             tasks: tasks,
-            referenceDate: .now,
-            leadDays: leadDays,
-            includeExpired: badgeIncludeExpired
+            referenceDate: .now
         )
         
         center.setBadgeCount(count)
