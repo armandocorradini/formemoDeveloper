@@ -276,7 +276,6 @@ final class NotificationManager: NSObject {
         }
 
         // DEADLINE (only if no snooze already returned above)
-        let delta = deadline.timeIntervalSince(now)
         if deadline > now {
             events.append(("task.\(task.id.uuidString).deadline", deadline, "deadline"))
         }
@@ -293,7 +292,7 @@ final class NotificationManager: NSObject {
         let rebuildStart = Date()
         let center = UNUserNotificationCenter.current()
         let now = Date()
-        let badge = computeBadgeCount(from: tasks)
+       
         let requests = await center.pendingNotificationRequests()
         
         var existing: [String: UNNotificationRequest] = [:]
@@ -365,7 +364,8 @@ final class NotificationManager: NSObject {
             guard let next = nextTrigger(for: task, now: now) else {
                 continue
             }
-            
+            let badgeAtTrigger = computeBadgeCount(at: next.date, tasks: tasks)
+
             let content: UNMutableNotificationContent
             
             switch next.type {
@@ -381,15 +381,15 @@ final class NotificationManager: NSObject {
                 ) as? Int ?? 1
                 let title: String
                 if leadDays == 1 {
-                    title = String(localized: "⏱️ 1 day before!")
+                    title = String(localized: "⏱️ \(leadDays) day before!")
                 } else {
                     title = String(localized: "⏱️ \(leadDays) days before!")
                 }
                 content = baseContent(task, title: title)
                 
             case "deadline":
-                content = baseContent(task, title: String(localized: "⏱️ Due now"))
-                content.badge = NSNumber(value: badge)
+                content = baseContent(task, title: String(localized: "⏱️ Expired"))
+                content.badge = NSNumber(value: badgeAtTrigger)
                 
             default:
                 content = baseContent(task, title: String(localized: "Reminder"))
@@ -457,7 +457,25 @@ final class NotificationManager: NSObject {
         return c
     }
     
-    // MARK: - BADGE
+    // MARK: - BADGEù
+    private func computeBadgeCount(at date: Date, tasks: [TodoTask]) -> Int {
+        
+        tasks.reduce(0) { count, task in
+            
+            guard !task.isCompleted,
+                  let deadline = task.deadLine else {
+                return count
+            }
+            
+            if deadline <= date {
+                return count + 1
+            }
+            
+            return count
+        }
+    }
+    
+    
     
     private func computeBadgeCount(from tasks: [TodoTask]) -> Int {
         
