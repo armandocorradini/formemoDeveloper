@@ -4531,7 +4531,6 @@
       }
     },
     "How are notifications managed?" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6660,6 +6659,7 @@
       }
     },
     "Notifications are kept up to date automatically. When a task changes, the app removes outdated alerts and keeps only the correct ones." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9032,6 +9032,9 @@
         }
       }
     },
+    "Snooze follows specific rules. For reminders and early notifications, snooze is ignored if it would go beyond the task’s deadline. For deadline notifications, snooze is always applied and triggers at the selected time. If a snooze seems missing, it was ignored to respect the deadline." : {
+
+    },
     "Snooze is temporary. Once its time passes or the task changes, it is no longer shown." : {
       "localizations" : {
         "de" : {
@@ -10146,6 +10149,9 @@
         }
       }
     },
+    "The app always schedules a notification at the task’s due time. In Settings, you can enable an automatic early notification (from 1 to 7 days before), applied to every task. You can also add a custom reminder for each task. Only one notification is active at a time, and when it fires, the system automatically schedules the next one." : {
+
+    },
     "The app avoids duplicates, past alerts, and night-time notifications to reduce noise." : {
       "localizations" : {
         "de" : {
@@ -10317,6 +10323,7 @@
       }
     },
     "The badge shows only tasks that require attention based on your settings. Completed tasks and some overdue tasks may be excluded." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -10343,6 +10350,9 @@
           }
         }
       }
+    },
+    "The badge shows the number of overdue tasks (tasks whose deadline has passed). Snoozing a notification does not remove a task from the badge, because the deadline does not change. The badge updates automatically when a task becomes due, even if the app is closed." : {
+
     },
     "The badge updates automatically based on task changes and time. If it seems incorrect, try reopening the app or checking your notification settings." : {
       "localizations" : {
@@ -10401,6 +10411,7 @@
       }
     },
     "The snooze time may be invalid, in the past, or overridden by a task update." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11857,7 +11868,6 @@
       }
     },
     "Why did my snooze not trigger?" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12167,7 +12177,6 @@
       }
     },
     "Why is the badge different from what I expect?" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12222,15 +12231,6 @@
           }
         }
       }
-    },
-    "xxHow are notifications managed?" : {
-
-    },
-    "xxWhy did my snooze not trigger?" : {
-
-    },
-    "xxWhy is the badge different from what I expect?" : {
-
     },
     "Yellow" : {
       "localizations" : {

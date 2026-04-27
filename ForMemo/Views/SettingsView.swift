@@ -918,8 +918,8 @@ struct FAQView: View {
         // MARK: - NOTIFICATIONS
         FAQSection(title: String(localized: "Notifications & Reminders"), items: [
             FAQItem(
-                question: String(localized:"xxHow are notifications managed?"),
-                answer: String(localized:"Notifications are kept up to date automatically. When a task changes, the app removes outdated alerts and keeps only the correct ones.")
+                question: String(localized:"How are notifications managed?"),
+                answer: String(localized:"The app always schedules a notification at the task’s due time. In Settings, you can enable an automatic early notification (from 1 to 7 days before), applied to every task. You can also add a custom reminder for each task. Only one notification is active at a time, and when it fires, the system automatically schedules the next one.")
             ),
             FAQItem(
                 question: String(localized:"Why am I not receiving notifications?"),
@@ -959,8 +959,8 @@ struct FAQView: View {
                 answer: String(localized:"Snooze is temporary. Once its time passes or the task changes, it is no longer shown.")
             ),
             FAQItem(
-                question: String(localized:"xxWhy did my snooze not trigger?"),
-                answer: String(localized:"The snooze time may be invalid, in the past, or overridden by a task update.")
+                question: String(localized:"Why did my snooze not trigger?"),
+                answer: String(localized:"Snooze follows specific rules. For reminders and early notifications, snooze is ignored if it would go beyond the task’s deadline. For deadline notifications, snooze is always applied and triggers at the selected time. If a snooze seems missing, it was ignored to respect the deadline.")
             )
         ]),
 
@@ -984,8 +984,8 @@ struct FAQView: View {
                 answer: String(localized:"The badge updates automatically based on task changes and time. If it seems incorrect, try reopening the app or checking your notification settings.")
             ),
             FAQItem(
-                question: String(localized:"xxWhy is the badge different from what I expect?"),
-                answer: String(localized:"The badge shows only tasks that require attention based on your settings. Completed tasks and some overdue tasks may be excluded.")
+                question: String(localized:"Why is the badge different from what I expect?"),
+                answer: String(localized:"The badge shows the number of overdue tasks (tasks whose deadline has passed). Snoozing a notification does not remove a task from the badge, because the deadline does not change. The badge updates automatically when a task becomes due, even if the app is closed.")
             ),
             // --- BEGIN NEW FAQItems ---
             FAQItem(
