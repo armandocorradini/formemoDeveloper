@@ -281,13 +281,26 @@ private struct WeeklyTaskRow: View {
         
         guard task.isCompleted == false else { return }
         
-        task.isCompleted = true
-        task.completedAt = .now
-        task.snoozeUntil = nil
+        if task.recurrenceRule != nil {
+            
+            // 🔁 Ricorrenza: NON completare
+            task.rescheduleAfterCompletion()
+            
+        } else {
+            
+            task.isCompleted = true
+            task.completedAt = .now
+            task.snoozeUntil = nil
+        }
+        
         do {
             try modelContext.save()
             
+            // 🔔 refresh notifiche
             NotificationManager.shared.refresh(force: true)
+            
+            // 🔥 forza refresh UI liste
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
 
         } catch {
             AppLogger.persistence.fault("Failed to save completion: \(error)")
@@ -342,6 +355,12 @@ private struct WeeklyTaskRow: View {
                 Text(task.title)
                     .font(.headline)
                     .lineLimit(1)
+                
+                if task.recurrenceRule != nil {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.caption)
+                        .foregroundStyle(.blue)
+                }
             }
             
             HStack(spacing: 10) {

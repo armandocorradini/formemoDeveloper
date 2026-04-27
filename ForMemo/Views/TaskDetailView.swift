@@ -1,3 +1,4 @@
+
 import SwiftUI
 import SwiftData
 import PhotosUI
@@ -6,6 +7,27 @@ import QuickLook
 import CoreLocation
 import os
 import CoreData
+
+enum RecurrenceUI: String, CaseIterable, Identifiable {
+    
+    case none
+    case daily
+    case weekly
+    case monthly
+    case yearly
+    
+    var id: String { rawValue }
+    
+    var title: String {
+        switch self {
+        case .none: return "None"
+        case .daily: return "Every day"
+        case .weekly: return "Every week"
+        case .monthly: return "Every month"
+        case .yearly: return "Every year"
+        }
+    }
+}
 
 struct TaskDetailView: View {
     
@@ -91,6 +113,7 @@ struct TaskDetailView: View {
     @State private var cloudKitDebounceTask: Task<Void, Never>?
     
     @State private var refreshID = UUID()
+    @State private var selectedRecurrence: RecurrenceUI = .none
     
     private var rowModel: TaskRowDisplayModel {
         
@@ -117,7 +140,8 @@ struct TaskDetailView: View {
             
             shouldShowBadge: task.shouldShowDaysBadge(showBadge: showBadge, showBadgeOnlyWithPriority: showBadgeOnlyWithPriority),
             
-            isCompleted: task.isCompleted
+            isCompleted: task.isCompleted,
+            recurrenceRule: task.recurrenceRule
         )
     }
     
@@ -347,6 +371,13 @@ struct TaskDetailView: View {
             .onAppear {
                 preloadAttachments()
                 removeGhostAttachments()
+                
+                if let rule = task.recurrenceRule,
+                   let mapped = RecurrenceUI(rawValue: rule) {
+                    selectedRecurrence = mapped
+                } else {
+                    selectedRecurrence = .none
+                }
             }
             
             .onChange(of: photoItems) { _, newItems in
@@ -813,19 +844,41 @@ struct TaskDetailView: View {
             Toggle(isOn: Binding(
                 get: { task.isCompleted },
                 set: { newValue in
-                    task.isCompleted = newValue
-                    task.completedAt = newValue ? .now : nil
-                    task.snoozeUntil = nil
+                    
+                    // 🔥 RICORRENZA: intercetta completamento
+                    if newValue == true, task.recurrenceRule != nil {
+                        
+                        task.rescheduleAfterCompletion()
+                        
+                    } else {
+                        
+                        task.isCompleted = newValue
+                        task.completedAt = newValue ? .now : nil
+                        task.snoozeUntil = nil
+                    }
+                    
                     saveTask()
-
                 }
             )) {
                 VStack (alignment: .leading){
-                    Text("Completed")
+                    HStack {
+                        Text("Completed")
+                        
+                        if task.recurrenceRule != nil {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                        }
+                    }
                     if let completedDate = task.completedAt {
                         Text("at \(completedDate.formatted(date: .numeric, time: .shortened))")
                             .font(.body)
                             .foregroundColor(.secondary)
+                    }
+                    if task.recurrenceRule != nil {
+                        Text("Recurring task")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
                     }
                 }
             }
@@ -923,7 +976,58 @@ struct TaskDetailView: View {
                 }
                 
             }
-            
+
+            // 🔁 Recurrence
+            Section {
+                
+                HStack {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .foregroundStyle(.blue)
+                    Text("Repeat")
+                    Spacer()
+                    Picker("", selection: $selectedRecurrence) {
+                        ForEach(RecurrenceUI.allCases) { option in
+                            Text(option.title).tag(option)
+                        }
+                    }
+                    .labelsHidden()
+                }
+                .onChange(of: selectedRecurrence) { _, newValue in
+                    
+                    if newValue == .none {
+                        task.recurrenceRule = nil
+                    } else {
+                        task.recurrenceRule = newValue.rawValue
+                        task.recurrenceInterval = 1
+                    }
+                    
+                    saveTask()
+                }
+                
+                if selectedRecurrence != .none {
+                    
+                    Stepper(
+                        "Every \(task.recurrenceInterval) \(selectedRecurrence.title.lowercased())",
+                        value: Binding(
+                            get: { task.recurrenceInterval },
+                            set: { newValue in
+                                task.recurrenceInterval = newValue
+                                saveTask()
+                            }
+                        ),
+                        in: 1...30
+                    )
+                    
+                    Button(role: .destructive) {
+                        task.recurrenceRule = nil
+                        task.recurrenceInterval = 1
+                        selectedRecurrence = .none
+                        saveTask()
+                    } label: {
+                        Label("Remove recurrence", systemImage: "xmark.circle")
+                    }
+                }
+            }
             // Priority picker
             Picker("Priority",
                    selection: Binding<TaskPriority>(

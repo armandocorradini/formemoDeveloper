@@ -49,7 +49,8 @@ struct TaskRowPreview: View {
             deadLine: .now.addingTimeInterval(60 * 60),
             reminderOffsetMinutes: 60,
             shouldShowBadge: shouldDisplayBadge,
-            isCompleted: false
+            isCompleted: false,
+            recurrenceRule: "daily"
         )
     }
     

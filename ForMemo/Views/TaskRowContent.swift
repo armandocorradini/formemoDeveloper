@@ -111,11 +111,19 @@ extension TaskRowContent {
                 
                 // TITOLO
                 todayExpiredLabel()
-                Text(model.title)
-                    .font(.headline)
-                    .foregroundStyle(model.isCompleted ? .secondary : .primary)
-                    .strikethrough(model.isCompleted)
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .font(.headline)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .strikethrough(model.isCompleted)
+                        .lineLimit(1)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
                 
                 // META (remind + flags)
                 HStack(spacing: 8) {
@@ -258,11 +266,19 @@ extension TaskRowContent {
             
             VStack(alignment: .leading, spacing: 6) {
                 todayExpiredLabel()
-                Text(model.title)
-                    .font(.headline)
-                    .foregroundStyle(model.isCompleted ? .secondary : .primary)
-                    .strikethrough(model.isCompleted)
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .font(.headline)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .strikethrough(model.isCompleted)
+                        .lineLimit(1)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
                 
                 HStack(spacing: 6) {
                     
@@ -296,9 +312,17 @@ extension TaskRowContent {
             VStack(alignment: .leading, spacing: 1) {
                 todayExpiredLabel()
 
-                Text(model.title)
-                    .font(.headline)
-                    .strikethrough(model.isCompleted)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .font(.headline)
+                        .strikethrough(model.isCompleted)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
 
                 HStack(spacing: 8) {
                     if model.reminderOffsetMinutes != nil {
@@ -316,6 +340,7 @@ extension TaskRowContent {
             icon.scaleEffect(0.72)
         }
         .padding(1)
+        .padding(.leading, 8)
     }
     
     private func layoutStyle2() -> some View {
@@ -327,9 +352,17 @@ extension TaskRowContent {
             VStack(alignment: .leading, spacing: 1) {
                 todayExpiredLabel()
 
-                Text(model.title)
-                    .font(.headline)
-                    .strikethrough(model.isCompleted)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .font(.headline)
+                        .strikethrough(model.isCompleted)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
 
                 HStack(spacing: 8) {
                     if model.reminderOffsetMinutes != nil {
@@ -359,10 +392,18 @@ extension TaskRowContent {
             
             VStack(alignment: .leading, spacing: 6) {
                 todayExpiredLabel()
-                Text(model.title)
-                    .font(.headline)
-                    .strikethrough(model.isCompleted)
-                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .font(.headline)
+                        .strikethrough(model.isCompleted)
+                        .lineLimit(1)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
                 
                 if model.reminderOffsetMinutes != nil {
                     HStack {
@@ -378,6 +419,7 @@ extension TaskRowContent {
             timeColumn(style: 3)
                 .frame(width: 50)
         }
+        .padding(.leading, 8)
     }
     
     private func layoutStyle4() -> some View {
@@ -387,9 +429,17 @@ extension TaskRowContent {
             
             VStack(alignment: .leading, spacing: 6) {
                 todayExpiredLabel()
-                Text(model.title)
-                    .font(.headline)
-                    .strikethrough(model.isCompleted)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .font(.headline)
+                        .strikethrough(model.isCompleted)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
                     .lineLimit(1)
                 
                 if model.reminderOffsetMinutes != nil {
@@ -407,6 +457,7 @@ extension TaskRowContent {
                     .frame(width: 50)
             }
         }
+        .padding(.leading, 8)
     }
     
     private func layoutStyle5() -> some View {
@@ -416,9 +467,17 @@ extension TaskRowContent {
             
             VStack(alignment: .leading) {
                 todayExpiredLabel()
-                Text(model.title)
-                    .font(.headline)
-                    .strikethrough(model.isCompleted)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .font(.headline)
+                        .strikethrough(model.isCompleted)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
                 
                 if let deadline = model.deadLine {
                     Text(deadline, format: .dateTime.day().month().hour().minute())
@@ -430,6 +489,7 @@ extension TaskRowContent {
             
             flags(vertical: true)
         }
+        .padding(.leading, 8)
     }
     
     private func layoutStyle6() -> some View {
@@ -448,9 +508,17 @@ extension TaskRowContent {
                         .foregroundStyle(model.statusColor)
                 }
                 
-                Text(model.title)
-                    .font(.headline)
-                    .strikethrough(model.isCompleted)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .font(.headline)
+                        .strikethrough(model.isCompleted)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
             }
             
             Spacer()
@@ -473,8 +541,16 @@ extension TaskRowContent {
                     Text(d, format: .dateTime.hour().minute())
                 }
                 
-                Text(model.title)
-                    .strikethrough(model.isCompleted)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .strikethrough(model.isCompleted)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
             }
             
             Spacer()
@@ -497,9 +573,17 @@ extension TaskRowContent {
                     Text(d, format: .dateTime.weekday(.wide))
                 }
                 
-                Text(model.title)
-                    .font(.headline)
-                    .strikethrough(model.isCompleted)
+                HStack(spacing: 6) {
+                    Text(model.title)
+                        .font(.headline)
+                        .strikethrough(model.isCompleted)
+                    
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.blue)
+                    }
+                }
             }
             
             Spacer()
@@ -554,12 +638,20 @@ extension TaskRowContent {
                             deadline: model.deadLine,
                             effect: selectedEffect
                         )
-                    Text(model.title)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
-                        .strikethrough(model.isCompleted)
-                        .lineLimit(2)
-                        .tracking(-0.2)
+                    HStack(spacing: 6) {
+                        Text(model.title)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                            .strikethrough(model.isCompleted)
+                            .lineLimit(2)
+                            .tracking(-0.2)
+                        
+                        if model.recurrenceRule != nil {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                        }
+                    }
                     
                     Spacer()
                     

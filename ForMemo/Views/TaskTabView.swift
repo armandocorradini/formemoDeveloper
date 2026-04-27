@@ -200,7 +200,7 @@ struct TaskTabView: View {
         let startingTab = selectedTab
         
         Task { @MainActor in
-            try? await Task.sleep(for: .seconds(3.4))
+            try? await Task.sleep(for: .seconds(3.4 + 0.5))
             
             guard !hasRedirected else { return }
             

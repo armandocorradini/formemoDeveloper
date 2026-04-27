@@ -21,6 +21,10 @@ final class TodoTask {
     var priorityRaw: Int = 0
     var mainTagRaw: String? = nil
     var snoozeUntil: Date? = nil
+
+    // MARK: - Recurrence
+    var recurrenceRule: String? = nil // "daily", "weekly", "monthly", "yearly"
+    var recurrenceInterval: Int = 1
     
     var isDebugTask: Bool = false
     
@@ -61,6 +65,48 @@ final class TodoTask {
     var locationCoordinate: CLLocationCoordinate2D? { // Corretto da locaMonCoordinate
         guard let locationLatitude, let locationLongitude else { return nil }
         return CLLocationCoordinate2D(latitude: locationLatitude, longitude: locationLongitude)
+    }
+    
+    // MARK: - Recurrence Logic
+    
+    func nextRecurrenceDate(from date: Date) -> Date? {
+        
+        guard let rule = recurrenceRule else { return nil }
+        
+        let calendar = Calendar.current
+        
+        switch rule {
+            
+        case "daily":
+            return calendar.date(byAdding: .day, value: recurrenceInterval, to: date)
+            
+        case "weekly":
+            return calendar.date(byAdding: .weekOfYear, value: recurrenceInterval, to: date)
+            
+        case "monthly":
+            return calendar.date(byAdding: .month, value: recurrenceInterval, to: date)
+            
+        case "yearly":
+            return calendar.date(byAdding: .year, value: recurrenceInterval, to: date)
+            
+        default:
+            return nil
+        }
+    }
+    
+    func rescheduleAfterCompletion() {
+        
+        guard let currentDeadline = deadLine,
+              let nextDate = nextRecurrenceDate(from: currentDeadline)
+        else { return }
+        
+        // 🔥 Reset stato per task ricorrente
+        self.deadLine = nextDate
+        
+        // 🔥 Reset completo stato ricorrenza
+        self.isCompleted = false
+        self.completedAt = nil
+        self.snoozeUntil = nil
     }
 }
 

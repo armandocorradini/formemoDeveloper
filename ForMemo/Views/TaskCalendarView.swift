@@ -675,9 +675,19 @@ private extension TaskCalendarView {
     
     @MainActor
     func toggleCompleted(_ task: TodoTask) {
-        task.isCompleted.toggle()
-        task.completedAt = task.isCompleted ? .now : nil
-        task.snoozeUntil = nil
+        
+        if task.recurrenceRule != nil {
+            
+            // 🔁 Ricorrenza: NON completare
+            task.rescheduleAfterCompletion()
+            
+        } else {
+            
+            task.isCompleted.toggle()
+            task.completedAt = task.isCompleted ? .now : nil
+            task.snoozeUntil = nil
+        }
+        
         do {
             try modelContext.save()
             
@@ -840,21 +850,29 @@ private struct DayCell: View {
         
         VStack(alignment: .leading, spacing: 1) {
             ForEach(tasks.prefix(3)) { task in
-                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)          .font(.system(size: 9, weight: .medium))
+                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
+                    .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(task.iconColor)
-                Text(task.title)
-                    .font(.system(size: 8, weight: .medium))
-                    .lineLimit(2)
-                    .foregroundStyle(
-                        isOverdue(task) ? .red :
-                            (task.isCompleted ? .secondary : .primary)
-                    )
-                    .strikethrough(task.isCompleted, color: .secondary)
-                    .contextMenu {
-                        contextMenu(for: task)
+                HStack(spacing: 3) {
+                    Text(task.title)
+                        .font(.system(size: 8, weight: .medium))
+                        .lineLimit(2)
+                        .foregroundStyle(
+                            isOverdue(task) ? .red :
+                                (task.isCompleted ? .secondary : .primary)
+                        )
+                        .strikethrough(task.isCompleted, color: .secondary)
+                    if task.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 7))
+                            .foregroundStyle(.blue)
                     }
+                }
+                .contextMenu {
+                    contextMenu(for: task)
+                }
             }
-            
+
             if tasks.count > 3 {
                 Text("…")
                     .font(.system(size: 9, weight: .medium))
@@ -937,13 +955,20 @@ private struct DayTasksInlineView: View {
                                     isOverdue(task) ? .red : .secondary
                                 )
                             
-                            Text(task.title)
-                                .font(.body)
-                                .strikethrough(task.isCompleted)
-                                .foregroundStyle(
-                                    isOverdue(task) ? .red :
-                                        (task.isCompleted ? .secondary : .primary)
-                                )
+                            HStack(spacing: 6) {
+                                Text(task.title)
+                                    .font(.body)
+                                    .strikethrough(task.isCompleted)
+                                    .foregroundStyle(
+                                        isOverdue(task) ? .red :
+                                            (task.isCompleted ? .secondary : .primary)
+                                    )
+                                if task.recurrenceRule != nil {
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                        .font(.caption)
+                                        .foregroundStyle(.blue)
+                                }
+                            }
                             
                             Spacer()
                             
@@ -967,15 +992,23 @@ private struct DayTasksInlineView: View {
                         
                         Button {
                             
-                            task.isCompleted.toggle()
-                            
-                            if task.isCompleted {
-                                task.completedAt = .now
-                                task.snoozeUntil = nil
+                            if task.recurrenceRule != nil {
+                                
+                                task.rescheduleAfterCompletion()
+                                
                             } else {
-                                task.completedAt = nil
-                                task.snoozeUntil = nil
+                                
+                                task.isCompleted.toggle()
+                                
+                                if task.isCompleted {
+                                    task.completedAt = .now
+                                    task.snoozeUntil = nil
+                                } else {
+                                    task.completedAt = nil
+                                    task.snoozeUntil = nil
+                                }
                             }
+                            
                             try? modelContext.save()
                             NotificationManager.shared.refresh(force: true)
                             
@@ -1007,17 +1040,23 @@ private struct DayTasksInlineView: View {
                     .contextMenu {
                         // Azione di completamento (quella che avevi nel leading swipe)
                         Button {
-                            task.isCompleted.toggle()
-                            
-                            if task.isCompleted {
-                                task.completedAt = .now
-                                task.snoozeUntil = nil
+                            if task.recurrenceRule != nil {
+                                
+                                task.rescheduleAfterCompletion()
+                                
                             } else {
-                                task.completedAt = nil
-                                task.snoozeUntil = nil
+                                
+                                task.isCompleted.toggle()
+                                
+                                if task.isCompleted {
+                                    task.completedAt = .now
+                                    task.snoozeUntil = nil
+                                } else {
+                                    task.completedAt = nil
+                                    task.snoozeUntil = nil
+                                }
                             }
                             try? modelContext.save()
-
                             NotificationManager.shared.refresh(force: true)
                             
                         } label: {

@@ -18,4 +18,5 @@ struct TaskRowDisplayModel: Identifiable, Sendable {
     let reminderOffsetMinutes: Int?
     let shouldShowBadge: Bool
     let isCompleted: Bool
+    let recurrenceRule: String?
 }

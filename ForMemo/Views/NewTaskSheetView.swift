@@ -1,3 +1,4 @@
+
 import SwiftUI
 import SwiftData
 import PhotosUI
@@ -5,6 +6,7 @@ import UniformTypeIdentifiers
 import UIKit
 import CoreLocation
 import os
+
 
 struct NewTaskSheetView: View {
     
@@ -28,6 +30,7 @@ struct NewTaskSheetView: View {
     @State private var showingAudioRecorder = false
     
     @State private var validationMessage: String? = nil
+    @State private var selectedRecurrence: RecurrenceUI = .none
     
     init(draftTask: TodoTask) {
         self._draftTask = Bindable(wrappedValue: draftTask)
@@ -187,6 +190,10 @@ struct NewTaskSheetView: View {
                     } else {
                         draftTask.deadLine = nil
                         draftTask.reminderOffsetMinutes = nil
+                        
+                        // 🔥 no deadline → no recurrence
+                        draftTask.recurrenceRule = nil
+                        selectedRecurrence = .none
                     }
                     
                     validateReminder()
@@ -222,6 +229,55 @@ struct NewTaskSheetView: View {
                             .padding(.top, 6)
                     }
                 }
+            }
+            
+            // 🔁 Recurrence
+            Section {
+                
+                Picker("Repeat", selection: $selectedRecurrence) {
+                    ForEach(RecurrenceUI.allCases) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                .onChange(of: selectedRecurrence) { _, newValue in
+                    
+                    if newValue == .none {
+                        draftTask.recurrenceRule = nil
+                    } else {
+                        draftTask.recurrenceRule = newValue.rawValue
+                        draftTask.recurrenceInterval = 1
+                    }
+                }
+                
+                if selectedRecurrence != .none {
+                    
+                    let unit = selectedRecurrence == .daily ? "day" :
+                               selectedRecurrence == .weekly ? "week" :
+                               selectedRecurrence == .monthly ? "month" :
+                               "year"
+                    
+                    Stepper(
+                        "Every \(draftTask.recurrenceInterval) \(unit)\(draftTask.recurrenceInterval > 1 ? "s" : "")",
+                        value: Binding(
+                            get: { draftTask.recurrenceInterval },
+                            set: { newValue in
+                                draftTask.recurrenceInterval = newValue
+                            }
+                        ),
+                        in: 1...30
+                    )
+                    
+                    Button(role: .destructive) {
+                        draftTask.recurrenceRule = nil
+                        draftTask.recurrenceInterval = 1
+                        selectedRecurrence = .none
+                    } label: {
+                        Label("Remove recurrence", systemImage: "xmark.circle")
+                    }
+                }
+                
+            } header: {
+                Label("Repeat", systemImage: "arrow.triangle.2.circlepath")
             }
             
             Picker("Priority", selection: $draftTask.priority) {

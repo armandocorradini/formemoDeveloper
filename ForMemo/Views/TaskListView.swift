@@ -4,6 +4,12 @@ import PhotosUI
 import Observation
 import os
 
+import Combine
+
+extension Notification.Name {
+    static let taskDidChange = Notification.Name("taskDidChange")
+}
+
 // MARK: - TaskListView
 struct TaskListView: View {
     
@@ -61,6 +67,8 @@ struct TaskListView: View {
     }
     @State private var cachedTodo: [TodoTask] = []
     @State private var cachedCompleted: [TodoTask] = []
+    // 🔥 Timer per aggiornamenti automatici (Today → Overdue)
+    private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     private func recomputeSections() {
         // Sempre calcola TODO
@@ -81,7 +89,18 @@ struct TaskListView: View {
         }
 
         todo.sort {
-            ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
+            let lhs = $0.deadLine ?? .distantFuture
+            let rhs = $1.deadLine ?? .distantFuture
+            let now = Date()
+            
+            let lhsOverdue = lhs < now
+            let rhsOverdue = rhs < now
+            
+            if lhsOverdue != rhsOverdue {
+                return lhsOverdue && !rhsOverdue
+            }
+            
+            return lhs < rhs
         }
         cachedTodo = todo
 
@@ -363,10 +382,10 @@ struct TaskListView: View {
         .onAppear {
             recomputeSections()
         }
-        .onChange(of: todoQuery.count) {
+        .onChange(of: todoQuery) { _, _ in
             recomputeSections()
         }
-        .onChange(of: completedQuery.count) {
+        .onChange(of: completedQuery) { _, _ in
             recomputeSections()
         }
         .onChange(of: searchText) {
@@ -379,6 +398,12 @@ struct TaskListView: View {
             recomputeSections()
         }
         .onChange(of: showCompleted) {
+            recomputeSections()
+        }
+        .onReceive(timer) { _ in
+            recomputeSections()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .taskDidChange)) { _ in
             recomputeSections()
         }
     }
@@ -582,7 +607,8 @@ struct TaskRow: View {
             deadLine: task.deadLine,
             reminderOffsetMinutes: task.reminderOffsetMinutes,
             shouldShowBadge: shouldDisplayBadge,
-            isCompleted: task.isCompleted
+            isCompleted: task.isCompleted,
+            recurrenceRule: task.recurrenceRule
         )
     }
     
@@ -798,18 +824,31 @@ struct TodoSectionView: View {
     
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {
-        let newValue = !task.isCompleted
-        task.isCompleted = newValue
         
-        if newValue {
-            task.completedAt = .now
-            task.snoozeUntil = nil
+        // 🔥 RICORRENZA: intercetta PRIMA di cambiare stato
+        if task.recurrenceRule != nil {
+            
+            task.rescheduleAfterCompletion()
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+            
         } else {
-            task.completedAt = nil
-            task.snoozeUntil = nil
+            
+            let newValue = !task.isCompleted
+            task.isCompleted = newValue
+            
+            if newValue {
+                task.completedAt = .now
+                task.snoozeUntil = nil
+            } else {
+                task.completedAt = nil
+                task.snoozeUntil = nil
+            }
         }
         
         try? modelContext.save()
+        modelContext.processPendingChanges()
+        NotificationCenter.default.post(name: .taskDidChange, object: nil)
         
         // 🔴 Fix swipe crash: delay refresh to let swipe close
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
@@ -924,19 +963,32 @@ struct CompletedSectionView: View {
     
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {
-        let newValue = !task.isCompleted
-        task.isCompleted = newValue
         
-        if newValue {
-            task.completedAt = .now
-            task.snoozeUntil = nil
+        // 🔥 RICORRENZA: se riattivi un task ricorrente NON ha senso tenerlo completato
+        if task.recurrenceRule != nil {
+            
+            task.rescheduleAfterCompletion()
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+            
         } else {
-            task.completedAt = nil
-            task.snoozeUntil = nil
+            
+            let newValue = !task.isCompleted
+            task.isCompleted = newValue
+            
+            if newValue {
+                task.completedAt = .now
+                task.snoozeUntil = nil
+            } else {
+                task.completedAt = nil
+                task.snoozeUntil = nil
+            }
         }
         
         do {
             try modelContext.save()
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
         } catch {
             AppLogger.persistence.fault("Failed to save context: \(error)")
         }
