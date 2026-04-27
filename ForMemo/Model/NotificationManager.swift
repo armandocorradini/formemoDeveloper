@@ -243,10 +243,6 @@ final class NotificationManager: NSObject {
         if let snooze = task.snoozeUntil, snooze <= now {
             task.snoozeUntil = nil
         }
-        if let snooze = task.snoozeUntil,
-           snooze <= now {
-            task.snoozeUntil = nil
-        }
         
         // 🔥 DEFINITIVE FIX: snooze domina SEMPRE e blocca tutta la pipeline
         if let snooze = task.snoozeUntil, snooze > now {
@@ -255,17 +251,30 @@ final class NotificationManager: NSObject {
 
         var events: [(id: String, date: Date, type: String)] = []
 
-        let leadDays = UserDefaults.standard.object(
-            forKey: "notificationLeadTimeDays"
-        ) as? Int
+        let leadDays = NotificationLeadTime(
+            safeRawValue: UserDefaults.standard.integer(forKey: "notificationLeadTimeDays")
+        ).rawValue
 
         // GLOBAL (skip when none / disabled)
-        if let leadDays, leadDays >= 1,
-           let globalDate = Calendar.current.date(byAdding: .day, value: -leadDays, to: deadline) {
+        if leadDays >= 1 {
+            let globalDate = deadline.addingTimeInterval(-TimeInterval(leadDays * 86400))
             if globalDate > now {
                 events.append(("task.\(task.id.uuidString).global", globalDate, "global"))
             }
         }
+#if DEBUG
+        print("---- DEBUG GLOBAL ----")
+        print("leadDays:", leadDays)
+        print("now:", now)
+        print("deadline:", deadline)
+
+        if leadDays >= 1 {
+            let globalDate = deadline.addingTimeInterval(-TimeInterval(leadDays * 86400))
+            print("globalDate:", globalDate)
+            print("global > now ?", globalDate > now)
+        }
+        print("----------------------")
+#endif
 
         // REMINDER
         if let minutes = task.reminderOffsetMinutes,
@@ -371,26 +380,27 @@ final class NotificationManager: NSObject {
             switch next.type {
             case "snooze":
                 content = baseContent(task, title: String(localized: "⏰ Snoozed"))
-                
+
             case "reminder":
                 content = baseContent(task, title: String(localized: "🔔 Reminder"))
-                
+
             case "global":
-                let leadDays = UserDefaults.standard.object(
-                    forKey: "notificationLeadTimeDays"
-                ) as? Int ?? 1
+                let leadDays = NotificationLeadTime(
+                    safeRawValue: UserDefaults.standard.integer(forKey: "notificationLeadTimeDays")
+                ).rawValue
+                
                 let title: String
                 if leadDays == 1 {
-                    title = String(localized: "⏱️ \(leadDays) day before!")
+                    title = String(localized: "⏱️ 1 day before!")
                 } else {
                     title = String(localized: "⏱️ \(leadDays) days before!")
                 }
                 content = baseContent(task, title: title)
-                
+
             case "deadline":
                 content = baseContent(task, title: String(localized: "⏱️ Expired"))
                 content.badge = NSNumber(value: badgeAtTrigger)
-                
+
             default:
                 content = baseContent(task, title: String(localized: "Reminder"))
             }

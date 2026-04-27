@@ -72,7 +72,7 @@ struct SettingsView: View {
     @AppStorage("locationRemindersEnabled")
     private var locationRemindersEnabled: Bool = false
     @AppStorage("locationRadius")
-    private var locationRadius: Int = 200
+    private var locationRadius: Int = 150
 
     @State private var showLocationPermissionAlert = false
     @State private var showLocationIntroAlert = false
@@ -918,7 +918,7 @@ struct FAQView: View {
         // MARK: - NOTIFICATIONS
         FAQSection(title: String(localized: "Notifications & Reminders"), items: [
             FAQItem(
-                question: String(localized:"How are notifications managed?"),
+                question: String(localized:"xxHow are notifications managed?"),
                 answer: String(localized:"Notifications are kept up to date automatically. When a task changes, the app removes outdated alerts and keeps only the correct ones.")
             ),
             FAQItem(
@@ -959,7 +959,7 @@ struct FAQView: View {
                 answer: String(localized:"Snooze is temporary. Once its time passes or the task changes, it is no longer shown.")
             ),
             FAQItem(
-                question: String(localized:"Why did my snooze not trigger?"),
+                question: String(localized:"xxWhy did my snooze not trigger?"),
                 answer: String(localized:"The snooze time may be invalid, in the past, or overridden by a task update.")
             )
         ]),
@@ -975,10 +975,6 @@ struct FAQView: View {
                 answer: String(localized:"The badge is dynamic and updates based on time, deadlines, and task status.")
             ),
             FAQItem(
-                question: String(localized:"Why does the badge decrease without completing tasks?"),
-                answer: String(localized:"If you have chosen to exclude overdue tasks from the badge, some tasks may no longer be counted as time passes and they become overdue.")
-            ),
-            FAQItem(
                 question: String(localized:"What do badges in task rows mean?"),
                 answer: String(localized:"They indicate the task status, for example if it is approaching its deadline, but only if a priority is set.")
             ),
@@ -988,7 +984,7 @@ struct FAQView: View {
                 answer: String(localized:"The badge updates automatically based on task changes and time. If it seems incorrect, try reopening the app or checking your notification settings.")
             ),
             FAQItem(
-                question: String(localized:"Why is the badge different from what I expect?"),
+                question: String(localized:"xxWhy is the badge different from what I expect?"),
                 answer: String(localized:"The badge shows only tasks that require attention based on your settings. Completed tasks and some overdue tasks may be excluded.")
             ),
             // --- BEGIN NEW FAQItems ---
