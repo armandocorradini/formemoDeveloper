@@ -96,14 +96,15 @@ final class TodoTask {
     
     func rescheduleAfterCompletion() {
         
-        guard let currentDeadline = deadLine,
-              let nextDate = nextRecurrenceDate(from: currentDeadline)
-        else { return }
+        guard let currentDeadline = deadLine else {
+            assertionFailure("Recurring task without deadline")
+            return
+        }
         
-        // 🔥 Reset stato per task ricorrente
+        guard let nextDate = nextRecurrenceDate(from: currentDeadline) else { return }
+        
         self.deadLine = nextDate
         
-        // 🔥 Reset completo stato ricorrenza
         self.isCompleted = false
         self.completedAt = nil
         self.snoozeUntil = nil

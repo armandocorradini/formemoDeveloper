@@ -19,10 +19,18 @@ final class NotificationManager: NSObject {
   
     private var cloudKitDebounceTask: Task<Void, Never>?
     private var isAppLaunching = true
+    private var cloudKitRefreshScheduled = false
+    private var isProcessingCloudKit = false
     
     private let refreshQueue = DispatchQueue(label: "notification.refresh.serial")
+
+    // 🔵 Safe access for AppDelegate (nonisolated)
+    private(set) var lastPushHandledSafe: Date = .distantPast
+
+    func setLastPushHandled(_ date: Date) {
+        lastPushHandledSafe = date
+    }
     
-    var lastPushHandled: Date = .distantPast
     
     private override init() {
         super.init()
@@ -83,8 +91,8 @@ final class NotificationManager: NSObject {
     func refresh(force: Bool = false) {
         let now = Date()
 
-        // 🔴 Throttle globale anti-loop (CloudKit push storm safe)
-        if !force && now.timeIntervalSince(lastRebuild) < 1.0 {
+        // 🔴 Throttle più morbido (evita drop di aggiornamenti reali)
+        if !force && now.timeIntervalSince(lastRebuild) < 0.5 {
             return
         }
 
@@ -101,7 +109,7 @@ final class NotificationManager: NSObject {
         applyBadge(showBadge ? badge : 0)
 
         // 🔥 evita loop multipli
-        if pendingRefresh && !force {
+        if pendingRefresh  {
             return
         }
 
@@ -110,6 +118,9 @@ final class NotificationManager: NSObject {
         rebuildTask?.cancel()
 
         rebuildTask = Task(priority: .utility) { [weak self] in
+            
+            print("🔥 REBUILD SCHEDULED")
+            
             guard let self else { return }
 
             try? await Task.sleep(for: .seconds(force ? 0.5 : 1.5))
@@ -145,7 +156,11 @@ final class NotificationManager: NSObject {
 
             // --- OUTSIDE MAIN ACTOR: heavy work ---
             if shouldRebuild {
+
+                print("🔥 REBUILD ESEGUITO")
+
                 await self.rebuild(tasks)
+
             }
 
             // --- CLEANUP ---
@@ -162,23 +177,40 @@ final class NotificationManager: NSObject {
     // MARK: - CloudKit Optimized Refresh (coalescing)
 
     func refreshFromCloudKit() {
-        // 🔵 Avoid heavy work during initial app launch
-        if isAppLaunching {
+        let now = Date()
+
+        // 🔥 HARD throttle globale (anti storm)
+        if now.timeIntervalSince(self.lastPushHandledSafe) < 8.0 {
             return
         }
-        
+
+        // 🔥 Skip durante launch
+        if self.isAppLaunching { return }
+
+        // 🔥 Se già in corso → STOP
+        if self.isProcessingCloudKit { return }
+
+        self.isProcessingCloudKit = true
+
         cloudKitDebounceTask?.cancel()
-        
+
         cloudKitDebounceTask = Task { [weak self] in
             guard let self else { return }
-            
-            // aspetta eventuali altri push (coalescing)
-            try? await Task.sleep(for: .seconds(1.5))
-            
+
+            // 🔥 Coalescing forte
+            try? await Task.sleep(for: .seconds(2.5))
             guard !Task.isCancelled else { return }
-            
+
             await MainActor.run {
-                self.refresh()
+                self.refresh(force: true)
+                self.lastPushHandledSafe = Date()
+            }
+
+            // 🔥 cooldown anti-loop
+            try? await Task.sleep(for: .seconds(3.0))
+
+            await MainActor.run {
+                self.isProcessingCloudKit = false
             }
         }
     }
@@ -201,6 +233,12 @@ final class NotificationManager: NSObject {
             if task.isDebugTask { continue }
             if let snooze = task.snoozeUntil, snooze <= now {
                 task.snoozeUntil = nil
+                needsSave = true
+            }
+            if let snooze = task.snoozeUntil,
+               let deadline = task.deadLine,
+               snooze >= deadline {
+                task.snoozeUntil = deadline.addingTimeInterval(-1)
                 needsSave = true
             }
             
@@ -246,6 +284,11 @@ final class NotificationManager: NSObject {
         
         // 🔥 DEFINITIVE FIX: snooze domina SEMPRE e blocca tutta la pipeline
         if let snooze = task.snoozeUntil, snooze > now {
+
+            if let deadline = task.deadLine, snooze >= deadline {
+                return ("task.\(task.id.uuidString).deadline", deadline, "deadline")
+            }
+
             return ("task.\(task.id.uuidString).snooze", snooze, "snooze")
         }
 
@@ -255,26 +298,49 @@ final class NotificationManager: NSObject {
             safeRawValue: UserDefaults.standard.integer(forKey: "notificationLeadTimeDays")
         ).rawValue
 
-        // GLOBAL (skip when none / disabled)
+       // GLOBAL (skip when none / disabled)
         if leadDays >= 1 {
-            let globalDate = deadline.addingTimeInterval(-TimeInterval(leadDays * 86400))
-            if globalDate > now {
-                events.append(("task.\(task.id.uuidString).global", globalDate, "global"))
+            let calendar = Calendar.current
+
+            if var globalDate = calendar.date(byAdding: .day, value: -leadDays, to: deadline) {
+
+                // 🔵 UX FIX: normalize to evening (18:00)
+                globalDate = calendar.date(
+                    bySettingHour: 18,
+                    minute: 0,
+                    second: 0,
+                    of: globalDate
+                ) ?? globalDate
+
+                // 🔥 FAIL-SAFE: never lose GLOBAL
+                if globalDate > now {
+                    events.append(("task.\(task.id.uuidString).global", globalDate, "global"))
+                }
             }
         }
-#if DEBUG
-        print("---- DEBUG GLOBAL ----")
-        print("leadDays:", leadDays)
-        print("now:", now)
-        print("deadline:", deadline)
-
-        if leadDays >= 1 {
-            let globalDate = deadline.addingTimeInterval(-TimeInterval(leadDays * 86400))
-            print("globalDate:", globalDate)
-            print("global > now ?", globalDate > now)
-        }
-        print("----------------------")
-#endif
+//#if DEBUG
+//        print("---- DEBUG GLOBAL ----")
+//        print("leadDays:", leadDays)
+//        print("now:", now)
+//        print("deadline:", deadline)
+//
+//        if leadDays >= 1 {
+//            let calendar = Calendar.current
+//            if var globalDate = calendar.date(byAdding: .day, value: -leadDays, to: deadline) {
+//                globalDate = calendar.date(
+//                    bySettingHour: 18,
+//                    minute: 0,
+//                    second: 0,
+//                    of: globalDate
+//                ) ?? globalDate
+//
+//                let isFuture = globalDate > now
+//                print("globalDate:", globalDate)
+//                print("global > now ?", isFuture)
+//            }
+//        }
+//        print("----------------------")
+//#endif
 
         // REMINDER
         if let minutes = task.reminderOffsetMinutes,
@@ -291,7 +357,16 @@ final class NotificationManager: NSObject {
 
         events.sort { $0.date < $1.date }
 
-        return events.first
+        if let first = events.first {
+            return first
+        }
+
+        // 🔥 FALLBACK SAFE: if nothing else, always return deadline
+        if deadline > now {
+            return ("task.\(task.id.uuidString).deadline", deadline, "deadline")
+        }
+
+        return nil
     }
     
     
@@ -362,11 +437,6 @@ final class NotificationManager: NSObject {
         }
         
         for task in tasks {
-            
-            // 🔥 SAFETY: rimuovi TUTTE le notifiche esistenti per questo task
-            let taskPrefix = "task.\(task.id.uuidString)"
-            let existingForTask = existing.keys.filter { $0.hasPrefix(taskPrefix) }
-            center.removePendingNotificationRequests(withIdentifiers: existingForTask)
             
             guard !task.isCompleted else { continue }
             
@@ -540,7 +610,7 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         case "SNOOZE_5", "SNOOZE_15", "SNOOZE_30", "SNOOZE_60":
             if let container = self.modelContainer {
                 let context = container.mainContext
-                
+
                 let interval: TimeInterval
                 switch response.actionIdentifier {
                 case "SNOOZE_5": interval = 300
@@ -549,34 +619,21 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 case "SNOOZE_60": interval = 3600
                 default: interval = 300
                 }
-                
+
                 if let uuid = UUID(uuidString: taskID) {
                     let descriptor = FetchDescriptor<TodoTask>(
                         predicate: #Predicate { $0.id == uuid }
                     )
-                    
+
                     if let task = try? context.fetch(descriptor).first {
-                        let newDate = Date().addingTimeInterval(interval)
-                        
+                        let rawDate = Date().addingTimeInterval(interval)
+
                         if let deadline = task.deadLine {
-                            
-                            if type == "deadline" {
-                                // 🔴 deadline snooze: allow but NEVER beyond deadline + grace?
-                                task.snoozeUntil = newDate
-                            } else {
-                                // 🟡 reminder/global: block if exceeds deadline
-                                if newDate >= deadline {
-                                    task.snoozeUntil = nil
-                                    // opzionale: log o flag
-                                } else {
-                                    task.snoozeUntil = newDate
-                                }
-                            }
-                            
+                            task.snoozeUntil = min(rawDate, deadline.addingTimeInterval(-1))
                         } else {
-                            task.snoozeUntil = newDate
+                            task.snoozeUntil = rawDate
                         }
-                        
+
                         try? context.save()
                         context.processPendingChanges()
                     }

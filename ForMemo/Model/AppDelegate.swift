@@ -69,23 +69,30 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         await MainActor.run {
             
             let now = Date()
-            
-            // 🔥 filtro forte anti-spam CloudKit
-            if now.timeIntervalSince(NotificationManager.shared.lastPushHandled) <= 5 {
-        #if DEBUG
-                AppLogger.notifications.debug("CloudKit push ignored (debounce)")
-        #endif
+
+            // 🔴 HARD FILTER (early drop – storm protection)
+            if now.timeIntervalSince(NotificationManager.shared.lastPushHandledSafe) < 1.5 {
+#if DEBUG
+                AppLogger.notifications.debug("CloudKit push ignored (burst)")
+#endif
                 return
             }
-            
-            NotificationManager.shared.lastPushHandled = now
-            
-        #if DEBUG
-            AppLogger.notifications.debug("CloudKit UI refresh")
-            
-        #endif
-            
-            NotificationManager.shared.refresh()
+
+            // 🔵 SOFT DEBOUNCE (coalescing window)
+            if now.timeIntervalSince(NotificationManager.shared.lastPushHandledSafe) < 4.0 {
+#if DEBUG
+                AppLogger.notifications.debug("CloudKit push coalesced")
+#endif
+                return
+            }
+
+            NotificationManager.shared.setLastPushHandled(now)
+
+#if DEBUG
+            AppLogger.notifications.debug("CloudKit UI refresh (final)")
+#endif
+
+            NotificationManager.shared.refreshFromCloudKit()
         }
         
         return .newData

@@ -193,9 +193,12 @@ struct ForMemoApp: App {
             
             Task { @MainActor in
                 
-    #if DEBUG
-                AppLogger.notifications.info("🔥 CLOUDKIT PUSH ARRIVATO")
-    #endif
+                // 🔥 COALESCING CLOUDKIT PUSH
+#if DEBUG
+                AppLogger.notifications.debug("📡 CloudKit push ricevuto")
+#endif
+
+                NotificationManager.shared.refreshFromCloudKit()
                 
                 let context = self.container.mainContext
                 NotificationActionProcessor.shared.processAll(using: context)
@@ -207,16 +210,6 @@ struct ForMemoApp: App {
                     name: .attachmentsShouldRefresh,
                     object: nil
                 )
-                
-                // ✅ refresh notifiche (safe)
-                let now = Date()
-
-                if now.timeIntervalSince(NotificationManager.shared.lastPushHandled) > 2 {
-                    
-                    NotificationManager.shared.lastPushHandled = now
-                    
-                    NotificationManager.shared.refreshFromCloudKit()
-                }
             }
         }
     }
