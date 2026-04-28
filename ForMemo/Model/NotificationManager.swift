@@ -595,7 +595,6 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         
         guard let taskID = response.notification.request.content.userInfo["taskID"] as? String else { return }
         
-        let type = response.notification.request.content.userInfo["type"] as? String
         
         // 1️⃣ salva azione (come già fai)
         switch response.actionIdentifier {

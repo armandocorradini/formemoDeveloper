@@ -283,8 +283,8 @@ private struct WeeklyTaskRow: View {
         
         if task.recurrenceRule != nil {
             
-            // 🔁 Ricorrenza: NON completare
-            task.rescheduleAfterCompletion()
+            // 🔁 Ricorrenza: completa e rischedula
+            task.completeRecurringTask(in: modelContext)
             
         } else {
             

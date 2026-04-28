@@ -34,6 +34,13 @@ struct NewTaskSheetView: View {
     
     init(draftTask: TodoTask) {
         self._draftTask = Bindable(wrappedValue: draftTask)
+        
+        // 🔥 Sync UI ← MODEL (repeat)
+        if let rule = draftTask.recurrenceRule {
+            self._selectedRecurrence = State(
+                initialValue: RecurrenceUI(rawValue: rule) ?? .none
+            )
+        }
     }
     
     private var isTitleValid: Bool {
@@ -165,14 +172,6 @@ struct NewTaskSheetView: View {
             TextField("Description", text: $draftTask.taskDescription, axis: .vertical)
                 .foregroundStyle(.secondary)
             
-            HStack {
-                Text("Completed")
-                    .foregroundStyle(isTitleValid ? .primary : .secondary)
-                
-                Toggle("", isOn: $draftTask.isCompleted)
-            }
-            .tint(.green)
-            .disabled(!isTitleValid)
         }
     }
     
@@ -234,11 +233,18 @@ struct NewTaskSheetView: View {
             // 🔁 Recurrence
             Section {
                 
-                Picker("Repeat", selection: $selectedRecurrence) {
-                    ForEach(RecurrenceUI.allCases) { option in
-                        Text(option.title).tag(option)
+                HStack {
+                    Label("Repeat", systemImage: "arrow.triangle.2.circlepath")
+                    Spacer()
+                    
+                    Picker("", selection: $selectedRecurrence) {
+                        ForEach(RecurrenceUI.allCases) { option in
+                            Text(option.title).tag(option)
+                        }
                     }
+                    .labelsHidden()
                 }
+                
                 .onChange(of: selectedRecurrence) { _, newValue in
                     
                     if newValue == .none {
@@ -260,9 +266,7 @@ struct NewTaskSheetView: View {
                         "Every \(draftTask.recurrenceInterval) \(unit)\(draftTask.recurrenceInterval > 1 ? "s" : "")",
                         value: Binding(
                             get: { draftTask.recurrenceInterval },
-                            set: { newValue in
-                                draftTask.recurrenceInterval = newValue
-                            }
+                            set: { draftTask.recurrenceInterval = $0 }
                         ),
                         in: 1...30
                     )
@@ -272,12 +276,10 @@ struct NewTaskSheetView: View {
                         draftTask.recurrenceInterval = 1
                         selectedRecurrence = .none
                     } label: {
-                        Label("Remove recurrence", systemImage: "xmark.circle")
+                        Label("Remove repeat", systemImage: "xmark.circle")
                     }
                 }
                 
-            } header: {
-                Label("Repeat", systemImage: "arrow.triangle.2.circlepath")
             }
             
             Picker("Priority", selection: $draftTask.priority) {

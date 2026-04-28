@@ -286,3 +286,69 @@ extension TodoTask {
         showBadge && (!showBadgeOnlyWithPriority || self.priority != .none)
     }
 }
+
+
+
+extension TodoTask {
+    
+    func completeRecurringTask(in context: ModelContext) {
+        
+        // 1️⃣ CREA COPIA COMPLETATA (STORICO)
+        let completedCopy = TodoTask(
+            title: self.title,
+            taskDescription: self.taskDescription
+        )
+        
+        completedCopy.deadLine = self.deadLine
+        completedCopy.reminderOffsetMinutes = self.reminderOffsetMinutes
+        completedCopy.priority = self.priority
+        completedCopy.mainTag = self.mainTag
+        
+        completedCopy.locationName = self.locationName
+        completedCopy.locationLatitude = self.locationLatitude
+        completedCopy.locationLongitude = self.locationLongitude
+        
+        completedCopy.isCompleted = true
+        completedCopy.completedAt = Date()
+        
+        // 🔴 fondamentale: NO ricorrenza nella copia
+        completedCopy.recurrenceRule = nil
+        completedCopy.recurrenceInterval = 1
+        
+        context.insert(completedCopy)
+        
+        // 2️⃣ AGGIORNA TASK ORIGINALE → PROSSIMA OCCORRENZA
+        moveToNextOccurrence()
+        
+        self.isCompleted = false
+        self.completedAt = nil
+        self.snoozeUntil = nil
+    }
+    
+    private func moveToNextOccurrence() {
+        
+        guard let rule = recurrenceRule,
+              let current = deadLine else { return }
+        
+        let calendar = Calendar.current
+        let interval = max(1, recurrenceInterval)
+        
+        switch rule {
+            
+        case "daily":
+            deadLine = calendar.date(byAdding: .day, value: interval, to: current)
+            
+        case "weekly":
+            deadLine = calendar.date(byAdding: .weekOfYear, value: interval, to: current)
+            
+        case "monthly":
+            deadLine = calendar.date(byAdding: .month, value: interval, to: current)
+            
+        case "yearly":
+            deadLine = calendar.date(byAdding: .year, value: interval, to: current)
+            
+        default:
+            break
+        }
+    }
+}

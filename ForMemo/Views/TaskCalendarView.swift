@@ -678,8 +678,8 @@ private extension TaskCalendarView {
         
         if task.recurrenceRule != nil {
             
-            // 🔁 Ricorrenza: NON completare
-            task.rescheduleAfterCompletion()
+            // 🔁 Ricorrenza: completa e rischedula
+            task.completeRecurringTask(in: modelContext)
             
         } else {
             
@@ -994,7 +994,8 @@ private struct DayTasksInlineView: View {
                             
                             if task.recurrenceRule != nil {
                                 
-                                task.rescheduleAfterCompletion()
+                                // 🔁 Ricorrenza: completa e rischedula
+                                task.completeRecurringTask(in: modelContext)
                                 
                             } else {
                                 
@@ -1042,7 +1043,8 @@ private struct DayTasksInlineView: View {
                         Button {
                             if task.recurrenceRule != nil {
                                 
-                                task.rescheduleAfterCompletion()
+                                // 🔁 Ricorrenza: completa e rischedula
+                                task.completeRecurringTask(in: modelContext)
                                 
                             } else {
                                 

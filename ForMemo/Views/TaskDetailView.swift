@@ -847,8 +847,7 @@ struct TaskDetailView: View {
                     
                     // 🔥 RICORRENZA: intercetta completamento
                     if newValue == true, task.recurrenceRule != nil {
-                        
-                        task.rescheduleAfterCompletion()
+                                task.completeRecurringTask(in: modelContext)
                         
                     } else {
                         
@@ -858,6 +857,10 @@ struct TaskDetailView: View {
                     }
                     
                     saveTask()
+                    // 🔥 Se task completato da detail, torna indietro
+                    if newValue == true {
+                        dismiss()
+                    }
                 }
             )) {
                 VStack (alignment: .leading){
