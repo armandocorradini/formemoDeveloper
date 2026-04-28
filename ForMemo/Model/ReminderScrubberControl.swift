@@ -7,18 +7,21 @@ struct ReminderScrubberControl: View {
     }
     
     @Binding var reminderOffsetMinutes: Int?
+    @State private var localOffset: Int? = nil
     let notificationLeadTimeDays: Int
     
     // Computed mode e value calcolati direttamente dal binding
     private var mode: Mode {
-        guard let offset = reminderOffsetMinutes else { return .none }
+        let offsetValue = localOffset ?? reminderOffsetMinutes
+        guard let offset = offsetValue else { return .none }
         if offset <= 59 { return .minutes }
         if offset <= 1439 { return .hours }
         return .days
     }
     
     private var value: Int {
-        guard let offset = reminderOffsetMinutes else { return 1 }
+        let offsetValue = localOffset ?? reminderOffsetMinutes
+        guard let offset = offsetValue else { return 1 }
         switch mode {
         case .minutes: return offset
         case .hours: return offset / 60
@@ -58,6 +61,9 @@ struct ReminderScrubberControl: View {
             }
             .pickerStyle(.menu)
             .padding(.bottom, 10)
+            .onAppear {
+                localOffset = reminderOffsetMinutes
+            }
             
             if mode == .minutes || mode == .hours || mode == .days {
                 Stepper(value: Binding(
@@ -68,14 +74,22 @@ struct ReminderScrubberControl: View {
                 }
             }
         }
+        .onChange(of: localOffset) { _, newValue in
+            // Debounce-like behavior: commit after small delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                if localOffset == newValue {
+                    reminderOffsetMinutes = newValue
+                }
+            }
+        }
     }
     
     private func applyMode(_ newMode: Mode) {
         switch newMode {
-        case .none: reminderOffsetMinutes = nil
-        case .minutes: reminderOffsetMinutes = 1
-        case .hours: reminderOffsetMinutes = 60
-        case .days: reminderOffsetMinutes = 1440
+        case .none: localOffset = nil
+        case .minutes: localOffset = 1
+        case .hours: localOffset = 60
+        case .days: localOffset = 1440
         }
     }
     
@@ -83,12 +97,12 @@ struct ReminderScrubberControl: View {
         switch mode {
         case .minutes:
             if newValue == 60 { applyMode(.hours); return }
-            reminderOffsetMinutes = newValue
+            localOffset = newValue
         case .hours:
             if newValue == 24 { applyMode(.days); return }
-            reminderOffsetMinutes = newValue * 60
+            localOffset = newValue * 60
         case .days:
-            reminderOffsetMinutes = newValue * 1440
+            localOffset = newValue * 1440
         default: break
         }
     }

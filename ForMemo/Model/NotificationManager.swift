@@ -90,7 +90,10 @@ final class NotificationManager: NSObject {
 
     func refresh(force: Bool = false) {
         let now = Date()
-
+        
+        if Date().timeIntervalSince(lastPushHandledSafe) < 1.0 {
+            return
+        }
         // 🔴 Throttle più morbido (evita drop di aggiornamenti reali)
         if !force && now.timeIntervalSince(lastRebuild) < 0.5 {
             return
@@ -180,7 +183,7 @@ final class NotificationManager: NSObject {
         let now = Date()
 
         // 🔥 HARD throttle globale (anti storm)
-        if now.timeIntervalSince(self.lastPushHandledSafe) < 8.0 {
+        if now.timeIntervalSince(self.lastPushHandledSafe) < 20.0 {
             return
         }
 
@@ -198,7 +201,7 @@ final class NotificationManager: NSObject {
             guard let self else { return }
 
             // 🔥 Coalescing forte
-            try? await Task.sleep(for: .seconds(2.5))
+            try? await Task.sleep(for: .seconds(4.0))
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
@@ -243,7 +246,7 @@ final class NotificationManager: NSObject {
         }
         
         if needsSave {
-            try? context.save()
+            context.processPendingChanges()
         }
         
         return tasks
@@ -656,7 +659,9 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 self.applyBadge(showBadge ? badge : 0)
             }
             
-            NotificationManager.shared.refresh()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                NotificationManager.shared.refresh()
+            }
             
             NotificationCenter.default.post(
                 name: .attachmentsShouldRefresh,

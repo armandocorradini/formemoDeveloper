@@ -9191,7 +9191,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lo snooze supera la scadenza. Non verrà programmata alcuna notifica di snooze. La notifica alla scadenza verrà comunque inviata."
+            "value" : "Il posticipo supera la scadenza. Non verrà programmata alcuna notifica di posticipo. La notifica alla scadenza verrà comunque inviata."
           }
         }
       }
@@ -9277,7 +9277,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Snooze non programmato"
+            "value" : "Posticipo non programmato"
           }
         }
       }
