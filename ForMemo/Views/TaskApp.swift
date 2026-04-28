@@ -111,6 +111,13 @@ struct ForMemoApp: App {
     var body: some Scene {
         WindowGroup {
             TaskTabView()
+                .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
+                    
+                    NotificationCenter.default.post(
+                        name: .attachmentsShouldRefresh,
+                        object: nil
+                    )
+                }
                 .preferredColorScheme(selectedTheme.colorScheme)
         }
         
@@ -341,4 +348,5 @@ struct ForMemoApp: App {
 
 extension Notification.Name {
     static let locationPermissionAutoDisabled = Notification.Name("locationPermissionAutoDisabled")
+
 }

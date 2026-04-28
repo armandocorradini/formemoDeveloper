@@ -235,13 +235,6 @@ final class NotificationManager: NSObject {
                 task.snoozeUntil = nil
                 needsSave = true
             }
-            if let snooze = task.snoozeUntil,
-               let deadline = task.deadLine,
-               snooze >= deadline {
-                task.snoozeUntil = deadline.addingTimeInterval(-1)
-                needsSave = true
-            }
-            
             // 🔵 MIGRATION: remove legacy "at deadline"
             if task.reminderOffsetMinutes == 0 {
                 task.reminderOffsetMinutes = nil
@@ -285,11 +278,12 @@ final class NotificationManager: NSObject {
         // 🔥 DEFINITIVE FIX: snooze domina SEMPRE e blocca tutta la pipeline
         if let snooze = task.snoozeUntil, snooze > now {
 
+            // 🔥 NEW RULE: if snooze exceeds deadline, ignore it completely
             if let deadline = task.deadLine, snooze >= deadline {
-                return ("task.\(task.id.uuidString).deadline", deadline, "deadline")
+                task.snoozeUntil = nil
+            } else {
+                return ("task.\(task.id.uuidString).snooze", snooze, "snooze")
             }
-
-            return ("task.\(task.id.uuidString).snooze", snooze, "snooze")
         }
 
         var events: [(id: String, date: Date, type: String)] = []
@@ -627,8 +621,11 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                     if let task = try? context.fetch(descriptor).first {
                         let rawDate = Date().addingTimeInterval(interval)
 
-                        if let deadline = task.deadLine {
-                            task.snoozeUntil = min(rawDate, deadline.addingTimeInterval(-1))
+                        if let deadline = task.deadLine, rawDate >= deadline {
+                            // 🔥 CANCEL snooze → let pipeline continue (deadline will fire)
+                            task.snoozeUntil = nil
+
+                            NotificationCenter.default.post(name: .snoozeRejectedDueToDeadline, object: nil)
                         } else {
                             task.snoozeUntil = rawDate
                         }
@@ -667,4 +664,11 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             )
         }
     }
+}
+
+//# MARK: - Notification Extension
+
+extension Notification.Name {
+    static let snoozeClamped = Notification.Name("snoozeClamped")
+    static let snoozeRejectedDueToDeadline = Notification.Name("snoozeRejectedDueToDeadline")
 }

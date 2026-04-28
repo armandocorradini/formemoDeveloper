@@ -9,6 +9,7 @@ struct TaskTabView: View {
     
     @State private var selectedTab: Int? = 0
     @State private var hasRedirected = false
+    @State private var showSnoozeAlert = false
     
     @AppStorage("TaskWeekDays")
     private var taskWeekDays: Int = 3
@@ -38,6 +39,15 @@ struct TaskTabView: View {
         .allowsHitTesting(scenePhase == .active)
         .onAppear {
             handleInitialRedirect()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
+            showSnoozeAlert = true
+        }
+        .alert("Snooze not scheduled",
+               isPresented: $showSnoozeAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Snooze exceeds the deadline. No snooze notification will be scheduled. The deadline notification will still occur.")
         }
     }
     
