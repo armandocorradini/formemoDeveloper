@@ -227,8 +227,6 @@ final class NotificationManager: NSObject {
         let tasks = (try? context.fetch(FetchDescriptor<TodoTask>(
             predicate: #Predicate { !$0.isCompleted }
         ))) ?? []
-        
-        let now = Date()
         var needsSave = false
         
         for task in tasks {
@@ -561,7 +559,7 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        [.banner, .sound, .badge]
+        return [.banner, .sound, .badge]
     }
     
     func userNotificationCenter(
@@ -612,7 +610,31 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                             } else {
                                 // ❌ Snooze from global/reminder/snooze must NOT exceed deadline
                                 if rawDate >= deadline {
-                                    NotificationCenter.default.post(name: .snoozeRejectedDueToDeadline, object: nil)
+                                    // 🔴 Show internal message ONLY if app was already active (avoid showing on launch/resume)
+                                    let state = UIApplication.shared.applicationState
+
+                                    // Show message also when coming from notification tap (.inactive), but not when launching
+                                    if !self.isAppLaunching && state != .background {
+                                        NotificationCenter.default.post(name: .snoozeRejectedDueToDeadline, object: nil)
+                                    }
+
+                                    // 🔴 Always schedule local notification (will be suppressed if app is active)
+                                    let content = UNMutableNotificationContent()
+                                    let title = "Snooze not scheduled"
+                                    let body = "Snooze exceeds the deadline. No snooze notification will be scheduled. The deadline notification will still occur."
+                                    content.title = title
+                                    content.body = body
+                                    content.sound = .default
+
+                                    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+
+                                    let request = UNNotificationRequest(
+                                        identifier: "snoozeRejected.\(UUID().uuidString)",
+                                        content: content,
+                                        trigger: trigger
+                                    )
+
+                                    try? await UNUserNotificationCenter.current().add(request)
                                 } else {
                                     task.snoozeUntil = rawDate
                                 }
