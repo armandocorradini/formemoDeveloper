@@ -140,7 +140,9 @@ struct AddTaskIntent: AppIntent {
             // MARK: - MINUTES
             
             else if normalized.contains("min") {
-                let value = extractNumber(from: normalized)
+                guard let value = extractNumber(from: normalized) else {
+                    throw $reminderText.needsValueError()
+                }
                 minutes = max(1, min(59, value))
             }
             
@@ -153,7 +155,10 @@ struct AddTaskIntent: AppIntent {
                 "stunde", "stunden"
             ].contains(where: { normalized.contains($0) }) {
                 
-                let value = extractNumber(from: normalized)
+                guard let value = extractNumber(from: normalized) else {
+
+                    throw $reminderText.needsValueError()
+                }
                 let clamped = max(1, min(23, value))
                 minutes = clamped * 60
             }
@@ -168,7 +173,9 @@ struct AddTaskIntent: AppIntent {
                 "tag", "tage"
             ].contains(where: { normalized.contains($0) }) {
                 
-                let value = extractNumber(from: normalized)
+                guard let value = extractNumber(from: normalized) else {
+                    throw $reminderText.needsValueError()
+                }
                 let clamped = max(1, min(7, value))
                 minutes = clamped * 1440
             }
@@ -176,7 +183,7 @@ struct AddTaskIntent: AppIntent {
             // MARK: - FALLBACK
             
             else {
-                minutes = 0
+                throw $reminderText.needsValueError()
             }
             
             // 🔥 APPLY (coerente con ReminderScrubberControl)
@@ -214,16 +221,14 @@ struct AddTaskIntent: AppIntent {
     }
 }
 
-func extractNumber(from text: String) -> Int {
+func extractNumber(from text: String) -> Int? {
     
-    // 🔥 1. numeri diretti (2, 10, ecc)
     let numbers = text.components(separatedBy: CharacterSet.decimalDigits.inverted)
     if let first = numbers.first(where: { !$0.isEmpty }),
        let value = Int(first) {
         return value
     }
     
-    // 🔥 2. prova con NumberFormatter spellOut
     let formatter = NumberFormatter()
     formatter.numberStyle = .spellOut
     
@@ -246,7 +251,7 @@ func extractNumber(from text: String) -> Int {
         }
     }
     
-    return 0
+    return nil // 🔴 NON più 0
 }
 
 struct NaturalLanguageParser {

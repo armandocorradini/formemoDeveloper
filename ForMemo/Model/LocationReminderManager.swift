@@ -22,6 +22,10 @@ private var triggeredRecently: [String: Date] = {
     return [:]
 }()
     
+    
+    private var lastFetch: Date = .distantPast
+    private let fetchInterval: TimeInterval = 10 // secondi
+    
     private var isMonitoringActive = false
     
     private var lastLocationRequest: Date = .distantPast
@@ -99,12 +103,6 @@ private var triggeredRecently: [String: Date] = {
     func updateRegions(tasks: [TodoTask]) {
         guard !tasks.isEmpty else { return }
         
-        let newIDs = Set(tasks.map { $0.id })
-
-        if newIDs == monitoredTaskIDs {
-            return
-        }
-        
         let enabled = UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
         guard enabled else {
             manager.monitoredRegions.forEach {
@@ -114,12 +112,6 @@ private var triggeredRecently: [String: Date] = {
         }
         
         guard CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) else { return }
-        
-        manager.monitoredRegions.forEach {
-            manager.stopMonitoring(for: $0)
-        }
-        
-        monitoredTaskIDs.removeAll()
         
         let validTasks = tasks
             .filter { !$0.isCompleted }
@@ -160,7 +152,30 @@ private var triggeredRecently: [String: Date] = {
 
         let limited = Array(scoredTasks.prefix(20))
         
-        for task in limited {
+        let newIDs = Set(limited.map { $0.id })
+
+        if newIDs == monitoredTaskIDs {
+            return
+        }
+        
+        // 🔄 Diff-based update (no global reset)
+
+        // Regions to remove
+        let toRemove = monitoredTaskIDs.subtracting(newIDs)
+
+        // Regions to add
+        let toAdd = newIDs.subtracting(monitoredTaskIDs)
+
+        // Stop only removed regions
+        for region in manager.monitoredRegions {
+            if let id = UUID(uuidString: region.identifier),
+               toRemove.contains(id) {
+                manager.stopMonitoring(for: region)
+            }
+        }
+
+        // Start only new regions
+        for task in limited where toAdd.contains(task.id) {
             guard let lat = task.locationLatitude,
                   let lon = task.locationLongitude else { continue }
             
@@ -178,8 +193,10 @@ private var triggeredRecently: [String: Date] = {
             region.notifyOnExit = false
             
             manager.startMonitoring(for: region)
-            monitoredTaskIDs.insert(task.id)
         }
+
+        // Update tracked IDs
+        monitoredTaskIDs = newIDs
     }
     func locationManager(
         _ manager: CLLocationManager,
@@ -201,6 +218,14 @@ private var triggeredRecently: [String: Date] = {
             
             let context = container.mainContext
             
+            let now = Date()
+
+            guard now.timeIntervalSince(lastFetch) > fetchInterval else {
+                return
+            }
+
+            lastFetch = now
+
             let tasks: [TodoTask]
             do {
                 tasks = try context.fetch(
@@ -211,8 +236,9 @@ private var triggeredRecently: [String: Date] = {
             } catch {
                 return
             }
-            
+
             self.updateRegions(tasks: tasks)
+            
         }
     }
 

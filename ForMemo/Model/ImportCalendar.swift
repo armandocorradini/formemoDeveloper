@@ -193,9 +193,9 @@ private extension CalendarImportView {
     
     func computeOffset(_ event: EKEvent) -> Int? {
         
-        // 🔥 Se NON ci sono reminder → reminder alla scadenza
+        // 🔥 Se NON ci sono reminder → NESSUN reminder
         guard let alarms = event.alarms, !alarms.isEmpty else {
-            return 0
+            return nil
         }
         
         for alarm in alarms {
@@ -215,8 +215,8 @@ private extension CalendarImportView {
             }
         }
         
-        // 🔥 fallback → alla scadenza
-        return 0
+        // 🔥 fallback → parsing fallito → nessun reminder
+        return nil
     }
 }
 
