@@ -234,10 +234,7 @@ final class NotificationManager: NSObject {
         for task in tasks {
             // 🔴 Skip debug stress-test tasks (no notifications)
             if task.isDebugTask { continue }
-            if let snooze = task.snoozeUntil, snooze <= now {
-                task.snoozeUntil = nil
-                needsSave = true
-            }
+            // (Snooze cleanup block removed)
             // 🔵 MIGRATION: remove legacy "at deadline"
             if task.reminderOffsetMinutes == 0 {
                 task.reminderOffsetMinutes = nil
@@ -268,102 +265,84 @@ final class NotificationManager: NSObject {
         return "\(tasks.count)-" + body
     }
     
+    // MARK: - PURE LOGIC (Event Calculation)
+
+    struct TaskEventCalculator {
+        struct Event {
+            let id: String
+            let date: Date
+            let type: String
+        }
+
+        static func nextEvent(for task: TodoTask, now: Date, lead: NotificationLeadTime) -> Event? {
+            guard let deadline = task.deadLine else { return nil }
+
+            // 🔥 1. Snooze has priority EVEN after deadline (only if valid)
+            if let snooze = task.snoozeUntil,
+               snooze > now {
+                return Event(
+                    id: "task.\(task.id.uuidString).snooze",
+                    date: snooze,
+                    type: "snooze"
+                )
+            }
+
+            // 🔥 2. If deadline is in the past and no snooze → nothing to schedule
+            if deadline <= now {
+                return nil
+            }
+
+            var candidates: [Event] = []
+
+            // 🔵 Global
+            if !lead.isNone {
+                let calendar = Calendar.current
+                if var globalDate = calendar.date(byAdding: .day, value: -lead.rawValue, to: deadline) {
+                    globalDate = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: globalDate) ?? globalDate
+                    if globalDate > now {
+                        candidates.append(Event(
+                            id: "task.\(task.id.uuidString).global",
+                            date: globalDate,
+                            type: "global"
+                        ))
+                    }
+                }
+            }
+
+            // 🔵 Reminder
+            if let minutes = task.reminderOffsetMinutes,
+               let reminderDate = Calendar.current.date(byAdding: .minute, value: -minutes, to: deadline),
+               reminderDate > now {
+                candidates.append(Event(
+                    id: "task.\(task.id.uuidString).reminder",
+                    date: reminderDate,
+                    type: "reminder"
+                ))
+            }
+
+            // 🔵 Deadline (always if future)
+            candidates.append(Event(
+                id: "task.\(task.id.uuidString).deadline",
+                date: deadline,
+                type: "deadline"
+            ))
+
+            return candidates.min(by: { $0.date < $1.date })
+        }
+    }
+
     // MARK: - NEXT TRIGGER (single source of truth)
 
     private func nextTrigger(for task: TodoTask, now: Date) -> (id: String, date: Date, type: String)? {
-        
-        guard let deadline = task.deadLine else { return nil }
-        // 🔥 RUNTIME SAFETY: clean expired snooze also here (defensive)
-        if let snooze = task.snoozeUntil, snooze <= now {
-            task.snoozeUntil = nil
-        }
-        
-        // 🔥 DEFINITIVE FIX: snooze domina SEMPRE e blocca tutta la pipeline
-        if let snooze = task.snoozeUntil, snooze > now {
-
-            // 🔥 NEW RULE: if snooze exceeds deadline, ignore it completely
-            if let deadline = task.deadLine, snooze >= deadline {
-                task.snoozeUntil = nil
-            } else {
-                return ("task.\(task.id.uuidString).snooze", snooze, "snooze")
-            }
-        }
-
-        var events: [(id: String, date: Date, type: String)] = []
-
-        let leadDays = NotificationLeadTime(
+        let lead = NotificationLeadTime(
             safeRawValue: UserDefaults.standard.integer(forKey: "notificationLeadTimeDays")
-        ).rawValue
+        )
 
-       // GLOBAL (skip when none / disabled)
-        if leadDays >= 1 {
-            let calendar = Calendar.current
-
-            if var globalDate = calendar.date(byAdding: .day, value: -leadDays, to: deadline) {
-
-                // 🔵 UX FIX: normalize to evening (18:00)
-                globalDate = calendar.date(
-                    bySettingHour: 18,
-                    minute: 0,
-                    second: 0,
-                    of: globalDate
-                ) ?? globalDate
-
-                // 🔥 FAIL-SAFE: never lose GLOBAL
-                if globalDate > now {
-                    events.append(("task.\(task.id.uuidString).global", globalDate, "global"))
-                }
-            }
-        }
-//#if DEBUG
-//        print("---- DEBUG GLOBAL ----")
-//        print("leadDays:", leadDays)
-//        print("now:", now)
-//        print("deadline:", deadline)
-//
-//        if leadDays >= 1 {
-//            let calendar = Calendar.current
-//            if var globalDate = calendar.date(byAdding: .day, value: -leadDays, to: deadline) {
-//                globalDate = calendar.date(
-//                    bySettingHour: 18,
-//                    minute: 0,
-//                    second: 0,
-//                    of: globalDate
-//                ) ?? globalDate
-//
-//                let isFuture = globalDate > now
-//                print("globalDate:", globalDate)
-//                print("global > now ?", isFuture)
-//            }
-//        }
-//        print("----------------------")
-//#endif
-
-        // REMINDER
-        if let minutes = task.reminderOffsetMinutes,
-           let reminderDate = Calendar.current.date(byAdding: .minute, value: -minutes, to: deadline) {
-            if reminderDate > now {
-                events.append(("task.\(task.id.uuidString).reminder", reminderDate, "reminder"))
-            }
+        guard let event = TaskEventCalculator.nextEvent(for: task, now: now, lead: lead) else {
+            return nil
         }
 
-        // DEADLINE (only if no snooze already returned above)
-        if deadline > now {
-            events.append(("task.\(task.id.uuidString).deadline", deadline, "deadline"))
-        }
-
-        events.sort { $0.date < $1.date }
-
-        if let first = events.first {
-            return first
-        }
-
-        // 🔥 FALLBACK SAFE: if nothing else, always return deadline
-        if deadline > now {
-            return ("task.\(task.id.uuidString).deadline", deadline, "deadline")
-        }
-
-        return nil
+        return (event.id, event.date, event.type)
     }
     
     
@@ -624,11 +603,20 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                     if let task = try? context.fetch(descriptor).first {
                         let rawDate = Date().addingTimeInterval(interval)
 
-                        if let deadline = task.deadLine, rawDate >= deadline {
-                            // 🔥 CANCEL snooze → let pipeline continue (deadline will fire)
-                            task.snoozeUntil = nil
+                        let type = response.notification.request.content.userInfo["type"] as? String
 
-                            NotificationCenter.default.post(name: .snoozeRejectedDueToDeadline, object: nil)
+                        if let deadline = task.deadLine {
+                            if type == "deadline" {
+                                // ✅ Snooze from deadline is ALWAYS allowed
+                                task.snoozeUntil = rawDate
+                            } else {
+                                // ❌ Snooze from global/reminder/snooze must NOT exceed deadline
+                                if rawDate >= deadline {
+                                    NotificationCenter.default.post(name: .snoozeRejectedDueToDeadline, object: nil)
+                                } else {
+                                    task.snoozeUntil = rawDate
+                                }
+                            }
                         } else {
                             task.snoozeUntil = rawDate
                         }
