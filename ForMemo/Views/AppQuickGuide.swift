@@ -114,7 +114,7 @@ struct AppQuickGuideView: View {
         
             .init(
                 title: String(localized: "Smart Notifications"),
-                description: String(localized: "Stay on track with intelligent reminders. Every task always includes a notification at the due time. You can add custom reminders, enable an automatic early notification (1–7 days before), and quickly snooze notifications when needed."),
+                description: String(localized: "Stay on track with intelligent reminders. Every task includes a notification at the due time. You can add custom reminders, enable an automatic early notification (1–7 days before), and quickly snooze notifications when needed."),
                 icon: "deskclock",
                 tint: .orange
             ),

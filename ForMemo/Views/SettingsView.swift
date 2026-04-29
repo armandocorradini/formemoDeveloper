@@ -923,7 +923,7 @@ struct FAQView: View {
         FAQSection(title: String(localized: "Notifications & Reminders"), items: [
             FAQItem(
                 question: String(localized:"How are notifications managed?"),
-                answer: String(localized:"The app always schedules a notification at the task’s due time. In Settings, you can enable an automatic early notification (from 1 to 7 days before), applied to every task. You can also add a custom reminder for each task. You can also associate a location with a task and receive a notification when you arrive at that place. Only one notification is active at a time, and when it fires, the system automatically schedules the next one. Recurring tasks follow the same logic for each occurrence.")
+                answer: String(localized:"The app schedules a notification at the task’s due time. In Settings, you can enable an automatic early notification (from 1 to 7 days before), applied to every task. You can also add a custom reminder for each task. You can also associate a location with a task and receive a notification when you arrive at that place. Only one notification is active at a time, and when it fires, the system automatically schedules the next one. Recurring tasks follow the same logic for each occurrence.")
             ),
             FAQItem(
                 question: String(localized:"Why am I not receiving notifications?"),
