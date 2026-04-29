@@ -981,7 +981,8 @@ struct TaskDetailView: View {
             }
 
             // 🔁 Recurrence
-            Section {
+            if task.deadLine != nil {
+                Section {
                 
                 HStack {
                     Image(systemName: "arrow.triangle.2.circlepath")
@@ -990,7 +991,7 @@ struct TaskDetailView: View {
                     Spacer()
                     Picker("", selection: $selectedRecurrence) {
                         ForEach(RecurrenceUI.allCases) { option in
-                            Text(option.title).tag(option)
+                            Text(LocalizedStringKey(option.localizationKey)).tag(option)
                         }
                     }
                     .labelsHidden()
@@ -1009,8 +1010,41 @@ struct TaskDetailView: View {
                 
                 if selectedRecurrence != .none {
                     
+                    let count = task.recurrenceInterval
+
+                    let unitKey: String = {
+                        switch selectedRecurrence {
+                        case .daily:
+                            return count == 1 ? "recurrence.day.one" : "recurrence.day.other"
+                        case .weekly:
+                            return count == 1 ? "recurrence.week.one" : "recurrence.week.other"
+                        case .monthly:
+                            return count == 1 ? "recurrence.month.one" : "recurrence.month.other"
+                        case .yearly:
+                            return count == 1 ? "recurrence.year.one" : "recurrence.year.other"
+                        case .none:
+                            return ""
+                        }
+                    }()
+
+                    let unit = unitKey.isEmpty ? "" : String(localized: .init(unitKey))
+
+                    let label: String = {
+                        if count == 1 {
+                            return String(
+                                format: NSLocalizedString("recurrence.format.single %@", comment: ""),
+                                unit
+                            )
+                        } else {
+                            return String(
+                                format: NSLocalizedString("recurrence.format %lld %@", comment: ""),
+                                count, unit
+                            )
+                        }
+                    }()
+
                     Stepper(
-                        "Every \(task.recurrenceInterval) \(selectedRecurrence.title.lowercased())",
+                        label,
                         value: Binding(
                             get: { task.recurrenceInterval },
                             set: { newValue in
@@ -1021,16 +1055,17 @@ struct TaskDetailView: View {
                         in: 1...30
                     )
                     
-                    Button(role: .destructive) {
-                        task.recurrenceRule = nil
-                        task.recurrenceInterval = 1
-                        selectedRecurrence = .none
-                        saveTask()
-                    } label: {
-                        Label("Remove recurrence", systemImage: "xmark.circle")
-                    }
+//                    Button(role: .destructive) {
+//                        task.recurrenceRule = nil
+//                        task.recurrenceInterval = 1
+//                        selectedRecurrence = .none
+//                        saveTask()
+//                    } label: {
+//                        Label("Remove recurrence", systemImage: "xmark.circle")
+//                    }
                 }
             }
+            } // closes if task.deadLine != nil
             // Priority picker
             Picker("Priority",
                    selection: Binding<TaskPriority>(

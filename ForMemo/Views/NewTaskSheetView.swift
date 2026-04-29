@@ -231,7 +231,8 @@ struct NewTaskSheetView: View {
             }
             
             // 🔁 Recurrence
-            Section {
+            if draftTask.deadLine != nil {
+                Section {
                 
                 HStack {
                     Label("Repeat", systemImage: "arrow.triangle.2.circlepath")
@@ -239,7 +240,7 @@ struct NewTaskSheetView: View {
                     
                     Picker("", selection: $selectedRecurrence) {
                         ForEach(RecurrenceUI.allCases) { option in
-                            Text(option.title).tag(option)
+                            Text(LocalizedStringKey(option.localizationKey)).tag(option)
                         }
                     }
                     .labelsHidden()
@@ -257,13 +258,30 @@ struct NewTaskSheetView: View {
                 
                 if selectedRecurrence != .none {
                     
-                    let unit = selectedRecurrence == .daily ? "day" :
-                               selectedRecurrence == .weekly ? "week" :
-                               selectedRecurrence == .monthly ? "month" :
-                               "year"
+                    let count = draftTask.recurrenceInterval
+                    
+                    let unitKey: String = {
+                        switch selectedRecurrence {
+                        case .daily:
+                            return count == 1 ? "recurrence.day.one" : "recurrence.day.other"
+                        case .weekly:
+                            return count == 1 ? "recurrence.week.one" : "recurrence.week.other"
+                        case .monthly:
+                            return count == 1 ? "recurrence.month.one" : "recurrence.month.other"
+                        case .yearly:
+                            return count == 1 ? "recurrence.year.one" : "recurrence.year.other"
+                        case .none:
+                            return ""
+                        }
+                    }()
+                    
+                    let unit = unitKey.isEmpty ? "" : String(localized: .init(unitKey))
                     
                     Stepper(
-                        "Every \(draftTask.recurrenceInterval) \(unit)\(draftTask.recurrenceInterval > 1 ? "s" : "")",
+                        String(
+                            format: NSLocalizedString("recurrence.format %lld %@", comment: ""),
+                            count, unit
+                        ),
                         value: Binding(
                             get: { draftTask.recurrenceInterval },
                             set: { draftTask.recurrenceInterval = $0 }
@@ -271,15 +289,16 @@ struct NewTaskSheetView: View {
                         in: 1...30
                     )
                     
-                    Button(role: .destructive) {
-                        draftTask.recurrenceRule = nil
-                        draftTask.recurrenceInterval = 1
-                        selectedRecurrence = .none
-                    } label: {
-                        Label("Remove repeat", systemImage: "xmark.circle")
-                    }
+//                    Button(role: .destructive) {
+//                        draftTask.recurrenceRule = nil
+//                        draftTask.recurrenceInterval = 1
+//                        selectedRecurrence = .none
+//                    } label: {
+//                        Label("Remove repeat", systemImage: "xmark.circle")
+//                    }
                 }
                 
+                }
             }
             
             Picker("Priority", selection: $draftTask.priority) {
@@ -559,3 +578,16 @@ struct NewTaskSheetView: View {
         }
     }
 }
+
+extension RecurrenceUI {
+    var localizationKey: String {
+        switch self {
+        case .none: return "recurrence.none"
+        case .daily: return "recurrence.daily"
+        case .weekly: return "recurrence.weekly"
+        case .monthly: return "recurrence.monthly"
+        case .yearly: return "recurrence.yearly"
+        }
+    }
+    }
+

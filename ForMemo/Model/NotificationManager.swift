@@ -620,13 +620,19 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
 
                                     // 🔴 Always schedule local notification (will be suppressed if app is active)
                                     let content = UNMutableNotificationContent()
-                                    let title = "Snooze not scheduled"
-                                    let body = "Snooze exceeds the deadline. No snooze notification will be scheduled. The deadline notification will still occur."
+                                    let title = String(localized: "Snooze not scheduled")
+                                    let body = String(localized: "Snooze exceeds the deadline. No snooze notification will be scheduled. The deadline notification will still occur.")
                                     content.title = title
                                     content.body = body
                                     content.sound = .default
 
-                                    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+                                    // 🔒 Ensure reliable delivery also when app is terminated
+                                    let triggerInterval: TimeInterval = 5
+
+                                    let trigger = UNTimeIntervalNotificationTrigger(
+                                        timeInterval: triggerInterval,
+                                        repeats: false
+                                    )
 
                                     let request = UNNotificationRequest(
                                         identifier: "snoozeRejected.\(UUID().uuidString)",

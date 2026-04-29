@@ -29,7 +29,7 @@ struct AddTaskIntent: AppIntent {
     
     @Parameter(
         title: "Reminder",
-        requestValueDialog: IntentDialog("When should I remind you?")
+        requestValueDialog: IntentDialog("Do you want a reminder? If yes, when?")
     )
     var reminderText: String?
     
@@ -117,7 +117,6 @@ struct AddTaskIntent: AppIntent {
                 .lowercased()
             
             let minutes: Int?
-            
 
             // MARK: - NONE
 
@@ -132,11 +131,87 @@ struct AddTaskIntent: AppIntent {
             ]
 
             if words.contains(where: { word in
-                noKeywords.contains(where: { word.hasPrefix($0) })
+                noKeywords.contains(word)
             }) {
                 minutes = nil
             }
-            
+
+            // MARK: - AT DEADLINE
+
+            else if [
+                // EN
+                "when it's due", "when it is due", "at the deadline",
+                "at due time", "only when due",
+
+                // IT
+                "alla scadenza", "alla fine", "al termine",
+                "solo alla fine", "solo alla scadenza",
+
+                // FR
+                "à l'échéance", "au moment de l'échéance",
+                "seulement à l'échéance",
+
+                // ES
+                "al vencimiento", "en el momento exacto",
+                "solo al vencimiento",
+
+                // DE
+                "bei fälligkeit", "zum fälligkeitszeitpunkt",
+                "nur bei fälligkeit"
+            ].contains(where: { normalized.contains($0) }) {
+                minutes = nil
+            }
+
+            // MARK: - SPECIAL DURATIONS (no numbers)
+
+            // HALF HOUR (30 min)
+            else if [
+                // EN
+                "half an hour", "half hour",
+                // IT
+                "mezzora", "mez ora", "mez'ora",
+                // FR
+                "demi heure", "demi-heure", "une demi heure",
+                // ES
+                "media hora",
+                // DE
+                "halbe stunde", "eine halbe stunde"
+            ].contains(where: { normalized.contains($0) }) {
+                minutes = 30
+            }
+
+            // QUARTER HOUR (15 min)
+            else if [
+                // EN
+                "quarter of an hour", "a quarter hour", "quarter hour",
+                // IT
+                "un quarto d ora", "un quarto d'ora", "un quarto ora",
+                // FR
+                "un quart d heure", "un quart d'heure",
+                // ES
+                "un cuarto de hora",
+                // DE
+                "viertelstunde"
+            ].contains(where: { normalized.contains($0) }) {
+                minutes = 15
+            }
+
+            // THREE QUARTERS (45 min)
+            else if [
+                // EN
+                "three quarters of an hour", "three quarter hour",
+                // IT
+                "tre quarti d ora", "tre quarti d'ora",
+                // FR
+                "trois quarts d heure", "trois quarts d'heure",
+                // ES
+                "tres cuartos de hora",
+                // DE
+                "dreiviertelstunde"
+            ].contains(where: { normalized.contains($0) }) {
+                minutes = 45
+            }
+
             // MARK: - MINUTES
             
             else if normalized.contains("min") {
@@ -191,7 +266,7 @@ struct AddTaskIntent: AppIntent {
             task.reminderOffsetMinutes = minutes
             
             if minutes == nil {
-                reminderInfo = String(localized: "No reminder")
+                reminderInfo = String(localized: "when it's due")
             } else {
                 reminderInfo = Self.description(forMinutes: minutes!)
             }
@@ -209,14 +284,22 @@ struct AddTaskIntent: AppIntent {
             return .result(dialog: "Done")
         }
 
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+
+        let formattedDate = formatter.string(from: dueDate)
+        let at = String(localized: "date.at")
+        let spokenDate = formattedDate.replacingOccurrences(of: ", ", with: " \(at) ")
+
         if task.reminderOffsetMinutes == nil {
             return .result(
-                dialog: IntentDialog("Done. \(finalTitle) is scheduled.")
+                dialog: IntentDialog("Done. \(finalTitle) is scheduled for \(spokenDate). You’ll get a notification when it’s due.")
             )
         }
 
         return .result(
-            dialog: IntentDialog("Done. \(finalTitle) is scheduled. I’ll remind you \(reminderInfo).")
+            dialog: IntentDialog("Done. \(finalTitle) is scheduled for \(spokenDate). I’ll remind you \(reminderInfo), and again when it’s due.")
         )
     }
 }
