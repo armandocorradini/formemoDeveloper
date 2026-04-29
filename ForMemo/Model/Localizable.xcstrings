@@ -3292,36 +3292,36 @@
         }
       }
     },
-    "Disclaimer and Terms of Use\n\nThe %@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. Their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n5. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n6. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n7. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n8. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n9. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %@, you confirm that you have read, understood, and fully accepted this Disclaimer." : {
+    "Disclaimer and Terms of Use\n\nThe %@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately.\n\n6. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n7. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n8. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n9. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n10. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n11. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %@, you confirm that you have read, understood, and fully accepted this Disclaimer." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haftungsausschluss und Nutzungsbedingungen\n\nDie %1$@ App („App“) dient der persönlichen Aufgabenverwaltung und Produktivität.\n\nDurch die Nutzung der App erkennen Sie Folgendes an und stimmen zu:\n\n1. Zweck der App: Die App dient ausschließlich der persönlichen Organisation. Alle Informationen, Vorschläge und Funktionen werden nur zu Informationszwecken bereitgestellt und stellen keine Garantie für Ausführung oder Ergebnis dar.\n\n2. Nutzerverantwortung: Die App wird „wie besehen“ ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt. Sie sind allein verantwortlich für Ihre Entscheidungen, Handlungen und Aktivitäten auf Grundlage der Nutzung der App.\n\n3. Benachrichtigungen, Badges und Erinnerungen: Benachrichtigungen, App-Badges, Erinnerungen und Snooze-Funktionen dienen nur zu Informationszwecken. Ihre Zustellung und Genauigkeit hängen von Systemdiensten, Geräteeinstellungen und externen Faktoren ab. Die App garantiert keine rechtzeitige Zustellung, Genauigkeit oder ordnungsgemäße Funktion. Sie sollten sich bei wichtigen oder zeitkritischen Aufgaben nicht ausschließlich auf diese Funktionen verlassen.\n\n4. Daten und Speicherung: Daten können lokal auf Ihrem Gerät gespeichert oder über iCloud synchronisiert werden. Sie sind für die Verwaltung und Sicherung Ihrer Daten verantwortlich. Die Entwickler haften nicht für Datenverlust, Beschädigung, unbefugten Zugriff oder Probleme im Zusammenhang mit iCloud-Synchronisationsverzögerungen oder -fehlern.\n\n5. Drittanbieterdienste: Die App kann für bestimmte Funktionen auf Dienste von Drittanbietern (z. B. iCloud) angewiesen sein. Die Entwickler übernehmen keine Verantwortung für Verfügbarkeit, Leistung, Kompatibilität oder Datenschutzpraktiken dieser Dienste.\n\n6. Funktionsverfügbarkeit: Die Funktionalität der App kann von Gerätezustand, Systemeinstellungen, erteilten Berechtigungen und Netzwerkverbindung abhängen. Eine kontinuierliche Verfügbarkeit oder korrekte Funktion aller Features wird nicht garantiert.\n\n7. Import- und Exportfunktionen: Import- und Exportfunktionen werden aus Komfortgründen bereitgestellt. Die App garantiert keine vollständige Datenintegrität, Vollständigkeit oder Kompatibilität mit Drittformaten oder -diensten. Anhänge sind in Import- oder Exportvorgängen nicht enthalten.\n\n8. Updates und Änderungen: Die App und dieser Haftungsausschluss können jederzeit ohne vorherige Ankündigung aktualisiert oder geändert werden. Die fortgesetzte Nutzung gilt als Zustimmung zu diesen Änderungen.\n\n9. Haftungsbeschränkung: Soweit gesetzlich zulässig, haften die Entwickler nicht für Schäden, die aus der Nutzung oder der Unfähigkeit zur Nutzung der App entstehen.\n\nDurch die Nutzung von %2$@ bestätigen Sie, dass Sie diesen Haftungsausschluss gelesen, verstanden und vollständig akzeptiert haben."
+            "value" : "Haftungsausschluss und Nutzungsbedingungen\n\nDie App %@ („App“) dient der persönlichen Aufgabenverwaltung und Produktivität.\n\nDurch die Nutzung der App erkennst du Folgendes an und stimmst zu:\n\n1. Zweck der App: Die App dient ausschließlich der persönlichen Organisation. Alle Informationen, Vorschläge und Funktionen werden nur zu Informationszwecken bereitgestellt und stellen keine Garantie für Ausführung oder Ergebnis dar.\n\n2. Verantwortung des Nutzers: Die App wird „wie besehen“ ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt. Du bist allein verantwortlich für deine Entscheidungen, Handlungen und Aktivitäten auf Grundlage der Nutzung der App.\n\n3. Benachrichtigungen, Badges und Erinnerungen: Benachrichtigungen, App-Symbole, Erinnerungen und Snooze-Funktionen werden ausschließlich zu Informationszwecken bereitgestellt. Obwohl die App darauf ausgelegt ist, Benachrichtigungen zum richtigen Zeitpunkt zu planen, hängen deren Zustellung und Genauigkeit von Systemdiensten, Geräteeinstellungen und externen Faktoren ab. Die App garantiert keine rechtzeitige Zustellung, Genauigkeit oder ordnungsgemäße Funktion. Du solltest dich nicht ausschließlich auf diese Funktionen bei kritischen oder zeitabhängigen Aufgaben verlassen.\n\n4. Standortbasierte Erinnerungen: Standortbasierte Erinnerungen hängen von Systemberechtigungen, Gerätezuständen und externen Faktoren ab und funktionieren möglicherweise nicht immer wie erwartet.\n\n5. Sprachassistent (Siri): Sprachbefehle und die Siri-Integration basieren auf Apple-Diensten und können Nutzereingaben möglicherweise nicht korrekt interpretieren.\n\n6. Daten und Speicherung: Daten können lokal auf dem Gerät gespeichert oder über iCloud synchronisiert werden. Du bist für die Verwaltung und Sicherung deiner Daten verantwortlich. Die Entwickler übernehmen keine Verantwortung für Datenverlust, Datenbeschädigung, unbefugten Zugriff oder Probleme im Zusammenhang mit iCloud-Synchronisationsverzögerungen oder -fehlern.\n\n7. Dienste von Drittanbietern: Die App kann für bestimmte Funktionen auf Drittanbieterdienste (wie iCloud) angewiesen sein. Die Entwickler übernehmen keine Verantwortung für deren Verfügbarkeit, Leistung, Kompatibilität oder Datenschutzpraktiken.\n\n8. Verfügbarkeit der Funktionen: Die Funktionalität der App kann von Gerätezuständen, Systemeinstellungen, erteilten Berechtigungen und Netzwerkverbindungen abhängen. Eine kontinuierliche Verfügbarkeit oder ein fehlerfreier Betrieb aller Funktionen wird nicht garantiert.\n\n9. Import- und Exportfunktionen: Import- und Exportfunktionen werden aus Gründen der Benutzerfreundlichkeit bereitgestellt. Die App garantiert keine vollständige Datenintegrität, Vollständigkeit oder Kompatibilität mit Drittanbieterformaten oder -diensten. Anhänge sind in Import- oder Exportvorgängen nicht enthalten.\n\n10. Updates und Änderungen: Die App und dieser Haftungsausschluss können jederzeit ohne vorherige Ankündigung aktualisiert oder geändert werden. Die fortgesetzte Nutzung der App gilt als Zustimmung zu diesen Änderungen.\n\n11. Haftungsbeschränkung: Soweit gesetzlich zulässig, haften die Entwickler nicht für Schäden, die aus der Nutzung oder der Unmöglichkeit der Nutzung der App entstehen.\n\nDurch die Nutzung von %@ bestätigst du, dass du diesen Haftungsausschluss gelesen, verstanden und vollständig akzeptiert hast."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Disclaimer and Terms of Use\n\nThe %1$@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. Their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n5. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n6. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n7. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n8. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n9. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %2$@, you confirm that you have read, understood, and fully accepted this Disclaimer."
+            "value" : "Disclaimer and Terms of Use\n\nThe %1$@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately.\n\n6. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n7. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n8. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n9. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n10. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n11. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %2$@, you confirm that you have read, understood, and fully accepted this Disclaimer."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aviso legal y Términos de uso\n\nLa aplicación %1$@ (\"App\") está diseñada para la gestión personal de tareas y la productividad.\n\nAl utilizar la App, reconoces y aceptas lo siguiente:\n\n1. Finalidad de la App: La App está destinada únicamente a la organización personal. Toda la información, sugerencias y funcionalidades se proporcionan con fines informativos y no constituyen ninguna garantía de ejecución o resultado.\n\n2. Responsabilidad del usuario: La App se proporciona “tal cual”, sin garantías de ningún tipo, expresas o implícitas. Eres el único responsable de tus decisiones, acciones y actividades basadas en el uso de la App.\n\n3. Notificaciones, insignias y recordatorios: Las notificaciones, insignias de la app, recordatorios y funciones de aplazamiento se proporcionan solo con fines informativos. Su entrega y precisión dependen de servicios del sistema, ajustes del dispositivo y factores externos. La App no garantiza la entrega puntual, precisión ni el correcto funcionamiento. No debes depender exclusivamente de estas funciones para tareas críticas o sensibles al tiempo.\n\n4. Datos y almacenamiento: Los datos pueden almacenarse localmente en tu dispositivo o sincronizarse mediante iCloud. Eres responsable de gestionar y realizar copias de seguridad de tus datos. Los desarrolladores no son responsables de pérdidas de datos, corrupción, accesos no autorizados o problemas relacionados con retrasos o fallos en la sincronización de iCloud.\n\n5. Servicios de terceros: La App puede depender de servicios de terceros (como iCloud) para determinadas funciones. Los desarrolladores no son responsables de la disponibilidad, rendimiento, compatibilidad o prácticas de privacidad de dichos servicios.\n\n6. Disponibilidad de funciones: El funcionamiento de la App puede depender del estado del dispositivo, ajustes del sistema, permisos concedidos y conectividad de red. No se garantiza la disponibilidad continua ni el correcto funcionamiento de todas las funciones.\n\n7. Funciones de importación y exportación: Las funciones de importación y exportación se proporcionan por conveniencia. La App no garantiza la fidelidad, integridad ni compatibilidad total de los datos con formatos o servicios de terceros. Los archivos adjuntos no se incluyen en las operaciones de importación o exportación.\n\n8. Actualizaciones y cambios: La App y este aviso legal pueden actualizarse o modificarse en cualquier momento sin previo aviso. El uso continuado de la App implica la aceptación de dichos cambios.\n\n9. Limitación de responsabilidad: En la medida máxima permitida por la ley aplicable, los desarrolladores no serán responsables de ningún daño derivado del uso o de la imposibilidad de uso de la App.\n\nAl utilizar %2$@, confirmas que has leído, comprendido y aceptado plenamente este aviso legal."
+            "value" : "Aviso legal y términos de uso\n\nLa aplicación %@ (\"App\") está diseñada para la gestión personal de tareas y la productividad.\n\nAl utilizar la App, reconoces y aceptas lo siguiente:\n\n1. Finalidad de la App: La App está destinada exclusivamente a la organización personal. Toda la información, sugerencias y funcionalidades se proporcionan únicamente con fines informativos y no constituyen ninguna garantía de ejecución o resultado.\n\n2. Responsabilidad del usuario: La App se proporciona “tal cual”, sin garantías de ningún tipo, expresas o implícitas. Eres el único responsable de tus decisiones, acciones y actividades basadas en el uso de la App.\n\n3. Notificaciones y recordatorios: Las notificaciones, insignias de la aplicación, recordatorios y funciones de snooze se proporcionan únicamente con fines informativos. Aunque la App está diseñada para programar notificaciones en el momento adecuado, su entrega y precisión dependen de servicios del sistema, configuraciones del dispositivo y factores externos. La App no garantiza su entrega puntual, precisión o correcto funcionamiento. No debes confiar exclusivamente en estas funciones para tareas críticas o sensibles al tiempo.\n\n4. Recordatorios basados en ubicación: Los recordatorios basados en ubicación dependen de permisos del sistema, condiciones del dispositivo y factores externos, y pueden no activarse como se espera.\n\n5. Asistente de voz (Siri): Los comandos de voz y la integración con Siri dependen de los servicios de Apple y pueden no interpretar correctamente las solicitudes del usuario.\n\n6. Datos y almacenamiento: Los datos pueden almacenarse localmente en el dispositivo o sincronizarse mediante iCloud. Eres responsable de gestionar y realizar copias de seguridad de tus datos. Los desarrolladores no son responsables de pérdidas de datos, corrupción, accesos no autorizados o problemas relacionados con retrasos o fallos de sincronización de iCloud.\n\n7. Servicios de terceros: La App puede depender de servicios de terceros (como iCloud) para determinadas funciones. Los desarrolladores no son responsables de la disponibilidad, rendimiento, compatibilidad o prácticas de privacidad de dichos servicios.\n\n8. Disponibilidad de funciones: El funcionamiento de la App puede depender de condiciones del dispositivo, configuraciones del sistema, permisos concedidos y conectividad de red. No se garantiza la disponibilidad continua ni el correcto funcionamiento de todas las funciones.\n\n9. Importación y exportación: Las funciones de importación y exportación se proporcionan por conveniencia. La App no garantiza la fidelidad completa de los datos, su integridad ni su compatibilidad con formatos o servicios de terceros. Los archivos adjuntos no se incluyen en estas operaciones.\n\n10. Actualizaciones y cambios: La App y este aviso pueden actualizarse o modificarse sin previo aviso. El uso continuado de la App implica la aceptación de dichos cambios.\n\n11. Limitación de responsabilidad: En la medida máxima permitida por la legislación aplicable, los desarrolladores no serán responsables de ningún daño derivado del uso o la imposibilidad de uso de la App.\n\nAl utilizar %@, confirmas que has leído, comprendido y aceptado plenamente este aviso."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disclaimer and Terms of Use\n\nThe %1$@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. Their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n5. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n6. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n7. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n8. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n9. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %2$@, you confirm that you have read, understood, and fully accepted this Disclaimer."
+            "value" : "Clause de non-responsabilité et conditions d’utilisation\n\nL’application %@ (« App ») est conçue pour la gestion personnelle des tâches et la productivité.\n\nEn utilisant l’App, vous reconnaissez et acceptez ce qui suit :\n\n1. Objet de l’App : L’App est destinée uniquement à l’organisation personnelle. Toutes les informations, suggestions et fonctionnalités sont fournies à titre informatif uniquement et ne constituent aucune garantie d’exécution ou de résultat.\n\n2. Responsabilité de l’utilisateur : L’App est fournie « telle quelle », sans garantie d’aucune sorte, expresse ou implicite. Vous êtes seul responsable de vos décisions, actions et activités basées sur l’utilisation de l’App.\n\n3. Notifications, badges et rappels : Les notifications, badges de l’application, rappels et fonctions de snooze sont fournis à titre informatif uniquement. Bien que l’App soit conçue pour planifier les notifications au moment approprié, leur livraison et leur exactitude dépendent des services système, des paramètres de l’appareil et de facteurs externes. L’App ne garantit pas leur livraison en temps voulu, leur exactitude ni leur bon fonctionnement. Vous ne devez pas vous y fier exclusivement pour des tâches critiques ou sensibles au temps.\n\n4. Rappels basés sur la localisation : Les rappels basés sur la localisation dépendent des autorisations système, des conditions de l’appareil et de facteurs externes et peuvent ne pas se déclencher comme prévu.\n\n5. Assistant vocal (Siri) : Les commandes vocales et l’intégration avec Siri reposent sur les services Apple et peuvent ne pas interpréter correctement les demandes de l’utilisateur.\n\n6. Données et stockage : Les données peuvent être stockées localement sur votre appareil ou synchronisées via iCloud. Vous êtes responsable de la gestion et de la sauvegarde de vos données. Les développeurs ne sont pas responsables des pertes de données, corruptions, accès non autorisés ou problèmes liés aux retards ou défaillances de la synchronisation iCloud.\n\n7. Services tiers : L’App peut s’appuyer sur des services tiers (tels qu’iCloud) pour certaines fonctionnalités. Les développeurs ne sont pas responsables de la disponibilité, des performances, de la compatibilité ou des pratiques de confidentialité de ces services.\n\n8. Disponibilité des fonctionnalités : Les fonctionnalités de l’App peuvent dépendre des conditions de l’appareil, des paramètres système, des autorisations accordées et de la connectivité réseau. La disponibilité continue ou le bon fonctionnement de toutes les fonctionnalités n’est pas garanti.\n\n9. Importation et exportation : Les fonctions d’importation et d’exportation sont fournies à titre pratique. L’App ne garantit pas l’exactitude complète des données, leur exhaustivité ni leur compatibilité avec des formats ou services tiers. Les pièces jointes ne sont pas incluses dans ces opérations.\n\n10. Mises à jour et modifications : L’App et le présent avertissement peuvent être mis à jour ou modifiés à tout moment sans préavis. L’utilisation continue de l’App constitue une acceptation de ces modifications.\n\n11. Limitation de responsabilité : Dans la mesure maximale permise par la loi applicable, les développeurs ne sauraient être tenus responsables de tout dommage résultant de l’utilisation ou de l’impossibilité d’utiliser l’App.\n\nEn utilisant %@, vous confirmez avoir lu, compris et accepté intégralement le présent avertissement."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disclaimer e Termini di Utilizzo\n\nL’app %1$@ (\"App\") è progettata per la gestione personale delle attività e la produttività.\n\nUtilizzando l’App, dichiari di aver letto, compreso e accettato quanto segue:\n\n1. Scopo dell’App: L’App è destinata esclusivamente all’organizzazione personale. Tutte le informazioni, i suggerimenti e le funzionalità sono forniti a scopo informativo e non costituiscono alcuna garanzia di esecuzione o risultato.\n\n2. Responsabilità dell’utente: L’App è fornita “così com’è”, senza garanzie di alcun tipo, esplicite o implicite. Sei l’unico responsabile delle tue decisioni, azioni e attività derivanti dall’uso dell’App.\n\n3. Notifiche, badge e promemoria: Notifiche, badge dell’app, promemoria e funzioni di snooze sono forniti esclusivamente a scopo informativo. La loro consegna e accuratezza dipendono da servizi di sistema, impostazioni del dispositivo e fattori esterni. L’App non garantisce la consegna puntuale, l’accuratezza o il corretto funzionamento. Non dovresti fare affidamento esclusivo su queste funzionalità per attività critiche o sensibili al tempo.\n\n4. Dati e archiviazione: I dati possono essere salvati localmente sul dispositivo o sincronizzati tramite iCloud. Sei responsabile della gestione e del backup dei tuoi dati. Gli sviluppatori non sono responsabili per perdita di dati, corruzione, accessi non autorizzati o problemi legati a ritardi o errori di sincronizzazione iCloud.\n\n5. Servizi di terze parti: L’App può utilizzare servizi di terze parti (come iCloud). Gli sviluppatori non sono responsabili per disponibilità, prestazioni, compatibilità o pratiche sulla privacy di tali servizi.\n\n6. Disponibilità delle funzionalità: Il funzionamento dell’App può dipendere dalle condizioni del dispositivo, dalle impostazioni di sistema, dai permessi concessi e dalla connettività di rete. Non è garantita la disponibilità continua o il corretto funzionamento di tutte le funzionalità.\n\n7. Funzionalità di importazione ed esportazione: Le funzioni di importazione ed esportazione sono fornite per comodità. L’App non garantisce la completa fedeltà, completezza o compatibilità dei dati con formati o servizi di terze parti. Gli allegati non sono inclusi nelle operazioni di importazione o esportazione.\n\n8. Aggiornamenti e modifiche: L’App e il presente Disclaimer possono essere aggiornati o modificati nel tempo senza preavviso. L’uso continuato dell’App implica l’accettazione di tali modifiche.\n\n9. Limitazione di responsabilità: Nei limiti massimi consentiti dalla legge applicabile, gli sviluppatori non sono responsabili per eventuali danni derivanti dall’uso o dall’impossibilità di utilizzo dell’App.\n\nUtilizzando %2$@, confermi di aver letto, compreso e accettato integralmente il presente Disclaimer."
+            "value" : "Disclaimer e Termini di utilizzo\n\nL’app %@ (\"App\") è progettata per la gestione personale delle attività e per scopi di produttività.\n\nUtilizzando l’App, riconosci e accetti quanto segue:\n\n1. Scopo dell’App: L’App è destinata esclusivamente all’organizzazione personale. Tutte le informazioni, i suggerimenti e le funzionalità sono forniti a solo scopo informativo e non costituiscono alcuna garanzia di esecuzione o risultato.\n\n2. Responsabilità dell’utente: L’App è fornita “così com’è”, senza alcuna garanzia di alcun tipo, espressa o implicita. Sei l’unico responsabile delle tue decisioni, azioni e attività basate sull’utilizzo dell’App.\n\n3. Notifiche, badge e promemoria: Le notifiche, i badge dell’app, i promemoria e le funzioni di snooze sono forniti esclusivamente a scopo informativo. Sebbene l’App sia progettata per programmare le notifiche al momento appropriato, la loro consegna e accuratezza dipendono da servizi di sistema, impostazioni del dispositivo e fattori esterni. L’App non garantisce la consegna puntuale, l’accuratezza o il corretto funzionamento di tali funzionalità. Non dovresti fare affidamento esclusivo su queste funzionalità per attività critiche o sensibili al tempo.\n\n4. Promemoria basati sulla posizione: I promemoria basati sulla posizione dipendono dalle autorizzazioni di sistema, dalle condizioni del dispositivo e da fattori esterni e potrebbero non attivarsi sempre come previsto.\n\n5. Assistente vocale (Siri): I comandi vocali e l’integrazione con Siri dipendono dai servizi Apple e potrebbero non interpretare sempre correttamente le richieste dell’utente.\n\n6. Dati e archiviazione: I dati possono essere salvati localmente sul dispositivo o sincronizzati tramite iCloud. Sei responsabile della gestione e del backup dei tuoi dati. Gli sviluppatori non sono responsabili per eventuali perdite di dati, corruzioni, accessi non autorizzati o problemi legati a ritardi o malfunzionamenti della sincronizzazione iCloud.\n\n7. Servizi di terze parti: L’App può fare affidamento su servizi di terze parti (come iCloud) per alcune funzionalità. Gli sviluppatori non sono responsabili per la disponibilità, le prestazioni, la compatibilità o le pratiche sulla privacy di tali servizi.\n\n8. Disponibilità delle funzionalità: Le funzionalità dell’App possono dipendere dalle condizioni del dispositivo, dalle impostazioni di sistema, dai permessi concessi e dalla connettività di rete. Non è garantita la disponibilità continua o il corretto funzionamento di tutte le funzionalità.\n\n9. Importazione ed esportazione: Le funzionalità di importazione ed esportazione sono fornite per comodità. L’App non garantisce la completa fedeltà dei dati, la completezza o la compatibilità con formati o servizi di terze parti. Gli allegati non sono inclusi nelle operazioni di importazione o esportazione.\n\n10. Aggiornamenti e modifiche: L’App e il presente Disclaimer possono essere aggiornati o modificati nel tempo senza preavviso. L’uso continuato dell’App costituisce accettazione di tali modifiche.\n\n11. Limitazione di responsabilità: Nella misura massima consentita dalla legge applicabile, gli sviluppatori non saranno responsabili per eventuali danni derivanti dall’uso o dall’impossibilità di utilizzare l’App.\n\nUtilizzando %@, confermi di aver letto, compreso e accettato integralmente il presente Disclaimer."
           }
         }
       }
@@ -4323,32 +4323,32 @@
         }
       }
     },
-    "Get notified when you arrive at a place. Associate a location with a task and receive a reminder at the right moment." : {
-      "comment" : "Text describing how to use location-based reminders in the app.",
+    "Get notified when you arrive at a place. Associate a location with a task and receive a reminder automatically at the right moment." : {
+      "comment" : "Title of a quick guide item for location-based reminders.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erhalten Sie eine Benachrichtigung, wenn Sie an einem Ort ankommen. Verknüpfen Sie einen Ort mit einer Aufgabe und werden Sie zur richtigen Zeit erinnert."
+            "value" : "Erhalte eine Benachrichtigung, wenn du an einem Ort ankommst.\nVerknüpfe einen Ort mit einer Aufgabe und erhalte automatisch eine Erinnerung zum richtigen Zeitpunkt."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recibe una notificación cuando llegues a un lugar. Asocia una ubicación a una tarea y recibe un recordatorio en el momento adecuado."
+            "value" : "Recibe una notificación cuando llegues a un lugar.\nAsocia una ubicación a una tarea y recibe automáticamente un recordatorio en el momento adecuado."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recevez une notification lorsque vous arrivez à un endroit. Associez un lieu à une tâche et soyez averti au bon moment."
+            "value" : "Recevez une notification lorsque vous arrivez à un endroit.\nAssociez un lieu à une tâche et recevez automatiquement un rappel au bon moment."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ricevi una notifica quando arrivi in un luogo. Associa una posizione a un’attività e ricevi un promemoria al momento giusto."
+            "value" : "Ricevi una notifica quando arrivi in un luogo.\nAssocia una posizione a un’attività e ricevi automaticamente un promemoria al momento giusto."
           }
         }
       }
@@ -4687,6 +4687,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Come funzionano i promemoria di posizione?"
+          }
+        }
+      }
+    },
+    "How do recurring tasks work?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie funktionieren wiederkehrende Aufgaben?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo funcionan las tareas recurrentes?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment fonctionnent les tâches récurrentes ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come funzionano le attività ricorrenti?"
           }
         }
       }
@@ -8089,6 +8117,36 @@
         }
       }
     },
+    "Recurring Tasks" : {
+      "comment" : "A task that repeats daily, weekly, monthly, or yearly.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederkehrende Aufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas recurrentes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches récurrentes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività ricorrenti"
+          }
+        }
+      }
+    },
     "Red" : {
       "localizations" : {
         "de" : {
@@ -8882,6 +8940,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Imposta scadenza"
+          }
+        }
+      }
+    },
+    "Set tasks to repeat daily, weekly, monthly, or yearly. When you complete a recurring task, the next one is created automatically based on the selected frequency." : {
+      "comment" : "Text describing how to set tasks to repeat daily, weekly, monthly, or yearly. When a recurring task is completed, the next one is automatically created based on the selected frequency.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kannst Aufgaben so einstellen, dass sie täglich, wöchentlich, monatlich oder jährlich wiederholt werden. Wenn du eine wiederkehrende Aufgabe abschließt, wird die nächste automatisch entsprechend der gewählten Frequenz erstellt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes configurar tareas para que se repitan diariamente, semanalmente, mensualmente o anualmente. Cuando completas una tarea recurrente, la siguiente se crea automáticamente según la frecuencia seleccionada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez définir des tâches récurrentes quotidiennes, hebdomadaires, mensuelles ou annuelles. Lorsque vous terminez une tâche récurrente, la suivante est créée automatiquement selon la fréquence choisie."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi impostare le attività in modo che si ripetano ogni giorno, settimana, mese o anno. Quando completi un’attività ricorrente, quella successiva viene creata automaticamente in base alla frequenza selezionata."
           }
         }
       }
@@ -9790,32 +9878,32 @@
         }
       }
     },
-    "Stay on track with intelligent reminders. Notifications adapt to your schedule and let you quickly snooze or open tasks." : {
-      "comment" : "Notification type: information.",
+    "Stay on track with intelligent reminders. Every task always includes a notification at the due time. You can add custom reminders, enable an automatic early notification (1–7 days before), and quickly snooze notifications when needed." : {
+      "comment" : "Description of the smart notifications feature.",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bleiben Sie organisiert mit intelligenten Erinnerungen. Benachrichtigungen passen sich Ihrem Zeitplan an und ermöglichen es Ihnen, Aufgaben schnell zu verschieben oder zu öffnen."
+            "value" : "Bleib organisiert mit intelligenten Erinnerungen.\nJede Aufgabe enthält immer eine Benachrichtigung zum Fälligkeitszeitpunkt. Du kannst individuelle Erinnerungen hinzufügen, eine automatische Vorabbenachrichtigung (1 bis 7 Tage vorher) aktivieren und Benachrichtigungen bei Bedarf schnell verschieben."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mantente al día con recordatorios inteligentes. Las notificaciones se adaptan a tu agenda y te permiten posponer o abrir tareas rápidamente."
+            "value" : "Mantente organizado con recordatorios inteligentes.\nCada tarea incluye siempre una notificación en el momento de vencimiento. Puedes añadir recordatorios personalizados, activar una notificación anticipada automática (de 1 a 7 días antes) y posponer rápidamente las notificaciones cuando sea necesario."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Restez organisé grâce à des rappels intelligents. Les notifications s’adaptent à votre emploi du temps et vous permettent de reporter ou d’ouvrir rapidement vos tâches."
+            "value" : "Restez organisé grâce à des rappels intelligents.\n\nChaque tâche inclut toujours une notification à l’échéance. Vous pouvez ajouter des rappels personnalisés, activer une notification anticipée automatique (1 à 7 jours avant) et reporter rapidement les notifications si nécessaire."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rimani organizzato con promemoria intelligenti. Le notifiche si adattano ai tuoi impegni e ti permettono di posticipare o aprire rapidamente le attività."
+            "value" : "Rimani organizzato con promemoria intelligenti.\nOgni attività include sempre una notifica alla scadenza. Puoi aggiungere promemoria personalizzati, attivare una notifica anticipata automatica (da 1 a 7 giorni prima) e posticipare rapidamente le notifiche quando necessario."
           }
         }
       }
@@ -10848,30 +10936,30 @@
         }
       }
     },
-    "The app always schedules a notification at the task’s due time. In Settings, you can enable an automatic early notification (from 1 to 7 days before), applied to every task. You can also add a custom reminder for each task. Only one notification is active at a time, and when it fires, the system automatically schedules the next one." : {
+    "The app always schedules a notification at the task’s due time. In Settings, you can enable an automatic early notification (from 1 to 7 days before), applied to every task. You can also add a custom reminder for each task. You can also associate a location with a task and receive a notification when you arrive at that place. Only one notification is active at a time, and when it fires, the system automatically schedules the next one. Recurring tasks follow the same logic for each occurrence." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die App plant immer eine Benachrichtigung zum Fälligkeitszeitpunkt der Aufgabe. In den Einstellungen können Sie eine automatische Vorabbenachrichtigung (1 bis 7 Tage vorher) aktivieren, die für alle Aufgaben gilt. Sie können auch eine individuelle Erinnerung für jede Aufgabe hinzufügen. Es ist immer nur eine Benachrichtigung aktiv; sobald sie ausgelöst wird, wird die nächste automatisch geplant."
+            "value" : "Die App plant immer eine Benachrichtigung zum Fälligkeitszeitpunkt der Aufgabe. In den Einstellungen kannst du eine automatische Vorabbenachrichtigung aktivieren (1 bis 7 Tage vorher), die für alle Aufgaben gilt. Du kannst außerdem für jede Aufgabe eine individuelle Erinnerung hinzufügen. Du kannst auch einen Ort mit einer Aufgabe verknüpfen und eine Benachrichtigung erhalten, wenn du dort ankommst. Es ist immer nur eine Benachrichtigung gleichzeitig aktiv und sobald sie ausgelöst wird, plant das System automatisch die nächste. Wiederkehrende Aufgaben folgen für jede Ausführung derselben Logik."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La app siempre programa una notificación a la hora de vencimiento de la tarea. En Ajustes, puedes activar una notificación anticipada automática (de 1 a 7 días antes), aplicada a todas las tareas. También puedes añadir un recordatorio personalizado para cada tarea. Solo hay una notificación activa a la vez y, cuando se activa, el sistema programa automáticamente la siguiente."
+            "value" : "La aplicación siempre programa una notificación en el momento de vencimiento de la tarea. En Ajustes puedes activar una notificación anticipada automática (de 1 a 7 días antes), aplicada a todas las tareas. También puedes añadir un recordatorio personalizado para cada tarea. También puedes asociar un lugar a una tarea y recibir una notificación cuando llegues a ese lugar. Solo hay una notificación activa a la vez y, cuando se envía, el sistema programa automáticamente la siguiente. Las tareas recurrentes siguen la misma lógica en cada ocurrencia."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’app planifie toujours une notification à l’heure d’échéance de la tâche. Dans Réglages, vous pouvez activer une notification anticipée automatique (de 1 à 7 jours avant), appliquée à toutes les tâches. Vous pouvez également ajouter un rappel personnalisé pour chaque tâche. Une seule notification est active à la fois et, lorsqu’elle se déclenche, la suivante est automatiquement planifiée."
+            "value" : "L’application planifie toujours une notification à l’échéance de la tâche. Dans les réglages, vous pouvez activer une notification anticipée automatique (de 1 à 7 jours avant), appliquée à toutes les tâches. Vous pouvez également ajouter un rappel personnalisé pour chaque tâche. Vous pouvez aussi associer un lieu à une tâche et recevoir une notification lorsque vous arrivez à cet endroit. Une seule notification est active à la fois et, lorsqu’elle est envoyée, le système planifie automatiquement la suivante. Les tâches récurrentes suivent la même logique pour chaque occurrence."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’app programma sempre una notifica all’orario di scadenza della attività. In Impostazioni puoi attivare una notifica anticipata automatica (da 1 a 7 giorni prima), applicata a tutte le attività. Puoi anche aggiungere un promemoria personalizzato per ogni attività. È attiva una sola notifica alla volta e, quando viene eseguita, la successiva viene programmata automaticamente."
+            "value" : "L’app pianifica sempre una notifica alla scadenza dell’attività. Nelle impostazioni puoi attivare una notifica anticipata automatica (da 1 a 7 giorni prima), applicata a tutte le attività. Puoi anche aggiungere un promemoria personalizzato per ogni attività. Puoi anche associare un luogo a un’attività e ricevere una notifica quando arrivi a destinazione. È attiva una sola notifica alla volta e, quando viene inviata, il sistema pianifica automaticamente la successiva. Le attività ricorrenti seguono la stessa logica per ogni occorrenza."
           }
         }
       }
@@ -13084,6 +13172,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Puoi creare attività manualmente o con Siri. Quando usi Siri, vieni guidato passo dopo passo: prima cosa aggiungere, poi quando e infine quale promemoria impostare. L’app salva l’attività con le informazioni fornite."
+          }
+        }
+      }
+    },
+    "You can set tasks to repeat daily, weekly, monthly, or yearly. When you complete a recurring task, the app automatically creates the next one based on the selected frequency, so you don’t need to recreate it manually. You can modify or stop recurrence at any time." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kannst Aufgaben so einstellen, dass sie täglich, wöchentlich, monatlich oder jährlich wiederholt werden. Wenn du eine wiederkehrende Aufgabe abschließt, erstellt die App automatisch die nächste entsprechend der gewählten Frequenz, sodass du sie nicht manuell neu erstellen musst. Du kannst die Wiederholung jederzeit ändern oder beenden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes configurar tareas para que se repitan diariamente, semanalmente, mensualmente o anualmente. Cuando completas una tarea recurrente, la aplicación crea automáticamente la siguiente según la frecuencia seleccionada, por lo que no necesitas recrearla manualmente. Puedes modificar o detener la recurrencia en cualquier momento."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez définir des tâches récurrentes quotidiennes, hebdomadaires, mensuelles ou annuelles. Lorsque vous terminez une tâche récurrente, l’application crée automatiquement la suivante selon la fréquence choisie, sans que vous ayez besoin de la recréer manuellement. Vous pouvez modifier ou arrêter la récurrence à tout moment."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi impostare le attività in modo che si ripetano ogni giorno, settimana, mese o anno. Quando completi un’attività ricorrente, l’app crea automaticamente quella successiva in base alla frequenza selezionata, così non devi ricrearla manualmente. Puoi modificare o interrompere la ricorrenza in qualsiasi momento."
           }
         }
       }

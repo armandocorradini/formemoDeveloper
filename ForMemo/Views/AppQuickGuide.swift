@@ -114,15 +114,21 @@ struct AppQuickGuideView: View {
         
             .init(
                 title: String(localized: "Smart Notifications"),
-                description: String(localized: "Stay on track with intelligent reminders. Notifications adapt to your schedule and let you quickly snooze or open tasks."),
+                description: String(localized: "Stay on track with intelligent reminders. Every task always includes a notification at the due time. You can add custom reminders, enable an automatic early notification (1–7 days before), and quickly snooze notifications when needed."),
                 icon: "deskclock",
                 tint: .orange
             ),
         .init(
+            title: String(localized:"Recurring Tasks"),
+            description: String(localized:"Set tasks to repeat daily, weekly, monthly, or yearly. When you complete a recurring task, the next one is created automatically based on the selected frequency."),
+            icon: "repeat",
+            tint: .green
+        ),
+        .init(
 
             title: String(localized: "Location-Based Reminders"),
 
-            description: String(localized: "Get notified when you arrive at a place. Associate a location with a task and receive a reminder at the right moment."),
+            description: String(localized: "Get notified when you arrive at a place. Associate a location with a task and receive a reminder automatically at the right moment."),
 
             icon: "mappin.and.ellipse",
 

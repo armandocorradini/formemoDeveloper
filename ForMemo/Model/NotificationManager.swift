@@ -295,15 +295,13 @@ final class NotificationManager: NSObject {
             // 🔵 Global
             if !lead.isNone {
                 let calendar = Calendar.current
-                if var globalDate = calendar.date(byAdding: .day, value: -lead.rawValue, to: deadline) {
-                    globalDate = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: globalDate) ?? globalDate
-                    if globalDate > now {
-                        candidates.append(Event(
-                            id: "task.\(task.id.uuidString).global",
-                            date: globalDate,
-                            type: "global"
-                        ))
-                    }
+                if let globalDate = calendar.date(byAdding: .day, value: -lead.rawValue, to: deadline),
+                   globalDate > now {
+                    candidates.append(Event(
+                        id: "task.\(task.id.uuidString).global",
+                        date: globalDate,
+                        type: "global"
+                    ))
                 }
             }
 
