@@ -184,11 +184,18 @@ struct WeeklyTasksView: View {
 
 private struct WeeklyTaskRow: View {
     
+    @AppStorage("tasklist.highlightOpacity")
+    private var highlightOpacity: Double = 1.0
+
+    @AppStorage("tasklist.highlightColor")
+    private var highlightColorHex: String = "#FF3B30"
+
+    private var highlightColor: Color {
+        Color(hex: highlightColorHex) ?? .red
+    }
+    
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
-    
-    @AppStorage("tasklist.highlightCriticalOverdue")
-    private var highlightCriticalOverdue: Bool = true
     
     @Binding var taskPendingDeletion: TodoTask?
     
@@ -376,8 +383,8 @@ private struct WeeklyTaskRow: View {
                                 let isOverdue = deadline < now
                                 let isCritical = task.priority.systemImage == "flame"
                                 
-                                if highlightCriticalOverdue && isCritical && (isToday || isOverdue) {
-                                    return Color.red
+                                if highlightOpacity > 0 && isCritical && (isToday || isOverdue) {
+                                    return highlightColor
                                 } else if isToday {
                                     return Color.orange
                                 } else if isOverdue {
@@ -412,14 +419,24 @@ private struct WeeklyTaskRow: View {
         let isCritical = task.priority.systemImage == "flame"
         let isToday = Calendar.current.isDateInToday(deadline) && deadline >= Date()
         let isOverdue = deadline < Date()
-        let shouldHighlight = highlightCriticalOverdue && isCritical && (isToday || isOverdue)
+        let shouldHighlight = highlightOpacity > 0 && isCritical && (isToday || isOverdue)
         
         return RoundedRectangle(cornerRadius: 18, style: .continuous)
             .fill(
-                shouldHighlight
-                ? Color.red.opacity(colorScheme == .dark ? 0.18 : 0.08)
-                : Color(uiColor: .secondarySystemBackground).opacity(0.5)
+                Color(uiColor: .secondarySystemBackground).opacity(0.5)
             )
+            .overlay {
+                if shouldHighlight {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(
+                            highlightColor.opacity(
+                                colorScheme == .dark
+                                ? highlightOpacity
+                                : highlightOpacity * 0.6
+                            )
+                        )
+                }
+            }
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(

@@ -7,9 +7,10 @@ struct TaskTabView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.modelContext) private var modelContext
     
-    @State private var selectedTab: Int? = 0
+    @State private var selectedTab: Int = 0
     @State private var hasRedirected = false
     @State private var showSnoozeAlert = false
+    @Namespace private var tabAnimation
     
     @AppStorage("TaskWeekDays")
     private var taskWeekDays: Int = 3
@@ -24,7 +25,15 @@ struct TaskTabView: View {
         return false
 #endif
     }
+
+    private var safeAreaBottom: CGFloat {
+        UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+            .first?
+            .safeAreaInsets.bottom ?? 0
+    }
     
+
     var body: some View {
         
         Group {
@@ -36,9 +45,29 @@ struct TaskTabView: View {
                 iPhoneLayout
             }
         }
-        .allowsHitTesting(scenePhase == .active)
         .onAppear {
-            handleInitialRedirect()
+            // Start from Home immediately
+            selectedTab = 0
+            
+            // 1) Wait 1.5s (data loading)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                
+                // Start faster rotation
+                NotificationCenter.default.post(name: Notification.Name("StartHomeIconRotationFast"), object: nil)
+                
+                // 2) Wait for rotation duration (assumed handled in HomeView)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    
+                    // 3) Additional delay before navigation
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        if selectedTab == 0 {
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                selectedTab = startupTab
+                            }
+                        }
+                    }
+                }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
             showSnoozeAlert = true
@@ -58,13 +87,22 @@ struct TaskTabView: View {
         
         NavigationSplitView {
             
-            List(selection: $selectedTab) {
+            List(selection: Binding<Int?>(
+                get: { selectedTab },
+                set: { if let value = $0 { selectedTab = value } }
+            )) {
                 
-                Label("Home", systemImage: "house").tag(0)
-                Label("List", systemImage: "checklist").tag(1)
-                Label("\(taskWeekDays) days", systemImage: "calendar.day.timeline.right").tag(4)
-                Label("Calendar", systemImage: "calendar").tag(3)
-                Label("Settings", systemImage: "gear").tag(2)
+                Label(NSLocalizedString("home", comment: ""), systemImage: "house").tag(0)
+                Label(NSLocalizedString("list_tab", comment: ""), systemImage: "checklist").tag(1)
+                Label(NSLocalizedString("map_tab", comment: ""), systemImage: "map").tag(5)
+                Label(
+                    taskWeekDays == 1
+                    ? String(localized: "today_tab")
+                    : String(localized: "\(taskWeekDays) days_tab"),
+                    systemImage: "calendar.day.timeline.right"
+                ).tag(4)
+                Label(NSLocalizedString("calendar_tab", comment: ""), systemImage: "calendar").tag(3)
+                Label(NSLocalizedString("settings_tab", comment: ""), systemImage: "gear").tag(2)
             }
             .listStyle(.sidebar)
             .navigationTitle("Tasks")
@@ -77,6 +115,8 @@ struct TaskTabView: View {
                 HomeView()
             case 1:
                 TaskListView()
+            case 5:
+                TaskMapView()
             case 4:
                 WeeklyTasksView()
             case 3:
@@ -92,53 +132,59 @@ struct TaskTabView: View {
     }
     
     
-    // MARK: - iPhone Layout (UNCHANGED)
+    // MARK: - iPhone Layout
     
     private var iPhoneLayout: some View {
-        
-        TabView(selection: $selectedTab) {
-            
-            NavigationStack {
-                HomeView()
+        ZStack {
+            switch selectedTab {
+            case 0:
+                NavigationStack {
+                    HomeView()
+                }
+            case 1:
+                NavigationStack {
+                    TaskListView()
+                }
+            case 5:
+                NavigationStack { TaskMapView() }
+            case 4:
+                NavigationStack { WeeklyTasksView() }
+            case 3:
+                NavigationStack { TaskCalendarView() }
+            case 2:
+                NavigationStack { SettingsView() }
+            default:
+                NavigationStack { HomeView() }
             }
-            .tabItem {
-                Label("Home", systemImage: "house")
-            }
-            .tag(0)
-            
-            NavigationStack {
-                TaskListView()
-            }
-            .tabItem {
-                Label("List", systemImage: "checklist")
-            }
-            .tag(1)
-            
-            NavigationStack {
-                WeeklyTasksView()
-            }
-            .tabItem {
-                Label("\(taskWeekDays) days", systemImage: "calendar.day.timeline.right")
-            }
-            .tag(4)
-            
-            NavigationStack {
-                TaskCalendarView()
-            }
-            .tabItem {
-                Label("Calendar", systemImage: "calendar")
-            }
-            .tag(3)
-            
-            NavigationStack {
-                SettingsView()
-            }
-            .tabItem {
-                Label("Settings", systemImage: "gear")
-            }
-            .tag(2)
         }
-        .tabBarMinimizeBehavior(.onScrollDown)
+        .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 0) {
+                HStack(spacing: 10) {
+                    tabItem("house", NSLocalizedString("Home", comment: ""), 0)
+                    tabItem("checklist", NSLocalizedString("list_tab", comment: ""), 1)
+                    tabItem("calendar.day.timeline.right",
+                            taskWeekDays == 1
+                            ? String(localized: "today_tab")
+                            : String(localized: "\(taskWeekDays) days_tab"),
+                            4)
+                    tabItem("calendar", NSLocalizedString("calendar_tab", comment: ""), 3)
+                    tabItem("map", NSLocalizedString("map_tab", comment: ""), 5)
+                    tabItem("gear", NSLocalizedString("settings_tab", comment: ""), 2)
+                }
+                .frame(height: 49)
+                .frame(maxHeight: .infinity, alignment: .center)
+            }
+            .frame(height: 64)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.horizontal, 16)
+            .background(.bar)
+            .overlay(
+                Divider().opacity(0.3),
+                alignment: .top
+            )
+            .padding(.vertical, 4)
+        }
+        .ignoresSafeArea(edges: .bottom)
     }
     
     // MARK: - iPad Layout
@@ -149,11 +195,16 @@ struct TaskTabView: View {
             
             List {
                 
-                sidebarRow(title: "Home", systemImage: "house", tag: 0)
-                sidebarRow(title: "List", systemImage: "checklist", tag: 1)
-                sidebarRow(title: "\(taskWeekDays) days", systemImage: "calendar.day.timeline.right", tag: 4)
-                sidebarRow(title: "Calendar", systemImage: "calendar", tag: 3)
-                sidebarRow(title: "Settings", systemImage: "gear", tag: 2)
+                sidebarRow(title: NSLocalizedString("home_tab", comment: ""), systemImage: "house", tag: 0)
+                sidebarRow(title: NSLocalizedString("list_tab", comment: ""), systemImage: "checklist", tag: 1)
+                sidebarRow(title:
+                                taskWeekDays == 1
+                                ? String(localized: "today_tab")
+                                : String(localized: "days_tab \(taskWeekDays)"),
+                           systemImage: "calendar.day.timeline.right", tag: 4)
+                sidebarRow(title: NSLocalizedString("calendar_tab", comment: ""), systemImage: "calendar", tag: 3)
+                sidebarRow(title: NSLocalizedString("map_tab", comment: ""), systemImage: "map", tag: 5)
+                sidebarRow(title: NSLocalizedString("settings_tab", comment: ""), systemImage: "gear", tag: 2)
             }
             .listStyle(.sidebar)
             .navigationTitle("Tasks")
@@ -166,6 +217,8 @@ struct TaskTabView: View {
                 NavigationStack { HomeView() }
             case 1:
                 NavigationStack { TaskListView() }
+            case 5:
+                NavigationStack { TaskMapView() }
             case 4:
                 NavigationStack { WeeklyTasksView() }
             case 3:
@@ -206,29 +259,7 @@ struct TaskTabView: View {
     // MARK: - Redirect
     
     private func handleInitialRedirect() {
-        
-        let startingTab = selectedTab
-        
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(3.4 + 0.5))
-            
-            guard !hasRedirected else { return }
-            
-            if selectedTab == startingTab {
-                
-                withAnimation(
-                    .interactiveSpring(
-                        response: 1,
-                        dampingFraction: 0.3,
-                        blendDuration: 0.9
-                    )
-                ) {
-                    selectedTab = startupTab
-                }
-            }
-            
-            hasRedirected = true
-        }
+        // DISABLED: was overriding user tab selection
     }
     
     @ViewBuilder
@@ -248,5 +279,33 @@ struct TaskTabView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
+    }
+    // MARK: - Custom Tab Item
+
+    private func tabItem(_ icon: String, _ title: String, _ tag: Int) -> some View {
+        Button {
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            selectedTab = tag
+        } label: {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .regular))
+                    .symbolRenderingMode(.hierarchical)
+                    .frame(height: 22)
+                Text(title)
+                    .font(.system(size:8, weight: .medium))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.9)
+                    .layoutPriority(1)
+            }
+            .frame(minWidth: 0)
+            .frame(maxWidth: .infinity)
+            .frame(height: 49)
+            .foregroundStyle(selectedTab == tag ? Color.accentColor : Color.secondary)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .transaction { $0.animation = nil }
+        .animation(.snappy(duration: 0.12), value: selectedTab)
     }
 }

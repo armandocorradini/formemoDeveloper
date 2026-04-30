@@ -1,10 +1,12 @@
+
 import SwiftUI
 import SwiftData
 import PhotosUI
 import Observation
 import os
-
 import Combine
+
+
 
 extension Notification.Name {
     static let taskDidChange = Notification.Name("taskDidChange")
@@ -157,7 +159,6 @@ struct TaskListView: View {
                 listWithStyle {
                     
                     List {
-                        
                         if todoQuery.isEmpty && completedQuery.isEmpty && !showNewTask {
                             EmptySectionView(showQuickGuide: $showQuickGuide)
                         }
@@ -178,7 +179,9 @@ struct TaskListView: View {
                             
                         }
                     }
-
+                    .safeAreaInset(edge: .bottom) {
+                        Color.clear.frame(height: 80)
+                    }
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
                     .listRowInsets(
@@ -224,9 +227,9 @@ struct TaskListView: View {
                 }
                 .scrollDismissesKeyboard(.immediately)
                 
-                .searchableIf(
-                    !(todoQuery.isEmpty && completedQuery.isEmpty) && !showNewTask,
+                .searchable(
                     text: $searchText,
+                    placement: .navigationBarDrawer(displayMode: .automatic),
                     prompt: "Search task"
                 )
                 .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
@@ -549,8 +552,15 @@ struct TaskRow: View {
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
     
-    @AppStorage("tasklist.highlightCriticalOverdue")
-    private var highlightCriticalOverdue: Bool = true
+    @AppStorage("tasklist.highlightOpacity")
+    private var highlightOpacity: Double = 1.0
+
+    @AppStorage("tasklist.highlightColor")
+    private var highlightColorHex: String = "#FF3B30"
+
+    private var highlightColor: Color {
+        Color(hex: highlightColorHex) ?? .red
+    }
 
     @AppStorage("tasklist.showTodayExpiredLabel")
     private var showTodayExpiredLabel: Bool = true
@@ -630,7 +640,7 @@ struct TaskRow: View {
                 showPriority: showPriority,
                 showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
                 rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
-                highlightCriticalOverdue: highlightCriticalOverdue,
+                highlightCriticalOverdue: highlightOpacity > 0,
                 showTodayExpiredLabel: showTodayExpiredLabel && !task.isCompleted
             )
         }
@@ -686,7 +696,12 @@ struct TodoSectionView: View {
         let style: TaskListStyle
 
         @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
-        @AppStorage("tasklist.highlightCriticalOverdue") var highlightBackground: Bool = true
+        @AppStorage("tasklist.highlightOpacity") var highlightOpacity: Double = 1.0
+        @AppStorage("tasklist.highlightColor") var highlightColorHex: String = "#FF3B30"
+
+        private var highlightColor: Color {
+            Color(hex: highlightColorHex) ?? .red
+        }
 
         func body(content: Content) -> some View {
             content
@@ -716,22 +731,31 @@ struct TodoSectionView: View {
 
             let baseBackground = Color(uiColor: .secondarySystemBackground).opacity(0.5)
 
-            let fillColor: Color = {
-                guard highlightBackground, isCritical else {
-                    return baseBackground
+            let fillColor: Color = baseBackground
+            let highlightOverlay: Color? = {
+                guard highlightOpacity > 0, isCritical, (isOverdue || isToday) else {
+                    return nil
                 }
-                if isOverdue || isToday {
-                    return Color.red.opacity(colorScheme == .dark ? 0.18 : 0.08)
-                }
-                return baseBackground
+                let adjusted = colorScheme == .dark ? highlightOpacity : highlightOpacity * 0.6
+                return highlightColor.opacity(adjusted)
             }()
 
             if style == .plain {
                 RoundedRectangle(cornerRadius: 0, style: .continuous)
                     .fill(fillColor)
+                    .overlay {
+                        if let highlightOverlay {
+                            highlightOverlay
+                        }
+                    }
             } else {
                 RoundedRectangle(cornerRadius: 26, style: .continuous)
                     .fill(fillColor)
+                    .overlay {
+                        if let highlightOverlay {
+                            highlightOverlay
+                        }
+                    }
                     .overlay(
                         RoundedRectangle(cornerRadius: 26, style: .continuous)
                             .strokeBorder(strokeColor, lineWidth: lineWidth)

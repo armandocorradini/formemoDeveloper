@@ -94,11 +94,18 @@ struct TaskListAppearanceView: View {
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
     
-    @AppStorage(TaskListAppearanceKeys.highlightCriticalOverdue)
-    private var highlightCriticalOverdue = true
-    
+    @AppStorage("tasklist.highlightOpacity")
+    private var highlightOpacity: Double = 0.3
+
+    @AppStorage("tasklist.highlightColor")
+    private var highlightColorHex: String = "#FF3B30"
+
     @AppStorage(TaskListAppearanceKeys.showTodayExpiredLabel)
     private var showTodayExpiredLabel = true
+
+    private var highlightColor: Color {
+        Color(hex: highlightColorHex) ?? .red
+    }
     
     @Environment(\.dismiss) private var dismiss
     
@@ -204,9 +211,6 @@ struct TaskListAppearanceView: View {
             .onChange(of: dueIconEffectRaw) { _, _ in
                 refreshID = UUID()
             }
-            .onChange(of: highlightCriticalOverdue) { _, _ in
-                refreshID = UUID()
-            }
             .onChange(of: showTodayExpiredLabel) { _, _ in
                 refreshID = UUID()
             }
@@ -292,10 +296,19 @@ struct TaskListAppearanceView: View {
         
         Section("Visible elements") {
             
-            Toggle(
-                "Highlight overdue & today (critical priority)",
-                isOn: $highlightCriticalOverdue
-            )
+            VStack(alignment: .leading) {
+                Text("Highlight overdue & today (critical priority)")
+                
+                Slider(value: $highlightOpacity, in: 0...1)
+                    .animation(.linear(duration: 0.1), value: highlightOpacity)
+                
+                ColorPicker("Highlight color", selection: Binding(
+                    get: { highlightColor },
+                    set: { newColor in
+                        highlightColorHex = newColor.toHex() ?? "#FF3B30"
+                    }
+                ))
+            }
             Toggle(
                 "Show “Today/Expired”",
                 isOn: $showTodayExpiredLabel
@@ -320,7 +333,8 @@ struct TaskListAppearanceView: View {
         showLocation = true
         showPriority = true
         showBadgeOnlyWithPriority = true
-        highlightCriticalOverdue = true
+        highlightOpacity = 0.3
+        highlightColorHex = "#FF3B30"
         showTodayExpiredLabel = true
         selectedRowStyle = 0
     }
@@ -335,5 +349,65 @@ private struct ListStyleModifier: ViewModifier {
         } else {
             content.listStyle(.plain)
         }
+    }
+}
+
+extension Color {
+    init?(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        guard Scanner(string: hex).scanHexInt64(&int) else { return nil }
+
+        let r, g, b, a: UInt64
+
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (r, g, b, a) = (
+                (int >> 8) * 17,
+                (int >> 4 & 0xF) * 17,
+                (int & 0xF) * 17,
+                255
+            )
+        case 6: // RGB (24-bit)
+            (r, g, b, a) = (
+                int >> 16,
+                int >> 8 & 0xFF,
+                int & 0xFF,
+                255
+            )
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (
+                int >> 24,
+                int >> 16 & 0xFF,
+                int >> 8 & 0xFF,
+                int & 0xFF
+            )
+        default:
+            return nil
+        }
+
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
+    }
+    
+    func toHex() -> String? {
+        let uiColor = UIColor(self)
+        guard let components = uiColor.cgColor.components else { return nil }
+
+        let r = Float(components[0])
+        let g = Float(components[1])
+        let b = Float(components[2])
+        let a = components.count >= 4 ? Float(components[3]) : 1.0
+
+        return String(format: "#%02lX%02lX%02lX%02lX",
+                      Int(a * 255),
+                      Int(r * 255),
+                      Int(g * 255),
+                      Int(b * 255))
     }
 }

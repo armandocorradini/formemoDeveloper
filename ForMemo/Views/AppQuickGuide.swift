@@ -69,7 +69,7 @@ struct AppQuickGuideView: View {
             .init(
                 title: String(localized:"Choose Your Map"),
                 description: String(localized:"Select your preferred navigation app in Settings to open task locations using Apple Maps or Google Maps."),
-                icon: "map",
+                icon: "iphone.badge.location",
                 tint: .green
             ),
         

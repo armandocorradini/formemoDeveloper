@@ -461,7 +461,7 @@ Attivazione: \(triggerInfo)
                         .labelsHidden()
                         .opacity(0.7)
                     } label: {
-                        Label("Navigation app", systemImage: "map")
+                        Label("Navigation app", systemImage: "iphone.badge.location")
                     }
                 }
                 Section {

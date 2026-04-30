@@ -8,8 +8,16 @@ struct TaskRowPreview: View {
     @AppStorage("selectedTaskRowStyle")
     private var selectedRowStyle: Int = 0
 
-    @AppStorage("tasklist.highlightCriticalOverdue")
-    private var highlightCriticalOverdue: Bool = true
+    @AppStorage("tasklist.highlightOpacity")
+    private var highlightOpacity: Double = 1.0
+
+    @AppStorage("tasklist.highlightColor")
+    private var highlightColorHex: String = "#FF3B30"
+
+    private var highlightColor: Color {
+        Color(hex: highlightColorHex) ?? .red
+    }
+    @Environment(\.colorScheme) private var colorScheme
 
     @AppStorage("tasklist.showTodayExpiredLabel")
     private var showTodayExpiredLabel: Bool = true
@@ -69,7 +77,7 @@ struct TaskRowPreview: View {
                     showPriority: showPriority,
                     showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
                     rowStyle: rowStyle,
-                    highlightCriticalOverdue: highlightCriticalOverdue,
+                    highlightCriticalOverdue: highlightOpacity > 0,
                     showTodayExpiredLabel: showTodayExpiredLabel
                 )
                 .listRowSeparator(.hidden)
@@ -104,14 +112,23 @@ private extension TaskRowPreview {
             let isOverdue = deadline < Date()
             let isCritical = model.prioritySystemImage == "flame"
 
-            let shouldHighlight = highlightCriticalOverdue && isCritical && (isToday || isOverdue)
+            let shouldHighlight = highlightOpacity > 0 && isCritical && (isToday || isOverdue)
 
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(
                     shouldHighlight
-                    ? AnyShapeStyle(Color.red.opacity(0.12))
+                    ? AnyShapeStyle(Color(uiColor: .secondarySystemBackground).opacity(0.5))
                     : AnyShapeStyle(.ultraThinMaterial)
                 )
+                .overlay {
+                    if shouldHighlight {
+                        highlightColor.opacity(
+                            colorScheme == .dark
+                            ? highlightOpacity
+                            : highlightOpacity * 0.6
+                        )
+                    }
+                }
         case .plain:
             Color.clear
         }
