@@ -2115,6 +2115,34 @@
         }
       }
     },
+    "Can I customize task highlighting?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich die Hervorhebung von Aufgaben anpassen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo personalizar el resaltado de tareas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je personnaliser la mise en évidence des tâches ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso personalizzare l’evidenziazione dei task?"
+          }
+        }
+      }
+    },
     "Can I delete all attachments at once?" : {
       "localizations" : {
         "de" : {
@@ -2143,30 +2171,58 @@
         }
       }
     },
-    "Can I disable the red highlight for critical tasks?" : {
+    "Can I disable the highlight for critical tasks?" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kann ich die rote Hervorhebung für Aufgaben mit kritischer Priorität deaktivieren?"
+            "value" : "Kann ich die Hervorhebung für Aufgaben mit kritischer Priorität deaktivieren?"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Puedo desactivar el resaltado en rojo para las tareas con prioridad crítica?"
+            "value" : "¿Puedo desactivar el resaltado para las tareas con prioridad crítica?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Puis-je désactiver la mise en évidence rouge pour les tâches critiques ?"
+            "value" : "Puis-je désactiver la mise en évidence pour les tâches critiques ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Posso disattivare l’evidenziazione rossa per le attività con priorità critica?"
+            "value" : "Posso disattivare l’evidenziazione per le attività con priorità critica?"
+          }
+        }
+      }
+    },
+    "Can I view tasks on a map?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Aufgaben auf einer Karte anzeigen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo ver las tareas en un mapa?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je voir les tâches sur une carte ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso vedere i task su una mappa?"
           }
         }
       }
@@ -3455,36 +3511,38 @@
         }
       }
     },
-    "Disclaimer and Terms of Use\n\nThe %@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately.\n\n6. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n7. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n8. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n9. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n10. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n11. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %@, you confirm that you have read, understood, and fully accepted this Disclaimer." : {
+    "Disclaimer and Terms of Use\n\nThe %@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately.\n\n6. Map and Location Features: Map visualization and location-based features depend on device location services, GPS accuracy, and system conditions. The App does not guarantee the accuracy, precision, or real-time reliability of location data or map-based interactions.\n\n7. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n8. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n9. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n10. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n11. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n12. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %@, you confirm that you have read, understood, and fully accepted this Disclaimer." : {
+      "comment" : "The disclaimer text displayed in the disclaimer view.",
+      "isCommentAutoGenerated" : true,
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haftungsausschluss und Nutzungsbedingungen\n\nDie App %@ („App“) dient der persönlichen Aufgabenverwaltung und Produktivität.\n\nDurch die Nutzung der App erkennst du Folgendes an und stimmst zu:\n\n1. Zweck der App: Die App dient ausschließlich der persönlichen Organisation. Alle Informationen, Vorschläge und Funktionen werden nur zu Informationszwecken bereitgestellt und stellen keine Garantie für Ausführung oder Ergebnis dar.\n\n2. Verantwortung des Nutzers: Die App wird „wie besehen“ ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt. Du bist allein verantwortlich für deine Entscheidungen, Handlungen und Aktivitäten auf Grundlage der Nutzung der App.\n\n3. Benachrichtigungen, Badges und Erinnerungen: Benachrichtigungen, App-Symbole, Erinnerungen und Snooze-Funktionen werden ausschließlich zu Informationszwecken bereitgestellt. Obwohl die App darauf ausgelegt ist, Benachrichtigungen zum richtigen Zeitpunkt zu planen, hängen deren Zustellung und Genauigkeit von Systemdiensten, Geräteeinstellungen und externen Faktoren ab. Die App garantiert keine rechtzeitige Zustellung, Genauigkeit oder ordnungsgemäße Funktion. Du solltest dich nicht ausschließlich auf diese Funktionen bei kritischen oder zeitabhängigen Aufgaben verlassen.\n\n4. Standortbasierte Erinnerungen: Standortbasierte Erinnerungen hängen von Systemberechtigungen, Gerätezuständen und externen Faktoren ab und funktionieren möglicherweise nicht immer wie erwartet.\n\n5. Sprachassistent (Siri): Sprachbefehle und die Siri-Integration basieren auf Apple-Diensten und können Nutzereingaben möglicherweise nicht korrekt interpretieren.\n\n6. Daten und Speicherung: Daten können lokal auf dem Gerät gespeichert oder über iCloud synchronisiert werden. Du bist für die Verwaltung und Sicherung deiner Daten verantwortlich. Die Entwickler übernehmen keine Verantwortung für Datenverlust, Datenbeschädigung, unbefugten Zugriff oder Probleme im Zusammenhang mit iCloud-Synchronisationsverzögerungen oder -fehlern.\n\n7. Dienste von Drittanbietern: Die App kann für bestimmte Funktionen auf Drittanbieterdienste (wie iCloud) angewiesen sein. Die Entwickler übernehmen keine Verantwortung für deren Verfügbarkeit, Leistung, Kompatibilität oder Datenschutzpraktiken.\n\n8. Verfügbarkeit der Funktionen: Die Funktionalität der App kann von Gerätezuständen, Systemeinstellungen, erteilten Berechtigungen und Netzwerkverbindungen abhängen. Eine kontinuierliche Verfügbarkeit oder ein fehlerfreier Betrieb aller Funktionen wird nicht garantiert.\n\n9. Import- und Exportfunktionen: Import- und Exportfunktionen werden aus Gründen der Benutzerfreundlichkeit bereitgestellt. Die App garantiert keine vollständige Datenintegrität, Vollständigkeit oder Kompatibilität mit Drittanbieterformaten oder -diensten. Anhänge sind in Import- oder Exportvorgängen nicht enthalten.\n\n10. Updates und Änderungen: Die App und dieser Haftungsausschluss können jederzeit ohne vorherige Ankündigung aktualisiert oder geändert werden. Die fortgesetzte Nutzung der App gilt als Zustimmung zu diesen Änderungen.\n\n11. Haftungsbeschränkung: Soweit gesetzlich zulässig, haften die Entwickler nicht für Schäden, die aus der Nutzung oder der Unmöglichkeit der Nutzung der App entstehen.\n\nDurch die Nutzung von %@ bestätigst du, dass du diesen Haftungsausschluss gelesen, verstanden und vollständig akzeptiert hast."
+            "value" : "Haftungsausschluss und Nutzungsbedingungen\n\nDie App %1$@ (\\\"App\\\") ist für die persönliche Aufgabenverwaltung und Produktivitätszwecke konzipiert.\n\nDurch die Nutzung der App erkennen Sie Folgendes an und stimmen dem zu:\n\n1. Zweck der App: Die App ist ausschließlich für die persönliche Organisation bestimmt. Alle Informationen, Vorschläge und Funktionen werden nur zu Informationszwecken bereitgestellt und stellen keinerlei Garantie für Ausführung oder Ergebnis dar.\n\n2. Verantwortung des Nutzers: Die App wird \\\"wie sie ist\\\" bereitgestellt, ohne jegliche ausdrücklichen oder stillschweigenden Garantien. Sie sind allein verantwortlich für Ihre Entscheidungen, Handlungen und Aktivitäten, die sich aus der Nutzung der App ergeben.\n\n3. Benachrichtigungen, Badges und Erinnerungen: Benachrichtigungen, App-Badges, Erinnerungen und Snooze-Funktionen werden ausschließlich zu Informationszwecken bereitgestellt. Obwohl die App darauf ausgelegt ist, Benachrichtigungen zum richtigen Zeitpunkt zu planen, hängen deren Zustellung und Genauigkeit von Systemdiensten, Geräteeinstellungen und externen Faktoren ab. Die App garantiert nicht deren rechtzeitige Zustellung, Genauigkeit oder ordnungsgemäße Funktion. Sie sollten sich nicht ausschließlich auf diese Funktionen für kritische oder zeitabhängige Aufgaben verlassen.\n\n4. Standortbasierte Erinnerungen: Standortbasierte Erinnerungen hängen von Systemberechtigungen, Gerätezuständen und externen Faktoren ab und werden möglicherweise nicht immer wie erwartet ausgelöst.\n\n5. Sprachassistent (Siri): Sprachbefehle und Siri-Integrationen basieren auf Apple-Diensten und interpretieren Benutzereingaben möglicherweise nicht immer korrekt.\n\n6. Karten- und Standortfunktionen: Die Kartenanzeige und standortbasierten Funktionen hängen von den Ortungsdiensten des Geräts, der GPS-Genauigkeit und den Systembedingungen ab. Die App übernimmt keine Gewähr für die Genauigkeit, Präzision oder Echtzeit-Zuverlässigkeit von Standortdaten oder kartenbasierten Interaktionen.\n\n7. Daten und Speicherung: Daten können lokal auf Ihrem Gerät gespeichert oder über iCloud synchronisiert werden. Sie sind für die Verwaltung und Sicherung Ihrer Daten verantwortlich. Die Entwickler haften nicht für Datenverlust, Datenbeschädigung, unbefugten Zugriff oder Probleme im Zusammenhang mit Verzögerungen oder Ausfällen der iCloud-Synchronisierung.\n\n8. Dienste Dritter: Die App kann für bestimmte Funktionen auf Dienste Dritter (wie iCloud) angewiesen sein. Die Entwickler sind nicht verantwortlich für die Verfügbarkeit, Leistung, Kompatibilität oder Datenschutzpraktiken solcher Dienste.\n\n9. Verfügbarkeit von Funktionen: Die Funktionalität der App kann von Gerätezuständen, Systemeinstellungen, erteilten Berechtigungen und der Netzwerkverbindung abhängen. Eine kontinuierliche Verfügbarkeit oder ein fehlerfreier Betrieb aller Funktionen wird nicht garantiert.\n\n10. Import- und Exportfunktionen: Import- und Exportfunktionen werden aus Gründen der Benutzerfreundlichkeit bereitgestellt. Die App übernimmt keine Gewähr für die vollständige Datenintegrität, Vollständigkeit oder Kompatibilität mit Formaten oder Diensten Dritter. Anhänge sind nicht Bestandteil von Import- oder Exportvorgängen.\n\n11. Aktualisierungen und Änderungen: Die App und dieser Haftungsausschluss können jederzeit ohne vorherige Ankündigung aktualisiert oder geändert werden. Die fortgesetzte Nutzung der App gilt als Zustimmung zu diesen Änderungen.\n\n12. Haftungsbeschränkung: Soweit gesetzlich zulässig, haften die Entwickler nicht für Schäden, die sich aus der Nutzung oder der Unmöglichkeit der Nutzung der App ergeben.\n\nDurch die Nutzung von %2$@ bestätigen Sie, dass Sie diesen Haftungsausschluss gelesen, verstanden und vollständig akzeptiert haben."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Disclaimer and Terms of Use\n\nThe %1$@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately.\n\n6. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n7. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n8. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n9. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n10. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n11. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %2$@, you confirm that you have read, understood, and fully accepted this Disclaimer."
+            "value" : "Disclaimer and Terms of Use\n\nThe %1$@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately.\n\n6. Map and Location Features: Map visualization and location-based features depend on device location services, GPS accuracy, and system conditions. The App does not guarantee the accuracy, precision, or real-time reliability of location data or map-based interactions.\n\n7. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n8. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n9. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n10. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n11. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n12. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %2$@, you confirm that you have read, understood, and fully accepted this Disclaimer."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aviso legal y términos de uso\n\nLa aplicación %@ (\"App\") está diseñada para la gestión personal de tareas y la productividad.\n\nAl utilizar la App, reconoces y aceptas lo siguiente:\n\n1. Finalidad de la App: La App está destinada exclusivamente a la organización personal. Toda la información, sugerencias y funcionalidades se proporcionan únicamente con fines informativos y no constituyen ninguna garantía de ejecución o resultado.\n\n2. Responsabilidad del usuario: La App se proporciona “tal cual”, sin garantías de ningún tipo, expresas o implícitas. Eres el único responsable de tus decisiones, acciones y actividades basadas en el uso de la App.\n\n3. Notificaciones y recordatorios: Las notificaciones, insignias de la aplicación, recordatorios y funciones de snooze se proporcionan únicamente con fines informativos. Aunque la App está diseñada para programar notificaciones en el momento adecuado, su entrega y precisión dependen de servicios del sistema, configuraciones del dispositivo y factores externos. La App no garantiza su entrega puntual, precisión o correcto funcionamiento. No debes confiar exclusivamente en estas funciones para tareas críticas o sensibles al tiempo.\n\n4. Recordatorios basados en ubicación: Los recordatorios basados en ubicación dependen de permisos del sistema, condiciones del dispositivo y factores externos, y pueden no activarse como se espera.\n\n5. Asistente de voz (Siri): Los comandos de voz y la integración con Siri dependen de los servicios de Apple y pueden no interpretar correctamente las solicitudes del usuario.\n\n6. Datos y almacenamiento: Los datos pueden almacenarse localmente en el dispositivo o sincronizarse mediante iCloud. Eres responsable de gestionar y realizar copias de seguridad de tus datos. Los desarrolladores no son responsables de pérdidas de datos, corrupción, accesos no autorizados o problemas relacionados con retrasos o fallos de sincronización de iCloud.\n\n7. Servicios de terceros: La App puede depender de servicios de terceros (como iCloud) para determinadas funciones. Los desarrolladores no son responsables de la disponibilidad, rendimiento, compatibilidad o prácticas de privacidad de dichos servicios.\n\n8. Disponibilidad de funciones: El funcionamiento de la App puede depender de condiciones del dispositivo, configuraciones del sistema, permisos concedidos y conectividad de red. No se garantiza la disponibilidad continua ni el correcto funcionamiento de todas las funciones.\n\n9. Importación y exportación: Las funciones de importación y exportación se proporcionan por conveniencia. La App no garantiza la fidelidad completa de los datos, su integridad ni su compatibilidad con formatos o servicios de terceros. Los archivos adjuntos no se incluyen en estas operaciones.\n\n10. Actualizaciones y cambios: La App y este aviso pueden actualizarse o modificarse sin previo aviso. El uso continuado de la App implica la aceptación de dichos cambios.\n\n11. Limitación de responsabilidad: En la medida máxima permitida por la legislación aplicable, los desarrolladores no serán responsables de ningún daño derivado del uso o la imposibilidad de uso de la App.\n\nAl utilizar %@, confirmas que has leído, comprendido y aceptado plenamente este aviso."
+            "value" : "Aviso legal y Términos de uso\n\nLa aplicación %1$@ (\\\"App\\\") está diseñada para la gestión personal de tareas y fines de productividad.\n\nAl utilizar la App, reconoces y aceptas lo siguiente:\n\n1. Finalidad de la App: La App está destinada exclusivamente a la organización personal. Toda la información, sugerencias y funcionalidades se proporcionan únicamente con fines informativos y no constituyen ninguna garantía de ejecución o resultado.\n\n2. Responsabilidad del usuario: La App se proporciona \\\"tal cual\\\", sin garantías de ningún tipo, expresas o implícitas. Eres el único responsable de tus decisiones, acciones y actividades basadas en el uso de la App.\n\n3. Notificaciones, insignias y recordatorios: Las notificaciones, insignias de la app, recordatorios y funciones de snooze se proporcionan únicamente con fines informativos. Aunque la App está diseñada para programar notificaciones en el momento adecuado, su entrega y precisión dependen de servicios del sistema, configuraciones del dispositivo y factores externos. La App no garantiza su entrega puntual, precisión o correcto funcionamiento. No debes confiar exclusivamente en estas funciones para tareas críticas o sensibles al tiempo.\n\n4. Recordatorios basados en ubicación: Dependen de permisos del sistema, condiciones del dispositivo y factores externos, y pueden no activarse como se espera.\n\n5. Asistente de voz (Siri): Los comandos de voz y las integraciones con Siri dependen de los servicios de Apple y pueden no interpretar correctamente la entrada del usuario.\n\n6. Funciones de mapa y ubicación: La visualización en mapa y las funciones basadas en ubicación dependen de los servicios de localización del dispositivo, la precisión del GPS y las condiciones del sistema. La App no garantiza la precisión, exactitud ni la fiabilidad en tiempo real de los datos de ubicación o de las interacciones en el mapa.\n\n7. Datos y almacenamiento: Los datos pueden almacenarse localmente en el dispositivo o sincronizarse mediante iCloud. Eres responsable de gestionar y realizar copias de seguridad de tus datos. Los desarrolladores no son responsables de la pérdida de datos, corrupción, accesos no autorizados o problemas relacionados con retrasos o fallos de sincronización de iCloud.\n\n8. Servicios de terceros: La App puede depender de servicios de terceros (como iCloud) para ciertas funciones. Los desarrolladores no son responsables de la disponibilidad, rendimiento, compatibilidad o prácticas de privacidad de dichos servicios.\n\n9. Disponibilidad de funciones: El funcionamiento de la App puede depender de las condiciones del dispositivo, la configuración del sistema, los permisos otorgados y la conectividad de red. No se garantiza la disponibilidad continua ni el correcto funcionamiento de todas las funciones.\n\n10. Funciones de importación y exportación: Se proporcionan por conveniencia. La App no garantiza la fidelidad completa de los datos, la integridad o la compatibilidad con formatos o servicios de terceros. Los archivos adjuntos no se incluyen en estas operaciones.\n\n11. Actualizaciones y cambios: La App y este Aviso legal pueden ser modificados sin previo aviso. El uso continuado implica la aceptación de dichos cambios.\n\n12. Limitación de responsabilidad: En la máxima medida permitida por la ley, los desarrolladores no serán responsables de daños derivados del uso o la imposibilidad de uso de la App.\n\nAl utilizar %2$@, confirmas que has leído, comprendido y aceptado este aviso legal."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clause de non-responsabilité et conditions d’utilisation\n\nL’application %@ (« App ») est conçue pour la gestion personnelle des tâches et la productivité.\n\nEn utilisant l’App, vous reconnaissez et acceptez ce qui suit :\n\n1. Objet de l’App : L’App est destinée uniquement à l’organisation personnelle. Toutes les informations, suggestions et fonctionnalités sont fournies à titre informatif uniquement et ne constituent aucune garantie d’exécution ou de résultat.\n\n2. Responsabilité de l’utilisateur : L’App est fournie « telle quelle », sans garantie d’aucune sorte, expresse ou implicite. Vous êtes seul responsable de vos décisions, actions et activités basées sur l’utilisation de l’App.\n\n3. Notifications, badges et rappels : Les notifications, badges de l’application, rappels et fonctions de snooze sont fournis à titre informatif uniquement. Bien que l’App soit conçue pour planifier les notifications au moment approprié, leur livraison et leur exactitude dépendent des services système, des paramètres de l’appareil et de facteurs externes. L’App ne garantit pas leur livraison en temps voulu, leur exactitude ni leur bon fonctionnement. Vous ne devez pas vous y fier exclusivement pour des tâches critiques ou sensibles au temps.\n\n4. Rappels basés sur la localisation : Les rappels basés sur la localisation dépendent des autorisations système, des conditions de l’appareil et de facteurs externes et peuvent ne pas se déclencher comme prévu.\n\n5. Assistant vocal (Siri) : Les commandes vocales et l’intégration avec Siri reposent sur les services Apple et peuvent ne pas interpréter correctement les demandes de l’utilisateur.\n\n6. Données et stockage : Les données peuvent être stockées localement sur votre appareil ou synchronisées via iCloud. Vous êtes responsable de la gestion et de la sauvegarde de vos données. Les développeurs ne sont pas responsables des pertes de données, corruptions, accès non autorisés ou problèmes liés aux retards ou défaillances de la synchronisation iCloud.\n\n7. Services tiers : L’App peut s’appuyer sur des services tiers (tels qu’iCloud) pour certaines fonctionnalités. Les développeurs ne sont pas responsables de la disponibilité, des performances, de la compatibilité ou des pratiques de confidentialité de ces services.\n\n8. Disponibilité des fonctionnalités : Les fonctionnalités de l’App peuvent dépendre des conditions de l’appareil, des paramètres système, des autorisations accordées et de la connectivité réseau. La disponibilité continue ou le bon fonctionnement de toutes les fonctionnalités n’est pas garanti.\n\n9. Importation et exportation : Les fonctions d’importation et d’exportation sont fournies à titre pratique. L’App ne garantit pas l’exactitude complète des données, leur exhaustivité ni leur compatibilité avec des formats ou services tiers. Les pièces jointes ne sont pas incluses dans ces opérations.\n\n10. Mises à jour et modifications : L’App et le présent avertissement peuvent être mis à jour ou modifiés à tout moment sans préavis. L’utilisation continue de l’App constitue une acceptation de ces modifications.\n\n11. Limitation de responsabilité : Dans la mesure maximale permise par la loi applicable, les développeurs ne sauraient être tenus responsables de tout dommage résultant de l’utilisation ou de l’impossibilité d’utiliser l’App.\n\nEn utilisant %@, vous confirmez avoir lu, compris et accepté intégralement le présent avertissement."
+            "value" : "Avertissement et conditions d'utilisation\n\nL'application %1$@ (\\\"App\\\") est conçue pour la gestion personnelle des tâches et des objectifs de productivité.\n\nEn utilisant l'App, vous reconnaissez et acceptez ce qui suit :\n\n1. Objectif de l'App : L'App est destinée uniquement à l'organisation personnelle. Toutes les informations, suggestions et fonctionnalités sont fournies à titre informatif uniquement et ne constituent aucune garantie d'exécution ou de résultat.\n\n2. Responsabilité de l'utilisateur : L'App est fournie \\\"en l'état\\\", sans garantie d'aucune sorte, expresse ou implicite. Vous êtes seul responsable de vos décisions, actions et activités résultant de l'utilisation de l'App.\n\n3. Notifications, badges et rappels : Les notifications, badges d'application, rappels et fonctions de snooze sont fournis uniquement à titre informatif. Bien que l'App soit conçue pour planifier les notifications au moment approprié, leur livraison et leur précision dépendent des services système, des paramètres de l'appareil et de facteurs externes. L'App ne garantit pas leur livraison en temps voulu, leur précision ou leur bon fonctionnement. Vous ne devez pas vous fier exclusivement à ces fonctionnalités pour des tâches critiques ou sensibles au temps.\n\n4. Rappels basés sur la localisation : Les rappels basés sur la localisation dépendent des autorisations système, de l'état de l'appareil et de facteurs externes, et peuvent ne pas se déclencher comme prévu.\n\n5. Assistant vocal (Siri) : Les commandes vocales et les intégrations Siri reposent sur les services Apple et peuvent ne pas interpréter correctement les entrées de l'utilisateur.\n\n6. Fonctionnalités de carte et de localisation : L'affichage de la carte et les fonctionnalités basées sur la localisation dépendent des services de localisation de l'appareil, de la précision du GPS et des conditions du système. L'App ne garantit pas l'exactitude, la précision ou la fiabilité en temps réel des données de localisation ou des interactions basées sur la carte.\n\n7. Données et stockage : Les données peuvent être stockées localement sur votre appareil ou synchronisées via iCloud. Vous êtes responsable de la gestion et de la sauvegarde de vos données. Les développeurs ne sont pas responsables des pertes de données, de la corruption, des accès non autorisés ou des problèmes liés aux retards ou aux échecs de synchronisation iCloud.\n\n8. Services tiers : L'App peut dépendre de services tiers (tels que iCloud) pour certaines fonctionnalités. Les développeurs ne sont pas responsables de la disponibilité, des performances, de la compatibilité ou des pratiques de confidentialité de ces services.\n\n9. Disponibilité des fonctionnalités : Le fonctionnement de l'App peut dépendre des conditions de l'appareil, des paramètres système, des autorisations accordées et de la connectivité réseau. La disponibilité continue ou le bon fonctionnement de toutes les fonctionnalités n'est pas garanti.\n\n10. Fonctionnalités d'importation et d'exportation : Les fonctions d'importation et d'exportation sont fournies pour plus de commodité. L'App ne garantit pas l'intégrité complète des données, leur exhaustivité ou leur compatibilité avec des formats ou services tiers. Les pièces jointes ne sont pas incluses dans ces opérations.\n\n11. Mises à jour et modifications : L'App et le présent avertissement peuvent être mis à jour ou modifiés à tout moment sans préavis. L'utilisation continue de l'App constitue une acceptation de ces modifications.\n\n12. Limitation de responsabilité : Dans toute la mesure permise par la loi applicable, les développeurs ne peuvent être tenus responsables des dommages résultant de l'utilisation ou de l'impossibilité d'utiliser l'App.\n\nEn utilisant %2$@, vous confirmez avoir lu, compris et accepté intégralement cet avertissement."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disclaimer e Termini di utilizzo\n\nL’app %@ (\"App\") è progettata per la gestione personale delle attività e per scopi di produttività.\n\nUtilizzando l’App, riconosci e accetti quanto segue:\n\n1. Scopo dell’App: L’App è destinata esclusivamente all’organizzazione personale. Tutte le informazioni, i suggerimenti e le funzionalità sono forniti a solo scopo informativo e non costituiscono alcuna garanzia di esecuzione o risultato.\n\n2. Responsabilità dell’utente: L’App è fornita “così com’è”, senza alcuna garanzia di alcun tipo, espressa o implicita. Sei l’unico responsabile delle tue decisioni, azioni e attività basate sull’utilizzo dell’App.\n\n3. Notifiche, badge e promemoria: Le notifiche, i badge dell’app, i promemoria e le funzioni di snooze sono forniti esclusivamente a scopo informativo. Sebbene l’App sia progettata per programmare le notifiche al momento appropriato, la loro consegna e accuratezza dipendono da servizi di sistema, impostazioni del dispositivo e fattori esterni. L’App non garantisce la consegna puntuale, l’accuratezza o il corretto funzionamento di tali funzionalità. Non dovresti fare affidamento esclusivo su queste funzionalità per attività critiche o sensibili al tempo.\n\n4. Promemoria basati sulla posizione: I promemoria basati sulla posizione dipendono dalle autorizzazioni di sistema, dalle condizioni del dispositivo e da fattori esterni e potrebbero non attivarsi sempre come previsto.\n\n5. Assistente vocale (Siri): I comandi vocali e l’integrazione con Siri dipendono dai servizi Apple e potrebbero non interpretare sempre correttamente le richieste dell’utente.\n\n6. Dati e archiviazione: I dati possono essere salvati localmente sul dispositivo o sincronizzati tramite iCloud. Sei responsabile della gestione e del backup dei tuoi dati. Gli sviluppatori non sono responsabili per eventuali perdite di dati, corruzioni, accessi non autorizzati o problemi legati a ritardi o malfunzionamenti della sincronizzazione iCloud.\n\n7. Servizi di terze parti: L’App può fare affidamento su servizi di terze parti (come iCloud) per alcune funzionalità. Gli sviluppatori non sono responsabili per la disponibilità, le prestazioni, la compatibilità o le pratiche sulla privacy di tali servizi.\n\n8. Disponibilità delle funzionalità: Le funzionalità dell’App possono dipendere dalle condizioni del dispositivo, dalle impostazioni di sistema, dai permessi concessi e dalla connettività di rete. Non è garantita la disponibilità continua o il corretto funzionamento di tutte le funzionalità.\n\n9. Importazione ed esportazione: Le funzionalità di importazione ed esportazione sono fornite per comodità. L’App non garantisce la completa fedeltà dei dati, la completezza o la compatibilità con formati o servizi di terze parti. Gli allegati non sono inclusi nelle operazioni di importazione o esportazione.\n\n10. Aggiornamenti e modifiche: L’App e il presente Disclaimer possono essere aggiornati o modificati nel tempo senza preavviso. L’uso continuato dell’App costituisce accettazione di tali modifiche.\n\n11. Limitazione di responsabilità: Nella misura massima consentita dalla legge applicabile, gli sviluppatori non saranno responsabili per eventuali danni derivanti dall’uso o dall’impossibilità di utilizzare l’App.\n\nUtilizzando %@, confermi di aver letto, compreso e accettato integralmente il presente Disclaimer."
+            "value" : "Disclaimer e Termini di Utilizzo\n\nL'app %1$@ (\\\"App\\\") è progettata per la gestione personale delle attività e per finalità di produttività.\n\nUtilizzando l'App, dichiari di aver letto, compreso e accettato quanto segue:\n\n1. Finalità dell'App: L'App è destinata esclusivamente all'organizzazione personale. Tutte le informazioni, i suggerimenti e le funzionalità sono forniti solo a scopo informativo e non costituiscono alcuna garanzia di esecuzione o risultato.\n\n2. Responsabilità dell'utente: L'App è fornita \\\"così com'è\\\", senza garanzie di alcun tipo, espresse o implicite. Sei l'unico responsabile delle tue decisioni, azioni e attività derivanti dall'utilizzo dell'App.\n\n3. Notifiche, badge e promemoria: Notifiche, badge dell'app, promemoria e funzioni di snooze sono forniti esclusivamente a scopo informativo. Sebbene l'App sia progettata per programmare notifiche nei tempi appropriati, la loro consegna e accuratezza dipendono da servizi di sistema, impostazioni del dispositivo e fattori esterni. L'App non garantisce la consegna puntuale, l'accuratezza o il corretto funzionamento di tali funzionalità. Non fare affidamento esclusivo su queste funzioni per attività critiche o sensibili al tempo.\n\n4. Promemoria basati sulla posizione: I promemoria basati sulla posizione dipendono dalle autorizzazioni di sistema, dalle condizioni del dispositivo e da fattori esterni e potrebbero non attivarsi sempre come previsto.\n\n5. Assistente vocale (Siri): I comandi vocali e le integrazioni con Siri si basano sui servizi Apple e potrebbero non interpretare sempre correttamente l'input dell'utente.\n\n6. Funzionalità mappa e posizione: La visualizzazione sulla mappa e le funzionalità basate sulla posizione dipendono dai servizi di localizzazione del dispositivo, dalla precisione del GPS e da condizioni di sistema. L'App non garantisce l'accuratezza, la precisione o l'affidabilità in tempo reale dei dati di posizione o delle interazioni basate sulla mappa.\n\n7. Dati e archiviazione: I dati possono essere archiviati localmente sul dispositivo o sincronizzati tramite iCloud. Sei responsabile della gestione e del backup dei tuoi dati. Gli sviluppatori non sono responsabili per eventuali perdite di dati, corruzioni, accessi non autorizzati o problemi legati a ritardi o errori di sincronizzazione iCloud.\n\n8. Servizi di terze parti: L'App può fare affidamento su servizi di terze parti (come iCloud) per alcune funzionalità. Gli sviluppatori non sono responsabili per la disponibilità, le prestazioni, la compatibilità o le pratiche sulla privacy di tali servizi.\n\n9. Disponibilità delle funzionalità: Il funzionamento dell'App può dipendere dalle condizioni del dispositivo, dalle impostazioni di sistema, dalle autorizzazioni concesse e dalla connettività di rete. Non è garantita la disponibilità continua o il corretto funzionamento di tutte le funzionalità.\n\n10. Funzionalità di importazione ed esportazione: Le funzionalità di importazione ed esportazione sono fornite per comodità. L'App non garantisce la completa fedeltà dei dati, la completezza o la compatibilità con formati o servizi di terze parti. Gli allegati non sono inclusi nelle operazioni di importazione o esportazione.\n\n11. Aggiornamenti e modifiche: L'App e il presente Disclaimer possono essere aggiornati o modificati nel tempo senza preavviso. L'utilizzo continuato dell'App costituisce accettazione di tali modifiche.\n\n12. Limitazione di responsabilità: Nella misura massima consentita dalla legge applicabile, gli sviluppatori non saranno responsabili per eventuali danni derivanti dall'uso o dall'impossibilità di utilizzare l'App.\n\nUtilizzando %2$@, confermi di aver letto, compreso e accettato integralmente il presente Disclaimer."
           }
         }
       }
@@ -3543,6 +3601,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’app funziona offline?"
+          }
+        }
+      }
+    },
+    "Does the map adjust zoom automatically?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passt die Karte den Zoom automatisch an?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿El mapa ajusta automáticamente el zoom?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carte ajuste-t-elle automatiquement le zoom ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La mappa regola automaticamente lo zoom?"
           }
         }
       }
@@ -4686,7 +4772,33 @@
     },
     "Highlight color" : {
       "comment" : "A color picker for the highlight color of overdue and today tasks.",
-      "isCommentAutoGenerated" : true
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hervorhebungsfarbe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de resaltado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleur de mise en évidence"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colore evidenziazione"
+          }
+        }
+      }
     },
     "Highlight overdue & today (critical priority)" : {
       "comment" : "A toggle that highlights overdue and today tasks with critical priority.",
@@ -6092,6 +6204,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gestisci le tue attività con facilità."
+          }
+        }
+      }
+    },
+    "Map" : {
+      "comment" : "A label displayed in the settings.",
+      "isCommentAutoGenerated" : true
+    },
+    "Map View" : {
+      "comment" : "View that shows tasks on a map.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartenansicht"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista de mapa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vue Carte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista mappa"
           }
         }
       }
@@ -9159,19 +9305,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selecciona tu aplicación de navegación preferida en Ajustes para abrir las ubicaciones de las tareas con Apple Maps o Google Maps."
+            "value" : "Selecciona tu aplicación de navegación preferida en Configuración para abrir las ubicaciones de las tareas con Apple Maps o Google Maps."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sélectionnez votre application de navigation préférée dans les Réglages pour ouvrir les lieux des tâches avec Apple Maps ou Google Maps."
+            "value" : "Sélectionnez votre application de navigation préférée dans les paramètres pour ouvrir les emplacements des tâches avec Apple Maps ou Google Maps.\n"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seleziona la tua app di navigazione preferita nelle Impostazioni per aprire le posizioni delle attività con Apple Maps o Google Maps."
+            "value" : "Seleziona l’app di navigazione preferita nelle Impostazioni per aprire le posizioni delle attività con Apple Maps o Google Maps."
           }
         }
       }
@@ -11094,58 +11240,60 @@
         }
       }
     },
-    "Tasks change color automatically based on their category. Overdue tasks and upcoming deadlines are visually highlighted." : {
+    "Tasks with critical priority that are due today or overdue are highlighted automatically. You can customize highlight color and opacity in Settings." : {
+      "comment" : "Description of a task that is highlighted automatically when it has a critical priority and is due today or overdue.",
+      "isCommentAutoGenerated" : true,
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aufgaben ändern automatisch ihre Farbe je nach Typ. Überfällige Aufgaben und bevorstehende Fristen werden visuell hervorgehoben."
+            "value" : "Aufgaben mit kritischer Priorität, die heute fällig oder überfällig sind, werden automatisch hervorgehoben. Sie können Farbe und Deckkraft der Hervorhebung in den Einstellungen anpassen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las tareas cambian de color automáticamente según su tipo. Las tareas vencidas y las fechas próximas se resaltan visualmente."
+            "value" : "Las tareas con prioridad crítica que vencen hoy o están vencidas se resaltan automáticamente. Puedes personalizar el color y la opacidad del resaltado en Configuración."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les tâches changent de couleur automatiquement selon leur type. Les échéances dépassées et les dates limites proches restent mises en évidence."
+            "value" : "Les tâches avec une priorité critique qui sont dues aujourd’hui ou en retard sont mises en évidence automatiquement. Vous pouvez personnaliser la couleur et l’opacité dans les paramètres."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le attività cambiano colore automaticamente in base alla loro tipologia. Le scadenze passate e quelle imminenti rimangono evidenziate visivamente."
+            "value" : "I task con priorità critica che sono in scadenza oggi o già scaduti vengono evidenziati automaticamente. Puoi personalizzare il colore e l’opacità dell’evidenziazione nelle Impostazioni."
           }
         }
       }
     },
-    "Tasks with critical priority that are due today or overdue can be highlighted to draw your attention. This helps you quickly identify the most urgent tasks." : {
+    "Tasks with critical priority that are due today or overdue are highlighted to help you quickly identify the most urgent items." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aufgaben mit kritischer Priorität, die heute fällig oder überfällig sind, können hervorgehoben werden, um Ihre Aufmerksamkeit zu lenken. So erkennen Sie schnell die dringendsten Aufgaben."
+            "value" : "Aufgaben mit kritischer Priorität, die heute fällig oder überfällig sind, werden hervorgehoben, damit Sie die wichtigsten Aufgaben schnell erkennen können."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las tareas con prioridad crítica que vencen hoy o están vencidas pueden resaltarse para llamar tu atención. Esto te ayuda a identificar rápidamente las tareas más urgentes."
+            "value" : "Las tareas con prioridad crítica que vencen hoy o están vencidas se resaltan para ayudarte a identificar rápidamente los elementos más urgentes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les tâches avec une priorité critique qui sont prévues aujourd’hui ou en retard peuvent être mises en évidence pour attirer votre attention. Cela vous aide à identifier rapidement les tâches les plus urgentes."
+            "value" : "Les tâches avec une priorité critique qui sont dues aujourd’hui ou en retard sont mises en évidence pour vous aider à identifier rapidement les éléments les plus urgents."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le attività con priorità critica che sono previste per oggi o scadute possono essere evidenziate per attirare la tua attenzione. Questo ti aiuta a identificare rapidamente le attività più urgenti."
+            "value" : "I task con priorità critica che sono in scadenza oggi o già scaduti vengono evidenziati per aiutarti a identificare rapidamente gli elementi più urgenti."
           }
         }
       }
@@ -11512,6 +11660,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il badge si aggiorna automaticamente in base alle modifiche delle attività e al tempo. Se sembra errato, prova a riaprire l’app o controllare le impostazioni delle notifiche."
+          }
+        }
+      }
+    },
+    "The map automatically adjusts to show all tasks when it opens. After that, your zoom level is preserved." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Karte passt sich beim Öffnen automatisch an, um alle Aufgaben anzuzeigen. Danach bleibt Ihre gewählte Zoomstufe erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El mapa se ajusta automáticamente para mostrar todas las tareas al abrirse. Después, se mantiene el nivel de zoom elegido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carte s’ajuste automatiquement pour afficher toutes les tâches à l’ouverture. Ensuite, votre niveau de zoom est conservé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La mappa si adatta automaticamente per mostrare tutti i task all’apertura. Dopo, il livello di zoom scelto viene mantenuto."
           }
         }
       }
@@ -12530,6 +12706,36 @@
         }
       }
     },
+    "View tasks directly on the map. Tasks with a location appear as pins. Tap a pin to open task details. The map automatically fits all tasks on first load and preserves your zoom level afterward." : {
+      "comment" : "Description of the map view in the app quick guide.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sehen Sie Aufgaben direkt auf der Karte. Aufgaben mit Standort werden als Markierungen angezeigt. Tippen Sie auf eine Markierung, um die Details der Aufgabe zu öffnen. Die Karte passt sich beim ersten Laden automatisch an alle Aufgaben an und behält anschließend die Zoomstufe bei."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visualiza las tareas directamente en el mapa. Las tareas con ubicación aparecen como marcadores. Toca un marcador para abrir los detalles de la tarea. El mapa se ajusta automáticamente a todas las tareas en la primera carga y mantiene el nivel de zoom posteriormente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visualisez les tâches directement sur la carte. Les tâches avec une localisation apparaissent sous forme de repères. Touchez un repère pour ouvrir les détails de la tâche. La carte s’ajuste automatiquement à toutes les tâches lors du premier chargement et conserve ensuite le niveau de zoom."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visualizza i task direttamente sulla mappa. I task con una posizione vengono mostrati come pin. Tocca un pin per aprire i dettagli del task. La mappa si adatta automaticamente a tutti i task al primo avvio e mantiene il livello di zoom successivamente."
+          }
+        }
+      }
+    },
     "Visible elements" : {
       "localizations" : {
         "de" : {
@@ -12950,30 +13156,30 @@
         }
       }
     },
-    "Why are some tasks highlighted in red?" : {
+    "Why are some tasks highlighted?" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Warum sind einige Aufgaben rot hervorgehoben?"
+            "value" : "Warum sind einige Aufgaben hervorgehoben?"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Por qué algunas tareas están resaltadas en rojo?"
+            "value" : "¿Por qué algunas tareas están resaltadas?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pourquoi certaines tâches sont-elles mises en évidence en rouge ?"
+            "value" : "Pourquoi certaines tâches sont-elles mises en évidence ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Perché alcune attività sono evidenziate in rosso?"
+            "value" : "Perché alcune attività sono evidenziate?"
           }
         }
       }
@@ -13398,6 +13604,34 @@
         }
       }
     },
+    "Yes. Tasks with a location are shown as pins on the map. Tap a pin to open task details." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Aufgaben mit Standort werden als Markierungen auf der Karte angezeigt. Tippen Sie auf eine Markierung, um die Details der Aufgabe zu öffnen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Las tareas con ubicación se muestran como marcadores en el mapa. Toca un marcador para abrir los detalles de la tarea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Les tâches avec une localisation sont affichées sous forme de repères sur la carte. Touchez un repère pour ouvrir les détails de la tâche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. I task con una posizione vengono mostrati come pin sulla mappa. Tocca un pin per aprire i dettagli del task."
+          }
+        }
+      }
+    },
     "Yes. You can attach files, images, documents, and record audio." : {
       "localizations" : {
         "de" : {
@@ -13426,30 +13660,58 @@
         }
       }
     },
-    "Yes. You can enable or disable this behavior in Customize > Visible elements by turning off the highlight option for critical tasks." : {
+    "Yes. You can choose both color and opacity for highlighting critical tasks in Settings." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Sie können dieses Verhalten unter Anpassen > Sichtbare Elemente deaktivieren, indem Sie die Hervorhebung für Aufgaben mit kritischer Priorität ausschalten."
+            "value" : "Ja. Sie können sowohl Farbe als auch Deckkraft für die Hervorhebung kritischer Aufgaben in den Einstellungen auswählen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes activar o desactivar este comportamiento en Personalizar > Elementos visibles desactivando la opción de resaltado para las tareas con prioridad crítica."
+            "value" : "Sí. Puedes elegir tanto el color como la opacidad para resaltar tareas con prioridad crítica en Configuración."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Vous pouvez activer ou désactiver ce comportement dans Personnaliser > Éléments visibles en désactivant l’option de mise en évidence des tâches critiques."
+            "value" : "Oui. Vous pouvez choisir la couleur et l’opacité pour mettre en évidence les tâches critiques dans les paramètres."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Puoi attivare o disattivare questo comportamento in Personalizza > Elementi visibili disattivando l’opzione di evidenziazione per le attività con priorità critica."
+            "value" : "Sì. Puoi scegliere sia il colore che l’opacità per evidenziare i task con priorità critica nelle Impostazioni."
+          }
+        }
+      }
+    },
+    "Yes. You can customize the highlight in Customize > Appearance by adjusting color and opacity, or disable it in Visible elements." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sie können die Hervorhebung unter Anpassung > Darstellung anpassen, indem Sie Farbe und Deckkraft ändern, oder sie unter Sichtbare Elemente deaktivieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes personalizar el resaltado en Personalización > Apariencia ajustando el color y la opacidad, o desactivarlo en Elementos visibles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez personnaliser la mise en évidence dans Personnalisation > Apparence en ajustant la couleur et l’opacité, ou la désactiver dans Éléments visibles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi personalizzare l’evidenziazione in Personalizzazione > Aspetto regolando colore e opacità, oppure disattivarla in Elementi visibili."
           }
         }
       }

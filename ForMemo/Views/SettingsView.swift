@@ -993,12 +993,24 @@ struct FAQView: View {
             ),
             // --- BEGIN NEW FAQItems ---
             FAQItem(
-                question: String(localized:"Why are some tasks highlighted in red?"),
-                answer: String(localized:"Tasks with critical priority that are due today or overdue can be highlighted to draw your attention. This helps you quickly identify the most urgent tasks.")
+                question: String(localized:"Why are some tasks highlighted?"),
+                answer: String(localized:"Tasks with critical priority that are due today or overdue are highlighted to help you quickly identify the most urgent items.")
             ),
             FAQItem(
-                question: String(localized:"Can I disable the red highlight for critical tasks?"),
-                answer: String(localized:"Yes. You can enable or disable this behavior in Customize > Visible elements by turning off the highlight option for critical tasks.")
+                question: String(localized:"Can I disable the highlight for critical tasks?"),
+                answer: String(localized:"Yes. You can customize the highlight in Customize > Appearance by adjusting color and opacity, or disable it in Visible elements.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I view tasks on a map?"),
+                answer: String(localized:"Yes. Tasks with a location are shown as pins on the map. Tap a pin to open task details.")
+            ),
+            FAQItem(
+                question: String(localized:"Does the map adjust zoom automatically?"),
+                answer: String(localized:"The map automatically adjusts to show all tasks when it opens. After that, your zoom level is preserved.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I customize task highlighting?"),
+                answer: String(localized:"Yes. You can choose both color and opacity for highlighting critical tasks in Settings.")
             )
             // --- END NEW FAQItems ---
         ]),

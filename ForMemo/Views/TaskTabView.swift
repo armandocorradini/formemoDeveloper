@@ -229,7 +229,6 @@ struct TaskTabView: View {
                 NavigationStack { HomeView() }
             }
             
-            
         }
         
         
@@ -301,7 +300,7 @@ struct TaskTabView: View {
             .frame(minWidth: 0)
             .frame(maxWidth: .infinity)
             .frame(height: 49)
-            .foregroundStyle(selectedTab == tag ? Color.accentColor : Color.secondary)
+            .foregroundStyle(selectedTab == tag ? Color.accentColor : Color.primary)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

@@ -45,9 +45,9 @@ struct AppQuickGuideView: View {
             tint: .teal
         ),
         
-            .init(
+        .init(
             title: String(localized:"Smart Priorities"),
-            description: String(localized:"Tasks change color automatically based on their category. Overdue tasks and upcoming deadlines are visually highlighted."),
+            description: String(localized:"Tasks with critical priority that are due today or overdue are highlighted automatically. You can customize highlight color and opacity in Settings."),
             icon: "exclamationmark.circle",
             tint: .red
         ),
@@ -66,12 +66,18 @@ struct AppQuickGuideView: View {
                 tint: .blue
             ),
         
-            .init(
-                title: String(localized:"Choose Your Map"),
-                description: String(localized:"Select your preferred navigation app in Settings to open task locations using Apple Maps or Google Maps."),
-                icon: "iphone.badge.location",
-                tint: .green
-            ),
+        .init(
+            title: String(localized:"Choose Your Map"),
+            description: String(localized:"Select your preferred navigation app in Settings to open task locations using Apple Maps or Google Maps."),
+            icon: "iphone.badge.location",
+            tint: .green
+        ),
+        .init(
+            title: String(localized:"Map View"),
+            description: String(localized:"View tasks directly on the map. Tasks with a location appear as pins. Tap a pin to open task details. The map automatically fits all tasks on first load and preserves your zoom level afterward."),
+            icon: "map",
+            tint: .green
+        ),
         
             .init(
                 title: String(localized:"Selective Sharing"),

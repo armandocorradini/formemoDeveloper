@@ -54,6 +54,8 @@ struct OtherSettingsView: View {
                         
                         Text(String(localized: "Calendar"))
                             .tag(3)
+                        Text(String(localized: "Map"))
+                            .tag(5)
                     }
                     .pickerStyle(.navigationLink)
                     //                .labelsHidden()
