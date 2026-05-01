@@ -104,7 +104,7 @@ struct TaskListAppearanceView: View {
     private var showTodayExpiredLabel = true
 
     private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .red
+        Color(hex: highlightColorHex) ?? .blue
     }
     
     @Environment(\.dismiss) private var dismiss
@@ -255,7 +255,7 @@ struct TaskListAppearanceView: View {
         .scrollDisabled(true)
         .contentMargins(.top, 18, for: .scrollContent)
         .contentMargins(.horizontal, 8, for: .scrollContent)
-        .frame(height: 140)
+        .frame(height: 120)
         .modifier(ListStyleModifier(style: listStyleChoice))
     }
     
@@ -367,7 +367,7 @@ struct TaskListAppearanceView: View {
         showPriority = true
         showBadgeOnlyWithPriority = true
         highlightOpacity = 0.3
-        highlightColorHex = Color.red.toHex() ?? ""
+        highlightColorHex = Color.blue.toHex() ?? ""
         showTodayExpiredLabel = true
         selectedRowStyle = 0
     }

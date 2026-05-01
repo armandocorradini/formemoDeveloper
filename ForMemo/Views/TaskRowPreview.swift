@@ -15,7 +15,7 @@ struct TaskRowPreview: View {
     private var highlightColorHex: String = Color.red.toHex() ?? ""
 
     private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .red
+        Color(hex: highlightColorHex) ?? .blue
     }
     @Environment(\.colorScheme) private var colorScheme
 

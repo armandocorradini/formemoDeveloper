@@ -43,7 +43,7 @@ struct TaskListView: View {
 
     
     @AppStorage("TaskListStyle")
-    private var listStyleChoice: TaskListStyle = .cards
+    private var listStyleChoice: TaskListStyle = .plain
     
     @State private var taskPendingDeletion: TodoTask?
     
@@ -518,6 +518,7 @@ struct EmptySectionView: View {
                 }
             }
             .listRowSeparator(.hidden)
+            
         }
     }
 }
@@ -559,7 +560,7 @@ struct TaskRow: View {
     private var highlightColorHex: String = Color.red.toHex() ?? ""
 
     private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .red
+        Color(hex: highlightColorHex) ?? .blue
     }
 
     @AppStorage("tasklist.showTodayExpiredLabel")
@@ -682,7 +683,7 @@ extension View {
     }
 }
 struct TodoSectionView: View {
-    @AppStorage("TaskListStyle") private var listStyleChoice: TaskListStyle = .cards
+    @AppStorage("TaskListStyle") private var listStyleChoice: TaskListStyle = .plain
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
     @Binding var taskPendingDeletion: TodoTask?
@@ -700,7 +701,7 @@ struct TodoSectionView: View {
         @AppStorage("tasklist.highlightColor") var highlightColorHex: String = Color.red.toHex() ?? ""
 
         private var highlightColor: Color {
-            Color(hex: highlightColorHex) ?? .red
+            Color(hex: highlightColorHex) ?? .blue
         }
 
         func body(content: Content) -> some View {
@@ -885,7 +886,7 @@ struct TodoSectionView: View {
 }
 
 struct CompletedSectionView: View {
-    @AppStorage("TaskListStyle") private var listStyleChoice: TaskListStyle = .cards
+    @AppStorage("TaskListStyle") private var listStyleChoice: TaskListStyle = .plain
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
     

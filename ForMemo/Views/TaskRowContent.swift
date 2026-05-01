@@ -253,7 +253,7 @@ extension TaskRowContent {
 
 extension TaskRowContent {
     
-    private func layoutStyle0() -> some View {
+    private func layoutStyle9() -> some View {
         HStack(spacing: 2) {
             
             timeColumn(style: 0)
@@ -593,7 +593,7 @@ extension TaskRowContent {
     }
     
     
-    private func layoutStyle9() -> some View {
+    private func layoutStyle0() -> some View {
         
         HStack(spacing: 14) {
             

@@ -169,7 +169,7 @@ struct AddTaskIntent: AppIntent {
                 // EN
                 "half an hour", "half hour",
                 // IT
-                "mezzora", "mez ora", "mez'ora",
+                "mezzora", "mezz ora", "mezz'ora",
                 // FR
                 "demi heure", "demi-heure", "une demi heure",
                 // ES
