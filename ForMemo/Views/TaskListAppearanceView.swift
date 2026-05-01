@@ -98,7 +98,7 @@ struct TaskListAppearanceView: View {
     private var highlightOpacity: Double = 0.3
 
     @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = "#FF3B30"
+    private var highlightColorHex: String = Color.red.toHex() ?? ""
 
     @AppStorage(TaskListAppearanceKeys.showTodayExpiredLabel)
     private var showTodayExpiredLabel = true
@@ -299,15 +299,48 @@ struct TaskListAppearanceView: View {
             VStack(alignment: .leading) {
                 Text("Highlight overdue & today (critical priority)")
                 
-                Slider(value: $highlightOpacity, in: 0...1)
-                    .animation(.linear(duration: 0.1), value: highlightOpacity)
+                HStack {
+                    Slider(value: $highlightOpacity, in: 0...1)
+                        .animation(.linear(duration: 0.1), value: highlightOpacity)
+                    Text(String(format: "%.2f", highlightOpacity))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 40, alignment: .trailing)
+                }
                 
-                ColorPicker("Highlight color", selection: Binding(
-                    get: { highlightColor },
-                    set: { newColor in
-                        highlightColorHex = newColor.toHex() ?? "#FF3B30"
+                let palette: [Color] = [
+                    .red, .orange, .yellow, .green,
+                    .mint, .teal, .cyan, .blue, .indigo,
+                    .purple, .brown, .gray
+                ]
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(palette, id: \.self) { color in
+                            let hex = color.toHex() ?? ""
+                            let isSelected = highlightColorHex == hex
+
+                            Circle()
+                                .fill(color)
+                                .frame(width: 26, height: 26)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.primary, lineWidth: 2)
+                                        .opacity(isSelected ? 1 : 0)
+                                )
+                                .shadow(color: isSelected ? .black.opacity(0.2) : .clear, radius: 3)
+                                .scaleEffect(isSelected ? 1.15 : 1.0)
+                                .onTapGesture {
+                                    highlightColorHex = hex
+                                }
+                                .animation(.spring(response: 0.25, dampingFraction: 0.6), value: isSelected)
+                        }
                     }
-                ))
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 2)
+                    
+                }
+                .frame(minHeight: 36)
+                .padding(.vertical, 4)
             }
             Toggle(
                 "Show “Today/Expired”",
@@ -334,7 +367,7 @@ struct TaskListAppearanceView: View {
         showPriority = true
         showBadgeOnlyWithPriority = true
         highlightOpacity = 0.3
-        highlightColorHex = "#FF3B30"
+        highlightColorHex = Color.red.toHex() ?? ""
         showTodayExpiredLabel = true
         selectedRowStyle = 0
     }

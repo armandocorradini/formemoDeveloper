@@ -9,10 +9,10 @@ struct TaskRowPreview: View {
     private var selectedRowStyle: Int = 0
 
     @AppStorage("tasklist.highlightOpacity")
-    private var highlightOpacity: Double = 1.0
+    private var highlightOpacity: Double = 0.3
 
     @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = "#FF3B30"
+    private var highlightColorHex: String = Color.red.toHex() ?? ""
 
     private var highlightColor: Color {
         Color(hex: highlightColorHex) ?? .red
@@ -123,9 +123,7 @@ private extension TaskRowPreview {
                 .overlay {
                     if shouldHighlight {
                         highlightColor.opacity(
-                            colorScheme == .dark
-                            ? highlightOpacity
-                            : highlightOpacity * 0.6
+                            highlightOpacity
                         )
                     }
                 }

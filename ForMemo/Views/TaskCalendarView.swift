@@ -945,19 +945,18 @@ private struct DayTasksInlineView: View {
             List {
                 ForEach(tasks) { task in
                     
-                    Button { onEditTask(task) } label: {
-                        
+                    NavigationLink(value: task) {
                         HStack(spacing: 15) {
                             
                             Text(task.deadLine?.formatted(.dateTime.hour().minute()) ?? "")
-                                .font(.body.monospacedDigit())
+                                .font(.callout.monospacedDigit())
                                 .foregroundStyle(
                                     isOverdue(task) ? .red : .secondary
                                 )
                             
                             HStack(spacing: 6) {
                                 Text(task.title)
-                                    .font(.body)
+                                    .font(.callout)
                                     .strikethrough(task.isCompleted)
                                     .foregroundStyle(
                                         isOverdue(task) ? .red :
@@ -985,7 +984,6 @@ private struct DayTasksInlineView: View {
                                 .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
                         }
                         .padding(.vertical, 4)
-                        
                     }
                     //                    .backgroundStyle(.secondary)
                     .swipeActions(edge: .leading) {
@@ -1111,7 +1109,9 @@ private struct DayTasksInlineView: View {
             } message: {
                 Text("This action cannot be undone.")
             }
-            
+            .navigationDestination(for: TodoTask.self) { task in
+                TaskDetailView(task: task)
+            }
         }
         
     }

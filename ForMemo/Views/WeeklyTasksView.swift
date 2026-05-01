@@ -185,10 +185,10 @@ struct WeeklyTasksView: View {
 private struct WeeklyTaskRow: View {
     
     @AppStorage("tasklist.highlightOpacity")
-    private var highlightOpacity: Double = 1.0
+    private var highlightOpacity: Double = 0.3
 
     @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = "#FF3B30"
+    private var highlightColorHex: String = Color.red.toHex() ?? ""
 
     private var highlightColor: Color {
         Color(hex: highlightColorHex) ?? .red
@@ -430,9 +430,7 @@ private struct WeeklyTaskRow: View {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(
                             highlightColor.opacity(
-                                colorScheme == .dark
-                                ? highlightOpacity
-                                : highlightOpacity * 0.6
+                                highlightOpacity
                             )
                         )
                 }

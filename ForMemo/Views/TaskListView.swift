@@ -553,10 +553,10 @@ struct TaskRow: View {
     private var showBadgeOnlyWithPriority = true
     
     @AppStorage("tasklist.highlightOpacity")
-    private var highlightOpacity: Double = 1.0
+    private var highlightOpacity: Double = 0.3
 
     @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = "#FF3B30"
+    private var highlightColorHex: String = Color.red.toHex() ?? ""
 
     private var highlightColor: Color {
         Color(hex: highlightColorHex) ?? .red
@@ -696,8 +696,8 @@ struct TodoSectionView: View {
         let style: TaskListStyle
 
         @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
-        @AppStorage("tasklist.highlightOpacity") var highlightOpacity: Double = 1.0
-        @AppStorage("tasklist.highlightColor") var highlightColorHex: String = "#FF3B30"
+        @AppStorage("tasklist.highlightOpacity") var highlightOpacity: Double = 0.3
+        @AppStorage("tasklist.highlightColor") var highlightColorHex: String = Color.red.toHex() ?? ""
 
         private var highlightColor: Color {
             Color(hex: highlightColorHex) ?? .red
@@ -736,8 +736,8 @@ struct TodoSectionView: View {
                 guard highlightOpacity > 0, isCritical, (isOverdue || isToday) else {
                     return nil
                 }
-                let adjusted = colorScheme == .dark ? highlightOpacity : highlightOpacity * 0.6
-                return highlightColor.opacity(adjusted)
+
+                return highlightColor.opacity(highlightOpacity)
             }()
 
             if style == .plain {
