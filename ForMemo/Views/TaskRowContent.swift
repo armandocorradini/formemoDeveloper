@@ -217,7 +217,13 @@ extension TaskRowContent {
             if let d = model.deadLine {
                 
                 VStack(spacing: style == 1 ? 1 : 0) {
-                    
+
+                    if style == 1 || style == 7 || style == 9 {
+                        Text(d, format: .dateTime.weekday(.abbreviated))
+                            .font(.system(size: 10, weight: .semibold))
+                            .textCase(.uppercase)
+                    }
+
                     if style == 6 {
                         Text(d, format: .dateTime.hour().minute())
                             .font(.system(size: 11, weight: .medium))
@@ -256,7 +262,7 @@ extension TaskRowContent {
     private func layoutStyle9() -> some View {
         HStack(spacing: 2) {
             
-            timeColumn(style: 0)
+            timeColumn(style: 9)
                 .frame(width: 44)
             
             icon
@@ -600,10 +606,14 @@ extension TaskRowContent {
             // 📅 COLONNA DATA (sinistra)
             if let d = model.deadLine {
                 VStack(spacing: 0) {
-                    
+
+                    Text(d, format: .dateTime.weekday(.abbreviated))
+                        .font(.system(size: 10, weight: .semibold))
+                        .textCase(.uppercase)
+
                     Text(d, format: .dateTime.day())
                         .font(.system(size: 22, weight: .bold, design: .rounded))
-                    
+
                     Text(d, format: .dateTime.month(.abbreviated))
                         .font(.system(size: 11, weight: .medium))
                         .textCase(.uppercase)

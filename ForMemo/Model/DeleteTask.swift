@@ -23,11 +23,8 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
     }
 
     context.delete(task)
-    do {
-        try context.save()
-    } catch {
-        AppLogger.persistence.error("Delete failed: \(error.localizedDescription)")
-    }
+
+    context.safeSave(operation: "DeleteTask")
+    
     NotificationManager.shared.refresh()
 }
-

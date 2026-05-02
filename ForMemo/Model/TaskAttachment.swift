@@ -170,6 +170,7 @@ extension TaskAttachment {
         
         // Se non abbiamo la Trash → fallback delete (comportamento originale)
         guard let trashDir = Self.trashDirectory else {
+            AppLogger.persistence.fault("Trash directory missing → fallback delete for \(sourceURL.lastPathComponent)")
             try? fm.removeItem(at: sourceURL)
             return nil
         }
@@ -192,7 +193,7 @@ extension TaskAttachment {
                 try fm.moveItem(at: safeURL, to: destinationURL)
                 result = destinationURL.lastPathComponent
             } catch {
-                // Fallback: se move fallisce → delete (mai peggio di prima)
+                AppLogger.persistence.fault("Move failed → fallback delete: \(error.localizedDescription)")
                 do {
                     try fm.removeItem(at: safeURL)
                 } catch {
@@ -403,7 +404,11 @@ extension DeletedItem {
                     }
                     
                     // 🔥 Move back to attachments folder
-                    try? fm.moveItem(at: fileURL, to: destinationURL)
+                    do {
+                        try fm.moveItem(at: fileURL, to: destinationURL)
+                    } catch {
+                        AppLogger.persistence.error("Restore move failed: \(error.localizedDescription)")
+                    }
                 }
                 
                 let ext = (fileName as NSString).pathExtension.lowercased()
@@ -432,7 +437,7 @@ extension DeletedItem {
             }
         }
         
-        try? context.save()
+        context.safeSave(operation: "DeletedItemRestore")
     }
 }
 extension TaskAttachment {

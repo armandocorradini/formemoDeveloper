@@ -84,7 +84,7 @@ struct OtherSettingsView: View {
                     Text(
                         notificationLeadTimeDays == -1
                         ? String(localized: "You’ll be notified at the exact time of the task. The badge updates when it’s due.")
-                        : String(localized: "You’ll be notified \(notificationLeadTimeDays) day(s) before the deadline. This is your early reminder. The badge updates when it’s due.")
+                        : String(localized: "You’ll receive a notification \(notificationLeadTimeDays) day(s) before the deadline and another at the time it’s due, when the badge is also updated.")
                     )
                     .foregroundStyle(.blue)
                     .font(.footnote)

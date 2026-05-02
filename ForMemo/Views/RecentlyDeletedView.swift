@@ -117,6 +117,7 @@ struct RecentlyDeletedView: View {
                         Button {
                             item.restore(in: context)
                             context.delete(item)
+                            context.safeSave(operation: "RecentlyDeletedRestoreSingle")
                         } label: {
                             Label("Restore", systemImage: "arrow.uturn.backward")
                         }
@@ -124,15 +125,6 @@ struct RecentlyDeletedView: View {
                     }
                     .swipeActions (edge: .trailing) {
                         Button(role: .destructive) {
-                            
-                            func deleteFile(_ item: DeletedItem) {
-                                if let trashName = item.trashFileName,
-                                   let dir = TaskAttachment.trashDirectory {
-                                    
-                                    let url = dir.appendingPathComponent(trashName)
-                                    try? FileManager.default.removeItem(at: url)
-                                }
-                            }
                             
                             if item.type == "task" {
                                 
@@ -150,7 +142,7 @@ struct RecentlyDeletedView: View {
                             deleteFile(item)          // 🔥 fondamentale
                             context.delete(item)
                             
-                            try? context.save()       // 🔥 stabilità
+                            context.safeSave(operation: "RecentlyDeletedAction")      // 🔥 stabilità
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -169,64 +161,68 @@ struct RecentlyDeletedView: View {
                 }
             }
             
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                
-                Button(selection.count == items.count ? "Deselect All" : "Select All") {
-                    if selection.count == items.count {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button(selection.count == items.count ? "Deselect All" : "Select All") {
+                        if selection.count == items.count {
+                            selection.removeAll()
+                        } else {
+                            selection = Set(items.map { $0.id })
+                        }
+                    }
+                    
+                    Button {
+                        for id in selection {
+                            if let item = items.first(where: { $0.id == id }) {
+                                item.restore(in: context)
+                                context.delete(item)
+                            }
+                        }
+                        context.safeSave(operation: "RecentlyDeletedAction")
                         selection.removeAll()
-                    } else {
-                        selection = Set(items.map { $0.id })
+                    } label: {
+                        Label("Restore", systemImage: "arrow.uturn.backward")
                     }
-                }
-                
-                Button {
-                    for id in selection {
-                        if let item = items.first(where: { $0.id == id }) {
-                            item.restore(in: context)
-                            context.delete(item)
-                        }
-                    }
-                    try? context.save()
-                    selection.removeAll()
-                } label: {
-                    Image(systemName: "arrow.uturn.backward")
-                }
-                .disabled(selection.isEmpty)
-                
-                Button(role: .destructive) {
-                    for id in selection {
-                        if let item = items.first(where: { $0.id == id }) {
-                            
-                            func deleteFile(_ item: DeletedItem) {
-                                if let trashName = item.trashFileName,
-                                   let dir = TaskAttachment.trashDirectory {
-                                    let url = dir.appendingPathComponent(trashName)
-                                    try? FileManager.default.removeItem(at: url)
-                                }
-                            }
 
-                            if item.type == "task" {
-                                let relatedAttachments = items.filter {
-                                    $0.type == "attachment" &&
-                                    $0.taskID == item.taskID
-                                }
-                                for att in relatedAttachments {
-                                    deleteFile(att)
-                                    context.delete(att)
-                                }
-                            }
+                    Button(role: .destructive) {
+                        for id in selection {
+                            if let item = items.first(where: { $0.id == id }) {
 
-                            deleteFile(item)
-                            context.delete(item)
+                                if item.type == "task" {
+                                    let relatedAttachments = items.filter {
+                                        $0.type == "attachment" &&
+                                        $0.taskID == item.taskID
+                                    }
+                                    for att in relatedAttachments {
+                                        deleteFile(att)
+                                        context.delete(att)
+                                    }
+                                }
+
+                                deleteFile(item)
+                                context.delete(item)
+                            }
                         }
+                        context.safeSave(operation: "RecentlyDeletedAction")
+                        selection.removeAll()
+                    } label: {
+                        Label("Delete", systemImage: "trash")
                     }
-                    try? context.save()
-                    selection.removeAll()
                 } label: {
-                    Image(systemName: "trash")
+                    Image(systemName: "ellipsis.circle")
                 }
-                .disabled(selection.isEmpty)
             }
+        }
+    }
+    
+    // MARK: - Helpers
+    
+    private func deleteFile(_ item: DeletedItem) {
+        if let trashName = item.trashFileName,
+           let dir = TaskAttachment.trashDirectory {
+            
+            let url = dir.appendingPathComponent(trashName)
+            try? FileManager.default.removeItem(at: url)
         }
     }
     

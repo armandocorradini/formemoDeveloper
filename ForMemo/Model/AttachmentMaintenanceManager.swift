@@ -64,7 +64,7 @@ final class AttachmentMaintenanceManager {
             }
         }
         
-        try context.save()
+        context.safeSave(operation: "AttachmentCleanup")
 
     }
     
@@ -101,7 +101,7 @@ final class AttachmentMaintenanceManager {
             context.processPendingChanges() // 🔥 sync UI immediata
         }
         
-        try context.save()
+        context.safeSave(operation: "AttachmentCleanup")
   
     }
     
@@ -127,7 +127,7 @@ final class AttachmentMaintenanceManager {
             context.processPendingChanges() // 🔥 sync UI immediata
         }
         
-        try context.save()
+        context.safeSave(operation: "AttachmentCleanup")
         
     }
 }

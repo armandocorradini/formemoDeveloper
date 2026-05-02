@@ -417,7 +417,6 @@ struct TaskDetailView: View {
     }
     @MainActor
     private func saveTask() {
-        
         do {
             try modelContext.save()
             NotificationManager.shared.refresh()
@@ -426,7 +425,9 @@ struct TaskDetailView: View {
 #endif
             
         } catch {
-            AppLogger.persistence.fault("Save error: \(error)")
+            AppLogger.persistence.fault("CRITICAL SAVE FAILURE [TaskDetailView.saveTask]: \(error.localizedDescription)")
+            modelContext.rollback()
+            assertionFailure("CRITICAL: TaskDetailView.saveTask failed → rollback executed")
         }
     }
     
@@ -521,6 +522,12 @@ struct TaskDetailView: View {
             modelContext.delete(attachment)
             modelContext.processPendingChanges() // 🔥 sync UI immediata
         }
+        NotificationCenter.default.post(
+            name: .attachmentsShouldRefresh,
+            object: nil
+        )
+        modelContext.safeSave(operation: "RemoveGhostAttachments")
+
         NotificationCenter.default.post(
             name: .attachmentsShouldRefresh,
             object: nil

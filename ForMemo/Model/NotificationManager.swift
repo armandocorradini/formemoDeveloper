@@ -99,7 +99,6 @@ final class NotificationManager: NSObject {
             return
         }
 
-        lastRebuild = now
 
         guard let context = modelContainer?.mainContext else { return }
 
@@ -169,6 +168,7 @@ final class NotificationManager: NSObject {
             // --- CLEANUP ---
             await MainActor.run {
                 self.pendingRefresh = false
+                self.lastRebuild = Date()
             }
         }
     }
