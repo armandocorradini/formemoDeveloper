@@ -289,14 +289,27 @@ struct TaskTabView: View {
     // MARK: - Custom Tab Item
     
     private func tabItem(_ icon: String, _ title: String, _ tag: Int) -> some View {
+
         Button {
+
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            
-            if selectedTab == tag {
-                resetTab(tag)
-            } else {
+
+            if selectedTab != tag {
+
+                // Reset della tab che stai lasciando
+
+                resetTab(selectedTab)
+
                 selectedTab = tag
+
+            } else {
+
+                // Tap sulla stessa tab → torna alla root
+
+                resetTab(tag)
+
             }
+
         } label: {
             VStack(spacing: 4) {
                 Image(systemName: icon)
