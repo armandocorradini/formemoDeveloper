@@ -12,6 +12,13 @@ struct TaskTabView: View {
     @State private var showSnoozeAlert = false
     @Namespace private var tabAnimation
     
+    @State private var homePath = NavigationPath()
+    @State private var listPath = NavigationPath()
+    @State private var mapPath = NavigationPath()
+    @State private var weeklyPath = NavigationPath()
+    @State private var calendarPath = NavigationPath()
+    @State private var settingsPath = NavigationPath()
+    
     @AppStorage("TaskWeekDays")
     private var taskWeekDays: Int = 3
     
@@ -25,7 +32,7 @@ struct TaskTabView: View {
         return false
 #endif
     }
-
+    
     private var safeAreaBottom: CGFloat {
         UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow }
@@ -33,7 +40,7 @@ struct TaskTabView: View {
             .safeAreaInsets.bottom ?? 0
     }
     
-
+    
     var body: some View {
         
         Group {
@@ -116,7 +123,7 @@ struct TaskTabView: View {
             case 1:
                 TaskListView()
             case 5:
-                TaskMapView()
+                TaskMapView(mapPath: $mapPath)
             case 4:
                 WeeklyTasksView()
             case 3:
@@ -138,23 +145,23 @@ struct TaskTabView: View {
         ZStack {
             switch selectedTab {
             case 0:
-                NavigationStack {
+                NavigationStack(path: $homePath) {
                     HomeView()
                 }
             case 1:
-                NavigationStack {
+                NavigationStack(path: $listPath) {
                     TaskListView()
                 }
             case 5:
-                NavigationStack { TaskMapView() }
+                NavigationStack(path: $mapPath) { TaskMapView(mapPath: $mapPath) }
             case 4:
-                NavigationStack { WeeklyTasksView() }
+                NavigationStack(path: $weeklyPath) { WeeklyTasksView() }
             case 3:
-                NavigationStack { TaskCalendarView() }
+                NavigationStack(path: $calendarPath) { TaskCalendarView() }
             case 2:
-                NavigationStack { SettingsView() }
+                NavigationStack(path: $settingsPath) { SettingsView() }
             default:
-                NavigationStack { HomeView() }
+                NavigationStack(path: $homePath) { HomeView() }
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -198,9 +205,9 @@ struct TaskTabView: View {
                 sidebarRow(title: NSLocalizedString("home_tab", comment: ""), systemImage: "house", tag: 0)
                 sidebarRow(title: NSLocalizedString("list_tab", comment: ""), systemImage: "checklist", tag: 1)
                 sidebarRow(title:
-                                taskWeekDays == 1
-                                ? String(localized: "today_tab")
-                                : String(localized: "days_tab \(taskWeekDays)"),
+                            taskWeekDays == 1
+                           ? String(localized: "today_tab")
+                           : String(localized: "days_tab \(taskWeekDays)"),
                            systemImage: "calendar.day.timeline.right", tag: 4)
                 sidebarRow(title: NSLocalizedString("calendar_tab", comment: ""), systemImage: "calendar", tag: 3)
                 sidebarRow(title: NSLocalizedString("map_tab", comment: ""), systemImage: "map", tag: 5)
@@ -218,7 +225,7 @@ struct TaskTabView: View {
             case 1:
                 NavigationStack { TaskListView() }
             case 5:
-                NavigationStack { TaskMapView() }
+                NavigationStack(path: $mapPath) { TaskMapView(mapPath: $mapPath) }
             case 4:
                 NavigationStack { WeeklyTasksView() }
             case 3:
@@ -280,11 +287,16 @@ struct TaskTabView: View {
         .buttonStyle(.plain)
     }
     // MARK: - Custom Tab Item
-
+    
     private func tabItem(_ icon: String, _ title: String, _ tag: Int) -> some View {
         Button {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            selectedTab = tag
+            
+            if selectedTab == tag {
+                resetTab(tag)
+            } else {
+                selectedTab = tag
+            }
         } label: {
             VStack(spacing: 4) {
                 Image(systemName: icon)
@@ -306,5 +318,24 @@ struct TaskTabView: View {
         .buttonStyle(.plain)
         .transaction { $0.animation = nil }
         .animation(.snappy(duration: 0.12), value: selectedTab)
+    }
+    
+    private func resetTab(_ tab: Int) {
+        switch tab {
+        case 0:
+            if !homePath.isEmpty { homePath = NavigationPath() }
+        case 1:
+            if !listPath.isEmpty { listPath = NavigationPath() }
+        case 5:
+            if !mapPath.isEmpty { mapPath = NavigationPath() }
+        case 4:
+            if !weeklyPath.isEmpty { weeklyPath = NavigationPath() }
+        case 3:
+            if !calendarPath.isEmpty { calendarPath = NavigationPath() }
+        case 2:
+            if !settingsPath.isEmpty { settingsPath = NavigationPath() }
+        default:
+            break
+        }
     }
 }

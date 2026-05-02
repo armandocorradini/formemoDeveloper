@@ -1,3 +1,7 @@
+enum UrgencyLevel {
+    case none, soon, overdue
+}
+
 struct TaskMapAnnotationModel: Identifiable, Equatable {
     let id: UUID
     let coordinate: CLLocationCoordinate2D
@@ -8,7 +12,15 @@ struct TaskMapAnnotationModel: Identifiable, Equatable {
     let address: String?
     let locationName: String?
     
-    let isUrgent: Bool
+    let urgency: UrgencyLevel
+    let items: [Item]
+
+    struct Item: Identifiable, Equatable {
+        let id: UUID
+        let title: String
+        let deadline: Date?
+        let urgency: UrgencyLevel
+    }
 
     static func == (lhs: TaskMapAnnotationModel, rhs: TaskMapAnnotationModel) -> Bool {
         lhs.id == rhs.id &&
@@ -19,13 +31,22 @@ struct TaskMapAnnotationModel: Identifiable, Equatable {
         lhs.deadline == rhs.deadline &&
         lhs.address == rhs.address &&
         lhs.locationName == rhs.locationName &&
-        lhs.isUrgent == rhs.isUrgent
+        lhs.urgency == rhs.urgency &&
+        lhs.items == rhs.items
     }
 }
 
 import SwiftUI
 import MapKit
 import SwiftData
+
+struct ZoomStore {
+    static var zoomLevel: Double = 0.2
+    static var latDelta: Double = 0.2
+    static var lonDelta: Double = 0.2
+    static var centerLat: Double = 41.9028
+    static var centerLon: Double = 12.4964
+}
 
 struct TaskMapView: View {
     
@@ -39,25 +60,52 @@ struct TaskMapView: View {
         span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
     )
     
-    @State private var zoomLevel: Double = 0.2
+    @State private var zoomLevel: Double = ZoomStore.zoomLevel
     
     @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var storedLatDelta: Double = ZoomStore.latDelta
+    @State private var storedLonDelta: Double = ZoomStore.lonDelta
+    @State private var storedCenterLat: Double = ZoomStore.centerLat
+    @State private var storedCenterLon: Double = ZoomStore.centerLon
     
-    @State private var selectedTask: TodoTask?
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var didInitializeLaunch = false
     @State private var hasSetInitialRegion = false
-    
-var body: some View {
-    
-    NavigationStack {
+
+    @Binding var mapPath: NavigationPath
+
+    var body: some View {
         Map(position: $cameraPosition) {
             mapAnnotations
         }
         .onMapCameraChange { context in
             zoomLevel = context.region.span.latitudeDelta
+            storedLatDelta = context.region.span.latitudeDelta
+            storedLonDelta = context.region.span.longitudeDelta
+            storedCenterLat = context.region.center.latitude
+            storedCenterLon = context.region.center.longitude
+            ZoomStore.zoomLevel = zoomLevel
+            ZoomStore.latDelta = storedLatDelta
+            ZoomStore.lonDelta = storedLonDelta
+            ZoomStore.centerLat = storedCenterLat
+            ZoomStore.centerLon = storedCenterLon
         }
         .ignoresSafeArea()
         .task {
             guard !hasSetInitialRegion else { return }
+
+            // If we already have a stored zoom, restore ONLY that and skip bounding region
+            if storedLatDelta != 0.2 {
+                let restoredRegion = MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: storedCenterLat, longitude: storedCenterLon),
+                    span: MKCoordinateSpan(latitudeDelta: storedLatDelta, longitudeDelta: storedLonDelta)
+                )
+                cameraPosition = .region(restoredRegion)
+                hasSetInitialRegion = true
+                return
+            }
+
+            // First launch: fit all annotations
             if let region = boundingRegion {
                 cameraPosition = .region(region)
                 hasSetInitialRegion = true
@@ -74,37 +122,78 @@ var body: some View {
                 }
             }
         }
-        .navigationDestination(item: $selectedTask) { task in
+        .navigationDestination(for: TodoTask.self) { task in
             TaskDetailView(task: task)
         }
     }
-}
 }
 
 
 extension TaskMapView {
     
     var mapModels: [TaskMapAnnotationModel] {
-        
-        tasks.compactMap { task -> TaskMapAnnotationModel? in
-            
+        let grouped = Dictionary(grouping: tasks.compactMap { task -> (CLLocationCoordinate2D, TaskMapAnnotationModel.Item)? in
             guard let lat = task.locationLatitude,
                   let lon = task.locationLongitude else { return nil }
-            
-            let isUrgent = {
-                guard let d = task.deadLine else { return false }
-                return d.timeIntervalSinceNow < 86400 && d.timeIntervalSinceNow > 0
+
+            let urgency: UrgencyLevel = {
+                guard let d = task.deadLine else { return .none }
+                let interval = d.timeIntervalSinceNow
+                if interval < 0 { return .overdue }
+                if interval < 86400 { return .soon }
+                return .none
             }()
-            
-            return TaskMapAnnotationModel(
+
+            let item = TaskMapAnnotationModel.Item(
                 id: task.id,
-                coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon),
                 title: task.title,
-                tagIcon: nil,
                 deadline: task.deadLine,
+                urgency: urgency
+            )
+
+            return (CLLocationCoordinate2D(latitude: lat, longitude: lon), item)
+        }) { pair in
+            // group key by exact coordinate
+            "\(pair.0.latitude)-\(pair.0.longitude)"
+        }
+
+        return grouped.map { _, pairs in
+            // extract coordinate and items
+            let coordinate = pairs.first!.0
+            var items = pairs.map { $0.1 }
+
+            // sort by deadline ascending (nil last)
+            items.sort { a, b in
+                switch (a.deadline, b.deadline) {
+                case let (da?, db?): return da < db
+                case (nil, _?): return false
+                case (_?, nil): return true
+                default: return a.title < b.title
+                }
+            }
+
+            // highest urgency for dot
+            let urgency = items.map { $0.urgency }.max { a, b in
+                func p(_ u: UrgencyLevel) -> Int {
+                    switch u {
+                    case .overdue: return 2
+                    case .soon: return 1
+                    case .none: return 0
+                    }
+                }
+                return p(a) < p(b)
+            } ?? .none
+
+            return TaskMapAnnotationModel(
+                id: items.first!.id,
+                coordinate: coordinate,
+                title: "", // no longer used for multi-line label
+                tagIcon: nil,
+                deadline: nil,
                 address: nil,
-                locationName: task.locationName,
-                isUrgent: isUrgent
+                locationName: tasks.first(where: { $0.locationLatitude == coordinate.latitude && $0.locationLongitude == coordinate.longitude })?.locationName,
+                urgency: urgency,
+                items: items
             )
         }
     }
@@ -134,7 +223,17 @@ extension TaskMapView {
     }
     
     var mapAnnotations: some MapContent {
-        ForEach(mapModels) { item in
+        ForEach(mapModels.sorted { lhs, rhs in
+            // higher priority first (drawn later = on top)
+            func priority(_ u: UrgencyLevel) -> Int {
+                switch u {
+                case .overdue: return 2
+                case .soon: return 1
+                case .none: return 0
+                }
+            }
+            return priority(lhs.urgency) < priority(rhs.urgency)
+        }) { item in
             Annotation("", coordinate: item.coordinate) {
                 annotationButton(for: item)
             }
@@ -144,12 +243,21 @@ extension TaskMapView {
     private func annotationButton(for item: TaskMapAnnotationModel) -> some View {
         Button {
             if let task = tasks.first(where: { $0.id == item.id }) {
-                selectedTask = task
+                mapPath.append(task)
             }
         } label: {
             TaskAnnotationView(
                 model: item,
-                zoomLevel: zoomLevel
+                zoomLevel: zoomLevel,
+                onSelectTask: { id in
+                    if let task = tasks.first(where: { $0.id == id }) {
+                        mapPath.append(task)
+                    }
+                }
+            )
+            .offset(
+                x: CGFloat((item.id.uuidString.hashValue % 10) - 5),
+                y: CGFloat((item.id.uuidString.hashValue % 10) - 5)
             )
         }
         .buttonStyle(.plain)
@@ -160,6 +268,7 @@ struct TaskAnnotationView: View {
     
     let model: TaskMapAnnotationModel
     let zoomLevel: Double
+    let onSelectTask: (UUID) -> Void
     
     @State private var blink = false
     
@@ -171,14 +280,32 @@ struct TaskAnnotationView: View {
             ZStack {
                 // 🔴 BASE DOT
                 Circle()
-                    .fill(model.isUrgent ? Color.red : Color.blue)
-                    .shadow(color: model.isUrgent ? Color.red.opacity(0.9) : Color.blue.opacity(0.6), radius: 4)
+                    .fill({
+                        switch model.urgency {
+                        case .overdue: return Color.red
+                        case .soon: return Color.orange
+                        case .none: return Color.blue
+                        }
+                    }())
+                    .shadow(color: ({
+                        switch model.urgency {
+                        case .overdue: return Color.red.opacity(0.9)
+                        case .soon: return Color.orange.opacity(0.9)
+                        case .none: return Color.blue.opacity(0.6)
+                        }
+                    }()), radius: 4)
                     .frame(width: 12, height: 12)
                 
                 // 🔥 RADAR PULSE 1
-                if model.isUrgent && zoomLevel < 0.08 {
+                if model.urgency != .none && zoomLevel < 0.08 {
                     Circle()
-                        .stroke(Color.red, lineWidth: 3)
+                        .stroke(({
+                            switch model.urgency {
+                            case .overdue: return Color.red
+                            case .soon: return Color.orange
+                            case .none: return Color.clear
+                            }
+                        }()), lineWidth: 3)
                         .frame(width: 12, height: 12)
                         .scaleEffect(blink ? 3.5 : 1.0)
                         .opacity(blink ? 0.0 : 1.0)
@@ -190,9 +317,15 @@ struct TaskAnnotationView: View {
                 }
                 
                 // 🔥 RADAR PULSE 2 (offset for continuous effect)
-                if model.isUrgent && zoomLevel < 0.08 {
+                if model.urgency != .none && zoomLevel < 0.08 {
                     Circle()
-                        .stroke(Color.red.opacity(0.9), lineWidth: 2)
+                        .stroke(({
+                            switch model.urgency {
+                            case .overdue: return Color.red.opacity(0.9)
+                            case .soon: return Color.orange.opacity(0.9)
+                            case .none: return Color.clear
+                            }
+                        }()), lineWidth: 2)
                         .frame(width: 12, height: 12)
                         .scaleEffect(blink ? 3.5 : 1.0)
                         .opacity(blink ? 0.0 : 0.9)
@@ -212,7 +345,7 @@ struct TaskAnnotationView: View {
             }
         }
         .onAppear {
-            if model.isUrgent && zoomLevel < 0.08 {
+            if model.urgency != .none && zoomLevel < 0.08 {
                 // 🔥 trigger continuous animation
                 withAnimation {
                     blink.toggle()
@@ -220,7 +353,7 @@ struct TaskAnnotationView: View {
             }
         }
         .onChange(of: zoomLevel) { _, newValue in
-            if model.isUrgent && newValue < 0.08 {
+            if model.urgency != .none && newValue < 0.08 {
                 withAnimation {
                     blink = false
                     blink.toggle()
@@ -236,25 +369,46 @@ extension TaskAnnotationView {
         
         VStack(alignment: .leading, spacing: 4) {
             
-            HStack(spacing: 6) {
-                
-                if let icon = model.tagIcon {
+            if let icon = model.tagIcon {
+                HStack(spacing: 6) {
                     Image(systemName: icon)
                         .font(.caption)
                 }
-                
-                Text(model.title)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .lineLimit(1)
             }
-            
-            if let deadline = model.deadline {
-                Text(deadline.formatted(date: .abbreviated, time: .shortened))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+
+            ForEach(model.items) { it in
+                Button {
+                    onSelectTask(it.id)
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill({
+                                    switch it.urgency {
+                                    case .overdue: return Color.red
+                                    case .soon: return Color.orange
+                                    case .none: return Color.blue
+                                    }
+                                }())
+                                .frame(width: 6, height: 6)
+
+                            Text(it.title)
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .lineLimit(1)
+                        }
+
+                        if let d = it.deadline {
+                            Text(d.formatted(date: .abbreviated, time: .shortened))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .padding(.leading, 12)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
             }
-            
+
             if let locationName = model.locationName {
                 Text(locationName)
                     .font(.caption2)

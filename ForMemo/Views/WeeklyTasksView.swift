@@ -111,6 +111,9 @@ struct WeeklyTasksView: View {
             .listStyle(.plain)
             .navigationTitle(formattedDate)
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(for: TodoTask.self) { task in
+                TaskDetailView(task: task)
+            }
             .scrollContentBackground(.hidden)
             // ALERT UNICO – STABILE
             .alert(
@@ -210,9 +213,7 @@ private struct WeeklyTaskRow: View {
         
         ZStack {
             
-            NavigationLink {
-                TaskDetailView(task: task)
-            } label: {
+            NavigationLink(value: task) {
                 EmptyView()
             }
             .opacity(0)

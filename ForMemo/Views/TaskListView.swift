@@ -1,4 +1,5 @@
 
+
 import SwiftUI
 import SwiftData
 import PhotosUI
@@ -14,56 +15,55 @@ extension Notification.Name {
 
 // MARK: - TaskListView
 struct TaskListView: View {
-    
+
     @Environment(\.modelContext) private var modelContext
-    
+
     @Environment(\.scenePhase) private var scenePhase
-    
-    
+
+
     @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
     private var todoQuery: [TodoTask]
 
     @Query(filter: #Predicate<TodoTask> { $0.isCompleted })
     private var completedQuery: [TodoTask]
-    
+
     @State private var draftTask: TodoTask?
-    
+
     //    @Query(sort: \TodoTask.deadLine, order: .forward)
     //    private var tasks: [TodoTask]
-    
-    @State private var path = NavigationPath()
-    
+
+
     @State private var searchText = ""
     @State private var showCompleted = false
     @State private var showNewTask = false
     @State private var showQuickGuide = false
-    
+
     @State private var selectedTagFilter: TaskMainTag? = nil
     @State private var selectedPriorityFilter: TaskPriority? = nil
 
-    
+
     @AppStorage("TaskListStyle")
     private var listStyleChoice: TaskListStyle = .plain
-    
+
     @State private var taskPendingDeletion: TodoTask?
-    
-    
+
+
     private var filteredTasks: [TodoTask] {
         let source = showCompleted ? completedQuery : todoQuery
-        
+
         return source.filter { task in
             let matchesSearch =
             searchText.isEmpty ||
             task.title.localizedCaseInsensitiveContains(searchText)
-            
+
             let matchesTag =
             selectedTagFilter == nil ||
             task.mainTag == selectedTagFilter
-            
+
             let matchesPriority =
             selectedPriorityFilter == nil ||
             task.priority == selectedPriorityFilter
-            
+
             return matchesSearch && matchesTag && matchesPriority
         }
     }
@@ -94,14 +94,14 @@ struct TaskListView: View {
             let lhs = $0.deadLine ?? .distantFuture
             let rhs = $1.deadLine ?? .distantFuture
             let now = Date()
-            
+
             let lhsOverdue = lhs < now
             let rhsOverdue = rhs < now
-            
+
             if lhsOverdue != rhsOverdue {
                 return lhsOverdue && !rhsOverdue
             }
-            
+
             return lhs < rhs
         }
         cachedTodo = todo
@@ -141,42 +141,40 @@ struct TaskListView: View {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
-    
-    
+
+
     var body: some View {
-        
-        NavigationStack(path: $path)  {
-            ZStack {
+        ZStack {
                 // 1. IL GRADIENTE (Sotto a tutto)
                 Self.backgroundGradient
                     .ignoresSafeArea()
-                
+
                 // 2. IL MATERIAL (Effetto vetro)
                 Rectangle()
                     .fill(.ultraThinMaterial)
                     .ignoresSafeArea()
-                
+
                 listWithStyle {
-                    
+
                     List {
                         if todoQuery.isEmpty && completedQuery.isEmpty && !showNewTask {
                             EmptySectionView(showQuickGuide: $showQuickGuide)
                         }
-                        
+
                         if !todoTasks.isEmpty {
                             TodoSectionView( taskPendingDeletion: $taskPendingDeletion,
                                              tasks: todoTasks,
                                              modelContext: modelContext
-                                             
+
                             )
                         }
-                        
+
                         if showCompleted && !completedTasks.isEmpty {
                             CompletedSectionView( taskPendingDeletion: $taskPendingDeletion,
                                                   tasks: completedTasks,
                                                   modelContext: modelContext
                             )
-                            
+
                         }
                     }
                     .safeAreaInset(edge: .bottom) {
@@ -196,12 +194,12 @@ struct TaskListView: View {
                             set: { if !$0 { taskPendingDeletion = nil } }
                         )
                     ) {
-                        
-                        
+
+
 
                         Button("Delete", role: .destructive) {
                             guard let task = taskPendingDeletion else { return }
-                            
+
                             withAnimation {
                                 deleteTask(task, in: modelContext)
                             }
@@ -215,7 +213,7 @@ struct TaskListView: View {
                         Text("This action cannot be undone.")
                     }
                     .contentMargins(.horizontal, listStyleChoice == .plain ? 0 : 10, for: .scrollContent)
-                    
+
                     .fullScreenCover(isPresented: $showQuickGuide) {
                         AppQuickGuideView()
                     }
@@ -226,6 +224,12 @@ struct TaskListView: View {
                     TaskDetailView(task: task)
                 }
                 .scrollDismissesKeyboard(.immediately)
+
+                .searchable(
+                    text: $searchText,
+                    placement: .navigationBarDrawer(displayMode: .automatic),
+                    prompt: "Search task"
+                )
                 .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
                 .navigationBarTitleDisplayMode(.inline)
                 .sheet(item: $draftTask) { task in
@@ -233,12 +237,12 @@ struct TaskListView: View {
                 }
                 //            .animation(.snappy, value: showCompleted)
                 //            .animation(.snappy, value: searchText)
-                
+
 
                 .toolbar {
-                    
+
                     ToolbarItem(placement: .topBarTrailing) {
-                        
+
 //                        Button {
 //                            withAnimation(.snappy) {
 //
@@ -257,9 +261,9 @@ struct TaskListView: View {
 //                        }
 //
 //
-                        
-                        
-                        
+
+
+
                         Button {
                             withAnimation(.snappy) {
                                 showCompleted.toggle()
@@ -269,7 +273,7 @@ struct TaskListView: View {
                                 .foregroundStyle(showCompleted ? .gray : .blue)
                         }
                     }
-                    
+
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
                             withAnimation(.snappy) {
@@ -295,10 +299,10 @@ struct TaskListView: View {
                                             systemImage: "line.3.horizontal.decrease.circle.slash"
                                         )
                                     }
-                                    
+
                                     Divider()
                                 }
-                                
+
                                 // MENU FILTRO TAG
                                 // Usiamo un Picker per gestire la selezione "esclusiva" in modo nativo
                                 Menu {
@@ -306,7 +310,7 @@ struct TaskListView: View {
                                         // Opzione per deselezionare (All)
                                         // Usiamo Optional(nil) per far combaciare il tipo con selectedTagFilter
                                         Text("All").tag(nil as TaskMainTag?)
-                                        
+
                                         ForEach(TaskMainTag.allCases) { tag in
                                             Label(tag.localizedTitle, systemImage: tag.mainIcon)
                                                 .tag(tag as TaskMainTag?)
@@ -318,12 +322,12 @@ struct TaskListView: View {
                                         systemImage: "tag"
                                     )
                                 }
-                                
+
                                 // MENU FILTRO PRIORITÀ
                                 Menu {
                                     Picker("Priority", selection: $selectedPriorityFilter) {
                                         Text("All").tag(nil as TaskPriority?)
-                                        
+
                                         ForEach(TaskPriority.allCases) { priority in
                                             // Utilizziamo l'icona della priorità o una stringa vuota se nil
                                             Label(priority.localizedTitle, systemImage: priority.systemImage ?? "ellipsis")
@@ -336,7 +340,7 @@ struct TaskListView: View {
                                         systemImage: "exclamationmark.circle"
                                     )
                                 }
-                                
+
                             } label: {
                                 // Icona principale del Filtro nella Toolbar
                                 // Diventa blu se almeno un filtro è attivo
@@ -348,14 +352,14 @@ struct TaskListView: View {
                                     )
                             }
                         }
-                        
+
                     }
-                    
-                    
-                    
+
+
+
                     ToolbarItem(placement: .topBarLeading) {
                         Menu {
-                            
+
                             Section {
                                 Picker("List Style", selection: $listStyleChoice) {
                                     ForEach(TaskListStyle.allCases, id: \.self) { style in
@@ -368,15 +372,13 @@ struct TaskListView: View {
                             } header: {
                                 Text("List Style")
                             }
-                            
+
                         } label: {
                             Image(systemName: "ellipsis")
                         }
                     }
                 }
-            }
         }
-        // overlay removed
         .onAppear {
             recomputeSections()
         }
@@ -404,23 +406,13 @@ struct TaskListView: View {
         .onReceive(NotificationCenter.default.publisher(for: .taskDidChange)) { _ in
             recomputeSections()
         }
-        .searchableIf(
-            !(todoQuery.isEmpty && completedQuery.isEmpty && !showNewTask),
-            text: $searchText,
-            prompt: "Search task"
-        )
-        .searchable(
-            text: $searchText,
-            placement: .navigationBarDrawer(displayMode: .always),
-            prompt: "Search task"
-        )
     }
-     
+
     @ViewBuilder
     private func listWithStyle<Content: View>(
         @ViewBuilder content: () -> Content
     ) -> some View {
-        
+
         switch listStyleChoice {
         case .plain:
             content().listStyle(.plain)
@@ -428,25 +420,25 @@ struct TaskListView: View {
             content().listStyle(.insetGrouped)
         }
     }
-    
+
 
 }
 
 
 // MARK: - EmptySectionView
 struct EmptySectionView: View {
-    
+
     @Binding var showQuickGuide: Bool
-    
+
     var body: some View {
         Section("") {
-            
+
             ContentUnavailableView {
                 VStack(spacing: 12) {
                     Text(String(localized:("Welcome!")))
                         .font(.largeTitle.bold())
                         .foregroundStyle(.primary)
-                    
+
                     Image(systemName: "checkmark.circle.dotted")
                         .resizable()
                         .scaledToFit()
@@ -456,7 +448,7 @@ struct EmptySectionView: View {
                     // animazione continua
                         .symbolEffect(.pulse, options: .repeating.speed(0.2))
                         .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
-                    
+
                     Text(String(localized:"No Tasks"))
                         .font(.title2.bold())
                 }
@@ -481,25 +473,25 @@ struct EmptySectionView: View {
                                 .foregroundStyle(.primary)
                             VStack(alignment: .leading){
                                 Text("switch your list view.")
-                                
+
                             }}
-                        
+
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: "plus.circle.fill")
                             //                                        .frame(width: 30)
                                 .foregroundStyle(.green)
                             Text("add a new task to your list.")
                         }
-                        
-                        
-                        
+
+
+
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: "eye")
                             //                                        .frame(width: 30)
                                 .foregroundStyle(.blue)
                             Text("show or hide completed tasks.")
                         }
-                        
+
                         Spacer()
                         HStack{
                             Spacer()
@@ -557,7 +549,7 @@ struct TaskRow: View {
 
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
-    
+
     @AppStorage("tasklist.highlightOpacity")
     private var highlightOpacity: Double = 0.3
 
@@ -582,7 +574,7 @@ struct TaskRow: View {
         guard let d = task.deadLine else { return false }
         let now = Date()
         let startOfToday = Calendar.current.startOfDay(for: now)
-        
+
         return d >= startOfToday && d >= now
     }
 
@@ -627,7 +619,7 @@ struct TaskRow: View {
             recurrenceRule: task.recurrenceRule
         )
     }
-    
+
     var body: some View {
         ZStack {
             // NavigationLink trasparente per mantenere l'estetica custom
@@ -692,10 +684,10 @@ struct TodoSectionView: View {
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
     @Binding var taskPendingDeletion: TodoTask?
-    
+
     let tasks: [TodoTask]
     let modelContext: ModelContext
-    
+
     struct RowCardStyle: ViewModifier {
         @Environment(\.colorScheme) private var colorScheme
         let task: TodoTask
@@ -785,17 +777,17 @@ struct TodoSectionView: View {
             return date < Date()
         }
     }
-    
+
     var body: some View {
-        
+
         Section(String(localized:"To do (\(tasks.count))")) {
-            
+
             ForEach(tasks, id: \.id) { t in
-                
+
                 TaskRow(task: t)
 
                     .modifier(RowCardStyle(task: t, style: listStyleChoice))
-                
+
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
                             toggleCompleted(t)
@@ -804,7 +796,7 @@ struct TodoSectionView: View {
                         }
                         .tint(.green)
                     }
-                
+
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
                             if confirmTaskDeletion {
@@ -819,7 +811,7 @@ struct TodoSectionView: View {
                             Label("Delete", systemImage: "trash")
                         }
                     }
-                
+
                     .contextMenu {
                         Button(role: .destructive) {
                             if confirmTaskDeletion {
@@ -832,7 +824,7 @@ struct TodoSectionView: View {
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
-                        
+
                         Button {
                             toggleCompleted(t)
                         } label: {
@@ -842,34 +834,34 @@ struct TodoSectionView: View {
             }
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
+
+
+
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {
-        
+
         // 🔥 RICORRENZA: intercetta PRIMA di cambiare stato
         if task.recurrenceRule != nil {
-            
+
             // 🔁 Ricorrenza: completa e rischedula
             task.completeRecurringTask(in: modelContext)
-            
-            
+
+
             modelContext.processPendingChanges()
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
-            
+
         } else {
-            
+
             let newValue = !task.isCompleted
             task.isCompleted = newValue
-            
+
             if newValue {
                 task.completedAt = .now
                 task.snoozeUntil = nil
@@ -878,11 +870,11 @@ struct TodoSectionView: View {
                 task.snoozeUntil = nil
             }
         }
-        
+
         try? modelContext.save()
         modelContext.processPendingChanges()
         NotificationCenter.default.post(name: .taskDidChange, object: nil)
-        
+
         // 🔴 Fix swipe crash: delay refresh to let swipe close
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             NotificationManager.shared.refresh(force: true)
@@ -894,29 +886,29 @@ struct CompletedSectionView: View {
     @AppStorage("TaskListStyle") private var listStyleChoice: TaskListStyle = .plain
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
-    
-    
+
+
     @Binding var taskPendingDeletion: TodoTask?
     let tasks: [TodoTask]
     let modelContext: ModelContext
-    
+
     struct RowCardStyle: ViewModifier {
-        
+
         let task: TodoTask
         let style: TaskListStyle
-        
+
         func body(content: Content) -> some View {
-            
+
             if style == .cards {
-                
+
                 content
                     .listRowInsets(
                         EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
                     )
                     .listRowBackground(cardBackground(for: task))
-                
+
             } else {
-                
+
                 content
                     .listRowInsets(
                         EdgeInsets(top: 20, leading: 4, bottom: 20, trailing: 4)
@@ -924,25 +916,25 @@ struct CompletedSectionView: View {
                     .listRowBackground(Color.clear)
             }
         }
-        
+
         private func cardBackground(for task: TodoTask) -> some View {
-            
+
             RoundedRectangle(cornerRadius: 26, style: .continuous)
                 .fill(
                     Color(uiColor: .secondarySystemBackground).opacity(0.5))
         }
     }
     var body: some View {
-        
+
         Section(String(localized:"Completed (\(tasks.count))")) {
-            
-            
+
+
             ForEach(tasks, id: \.id) { t in
-                
+
                 TaskRow(task: t)
 
                     .modifier(RowCardStyle( task: t, style: listStyleChoice))
-                
+
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
                             toggleCompleted(t)
@@ -951,20 +943,20 @@ struct CompletedSectionView: View {
                         }
                         .tint(.orange)
                     }
-                
+
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
-                            
+
                             if confirmTaskDeletion {
                                 taskPendingDeletion = t
                             } else {
-                                
+
                                 withAnimation {
                                     deleteTask(t, in: modelContext)
                                 }
                                 NotificationManager.shared.refresh()
                             }
-                            
+
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -981,37 +973,37 @@ struct CompletedSectionView: View {
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
-                        
+
                         Button {
                             toggleCompleted(t)
                         } label: {
                             Label("To do" , systemImage: "arrow.uturn.left"
                             )
                         }
-                        
+
                     }
             }
         }
     }
-    
+
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {
-        
+
         // 🔥 RICORRENZA: se riattivi un task ricorrente NON ha senso tenerlo completato
         if task.recurrenceRule != nil {
-            
+
             // 🔁 Ricorrenza: completa e rischedula
             task.completeRecurringTask(in: modelContext)
-            
-            
+
+
             modelContext.processPendingChanges()
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
-            
+
         } else {
-            
+
             let newValue = !task.isCompleted
             task.isCompleted = newValue
-            
+
             if newValue {
                 task.completedAt = .now
                 task.snoozeUntil = nil
@@ -1020,7 +1012,7 @@ struct CompletedSectionView: View {
                 task.snoozeUntil = nil
             }
         }
-        
+
         do {
             try modelContext.save()
             modelContext.processPendingChanges()
@@ -1028,7 +1020,7 @@ struct CompletedSectionView: View {
         } catch {
             AppLogger.persistence.fault("Failed to save context: \(error)")
         }
-        
+
         // 🔴 Fix swipe crash
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
             NotificationManager.shared.refresh(force: true)
