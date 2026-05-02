@@ -226,12 +226,6 @@ struct TaskListView: View {
                     TaskDetailView(task: task)
                 }
                 .scrollDismissesKeyboard(.immediately)
-                
-                .searchable(
-                    text: $searchText,
-                    placement: .navigationBarDrawer(displayMode: .automatic),
-                    prompt: "Search task"
-                )
                 .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
                 .navigationBarTitleDisplayMode(.inline)
                 .sheet(item: $draftTask) { task in
@@ -382,6 +376,7 @@ struct TaskListView: View {
                 }
             }
         }
+        // overlay removed
         .onAppear {
             recomputeSections()
         }
@@ -409,6 +404,16 @@ struct TaskListView: View {
         .onReceive(NotificationCenter.default.publisher(for: .taskDidChange)) { _ in
             recomputeSections()
         }
+        .searchableIf(
+            !(todoQuery.isEmpty && completedQuery.isEmpty && !showNewTask),
+            text: $searchText,
+            prompt: "Search task"
+        )
+        .searchable(
+            text: $searchText,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: "Search task"
+        )
     }
      
     @ViewBuilder
