@@ -104,9 +104,7 @@ struct ResetAppView: View {
     // 🔥 DELETE REALE
     @MainActor
     private func deleteAllData() async {
-        
-        print("🔥 deleteAllData CALLED")
-        
+
         let center = UNUserNotificationCenter.current()
         let fileManager = FileManager.default
         

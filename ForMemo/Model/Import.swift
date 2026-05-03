@@ -185,20 +185,10 @@ private extension RemindersImportView {
 private extension RemindersImportView {
     
     func map(_ reminder: EKReminder) -> ReminderDTO {
-//        print("---- REMINDER DEBUG ----")
-//        print("Title:", reminder.title)
-//        print("Notes:", reminder.notes ?? "nil")
-//        print("Priority:", reminder.priority)
-//        print("Calendar:", reminder.calendar.title)
-        
+
         let deadline = buildDeadline(from: reminder)
         let location = extractLocation(from: reminder)
-        
-//        print("Computed deadline:", deadline as Any)
-//        print("Computed offset:", computeOffset(deadline: deadline, alarms: reminder.alarms) as Any)
-//        print("Extracted tag:", extractTag(from: reminder) as Any)
-//        print("------------------------")
-        
+
         let combinedText = reminder.title + " " + (reminder.notes ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let inferredTag = TagInference.infer(from: combinedText.lowercased())

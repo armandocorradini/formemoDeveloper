@@ -157,9 +157,9 @@ extension TodoTask {
             if isCompleted { return .green }
             guard let deadline = deadLine else { return .blue }
             let diff = deadline.timeIntervalSinceNow
-            if diff < 0 { return .red}//red: 1, green: 0.14, blue: 0) }
-            if diff <= 86400 { return .orange}//red: 1, green: 0.4, blue: 0) } // 24h
-            if diff <= 259200 { return Color(red: 1, green: 1, blue: 0) } // 72h giallo
+            if diff < 0 { return Color(red: 1.0, green: 0.1, blue: 0.1) }
+            if diff <= 86400 { return Color(red: 0.7, green: 0.0, blue: 0.9) }//red: 1, green: 0.4, blue: 0) } // 24h
+            if diff <= 259200 { return .indigo } // 72h giallo
             return .green
         }()
         

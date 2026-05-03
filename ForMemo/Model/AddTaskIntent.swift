@@ -271,8 +271,7 @@ struct AddTaskIntent: AppIntent {
                 reminderInfo = Self.description(forMinutes: minutes!)
             }
         }
-        print("INPUT:", input)
-        print("REMINDER:", reminderText ?? "nil")
+
         context.insert(task)
         try context.save()
         

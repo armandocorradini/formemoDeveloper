@@ -37,7 +37,8 @@ extension TaskAttachment {
         let fm = FileManager.default
         
         // 🔵 iCloud se disponibile
-        if let containerURL = fm.url(forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask") {
+        let ubiquity = fm.url(forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask")
+        if let containerURL = ubiquity {
             
             let directory = containerURL
                 .appendingPathComponent("Documents", isDirectory: true)
@@ -102,24 +103,20 @@ extension TaskAttachment {
     
     
     var fileURL: URL? {
-        
         guard let directory = Self.attachmentsDirectory else { return nil }
-        
+
         let url = directory.appendingPathComponent(relativePath)
-        
-        // 🔵 supporto iCloud download
-        var isUbiquitous: AnyObject?
-        try? (url as NSURL).getResourceValue(
-            &isUbiquitous,
-            forKey: .isUbiquitousItemKey
-        )
-        
-        if let isUbiquitous = isUbiquitous as? Bool,
-           isUbiquitous {
-            try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+        let fm = FileManager.default
+
+        // 🔥 prova SEMPRE a triggerare download
+        try? fm.startDownloadingUbiquitousItem(at: url)
+
+        // 🔥 controllo esistenza reale
+        if fm.fileExists(atPath: url.path) {
+            return url
+        } else {
+            return url // ⚠️ IMPORTANTISSIMO: NON nil
         }
-        
-        return url
     }
     
     var fileStatus: FileStatus {
@@ -158,53 +155,74 @@ extension TaskAttachment {
     
     
     func deleteFileIfNeeded() -> String? {
-        
         guard let sourceURL = fileURL else { return nil }
-        
+
         let fm = FileManager.default
-        
+
         // Se il file non esiste già → nessuna azione
         guard fm.fileExists(atPath: sourceURL.path) else {
             return nil
         }
-        
-        // Se non abbiamo la Trash → fallback delete (comportamento originale)
+
+        // 🔵 Se iCloud → forzo download reale (evita placeholder)
+        if (try? sourceURL.resourceValues(forKeys: [.isUbiquitousItemKey]))?.isUbiquitousItem == true {
+            try? fm.startDownloadingUbiquitousItem(at: sourceURL)
+
+            // ⏳ attesa breve finché non è disponibile
+            for _ in 0..<10 {
+                let status = try? sourceURL.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
+                if status?.ubiquitousItemDownloadingStatus == .current {
+                    break
+                }
+                Thread.sleep(forTimeInterval: 0.1)
+            }
+        }
+
+        // Se non abbiamo la Trash → fallback delete
         guard let trashDir = Self.trashDirectory else {
             AppLogger.persistence.fault("Trash directory missing → fallback delete for \(sourceURL.lastPathComponent)")
             try? fm.removeItem(at: sourceURL)
             return nil
         }
-        
+
         // Nome unico per evitare collisioni
         let uniqueName = UUID().uuidString + "_" + sourceURL.lastPathComponent
         let destinationURL = trashDir.appendingPathComponent(uniqueName)
-        
+
         let coordinator = NSFileCoordinator()
         var coordError: NSError?
         var result: String? = nil
-        
+
         coordinator.coordinate(
             writingItemAt: sourceURL,
             options: .forMoving,
+            writingItemAt: destinationURL,
+            options: .forReplacing,
             error: &coordError
-        ) { safeURL in
-            
+        ) { readURL, writeURL in
             do {
-                try fm.moveItem(at: safeURL, to: destinationURL)
-                result = destinationURL.lastPathComponent
+                try fm.moveItem(at: readURL, to: writeURL)
+
+                // 🔥 verifica reale
+                let size = (try? fm.attributesOfItem(atPath: writeURL.path)[.size] as? Int64) ?? 0
+                if size == 0 {
+                    try? fm.removeItem(at: writeURL)
+                    throw NSError(domain: "AttachmentImporter", code: 3, userInfo: [
+                        NSLocalizedDescriptionKey: "Moved file is empty"
+                    ])
+                }
+
+                result = writeURL.lastPathComponent
             } catch {
                 AppLogger.persistence.fault("Move failed → fallback delete: \(error.localizedDescription)")
-                do {
-                    try fm.removeItem(at: safeURL)
-                } catch {
-                    AppLogger.persistence.error("Move & delete failed: \(error.localizedDescription)")
-                }
+                try? fm.removeItem(at: readURL)
             }
         }
-        
+
         if let coordError {
             AppLogger.persistence.fault("File coordination failed: \(coordError.localizedDescription)")
         }
+
         return result
     }
 }
@@ -214,13 +232,27 @@ extension TaskAttachment {
     
     func loadDataAsync() async -> Data? {
         
-        guard let url = fileURL else { return nil }
+        guard let url = fileURL else {
+            return nil
+        }
         
         try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+
+        // 🔥 attesa più robusta (fino a ~4 secondi)
+        for _ in 0..<20 {
+            if FileManager.default.fileExists(atPath: url.path) {
+                break
+            }
+            try? await Task.sleep(nanoseconds: 200_000_000)
+        }
+
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            return nil
+        }
+
+        let data = try? Data(contentsOf: url)
         
-        return await Task.detached(priority: .utility) {
-            return try? Data(contentsOf: url)
-        }.value
+        return data
     }
 }
 

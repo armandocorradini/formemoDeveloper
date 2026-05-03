@@ -11,22 +11,16 @@ final class AttachmentImporter {
         in context: ModelContext
     ) throws {
         
-        // MARK: - Accesso file esterno
         let access = originalURL.startAccessingSecurityScopedResource()
-        
         defer {
-            if access {
-                originalURL.stopAccessingSecurityScopedResource()
-            }
+            if access { originalURL.stopAccessingSecurityScopedResource() }
         }
         
-        // MARK: - Copia file
         let destinationURL = try copyToAttachmentsFolder(originalURL: originalURL)
         
         let fileName = destinationURL.lastPathComponent
         let ext = destinationURL.pathExtension.lowercased()
         
-        // MARK: - MIME type
         let contentType: String = {
             if let type = UTType(filenameExtension: ext),
                let mime = type.preferredMIMEType {
@@ -35,7 +29,6 @@ final class AttachmentImporter {
             return "application/octet-stream"
         }()
         
-        // MARK: - Creazione attachment
         let attachment = TaskAttachment(
             originalName: originalURL.lastPathComponent,
             relativePath: fileName,
@@ -43,41 +36,34 @@ final class AttachmentImporter {
             task: task
         )
         
-        // 🔥 IMPORTANTE: insert PRIMA
         context.insert(attachment)
         
-        // 🔥 Relazione (CloudKit safe)
         if task.attachments == nil {
             task.attachments = []
         }
-        
         task.attachments?.append(attachment)
         
-        // 🔥 Salvataggio UNICO
         try context.save()
-        
-        // 🔥 Refresh leggero (no force aggressivo)
-        NotificationManager.shared.refresh()
     }
     
-    // MARK: - Copy file
-    
-    private static func copyToAttachmentsFolder(
-        originalURL: URL
-    ) throws -> URL {
-        
-        guard let directory = TaskAttachment.attachmentsDirectory else {
-            throw NSError(domain: "iCloudUnavailable", code: 1)
-        }
-        
-        let uuid = UUID().uuidString
-        
-        let destination = directory
-            .appendingPathComponent("\(uuid)-\(originalURL.lastPathComponent)")
+    private static func copyToAttachmentsFolder(originalURL: URL) throws -> URL {
         
         let fm = FileManager.default
         
-        // 🔥 Protezione duplicati
+        let directory: URL
+        if let ubiq = fm.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents/TaskAttachments") {
+            directory = ubiq
+        } else if let local = TaskAttachment.attachmentsDirectory {
+            directory = local
+        } else {
+            throw NSError(domain: "iCloudUnavailable", code: 1)
+        }
+        
+        try fm.createDirectory(at: directory, withIntermediateDirectories: true)
+        
+        let destination = directory
+            .appendingPathComponent("\(UUID().uuidString)-\(originalURL.lastPathComponent)")
+        
         if fm.fileExists(atPath: destination.path) {
             try fm.removeItem(at: destination)
         }

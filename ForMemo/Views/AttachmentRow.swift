@@ -48,8 +48,10 @@ struct AttachmentRow: View {
         .contentShape(Rectangle())
         
         // LOAD iniziale
-        .task {
-            await loadIfNeeded()
+        .onAppear {
+            Task {
+                await loadIfNeeded()
+            }
         }
         
         // RETRY manuale
@@ -167,12 +169,10 @@ struct AttachmentRow: View {
     }
     
     private func loadImage() async {
-        
         guard let url = attachment.fileURL else {
             state = .failed
             return
         }
-        
         let fm = FileManager.default
         
         // 🔥 1. CACHE (subito)
@@ -239,7 +239,15 @@ struct AttachmentRow: View {
     }
     
     private var isImage: Bool {
-        resolvedType?.conforms(to: .image) ?? false
+        if let type = resolvedType, type.conforms(to: .image) {
+            return true
+        }
+        
+        let name = attachment.originalName.lowercased()
+        return name.hasSuffix(".jpg")
+            || name.hasSuffix(".jpeg")
+            || name.hasSuffix(".png")
+            || name.hasSuffix(".heic")
     }
     
     private var isAudio: Bool {

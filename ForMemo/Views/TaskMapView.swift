@@ -184,11 +184,25 @@ extension TaskMapView {
                 return p(a) < p(b)
             } ?? .none
 
+            // pick most urgent item for tag icon
+            let mostUrgentItem = items.max { a, b in
+                func p(_ u: UrgencyLevel) -> Int {
+                    switch u {
+                    case .overdue: return 2
+                    case .soon: return 1
+                    case .none: return 0
+                    }
+                }
+                return p(a.urgency) < p(b.urgency)
+            }
+
+            let tagIcon = tasks.first(where: { $0.id == mostUrgentItem?.id })?.mainTag?.mainIcon
+
             return TaskMapAnnotationModel(
                 id: items.first!.id,
                 coordinate: coordinate,
                 title: "", // no longer used for multi-line label
-                tagIcon: nil,
+                tagIcon: tagIcon,
                 deadline: nil,
                 address: nil,
                 locationName: tasks.first(where: { $0.locationLatitude == coordinate.latitude && $0.locationLongitude == coordinate.longitude })?.locationName,
@@ -275,69 +289,71 @@ struct TaskAnnotationView: View {
     var body: some View {
         
         VStack(spacing: 4) {
-            
-            // 🔴 BASE DOT + RADAR PULSE
-            ZStack {
-                // 🔴 BASE DOT
-                Circle()
-                    .fill({
-                        switch model.urgency {
-                        case .overdue: return Color.red
-                        case .soon: return Color.orange
-                        case .none: return Color.blue
-                        }
-                    }())
-                    .shadow(color: ({
-                        switch model.urgency {
-                        case .overdue: return Color.red.opacity(0.9)
-                        case .soon: return Color.orange.opacity(0.9)
-                        case .none: return Color.blue.opacity(0.6)
-                        }
-                    }()), radius: 4)
-                    .frame(width: 12, height: 12)
-                
-                // 🔥 RADAR PULSE 1
-                if model.urgency != .none && zoomLevel < 0.08 {
+            // 🔴 BASE DOT + RADAR PULSE + 🏷 TAG ICON
+            HStack(spacing: 4) {
+                ZStack {
+                    // 🔴 BASE DOT
                     Circle()
-                        .stroke(({
+                        .fill({
                             switch model.urgency {
-                            case .overdue: return Color.red
-                            case .soon: return Color.orange
-                            case .none: return Color.clear
+                            case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
+                            case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
+                            case .none: return Color.indigo
                             }
-                        }()), lineWidth: 3)
+                        }())
+                        .shadow(color: ({
+                            switch model.urgency {
+                            case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1).opacity(0.9)
+                            case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9).opacity(0.9)
+                            case .none: return Color.indigo.opacity(0.6)
+                            }
+                        }()), radius: 4)
                         .frame(width: 12, height: 12)
-                        .scaleEffect(blink ? 3.5 : 1.0)
-                        .opacity(blink ? 0.0 : 1.0)
-                        .animation(
-                            .easeOut(duration: 1.2)
-                            .repeatForever(autoreverses: false),
-                            value: blink
-                        )
+
+                    // 🔥 RADAR PULSE 1
+                    if model.urgency != .none && zoomLevel < 0.08 {
+                        Circle()
+                            .stroke(({
+                                switch model.urgency {
+                                case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
+                                case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
+                                case .none: return Color.clear
+                                }
+                            }()), lineWidth: 3)
+                            .frame(width: 12, height: 12)
+                            .scaleEffect(blink ? 3.5 : 1.0)
+                            .opacity(blink ? 0.0 : 1.0)
+                            .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false), value: blink)
+                    }
+
+                    // 🔥 RADAR PULSE 2
+                    if model.urgency != .none && zoomLevel < 0.08 {
+                        Circle()
+                            .stroke(({
+                                switch model.urgency {
+                                case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1).opacity(0.9)
+                                case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9).opacity(0.9)
+                                case .none: return Color.clear
+                                }
+                            }()), lineWidth: 2)
+                            .frame(width: 12, height: 12)
+                            .scaleEffect(blink ? 3.5 : 1.0)
+                            .opacity(blink ? 0.0 : 0.9)
+                            .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false).delay(0.4), value: blink)
+                    }
                 }
-                
-                // 🔥 RADAR PULSE 2 (offset for continuous effect)
-                if model.urgency != .none && zoomLevel < 0.08 {
-                    Circle()
-                        .stroke(({
-                            switch model.urgency {
-                            case .overdue: return Color.red.opacity(0.9)
-                            case .soon: return Color.orange.opacity(0.9)
-                            case .none: return Color.clear
-                            }
-                        }()), lineWidth: 2)
-                        .frame(width: 12, height: 12)
-                        .scaleEffect(blink ? 3.5 : 1.0)
-                        .opacity(blink ? 0.0 : 0.9)
-                        .animation(
-                            .easeOut(duration: 1.2)
-                            .repeatForever(autoreverses: false)
-                            .delay(0.4),
-                            value: blink
-                        )
+
+                // 🏷 TAG ICON (se presente)
+                if let icon = model.tagIcon {
+                    Image(systemName: icon)
+                        .font(.system(size: 8, weight: .semibold))
+                        .foregroundStyle(.primary)
+                        .padding(2)
+                        .background(.ultraThinMaterial)
+                        .clipShape(Circle())
                 }
             }
-            
+
             // 🔍 DETTAGLIO SOLO SE ZOOM
             if zoomLevel < 0.05 {
                 detailView
@@ -385,9 +401,9 @@ extension TaskAnnotationView {
                             Circle()
                                 .fill({
                                     switch it.urgency {
-                                    case .overdue: return Color.red
-                                    case .soon: return Color.orange
-                                    case .none: return Color.blue
+                                    case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
+                                    case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
+                                    case .none: return Color.indigo
                                     }
                                 }())
                                 .frame(width: 6, height: 6)

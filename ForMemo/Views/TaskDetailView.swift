@@ -369,8 +369,13 @@ struct TaskDetailView: View {
                 Text("The set date will be permanently removed.")
             }
             .onAppear {
+
+                DebugTools.migrateAttachmentsToiCloud(context: modelContext)
+
+            }
+            .onAppear {
                 preloadAttachments()
-                removeGhostAttachments()
+//                removeGhostAttachments()
                 
                 if let rule = task.recurrenceRule,
                    let mapped = RecurrenceUI(rawValue: rule) {
@@ -496,44 +501,25 @@ struct TaskDetailView: View {
     @MainActor
     private func removeGhostAttachments() {
         
-        
         let ghostAttachments = taskAttachments.filter { attachment in
             
-            guard let url = attachment.fileURL else { return true }
+            guard let url = attachment.fileURL else { return false }
+            
+            // 🔥 NON considerare ghost se è file iCloud non ancora scaricato
+            if (try? url.resourceValues(forKeys: [.isUbiquitousItemKey]))?.isUbiquitousItem == true {
+                return false
+            }
             
             return !FileManager.default.fileExists(atPath: url.path)
         }
         
         guard !ghostAttachments.isEmpty else { return }
         
-        AppLogger.notifications.info("👻 Removing ghost attachments: \(ghostAttachments.map { $0.originalName })")
+        AppLogger.notifications.warning("⚠️ Ghost check skipped deletion for safety: \(ghostAttachments.map { $0.originalName })")
         
-        for attachment in ghostAttachments {
-            let trashName = attachment.deleteFileIfNeeded()
-
-            let item = DeletedItem(type: "attachment")
-            item.taskID = attachment.task?.id
-            item.fileName = attachment.originalName
-            item.relativePath = attachment.relativePath
-            item.trashFileName = trashName
-
-            modelContext.insert(item)
-
-            modelContext.delete(attachment)
-            modelContext.processPendingChanges() // 🔥 sync UI immediata
-        }
-        NotificationCenter.default.post(
-            name: .attachmentsShouldRefresh,
-            object: nil
-        )
-        modelContext.safeSave(operation: "RemoveGhostAttachments")
-
-        NotificationCenter.default.post(
-            name: .attachmentsShouldRefresh,
-            object: nil
-        )
+        // ❌ NON eliminare automaticamente
+        // eventualmente qui puoi solo loggare o marcare
     }
-    
     
     // MARK: - importCameraImage
     @MainActor
@@ -1635,60 +1621,54 @@ struct AttachmentList: View {
     }
 }
 struct AttachmentRowView: View {
-    @State private var hasLoaded = false
     let attachment: TaskAttachment
     let image: UIImage?
-    
+    @State private var hasLoaded = false
+
     let onDelete: (TaskAttachment) -> Void
     let onPreview: (URL) -> Void
     let onImageLoaded: (UIImage) -> Void
-    
+
+
     var body: some View {
-        
         HStack(spacing: 12) {
-            
             if isImage {
-                
-                if let image {
+                if let image, image.size.width > 0 {
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
                         .frame(width: 52, height: 52)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
-                    
                 } else {
                     ProgressView()
                         .frame(width: 52, height: 52)
-                        .task {
-                            await load()
+                        .onAppear {
+                            Task {
+                                await load()
+                            }
                         }
                 }
-                
             } else {
-                
                 Image(systemName: iconName)
                     .frame(width: 52, height: 52)
                     .foregroundStyle(.secondary)
             }
-            
+
             VStack(alignment: .leading) {
                 Text(attachment.shortDisplayName)
                 Text(attachment.contentType)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
+
             Button {
                 guard let url = attachment.fileURL,
                       FileManager.default.fileExists(atPath: url.path) else {
                     return
                 }
-
                 onPreview(url)
-
-                
             } label: {
                 Image(systemName: "eye")
             }
@@ -1701,54 +1681,56 @@ struct AttachmentRowView: View {
             }
         }
     }
-    
+
     private var isImage: Bool {
         attachment.contentType.contains("image")
     }
-    
+
     private var iconName: String {
         if attachment.contentType.contains("pdf") { return "doc.richtext" }
         if attachment.contentType.contains("audio") { return "waveform" }
         if attachment.contentType.contains("video") { return "film" }
         return "doc"
     }
-    
+
     private func load() async {
-        
         if hasLoaded { return }
         hasLoaded = true
-        
-        if image != nil { return }
-        
-        try? await Task.sleep(nanoseconds: 80_000_000)
-        
-        guard let data = await attachment.loadDataAsync() else { return }
-        
+
+        // 🔥 usa loader centralizzato (gestisce iCloud + sicurezza)
+        guard let data = await attachment.loadDataAsync() else {
+            // fallback per fermare spinner
+            await MainActor.run {
+                onImageLoaded(UIImage())
+            }
+            return
+        }
+
+        // 🔥 genera thumbnail
         let thumbnail = await Task.detached(priority: .utility) {
             downsample(data: data, to: CGSize(width: 52, height: 52))
         }.value
-        
-        guard let thumbnail else { return }
-        
+
+        guard let thumbnail else {
+            await MainActor.run {
+                onImageLoaded(UIImage())
+            }
+            return
+        }
+
         await MainActor.run {
             onImageLoaded(thumbnail)
         }
     }
     nonisolated private func downsample(data: Data, to size: CGSize) -> UIImage? {
-        
         let cfData = data as CFData
-        
         guard let source = CGImageSourceCreateWithData(cfData, nil) else { return nil }
-        
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceThumbnailMaxPixelSize: max(size.width, size.height) * 2,
             kCGImageSourceCreateThumbnailWithTransform: true
         ]
-        
         guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
-        
         return UIImage(cgImage: cgImage)
     }
-    
 }
