@@ -6,6 +6,10 @@ import AppIntents
 import os
 import CoreLocation
 
+#if canImport(AppKit)
+import AppKit
+#endif
+
 
 
 @main
@@ -118,6 +122,11 @@ struct ForMemoApp: App {
                         object: nil
                     )
                 }
+#if canImport(AppKit)
+                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+                    NotificationManager.shared.refresh(force: true)
+                }
+#endif
                 .preferredColorScheme(selectedTheme.colorScheme)
         }
         
@@ -173,6 +182,10 @@ struct ForMemoApp: App {
                     
                     // 4️⃣ refresh notifiche (con piccolo delay SAFE)
                     try? await Task.sleep(for: .milliseconds(300))
+                    NotificationManager.shared.refresh(force: true)
+                    
+                    // 🔥 SECOND PASS (fix CloudKit delayed pull on macOS)
+                    try? await Task.sleep(for: .seconds(1.5))
                     NotificationManager.shared.refresh(force: true)
                 }
             case .inactive:

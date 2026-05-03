@@ -13,12 +13,12 @@ enum Persistence {
             DeletedItem.self   // ✅ AGGIUNTO
         ])
         
-        let storeURL = URL.documentsDirectory.appendingPathComponent("local.store")
+//        let storeURL = URL.documentsDirectory.appendingPathComponent("local.store")
         
         do {
             let configuration = ModelConfiguration(
                 schema: schema,
-                url: storeURL
+                cloudKitDatabase: .private("iCloud.corradini.armando.NewTask")
             )
             
             return try ModelContainer(
@@ -28,7 +28,7 @@ enum Persistence {
             
         } catch {
             AppLogger.persistence.fault("ModelContainer error: \(error.localizedDescription)")
-            AppLogger.persistence.error("Store URL: \(storeURL.path)")
+            AppLogger.persistence.error("CloudKit container: iCloud.corradini.armando.NewTask")
             
             // 🚨 QUI è giusto crashare (caso rarissimo)
             fatalError("ModelContainer initialization failed")

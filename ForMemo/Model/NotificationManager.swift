@@ -183,7 +183,7 @@ final class NotificationManager: NSObject {
         let now = Date()
 
         // 🔥 HARD throttle globale (anti storm)
-        if now.timeIntervalSince(self.lastPushHandledSafe) < 20.0 {
+        if now.timeIntervalSince(self.lastPushHandledSafe) < 2.0 {
             return
         }
 
