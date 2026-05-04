@@ -21,6 +21,7 @@ struct TaskMapAnnotationModel: Identifiable, Equatable {
         let deadline: Date?
         let urgency: UrgencyLevel
         let tagIcon: String?
+        let tagColor: Color?
     }
 
     static func == (lhs: TaskMapAnnotationModel, rhs: TaskMapAnnotationModel) -> Bool {
@@ -150,7 +151,8 @@ extension TaskMapView {
                 title: task.title,
                 deadline: task.deadLine,
                 urgency: urgency,
-                tagIcon: task.mainTag?.mainIcon
+                tagIcon: task.mainTag?.mainIcon,
+                tagColor: task.mainTag?.color
             )
 
             return (CLLocationCoordinate2D(latitude: lat, longitude: lon), item)
@@ -382,8 +384,8 @@ extension TaskAnnotationView {
                         HStack(spacing: 6) {
                             if let icon = it.tagIcon {
                                 Image(systemName: icon)
-                                    .font(.caption2)
-                                    .foregroundStyle(.primary)
+                                    .font(.caption)
+                                    .foregroundStyle(it.tagColor ?? .primary.opacity(0.9))
                             }
 
                             Circle()
@@ -394,10 +396,10 @@ extension TaskAnnotationView {
                                     case .none: return Color.indigo
                                     }
                                 }())
-                                .frame(width: 6, height: 6)
+                                .frame(width: 7, height: 7)
 
                             Text(it.title)
-                                .font(.caption)
+                                .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .lineLimit(1)
                         }

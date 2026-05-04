@@ -8,8 +8,8 @@ struct TaskRowPreview: View {
     @AppStorage("selectedTaskRowStyle")
     private var selectedRowStyle: Int = 0
 
-    @AppStorage("tasklist.highlightOpacity")
-    private var highlightOpacity: Double = 0.3
+    @AppStorage("tasklist.highlightEnabled")
+    private var highlightEnabled: Bool = true
 
     @AppStorage("tasklist.highlightColor")
     private var highlightColorHex: String = Color.red.toHex() ?? ""
@@ -77,7 +77,7 @@ struct TaskRowPreview: View {
                     showPriority: showPriority,
                     showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
                     rowStyle: rowStyle,
-                    highlightCriticalOverdue: highlightOpacity > 0,
+                    highlightCriticalOverdue: highlightEnabled,
                     showTodayExpiredLabel: showTodayExpiredLabel
                 )
                 .listRowSeparator(.hidden)
@@ -112,7 +112,7 @@ private extension TaskRowPreview {
             let isOverdue = deadline < Date()
             let isCritical = model.prioritySystemImage == "flame"
 
-            let shouldHighlight = highlightOpacity > 0 && isCritical && (isToday || isOverdue)
+            let shouldHighlight = highlightEnabled && isCritical && (isToday || isOverdue)
 
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(
@@ -122,9 +122,7 @@ private extension TaskRowPreview {
                 )
                 .overlay {
                     if shouldHighlight {
-                        highlightColor.opacity(
-                            highlightOpacity
-                        )
+                        highlightColor
                     }
                 }
         case .plain:

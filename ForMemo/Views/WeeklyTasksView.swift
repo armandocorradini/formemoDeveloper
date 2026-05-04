@@ -187,8 +187,8 @@ struct WeeklyTasksView: View {
 
 private struct WeeklyTaskRow: View {
     
-    @AppStorage("tasklist.highlightOpacity")
-    private var highlightOpacity: Double = 0.3
+    @AppStorage("tasklist.highlightEnabled")
+    private var highlightEnabled: Bool = true
 
     @AppStorage("tasklist.highlightColor")
     private var highlightColorHex: String = Color.red.toHex() ?? ""
@@ -356,11 +356,11 @@ private struct WeeklyTaskRow: View {
                     .font(.title3)
             }
         }
-        .frame(width: 44, height: 54)                  .foregroundStyle(task.mainTag?.color ?? task.status.color)
+        .frame(width: 44, height: 44)                  .foregroundStyle(task.mainTag?.color ?? task.status.color)
         .shadow(color: Color.black.opacity(0.5), radius: 0.5, x: 0.5, y: 0.5)
         .shadow(color: Color.black.opacity(0.5), radius: 0.5, x: -0.5, y: -0.5)
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(task.status.color.opacity(0.07))
                 .shadow(color: Color.black.opacity(0.1), radius: 0.5, x: 0.5, y: 0.5)
         )
@@ -404,7 +404,7 @@ private struct WeeklyTaskRow: View {
                                 let isOverdue = deadline < now
                                 let isCritical = task.priority.systemImage == "flame"
                                 
-                                if highlightOpacity > 0 && isCritical && (isToday || isOverdue) {
+                                if highlightEnabled && isCritical && (isToday || isOverdue) {
                                     return highlightColor
                                 } else if isToday {
                                     return Color.orange
@@ -433,28 +433,22 @@ private struct WeeklyTaskRow: View {
     // MARK: - Background
     
     private var cardBackground: some View {
-        
         let deadline = task.deadLine ?? .distantFuture
-        
-      
+
         let isCritical = task.priority.systemImage == "flame"
         let isToday = Calendar.current.isDateInToday(deadline) && deadline >= Date()
         let isOverdue = deadline < Date()
-        let shouldHighlight = highlightOpacity > 0 && isCritical && (isToday || isOverdue)
-        
+        let shouldHighlight = highlightEnabled && isCritical && (isToday || isOverdue)
+
         return RoundedRectangle(cornerRadius: 18, style: .continuous)
             .fill(.clear)
-//            .fill(
-//                Color(uiColor: .secondarySystemBackground).opacity(0.5)
-//            )
-            .overlay {
+            .overlay(alignment: .leading) {
                 if shouldHighlight {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(
-                            highlightColor.opacity(
-                                highlightOpacity
-                            )
-                        )
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(highlightColor)
+                        .frame(width: 5, height: 40)
+                        .frame(maxHeight: .infinity, alignment: .center)
+                        .padding(.leading, 10)
                 }
             }
             .overlay(
@@ -465,7 +459,7 @@ private struct WeeklyTaskRow: View {
                             : isToday
                                 ? Color.orange
                                 : Color.secondary,
-                        lineWidth: (isToday || isOverdue) ? 1.0 : 0.7
+                        lineWidth: (isToday || isOverdue) ? 0.4 : 0.3
                     )
             )
     }

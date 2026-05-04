@@ -94,8 +94,9 @@ struct TaskListAppearanceView: View {
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
     
-    @AppStorage("tasklist.highlightOpacity")
-    private var highlightOpacity: Double = 0.3
+    @AppStorage("tasklist.highlightEnabled")
+    private var highlightEnabled: Bool = true
+
 
     @AppStorage("tasklist.highlightColor")
     private var highlightColorHex: String = Color.red.toHex() ?? ""
@@ -103,9 +104,6 @@ struct TaskListAppearanceView: View {
     @AppStorage(TaskListAppearanceKeys.showTodayExpiredLabel)
     private var showTodayExpiredLabel = true
 
-    private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .blue
-    }
     
     @Environment(\.dismiss) private var dismiss
     
@@ -272,16 +270,17 @@ struct TaskListAppearanceView: View {
                 ForEach(0..<rowOptions.count, id: \.self) { index in
                     Text(rowOptions[index]).tag(index)
                 }
-                
-                .pickerStyle(.inline)
             }
+            .pickerStyle(.menu)
+            .tint(.secondary)
             Picker("Animation", selection: $dueIconEffectRaw) {
-                
                 ForEach(DueIconEffect.allCases) { effect in
                     Text(effect.title)
                         .tag(effect.rawValue)
                 }
             }
+            .pickerStyle(.menu)
+            .tint(.secondary)
             
             Picker("Days badge color", selection: $badgeColorRaw) {
                 ForEach(BadgeColorStyle.allCases, id: \.rawValue) {
@@ -298,16 +297,8 @@ struct TaskListAppearanceView: View {
             
             VStack(alignment: .leading) {
                 Text("Highlight overdue & today (critical priority)")
-                
-                HStack {
-                    Slider(value: $highlightOpacity, in: 0...1)
-                        .animation(.linear(duration: 0.1), value: highlightOpacity)
-                    Text(String(format: "%.2f", highlightOpacity))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .frame(width: 40, alignment: .trailing)
-                }
-                
+                Toggle("", isOn: $highlightEnabled)
+
                 let palette: [Color] = [
                     .red, .orange, .yellow, .green,
                     .mint, .teal, .cyan, .blue, .indigo,
@@ -337,10 +328,11 @@ struct TaskListAppearanceView: View {
                     }
                     .padding(.vertical, 6)
                     .padding(.horizontal, 2)
-                    
                 }
                 .frame(minHeight: 36)
                 .padding(.vertical, 4)
+                .disabled(!highlightEnabled)
+                .opacity(!highlightEnabled ? 0.4 : 1)
             }
             Toggle(
                 "Show “Today/Expired”",
@@ -366,8 +358,8 @@ struct TaskListAppearanceView: View {
         showLocation = true
         showPriority = true
         showBadgeOnlyWithPriority = true
-        highlightOpacity = 0.3
-        highlightColorHex = Color.blue.toHex() ?? ""
+        highlightEnabled = true
+        highlightColorHex = Color.red.toHex() ?? ""
         showTodayExpiredLabel = true
         selectedRowStyle = 0
     }

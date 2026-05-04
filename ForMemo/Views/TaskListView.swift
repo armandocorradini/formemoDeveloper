@@ -550,8 +550,8 @@ struct TaskRow: View {
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
 
-    @AppStorage("tasklist.highlightOpacity")
-    private var highlightOpacity: Double = 0.3
+    @AppStorage("tasklist.highlightEnabled")
+    private var highlightEnabled: Bool = true
 
     @AppStorage("tasklist.highlightColor")
     private var highlightColorHex: String = Color.red.toHex() ?? ""
@@ -585,9 +585,9 @@ struct TaskRow: View {
 
     private var dynamicRowHeight: CGFloat {
         if showTodayExpiredLabel && !task.isCompleted && (isToday || isOverdue) {
-            return 52
+            return 42
         } else {
-            return 40
+            return 38
         }
     }
     // --- END PATCH ---
@@ -638,7 +638,7 @@ struct TaskRow: View {
                 showPriority: showPriority,
                 showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
                 rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
-                highlightCriticalOverdue: highlightOpacity > 0,
+                highlightCriticalOverdue: highlightEnabled,
                 showTodayExpiredLabel: showTodayExpiredLabel && !task.isCompleted
             )
         }
@@ -694,7 +694,7 @@ struct TodoSectionView: View {
         let style: TaskListStyle
 
         @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
-        @AppStorage("tasklist.highlightOpacity") var highlightOpacity: Double = 0.3
+        @AppStorage("tasklist.highlightEnabled") var highlightEnabled: Bool = true
         @AppStorage("tasklist.highlightColor") var highlightColorHex: String = Color.red.toHex() ?? ""
 
         private var highlightColor: Color {
@@ -703,11 +703,12 @@ struct TodoSectionView: View {
 
         func body(content: Content) -> some View {
             content
-                .padding(.horizontal, style == .plain ? 12 : 0)
+                .padding(.leading, style == .plain ? 24 : 14) // extra space for highlight bar
+                .padding(.trailing, style == .plain ? 12 : 0)
                 .listRowInsets(
                     style == .cards
                     ? EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
-                    : EdgeInsets(top: 20, leading: 0, bottom: 20, trailing: 0)
+                    : EdgeInsets(top: 20, leading: 6, bottom: 20, trailing: 0)
                 )
                 .listRowBackground(cardBackground(for: task))
         }
@@ -725,33 +726,41 @@ struct TodoSectionView: View {
             }()
 
             let lineWidth: CGFloat =
-            (isToday || isOverdue) ? 1.0 : 0.7
+            (isToday || isOverdue) ? 0.4: 0.3
 
-            let baseBackground = Color(.clear)//uiColor: .secondarySystemBackground).opacity(0.005)
-
-            let fillColor: Color = baseBackground
             let highlightOverlay: Color? = {
-                guard highlightOpacity > 0, isCritical, (isOverdue || isToday) else {
+                guard highlightEnabled, isCritical, (isOverdue || isToday) else {
                     return nil
                 }
-
-                return highlightColor.opacity(highlightOpacity)
+                return highlightColor
             }()
 
             if style == .plain {
                 RoundedRectangle(cornerRadius: 0, style: .continuous)
-                    .fill(fillColor)
-                    .overlay {
+                    .fill(Color.clear)
+                    .overlay(alignment: .leading) {
                         if let highlightOverlay {
-                            highlightOverlay
+                            RoundedRectangle(cornerRadius: style == .plain ? 2 : 4)
+                                .fill(highlightOverlay)
+                                .frame(width: style == .plain ? 4 : 6,
+                                       height: style == .plain ? 34 : 44)
+                                .frame(maxHeight: .infinity, alignment: .center)
+                                .padding(.leading, style == .plain ? 12 : 8)
+                                .padding(.trailing,8)
                         }
                     }
             } else {
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(fillColor)
-                    .overlay {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.clear)
+                    .overlay(alignment: .leading) {
                         if let highlightOverlay {
-                            highlightOverlay
+                            RoundedRectangle(cornerRadius: style == .plain ? 2 : 4)
+                                .fill(highlightOverlay)
+                                .frame(width: style == .plain ? 4 : 6,
+                                       height: style == .plain ? 34 : 44)
+                                .frame(maxHeight: .infinity, alignment: .center)
+                                .padding(.leading, style == .plain ? 12 : 8)
+                                .padding(.trailing, 8)
                         }
                     }
                     .overlay(
