@@ -1996,6 +1996,7 @@
       }
     },
     "Blue" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2763,6 +2764,7 @@
       }
     },
     "Cyan" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2955,6 +2957,7 @@
       "shouldTranslate" : false
     },
     "Days badge color" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4740,6 +4743,7 @@
       }
     },
     "Gray" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4768,6 +4772,7 @@
       }
     },
     "Green" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5563,6 +5568,7 @@
       }
     },
     "Indigo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6384,6 +6390,7 @@
       }
     },
     "Match Icon" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6440,6 +6447,7 @@
       }
     },
     "Mint" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7447,6 +7455,7 @@
       }
     },
     "Orange" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7475,6 +7484,7 @@
       }
     },
     "Pink" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7813,6 +7823,7 @@
       }
     },
     "Purple" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8631,6 +8642,7 @@
       }
     },
     "Red" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11348,6 +11360,7 @@
       }
     },
     "Teal" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13598,6 +13611,7 @@
       }
     },
     "Yellow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

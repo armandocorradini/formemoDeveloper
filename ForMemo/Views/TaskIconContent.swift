@@ -3,14 +3,10 @@ import SwiftUI
 struct TaskIconContent: View {
     
     let model: TaskRowDisplayModel
-    
     let iconStyle: TaskIconStyle
-    let badgeStyle: BadgeColorStyle
-    
-    let showBadge: Bool
     let showAttachments: Bool
     let showLocation: Bool
-    let showBadgeOnlyWithPriority: Bool
+
     
     @AppStorage("dueIconEffect")
     private var dueIconEffectRaw: String = DueIconEffect.blink.rawValue
@@ -20,27 +16,20 @@ struct TaskIconContent: View {
     }
     
     private var shouldShowBadge: Bool {
-        
-        guard showBadge else { return false }
-        
-        if showBadgeOnlyWithPriority {
-            return model.prioritySystemImage != nil
-        }
-        
-        return true
+        model.shouldShowBadge
     }
     
     let size : CGFloat = 48
     
     var body: some View {
         
-        ZStack(alignment: .topTrailing) {
-            
+        ZStack {
+            // Icon layer (with palette)
             ZStack(alignment: .bottomLeading) {
                 ZStack {
                     //                    Circle()
                     RoundedRectangle(cornerRadius: model.statusColor == .red ? 30 : 12, style: .continuous)
-                        .stroke(model.statusColor.opacity(1).gradient,     lineWidth: model.statusColor == .red ? 4 : (model.statusColor == .orange ? 4 : 0.5))
+                        .stroke(model.statusColor.opacity(1).gradient,     lineWidth: model.statusColor == .red ? 2 : (model.statusColor == .orange ? 2 : 0.5))
                         .shadow(color: .black.opacity(0.5), radius: 0.5, x: 0.5, y: 0.5)
                     //                        .fill(model.statusColor.opacity(1).gradient)//0.15))
                     
@@ -50,7 +39,7 @@ struct TaskIconContent: View {
                             .resizable()
                             .scaledToFit()
                             .padding(10)
-                            .foregroundStyle(model.statusColor)//.black, .white)
+                            .foregroundStyle(model.mainTag?.color ?? model.statusColor)
                             .font(.title)
                             .shadow(color: .black.opacity(0.5), radius: 0.5, x: 0.5, y: 0.5)
                             .shadow(color: .black.opacity(0.5), radius: 0.5, x: -0.5, y: -0.5)
@@ -66,7 +55,7 @@ struct TaskIconContent: View {
                             .padding(10)
                         //                            .foregroundStyle(.primary)
                             .symbolRenderingMode(.palette)
-                            .foregroundStyle(.primary ,model.statusColor)
+                            .foregroundStyle(model.mainTag?.color ?? model.statusColor, .primary)
                             .font(.title)
                             .dueIconEffect(
                                 deadline: model.deadLine,
@@ -79,43 +68,21 @@ struct TaskIconContent: View {
                 
                 
             }
-            
+        }
+        .overlay(alignment: .topTrailing) {
             if shouldShowBadge,
-               let text = model.badgeText {
-                
-                let resolvedBadgeColor: Color =
-                badgeStyle == .default
-                ? model.statusColor
-                : badgeStyle.color
-                
-                let badgeSize: CGFloat = 21
-                
-                let needsBorder =
-                resolvedBadgeColor.isVisuallyEqual(to: model.statusColor)
-                
-                ZStack {
-                    
-                    Circle()
-                        .fill(resolvedBadgeColor)
-                    
-                    if needsBorder {
-                        Circle()
-                            .stroke(.black, lineWidth: 1)
-                    }
-                    
-                    Text(text)
-                        .font(.caption2.weight(.bold))
-                        .monospacedDigit()
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.6)
-                        .foregroundStyle(.black)
-                        .padding(3)
-                }
-                .frame(width: badgeSize, height: badgeSize)
-                .offset(x: size / 6, y: -size / 6)
+               let deadline = model.deadLine,
+               let badge = model.badgeText {
+
+                let count = badge.count
+
+                TaskBadgeView(
+                    deadline: deadline,
+                    badgeText: badge,
+                    statusColor: model.statusColor
+                )
+                .offset(x: count == 1 ? 6 : (count == 2 ? 14 : (count == 3 ? 17 : 18)), y: -9)
             }
-            
-            
         }
     }
 }

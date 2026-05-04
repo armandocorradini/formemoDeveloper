@@ -97,8 +97,6 @@ struct TaskDetailView: View {
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
     
-    @AppStorage(TaskListAppearanceKeys.badgeColor)
-    private var badgeColorRaw: String = BadgeColorStyle.default.rawValue
     
     @AppStorage(TaskListAppearanceKeys.showBadge)
     private var showBadge = true
@@ -106,9 +104,6 @@ struct TaskDetailView: View {
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
     
-    private var badgeStyle: BadgeColorStyle {
-        BadgeColorStyle(rawValue: badgeColorRaw) ?? .default
-    }
     
     @State private var cloudKitDebounceTask: Task<Void, Never>?
     
@@ -124,7 +119,7 @@ struct TaskDetailView: View {
             subtitle: task.taskDescription,
             
             mainIcon: task.mainTag?.mainIcon ?? task.status.icon,
-            statusColor: (task.mainTag?.color ?? task.status.color),
+            statusColor: iconStyle == .monochrome ? (task.mainTag?.color ?? task.status.color) : task.status.color,
             
             // Verifichiamo l'esistenza fisica reale di ogni file prima di confermare la presenza di allegati
             hasValidAttachments: !attachments.isEmpty,
@@ -170,7 +165,7 @@ struct TaskDetailView: View {
                 resourcesSection
                 metadataSection
             }
-            
+
             .scrollContentBackground(.hidden)
             .scrollDismissesKeyboard(.immediately)
             .scrollDismissesKeyboard(.interactively)
@@ -805,14 +800,8 @@ struct TaskDetailView: View {
                 TaskIconContent(
                     model: rowModel,
                     iconStyle: iconStyle,
-                    badgeStyle: badgeStyle,
-                    showBadge: task.shouldShowDaysBadge(
-                        showBadge: showBadge,
-                        showBadgeOnlyWithPriority: showBadgeOnlyWithPriority
-                    ),
                     showAttachments: false,
-                    showLocation: false,
-                    showBadgeOnlyWithPriority: showBadgeOnlyWithPriority
+                    showLocation: false
                 )
                 
                 TextField("Title",

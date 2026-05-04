@@ -5,74 +5,7 @@ enum TaskIconStyle: String, CaseIterable, Codable {
     case monochrome
 }
 
-enum BadgeColorStyle: String, CaseIterable, Codable {
-    
-    case `default`
-    case blue
-    case red
-    case green
-    case gray
-    case yellow
-    case orange
-    case pink
-    case purple
-    case teal
-    case indigo
-    case mint
-    case cyan
-    
-    var color: Color {
-        switch self {
-        case .default: .clear   // gestito come status color
-        case .blue: .blue
-        case .red: .red
-        case .green: .green
-        case .gray: .gray
-        case .yellow: .yellow
-        case .orange: .orange
-        case .pink: .pink
-        case .purple: .purple
-        case .teal: .teal
-        case .indigo: .indigo
-        case .mint: .mint
-        case .cyan: .cyan
-        }
-    }
-    
-    
-    var localizedTitle: String {
-        
-        switch self {
-        case .default:
-            return String(localized: "Match Icon")
-        case .blue:
-            return String(localized: "Blue")
-        case .red:
-            return String(localized: "Red")
-        case .green:
-            return String(localized: "Green")
-        case .gray:
-            return String(localized: "Gray")
-        case .yellow:
-            return String(localized: "Yellow")
-        case .orange:
-            return String(localized: "Orange")
-        case .pink:
-            return String(localized: "Pink")
-        case .purple:
-            return String(localized: "Purple")
-        case .teal:
-            return String(localized: "Teal")
-        case .indigo:
-            return String(localized: "Indigo")
-        case .mint:
-            return String(localized: "Mint")
-        case .cyan:
-            return String(localized: "Cyan")
-        }
-    }
-    
-}
+
 
 enum TaskListAppearanceKeys {
     static let iconStyle = "tasklist.iconStyle"
@@ -110,8 +43,6 @@ struct TaskListAppearanceView: View {
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
     
-    @AppStorage(TaskListAppearanceKeys.badgeColor)
-    private var badgeColorRaw: String = BadgeColorStyle.yellow.rawValue
     
     @AppStorage(TaskListAppearanceKeys.showBadge)
     private var showBadge = true
@@ -133,9 +64,6 @@ struct TaskListAppearanceView: View {
     
     @AppStorage("selectedTaskRowStyle") private var selectedRowStyle: Int = 0
     
-    private var badgeStyle: BadgeColorStyle {
-        BadgeColorStyle(rawValue: badgeColorRaw) ?? .default
-    }
     // Etichette dei vari stili disponibili
     private let rowOptions = [
         String(localized: "Default"),
@@ -282,12 +210,6 @@ struct TaskListAppearanceView: View {
             .pickerStyle(.menu)
             .tint(.secondary)
             
-            Picker("Days badge color", selection: $badgeColorRaw) {
-                ForEach(BadgeColorStyle.allCases, id: \.rawValue) {
-                    Text($0.localizedTitle)
-                        .tag($0.rawValue)
-                }
-            }
         }
     }
     
@@ -352,7 +274,6 @@ struct TaskListAppearanceView: View {
         
         iconStyle = .polychrome
         dueIconEffectRaw = DueIconEffect.blink.rawValue
-        badgeColorRaw = BadgeColorStyle.yellow.rawValue
         showBadge = true
         showAttachments = true
         showLocation = true

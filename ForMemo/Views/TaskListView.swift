@@ -532,8 +532,6 @@ struct TaskRow: View {
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
 
-    @AppStorage(TaskListAppearanceKeys.badgeColor)
-    private var badgeColorRaw: String = BadgeColorStyle.default.rawValue
 
     @AppStorage(TaskListAppearanceKeys.showBadge)
     private var showBadge = true
@@ -563,9 +561,6 @@ struct TaskRow: View {
     @AppStorage("tasklist.showTodayExpiredLabel")
     private var showTodayExpiredLabel: Bool = true
 
-    private var badgeStyle: BadgeColorStyle {
-        BadgeColorStyle(rawValue: badgeColorRaw) ?? .default
-    }
 
     @AppStorage("selectedTaskRowStyle") private var selectedRowStyle: Int = 0
 
@@ -631,7 +626,6 @@ struct TaskRow: View {
             TaskRowContent(
                 model: model,
                 iconStyle: iconStyle,
-                badgeStyle: badgeStyle,
                 showBadge: model.shouldShowBadge,
                 showAttachments: showAttachments,
                 showLocation: showLocation,

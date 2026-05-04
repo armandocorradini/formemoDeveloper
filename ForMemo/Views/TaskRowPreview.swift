@@ -24,7 +24,6 @@ struct TaskRowPreview: View {
     
     
     let iconStyle: TaskIconStyle
-    let badgeStyle: BadgeColorStyle
     let showBadge: Bool
     let showAttachments: Bool
     let showLocation: Bool
@@ -70,7 +69,6 @@ struct TaskRowPreview: View {
                 TaskRowContent(
                     model: model,
                     iconStyle: iconStyle,
-                    badgeStyle: badgeStyle,
                     showBadge: model.shouldShowBadge,
                     showAttachments: showAttachments,
                     showLocation: showLocation,

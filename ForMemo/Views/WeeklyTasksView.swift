@@ -243,6 +243,7 @@ private struct WeeklyTaskRow: View {
                 }
                 .font(.system(size: 10, weight: .semibold))
                 .padding(6)
+
             }
             .padding(.vertical, 14)
             .padding(.horizontal, 14)
@@ -346,24 +347,20 @@ private struct WeeklyTaskRow: View {
                 Text(date, format: .dateTime.weekday(.abbreviated))
                     .font(.caption2.weight(.semibold))
                     .textCase(.uppercase)
+                    .foregroundStyle(.secondary)
                 
                 Text(date, format: .dateTime.day())
                     .font(.title3.weight(.bold))
+                    .foregroundStyle(task.status.color)
                 
             } else {
                 
                 Image(systemName: "calendar")
                     .font(.title3)
+                    .foregroundStyle(.secondary)
             }
         }
-        .frame(width: 44, height: 44)                  .foregroundStyle(task.mainTag?.color ?? task.status.color)
-        .shadow(color: Color.black.opacity(0.5), radius: 0.5, x: 0.5, y: 0.5)
-        .shadow(color: Color.black.opacity(0.5), radius: 0.5, x: -0.5, y: -0.5)
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(task.status.color.opacity(0.07))
-                .shadow(color: Color.black.opacity(0.1), radius: 0.5, x: 0.5, y: 0.5)
-        )
+        .frame(width: 44, height: 44)
     }
     
     // MARK: - Main column

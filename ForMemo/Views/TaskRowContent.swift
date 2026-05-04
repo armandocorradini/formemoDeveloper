@@ -24,7 +24,6 @@ struct TaskRowContent: View, TaskRowBaseLogic {
     
     let model: TaskRowDisplayModel
     let iconStyle: TaskIconStyle
-    let badgeStyle: BadgeColorStyle
     
     let showBadge: Bool
     let showAttachments: Bool
@@ -80,6 +79,67 @@ struct TaskRowContent: View, TaskRowBaseLogic {
 // MARK: - SWITCH
 
 extension TaskRowContent {
+
+    enum BadgeVisualStyle {
+        case filled
+        case soft
+        case outlined
+    }
+
+    @ViewBuilder
+    private func badgeView(text: String, color: Color, style: BadgeVisualStyle) -> some View {
+        let isCircle = text.count <= 1
+
+        switch style {
+        case .filled:
+            Text(text)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: isCircle ? 18 : nil, height: 18)
+                .padding(.horizontal, isCircle ? 0 : 6)
+                .background(
+                    Group {
+                        if isCircle {
+                            Circle().fill(color)
+                        } else {
+                            Capsule().fill(color)
+                        }
+                    }
+                )
+
+        case .soft:
+            Text(text)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: isCircle ? 18 : nil, height: 18)
+                .padding(.horizontal, isCircle ? 0 : 6)
+                .background(
+                    Group {
+                        if isCircle {
+                            Circle().fill(color.opacity(0.2))
+                        } else {
+                            Capsule().fill(color.opacity(0.2))
+                        }
+                    }
+                )
+
+        case .outlined:
+            Text(text)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(color)
+                .frame(width: isCircle ? 18 : nil, height: 18)
+                .padding(.horizontal, isCircle ? 0 : 6)
+                .background(
+                    Group {
+                        if isCircle {
+                            Circle().stroke(color, lineWidth: 1)
+                        } else {
+                            Capsule().stroke(color, lineWidth: 1)
+                        }
+                    }
+                )
+        }
+    }
     
     @ViewBuilder
     var content: some View {
@@ -178,11 +238,8 @@ extension TaskRowContent {
         TaskIconContent(
             model: model,
             iconStyle: iconStyle,
-            badgeStyle: badgeStyle,
-            showBadge: showBadge,
             showAttachments: false,
-            showLocation: false,
-            showBadgeOnlyWithPriority: showBadgeOnlyWithPriority
+            showLocation: false
         )
     }
     
@@ -602,9 +659,8 @@ extension TaskRowContent {
     
     
     private func layoutStyle0() -> some View {
-        
         HStack(spacing: 14) {
-            
+
             // 📅 COLONNA DATA (sinistra)
             if let d = model.deadLine {
                 VStack(spacing: 0) {
@@ -621,15 +677,14 @@ extension TaskRowContent {
                         .textCase(.uppercase)
                 }
                 .frame(width: 44)
-             
             }
-            
+
             // 📌 CONTENUTO
             VStack(alignment: .leading, spacing: 6) {
                 todayExpiredLabel()
                 // 🏷️ TAG ICON + TITLE + BADGE
                 HStack(alignment: .top, spacing: 8) {
-                    
+
                     // 🔷 ICONA TAG (stessa dimensione del titolo)
                     Image(systemName: model.mainIcon)
                         .font(.system(size: 18, weight: .semibold))
@@ -640,7 +695,7 @@ extension TaskRowContent {
                             iconStyle == .polychrome
                             ? AnyShapeStyle(model.mainTag?.color ?? .primary)
                             : AnyShapeStyle(model.mainTag?.color ?? .primary),
-                            
+
                             iconStyle == .polychrome
                             ? AnyShapeStyle(.primary)
                             : AnyShapeStyle(model.mainTag?.color ?? .primary)
@@ -657,32 +712,29 @@ extension TaskRowContent {
                             .strikethrough(model.isCompleted)
                             .lineLimit(2)
                             .tracking(-0.2)
-                        
+
                         if model.recurrenceRule != nil {
                             Image(systemName: "arrow.triangle.2.circlepath")
                                 .font(.caption)
                                 .foregroundStyle(.blue)
                         }
                     }
-                    
+
                     Spacer()
-                    
-                    // 🔵 BADGE giorni (top right)
-                    if showBadge, let badge = model.badgeText {
-                        Text(badge)
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(
-                                Capsule().fill(model.statusColor)
-                            )
+
+                    // 🔵 BADGE giorni (top right) – intelligent
+                    if model.shouldShowBadge, let badge = model.badgeText, let deadline = model.deadLine {
+                        TaskBadgeView(
+                            deadline: deadline,
+                            badgeText: badge,
+                            statusColor: model.statusColor
+                        )
                     }
                 }
-                
+
                 // 🪶 META LINE (orario + remind + flags)
                 HStack(spacing: 10) {
-                    
+
                     if let deadline = model.deadLine {
                         HStack(spacing: 4) {
                             Image(systemName: "clock")
@@ -690,7 +742,7 @@ extension TaskRowContent {
                         }
                         .foregroundStyle(.primary)
                     }
-                    
+
                     if model.reminderOffsetMinutes != nil {
                         HStack(spacing: 4) {
                             Image(systemName: "bell")
@@ -704,7 +756,7 @@ extension TaskRowContent {
                 }
                 .font(.system(size: 12, weight: .medium))
             }
-            
+
             Spacer(minLength: 0)
         }
         .padding(.vertical, 10)
