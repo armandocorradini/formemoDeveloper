@@ -20,6 +20,7 @@ struct TaskMapAnnotationModel: Identifiable, Equatable {
         let title: String
         let deadline: Date?
         let urgency: UrgencyLevel
+        let tagIcon: String?
     }
 
     static func == (lhs: TaskMapAnnotationModel, rhs: TaskMapAnnotationModel) -> Bool {
@@ -148,7 +149,8 @@ extension TaskMapView {
                 id: task.id,
                 title: task.title,
                 deadline: task.deadLine,
-                urgency: urgency
+                urgency: urgency,
+                tagIcon: task.mainTag?.mainIcon
             )
 
             return (CLLocationCoordinate2D(latitude: lat, longitude: lon), item)
@@ -289,68 +291,56 @@ struct TaskAnnotationView: View {
     var body: some View {
         
         VStack(spacing: 4) {
-            // 🔴 BASE DOT + RADAR PULSE + 🏷 TAG ICON
-            HStack(spacing: 4) {
-                ZStack {
-                    // 🔴 BASE DOT
+            // 🔴 BASE DOT + RADAR PULSE (NO TAG ICON)
+            ZStack {
+                // 🔴 BASE DOT
+                Circle()
+                    .fill({
+                        switch model.urgency {
+                        case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
+                        case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
+                        case .none: return Color.indigo
+                        }
+                    }())
+                    .shadow(color: ({
+                        switch model.urgency {
+                        case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1).opacity(0.9)
+                        case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9).opacity(0.9)
+                        case .none: return Color.indigo.opacity(0.6)
+                        }
+                    }()), radius: 4)
+                    .frame(width: 12, height: 12)
+
+                // 🔥 RADAR PULSE 1
+                if model.urgency != .none && zoomLevel < 0.08 {
                     Circle()
-                        .fill({
+                        .stroke(({
                             switch model.urgency {
                             case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
                             case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
-                            case .none: return Color.indigo
+                            case .none: return Color.clear
                             }
-                        }())
-                        .shadow(color: ({
+                        }()), lineWidth: 3)
+                        .frame(width: 12, height: 12)
+                        .scaleEffect(blink ? 3.5 : 1.0)
+                        .opacity(blink ? 0.0 : 1.0)
+                        .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false), value: blink)
+                }
+
+                // 🔥 RADAR PULSE 2
+                if model.urgency != .none && zoomLevel < 0.08 {
+                    Circle()
+                        .stroke(({
                             switch model.urgency {
                             case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1).opacity(0.9)
                             case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9).opacity(0.9)
-                            case .none: return Color.indigo.opacity(0.6)
+                            case .none: return Color.clear
                             }
-                        }()), radius: 4)
+                        }()), lineWidth: 2)
                         .frame(width: 12, height: 12)
-
-                    // 🔥 RADAR PULSE 1
-                    if model.urgency != .none && zoomLevel < 0.08 {
-                        Circle()
-                            .stroke(({
-                                switch model.urgency {
-                                case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
-                                case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
-                                case .none: return Color.clear
-                                }
-                            }()), lineWidth: 3)
-                            .frame(width: 12, height: 12)
-                            .scaleEffect(blink ? 3.5 : 1.0)
-                            .opacity(blink ? 0.0 : 1.0)
-                            .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false), value: blink)
-                    }
-
-                    // 🔥 RADAR PULSE 2
-                    if model.urgency != .none && zoomLevel < 0.08 {
-                        Circle()
-                            .stroke(({
-                                switch model.urgency {
-                                case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1).opacity(0.9)
-                                case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9).opacity(0.9)
-                                case .none: return Color.clear
-                                }
-                            }()), lineWidth: 2)
-                            .frame(width: 12, height: 12)
-                            .scaleEffect(blink ? 3.5 : 1.0)
-                            .opacity(blink ? 0.0 : 0.9)
-                            .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false).delay(0.4), value: blink)
-                    }
-                }
-
-                // 🏷 TAG ICON (se presente)
-                if let icon = model.tagIcon {
-                    Image(systemName: icon)
-                        .font(.system(size: 8, weight: .semibold))
-                        .foregroundStyle(.primary)
-                        .padding(2)
-                        .background(.ultraThinMaterial)
-                        .clipShape(Circle())
+                        .scaleEffect(blink ? 3.5 : 1.0)
+                        .opacity(blink ? 0.0 : 0.9)
+                        .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false).delay(0.4), value: blink)
                 }
             }
 
@@ -384,20 +374,18 @@ extension TaskAnnotationView {
     var detailView: some View {
         
         VStack(alignment: .leading, spacing: 4) {
-            
-            if let icon = model.tagIcon {
-                HStack(spacing: 6) {
-                    Image(systemName: icon)
-                        .font(.caption)
-                }
-            }
-
             ForEach(model.items) { it in
                 Button {
                     onSelectTask(it.id)
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
+                            if let icon = it.tagIcon {
+                                Image(systemName: icon)
+                                    .font(.caption2)
+                                    .foregroundStyle(.primary)
+                            }
+
                             Circle()
                                 .fill({
                                     switch it.urgency {

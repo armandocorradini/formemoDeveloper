@@ -585,9 +585,9 @@ struct TaskRow: View {
 
     private var dynamicRowHeight: CGFloat {
         if showTodayExpiredLabel && !task.isCompleted && (isToday || isOverdue) {
-            return 54
+            return 52
         } else {
-            return 46
+            return 40
         }
     }
     // --- END PATCH ---
@@ -607,7 +607,7 @@ struct TaskRow: View {
             title: task.title,
             subtitle: task.taskDescription,
             mainIcon: task.mainTag?.mainIcon ?? task.status.icon,
-            statusColor: task.iconColor,
+            statusColor: task.status.color,
             hasValidAttachments: !attachments.isEmpty,
             hasLocation: task.locationName?.isEmpty == false,
             badgeText: task.daysRemainingBadgeText,
@@ -616,7 +616,7 @@ struct TaskRow: View {
             reminderOffsetMinutes: task.reminderOffsetMinutes,
             shouldShowBadge: shouldDisplayBadge,
             isCompleted: task.isCompleted,
-            recurrenceRule: task.recurrenceRule
+            recurrenceRule: task.recurrenceRule, mainTag: task.mainTag
         )
     }
 
@@ -725,9 +725,9 @@ struct TodoSectionView: View {
             }()
 
             let lineWidth: CGFloat =
-                (isToday || isOverdue) ? 2.5 : 0.7
+            (isToday || isOverdue) ? 1.0 : 0.7
 
-            let baseBackground = Color(uiColor: .secondarySystemBackground).opacity(0.5)
+            let baseBackground = Color(.clear)//uiColor: .secondarySystemBackground).opacity(0.005)
 
             let fillColor: Color = baseBackground
             let highlightOverlay: Color? = {
@@ -921,7 +921,7 @@ struct CompletedSectionView: View {
 
             RoundedRectangle(cornerRadius: 26, style: .continuous)
                 .fill(
-                    Color(uiColor: .secondarySystemBackground).opacity(0.5))
+                    Color(uiColor: .secondarySystemBackground).opacity(0.8))
         }
     }
     var body: some View {

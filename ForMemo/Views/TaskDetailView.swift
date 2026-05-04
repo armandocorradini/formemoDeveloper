@@ -141,7 +141,7 @@ struct TaskDetailView: View {
             shouldShowBadge: task.shouldShowDaysBadge(showBadge: showBadge, showBadgeOnlyWithPriority: showBadgeOnlyWithPriority),
             
             isCompleted: task.isCompleted,
-            recurrenceRule: task.recurrenceRule
+            recurrenceRule: task.recurrenceRule, mainTag: task.mainTag
         )
     }
     

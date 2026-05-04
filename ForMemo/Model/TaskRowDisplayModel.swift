@@ -19,4 +19,5 @@ struct TaskRowDisplayModel: Identifiable, Sendable {
     let shouldShowBadge: Bool
     let isCompleted: Bool
     let recurrenceRule: String?
+    let mainTag: TaskMainTag?
 }

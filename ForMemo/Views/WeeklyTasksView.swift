@@ -218,11 +218,31 @@ private struct WeeklyTaskRow: View {
             }
             .opacity(0)
             
-            HStack(spacing: 14) {
-                
-                dayBadge
-                mainColumn
-                Spacer(minLength: 6)
+            ZStack(alignment: .topTrailing) {
+                HStack(spacing: 14) {
+                    dayBadge
+                    mainColumn
+                    Spacer(minLength: 6)
+                }
+
+                VStack(spacing: 4) {
+                    if let priorityIcon = task.priority.systemImage {
+                        Image(systemName: priorityIcon)
+                            .foregroundStyle(priorityIcon == "flame" ? .red : .primary)
+                    }
+
+                    if let attachments = task.attachments, !attachments.isEmpty {
+                        Image(systemName: "paperclip")
+                            .foregroundStyle(.primary)
+                    }
+
+                    if task.locationName?.isEmpty == false {
+                        Image(systemName: "location.fill")
+                            .foregroundStyle(.primary)
+                    }
+                }
+                .font(.system(size: 10, weight: .semibold))
+                .padding(6)
             }
             .padding(.vertical, 14)
             .padding(.horizontal, 14)
@@ -423,9 +443,10 @@ private struct WeeklyTaskRow: View {
         let shouldHighlight = highlightOpacity > 0 && isCritical && (isToday || isOverdue)
         
         return RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(
-                Color(uiColor: .secondarySystemBackground).opacity(0.5)
-            )
+            .fill(.clear)
+//            .fill(
+//                Color(uiColor: .secondarySystemBackground).opacity(0.5)
+//            )
             .overlay {
                 if shouldHighlight {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -444,7 +465,7 @@ private struct WeeklyTaskRow: View {
                             : isToday
                                 ? Color.orange
                                 : Color.secondary,
-                        lineWidth: (isToday || isOverdue) ? 1.4 : 0.3
+                        lineWidth: (isToday || isOverdue) ? 1.0 : 0.7
                     )
             )
     }

@@ -156,11 +156,13 @@ extension TodoTask {
         let calculatedColor: Color = {
             if isCompleted { return .green }
             guard let deadline = deadLine else { return .blue }
+            
             let diff = deadline.timeIntervalSinceNow
-            if diff < 0 { return Color(red: 1.0, green: 0.1, blue: 0.1) }
-            if diff <= 86400 { return Color(red: 0.7, green: 0.0, blue: 0.9) }//red: 1, green: 0.4, blue: 0) } // 24h
-            if diff <= 259200 { return .indigo } // 72h giallo
-            return .green
+            
+            if diff < 0 { return .red }              // 🔴 scaduto
+            if diff <= 86400 { return .orange }      // 🟠 urgente
+            if diff <= 259200 { return Color(red: 0.9, green: 0.8, blue: 0.0) }    // 🟡 imminente
+            return .green                            // 🟢 normale
         }()
         
         let iconName: String = {

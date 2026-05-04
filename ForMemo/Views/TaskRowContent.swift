@@ -140,7 +140,7 @@ extension TaskRowContent {
                     flags(vertical: false)
                 }
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary).opacity(0.7)
             }
             
             Spacer()
@@ -151,7 +151,7 @@ extension TaskRowContent {
                     
                     Text(d, format: .dateTime.day())
                         .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    
+                        .foregroundStyle(model.statusColor)
                     Text(d, format: .dateTime.month(.abbreviated))
                         .font(.system(size: 10, weight: .bold))
                         .textCase(.uppercase)
@@ -161,7 +161,7 @@ extension TaskRowContent {
                         .opacity(0.8)
                 }
                 .frame(width: 44)
-                .foregroundStyle(model.statusColor)
+                
                 .pulseEffect(active: isUrgent(model: model))
             }
         }
@@ -190,6 +190,7 @@ extension TaskRowContent {
     var flagsContent: some View {
         if showPriority, let image = model.prioritySystemImage {
             Image(systemName: image)
+                .foregroundStyle(image == "flame" ? .red : .primary)
         }
         if showAttachments && model.hasValidAttachments {
             Image(systemName: "paperclip")
@@ -209,7 +210,7 @@ extension TaskRowContent {
             }
         }
         .font(.system(size: 10))
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.primary).opacity(0.7)
     }
     
     func timeColumn(style: Int) -> some View {
@@ -231,6 +232,7 @@ extension TaskRowContent {
                     
                     Text(d, format: .dateTime.day())
                         .font(style == 1 ? .headline : .system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(model.statusColor)
                     
                     Text(d, format: .dateTime.month(.abbreviated))
                         .font(.system(size: 11, weight: .bold))
@@ -242,8 +244,8 @@ extension TaskRowContent {
                             .opacity(0.8)
                     }
                 }
-                .shadow(color: .black, radius: 0.1, x: 1, y: 1)
-                .foregroundStyle(model.statusColor)
+                .shadow(color: .primary.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
+                
                 .pulseEffect(active: isUrgent(model: model))
                 
             } else {
@@ -290,9 +292,9 @@ extension TaskRowContent {
                     
                     if let deadline = model.deadLine {
                         Image(systemName: "clock")
-                            .foregroundStyle(model.statusColor)
+                            .foregroundStyle(.primary)
                         Text(deadline, format: .dateTime.hour().minute())
-                            .foregroundStyle(model.statusColor)
+                            .foregroundStyle(.primary)
                     }
                     
                     if model.reminderOffsetMinutes != nil {
@@ -301,7 +303,7 @@ extension TaskRowContent {
                     }
                 }
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary).opacity(0.7)
             }
             
             Spacer()
@@ -341,7 +343,7 @@ extension TaskRowContent {
                     flags(vertical: false)
                 }
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary).opacity(0.7)
             }
             icon.scaleEffect(0.72)
         }
@@ -381,7 +383,7 @@ extension TaskRowContent {
                     flags(vertical: false)
                 }
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary).opacity(0.7)
             }
             icon.scaleEffect(0.85)
         }
@@ -511,7 +513,7 @@ extension TaskRowContent {
                 if let d = model.deadLine {
                     Text(d, format: .dateTime.weekday(.wide))
                         .font(.caption)
-                        .foregroundStyle(model.statusColor)
+                        .foregroundStyle(.primary)
                 }
                 
                 HStack(spacing: 6) {
@@ -613,13 +615,13 @@ extension TaskRowContent {
 
                     Text(d, format: .dateTime.day())
                         .font(.system(size: 22, weight: .bold, design: .rounded))
-
+                        .foregroundStyle(model.statusColor)
                     Text(d, format: .dateTime.month(.abbreviated))
                         .font(.system(size: 11, weight: .medium))
                         .textCase(.uppercase)
                 }
                 .frame(width: 44)
-                .foregroundStyle(model.statusColor)
+             
             }
             
             // 📌 CONTENUTO
@@ -636,12 +638,12 @@ extension TaskRowContent {
                         )
                         .foregroundStyle(
                             iconStyle == .polychrome
-                            ? AnyShapeStyle(.primary)
-                            : AnyShapeStyle(.primary),
+                            ? AnyShapeStyle(model.mainTag?.color ?? .primary)
+                            : AnyShapeStyle(model.mainTag?.color ?? .primary),
                             
                             iconStyle == .polychrome
-                            ? AnyShapeStyle(model.statusColor)
-                            : AnyShapeStyle(.primary)
+                            ? AnyShapeStyle(.primary)
+                            : AnyShapeStyle(model.mainTag?.color ?? .primary)
                         )
                         .opacity(0.9)
                         .dueIconEffect(
@@ -686,7 +688,7 @@ extension TaskRowContent {
                             Image(systemName: "clock")
                             Text(deadline, format: .dateTime.hour().minute())
                         }
-                        .foregroundStyle(model.statusColor)
+                        .foregroundStyle(.primary)
                     }
                     
                     if model.reminderOffsetMinutes != nil {
@@ -695,7 +697,7 @@ extension TaskRowContent {
                                 .symbolRenderingMode(.hierarchical)
                             Text(formattedOffset(model: model))
                         }
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary).opacity(0.7)
                     }
                     Spacer()
                     flags(vertical: false)

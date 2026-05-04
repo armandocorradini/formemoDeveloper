@@ -58,7 +58,7 @@ struct TaskRowPreview: View {
             reminderOffsetMinutes: 60,
             shouldShowBadge: shouldDisplayBadge,
             isCompleted: false,
-            recurrenceRule: "daily"
+            recurrenceRule: "daily", mainTag: .freetime
         )
     }
     
