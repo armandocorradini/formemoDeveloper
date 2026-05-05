@@ -85,9 +85,7 @@ struct ForMemoApp: App {
             // 🔥 MIGRATION separata (non blocca startup)
             AttachmentMigration.runIfNeeded(context: context)
         }
-        if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("migration.log") {
-            print("LOG FILE:", url)
-        }
+
         Task { @MainActor in
             let context = sharedContainer.mainContext
             

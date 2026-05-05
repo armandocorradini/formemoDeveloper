@@ -409,6 +409,14 @@ struct TaskListView: View {
             stopTimer()
             startTimerIfNeeded()
         }
+        .onChange(of: scenePhase) {
+            switch scenePhase {
+            case .active:
+                startTimerIfNeeded()
+            default:
+                stopTimer()
+            }
+        }
         .onReceive(
             NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
         ) { _ in
@@ -424,6 +432,15 @@ struct TaskListView: View {
                 .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
         ) { _ in
             recomputeSections()
+        }
+        .onReceive(
+
+            NotificationCenter.default.publisher(for: .attachmentsShouldRefresh)
+                .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+        ) { _ in
+
+            recomputeSections()
+
         }
     }
 
