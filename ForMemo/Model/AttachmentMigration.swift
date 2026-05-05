@@ -1,69 +1,119 @@
 import Foundation
 import SwiftData
+import os
 
 enum AttachmentMigration {
     
-    private static let migrationKey = "didMigrateAttachmentsToiCloud"
+    private static let logger = Logger(subsystem: "com.formemo.migration", category: "migration")
     
     static func runIfNeeded(context: ModelContext) {
-        let alreadyMigrated = UserDefaults.standard.bool(forKey: migrationKey)
         
-        guard !alreadyMigrated else { return }
+        log("🚀 MIGRATION START")
         
-        migrateToiCloud(context: context)
+        let versionKey = "attachmentMigrationVersion"
+        let currentVersion = 2   // 🔥 incrementato
         
-        UserDefaults.standard.set(true, forKey: migrationKey)
+        let savedVersion = UserDefaults.standard.integer(forKey: versionKey)
+        log("Version: \(savedVersion) → \(currentVersion)")
+        
+        guard savedVersion < currentVersion else {
+            log("⏭️ Migration already done")
+            return
+        }
+        
+        let success = migrate(context: context)
+        
+        if success {
+            UserDefaults.standard.set(currentVersion, forKey: versionKey)
+            log("✅ Migration DONE")
+        } else {
+            log("❌ Migration FAILED → retry next launch")
+        }
     }
     
-    private static func migrateToiCloud(context: ModelContext) {
+    // MARK: - CORE
+    
+    private static func migrate(context: ModelContext) -> Bool {
         
         guard let iCloudDir = TaskAttachment.attachmentsDirectory else {
-            print("❌ iCloud directory not available")
-            return
+            log("❌ iCloud dir missing")
+            return false
         }
         
+        guard let legacyDir = legacyDirectory else {
+            log("❌ Legacy dir missing")
+            return false
+        }
+        
+        let fm = FileManager.default
+        
+        guard let files = try? fm.contentsOfDirectory(at: legacyDir, includingPropertiesForKeys: nil) else {
+            log("❌ Cannot read legacy directory")
+            return false
+        }
+        
+        log("📦 Legacy files found: \(files.count)")
+        
+        for fileURL in files {
+            let fileName = fileURL.lastPathComponent
+            let newURL = iCloudDir.appendingPathComponent(fileName)
+            
+            log("➡️ Migrating file: \(fileName)")
+            
+            let newExists = fm.fileExists(atPath: newURL.path)
+            
+            if newExists {
+                log("⏭️ Already exists in iCloud")
+                continue
+            }
+            
+            do {
+                try fm.copyItem(at: fileURL, to: newURL)
+                
+                let size = (try? fm.attributesOfItem(atPath: newURL.path)[.size] as? Int64) ?? 0
+                
+                if size == 0 {
+                    try? fm.removeItem(at: newURL)
+                    log("❌ Copied file empty")
+                    continue
+                }
+                
+                log("✅ Copied OK")
+                
+            } catch {
+                log("❌ Copy error: \(error.localizedDescription)")
+            }
+        }
+        
+        // 🔥 opzionale: aggiorna record SwiftData se esistono
         let descriptor = FetchDescriptor<TaskAttachment>()
         
-        guard let attachments = try? context.fetch(descriptor) else {
-            print("❌ Failed to fetch attachments")
-            return
-        }
-        
-        print("🔄 Starting migration for \(attachments.count) attachments")
-        
-        for attachment in attachments {
-            
-            guard let currentURL = attachment.fileURL else { continue }
-            
-            let fileName = currentURL.lastPathComponent
-            let destinationURL = iCloudDir.appendingPathComponent(fileName)
-            
-            let isAlreadyInICloud = currentURL.path.contains("Mobile Documents")
-            
-            if isAlreadyInICloud {
-                continue
-            }
-            
-            if FileManager.default.fileExists(atPath: destinationURL.path) {
+        if let attachments = try? context.fetch(descriptor) {
+            for attachment in attachments {
+                let fileName = (attachment.relativePath as NSString).lastPathComponent
                 attachment.relativePath = fileName
-                continue
             }
-            
-            if FileManager.default.fileExists(atPath: currentURL.path) {
-                do {
-                    try FileManager.default.copyItem(at: currentURL, to: destinationURL)
-                    attachment.relativePath = fileName
-                } catch {
-                    print("❌ Copy failed:", fileName, error.localizedDescription)
-                }
-            }
+            try? context.save()
         }
         
-        do {
-            try context.save()
-            print("✅ Migration completed")
-        } catch {
-            print("❌ Save failed:", error.localizedDescription)
-        }
+        return true
+    }
+    
+    // MARK: - LEGACY PATH
+    
+    private static var legacyDirectory: URL? {
+        FileManager.default
+            .urls(for: .documentDirectory, in: .userDomainMask)
+            .first?
+            .appendingPathComponent("TaskAttachments", isDirectory: true)
+    }
+    
+    // MARK: - LOG (TestFlight visible)
+    
+    private static func log(_ message: String) {
+        print("🟣 MIGRATION:", message)
+        logger.info("\(message)")
+        
+        DebugLog.write(message)   // 🔥 AGGIUNGI QUESTO
     }
 }

@@ -79,15 +79,23 @@ struct ForMemoApp: App {
         
         NotificationManager.shared.modelContainer = sharedContainer
         
-        let context = sharedContainer.mainContext
-        
         Task { @MainActor in
+            let context = sharedContainer.mainContext
+            
+            // 🔥 MIGRATION separata (non blocca startup)
+            AttachmentMigration.runIfNeeded(context: context)
+        }
+        if let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("migration.log") {
+            print("LOG FILE:", url)
+        }
+        Task { @MainActor in
+            let context = sharedContainer.mainContext
             
             // 1️⃣ Setup notifiche (PRIMA DI TUTTO)
             await NotificationManager.shared.configure()
             
-            // 🔥 REGISTRA APP SHORTCUTS (QUI)
-             AppShortcuts.updateAppShortcutParameters()
+            // 🔥 REGISTRA APP SHORTCUTS
+            AppShortcuts.updateAppShortcutParameters()
             
             // 2️⃣ Applica azioni da notifiche (app chiusa/background)
             NotificationActionProcessor.shared.processAll(using: context)
@@ -115,9 +123,6 @@ struct ForMemoApp: App {
     var body: some Scene {
         WindowGroup {
             TaskTabView()
-                .onAppear {
-                    AttachmentMigration.runIfNeeded(context: container.mainContext)
-                }
                 .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
                     
                     NotificationCenter.default.post(

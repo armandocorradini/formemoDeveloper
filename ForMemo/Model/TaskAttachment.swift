@@ -108,15 +108,10 @@ extension TaskAttachment {
         let url = directory.appendingPathComponent(relativePath)
         let fm = FileManager.default
 
-        // 🔥 prova SEMPRE a triggerare download
+        // trigger download
         try? fm.startDownloadingUbiquitousItem(at: url)
 
-        // 🔥 controllo esistenza reale
-        if fm.fileExists(atPath: url.path) {
-            return url
-        } else {
-            return url // ⚠️ IMPORTANTISSIMO: NON nil
-        }
+        return url
     }
     
     var fileStatus: FileStatus {
@@ -125,32 +120,28 @@ extension TaskAttachment {
         
         let fm = FileManager.default
         
-        guard fm.fileExists(atPath: url.path) else {
-            return .missing
-        }
+        let exists = fm.fileExists(atPath: url.path)
         
         let values = try? url.resourceValues(forKeys: [
             .ubiquitousItemDownloadingStatusKey
         ])
         
-        if let status = values?.ubiquitousItemDownloadingStatus {
-            
-            switch status {
-            case .current:
-                return .ready
-                
-            case .downloaded:
-                return .ready
-                
-            case .notDownloaded:
-                return .notDownloaded
-                
-            default:
-                return .notDownloaded
-            }
-        }
+        let status = values?.ubiquitousItemDownloadingStatus
         
-        return .ready
+        switch status {
+            
+        case .current:
+            return exists ? .ready : .downloading
+            
+        case .downloaded:
+            return exists ? .ready : .downloading
+            
+        case .notDownloaded:
+            return .notDownloaded
+            
+        default:
+            return exists ? .ready : .downloading
+        }
     }
     
     
@@ -232,14 +223,11 @@ extension TaskAttachment {
     
     func loadDataAsync() async -> Data? {
         
-        guard let url = fileURL else {
-            return nil
-        }
+        guard let url = fileURL else { return nil }
         
         try? FileManager.default.startDownloadingUbiquitousItem(at: url)
 
-        // 🔥 attesa più robusta (fino a ~4 secondi)
-        for _ in 0..<20 {
+        for _ in 0..<30 { // ~6 secondi
             if FileManager.default.fileExists(atPath: url.path) {
                 break
             }
@@ -250,9 +238,7 @@ extension TaskAttachment {
             return nil
         }
 
-        let data = try? Data(contentsOf: url)
-        
-        return data
+        return try? Data(contentsOf: url)
     }
 }
 

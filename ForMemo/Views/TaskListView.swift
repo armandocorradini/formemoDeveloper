@@ -69,65 +69,79 @@ struct TaskListView: View {
     }
     @State private var cachedTodo: [TodoTask] = []
     @State private var cachedCompleted: [TodoTask] = []
-    // 🔥 Timer per aggiornamenti automatici (Today → Overdue)
-    private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    @State private var timerTask: Task<Void, Never>?
+
+    private var nextDeadline: Date? {
+        let now = Date()
+        return todoQuery
+            .compactMap { $0.deadLine }
+            .filter { $0 > now }
+            .min()
+    }
+
+
+    private func startTimerIfNeeded() {
+        guard timerTask == nil else { return }
+
+        timerTask = Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 30 * 1_000_000_000) // ogni 30 sec
+                await MainActor.run {
+                    recomputeSections()
+                }
+            }
+        }
+    }
+
+    private func stopTimer() {
+        timerTask?.cancel()
+        timerTask = nil
+    }
+    private var dependencyHash: Int {
+        var hasher = Hasher()
+        hasher.combine(todoQuery.count)
+        hasher.combine(completedQuery.count)
+        hasher.combine(searchText)
+        hasher.combine(selectedTagFilter)
+        hasher.combine(selectedPriorityFilter)
+        hasher.combine(showCompleted)
+        return hasher.finalize()
+    }
 
     private func recomputeSections() {
-        // Sempre calcola TODO
-        var todo = todoQuery.filter { task in
-            let matchesSearch =
-                searchText.isEmpty ||
-                task.title.localizedCaseInsensitiveContains(searchText)
+        let now = Date()
 
-            let matchesTag =
-                selectedTagFilter == nil ||
-                task.mainTag == selectedTagFilter
-
-            let matchesPriority =
-                selectedPriorityFilter == nil ||
-                task.priority == selectedPriorityFilter
-
-            return matchesSearch && matchesTag && matchesPriority
+        func matches(_ task: TodoTask) -> Bool {
+            (searchText.isEmpty || task.title.localizedCaseInsensitiveContains(searchText))
+            &&
+            (selectedTagFilter == nil || task.mainTag == selectedTagFilter)
+            &&
+            (selectedPriorityFilter == nil || task.priority == selectedPriorityFilter)
         }
 
-        todo.sort {
+        let todo = todoQuery.lazy.filter { matches($0) }
+
+        cachedTodo = todo.sorted {
             let lhs = $0.deadLine ?? .distantFuture
             let rhs = $1.deadLine ?? .distantFuture
-            let now = Date()
 
             let lhsOverdue = lhs < now
             let rhsOverdue = rhs < now
 
             if lhsOverdue != rhsOverdue {
-                return lhsOverdue && !rhsOverdue
+                return lhsOverdue
             }
 
             return lhs < rhs
         }
-        cachedTodo = todo
 
-        // Calcola COMPLETED solo se serve
         if showCompleted {
-            var completed = completedQuery.filter { task in
-                let matchesSearch =
-                    searchText.isEmpty ||
-                    task.title.localizedCaseInsensitiveContains(searchText)
-
-                let matchesTag =
-                    selectedTagFilter == nil ||
-                    task.mainTag == selectedTagFilter
-
-                let matchesPriority =
-                    selectedPriorityFilter == nil ||
-                    task.priority == selectedPriorityFilter
-
-                return matchesSearch && matchesTag && matchesPriority
-            }
-
-            completed.sort {
-                ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast)
-            }
-            cachedCompleted = completed
+            cachedCompleted = completedQuery.lazy
+                .filter { matches($0) }
+                .sorted {
+                    ($0.completedAt ?? .distantPast) >
+                    ($1.completedAt ?? .distantPast)
+                }
         } else {
             cachedCompleted = []
         }
@@ -177,6 +191,7 @@ struct TaskListView: View {
 
                         }
                     }
+                    .id(listStyleChoice)
                     .safeAreaInset(edge: .bottom) {
                         Color.clear.frame(height: 80)
                     }
@@ -219,6 +234,9 @@ struct TaskListView: View {
                     }
                     .listRowSpacing(listStyleChoice == .plain ? 0 : 7) // spazio tra le righe
                     .transaction { $0.animation = nil }
+                    .transaction {
+                        $0.disablesAnimations = true
+                    }
                 }
                 .navigationDestination(for: TodoTask.self) { task in
                     TaskDetailView(task: task)
@@ -381,29 +399,30 @@ struct TaskListView: View {
         }
         .onAppear {
             recomputeSections()
+            startTimerIfNeeded()
         }
-        .onChange(of: todoQuery) { _, _ in
+        .onDisappear {
+            stopTimer()
+        }
+        .onChange(of: dependencyHash) {
+            recomputeSections()
+            stopTimer()
+            startTimerIfNeeded()
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+        ) { _ in
             recomputeSections()
         }
-        .onChange(of: completedQuery) { _, _ in
+        .onReceive(
+            NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)
+        ) { _ in
             recomputeSections()
         }
-        .onChange(of: searchText) {
-            recomputeSections()
-        }
-        .onChange(of: selectedTagFilter) {
-            recomputeSections()
-        }
-        .onChange(of: selectedPriorityFilter) {
-            recomputeSections()
-        }
-        .onChange(of: showCompleted) {
-            recomputeSections()
-        }
-        .onReceive(timer) { _ in
-            recomputeSections()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .taskDidChange)) { _ in
+        .onReceive(
+            NotificationCenter.default.publisher(for: .taskDidChange)
+                .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
+        ) { _ in
             recomputeSections()
         }
     }

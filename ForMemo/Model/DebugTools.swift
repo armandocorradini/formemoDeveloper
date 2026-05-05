@@ -98,3 +98,26 @@ enum DebugTools {
     }
 }
 
+enum DebugLog {
+    
+    static func write(_ message: String) {
+        
+        let url = FileManager.default
+            .urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("migration.log")
+        
+        let line = "\(Date()): \(message)\n"
+        
+        if let data = line.data(using: .utf8) {
+            if FileManager.default.fileExists(atPath: url.path) {
+                if let handle = try? FileHandle(forWritingTo: url) {
+                    handle.seekToEndOfFile()
+                    handle.write(data)
+                    handle.closeFile()
+                }
+            } else {
+                try? data.write(to: url)
+            }
+        }
+    }
+}
