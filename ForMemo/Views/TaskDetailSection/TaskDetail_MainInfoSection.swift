@@ -81,5 +81,6 @@ import SwiftData
             }
             .tint(.green)
         }
+        .listRowBackground(Color(.systemBackground).opacity(0.3))
     }
 }

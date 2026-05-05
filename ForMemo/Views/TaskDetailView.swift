@@ -651,6 +651,7 @@ struct TaskDetailView: View {
                 )
             )
         }
+        .listRowBackground(Color(.systemBackground).opacity(0.3))
     }
     @MainActor
     private func importPhotos(from items: [PhotosPickerItem]) async {

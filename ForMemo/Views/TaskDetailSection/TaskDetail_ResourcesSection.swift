@@ -67,5 +67,6 @@ import PhotosUI
                 Label("Scan documents", systemImage: "scanner")
             }
         }
+        .listRowBackground(Color(.systemBackground).opacity(0.3))
     }
 }

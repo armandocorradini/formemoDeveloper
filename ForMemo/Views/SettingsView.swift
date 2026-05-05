@@ -123,6 +123,7 @@ struct SettingsView: View {
                     }
                     
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
                 
                 Section("Help") {
                     Button {
@@ -153,6 +154,7 @@ struct SettingsView: View {
                         }
                     }
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
                 
                 // MARK: - General
                 Section("General") {
@@ -198,6 +200,7 @@ struct SettingsView: View {
                         .opacity(0.7)
                     }
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
 
                 // MARK: - Notifications
                 Section {
@@ -429,11 +432,13 @@ Attivazione: \(triggerInfo)
                         }
                     }
                     #endif
-                } header: {
+                }
+                header: {
                     Text("Notifications")
                 } footer: {
                     Text("Notifications must be enabled in system settings to receive alerts and sounds.")
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
 
                 // MARK: - Tasks & Appearance
                 Section("Tasks & Appearance") {
@@ -464,6 +469,7 @@ Attivazione: \(triggerInfo)
                         Label("Navigation app", systemImage: "iphone.badge.location")
                     }
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
                 Section {
                     
                     Button {
@@ -497,9 +503,11 @@ Attivazione: \(triggerInfo)
                         }
                     }
                     
-                } header: {
+                }
+                header: {
                     Text("Siri & Shortcuts")
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
                 
                 Section {
                     Toggle(
@@ -537,11 +545,13 @@ Attivazione: \(triggerInfo)
                     } message: {
                         Text("This permanently removes all attachments. This action cannot be undone.")
                     }
-                } header: {
+                }
+                header: {
                     Text("Completed Tasks")
                 } footer: {
                     Text("Attachments of completed tasks are automatically removed after the selected period. To-do tasks are not affected.")
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
                 Section {
                     
                     NavigationLink {
@@ -578,9 +588,11 @@ Attivazione: \(triggerInfo)
                     .foregroundStyle(.secondary)
                 } header: {
                     Text("Data Management")
-                } footer: {
+                }
+                footer: {
                     Text("Items in Recently Deleted are permanently removed after the selected period. You can restore them before that.")
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
 
                 Section {
                     Button(role: .destructive) {
@@ -622,6 +634,7 @@ Attivazione: \(triggerInfo)
                         }
                     }
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
                 .onAppear {
                     hasTestData = DebugTools.hasTestTasks(context: modelContext)
                     areTestTasksCompleted = DebugTools.areTestTasksCompleted(context: modelContext)

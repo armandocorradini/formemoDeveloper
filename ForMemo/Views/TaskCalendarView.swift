@@ -1013,7 +1013,7 @@ private struct DayTasksInlineView: View {
                         }
                         .padding(.vertical, 4)
                     }
-                    //                    .backgroundStyle(.secondary)
+                    .listRowBackground(Color.clear)
                     .swipeActions(edge: .leading) {
                         
                         Button {
@@ -1062,7 +1062,6 @@ private struct DayTasksInlineView: View {
                             Label("Delete", systemImage: "trash")
                         }
                     }
-                    //                    .listRowBackground(Color.secondary.opacity(0.8))
                     
                     .contextMenu {
                         // Azione di completamento (quella che avevi nel leading swipe)
@@ -1113,6 +1112,8 @@ private struct DayTasksInlineView: View {
             }
             
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
             .alert("Delete task?",
                    isPresented: Binding(
                     get: { taskPendingDeletion != nil },

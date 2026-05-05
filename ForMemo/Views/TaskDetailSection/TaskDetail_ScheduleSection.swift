@@ -147,6 +147,7 @@ struct ScheduleSection: View {
             }
             .pickerStyle(.menu)
         }
+        .listRowBackground(Color(.systemBackground).opacity(0.3))
     }
 }
 

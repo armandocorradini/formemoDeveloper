@@ -41,6 +41,7 @@ struct ShareSheet: View {
                         Toggle("Include location", isOn: $includeLocation)
                     }
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
                 
                 if !attachments.isEmpty {
                     Section("Attachments") {
@@ -93,6 +94,7 @@ struct ShareSheet: View {
                             }
                         }
                     }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
                 }
             }
             .navigationTitle("Share Task")

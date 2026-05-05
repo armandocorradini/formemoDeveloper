@@ -286,6 +286,9 @@ struct TaskAnnotationView: View {
     
     @State private var blink = false
     
+    @AppStorage(TaskListAppearanceKeys.iconStyle)
+    private var iconStyle: TaskIconStyle = .polychrome
+    
     // Helper computed properties for color logic
     private var baseColor: Color {
         switch model.urgency {
@@ -300,6 +303,14 @@ struct TaskAnnotationView: View {
         case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1).opacity(0.9)
         case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9).opacity(0.9)
         case .none: return Color.indigo.opacity(0.6)
+        }
+    }
+    
+    private func iconColor(for item: TaskMapAnnotationModel.Item) -> Color {
+        if iconStyle == .monochrome {
+            return .primary
+        } else {
+            return item.tagColor ?? .primary
         }
     }
     
@@ -374,7 +385,11 @@ extension TaskAnnotationView {
                             if let icon = it.tagIcon {
                                 Image(systemName: icon)
                                     .font(.caption)
-                                    .foregroundStyle(it.tagColor ?? .primary.opacity(0.9))
+                                    .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
+                                    .foregroundStyle(
+                                        iconColor(for: it),
+                                        .primary
+                                    )
                             }
 
                             let itemColor: Color = {
