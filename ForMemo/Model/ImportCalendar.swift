@@ -4,7 +4,7 @@ import SwiftData
 
 // MARK: - DTO
 
-struct CalendarEventDTO: Identifiable, Hashable, Sendable {
+struct CalendarEventDTO: Identifiable, Hashable {
     let id: String
     let title: String
     let notes: String?

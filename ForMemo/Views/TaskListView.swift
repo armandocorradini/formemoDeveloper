@@ -616,34 +616,42 @@ struct TaskRow: View {
     }
 
     var body: some View {
+        rowContent
+            .contentShape(Rectangle())
+            .alignmentGuide(.listRowSeparatorLeading) { d in d[.leading] }
+            .frame(height: dynamicRowHeight)
+            .padding(.vertical, 2)
+            .buttonStyle(.plain)
+            .listRowSeparatorTint(task.status.color.opacity(0.35))
+    }
+
+    private var rowContent: some View {
         ZStack {
-            // NavigationLink trasparente per mantenere l'estetica custom
-            NavigationLink(value: task) {
-                EmptyView()
-            }
-            .opacity(0)
-
-            TaskRowContent(
-                model: model,
-                iconStyle: iconStyle,
-                showBadge: model.shouldShowBadge,
-                showAttachments: showAttachments,
-                showLocation: showLocation,
-                showPriority: showPriority,
-                showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
-                rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
-                highlightCriticalOverdue: highlightEnabled,
-                showTodayExpiredLabel: showTodayExpiredLabel && !task.isCompleted
-            )
+            navigationLink
+            content
         }
+    }
 
-        .contentShape(Rectangle())
-        .alignmentGuide(.listRowSeparatorLeading) { d in d[.leading] }
-        .frame(height: dynamicRowHeight)
-        .padding(.vertical, 2)
-        .buttonStyle(.plain)
-        // Tint della linea di separazione basato sullo stato del task
-        .listRowSeparatorTint(task.status.color.opacity(0.35))
+    private var navigationLink: some View {
+        NavigationLink(value: task) {
+            EmptyView()
+        }
+        .opacity(0)
+    }
+
+    private var content: some View {
+        TaskRowContent(
+            model: model,
+            iconStyle: iconStyle,
+            showBadge: model.shouldShowBadge,
+            showAttachments: showAttachments,
+            showLocation: showLocation,
+            showPriority: showPriority,
+            showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
+            rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
+            highlightCriticalOverdue: highlightEnabled,
+            showTodayExpiredLabel: showTodayExpiredLabel && !task.isCompleted
+        )
     }
 }
 

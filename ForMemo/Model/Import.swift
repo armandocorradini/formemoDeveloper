@@ -5,7 +5,7 @@ import CoreLocation
 
 // MARK: - DTO
 
-struct ReminderDTO: Identifiable, Hashable, Sendable {
+struct ReminderDTO: Identifiable, Hashable {
     let id: String
     let title: String
     let notes: String?

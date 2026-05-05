@@ -1,3 +1,12 @@
+//
+//import SwiftUI
+//
+//struct TaskMapView: View {
+//    @Binding var mapPath: NavigationPath
+//    var body: some View {
+//        Text("Hello")
+//    }
+//}
 enum UrgencyLevel {
     case none, soon, overdue
 }
@@ -132,19 +141,31 @@ struct TaskMapView: View {
 
 
 extension TaskMapView {
+
+    private func urgencyPriority(_ u: UrgencyLevel) -> Int {
+        switch u {
+        case .overdue: return 2
+        case .soon: return 1
+        case .none: return 0
+        }
+    }
+
+    private func computeUrgency(deadline: Date?) -> UrgencyLevel {
+        guard let d = deadline else { return .none }
+        let interval = d.timeIntervalSinceNow
+        if interval < 0 { return .overdue }
+        if interval < 86400 { return .soon }
+        return .none
+    }
     
     var mapModels: [TaskMapAnnotationModel] {
+        let tasksById: [UUID: TodoTask] = Dictionary(uniqueKeysWithValues: tasks.map { ($0.id, $0) })
+
         let grouped = Dictionary(grouping: tasks.compactMap { task -> (CLLocationCoordinate2D, TaskMapAnnotationModel.Item)? in
             guard let lat = task.locationLatitude,
                   let lon = task.locationLongitude else { return nil }
 
-            let urgency: UrgencyLevel = {
-                guard let d = task.deadLine else { return .none }
-                let interval = d.timeIntervalSinceNow
-                if interval < 0 { return .overdue }
-                if interval < 86400 { return .soon }
-                return .none
-            }()
+            let urgency = computeUrgency(deadline: task.deadLine)
 
             let item = TaskMapAnnotationModel.Item(
                 id: task.id,
@@ -157,16 +178,13 @@ extension TaskMapView {
 
             return (CLLocationCoordinate2D(latitude: lat, longitude: lon), item)
         }) { pair in
-            // group key by exact coordinate
             "\(pair.0.latitude)-\(pair.0.longitude)"
         }
 
         return grouped.map { _, pairs in
-            // extract coordinate and items
             let coordinate = pairs.first!.0
             var items = pairs.map { $0.1 }
 
-            // sort by deadline ascending (nil last)
             items.sort { a, b in
                 switch (a.deadline, b.deadline) {
                 case let (da?, db?): return da < db
@@ -176,40 +194,25 @@ extension TaskMapView {
                 }
             }
 
-            // highest urgency for dot
-            let urgency = items.map { $0.urgency }.max { a, b in
-                func p(_ u: UrgencyLevel) -> Int {
-                    switch u {
-                    case .overdue: return 2
-                    case .soon: return 1
-                    case .none: return 0
-                    }
-                }
-                return p(a) < p(b)
-            } ?? .none
+            let urgency = items.map { $0.urgency }.max { urgencyPriority($0) < urgencyPriority($1) } ?? .none
 
-            // pick most urgent item for tag icon
-            let mostUrgentItem = items.max { a, b in
-                func p(_ u: UrgencyLevel) -> Int {
-                    switch u {
-                    case .overdue: return 2
-                    case .soon: return 1
-                    case .none: return 0
-                    }
-                }
-                return p(a.urgency) < p(b.urgency)
-            }
+            let mostUrgentItem = items.max { urgencyPriority($0.urgency) < urgencyPriority($1.urgency) }
 
-            let tagIcon = tasks.first(where: { $0.id == mostUrgentItem?.id })?.mainTag?.mainIcon
+            let tagIcon = mostUrgentItem.flatMap { tasksById[$0.id]?.mainTag?.mainIcon }
+
+            let locationName = tasks.first {
+                $0.locationLatitude == coordinate.latitude &&
+                $0.locationLongitude == coordinate.longitude
+            }?.locationName
 
             return TaskMapAnnotationModel(
                 id: items.first!.id,
                 coordinate: coordinate,
-                title: "", // no longer used for multi-line label
+                title: "",
                 tagIcon: tagIcon,
                 deadline: nil,
                 address: nil,
-                locationName: tasks.first(where: { $0.locationLatitude == coordinate.latitude && $0.locationLongitude == coordinate.longitude })?.locationName,
+                locationName: locationName,
                 urgency: urgency,
                 items: items
             )
@@ -243,14 +246,7 @@ extension TaskMapView {
     var mapAnnotations: some MapContent {
         ForEach(mapModels.sorted { lhs, rhs in
             // higher priority first (drawn later = on top)
-            func priority(_ u: UrgencyLevel) -> Int {
-                switch u {
-                case .overdue: return 2
-                case .soon: return 1
-                case .none: return 0
-                }
-            }
-            return priority(lhs.urgency) < priority(rhs.urgency)
+            return urgencyPriority(lhs.urgency) < urgencyPriority(rhs.urgency)
         }) { item in
             Annotation("", coordinate: item.coordinate) {
                 annotationButton(for: item)
@@ -290,6 +286,23 @@ struct TaskAnnotationView: View {
     
     @State private var blink = false
     
+    // Helper computed properties for color logic
+    private var baseColor: Color {
+        switch model.urgency {
+        case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
+        case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
+        case .none: return Color.indigo
+        }
+    }
+    
+    private var shadowColor: Color {
+        switch model.urgency {
+        case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1).opacity(0.9)
+        case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9).opacity(0.9)
+        case .none: return Color.indigo.opacity(0.6)
+        }
+    }
+    
     var body: some View {
         
         VStack(spacing: 4) {
@@ -297,32 +310,14 @@ struct TaskAnnotationView: View {
             ZStack {
                 // 🔴 BASE DOT
                 Circle()
-                    .fill({
-                        switch model.urgency {
-                        case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
-                        case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
-                        case .none: return Color.indigo
-                        }
-                    }())
-                    .shadow(color: ({
-                        switch model.urgency {
-                        case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1).opacity(0.9)
-                        case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9).opacity(0.9)
-                        case .none: return Color.indigo.opacity(0.6)
-                        }
-                    }()), radius: 4)
+                    .fill(baseColor)
+                    .shadow(color: shadowColor, radius: 4)
                     .frame(width: 12, height: 12)
 
                 // 🔥 RADAR PULSE 1
                 if model.urgency != .none && zoomLevel < 0.08 {
                     Circle()
-                        .stroke(({
-                            switch model.urgency {
-                            case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
-                            case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
-                            case .none: return Color.clear
-                            }
-                        }()), lineWidth: 3)
+                        .stroke(baseColor, lineWidth: 3)
                         .frame(width: 12, height: 12)
                         .scaleEffect(blink ? 3.5 : 1.0)
                         .opacity(blink ? 0.0 : 1.0)
@@ -332,13 +327,7 @@ struct TaskAnnotationView: View {
                 // 🔥 RADAR PULSE 2
                 if model.urgency != .none && zoomLevel < 0.08 {
                     Circle()
-                        .stroke(({
-                            switch model.urgency {
-                            case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1).opacity(0.9)
-                            case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9).opacity(0.9)
-                            case .none: return Color.clear
-                            }
-                        }()), lineWidth: 2)
+                        .stroke(baseColor.opacity(0.9), lineWidth: 2)
                         .frame(width: 12, height: 12)
                         .scaleEffect(blink ? 3.5 : 1.0)
                         .opacity(blink ? 0.0 : 0.9)
@@ -388,14 +377,16 @@ extension TaskAnnotationView {
                                     .foregroundStyle(it.tagColor ?? .primary.opacity(0.9))
                             }
 
+                            let itemColor: Color = {
+                                switch it.urgency {
+                                case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
+                                case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
+                                case .none: return Color.indigo
+                                }
+                            }()
+
                             Circle()
-                                .fill({
-                                    switch it.urgency {
-                                    case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
-                                    case .soon: return Color(red: 0.7, green: 0.0, blue: 0.9)
-                                    case .none: return Color.indigo
-                                    }
-                                }())
+                                .fill(itemColor)
                                 .frame(width: 7, height: 7)
 
                             Text(it.title)

@@ -115,6 +115,9 @@ struct ForMemoApp: App {
     var body: some Scene {
         WindowGroup {
             TaskTabView()
+                .onAppear {
+                    AttachmentMigration.runIfNeeded(context: container.mainContext)
+                }
                 .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
                     
                     NotificationCenter.default.post(

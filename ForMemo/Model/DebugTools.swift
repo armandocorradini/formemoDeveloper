@@ -1,4 +1,3 @@
-#if DEBUG
 import Foundation
 import SwiftData
 
@@ -97,70 +96,5 @@ enum DebugTools {
         
         return tasks.allSatisfy { $0.isCompleted }
     }
-    
-    // MARK: - Migration iCloud Attachments
-
-    static func migrateAttachmentsToiCloud(context: ModelContext) {
-        
-        guard let iCloudDir = TaskAttachment.attachmentsDirectory else {
-            print("❌ iCloud directory not available")
-            return
-        }
-        
-        let descriptor = FetchDescriptor<TaskAttachment>()
-        
-        guard let attachments = try? context.fetch(descriptor) else {
-            print("❌ Failed to fetch attachments")
-            return
-        }
-        
-        print("🔄 Starting migration for \(attachments.count) attachments")
-        
-        for attachment in attachments {
-            
-            guard let currentURL = attachment.fileURL else {
-                print("⚠️ Missing URL for:", attachment.originalName)
-                continue
-            }
-            
-            let fileName = currentURL.lastPathComponent
-            let destinationURL = iCloudDir.appendingPathComponent(fileName)
-            
-            let isAlreadyInICloud = currentURL.path.contains("Mobile Documents")
-            
-            // ✅ Caso 1: già perfetto
-            if isAlreadyInICloud {
-                print("✅ Already in iCloud:", fileName)
-                continue
-            }
-            
-            // ❗ Caso 2: file esiste già in iCloud
-            if FileManager.default.fileExists(atPath: destinationURL.path) {
-                attachment.relativePath = fileName
-                print("♻️ Linked existing iCloud file:", fileName)
-                continue
-            }
-            
-            // ❗ Caso 3: file locale esiste → copia
-            if FileManager.default.fileExists(atPath: currentURL.path) {
-                do {
-                    try FileManager.default.copyItem(at: currentURL, to: destinationURL)
-                    attachment.relativePath = fileName
-                    print("⬆️ Migrated:", fileName)
-                } catch {
-                    print("❌ Copy failed:", fileName, error.localizedDescription)
-                }
-            } else {
-                print("❌ Source file missing:", fileName)
-            }
-        }
-        
-        do {
-            try context.save()
-            print("✅ Migration completed")
-        } catch {
-            print("❌ Save failed:", error.localizedDescription)
-        }
-    }
 }
-#endif
+

@@ -15,6 +15,7 @@ final class NotificationManager: NSObject {
     private var lastTasksSignature: String = ""
     private var rebuildTask: Task<Void, Never>?
     private var lastRebuild: Date = .distantPast
+    @MainActor
     private var pendingRefresh = false
   
     private var cloudKitDebounceTask: Task<Void, Never>?

@@ -120,8 +120,6 @@ struct TaskCalendarView: View {
                     
                     HStack {
                         Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
-                            .font(.body)
-                            .foregroundStyle(.primary)
                         
                         Spacer()
                         
@@ -130,7 +128,9 @@ struct TaskCalendarView: View {
                         } label: {
                             Image(systemName: showCompletedTasks ? "eye.slash" : "eye")
                         }
+                        .labelStyle(.iconOnly)
                         .padding(.trailing, 4)
+
                         Button {
                             prepareNewTask(on: selectedDate)
                         } label: {
@@ -138,8 +138,9 @@ struct TaskCalendarView: View {
                                 .font(.title)
                                 .foregroundStyle(.green)
                         }
-                        
+                        .labelStyle(.iconOnly)
                     }
+                    .font(.subheadline.weight(.medium))
                     .padding(.horizontal)
                     .padding(.vertical, 6)
                     .background(Color(uiColor: .secondarySystemBackground).opacity(0.4))
@@ -164,7 +165,7 @@ struct TaskCalendarView: View {
         .onChange(of: displayedMonth) { _, newValue in
             Task { @MainActor in await loadHolidays(for: newValue) }
         }
-        .onChange(of: tasks) { _, _ in
+        .task(id: tasks.count) {
             rebuildCache()
         }
         .sheet(item: $draftTask) { task in
@@ -849,7 +850,11 @@ private struct DayCell: View {
     private var expandedTitles: some View {
         
         VStack(alignment: .leading, spacing: 1) {
-            ForEach(tasks.prefix(3)) { task in
+            ForEach(
+                tasks
+                    .sorted { ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture) }
+                    .prefix(3)
+            ) { task in
                 Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
                     .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(task.iconColor)

@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 
-struct TaskRowDisplayModel: Identifiable, Sendable {
+struct TaskRowDisplayModel: Identifiable {
     
     let id: AnyHashable
     

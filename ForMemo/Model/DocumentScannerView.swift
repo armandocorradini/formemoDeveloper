@@ -6,7 +6,7 @@ import os
 @MainActor
 struct DocumentScannerView: UIViewControllerRepresentable {
     
-    let onComplete: @Sendable ([UIImage]) -> Void
+    @MainActor  let onComplete: ([UIImage]) -> Void
     
     @Environment(\.dismiss)
     private var dismiss
@@ -56,11 +56,11 @@ extension DocumentScannerView {
     
     final class Coordinator: NSObject, VNDocumentCameraViewControllerDelegate {
         
-        private let onComplete: @Sendable ([UIImage]) -> Void
+        @MainActor  let onComplete: ([UIImage]) -> Void
         private let dismiss: DismissAction
         
         init(
-            onComplete: @escaping @Sendable ([UIImage]) -> Void,
+            onComplete: @escaping ([UIImage]) -> Void,
             dismiss: DismissAction
         ) {
             self.onComplete = onComplete
