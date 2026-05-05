@@ -689,16 +689,13 @@ extension TaskRowContent {
                     Image(systemName: model.mainIcon)
                         .font(.system(size: 18, weight: .semibold))
                         .symbolRenderingMode(
-                            iconStyle == .polychrome ? .palette : .monochrome
+                            iconStyle == .polychrome && model.mainTag != nil ? .palette : .monochrome
                         )
                         .foregroundStyle(
                             iconStyle == .polychrome
-                            ? AnyShapeStyle(model.mainTag?.color ?? .primary)
-                            : AnyShapeStyle(model.mainTag?.color ?? .primary),
-
-                            iconStyle == .polychrome
-                            ? AnyShapeStyle(.primary)
-                            : AnyShapeStyle(model.mainTag?.color ?? .primary)
+                            ? (model.mainTag?.color ?? model.statusColor)
+                            : .primary,
+                            .primary
                         )
                         .opacity(0.9)
                         .dueIconEffect(

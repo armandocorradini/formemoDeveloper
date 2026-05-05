@@ -25,7 +25,6 @@ struct AttachmentList: View {
 struct AttachmentRowView: View {
     let attachment: TaskAttachment
     let image: UIImage?
-    @State private var hasLoaded = false
 
     let onDelete: (TaskAttachment) -> Void
     let onPreview: (URL) -> Void
@@ -44,10 +43,8 @@ struct AttachmentRowView: View {
                 } else {
                     ProgressView()
                         .frame(width: 52, height: 52)
-                        .onAppear {
-                            Task {
-                                await load()
-                            }
+                        .task(id: attachment.id) {
+                            await load()
                         }
                 }
             } else {
@@ -96,15 +93,9 @@ struct AttachmentRowView: View {
     }
 
     private func load() async {
-        if hasLoaded { return }
-        hasLoaded = true
-
         // 🔥 usa loader centralizzato (gestisce iCloud + sicurezza)
         guard let data = await attachment.loadDataAsync() else {
             // fallback per fermare spinner
-            await MainActor.run {
-                onImageLoaded(UIImage())
-            }
             return
         }
 
@@ -114,9 +105,6 @@ struct AttachmentRowView: View {
         }.value
 
         guard let thumbnail else {
-            await MainActor.run {
-                onImageLoaded(UIImage())
-            }
             return
         }
 

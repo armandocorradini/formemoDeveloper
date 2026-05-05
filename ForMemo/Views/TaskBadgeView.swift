@@ -16,8 +16,8 @@ struct TaskBadgeView: View {
         let isToday = Calendar.current.isDateInToday(deadline) && diff >= 0
         
         let displayText: String = {
-            if diff < 0 { return "!" }
-            if isToday { return "0" }
+            if diff < 0 { return "!!" }
+            if isToday { return "!" }
             return badgeText
         }()
         

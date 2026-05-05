@@ -761,6 +761,17 @@ private struct DayCell: View {
     }()
     
     @State private var selectedTask: TodoTask?
+
+    @AppStorage(TaskListAppearanceKeys.iconStyle)
+    private var iconStyle: TaskIconStyle = .polychrome
+
+    private func iconColor(for task: TodoTask) -> Color {
+        if iconStyle == .monochrome {
+            return .primary
+        } else {
+            return task.mainTag?.color ?? task.status.color
+        }
+    }
     
     
     var body: some View {
@@ -848,7 +859,6 @@ private struct DayCell: View {
     
     @ViewBuilder
     private var expandedTitles: some View {
-        
         VStack(alignment: .leading, spacing: 1) {
             ForEach(
                 tasks
@@ -857,7 +867,8 @@ private struct DayCell: View {
             ) { task in
                 Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
                     .font(.system(size: 9, weight: .medium))
-                    .foregroundStyle(task.iconColor)
+                    .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
+                    .foregroundStyle(iconColor(for: task), .primary)
                 HStack(spacing: 3) {
                     Text(task.title)
                         .font(.system(size: 8, weight: .medium))
@@ -922,9 +933,21 @@ private struct DayTasksInlineView: View {
     
     @Environment(\.modelContext) private var modelContext
     @AppStorage("confirmTaskDeletion") private var confirmTaskDeletion = true
+    
+    @AppStorage(TaskListAppearanceKeys.iconStyle)
+    private var iconStyle: TaskIconStyle = .polychrome
+    
     @State private var taskPendingDeletion: TodoTask?
     let tasks: [TodoTask]
     var onEditTask: (TodoTask) -> Void
+
+    private func iconColor(for task: TodoTask) -> Color {
+        if iconStyle == .monochrome {
+            return .primary
+        } else {
+            return task.mainTag?.color ?? task.status.color
+        }
+    }
     
     var body: some View {
         
@@ -983,8 +1006,8 @@ private struct DayTasksInlineView: View {
                             }
                             Spacer()
                             Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                                .symbolRenderingMode(.palette)
-                                .foregroundStyle(.primary ,task.mainTag?.color ?? task.status.color)
+                                .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
+                                .foregroundStyle(iconColor(for: task), .primary)
                                 .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
                                 .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
                         }
