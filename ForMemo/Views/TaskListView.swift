@@ -940,35 +940,35 @@ struct CompletedSectionView: View {
     let modelContext: ModelContext
 
     struct RowCardStyle: ViewModifier {
-
         let task: TodoTask
         let style: TaskListStyle
 
         func body(content: Content) -> some View {
-
-            if style == .cards {
-
-                content
-                    .listRowInsets(
-                        EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
-                    )
-                    .listRowBackground(cardBackground(for: task))
-
-            } else {
-
-                content
-                    .listRowInsets(
-                        EdgeInsets(top: 20, leading: 4, bottom: 20, trailing: 4)
-                    )
-                    .listRowBackground(Color.clear)
-            }
+            content
+                .padding(.leading, style == .plain ? 24 : 14)
+                .padding(.trailing, style == .plain ? 12 : 0)
+                .listRowInsets(
+                    style == .cards
+                    ? EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
+                    : EdgeInsets(top: 20, leading: 6, bottom: 20, trailing: 0)
+                )
+                .listRowBackground(cardBackground(for: task))
         }
 
+        @ViewBuilder
         private func cardBackground(for task: TodoTask) -> some View {
 
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(
-                    Color(uiColor: .secondarySystemBackground).opacity(0.8))
+            if style == .plain {
+                RoundedRectangle(cornerRadius: 0, style: .continuous)
+                    .fill(Color.clear)
+            } else {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.clear)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 26, style: .continuous)
+                            .strokeBorder(.secondary.opacity(0.3), lineWidth: 0.3)
+                    )
+            }
         }
     }
     var body: some View {

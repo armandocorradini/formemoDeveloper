@@ -958,14 +958,23 @@ private struct DayTasksInlineView: View {
 
     // Helper methods for highlight
     private func shouldShowHighlight(for task: TodoTask) -> Bool {
-        guard highlightEnabled else { return false }
+        guard highlightEnabled else {
+            return false
+        }
 
-        let isCritical = task.priority.systemImage == "flame"
+        guard task.priority.systemImage == "flame" else {
+            return false
+        }
 
-        return isCritical && (
-            isOverdue(task) ||
-            Calendar.current.isDateInToday(task.deadLine ?? .distantPast)
-        )
+        guard !task.isCompleted else {
+            return false
+        }
+
+        guard let deadline = task.deadLine else {
+            return false
+        }
+
+        return deadline < .now || Calendar.current.isDateInToday(deadline)
     }
 
     private func highlightColor(for task: TodoTask) -> Color {
@@ -998,21 +1007,27 @@ private struct DayTasksInlineView: View {
                     
                     NavigationLink(value: task) {
                         HStack(spacing: 0) {
-                            if shouldShowHighlight(for: task) {
-                                Rectangle()
-                                    .fill(highlightColor(for: task))
-                                    .frame(width: 4)
-                                    .frame(maxHeight: .infinity)
-                                    .clipShape(RoundedRectangle(cornerRadius: 2))
-                                    .padding(.vertical, 1)
-                                    .padding(.trailing, 10)
-                            }
-                            HStack(spacing: 15) {
+
+                            Rectangle()
+                                .fill(
+                                    shouldShowHighlight(for: task)
+                                    ? highlightColor(for: task)
+                                    : Color.clear
+                                )
+                                .frame(width: 4)
+                                .frame(maxHeight: .infinity)
+                                .clipShape(RoundedRectangle(cornerRadius: 2))
+                                .padding(.vertical, 1)
+                                .padding(.trailing, 10)
+
+                            HStack(alignment: .center, spacing: 15) {
+
                                 Text(task.deadLine?.formatted(.dateTime.hour().minute()) ?? "")
                                     .font(.callout.monospacedDigit())
                                     .foregroundStyle(
                                         isOverdue(task) ? .red : .secondary
                                     )
+                                    .frame(width: 52, alignment: .leading)
 
                                 HStack(spacing: 6) {
                                     Text(task.title)
@@ -1022,6 +1037,7 @@ private struct DayTasksInlineView: View {
                                             isOverdue(task) ? .red :
                                                 (task.isCompleted ? .secondary : .primary)
                                         )
+
                                     if task.recurrenceRule != nil {
                                         Image(systemName: "arrow.triangle.2.circlepath")
                                             .font(.caption)
@@ -1031,19 +1047,20 @@ private struct DayTasksInlineView: View {
 
                                 Spacer()
 
-                                if task.isCompleted {
-                                    Image(systemName: "checkmark")
-                                        .font(.headline)
-                                        .foregroundStyle(.green)
+                                HStack(spacing: 6) {
+
+                                    if task.isCompleted {
+                                        Image(systemName: "checkmark")
+                                            .font(.headline)
+                                            .foregroundStyle(.green)
+                                    }
+
+                                    Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
+                                        .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
+                                        .foregroundStyle(iconColor(for: task), .primary)
+                                        .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
+                                        .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
                                 }
-
-                                Spacer()
-
-                                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                                    .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
-                                    .foregroundStyle(iconColor(for: task), .primary)
-                                    .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
-                                    .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
                             }
                         }
                         .padding(.vertical, 4)

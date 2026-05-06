@@ -83,8 +83,6 @@ struct ScheduleSection: View {
                             .padding(.top, 8)
                     }
                 }
-                .onAppear { validateReminder() }
-                .onChange(of: task.deadLine) { _, _ in validateReminder() }
             }
 
             if task.deadLine != nil {
@@ -151,6 +149,11 @@ struct ScheduleSection: View {
                                 ForEach(1...365, id: \.self) { value in
                                     Button("\(value)") {
                                         task.recurrenceInterval = value
+
+                                        if selectedRecurrence != .none {
+                                            task.recurrenceRule = selectedRecurrence.rawValue
+                                        }
+
                                         saveTask()
                                     }
                                 }
@@ -219,10 +222,15 @@ struct ScheduleSection: View {
                 .onChange(of: selectedRecurrence) { _, newValue in
                     if newValue == .none {
                         task.recurrenceRule = nil
+                        task.recurrenceInterval = 1
                     } else {
                         task.recurrenceRule = newValue.rawValue
-                        task.recurrenceInterval = 1
+
+                        if task.recurrenceInterval < 1 {
+                            task.recurrenceInterval = 1
+                        }
                     }
+
                     saveTask()
                 }
             }
@@ -249,5 +257,15 @@ struct ScheduleSection: View {
             .pickerStyle(.menu)
         }
         .listRowBackground(Color(.systemBackground).opacity(0.3))
+        .onChange(of: task.deadLine) { _, newValue in
+            validateReminder()
+
+            if newValue == nil {
+                task.recurrenceRule = nil
+                task.recurrenceInterval = 1
+                selectedRecurrence = .none
+                saveTask()
+            }
+        }
     }
 }

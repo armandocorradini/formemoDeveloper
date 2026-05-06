@@ -188,7 +188,7 @@ struct TaskTabView: View {
             )
             .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
             .padding(.horizontal, 16)
-            .padding(.bottom, -14 )//avvicina la bar al fondo telefono
+            .padding(.bottom, -20 )//avvicina la bar al fondo telefono
         }
         .ignoresSafeArea(.keyboard)
     }

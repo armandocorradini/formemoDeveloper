@@ -12,12 +12,25 @@ import SwiftData
     let modelContext: ModelContext
 
     private var shouldShowHighlight: Bool {
-        let isCritical = task.priority.systemImage == "flame"
-        let isOverdue = (task.deadLine ?? .distantPast) < .now && !task.isCompleted
-        let isToday = Calendar.current.isDateInToday(task.deadLine ?? .distantPast)
+        guard highlightEnabled else {
+            return false
+        }
 
-        return isCritical && (isOverdue || isToday)
+        guard task.priority.systemImage == "flame" else {
+            return false
+        }
+
+        guard !task.isCompleted else {
+            return false
+        }
+
+        let deadline = task.deadLine ?? .distantFuture
+
+        return deadline < .now || Calendar.current.isDateInToday(deadline)
     }
+
+    @AppStorage("tasklist.highlightEnabled")
+    private var highlightEnabled: Bool = true
 
     @AppStorage("tasklist.highlightColor")
     private var highlightColorHex: String = Color.red.toHex() ?? ""

@@ -29,6 +29,7 @@ struct TaskMapAnnotationModel: Identifiable, Equatable {
         let title: String
         let deadline: Date?
         let urgency: UrgencyLevel
+        let prioritySystemImage: String
         let tagIcon: String?
         let tagColor: Color?
     }
@@ -172,6 +173,7 @@ extension TaskMapView {
                 title: task.title,
                 deadline: task.deadLine,
                 urgency: urgency,
+                prioritySystemImage: task.priority.systemImage ?? "",
                 tagIcon: task.mainTag?.mainIcon,
                 tagColor: task.mainTag?.color
             )
@@ -288,6 +290,16 @@ struct TaskAnnotationView: View {
     
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
+
+    @AppStorage("tasklist.highlightEnabled")
+    private var highlightEnabled: Bool = true
+
+    @AppStorage("tasklist.highlightColor")
+    private var highlightColorHex: String = Color.red.toHex() ?? ""
+
+    private var highlightColor: Color {
+        Color(hex: highlightColorHex) ?? .red
+    }
     
     // Helper computed properties for color logic
     private var baseColor: Color {
@@ -382,6 +394,15 @@ extension TaskAnnotationView {
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
+                            
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(
+                                    shouldShowHighlight(for: it)
+                                    ? highlightColor.opacity(0.9)
+                                    : Color.clear
+                                )
+                                .frame(width: 4, height: 18)
+                            
                             if let icon = it.tagIcon {
                                 Image(systemName: icon)
                                     .font(.caption)
@@ -391,7 +412,7 @@ extension TaskAnnotationView {
                                         .primary
                                     )
                             }
-
+                            
                             let itemColor: Color = {
                                 switch it.urgency {
                                 case .overdue: return Color(red: 1.0, green: 0.1, blue: 0.1)
@@ -399,17 +420,17 @@ extension TaskAnnotationView {
                                 case .none: return Color.indigo
                                 }
                             }()
-
+                            
                             Circle()
                                 .fill(itemColor)
                                 .frame(width: 7, height: 7)
-
+                            
                             Text(it.title)
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .lineLimit(1)
                         }
-
+                        
                         if let d = it.deadline {
                             Text(d.formatted(date: .abbreviated, time: .shortened))
                                 .font(.caption2)
@@ -420,7 +441,7 @@ extension TaskAnnotationView {
                 }
                 .buttonStyle(.plain)
             }
-
+            
             if let locationName = model.locationName {
                 Text(locationName)
                     .font(.caption2)
@@ -428,7 +449,7 @@ extension TaskAnnotationView {
                     .foregroundStyle(.primary)
                     .lineLimit(1)
             }
-
+            
             if let address = model.address {
                 Text(address)
                     .font(.caption2)
@@ -440,5 +461,22 @@ extension TaskAnnotationView {
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .shadow(radius: 2)
+    }
+    
+    
+    private func shouldShowHighlight(for item: TaskMapAnnotationModel.Item) -> Bool {
+        guard highlightEnabled else {
+            return false
+        }
+
+        guard item.prioritySystemImage == "flame" else {
+            return false
+        }
+
+        guard let deadline = item.deadline else {
+            return false
+        }
+
+        return deadline < .now || Calendar.current.isDateInToday(deadline)
     }
 }
