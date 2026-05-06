@@ -325,9 +325,12 @@ struct ImportExportSettingsView: View {
                 Text("This will import tasks from a CSV file.")
             }
             .sheet(isPresented: $showCSVImporter) {
-                CSVImportView { count in
-                    showToast(count, action: "imported")
-                }
+                CSVImportView(
+                    isPresented: $showCSVImporter,
+                    onImportCompleted: { count in
+                        showToast(count, action: "imported")
+                    }
+                )
             }
             .navigationDestination(item: $route) { route in
                 switch route {
@@ -384,46 +387,102 @@ struct ImportExportSettingsView: View {
 // MARK: - CSV Import
 @MainActor
 struct CSVImportView: View {
-    
+    @Binding var isPresented: Bool
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
-    
+
     let onImportCompleted: (Int) -> Void
-    
+
     @State private var showImporter = false
     @State private var parsedItems: [CSVTask] = []
     @State private var showPreview = false
-    
+    @State private var hasPresentedImporter = false
+    @State private var importCancelled = false
+
     var body: some View {
         Group {
-            if showPreview {
+            if importCancelled {
+                NavigationStack {
+                    VStack(spacing: 20) {
+
+                        Image(systemName: "xmark.circle")
+                            .font(.system(size: 42))
+                            .foregroundStyle(.secondary)
+
+                        Text("Operation cancelled")
+                            .font(.headline)
+
+                        Button("Close") {
+                            isPresented = false
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color(.systemGroupedBackground))
+                    .navigationTitle("Import CSV")
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+
+            } else if showPreview {
                 NavigationStack {
                     CSVImportPreviewView(
                         items: parsedItems,
                         onImport: { selected in
                             try? CSVImporter.importTasks(selected, context: context)
                             onImportCompleted(selected.count)
-                            dismiss()
+                            isPresented = false
+                        },
+                        onCancel: {
+                            isPresented = false
                         }
                     )
                 }
             } else {
-                Color.clear
-                    .onAppear {
+                ZStack {
+                    Color(.systemGroupedBackground)
+                        .ignoresSafeArea()
+
+                    VStack(spacing: 16) {
+                        ProgressView()
+
+                        Text("Please wait…")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .onAppear {
+                    guard !hasPresentedImporter else { return }
+
+                    hasPresentedImporter = true
+
+                    DispatchQueue.main.async {
                         showImporter = true
                     }
-                    .fileImporter(
-                        isPresented: $showImporter,
-                        allowedContentTypes: [.commaSeparatedText]
-                    ) { result in
-                        switch result {
-                        case .success(let url):
-                            showImporter = false
-                            loadCSV(url)
-                        case .failure:
-                            dismiss()
+                }
+                .fileImporter(
+                    isPresented: $showImporter,
+                    allowedContentTypes: [.commaSeparatedText]
+                ) { result in
+                    switch result {
+                    case .success(let url):
+                        showImporter = false
+                        loadCSV(url)
+                    case .failure:
+                        showImporter = false
+                        showPreview = false
+                        parsedItems.removeAll()
+                        importCancelled = true
+                    }
+                }
+                .onChange(of: showImporter) { _, newValue in
+                    if hasPresentedImporter && !newValue && !showPreview && parsedItems.isEmpty {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            if !showPreview {
+                                importCancelled = true
+                            }
                         }
                     }
+                }
             }
         }
     }
@@ -438,13 +497,13 @@ struct CSVImportView: View {
             do {
                 let parsed = try CSVImporter.parse(url: url)
                 if parsed.isEmpty {
-                    dismiss()
+                    isPresented = false
                     return
                 }
                 parsedItems = parsed
                 showPreview = true
             } catch {
-                dismiss()
+                isPresented = false
             }
         }
     }
@@ -454,6 +513,7 @@ struct CSVImportPreviewView: View {
     
     let items: [CSVTask]
     let onImport: ([CSVTask]) -> Void
+    let onCancel: () -> Void
     
     @Environment(\.dismiss) private var dismiss
     @State private var selection: Set<UUID> = []
@@ -521,7 +581,7 @@ struct CSVImportPreviewView: View {
         .toolbar {
             ToolbarItem(placement:.topBarLeading) {
                 Button {
-                    dismiss()
+                    onCancel()
                 } label: {
                     Text("")
                         .fontWeight(.semibold)
@@ -553,9 +613,8 @@ struct CSVImportPreviewView: View {
                     }
                 }
 
-                    Button("Cancel") {
-                        dismiss()
-
+                Button("Cancel") {
+                    onCancel()
                 }
             }
         }

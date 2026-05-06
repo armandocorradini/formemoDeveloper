@@ -190,6 +190,7 @@ struct TaskTabView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, -14 )//avvicina la bar al fondo telefono
         }
+        .ignoresSafeArea(.keyboard)
     }
     
     // MARK: - iPad Layout

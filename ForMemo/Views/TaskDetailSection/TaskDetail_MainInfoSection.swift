@@ -45,6 +45,7 @@ import SwiftData
                         showAttachments: false,
                         showLocation: false
                     )
+                    .padding(.trailing, 10)
 
                     TextField(
                         "Title",
