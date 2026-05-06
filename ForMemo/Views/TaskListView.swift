@@ -591,7 +591,7 @@ struct TaskRow: View {
     private var highlightColorHex: String = Color.red.toHex() ?? ""
 
     private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .blue
+        Color(hex: highlightColorHex) ?? .red
     }
 
     @AppStorage("tasklist.showTodayExpiredLabel")
@@ -732,11 +732,11 @@ struct TodoSectionView: View {
         let style: TaskListStyle
 
         @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
-        @AppStorage("tasklist.highlightEnabled") var highlightEnabled: Bool = true
-        @AppStorage("tasklist.highlightColor") var highlightColorHex: String = Color.red.toHex() ?? ""
+        @AppStorage("tasklist.highlightEnabled") private var highlightEnabled: Bool = true
+        @AppStorage("tasklist.highlightColor")  private var highlightColorHex: String = Color.red.toHex() ?? ""
 
         private var highlightColor: Color {
-            Color(hex: highlightColorHex) ?? .blue
+            Color(hex: highlightColorHex) ?? .red
         }
 
         func body(content: Content) -> some View {

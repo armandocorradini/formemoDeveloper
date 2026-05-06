@@ -687,6 +687,7 @@ Attivazione: \(triggerInfo)
                 if newPhase == .active {
                     checkNotificationStatus()
                     cleanupRecentlyDeleted()
+                    syncLocationPermission()
                 }
             }
 
@@ -729,6 +730,15 @@ Attivazione: \(triggerInfo)
         }
     }
     // MARK: - Helpers
+
+    private func syncLocationPermission() {
+        let status = CLLocationManager().authorizationStatus
+        
+        if status == .authorizedAlways {
+            locationRemindersEnabled = true
+        }
+    }
+
     private func openNotificationSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)

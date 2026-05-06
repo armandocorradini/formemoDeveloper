@@ -89,17 +89,132 @@ struct ScheduleSection: View {
 
             if task.deadLine != nil {
 
-                HStack {
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                        .foregroundStyle(.blue)
-                    Text("Repeat")
-                    Spacer()
-                    Picker("", selection: $selectedRecurrence) {
-                        ForEach(RecurrenceUI.allCases) { option in
-                            Text(LocalizedStringKey(option.localizationKey)).tag(option)
+                VStack(alignment: .leading, spacing: 10) {
+
+                    HStack(spacing: 10) {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .foregroundStyle(.blue)
+
+                        Text(String(localized: "Repeat"))
+                        
+                        if selectedRecurrence == .none {
+                            Spacer()
+
+                            Picker("", selection: $selectedRecurrence) {
+                                ForEach(RecurrenceUI.allCases) { option in
+                                    Text({
+                                        let plural = task.recurrenceInterval > 1
+
+                                        switch option {
+                                        case .daily:
+                                            return plural
+                                            ? String(localized: "days")
+                                            : String(localized: "day")
+
+                                        case .weekly:
+                                            return plural
+                                            ? String(localized: "weeks")
+                                            : String(localized: "week")
+
+                                        case .monthly:
+                                            return plural
+                                            ? String(localized: "months")
+                                            : String(localized: "month")
+
+                                        case .yearly:
+                                            return plural
+                                            ? String(localized: "years")
+                                            : String(localized: "year")
+
+                                        case .none:
+                                            return String(localized: "recurrence.none")
+                                        }
+                                    }())
+                                    .tag(option)
+                                }
+                            }
+                            .labelsHidden()
+                            .fixedSize(horizontal: true, vertical: false)
+                            .tint(.secondary)
                         }
                     }
-                    .labelsHidden()
+
+                    HStack(spacing: 18) {
+
+                        if selectedRecurrence != .none {
+
+                            Text(String(localized: "Every"))
+                                .foregroundStyle(.primary)
+                                .padding(.trailing, 2)
+
+                            Menu {
+                                ForEach(1...365, id: \.self) { value in
+                                    Button("\(value)") {
+                                        task.recurrenceInterval = value
+                                        saveTask()
+                                    }
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    if task.recurrenceInterval != 1 {
+                                        Text("\(task.recurrenceInterval)")
+                                            .monospacedDigit()
+                                            .foregroundStyle(.primary)
+                                    }
+
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .font(.caption)
+                                        .foregroundStyle(.primary)
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 6)
+                                .contentShape(Rectangle())
+                                .tint(.primary)
+                            }
+                            .tint(.primary)
+                        }
+
+                        if selectedRecurrence != .none {
+                            Picker("", selection: $selectedRecurrence) {
+                                ForEach(RecurrenceUI.allCases) { option in
+                                    Text({
+                                        let plural = task.recurrenceInterval > 1
+
+                                        switch option {
+                                        case .daily:
+                                            return plural
+                                            ? String(localized: "days")
+                                            : String(localized: "day")
+
+                                        case .weekly:
+                                            return plural
+                                            ? String(localized: "weeks")
+                                            : String(localized: "week")
+
+                                        case .monthly:
+                                            return plural
+                                            ? String(localized: "months")
+                                            : String(localized: "month")
+
+                                        case .yearly:
+                                            return plural
+                                            ? String(localized: "years")
+                                            : String(localized: "year")
+
+                                        case .none:
+                                            return String(localized: "recurrence.none")
+                                        }
+                                    }())
+                                    .tag(option)
+                                }
+                            }
+                            .labelsHidden()
+                            .fixedSize(horizontal: true, vertical: false)
+                            .layoutPriority(1)
+                            .padding(.leading, 6)
+                            .tint(.primary)
+                        }
+                    }
                 }
                 .onChange(of: selectedRecurrence) { _, newValue in
                     if newValue == .none {
@@ -109,20 +224,6 @@ struct ScheduleSection: View {
                         task.recurrenceInterval = 1
                     }
                     saveTask()
-                }
-
-                if selectedRecurrence != .none {
-                    Stepper(
-                        "",
-                        value: Binding(
-                            get: { task.recurrenceInterval },
-                            set: { newValue in
-                                task.recurrenceInterval = newValue
-                                saveTask()
-                            }
-                        ),
-                        in: 1...30
-                    )
                 }
             }
 
@@ -150,6 +251,3 @@ struct ScheduleSection: View {
         .listRowBackground(Color(.systemBackground).opacity(0.3))
     }
 }
-
-
-

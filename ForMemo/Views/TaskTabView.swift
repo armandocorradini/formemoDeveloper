@@ -165,33 +165,31 @@ struct TaskTabView: View {
             }
         }
         .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 0) {
-                HStack(spacing: 10) {
-                    tabItem("house", NSLocalizedString("Home", comment: ""), 0)
-                    tabItem("checklist", NSLocalizedString("list_tab", comment: ""), 1)
-                    tabItem("calendar.day.timeline.right",
-                            taskWeekDays == 1
-                            ? String(localized: "today_tab")
-                            : String(localized: "\(taskWeekDays) days_tab"),
-                            4)
-                    tabItem("calendar", NSLocalizedString("calendar_tab", comment: ""), 3)
-                    tabItem("map", NSLocalizedString("map_tab", comment: ""), 5)
-                    tabItem("gear", NSLocalizedString("settings_tab", comment: ""), 2)
-                }
-                .frame(height: 49)
-                .frame(maxHeight: .infinity, alignment: .center)
+            HStack(spacing: 10) {
+                tabItem("house", NSLocalizedString("Home", comment: ""), 0)
+                tabItem("checklist", NSLocalizedString("list_tab", comment: ""), 1)
+                tabItem("calendar.day.timeline.right",
+                        taskWeekDays == 1
+                        ? String(localized: "today_tab")
+                        : String(localized: "\(taskWeekDays) days_tab"),
+                        4)
+                tabItem("calendar", NSLocalizedString("calendar_tab", comment: ""), 3)
+                tabItem("map", NSLocalizedString("map_tab", comment: ""), 5)
+                tabItem("gear", NSLocalizedString("settings_tab", comment: ""), 2)
             }
-            .frame(height: 64)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.horizontal, 16)
-            .background(.bar)
+            .frame(height: 50)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 12)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(
-                Divider().opacity(0.3),
-                alignment: .top
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
             )
-            .padding(.vertical, 4)
+            .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
+            .padding(.horizontal, 16)
+            .padding(.bottom, -14 )//avvicina la bar al fondo telefono
         }
-        .ignoresSafeArea(edges: .bottom)
     }
     
     // MARK: - iPad Layout

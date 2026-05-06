@@ -933,10 +933,17 @@ private struct DayTasksInlineView: View {
     
     @Environment(\.modelContext) private var modelContext
     @AppStorage("confirmTaskDeletion") private var confirmTaskDeletion = true
-    
+
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
-    
+
+    // New AppStorage properties for highlight
+    @AppStorage("tasklist.highlightEnabled")
+    private var highlightEnabled: Bool = true
+
+    @AppStorage("tasklist.highlightColor")
+    private var highlightColorHex: String = Color.red.toHex() ?? ""
+
     @State private var taskPendingDeletion: TodoTask?
     let tasks: [TodoTask]
     var onEditTask: (TodoTask) -> Void
@@ -947,6 +954,22 @@ private struct DayTasksInlineView: View {
         } else {
             return task.mainTag?.color ?? task.status.color
         }
+    }
+
+    // Helper methods for highlight
+    private func shouldShowHighlight(for task: TodoTask) -> Bool {
+        guard highlightEnabled else { return false }
+
+        let isCritical = task.priority.systemImage == "flame"
+
+        return isCritical && (
+            isOverdue(task) ||
+            Calendar.current.isDateInToday(task.deadLine ?? .distantPast)
+        )
+    }
+
+    private func highlightColor(for task: TodoTask) -> Color {
+        Color(hex: highlightColorHex) ?? .red
     }
     
     var body: some View {
@@ -974,42 +997,54 @@ private struct DayTasksInlineView: View {
                 ForEach(tasks) { task in
                     
                     NavigationLink(value: task) {
-                        HStack(spacing: 15) {
-                            
-                            Text(task.deadLine?.formatted(.dateTime.hour().minute()) ?? "")
-                                .font(.callout.monospacedDigit())
-                                .foregroundStyle(
-                                    isOverdue(task) ? .red : .secondary
-                                )
-                            
-                            HStack(spacing: 6) {
-                                Text(task.title)
-                                    .font(.callout)
-                                    .strikethrough(task.isCompleted)
+                        HStack(spacing: 0) {
+                            if shouldShowHighlight(for: task) {
+                                Rectangle()
+                                    .fill(highlightColor(for: task))
+                                    .frame(width: 4)
+                                    .frame(maxHeight: .infinity)
+                                    .clipShape(RoundedRectangle(cornerRadius: 2))
+                                    .padding(.vertical, 1)
+                                    .padding(.trailing, 10)
+                            }
+                            HStack(spacing: 15) {
+                                Text(task.deadLine?.formatted(.dateTime.hour().minute()) ?? "")
+                                    .font(.callout.monospacedDigit())
                                     .foregroundStyle(
-                                        isOverdue(task) ? .red :
-                                            (task.isCompleted ? .secondary : .primary)
+                                        isOverdue(task) ? .red : .secondary
                                     )
-                                if task.recurrenceRule != nil {
-                                    Image(systemName: "arrow.triangle.2.circlepath")
-                                        .font(.caption)
-                                        .foregroundStyle(.blue)
+
+                                HStack(spacing: 6) {
+                                    Text(task.title)
+                                        .font(.callout)
+                                        .strikethrough(task.isCompleted)
+                                        .foregroundStyle(
+                                            isOverdue(task) ? .red :
+                                                (task.isCompleted ? .secondary : .primary)
+                                        )
+                                    if task.recurrenceRule != nil {
+                                        Image(systemName: "arrow.triangle.2.circlepath")
+                                            .font(.caption)
+                                            .foregroundStyle(.blue)
+                                    }
                                 }
+
+                                Spacer()
+
+                                if task.isCompleted {
+                                    Image(systemName: "checkmark")
+                                        .font(.headline)
+                                        .foregroundStyle(.green)
+                                }
+
+                                Spacer()
+
+                                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
+                                    .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
+                                    .foregroundStyle(iconColor(for: task), .primary)
+                                    .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
+                                    .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
                             }
-                            
-                            Spacer()
-                            
-                            if task.isCompleted {
-                                Image(systemName: "checkmark")
-                                    .font(.headline)
-                                    .foregroundStyle(.green)
-                            }
-                            Spacer()
-                            Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                                .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
-                                .foregroundStyle(iconColor(for: task), .primary)
-                                .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
-                                .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
                         }
                         .padding(.vertical, 4)
                     }

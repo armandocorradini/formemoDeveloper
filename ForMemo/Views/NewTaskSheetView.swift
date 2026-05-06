@@ -233,71 +233,124 @@ struct NewTaskSheetView: View {
             // 🔁 Recurrence
             if draftTask.deadLine != nil {
                 Section {
-                
-                HStack {
-                    Label("Repeat", systemImage: "arrow.triangle.2.circlepath")
-                    Spacer()
-                    
-                    Picker("", selection: $selectedRecurrence) {
-                        ForEach(RecurrenceUI.allCases) { option in
-                            Text(LocalizedStringKey(option.localizationKey)).tag(option)
+
+                    VStack(alignment: .leading, spacing: 10) {
+
+                        HStack(spacing: 10) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .foregroundStyle(.blue)
+
+                            Text("Repeat")
+
+                            if selectedRecurrence == .none {
+                                Spacer()
+
+                                Picker("", selection: $selectedRecurrence) {
+                                    ForEach(RecurrenceUI.allCases) { option in
+                                        Text({
+                                            let plural = draftTask.recurrenceInterval > 1
+
+                                            switch option {
+                                            case .daily:
+                                                return NSLocalizedString(plural ? "days" : "day", comment: "")
+
+                                            case .weekly:
+                                                return NSLocalizedString(plural ? "weeks" : "week", comment: "")
+
+                                            case .monthly:
+                                                return NSLocalizedString(plural ? "months" : "month", comment: "")
+
+                                            case .yearly:
+                                                return NSLocalizedString(plural ? "years" : "year", comment: "")
+
+                                            case .none:
+                                                return NSLocalizedString("recurrence.none", comment: "")
+                                            }
+                                        }())
+                                        .tag(option)
+                                    }
+                                }
+                                .labelsHidden()
+                                .fixedSize(horizontal: true, vertical: false)
+                                .tint(.secondary)
+                            }
+                        }
+
+                        HStack(spacing: 18) {
+
+                            if selectedRecurrence != .none {
+
+                                Text("Every")
+                                    .foregroundStyle(.primary)
+                                    .padding(.trailing, 2)
+
+                                Menu {
+                                    ForEach(1...365, id: \.self) { value in
+                                        Button("\(value)") {
+                                            draftTask.recurrenceInterval = value
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        if draftTask.recurrenceInterval != 1 {
+                                            Text("\(draftTask.recurrenceInterval)")
+                                                .monospacedDigit()
+                                                .foregroundStyle(.primary)
+                                        }
+
+                                        Image(systemName: "chevron.up.chevron.down")
+                                            .font(.caption)
+                                            .foregroundStyle(.primary)
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 6)
+                                    .contentShape(Rectangle())
+                                    .tint(.primary)
+                                }
+                                .tint(.primary)
+
+                                Picker("", selection: $selectedRecurrence) {
+                                    ForEach(RecurrenceUI.allCases) { option in
+                                        Text({
+                                            let plural = draftTask.recurrenceInterval > 1
+
+                                            switch option {
+                                            case .daily:
+                                                return NSLocalizedString(plural ? "days" : "day", comment: "")
+
+                                            case .weekly:
+                                                return NSLocalizedString(plural ? "weeks" : "week", comment: "")
+
+                                            case .monthly:
+                                                return NSLocalizedString(plural ? "months" : "month", comment: "")
+
+                                            case .yearly:
+                                                return NSLocalizedString(plural ? "years" : "year", comment: "")
+
+                                            case .none:
+                                                return NSLocalizedString("recurrence.none", comment: "")
+                                            }
+                                        }())
+                                        .tag(option)
+                                    }
+                                }
+                                .labelsHidden()
+                                .fixedSize(horizontal: true, vertical: false)
+                                .layoutPriority(1)
+                                .padding(.leading, 6)
+                                .tint(.primary)
+                            }
                         }
                     }
-                    .labelsHidden()
-                }
-                
-                .onChange(of: selectedRecurrence) { _, newValue in
-                    
-                    if newValue == .none {
-                        draftTask.recurrenceRule = nil
-                    } else {
-                        draftTask.recurrenceRule = newValue.rawValue
-                        draftTask.recurrenceInterval = 1
-                    }
-                }
-                
-                if selectedRecurrence != .none {
-                    
-                    let count = draftTask.recurrenceInterval
-                    
-                    let unitKey: String = {
-                        switch selectedRecurrence {
-                        case .daily:
-                            return count == 1 ? "recurrence.day.one" : "recurrence.day.other"
-                        case .weekly:
-                            return count == 1 ? "recurrence.week.one" : "recurrence.week.other"
-                        case .monthly:
-                            return count == 1 ? "recurrence.month.one" : "recurrence.month.other"
-                        case .yearly:
-                            return count == 1 ? "recurrence.year.one" : "recurrence.year.other"
-                        case .none:
-                            return ""
+                    .onChange(of: selectedRecurrence) { _, newValue in
+
+                        if newValue == .none {
+                            draftTask.recurrenceRule = nil
+                        } else {
+                            draftTask.recurrenceRule = newValue.rawValue
+                            draftTask.recurrenceInterval = 1
                         }
-                    }()
-                    
-                    let unit = unitKey.isEmpty ? "" : String(localized: .init(unitKey))
-                    
-                    Stepper(
-                        String(
-                            format: NSLocalizedString("recurrence.format %lld %@", comment: ""),
-                            count, unit
-                        ),
-                        value: Binding(
-                            get: { draftTask.recurrenceInterval },
-                            set: { draftTask.recurrenceInterval = $0 }
-                        ),
-                        in: 1...30
-                    )
-                    
-//                    Button(role: .destructive) {
-//                        draftTask.recurrenceRule = nil
-//                        draftTask.recurrenceInterval = 1
-//                        selectedRecurrence = .none
-//                    } label: {
-//                        Label("Remove repeat", systemImage: "xmark.circle")
-//                    }
-                }
-                
+                    }
                 }
             }
             

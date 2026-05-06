@@ -194,7 +194,7 @@ private struct WeeklyTaskRow: View {
     private var highlightColorHex: String = Color.red.toHex() ?? ""
 
     private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .blue
+        Color(hex: highlightColorHex) ?? .red
     }
     
     @AppStorage("confirmTaskDeletion")
