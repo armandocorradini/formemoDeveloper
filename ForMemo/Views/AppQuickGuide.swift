@@ -47,7 +47,7 @@ struct AppQuickGuideView: View {
         
         .init(
             title: String(localized:"Smart Priorities"),
-            description: String(localized:"Tasks with critical priority that are due today or overdue are highlighted automatically. You can customize highlight color and opacity in Settings."),
+            description: String(localized:"Tasks with critical priority that are due today or overdue are highlighted automatically. You can customize highlight color in Settings."),
             icon: "exclamationmark.circle",
             tint: .red
         ),
@@ -127,8 +127,8 @@ struct AppQuickGuideView: View {
         .init(
             title: String(localized:"Recurring Tasks"),
             description: String(localized:"Set tasks to repeat daily, weekly, monthly, or yearly. When you complete a recurring task, the next one is created automatically based on the selected frequency."),
-            icon: "repeat",
-            tint: .green
+            icon: "arrow.triangle.2.circlepath",
+            tint: .blue
         ),
         .init(
 
