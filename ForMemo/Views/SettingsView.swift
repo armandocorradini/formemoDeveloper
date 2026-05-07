@@ -170,6 +170,21 @@ struct SettingsView: View {
                                 .frame(width: iconWidth)
                         }
                     }
+
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "lock.shield")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+
+                            Text("Permissions")
+                                .tint(.primary)
+                        }
+                    }
                     
                     Button {
                         openLanguageSettings()
@@ -184,6 +199,7 @@ struct SettingsView: View {
                                 .foregroundStyle(.blue).opacity(0.7)
                         }
                     }
+
                     
                     HStack(spacing: 12){
                         Image(systemName: "paintbrush").foregroundStyle(.blue)
