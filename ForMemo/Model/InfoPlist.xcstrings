@@ -169,36 +169,35 @@
     },
     "NSLocationAlwaysAndWhenInUseUsageDescription" : {
       "comment" : "Privacy - Location Always and When In Use Usage Description",
-      "extractionState" : "extracted_with_value",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diese App benötigt Zugriff auf Ihren Standort im Hintergrund, um Sie zu benachrichtigen, wenn Sie an einem gespeicherten Ort ankommen."
+            "value" : "ForMemo verwendet Ihren Standort im Hintergrund, um Sie zu benachrichtigen, wenn Sie an einem gespeicherten Aufgabenort ankommen."
           }
         },
         "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "This app needs background location access to notify you when you arrive at a saved location."
+            "state" : "translated",
+            "value" : "ForMemo uses your location in the background to notify you when you arrive at a saved task location."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta app necesita acceso a tu ubicación en segundo plano para avisarte cuando llegues a un lugar guardado."
+            "value" : "ForMemo utiliza tu ubicación en segundo plano para avisarte cuando llegues a una ubicación asociada a una tarea guardada."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette app a besoin d’un accès à votre position en arrière-plan pour vous notifier lorsque vous arrivez à un lieu enregistré."
+            "value" : "ForMemo utilise votre position en arrière-plan pour vous notifier lorsque vous arrivez à un lieu associé à une tâche enregistrée."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa app necessita dell’accesso alla posizione in background per notificarti quando arrivi in un luogo salvato."
+            "value" : "ForMemo usa la tua posizione in background per notificarti quando arrivi in un luogo associato a un’attività salvata."
           }
         }
       }
@@ -209,31 +208,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diese App nutzt Ihren Standort, um Ihren Aufgaben Orte zuzuweisen."
+            "value" : "ForMemo verwendet Ihren Standort, damit Sie Orte an Ihre Aufgaben anhängen können."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This app uses your location to assign places to your tasks."
+            "value" : "ForMemo uses your location to let you attach places to your tasks."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta aplicación utiliza tu ubicación para asignar lugares a tus tareas."
+            "value" : "ForMemo utiliza tu ubicación para permitirte asociar lugares a tus tareas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette application utilise votre position pour associer des lieux à vos tâches."
+            "value" : "ForMemo utilise votre position pour vous permettre d’associer des lieux à vos tâches."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa app usa la tua posizione per associare luoghi alle tue attività."
+            "value" : "ForMemo usa la tua posizione per consentirti di associare luoghi alle tue attività."
           }
         }
       }
@@ -244,31 +243,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diese App kann das Mikrofon für Spracheingabe oder Audiofunktionen verwenden."
+            "value" : "ForMemo verwendet das Mikrofon, um Sprachnotizen für Ihre Aufgaben aufzunehmen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This app may use the microphone for voice input or audio features."
+            "value" : "ForMemo uses the microphone to record voice notes for your tasks."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta aplicación puede utilizar el micrófono para entrada de voz o funciones de audio."
+            "value" : "ForMemo utiliza el micrófono para grabar notas de voz para tus tareas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette application peut utiliser le microphone pour la saisie vocale ou des fonctionnalités audio."
+            "value" : "ForMemo utilise le microphone pour enregistrer des notes vocales pour vos tâches."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa app può usare il microfono per input vocale o funzionalità audio."
+            "value" : "ForMemo usa il microfono per registrare note vocali per le tue attività."
           }
         }
       }

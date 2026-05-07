@@ -166,9 +166,9 @@
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app accesses your calendar to import events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "This app accesses your calendar to export events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to take photos and scan documents to attach them to your tasks.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app needs background location access to notify you when you arrive at a saved location.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location to trigger reminders when you arrive at a place.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to record audio notes for your tasks.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "ForMemo uses your location in the background to notify you when you arrive at a saved task location.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "ForMemo uses your location to let you attach places to your tasks.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "ForMemo uses the microphone to record voice notes for your tasks.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app lets you attach photos from your library to your tasks.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "This app needs access to your Reminders to sync your tasks.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "This app needs access to your Reminders to sync your tasks.";
@@ -220,9 +220,9 @@
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app accesses your calendar to import events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "This app accesses your calendar to export events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to take photos and scan documents to attach them to your tasks.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "This app needs background location access to notify you when you arrive at a saved location.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app uses your location to trigger reminders when you arrive at a place.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app uses the microphone to record audio notes for your tasks.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "ForMemo uses your location in the background to notify you when you arrive at a saved task location.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "ForMemo uses your location to let you attach places to your tasks.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "ForMemo uses the microphone to record voice notes for your tasks.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app lets you attach photos from your library to your tasks.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "This app needs access to your Reminders to sync your tasks.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "This app needs access to your Reminders to sync your tasks.";

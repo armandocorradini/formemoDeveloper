@@ -104,6 +104,16 @@ enum DebugTools {
         
         return tasks.allSatisfy { $0.isCompleted }
     }
+
+    
+    // MARK: - Reset Preferences
+    
+    static func resetPreferences() {
+        if let bundleID = Bundle.main.bundleIdentifier {
+            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+            UserDefaults.standard.synchronize()
+        }
+    }
 }
 
 enum DebugLog {

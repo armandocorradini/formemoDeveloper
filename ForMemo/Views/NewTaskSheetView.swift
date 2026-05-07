@@ -461,15 +461,17 @@ struct NewTaskSheetView: View {
 
             // Location Reminder Toggle
             if draftTask.locationLatitude != nil && draftTask.locationLongitude != nil {
-                let isGlobalEnabled = UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
-                
+                let canUseLocationReminders =
+                    UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
+                    && CLLocationManager().authorizationStatus == .authorizedAlways
+
                 VStack(alignment: .leading, spacing: 4) {
                     Toggle("Location Reminder", isOn: $draftTask.locationReminderEnabled)
-                        .disabled(!isGlobalEnabled)
-                        .opacity(isGlobalEnabled ? 1 : 0.4)
-                    
-                    if !isGlobalEnabled {
-                        Text("Enable Location Reminders in Settings")
+                        .disabled(!canUseLocationReminders)
+                        .opacity(canUseLocationReminders ? 1 : 0.4)
+
+                    if !canUseLocationReminders {
+                        Text("Location reminders require \"Always Allow\" location access and must be enabled in Settings.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .padding(.top,6)

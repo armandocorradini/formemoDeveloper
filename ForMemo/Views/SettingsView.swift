@@ -75,7 +75,6 @@ struct SettingsView: View {
     private var locationRadius: Int = 150
 
     @State private var showLocationPermissionAlert = false
-    @State private var showLocationIntroAlert = false
 
     @State private var showImportReminders = false
     @State private var showCalendarImport = false
@@ -292,7 +291,26 @@ struct SettingsView: View {
                             get: { locationRemindersEnabled },
                             set: { newValue in
                                 if newValue {
-                                    showLocationIntroAlert = true
+
+                                    let status = CLLocationManager().authorizationStatus
+
+                                    switch status {
+
+                                    case .authorizedAlways:
+                                        locationRemindersEnabled = true
+
+                                    case .notDetermined:
+                                        LocationReminderManager.shared.requestPermissionIfNeeded()
+                                        locationRemindersEnabled = false
+
+                                    case .authorizedWhenInUse, .denied, .restricted:
+                                        showLocationPermissionAlert = true
+                                        locationRemindersEnabled = false
+
+                                    @unknown default:
+                                        locationRemindersEnabled = false
+                                    }
+
                                 } else {
                                     locationRemindersEnabled = false
                                 }
@@ -358,39 +376,15 @@ struct SettingsView: View {
                         }
                         Button("Cancel", role: .cancel) { }
                     } message: {
-                        Text("To use location reminders, please allow Always access to your location in Settings.")
-                    }
-                    .alert("Location Reminders", isPresented: $showLocationIntroAlert) {
-                        Button("Continue") {
-                            let status = CLLocationManager().authorizationStatus
-
-                            switch status {
-                            case .notDetermined:
-                                LocationReminderManager.shared.requestPermissionIfNeeded()
-
-                            case .authorizedAlways:
-                                locationRemindersEnabled = true
-
-                            case .authorizedWhenInUse, .denied, .restricted:
-                                showLocationPermissionAlert = true
-                                locationRemindersEnabled = false
-
-                            @unknown default:
-                                locationRemindersEnabled = false
-                            }
-                        }
-                        Button("Cancel", role: .cancel) {
-                            locationRemindersEnabled = false
-                        }
-                    } message: {
-                        Text("Get reminders when you arrive at a place.")
+                        Text("Location reminders require \"Always Allow\" location access. Please enable it in Settings.")
                     }
 
                     #if DEBUG
                     Button {
                         Task {
                             let center = UNUserNotificationCenter.current()
-                            let requests = await center.pendingNotificationRequests()
+                            let requests: [UNNotificationRequest] =
+                                await center.pendingNotificationRequests()
 
                             print("🔔 DEBUG NOTIFICATIONS START ------------------")
 
@@ -440,19 +434,19 @@ struct SettingsView: View {
                                     }
                                 }
 
-                                let type: String = {
-                                    if id.contains(".deadline") { return "⏱ DEADLINE" }
-                                    if id.contains(".global") { return "🌍 GLOBAL" }
-                                    if id.contains(".reminder") { return "🔔 REMINDER" }
-                                    if id.contains(".snooze") { return "⏰ SNOOZE" }
+                                var type = "❓ UNKNOWN"
 
-                                    // 🔵 fallback detection (GLOBAL via title)
-                                    if title.contains("Manca") || title.contains("days") {
-                                        return "🌍 GLOBAL"
-                                    }
-
-                                    return "❓ UNKNOWN"
-                                }()
+                                if id.contains(".deadline") {
+                                    type = "⏱ DEADLINE"
+                                } else if id.contains(".global") {
+                                    type = "🌍 GLOBAL"
+                                } else if id.contains(".reminder") {
+                                    type = "🔔 REMINDER"
+                                } else if id.contains(".snooze") {
+                                    type = "⏰ SNOOZE"
+                                } else if title.contains("Manca") || title.contains("days") {
+                                    type = "🌍 GLOBAL"
+                                }
 
                                 print("🔎 RAW ID:", id)
 
@@ -661,6 +655,20 @@ Attivazione: \(triggerInfo)
                             Text("Elimina")
                         }
                     }
+                    Button(role: .destructive) {
+                        DebugTools.resetPreferences()
+
+                        print("🧹 Preferences reset")
+
+                        UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
+
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            exit(0)
+                        }
+                    } label: {
+                        Text("Reset Preferences")
+                            .foregroundStyle(.red)
+                    }
                 }
                 .listRowBackground(Color(.systemBackground).opacity(0.3))
                 .onAppear {
@@ -760,10 +768,12 @@ Attivazione: \(triggerInfo)
     // MARK: - Helpers
 
     private func syncLocationPermission() {
-        let status = CLLocationManager().authorizationStatus
-        
-        if status == .authorizedAlways {
-            locationRemindersEnabled = true
+
+        let hasPermission =
+            CLLocationManager().authorizationStatus == .authorizedAlways
+
+        if !hasPermission {
+            locationRemindersEnabled = false
         }
     }
 
