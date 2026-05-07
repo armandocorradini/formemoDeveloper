@@ -134,6 +134,25 @@ struct ResetAppView: View {
                 modelContext.delete(task)
             }
             
+            // 🔴 Recently Deleted
+            let deletedItems = try modelContext.fetch(FetchDescriptor<DeletedItem>())
+            
+            for item in deletedItems {
+                
+                // 🔥 remove trash files if present
+                if let trashFileName = item.trashFileName,
+                   let trashDir = TaskAttachment.trashDirectory {
+                    
+                    let trashURL = trashDir.appendingPathComponent(trashFileName)
+                    
+                    if fileManager.fileExists(atPath: trashURL.path) {
+                        try? fileManager.removeItem(at: trashURL)
+                    }
+                }
+                
+                modelContext.delete(item)
+            }
+            
             // 🔴 SAVE UNICO
             try modelContext.save()
             
@@ -141,6 +160,14 @@ struct ResetAppView: View {
             if let directory = TaskAttachment.attachmentsDirectory,
                let files = try? fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
                 for file in files {
+                    try? fileManager.removeItem(at: file)
+                }
+            }
+            
+            // 🔴 Clean trash directory
+            if let trashDirectory = TaskAttachment.trashDirectory,
+               let trashFiles = try? fileManager.contentsOfDirectory(at: trashDirectory, includingPropertiesForKeys: nil) {
+                for file in trashFiles {
                     try? fileManager.removeItem(at: file)
                 }
             }
