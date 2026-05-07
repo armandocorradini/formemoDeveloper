@@ -1,5 +1,7 @@
 import SwiftUI
 import PhotosUI
+import AVFoundation
+import AVFAudio
 
 // MARK: - Attachments
  struct ResourcesSection: View {
@@ -18,6 +20,8 @@ import PhotosUI
     let showScanner: () -> Void
 
     @Binding var photoItems: [PhotosPickerItem]
+    @State private var showCameraPermissionAlert = false
+    @State private var showMicrophonePermissionAlert = false
 
     var body: some View {
 
@@ -36,9 +40,37 @@ import PhotosUI
             )
 
             Button {
-                showCamera()
+                switch AVCaptureDevice.authorizationStatus(for: .video) {
+                case .authorized:
+                    showCamera()
+
+                case .notDetermined:
+                    AVCaptureDevice.requestAccess(for: .video) { granted in
+                        DispatchQueue.main.async {
+                            if granted {
+                                showCamera()
+                            } else {
+                                showCameraPermissionAlert = true
+                            }
+                        }
+                    }
+
+                default:
+                    showCameraPermissionAlert = true
+                }
             } label: {
                 Label("Take photo", systemImage: "camera")
+            }
+            .alert(String(localized: "Camera Access Required"), isPresented: $showCameraPermissionAlert) {
+                Button(String(localized: "Cancel"), role: .cancel) { }
+
+                Button(String(localized: "Open Settings")) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            } message: {
+                Text(String(localized: "Enable camera access in Settings to take photos."))
             }
 
             PhotosPicker(
@@ -50,9 +82,37 @@ import PhotosUI
             }
 
             Button {
-                showAudioRecorder()
+                switch AVAudioApplication.shared.recordPermission {
+                case .granted:
+                    showAudioRecorder()
+
+                case .undetermined:
+                    AVAudioApplication.requestRecordPermission { granted in
+                        DispatchQueue.main.async {
+                            if granted {
+                                showAudioRecorder()
+                            } else {
+                                showMicrophonePermissionAlert = true
+                            }
+                        }
+                    }
+
+                default:
+                    showMicrophonePermissionAlert = true
+                }
             } label: {
                 Label("Record voice note", systemImage: "mic")
+            }
+            .alert(String(localized: "Microphone Access Required"), isPresented: $showMicrophonePermissionAlert) {
+                Button(String(localized: "Cancel"), role: .cancel) { }
+
+                Button(String(localized: "Open Settings")) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            } message: {
+                Text(String(localized: "Enable microphone access in Settings to record voice notes."))
             }
 
             Button {

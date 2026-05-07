@@ -72,6 +72,13 @@ struct AttachmentRowView: View {
                 Image(systemName: "eye")
             }
         }
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                onDelete(attachment)
+            } label: {
+                Label("Remove", systemImage: "trash")
+            }
+        }
         .contextMenu {
             Button(role: .destructive) {
                 onDelete(attachment)
