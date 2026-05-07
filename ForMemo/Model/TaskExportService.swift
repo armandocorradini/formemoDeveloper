@@ -24,8 +24,9 @@ final class TaskExportService {
             exportCSV(dtos)
             
         case .calendar:
+#if DEBUG
            print("calendar")
-            
+#endif
         case .ics:
             exportICS(dtos)
         }
@@ -37,7 +38,9 @@ private extension TaskExportService {
     
     func exportCSV(_ items: [TaskTransferObject]) {
         guard let url = CSVExporter.export(items: items) else {
+#if DEBUG
             print("CSV export failed")
+#endif
             return
         }
         
@@ -64,7 +67,10 @@ private extension TaskExportService {
      func exportICS(_ items: [TaskTransferObject]) {
          
          guard let url = ICSExporter.export(items: items) else {
+#if DEBUG
              print("ICS export failed")
+#endif
+             
              return
          }
          
@@ -103,8 +109,9 @@ private extension TaskExportService {
                  }
                  
              } catch {
+#if DEBUG
                  print("Calendar export error:", error.localizedDescription)
-                 
+#endif
                  DispatchQueue.main.async {
                      onComplete(0)
                  }

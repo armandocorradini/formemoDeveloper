@@ -178,6 +178,7 @@ struct SettingsView: View {
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "lock.shield")
+                                .font(.system(size: 21, weight: .semibold))
                                 .foregroundStyle(.blue)
                                 .frame(width: iconWidth)
 

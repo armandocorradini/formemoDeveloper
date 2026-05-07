@@ -121,9 +121,9 @@ final class NotificationManager: NSObject {
         rebuildTask?.cancel()
 
         rebuildTask = Task(priority: .utility) { [weak self] in
-            
+#if DEBUG
             print("🔥 REBUILD SCHEDULED")
-            
+#endif
             guard let self else { return }
 
             try? await Task.sleep(for: .seconds(force ? 0.5 : 1.5))
@@ -159,9 +159,9 @@ final class NotificationManager: NSObject {
 
             // --- OUTSIDE MAIN ACTOR: heavy work ---
             if shouldRebuild {
-
+#if DEBUG
                 print("🔥 REBUILD ESEGUITO")
-
+#endif
                 await self.rebuild(tasks)
 
             }

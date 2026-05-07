@@ -111,9 +111,11 @@ enum AttachmentMigration {
     // MARK: - LOG (TestFlight visible)
     
     private static func log(_ message: String) {
+#if DEBUG
         print("🟣 MIGRATION:", message)
+        DebugLog.write(message)
+#endif
         logger.info("\(message)")
         
-        DebugLog.write(message)   // 🔥 AGGIUNGI QUESTO
     }
 }

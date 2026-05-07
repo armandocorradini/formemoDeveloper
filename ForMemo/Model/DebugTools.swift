@@ -28,8 +28,10 @@ enum DebugTools {
         }
         
         try? context.save()
-        
+#if DEBUG
         print("✅ Generated \(count) tasks in \(Date().timeIntervalSince(start)) sec")
+        
+#endif
     }
     
     // MARK: - Complete
@@ -50,10 +52,14 @@ enum DebugTools {
         }
         
         try? context.save()
-        
+#if DEBUG
         print("✅ Completed debug tasks in \(Date().timeIntervalSince(start)) sec")
+#endif
+        
     }
+    
 
+    
     // MARK: - Delete
     
     static func deleteTasks(context: ModelContext) {
@@ -70,8 +76,10 @@ enum DebugTools {
         }
         
         try? context.save()
-        
+#if DEBUG
         print("🗑 Deleted tasks in \(Date().timeIntervalSince(start)) sec")
+#endif
+        
     }
     
     // MARK: - Check
