@@ -150,7 +150,7 @@ struct TaskListAppearanceView: View {
         task.title = String(localized: "Preview")
         task.taskDescription = "Meeting with the medical team"
         task.priority = .critical
-        task.deadLine = Date().addingTimeInterval(3600)
+        task.deadLine = Date().addingTimeInterval(120)
         task.reminderOffsetMinutes = 60
         task.isCompleted = false
         task.locationName = "Office"
@@ -181,7 +181,7 @@ struct TaskListAppearanceView: View {
         .scrollDisabled(true)
         .contentMargins(.top, 18, for: .scrollContent)
         .contentMargins(.horizontal, 8, for: .scrollContent)
-        .frame(height: 120)
+        .frame(height: 100)
         .modifier(ListStyleModifier(style: listStyleChoice))
     }
     
@@ -217,14 +217,20 @@ struct TaskListAppearanceView: View {
         
         Section("Visible elements") {
             
-            VStack(alignment: .leading) {
-                Text("Highlight overdue & today (critical priority)")
-                Toggle("", isOn: $highlightEnabled)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .top) {
+                    Text("Highlight overdue & today (critical priority)")
+
+                    Spacer()
+
+                    Toggle("", isOn: $highlightEnabled)
+                        .labelsHidden()
+                }
 
                 let palette: [Color] = [
                     .red, .orange, .yellow, .green,
-                    .mint, .teal, .cyan, .blue, .indigo,
-                    .purple, .brown, .gray
+                     .cyan, .blue, .indigo,
+                    .purple, .brown
                 ]
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -249,10 +255,11 @@ struct TaskListAppearanceView: View {
                         }
                     }
                     .padding(.vertical, 6)
-                    .padding(.horizontal, 2)
+                    .padding(.horizontal, 3)
                 }
                 .frame(minHeight: 36)
-                .padding(.vertical, 4)
+                .padding(.top, 4)
+                .padding(.bottom, 2)
                 .disabled(!highlightEnabled)
                 .opacity(!highlightEnabled ? 0.4 : 1)
             }
@@ -357,3 +364,4 @@ extension Color {
                       Int(b * 255))
     }
 }
+

@@ -171,12 +171,8 @@ struct TaskCalendarView: View {
         .sheet(item: $draftTask) { task in
             NewTaskSheetView(draftTask: task)
         }
-        .sheet(item: $taskToEdit) { task in
-            NavigationStack {
-                TaskDetailView(task: task, isSheet: true)
-            }
-            .environment(\.modelContext, modelContext)
-            
+        .navigationDestination(item: $taskToEdit) { task in
+            TaskDetailView(task: task)
         }
     }
     
@@ -723,7 +719,8 @@ private extension TaskCalendarView {
                     onSelect: { selectedDate = day },
                     onToggleCompleted: toggleCompleted,
                     onDelete: { taskToDelete in deleteTask(taskToDelete, in: modelContext)},
-                    onAdd: prepareNewTask
+                    onAdd: prepareNewTask,
+                    onOpenTask: { taskToEdit = $0 }
                 )
             }
         }
@@ -760,8 +757,8 @@ private struct DayCell: View {
         return cal
     }()
     
-    @State private var selectedTask: TodoTask?
-
+    let onOpenTask: (TodoTask) -> Void
+    
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
 
@@ -815,13 +812,11 @@ private struct DayCell: View {
         
         .frame(maxHeight: .infinity, alignment: .top)
         .contentShape(Rectangle())
-        .simultaneousGesture(
-            TapGesture().onEnded {
+        .onTapGesture(coordinateSpace: .local) { location in
+            let dayHeaderHeight: CGFloat = 38
+            if location.y <= dayHeaderHeight {
                 onSelect()
             }
-        )
-        .navigationDestination(item: $selectedTask) { task in
-            TaskDetailView(task: task)
         }
     }
     
@@ -865,28 +860,42 @@ private struct DayCell: View {
                     .sorted { ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture) }
                     .prefix(3)
             ) { task in
-                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                    .font(.system(size: 9, weight: .medium))
-                    .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
-                    .foregroundStyle(iconColor(for: task), .primary)
-                HStack(spacing: 3) {
-                    Text(task.title)
-                        .font(.system(size: 8, weight: .medium))
-                        .lineLimit(2)
-                        .foregroundStyle(
-                            isOverdue(task) ? .red :
-                                (task.isCompleted ? .secondary : .primary)
-                        )
-                        .strikethrough(task.isCompleted, color: .secondary)
-                    if task.recurrenceRule != nil {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 7))
-                            .foregroundStyle(.blue)
+                Button {
+                    onOpenTask(task)
+                } label: {
+                    HStack(spacing: 3) {
+
+                        Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
+                            .font(.system(size: 9, weight: .medium))
+                            .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
+                            .foregroundStyle(iconColor(for: task), .primary)
+
+                        HStack(spacing: 3) {
+                            Text(task.title)
+                                .font(.system(size: 5, weight: .medium))
+                                .lineLimit(2)
+                                .foregroundStyle(
+                                    isOverdue(task) ? .red :
+                                        (task.isCompleted ? .secondary : .primary)
+                                )
+                                .strikethrough(task.isCompleted, color: .secondary)
+
+                            if task.recurrenceRule != nil {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                    .font(.system(size: 7))
+                                    .foregroundStyle(.blue)
+                            }
+                        }
+
+                        Spacer(minLength: 0)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 1)
+                    .contentShape(Rectangle())
                 }
-                .contextMenu {
-                    contextMenu(for: task)
-                }
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
 
             if tasks.count > 3 {
@@ -895,35 +904,7 @@ private struct DayCell: View {
                     .foregroundStyle(.secondary)
             }
         }
-    }
-    
-    @ViewBuilder
-    
-    
-    private func contextMenu(for task: TodoTask) -> some View {
-        
-        Button {
-            selectedTask = task // Questo farà scattare la navigazione
-        } label: {
-            Label("Details", systemImage: "magnifyingglass.circle")
-        }
-        
-        Button {
-            onToggleCompleted(task)
-        } label: {
-            Label(task.isCompleted ? "Mark as not completed" : "Mark as completed",
-                  systemImage: task.isCompleted ? "arrow.uturn.backward.circle" : "checkmark.circle")
-        }
-        
-        Button(role: .destructive) {
-            onDelete(task)
-        } label: {
-            Label("Delete task", systemImage: "trash")
-        }
-        
-        
-        
-        
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -958,23 +939,14 @@ private struct DayTasksInlineView: View {
 
     // Helper methods for highlight
     private func shouldShowHighlight(for task: TodoTask) -> Bool {
-        guard highlightEnabled else {
-            return false
-        }
+        guard highlightEnabled else { return false }
 
-        guard task.priority.systemImage == "flame" else {
-            return false
-        }
+        let isCritical = task.priority.systemImage == "flame"
 
-        guard !task.isCompleted else {
-            return false
-        }
-
-        guard let deadline = task.deadLine else {
-            return false
-        }
-
-        return deadline < .now || Calendar.current.isDateInToday(deadline)
+        return isCritical && (
+            isOverdue(task) ||
+            Calendar.current.isDateInToday(task.deadLine ?? .distantPast)
+        )
     }
 
     private func highlightColor(for task: TodoTask) -> Color {
@@ -1005,7 +977,9 @@ private struct DayTasksInlineView: View {
             List {
                 ForEach(tasks) { task in
                     
-                    NavigationLink(value: task) {
+                    Button {
+                        onEditTask(task)
+                    } label: {
                         HStack(spacing: 0) {
 
                             Rectangle()
@@ -1062,9 +1036,14 @@ private struct DayTasksInlineView: View {
                                         .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
                                 }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                         .padding(.vertical, 4)
                     }
+                    .buttonStyle(.plain)
+                    .contentShape(Rectangle())
                     .listRowBackground(Color.clear)
                     .swipeActions(edge: .leading) {
                         
@@ -1190,9 +1169,9 @@ private struct DayTasksInlineView: View {
             } message: {
                 Text("This action cannot be undone.")
             }
-            .navigationDestination(for: TodoTask.self) { task in
-                TaskDetailView(task: task)
-            }
+            // .navigationDestination(for: TodoTask.self) { task in
+            //     TaskDetailView(task: task)
+            // }
         }
         
     }
@@ -1245,13 +1224,21 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
         
         scrollView.alwaysBounceVertical = true
         scrollView.alwaysBounceHorizontal = true
+
+        // Improve pinch zoom responsiveness and gesture handling
+        scrollView.delaysContentTouches = false
+        scrollView.canCancelContentTouches = true
+        scrollView.panGestureRecognizer.cancelsTouchesInView = false
+        scrollView.pinchGestureRecognizer?.delaysTouchesBegan = false
+        scrollView.pinchGestureRecognizer?.cancelsTouchesInView = false
+        scrollView.decelerationRate = .fast
         
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
         
         scrollView.delegate = context.coordinator
         
-        //        scrollView.panGestureRecognizer.minimumNumberOfTouches = 2
+        scrollView.panGestureRecognizer.minimumNumberOfTouches = 2
         
         scrollView.contentInset = .zero
         scrollView.contentInsetAdjustmentBehavior = .never

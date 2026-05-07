@@ -202,6 +202,37 @@ struct SettingsView: View {
                 }
                 .listRowBackground(Color(.systemBackground).opacity(0.3))
 
+                // MARK: - Tasks & Appearance
+                Section("Tasks & Appearance") {
+                    
+                    Button {
+                        showCustomizationView = true
+                    } label: {
+                        Label {
+                            Text("Customize")
+                                .tint(.primary)
+                        } icon: {
+                            Image(systemName: "list.bullet.circle")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                        }
+                    }
+                    
+                    LabeledContent {
+                        Picker("", selection: $navigationAppRaw) {
+                            ForEach(NavigationApp.allCases) { app in
+                                Text(app.title).tag(app.rawValue)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                        .opacity(0.7)
+                    } label: {
+                        Label("Navigation app", systemImage: "iphone.badge.location")
+                    }
+                }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
+
                 // MARK: - Notifications
                 Section {
                     
@@ -252,24 +283,34 @@ struct SettingsView: View {
                         ))
 
                         if locationRemindersEnabled {
-                            HStack(spacing: 12) {
-                                Image(systemName: "location.circle")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                                Text("Trigger Distance")
-                                    .tint(.primary)
-                                Spacer()
-                                Text("\(locationRadius) m")
-                                    .foregroundStyle(.secondary)
+                            VStack(alignment: .leading, spacing: 8) {
+                                
+                                HStack(spacing: 12) {
+                                    Image(systemName: "location.circle")
+                                        .foregroundStyle(.blue)
+                                        .frame(width: iconWidth)
+                                    
+                                    Text("Trigger Distance")
+                                        .foregroundStyle(.primary)
+                                    
+                                    
+                                        .foregroundStyle(.secondary)
+                                        .monospacedDigit()
+                                }
+                                HStack{
+                                    Spacer()
+                                    
+                                    Text(String(localized:"\(locationRadius)     meters"))
+//                                        .padding(.trailing,4)
+                                    Stepper(
+                                        "",
+                                        value: $locationRadius,
+                                        in: 100...500,
+                                        step: 50
+                                    )
+                                    .labelsHidden()
+                                }
                             }
-
-                            Stepper(
-                                "",
-                                value: $locationRadius,
-                                in: 100...500,
-                                step: 50
-                            )
-
                             Button {
                                 soundPickerContext = .location
                                 showSoundPicker = true
@@ -440,36 +481,6 @@ Attivazione: \(triggerInfo)
                 }
                 .listRowBackground(Color(.systemBackground).opacity(0.3))
 
-                // MARK: - Tasks & Appearance
-                Section("Tasks & Appearance") {
-                    
-                    Button {
-                        showCustomizationView = true
-                    } label: {
-                        Label {
-                            Text("Customize")
-                                .tint(.primary)
-                        } icon: {
-                            Image(systemName: "list.bullet.circle")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                        }
-                    }
-                    
-                    LabeledContent {
-                        Picker("", selection: $navigationAppRaw) {
-                            ForEach(NavigationApp.allCases) { app in
-                                Text(app.title).tag(app.rawValue)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                        .labelsHidden()
-                        .opacity(0.7)
-                    } label: {
-                        Label("Navigation app", systemImage: "iphone.badge.location")
-                    }
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
                 Section {
                     
                     Button {
