@@ -53,6 +53,19 @@ struct TaskRowContent: View, TaskRowBaseLogic {
         return d < Date()
     }
 
+    private var recurringFutureYearText: String? {
+        guard model.recurrenceRule != nil,
+              let deadline = model.deadLine
+        else { return nil }
+
+        let currentYear = Calendar.current.component(.year, from: Date())
+        let deadlineYear = Calendar.current.component(.year, from: deadline)
+
+        guard deadlineYear > currentYear else { return nil }
+
+        return String(deadlineYear)
+    }
+
     @ViewBuilder
     private func todayExpiredLabel() -> some View {
         if showTodayExpiredLabel {
@@ -179,9 +192,16 @@ extension TaskRowContent {
                         .lineLimit(1)
                     
                     if model.recurrenceRule != nil {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                            if let recurringFutureYearText {
+                                Text(recurringFutureYearText)
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
                 
@@ -383,9 +403,16 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                     
                     if model.recurrenceRule != nil {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                            if let recurringFutureYearText {
+                                Text(recurringFutureYearText)
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
 
@@ -423,9 +450,16 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                     
                     if model.recurrenceRule != nil {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                            if let recurringFutureYearText {
+                                Text(recurringFutureYearText)
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
 
@@ -464,9 +498,16 @@ extension TaskRowContent {
                         .lineLimit(1)
                     
                     if model.recurrenceRule != nil {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                            if let recurringFutureYearText {
+                                Text(recurringFutureYearText)
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
                 
@@ -500,9 +541,16 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                     
                     if model.recurrenceRule != nil {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                            if let recurringFutureYearText {
+                                Text(recurringFutureYearText)
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
                     .lineLimit(1)
@@ -538,9 +586,16 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                     
                     if model.recurrenceRule != nil {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                            if let recurringFutureYearText {
+                                Text(recurringFutureYearText)
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
                 
@@ -611,9 +666,16 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                     
                     if model.recurrenceRule != nil {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                            if let recurringFutureYearText {
+                                Text(recurringFutureYearText)
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
             }
@@ -644,9 +706,16 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                     
                     if model.recurrenceRule != nil {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.caption)
-                            .foregroundStyle(.blue)
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(.blue)
+                            if let recurringFutureYearText {
+                                Text(recurringFutureYearText)
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                     }
                 }
             }
@@ -711,9 +780,16 @@ extension TaskRowContent {
                             .tracking(-0.2)
 
                         if model.recurrenceRule != nil {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.caption)
-                                .foregroundStyle(.blue)
+                            HStack(spacing: 3) {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                    .font(.caption)
+                                    .foregroundStyle(.blue)
+                                if let recurringFutureYearText {
+                                    Text(recurringFutureYearText)
+                                        .font(.system(size: 10, weight: .semibold))
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
                     }
 
