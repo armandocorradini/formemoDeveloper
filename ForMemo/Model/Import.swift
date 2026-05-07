@@ -16,6 +16,8 @@ struct ReminderDTO: Identifiable, Hashable {
     let latitude: Double?
     let longitude: Double?
     let priority: Int?
+    let recurrenceRule: String?
+    let recurrenceInterval: Int?
 }
 
 // MARK: - VIEW
@@ -29,6 +31,7 @@ struct RemindersImportView: View {
     @State private var selection = Set<String>()
     @State private var isLoading = false
     @State private var error: AppError?
+    @State private var importResultMessage: String?
     
     private let store = EKEventStore()
     
@@ -71,7 +74,15 @@ struct RemindersImportView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        importSelected()
+                        let message = importSelected()
+                        importResultMessage = message
+
+                        if !message.contains("Skipped duplicates: 0") ||
+                           !message.contains("Failed: 0") {
+                            return
+                        }
+
+                        dismiss()
                     } label: {
                         Text("Import")
                             .fontWeight(.semibold)
@@ -94,6 +105,17 @@ struct RemindersImportView: View {
                 }
             }
             .task { await load() }
+            .alert(
+                "Import Result",
+                isPresented: Binding(
+                    get: { importResultMessage != nil },
+                    set: { if !$0 { importResultMessage = nil } }
+                )
+            ) {
+                Button("OK") { }
+            } message: {
+                Text(importResultMessage ?? "")
+            }
         }
     }
 }
@@ -192,7 +214,7 @@ private extension RemindersImportView {
         let combinedText = reminder.title + " " + (reminder.notes ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let inferredTag = TagInference.infer(from: combinedText.lowercased())
-        
+        let recurrence = mapRecurrence(reminder.recurrenceRules?.first)
         return ReminderDTO(
             id: reminder.calendarItemIdentifier,
             title: reminder.title,
@@ -203,7 +225,9 @@ private extension RemindersImportView {
             locationName: location.name,
             latitude: location.lat,
             longitude: location.lon,
-            priority: mapPriority(reminder.priority)
+            priority: mapPriority(reminder.priority),
+            recurrenceRule: recurrence.rule,
+            recurrenceInterval: recurrence.interval
         )
     }
     
@@ -237,6 +261,34 @@ private extension RemindersImportView {
         return (nil, nil, nil)
     }
     
+    func mapRecurrence(_ rule: EKRecurrenceRule?) -> (rule: String?, interval: Int?) {
+        
+        guard let rule else {
+            return (nil, nil)
+        }
+        
+        let mappedRule: String?
+        
+        switch rule.frequency {
+        case .daily:
+            mappedRule = "daily"
+        case .weekly:
+            mappedRule = "weekly"
+        case .monthly:
+            mappedRule = "monthly"
+        case .yearly:
+            mappedRule = "yearly"
+        default:
+            mappedRule = nil
+        }
+        
+        return (
+            mappedRule,
+            rule.interval
+        )
+    }
+
+    
     func mapPriority(_ value: Int) -> Int? {
         // Apple: 0 = none, 1-4 high, 5 normal, 6-9 low
         
@@ -253,28 +305,36 @@ private extension RemindersImportView {
 
 private extension RemindersImportView {
     
-    func importSelected() {
+    func importSelected() -> String {
         let descriptor = FetchDescriptor<TodoTask>()
+        
         let existing = (try? context.fetch(descriptor)) ?? []
 
-        let existingKeys = Set(existing.map {
+        var existingKeys = Set(existing.map {
             buildKey(title: $0.title, date: $0.deadLine)
         })
-        
-        
+
         let items = reminders.lazy.filter { selection.contains($0.id) }
         
+        var imported = 0
+        var skippedDuplicates = 0
+        var failed = 0
+
         for item in items {
-            
-            guard !item.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
-            
-            let key = buildKey(title: item.title, date: item.deadline)
-            
-            // 🔥 SKIP duplicati
-            if existingKeys.contains(key) {
+
+            guard !item.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                failed += 1
                 continue
             }
-            
+
+            let key = buildKey(title: item.title, date: item.deadline)
+
+            // 🔥 SKIP duplicati
+            if existingKeys.contains(key) {
+                skippedDuplicates += 1
+                continue
+            }
+
             let task = TodoTask(
                 title: item.title,
                 taskDescription: item.notes ?? "",
@@ -285,18 +345,33 @@ private extension RemindersImportView {
                 locationLongitude: item.longitude,
                 priorityRaw: item.priority ?? 0
             )
-            
+
             if let tag = item.tag,
                let mapped = TaskMainTag(rawValue: tag) {
                 task.mainTag = mapped
             }
-            
+
+            task.recurrenceRule = item.recurrenceRule
+
+            if let recurrenceInterval = item.recurrenceInterval {
+                task.recurrenceInterval = recurrenceInterval
+            }
+
             context.insert(task)
+            imported += 1
+            existingKeys.insert(key)
         }
-        
-        try? context.save()
-        NotificationManager.shared.refresh()
-        dismiss()
+
+        do {
+            try context.save()
+            NotificationManager.shared.refresh()
+        } catch {
+            failed += imported
+            imported = 0
+        }
+
+
+        return "Imported: \(imported)\nSkipped duplicates: \(skippedDuplicates)\nFailed: \(failed)"
     }
 }
 
@@ -333,17 +408,7 @@ func filterAlreadyImported(
     context: ModelContext
 ) -> [ReminderDTO] {
     
-    let descriptor = FetchDescriptor<TodoTask>()
-    let existing = (try? context.fetch(descriptor)) ?? []
-    
-    let existingKeys = Set(existing.map {
-        buildKey(title: $0.title, date: $0.deadLine)
-    })
-    
-    return items.filter { item in
-        let key = buildKey(title: item.title, date: item.deadline)
-        return !existingKeys.contains(key)
-    }
+    items
 }
 
 

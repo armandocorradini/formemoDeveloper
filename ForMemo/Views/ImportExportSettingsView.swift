@@ -3,129 +3,6 @@ import SwiftData
 import EventKit
 import UniformTypeIdentifiers
 
-// Temporary inline CSV models and importer to resolve scope errors
-struct CSVTask: Identifiable, Hashable {
-    let id = UUID()
-    let title: String
-    let description: String
-    let deadline: Date?
-    let reminder: Int?
-    let tag: String?
-    let latitude: Double?
-    let longitude: Double?
-    let location: String?
-    let priority: Int
-}
-
-enum CSVImporter {
-    
-    static func parse(url: URL) throws -> [CSVTask] {
-        let content = try String(contentsOf: url, encoding: .utf8)
-        let rows = content
-            .components(separatedBy: CharacterSet.newlines)
-            .filter { !$0.isEmpty }
-            .dropFirst()
-        
-        _ = ISO8601DateFormatter()
-        var result: [CSVTask] = []
-        
-        for row in rows {
-            if row.trimmingCharacters(in: .whitespaces).isEmpty { continue }
-            
-            let cols = parseRow(row)
-            if cols.count < 2 { continue }
-            
-            result.append(
-                CSVTask(
-                    title: cols[0],
-                    description: cols[1],
-                    deadline: parseDate(cols.count > 2 ? cols[2] : ""),
-                    reminder: cols.count > 3 ? Int(cols[3]) : nil,
-                    tag: (cols.count > 4 && !cols[4].isEmpty) ? cols[4] : nil,
-                    latitude: cols.count > 5 ? Double(cols[5]) : nil,
-                    longitude: cols.count > 6 ? Double(cols[6]) : nil,
-                    location: (cols.count > 7 && !cols[7].isEmpty) ? cols[7] : nil,
-                    priority: (cols.count > 8 ? Int(cols[8]) : nil) ?? 0
-                )
-            )
-        }
-        
-        return result
-    }
-
-    private static func parseDate(_ string: String) -> Date? {
-        if string.isEmpty { return nil }
-        
-        let iso = ISO8601DateFormatter()
-        if let d = iso.date(from: string) {
-            return d
-        }
-        
-        let fallback = DateFormatter()
-        fallback.locale = Locale(identifier: "en_US_POSIX")
-        fallback.dateFormat = "yyyy-MM-dd HH:mm"
-        
-        return fallback.date(from: string)
-    }
-    
-    static func importTasks(_ items: [CSVTask], context: ModelContext) throws {
-        
-        let descriptor = FetchDescriptor<TodoTask>()
-        let existing = (try? context.fetch(descriptor)) ?? []
-
-        let existingKeys = Set(existing.map {
-            "\($0.title.lowercased())|\($0.deadLine?.timeIntervalSince1970 ?? 0)"
-        })
-
-        for item in items {
-            
-            guard !item.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
-            
-            let key = "\(item.title.lowercased())|\(item.deadline?.timeIntervalSince1970 ?? 0)"
-            if existingKeys.contains(key) { continue }
-            
-            let task = TodoTask(
-                title: item.title,
-                taskDescription: item.description,
-                deadLine: item.deadline,
-                reminderOffsetMinutes: item.reminder,
-                locationName: item.location,
-                locationLatitude: item.latitude,
-                locationLongitude: item.longitude,
-                priorityRaw: item.priority
-            )
-            
-            if let tag = item.tag,
-               let mapped = TaskMainTag(rawValue: tag) {
-                task.mainTag = mapped
-            }
-            
-            context.insert(task)
-        }
-
-        try context.save()
-    }
-    private static func parseRow(_ row: String) -> [String] {
-        var result: [String] = []
-        var current = ""
-        var insideQuotes = false
-        
-        for char in row {
-            if char == "\"" {
-                insideQuotes.toggle()
-            } else if char == "," && !insideQuotes {
-                result.append(current.trimmingCharacters(in: .whitespaces))
-                current = ""
-            } else {
-                current.append(char)
-            }
-        }
-        
-        result.append(current.trimmingCharacters(in: .whitespaces))
-        return result
-    }
-}
-
 struct ImportExportSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -217,7 +94,6 @@ struct ImportExportSettingsView: View {
                                 try await engine.requestAccess()
                                 
                                 let tasks = allTasks
-                                    .filter { !$0.isCompleted }
                                     .sorted {
                                         ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
                                     }
@@ -254,7 +130,6 @@ struct ImportExportSettingsView: View {
                     
                     NavigationLink {
                         let tasks = allTasks
-                            .filter { !$0.isCompleted }
                             .sorted {
                                 ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
                             }
@@ -277,7 +152,6 @@ struct ImportExportSettingsView: View {
                     
                     NavigationLink {
                         let tasks = allTasks
-                            .filter { !$0.isCompleted }
                             .sorted {
                                 ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
                             }
@@ -398,6 +272,9 @@ struct CSVImportView: View {
     @State private var showPreview = false
     @State private var hasPresentedImporter = false
     @State private var importCancelled = false
+    
+    @State private var importSummaryMessage: String?
+    @State private var showImportSummary = false
 
     var body: some View {
         Group {
@@ -428,9 +305,36 @@ struct CSVImportView: View {
                     CSVImportPreviewView(
                         items: parsedItems,
                         onImport: { selected in
-                            try? CSVImporter.importTasks(selected, context: context)
-                            onImportCompleted(selected.count)
-                            isPresented = false
+                            
+                            do {
+                                let result = try CSVImporter.importTasks(
+                                    selected,
+                                    context: context
+                                )
+                                
+                                if result.imported > 0 {
+                                    onImportCompleted(result.imported)
+                                }
+                                
+                                if result.skippedDuplicates > 0 || result.failed > 0 {
+                                    importSummaryMessage = result.message
+                                    showImportSummary = true
+                                }
+                                else {
+                                    isPresented = false
+                                }
+                                
+#if DEBUG
+                                print(result.message)
+#endif
+                                
+                            } catch {
+#if DEBUG
+                                print("CSV import error:", error.localizedDescription)
+#endif
+                            }
+                            
+                            // isPresented = false
                         },
                         onCancel: {
                             isPresented = false
@@ -484,6 +388,16 @@ struct CSVImportView: View {
                     }
                 }
             }
+        }
+        .alert(
+            "Import Result",
+            isPresented: $showImportSummary
+        ) {
+            Button("OK") {
+                isPresented = false
+            }
+        } message: {
+            Text(importSummaryMessage ?? "")
         }
     }
 
@@ -670,16 +584,24 @@ struct CSVExportSelectionView: View {
                             .foregroundStyle(task.mainTag?.color ?? .blue)
                         
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(task.title)
-                                .font(.headline)
-                            
+                            HStack(spacing: 6) {
+                                Text(task.title)
+                                    .font(.headline)
+
+                                if task.isCompleted {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.caption)
+                                        .foregroundStyle(.green)
+                                }
+                            }
+
                             if !task.taskDescription.isEmpty {
                                 Text(task.taskDescription)
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)
                             }
-                            
+
                             VStack(alignment: .leading, spacing: 4) {
                                 if let date = task.deadLine {
                                     Label(
@@ -687,7 +609,7 @@ struct CSVExportSelectionView: View {
                                         systemImage: "clock"
                                     )
                                 }
-                                
+
                                 if let location = task.locationName {
                                     Label(location, systemImage: "mappin")
                                 }

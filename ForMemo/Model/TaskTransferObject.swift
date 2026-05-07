@@ -16,6 +16,17 @@ struct TaskTransferObject: Identifiable, Hashable {
     let longitude: Double?
     let locationName: String?
     
+    let recurrenceRule: String?
+    let recurrenceInterval: Int?
+    
+    let locationReminderEnabled: Bool?
+    
+    let isCompleted: Bool?
+    
+    let createdAt: Date?
+    let completedAt: Date?
+    let snoozeUntil: Date?
+    
     let priority: Int
     
     init(
@@ -28,6 +39,13 @@ struct TaskTransferObject: Identifiable, Hashable {
         latitude: Double?,
         longitude: Double?,
         locationName: String?,
+        recurrenceRule: String?,
+        recurrenceInterval: Int?,
+        locationReminderEnabled: Bool?,
+        isCompleted: Bool?,
+        createdAt: Date?,
+        completedAt: Date?,
+        snoozeUntil: Date?,
         priority: Int
     ) {
         self.id = id
@@ -39,6 +57,13 @@ struct TaskTransferObject: Identifiable, Hashable {
         self.latitude = latitude
         self.longitude = longitude
         self.locationName = locationName
+        self.recurrenceRule = recurrenceRule
+        self.recurrenceInterval = recurrenceInterval
+        self.locationReminderEnabled = locationReminderEnabled
+        self.isCompleted = isCompleted
+        self.createdAt = createdAt
+        self.completedAt = completedAt
+        self.snoozeUntil = snoozeUntil
         self.priority = priority
     }
 }
@@ -61,6 +86,13 @@ extension TaskTransferObject {
             latitude: task.locationLatitude,
             longitude: task.locationLongitude,
             locationName: task.locationName,
+            recurrenceRule: task.recurrenceRule,
+            recurrenceInterval: task.recurrenceInterval,
+            locationReminderEnabled: task.locationReminderEnabled,
+            isCompleted: task.isCompleted,
+            createdAt: task.createdAt,
+            completedAt: task.completedAt,
+            snoozeUntil: task.snoozeUntil,
             priority: task.priorityRaw
         )
     }
@@ -83,6 +115,25 @@ extension TodoTask {
             locationLongitude: dto.longitude,
             priorityRaw: dto.priority
         )
+        
+        self.recurrenceRule = dto.recurrenceRule
+        
+        if let recurrenceInterval = dto.recurrenceInterval {
+            self.recurrenceInterval = recurrenceInterval
+        }
+        
+        if let locationReminderEnabled = dto.locationReminderEnabled {
+            self.locationReminderEnabled = locationReminderEnabled
+        }
+        
+        self.isCompleted = dto.isCompleted ?? false
+        
+        if let createdAt = dto.createdAt {
+            self.createdAt = createdAt
+        }
+        
+        self.completedAt = dto.completedAt
+        self.snoozeUntil = dto.snoozeUntil
         
         if let tag = dto.tag,
            let mapped = TaskMainTag(rawValue: tag) {

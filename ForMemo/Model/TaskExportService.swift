@@ -15,8 +15,16 @@ final class TaskExportService {
         format: ExportFormat
     ) {
         
-        let filtered = tasks.filter { !$0.isCompleted }
-        let dtos = filtered.map { TaskTransferObject(task: $0) }
+        let exportTasks: [TodoTask]
+        
+        switch format {
+        case .calendar:
+            exportTasks = tasks.filter { !$0.isCompleted }
+        case .csv, .ics:
+            exportTasks = tasks
+        }
+        
+        let dtos = exportTasks.map { TaskTransferObject(task: $0) }
         
         switch format {
             
@@ -62,60 +70,60 @@ private extension TaskExportService {
 
 // MARK: - ICS
 
- extension TaskExportService {
+extension TaskExportService {
     
-     func exportICS(_ items: [TaskTransferObject]) {
-         
-         guard let url = ICSExporter.export(items: items) else {
+    func exportICS(_ items: [TaskTransferObject]) {
+        
+        guard let url = ICSExporter.export(items: items) else {
 #if DEBUG
-             print("ICS export failed")
+            print("ICS export failed")
 #endif
-             
-             return
-         }
-         
-         DispatchQueue.main.async {
-             let controller = UIActivityViewController(
-                 activityItems: [url],
-                 applicationActivities: nil
-             )
-             
-             if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                let root = scene.windows.first?.rootViewController {
-                 
-                 root.present(controller, animated: true)
-             }
-         }
-     }
+            
+            return
+        }
+        
+        DispatchQueue.main.async {
+            let controller = UIActivityViewController(
+                activityItems: [url],
+                applicationActivities: nil
+            )
+            
+            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let root = scene.windows.first?.rootViewController {
+                
+                root.present(controller, animated: true)
+            }
+        }
+    }
     
-     func exportToCalendar(
-         tasks: [TodoTask],
-         calendar: EKCalendar,
-         onComplete: @escaping (Int) -> Void
-     ) {
-         let filtered = tasks.filter { !$0.isCompleted }
-         let items = filtered.map { TaskTransferObject(task: $0) }
-         
-         Task {
-             do {
-                 let engine = CalendarExportEngine()
-                 
-                 try await engine.requestAccess()
-                 
-                 let count = try engine.export(items: items, to: calendar)
-                 
-                 DispatchQueue.main.async {
-                     onComplete(count)
-                 }
-                 
-             } catch {
+    func exportToCalendar(
+        tasks: [TodoTask],
+        calendar: EKCalendar,
+        onComplete: @escaping (Int) -> Void
+    ) {
+        let filtered = tasks.filter { !$0.isCompleted }
+        let items = filtered.map { TaskTransferObject(task: $0) }
+        
+        Task {
+            do {
+                let engine = CalendarExportEngine()
+                
+                try await engine.requestAccess()
+                
+                let count = try engine.export(items: items, to: calendar)
+                
+                DispatchQueue.main.async {
+                    onComplete(count)
+                }
+                
+            } catch {
 #if DEBUG
-                 print("Calendar export error:", error.localizedDescription)
+                print("Calendar export error:", error.localizedDescription)
 #endif
-                 DispatchQueue.main.async {
-                     onComplete(0)
-                 }
-             }
-         }
-     }
+                DispatchQueue.main.async {
+                    onComplete(0)
+                }
+            }
+        }
+    }
 }

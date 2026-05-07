@@ -12,6 +12,8 @@ struct CalendarEventDTO: Identifiable, Hashable {
     let reminderOffsetMinutes: Int?
     let tag: String?
     let locationName: String?
+    let recurrenceRule: String?
+    let recurrenceInterval: Int?
 }
 
 // MARK: - VIEW
@@ -25,6 +27,7 @@ struct CalendarImportView: View {
     @State private var selection = Set<String>()
     @State private var isLoading = false
     @State private var error: AppError?
+    @State private var importResultMessage: String?
     
     private let store = EKEventStore()
     
@@ -79,7 +82,15 @@ struct CalendarImportView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        importSelected()
+                        let message = importSelected()
+                        importResultMessage = message
+
+                        if !message.contains("Skipped duplicates: 0") ||
+                           !message.contains("Failed: 0") {
+                            return
+                        }
+
+                        dismiss()
                     } label: {
                         Text("Import")
                             .fontWeight(.semibold)
@@ -100,6 +111,17 @@ struct CalendarImportView: View {
                 }
             }
             .task { await load() }
+            .alert(
+                "Import Result",
+                isPresented: Binding(
+                    get: { importResultMessage != nil },
+                    set: { if !$0 { importResultMessage = nil } }
+                )
+            ) {
+                Button("OK") { }
+            } message: {
+                Text(importResultMessage ?? "")
+            }
        }
 
     
@@ -165,8 +187,25 @@ private extension CalendarImportView {
         
         let events = store.events(matching: predicate)
         
+        var seenRecurringKeys = Set<String>()
+
         return events
             .filter { $0.startDate > now }
+            .filter { event in
+
+                guard let recurrenceRule = event.recurrenceRules?.first else {
+                    return true
+                }
+
+                let key = "\((event.title ?? "").lowercased())|\(recurrenceRule.frequency.rawValue)|\(recurrenceRule.interval)"
+
+                if seenRecurringKeys.contains(key) {
+                    return false
+                }
+
+                seenRecurringKeys.insert(key)
+                return true
+            }
             .map { map($0) }
     }
 }
@@ -179,7 +218,7 @@ private extension CalendarImportView {
         
         let combinedText = (event.title ?? "") + " " + (event.notes ?? "")
         let inferredTag = TagInference.infer(from: combinedText.lowercased())
-        
+        let recurrence = mapRecurrence(event.recurrenceRules?.first)
         return CalendarEventDTO(
             id: event.eventIdentifier,
             title: event.title ?? "",
@@ -187,7 +226,35 @@ private extension CalendarImportView {
             startDate: event.startDate,
             reminderOffsetMinutes: computeOffset(event),
             tag: inferredTag?.rawValue,
-            locationName: event.location
+            locationName: event.location,
+            recurrenceRule: recurrence.rule,
+            recurrenceInterval: recurrence.interval
+        )
+    }
+    func mapRecurrence(_ rule: EKRecurrenceRule?) -> (rule: String?, interval: Int?) {
+        
+        guard let rule else {
+            return (nil, nil)
+        }
+        
+        let mappedRule: String?
+        
+        switch rule.frequency {
+        case .daily:
+            mappedRule = "daily"
+        case .weekly:
+            mappedRule = "weekly"
+        case .monthly:
+            mappedRule = "monthly"
+        case .yearly:
+            mappedRule = "yearly"
+        default:
+            mappedRule = nil
+        }
+        
+        return (
+            mappedRule,
+            rule.interval
         )
     }
     
@@ -224,23 +291,37 @@ private extension CalendarImportView {
 
 private extension CalendarImportView {
     
-    func importSelected() {
+    func importSelected() -> String {
         
         let descriptor = FetchDescriptor<TodoTask>()
+        
         let existing = (try? context.fetch(descriptor)) ?? []
         
-        let existingKeys = Set(existing.map {
+        var existingKeys = Set(existing.map {
             buildKey(title: $0.title, date: $0.deadLine)
         })
         
         let items = events.lazy.filter { selection.contains($0.id) }
         
+        var imported = 0
+        var skippedDuplicates = 0
+        var failed = 0
+        
         for item in items {
             
-            guard !item.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { continue }
+            let trimmedTitle = item.title.trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            guard !trimmedTitle.isEmpty else {
+                failed += 1
+                continue
+            }
             
             let key = buildKey(title: item.title, date: item.startDate)
-            if existingKeys.contains(key) { continue }
+            
+            if existingKeys.contains(key) {
+                skippedDuplicates += 1
+                continue
+            }
             
             let task = TodoTask(
                 title: item.title,
@@ -256,12 +337,27 @@ private extension CalendarImportView {
                 task.mainTag = mapped
             }
             
+            task.recurrenceRule = item.recurrenceRule
+            
+            if let recurrenceInterval = item.recurrenceInterval {
+                task.recurrenceInterval = recurrenceInterval
+            }
+            
             context.insert(task)
+            existingKeys.insert(key)
+            imported += 1
         }
         
-        try? context.save()
-        NotificationManager.shared.refresh()
-        dismiss()
+        do {
+            try context.save()
+            NotificationManager.shared.refresh()
+        } catch {
+            failed += imported
+            imported = 0
+        }
+        
+        
+        return "Imported: \(imported)\nSkipped duplicates: \(skippedDuplicates)\nFailed: \(failed)"
     }
 }
 
@@ -318,17 +414,10 @@ private struct EventRow: View {
 
 // MARK: - FILTER
 
-func filterAlreadyImportedEvents(_ items: [CalendarEventDTO], context: ModelContext) -> [CalendarEventDTO] {
+func filterAlreadyImportedEvents(
+    _ items: [CalendarEventDTO],
+    context: ModelContext
+) -> [CalendarEventDTO] {
     
-    let descriptor = FetchDescriptor<TodoTask>()
-    let existing = (try? context.fetch(descriptor)) ?? []
-    
-    let existingKeys = Set(existing.map {
-        buildKey(title: $0.title, date: $0.deadLine)
-    })
-    
-    return items.filter {
-        let key = buildKey(title: $0.title, date: $0.startDate)
-        return !existingKeys.contains(key)
-    }
+    items
 }
