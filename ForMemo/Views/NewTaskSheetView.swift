@@ -1,4 +1,5 @@
 
+
 import SwiftUI
 import SwiftData
 import PhotosUI
@@ -6,6 +7,14 @@ import UniformTypeIdentifiers
 import UIKit
 import CoreLocation
 import os
+
+
+struct SavedLocationItem: Identifiable, Hashable {
+    let id = UUID()
+    let name: String
+    let latitude: Double
+    let longitude: Double
+}
 
 
 struct NewTaskSheetView: View {
@@ -20,6 +29,7 @@ struct NewTaskSheetView: View {
     private var notificationLeadTimeDays: Int = 1
     
     @Query private var allAttachments: [TaskAttachment]
+    @Query private var allTasks: [TodoTask]
     
     @State private var showingCamera = false
     @State private var libraryPickerItems: [PhotosPickerItem] = []
@@ -49,6 +59,30 @@ struct NewTaskSheetView: View {
     
     private var attachments: [TaskAttachment] {
         allAttachments.filter { $0.task == draftTask }
+    }
+
+    private var savedLocations: [SavedLocationItem] {
+        var seen = Set<String>()
+        return allTasks.compactMap { task in
+            guard let name = task.locationName,
+                  let latitude = task.locationLatitude,
+                  let longitude = task.locationLongitude else {
+                return nil
+            }
+            let key = "\(name.lowercased())|\(latitude)|\(longitude)"
+            guard !seen.contains(key) else {
+                return nil
+            }
+            seen.insert(key)
+            return SavedLocationItem(
+                name: name,
+                latitude: latitude,
+                longitude: longitude
+            )
+        }
+        .sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
     }
     
     var body: some View {
@@ -403,10 +437,25 @@ struct NewTaskSheetView: View {
                     }
                 }
             } else {
+                
                 Button {
                     showingLocationPicker = true
                 } label: {
                     Label("Add location", systemImage: "mappin.and.ellipse")
+                }
+
+                if !savedLocations.isEmpty {
+                    Menu {
+                        ForEach(savedLocations) { item in
+                            Button(item.name) {
+                                draftTask.locationName = item.name
+                                draftTask.locationLatitude = item.latitude
+                                draftTask.locationLongitude = item.longitude
+                            }
+                        }
+                    } label: {
+                        Label(String(localized: "Choose saved location"), systemImage: "mappin.circle")
+                    }
                 }
             }
 

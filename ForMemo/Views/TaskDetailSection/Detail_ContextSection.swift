@@ -1,20 +1,50 @@
-
 import SwiftUI
 import SwiftData
 import CoreLocation
-
 
 
 // MARK: - contextSection
  struct ContextSection: View {
 
     @Bindable var task: TodoTask
+    @Query private var allTasks: [TodoTask]
 
     let navigationApp: NavigationApp
     let showingDeleteConfirmation: Binding<Bool>
     let showingLocationPicker: Binding<Bool>
     let saveTask: () -> Void
     let openNavigation: (CLLocationCoordinate2D, String) -> Void
+
+    private var savedLocations: [SavedLocationItem] {
+
+        var seen = Set<String>()
+
+        return allTasks.compactMap { task in
+
+            guard let name = task.locationName,
+                  let latitude = task.locationLatitude,
+                  let longitude = task.locationLongitude else {
+                return nil
+            }
+
+            let key = "\(name.lowercased())|\(latitude)|\(longitude)"
+
+            guard !seen.contains(key) else {
+                return nil
+            }
+
+            seen.insert(key)
+
+            return SavedLocationItem(
+                name: name,
+                latitude: latitude,
+                longitude: longitude
+            )
+        }
+        .sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
+    }
 
     var body: some View {
 
@@ -76,6 +106,22 @@ import CoreLocation
                         showingLocationPicker.wrappedValue = true
                     } label: {
                         Label("", systemImage: "mappin.and.ellipse")
+                    }
+                }
+
+                if !savedLocations.isEmpty {
+
+                    Menu {
+                        ForEach(savedLocations) { item in
+                            Button(item.name) {
+                                task.locationName = item.name
+                                task.locationLatitude = item.latitude
+                                task.locationLongitude = item.longitude
+                                saveTask()
+                            }
+                        }
+                    } label: {
+                        Label(String(localized: "Choose saved location"), systemImage: "mappin.circle")
                     }
                 }
             }
