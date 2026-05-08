@@ -441,7 +441,7 @@ final class NotificationManager: NSObject {
                 content = baseContent(task, title: title)
 
             case "deadline":
-                content = baseContent(task, title: String(localized: "⏱️ Expired"))
+                content = baseContent(task, title: String(localized: "⏱️ Overdue"))
                 content.badge = NSNumber(value: badgeAtTrigger)
 
             default:

@@ -158,7 +158,7 @@ struct WeeklyTasksView: View {
                 Image(systemName: "exclamationmark.circle.fill")
                     .foregroundStyle(.red)
                 
-                Text("Expired in previous days: \(expiredTasks.count)")
+                Text("Overdue in previous days: \(expiredTasks.count)")
                     .font(.body)
                     .foregroundStyle(expiredTasks.count > 0 ? .red : .primary)
                 

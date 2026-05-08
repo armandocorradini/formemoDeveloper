@@ -264,7 +264,7 @@ struct TaskListAppearanceView: View {
                 .opacity(!highlightEnabled ? 0.4 : 1)
             }
             Toggle(
-                "Show “Today/Expired”",
+                "Show “Today/Overdue”",
                 isOn: $showTodayExpiredLabel
             )
             Toggle("Show days badge", isOn: $showBadge)

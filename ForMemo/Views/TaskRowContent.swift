@@ -70,11 +70,11 @@ struct TaskRowContent: View, TaskRowBaseLogic {
     private func todayExpiredLabel() -> some View {
         if showTodayExpiredLabel {
             if isToday {
-                Text("⏳ Today ⏳")
+                Text("Today")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.orange)
             } else if isOverdue {
-                Text("⚠️ Expired ⚠️")
+                Text("Overdue")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.red)
             }

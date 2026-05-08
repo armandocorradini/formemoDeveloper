@@ -18,9 +18,7 @@ final class TaskExportService {
         let exportTasks: [TodoTask]
         
         switch format {
-        case .calendar:
-            exportTasks = tasks.filter { !$0.isCompleted }
-        case .csv, .ics:
+        case .calendar, .csv, .ics:
             exportTasks = tasks
         }
         
@@ -101,8 +99,7 @@ extension TaskExportService {
         calendar: EKCalendar,
         onComplete: @escaping (Int) -> Void
     ) {
-        let filtered = tasks.filter { !$0.isCompleted }
-        let items = filtered.map { TaskTransferObject(task: $0) }
+        let items = tasks.map { TaskTransferObject(task: $0) }
         
         Task {
             do {

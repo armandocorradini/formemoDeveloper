@@ -246,8 +246,9 @@ struct TaskListView: View {
                 .searchable(
                     text: $searchText,
                     placement: .navigationBarDrawer(displayMode: .automatic),
-                    prompt: "Search task"
-                )
+                    prompt: "Search task")
+                        .toolbarBackground(.thinMaterial, for: .navigationBar)
+            
                 .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
                 .navigationBarTitleDisplayMode(.inline)
                 .sheet(item: $draftTask) { task in
@@ -288,7 +289,7 @@ struct TaskListView: View {
                             }
                         } label: {
                             Image(systemName: showCompleted ? "eye.slash" : "eye")
-                                .foregroundStyle(showCompleted ? .gray : .blue)
+                                .foregroundStyle(showCompleted ? .gray.opacity(0.7) : .blue.opacity(0.7))
                         }
                     }
 
@@ -366,7 +367,7 @@ struct TaskListView: View {
                                     .foregroundStyle(
                                         selectedTagFilter != nil || selectedPriorityFilter != nil
                                         ? .red
-                                        : .primary
+                                        : .primary.opacity(0.7)
                                     )
                             }
                         }
@@ -393,6 +394,7 @@ struct TaskListView: View {
 
                         } label: {
                             Image(systemName: "ellipsis")
+                                .foregroundStyle(.primary.opacity(0.7))
                         }
                     }
                 }
@@ -616,9 +618,9 @@ struct TaskRow: View {
 
     private var dynamicRowHeight: CGFloat {
         if showTodayExpiredLabel && !task.isCompleted && (isToday || isOverdue) {
-            return 42
+            return 44
         } else {
-            return 38
+            return 40
         }
     }
     // --- END PATCH ---

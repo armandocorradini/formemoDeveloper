@@ -177,18 +177,19 @@ struct TaskTabView: View {
                 tabItem("map", NSLocalizedString("map_tab", comment: ""), 5)
                 tabItem("gear", NSLocalizedString("settings_tab", comment: ""), 2)
             }
-            .frame(height: 50)
+            .frame(height: 60)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 12)
             .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+//            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .clipShape(Capsule())
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
             )
             .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
             .padding(.horizontal, 16)
-            .padding(.bottom, -20 )//avvicina la bar al fondo telefono
+            .padding(.bottom, -8 )//avvicina la bar al fondo telefono
         }
         .ignoresSafeArea(.keyboard)
     }
@@ -312,11 +313,11 @@ struct TaskTabView: View {
         } label: {
             VStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.system(size: 20, weight: .regular))
+                    .font(.system(size: 21, weight: .regular))
                     .symbolRenderingMode(.hierarchical)
                     .frame(height: 22)
                 Text(title)
-                    .font(.system(size:8, weight: .medium))
+                    .font(.system(size:9, weight: .medium))
                     .lineLimit(1)
                     .minimumScaleFactor(0.9)
                     .layoutPriority(1)

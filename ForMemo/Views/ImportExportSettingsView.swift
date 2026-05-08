@@ -234,7 +234,9 @@ struct ImportExportSettingsView: View {
                     CalendarPickerView(calendars: calendars) { calendar in
                         let exporter = TaskExportService()
                         exporter.exportToCalendar(
-                            tasks: selectedExportTasks,
+                            tasks: selectedExportTasks.sorted {
+                                ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
+                            },
                             calendar: calendar
                         ) { count in
                             showToast(count, action: "exported")
@@ -570,10 +572,38 @@ struct CSVExportSelectionView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var selection: Set<UUID> = []
+    @State private var showCompletedTasks = false
+
+    private var filteredTasks: [TodoTask] {
+        tasks.filter { showCompletedTasks || !$0.isCompleted }
+    }
+
+    private var sortedTasks: [TodoTask] {
+        filteredTasks.sorted {
+
+            if $0.isCompleted != $1.isCompleted {
+                return !$0.isCompleted
+            }
+
+            switch ($0.deadLine, $1.deadLine) {
+            case let (d1?, d2?):
+                return d1 < d2
+
+            case (_?, nil):
+                return true
+
+            case (nil, _?):
+                return false
+
+            case (nil, nil):
+                return $0.createdAt < $1.createdAt
+            }
+        }
+    }
     
     var body: some View {
         
-        List(tasks, id: \.id) { task in
+        List(sortedTasks, id: \.id) { task in
             
             ImportCard(isSelected: selection.contains(task.id)) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -633,34 +663,49 @@ struct CSVExportSelectionView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button(modeTitle) {
-                 
+                HStack(spacing: 14) {
+                    Button {
+                        showCompletedTasks.toggle()
+
+                        if !showCompletedTasks {
+                            selection = Set(
+                                selection.filter { id in
+                                    filteredTasks.contains(where: { $0.id == id })
+                                }
+                            )
+                        }
+                    } label: {
+                        let eyeColor: Color = showCompletedTasks ? .secondary : .blue
+                        Image(systemName: showCompletedTasks ? "eye.slash" : "eye")
+                            .foregroundStyle(eyeColor.opacity(showCompletedTasks ? 1 : 0.7))
+                    }
+
+                    Button(modeTitle) {
+
+                    }
                 }
             }
-            
-            ToolbarItemGroup(placement: .topBarTrailing) {
 
+            ToolbarItemGroup(placement: .topBarTrailing) {
                 Button("Export") {
-                    let selectedTasks = tasks.filter { selection.contains($0.id) }
+                    let selectedTasks = sortedTasks.filter { selection.contains($0.id) }
                     onExport(selectedTasks)
                     onComplete(selectedTasks.count)
                     dismiss()
                 }
-                .disabled(selection.isEmpty)
-                
-                Button(selection.count == tasks.count ? "Deselect All" : "Select All") {
-                    if selection.count == tasks.count {
+                .disabled(sortedTasks.filter { selection.contains($0.id) }.isEmpty)
+
+                Button(selection.count == filteredTasks.count ? "Deselect All" : "Select All") {
+                    if selection.count == filteredTasks.count {
                         selection.removeAll()
                     } else {
-                        selection = Set(tasks.map { $0.id })
+                        selection = Set(filteredTasks.map { $0.id })
                     }
                 }
-   
-                    Button("Cancel") {
-                        dismiss()
-       
+
+                Button("Cancel") {
+                    dismiss()
                 }
-                
             }
         }
     }
