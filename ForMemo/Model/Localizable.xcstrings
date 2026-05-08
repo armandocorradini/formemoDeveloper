@@ -577,7 +577,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld minuten vorher"
+            "value" : "%lld Minuten vorher"
           }
         },
         "es" : {
@@ -657,19 +657,19 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⏰ Snoozed"
+            "value" : "⏰ Verschoben"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⏰ Posponer"
+            "value" : "⏰ Pospuesto"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⏰ Rappeler "
+            "value" : "⏰ Reporté"
           }
         },
         "it" : {
@@ -989,7 +989,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "📍 Nelle vicinanze"
+            "value" : "📍 Vicino a"
           }
         }
       }
@@ -1158,7 +1158,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter une tâche dans %@"
+            "value" : "Ajouter une tâche à %@"
           }
         },
         "it" : {
@@ -1697,7 +1697,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "el %@"
+            "value" : "a las %@"
           }
         },
         "fr" : {
@@ -2171,7 +2171,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Posso personalizzare l’evidenziazione dei task?"
+            "value" : "Posso personalizzare l’evidenziazione delle attività?"
           }
         }
       }
@@ -2255,7 +2255,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Posso vedere i task su una mappa?"
+            "value" : "Posso visualizzare le attività su una mappa?"
           }
         }
       }
@@ -2481,7 +2481,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completa"
+            "value" : "Completata"
           }
         }
       }

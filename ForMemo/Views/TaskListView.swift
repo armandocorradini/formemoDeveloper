@@ -741,7 +741,7 @@ struct TodoSectionView: View {
 
         func body(content: Content) -> some View {
             content
-                .padding(.leading, style == .plain ? 24 : 14) // extra space for highlight bar
+                .padding(.leading, style == .plain ? 16 : 10) // reduced spacing from highlight bar
                 .padding(.trailing, style == .plain ? 12 : 0)
                 .listRowInsets(
                     style == .cards
@@ -945,7 +945,7 @@ struct CompletedSectionView: View {
 
         func body(content: Content) -> some View {
             content
-                .padding(.leading, style == .plain ? 24 : 14)
+                .padding(.leading, style == .plain ? 16 : 10)
                 .padding(.trailing, style == .plain ? 12 : 0)
                 .listRowInsets(
                     style == .cards
