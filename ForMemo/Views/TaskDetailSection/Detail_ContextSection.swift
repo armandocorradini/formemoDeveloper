@@ -9,11 +9,27 @@ import CoreLocation
     @Bindable var task: TodoTask
     @Query private var allTasks: [TodoTask]
 
+    @AppStorage("hiddenSavedLocations")
+    private var hiddenSavedLocationsData: Data = Data()
+
     let navigationApp: NavigationApp
     let showingDeleteConfirmation: Binding<Bool>
     let showingLocationPicker: Binding<Bool>
     let saveTask: () -> Void
     let openNavigation: (CLLocationCoordinate2D, String) -> Void
+
+    private var hiddenSavedLocations: Set<String> {
+        (try? JSONDecoder().decode(Set<String>.self, from: hiddenSavedLocationsData)) ?? []
+    }
+
+    private func hideSavedLocation(_ item: SavedLocationItem) {
+        let key = "\(item.name.lowercased())|\(item.latitude)|\(item.longitude)"
+
+        var hidden = hiddenSavedLocations
+        hidden.insert(key)
+
+        hiddenSavedLocationsData = (try? JSONEncoder().encode(hidden)) ?? Data()
+    }
 
     private var savedLocations: [SavedLocationItem] {
 
@@ -29,7 +45,8 @@ import CoreLocation
 
             let key = "\(name.lowercased())|\(latitude)|\(longitude)"
 
-            guard !seen.contains(key) else {
+            guard !seen.contains(key),
+                  !hiddenSavedLocations.contains(key) else {
                 return nil
             }
 
@@ -111,17 +128,24 @@ import CoreLocation
 
                 if !savedLocations.isEmpty {
 
-                    Menu {
-                        ForEach(savedLocations) { item in
-                            Button(item.name) {
+                    NavigationLink {
+                        SavedLocationsListView(
+                            locations: savedLocations,
+                            onSelect: { item in
                                 task.locationName = item.name
                                 task.locationLatitude = item.latitude
                                 task.locationLongitude = item.longitude
                                 saveTask()
+                            },
+                            onDelete: { item in
+                                hideSavedLocation(item)
                             }
-                        }
+                        )
                     } label: {
-                        Label(String(localized: "Choose saved location"), systemImage: "mappin.circle")
+                        Label(
+                            String(localized: "Choose saved location"),
+                            systemImage: "mappin.circle"
+                        )
                     }
                 }
             }

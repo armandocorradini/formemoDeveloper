@@ -16,6 +16,54 @@ struct SavedLocationItem: Identifiable, Hashable {
     let longitude: Double
 }
 
+struct SavedLocationsListView: View {
+
+    let locations: [SavedLocationItem]
+    let onSelect: (SavedLocationItem) -> Void
+    let onDelete: (SavedLocationItem) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+
+        List {
+            ForEach(locations) { item in
+
+                Button {
+                    onSelect(item)
+                    dismiss()
+                } label: {
+                    HStack(spacing: 12) {
+
+                        Image(systemName: "mappin.circle.fill")
+                            .foregroundStyle(.blue)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.name)
+                                .foregroundStyle(.primary)
+
+                            Text("\(item.latitude), \(item.longitude)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+                    }
+                }
+                .swipeActions(edge: .trailing) {
+                    Button(role: .destructive) {
+                        onDelete(item)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+            }
+        }
+        .navigationTitle("Saved Locations")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
 
 struct NewTaskSheetView: View {
     
@@ -30,6 +78,9 @@ struct NewTaskSheetView: View {
     
     @Query private var allAttachments: [TaskAttachment]
     @Query private var allTasks: [TodoTask]
+    
+    @AppStorage("hiddenSavedLocations")
+    private var hiddenSavedLocationsData: Data = Data()
     
     @State private var showingCamera = false
     @State private var libraryPickerItems: [PhotosPickerItem] = []
@@ -61,19 +112,38 @@ struct NewTaskSheetView: View {
         allAttachments.filter { $0.task == draftTask }
     }
 
+    private var hiddenSavedLocations: Set<String> {
+        (try? JSONDecoder().decode(Set<String>.self, from: hiddenSavedLocationsData)) ?? []
+    }
+
+    private func hideSavedLocation(_ item: SavedLocationItem) {
+        let key = "\(item.name.lowercased())|\(item.latitude)|\(item.longitude)"
+
+        var hidden = hiddenSavedLocations
+        hidden.insert(key)
+
+        hiddenSavedLocationsData = (try? JSONEncoder().encode(hidden)) ?? Data()
+    }
+
     private var savedLocations: [SavedLocationItem] {
         var seen = Set<String>()
+
         return allTasks.compactMap { task in
             guard let name = task.locationName,
                   let latitude = task.locationLatitude,
                   let longitude = task.locationLongitude else {
                 return nil
             }
+
             let key = "\(name.lowercased())|\(latitude)|\(longitude)"
-            guard !seen.contains(key) else {
+
+            guard !seen.contains(key),
+                  !hiddenSavedLocations.contains(key) else {
                 return nil
             }
+
             seen.insert(key)
+
             return SavedLocationItem(
                 name: name,
                 latitude: latitude,
@@ -445,14 +515,18 @@ struct NewTaskSheetView: View {
                 }
 
                 if !savedLocations.isEmpty {
-                    Menu {
-                        ForEach(savedLocations) { item in
-                            Button(item.name) {
+                    NavigationLink {
+                        SavedLocationsListView(
+                            locations: savedLocations,
+                            onSelect: { item in
                                 draftTask.locationName = item.name
                                 draftTask.locationLatitude = item.latitude
                                 draftTask.locationLongitude = item.longitude
+                            },
+                            onDelete: { item in
+                                hideSavedLocation(item)
                             }
-                        }
+                        )
                     } label: {
                         Label(String(localized: "Choose saved location"), systemImage: "mappin.circle")
                     }
