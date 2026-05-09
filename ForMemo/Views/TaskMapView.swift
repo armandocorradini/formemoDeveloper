@@ -401,7 +401,7 @@ extension TaskAnnotationView {
                                     ? highlightColor.opacity(0.9)
                                     : Color.clear
                                 )
-                                .frame(width: 4, height: 18)
+                                .frame(width: 1.3, height: 18)
                             
                             if let icon = it.tagIcon {
                                 Image(systemName: icon)

@@ -988,7 +988,7 @@ private struct DayTasksInlineView: View {
                                     ? highlightColor(for: task)
                                     : Color.clear
                                 )
-                                .frame(width: 4)
+                                .frame(width: 1.3)
                                 .frame(maxHeight: .infinity)
                                 .clipShape(RoundedRectangle(cornerRadius: 2))
                                 .padding(.vertical, 1)

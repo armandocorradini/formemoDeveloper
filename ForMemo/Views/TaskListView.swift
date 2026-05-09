@@ -780,10 +780,10 @@ struct TodoSectionView: View {
                     .fill(Color.clear)
                     .overlay(alignment: .leading) {
                         if let highlightOverlay {
-                            RoundedRectangle(cornerRadius: style == .plain ? 2 : 4)
+                            RoundedRectangle(cornerRadius: style == .plain ? 1.3 : 1.3)
                                 .fill(highlightOverlay)
-                                .frame(width: style == .plain ? 4 : 6,
-                                       height: style == .plain ? 34 : 44)
+                                .frame(width: style == .plain ? 1.3 : 1.3,
+                                       height: style == .plain ? 50 : 50)
                                 .frame(maxHeight: .infinity, alignment: .center)
                                 .padding(.leading, style == .plain ? 12 : 8)
                                 .padding(.trailing,8)
@@ -794,10 +794,10 @@ struct TodoSectionView: View {
                     .fill(Color.clear)
                     .overlay(alignment: .leading) {
                         if let highlightOverlay {
-                            RoundedRectangle(cornerRadius: style == .plain ? 2 : 4)
+                            RoundedRectangle(cornerRadius: style == .plain ? 1.3 : 1.3)
                                 .fill(highlightOverlay)
-                                .frame(width: style == .plain ? 4 : 6,
-                                       height: style == .plain ? 34 : 44)
+                                .frame(width: style == .plain ? 1.3 : 1.3,
+                                       height: style == .plain ? 50 : 50)
                                 .frame(maxHeight: .infinity, alignment: .center)
                                 .padding(.leading, style == .plain ? 12 : 8)
                                 .padding(.trailing, 8)

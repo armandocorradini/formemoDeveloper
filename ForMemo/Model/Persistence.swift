@@ -5,6 +5,10 @@ import os
 
 enum Persistence {
     
+    static var sharedModelContainer: ModelContainer {
+        shared
+    }
+
     static let shared: ModelContainer = {
         
         let schema = Schema([

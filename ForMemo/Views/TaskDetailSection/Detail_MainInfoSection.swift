@@ -46,8 +46,8 @@ import SwiftData
                     if shouldShowHighlight {
                         Rectangle()
                             .fill(highlightColor)
-                            .frame(width: 4)
-                            .frame(height: 42)
+                            .frame(width: 1.3)
+                            .frame(height: 50)
                             .clipShape(RoundedRectangle(cornerRadius: 2))
                             .padding(.trailing, 12)
                     }

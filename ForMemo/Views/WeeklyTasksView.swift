@@ -443,7 +443,7 @@ private struct WeeklyTaskRow: View {
                 if shouldHighlight {
                     RoundedRectangle(cornerRadius: 3)
                         .fill(highlightColor)
-                        .frame(width: 5, height: 40)
+                        .frame(width: 1.3, height: 50)
                         .frame(maxHeight: .infinity, alignment: .center)
                         .padding(.leading, 10)
                 }

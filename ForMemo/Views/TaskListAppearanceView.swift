@@ -181,7 +181,7 @@ struct TaskListAppearanceView: View {
         .scrollDisabled(true)
         .contentMargins(.top, 18, for: .scrollContent)
         .contentMargins(.horizontal, 8, for: .scrollContent)
-        .frame(height: 100)
+        .frame(height: 110)
         .modifier(ListStyleModifier(style: listStyleChoice))
     }
     

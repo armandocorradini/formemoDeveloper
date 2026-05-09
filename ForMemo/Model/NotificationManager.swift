@@ -425,7 +425,30 @@ final class NotificationManager: NSObject {
                 content = baseContent(task, title: String(localized: "⏰ Snoozed"))
 
             case "reminder":
-                content = baseContent(task, title: String(localized: "🔔 Reminder"))
+                let minutes = task.reminderOffsetMinutes ?? 0
+                let reminderTitle: String
+                if minutes < 60 {
+                    if minutes == 1 {
+                        reminderTitle = String(localized: "🔔 Reminder. In 1 minute!")
+                    } else {
+                        reminderTitle = String(localized: "🔔 Reminder. In \(minutes) minutes!")
+                    }
+                } else if minutes < 1440 {
+                    let hours = minutes / 60
+                    if hours == 1 {
+                        reminderTitle = String(localized: "🔔 Reminder. In 1 hour!")
+                    } else {
+                        reminderTitle = String(localized: "🔔 Reminder. In \(hours) hours!")
+                    }
+                } else {
+                    let days = minutes / 1440
+                    if days == 1 {
+                        reminderTitle = String(localized: "🔔 Reminder. In 1 day!")
+                    } else {
+                        reminderTitle = String(localized: "🔔 Reminder. In \(days) days!")
+                    }
+                }
+                content = baseContent(task, title: reminderTitle)
 
             case "global":
                 let leadDays = NotificationLeadTime(

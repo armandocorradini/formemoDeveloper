@@ -74,7 +74,7 @@ struct ForMemoApp: App {
         }
         
         
-        let sharedContainer = Persistence.shared
+        let sharedContainer = Persistence.sharedModelContainer
         self.container = sharedContainer
         
         NotificationManager.shared.modelContainer = sharedContainer
