@@ -879,19 +879,79 @@ struct TodoSectionView: View {
                         } label: {
                             Label("Complete", systemImage: "checkmark.circle")
                         }
+
+                        Menu {
+                            Button {
+                                postpone(t, byHours: 1)
+                            } label: {
+                                Label("1 hour", systemImage: "clock.badge")
+                            }
+
+                            Button {
+                                postpone(t, byHours: 3)
+                            } label: {
+                                Label("3 hours", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                            }
+
+                            Button {
+                                postpone(t, byDays: 1)
+                            } label: {
+                                Label("1 day", systemImage: "sun.max")
+                            }
+
+                            Button {
+                                postpone(t, byDays: 2)
+                            } label: {
+                                Label("2 days", systemImage: "calendar")
+                            }
+
+                            Button {
+                                postpone(t, byDays: 3)
+                            } label: {
+                                Label("3 days", systemImage: "calendar.badge.clock")
+                            }
+                        } label: {
+                            Label("Postpone", systemImage: "clock")
+                        }
                     }
             }
         }
     }
+    @MainActor
+    private func postpone(_ task: TodoTask, byHours hours: Int) {
 
+        let baseDate = task.deadLine ?? Date()
+        let newDate = Calendar.current.date(byAdding: .hour, value: hours, to: baseDate) ?? baseDate
 
+        postpone(task, to: newDate)
+    }
 
+    @MainActor
+    private func postpone(_ task: TodoTask, byDays days: Int) {
 
+        let baseDate = task.deadLine ?? Date()
+        let newDate = Calendar.current.date(byAdding: .day, value: days, to: baseDate) ?? baseDate
 
+        postpone(task, to: newDate)
+    }
 
+    @MainActor
+    private func postpone(_ task: TodoTask, to newDate: Date) {
 
+        task.deadLine = newDate
 
+        do {
+            try modelContext.save()
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        } catch {
+            AppLogger.persistence.fault("Failed to postpone task: \(error)")
+        }
 
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            NotificationManager.shared.refresh(force: true)
+        }
+    }
 
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {

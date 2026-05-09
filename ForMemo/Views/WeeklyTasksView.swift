@@ -289,6 +289,40 @@ private struct WeeklyTaskRow: View {
             } label: {
                 Label("Complete", systemImage: "checkmark.circle")
             }
+
+            Menu {
+                Button {
+                    postpone(task, byHours: 1)
+                } label: {
+                    Label("1 hour", systemImage: "clock.badge")
+                }
+
+                Button {
+                    postpone(task, byHours: 3)
+                } label: {
+                    Label("3 hours", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                }
+
+                Button {
+                    postpone(task, byDays: 1)
+                } label: {
+                    Label("1 day", systemImage: "sun.max")
+                }
+
+                Button {
+                    postpone(task, byDays: 2)
+                } label: {
+                    Label("2 days", systemImage: "calendar")
+                }
+
+                Button {
+                    postpone(task, byDays: 3)
+                } label: {
+                    Label("3 days", systemImage: "calendar.badge.clock")
+                }
+            } label: {
+                Label("Postpone", systemImage: "clock")
+            }
         }
         
     }
@@ -305,6 +339,41 @@ private struct WeeklyTaskRow: View {
         .tint(.green)
     }
     
+    @MainActor
+    private func postpone(_ task: TodoTask, byHours hours: Int) {
+
+        let baseDate = task.deadLine ?? Date()
+        let newDate = Calendar.current.date(byAdding: .hour, value: hours, to: baseDate) ?? baseDate
+
+        postpone(task, to: newDate)
+    }
+
+    @MainActor
+    private func postpone(_ task: TodoTask, byDays days: Int) {
+
+        let baseDate = task.deadLine ?? Date()
+        let newDate = Calendar.current.date(byAdding: .day, value: days, to: baseDate) ?? baseDate
+
+        postpone(task, to: newDate)
+    }
+
+    @MainActor
+    private func postpone(_ task: TodoTask, to newDate: Date) {
+
+        task.deadLine = newDate
+
+        do {
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationManager.shared.refresh(force: true)
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+
+        } catch {
+            AppLogger.persistence.fault("Failed to postpone task: \(error)")
+        }
+    }
+
     @MainActor
     private func completeTask() {
         
