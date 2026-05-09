@@ -189,12 +189,19 @@ struct GetTasksIntent: AppIntent {
         }
 
         let tasks = fetchedTasks.sorted {
-            guard let leftDate = $0.deadLine,
-                  let rightDate = $1.deadLine else {
+            switch ($0.deadLine, $1.deadLine) {
+            case let (leftDate?, rightDate?):
+                return leftDate < rightDate
+
+            case (_?, nil):
+                return true
+
+            case (nil, _?):
                 return false
+
+            default:
+                return $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
             }
-            
-            return leftDate < rightDate
         }
 
         let timeFormatter = DateFormatter()
@@ -205,18 +212,7 @@ struct GetTasksIntent: AppIntent {
         dateFormatterForTasks.dateStyle = .short
         dateFormatterForTasks.timeStyle = .none
 
-        let criticalTasks = tasks.filter {
-            $0.priority == .critical
-        }
-
-        let regularTasks = tasks.filter {
-            $0.priority != .critical
-        }
-
-        var limitedTasks: [TodoTask] = criticalTasks
-
-        let remainingSlots = max(0, 7 - criticalTasks.count)
-        limitedTasks += regularTasks.prefix(remainingSlots)
+        let limitedTasks = Array(tasks.prefix(7))
 
         let spokenTasks = limitedTasks.compactMap { task -> String? in
             let cleanTitle = task.title
@@ -295,17 +291,39 @@ struct GetTasksIntent: AppIntent {
         response += " "
         response += spokenTasks.joined(separator: ", ")
 
+        let remainingTasks = Array(tasks.dropFirst(7))
+
+        let remainingCriticalCount = remainingTasks.filter {
+            $0.priority == .critical
+        }.count
+
         if tasks.count > 7 {
+
             let remaining = tasks.count - 7
-            
+
             response += " "
-            response += String(
-                format: NSLocalizedString(
-                    "And %lld more reminders in ForMemo",
-                    comment: "Additional reminders count"
-                ),
-                remaining
-            )
+
+            if remainingCriticalCount > 0 {
+
+                response += String(
+                    format: NSLocalizedString(
+                        "And %1$lld more reminders in ForMemo, including %2$lld critical.",
+                        comment: "Additional reminders including critical"
+                    ),
+                    remaining,
+                    remainingCriticalCount
+                )
+
+            } else {
+
+                response += String(
+                    format: NSLocalizedString(
+                        "And %lld more reminders in ForMemo",
+                        comment: "Additional reminders count"
+                    ),
+                    remaining
+                )
+            }
         }
 
         return .result(

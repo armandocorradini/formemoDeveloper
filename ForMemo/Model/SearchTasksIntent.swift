@@ -78,31 +78,42 @@ struct SearchTasksIntent: AppIntent {
         guard !tasks.isEmpty else {
             return .result(
                 dialog: IntentDialog(
-                    stringLiteral: "I couldn't find any reminders matching \(normalizedQuery)."
+                    stringLiteral: String(
+                        localized: "I couldn't find any reminders matching \(normalizedQuery)."
+                    )
                 )
             )
         }
         
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        formatter.dateStyle = .short
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale.autoupdatingCurrent
+        dateFormatter.dateStyle = .long
+        dateFormatter.timeStyle = .none
+
+        let timeFormatter = DateFormatter()
+        timeFormatter.locale = Locale.autoupdatingCurrent
+        timeFormatter.dateStyle = .none
+        timeFormatter.timeStyle = .short
         
         let limitedTasks = Array(tasks.prefix(7))
         
         let spokenTasks = limitedTasks.compactMap { task -> String? in
             let cleanTitle = task.title
                 .trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
             guard !cleanTitle.isEmpty else {
                 return nil
             }
-            
+
             if let deadline = task.deadLine {
+                let spokenDate = dateFormatter.string(from: deadline)
+                let spokenTime = timeFormatter.string(from: deadline)
+
                 return String(
-                    localized: "\(cleanTitle) at \(formatter.string(from: deadline))"
+                    localized: "\(cleanTitle) on \(spokenDate) at \(spokenTime)"
                 )
             }
-            
+
             return cleanTitle
         }
         

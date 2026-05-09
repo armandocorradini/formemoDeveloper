@@ -291,7 +291,7 @@ extension LocationReminderManager {
             UserDefaults.standard.set(data, forKey: "locationTriggers")
         }
         
-        var titleText = "You have a task to complete here."
+        var titleText = String(localized: "You have a task to complete here.")
         
         if let uuid = UUID(uuidString: id),
            let container = NotificationManager.shared.modelContainer {

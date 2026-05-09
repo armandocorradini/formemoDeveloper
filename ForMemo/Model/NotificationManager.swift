@@ -429,23 +429,23 @@ final class NotificationManager: NSObject {
                 let reminderTitle: String
                 if minutes < 60 {
                     if minutes == 1 {
-                        reminderTitle = String(localized: "🔔 Reminder. In 1 minute!")
+                        reminderTitle = String(localized: "🔔 In 1 minute!")
                     } else {
-                        reminderTitle = String(localized: "🔔 Reminder. In \(minutes) minutes!")
+                        reminderTitle = String(localized: "🔔 In \(minutes) minutes!")
                     }
                 } else if minutes < 1440 {
                     let hours = minutes / 60
                     if hours == 1 {
-                        reminderTitle = String(localized: "🔔 Reminder. In 1 hour!")
+                        reminderTitle = String(localized: "🔔 In 1 hour!")
                     } else {
-                        reminderTitle = String(localized: "🔔 Reminder. In \(hours) hours!")
+                        reminderTitle = String(localized: "🔔 In \(hours) hours!")
                     }
                 } else {
                     let days = minutes / 1440
                     if days == 1 {
-                        reminderTitle = String(localized: "🔔 Reminder. In 1 day!")
+                        reminderTitle = String(localized: "🔔 In 1 day!")
                     } else {
-                        reminderTitle = String(localized: "🔔 Reminder. In \(days) days!")
+                        reminderTitle = String(localized: "🔔 In \(days) days!")
                     }
                 }
                 content = baseContent(task, title: reminderTitle)
@@ -457,14 +457,14 @@ final class NotificationManager: NSObject {
                 
                 let title: String
                 if leadDays == 1 {
-                    title = String(localized: "⏱️ 1 day before!")
+                    title = String(localized: "⏱️ In 1 day!")
                 } else {
-                    title = String(localized: "⏱️ \(leadDays) days before!")
+                    title = String(localized: "⏱️ In \(leadDays) days!")
                 }
                 content = baseContent(task, title: title)
 
             case "deadline":
-                content = baseContent(task, title: String(localized: "⏱️ Overdue"))
+                content = baseContent(task, title: String(localized: "⏰ Overdue"))
                 content.badge = NSNumber(value: badgeAtTrigger)
 
             default:
