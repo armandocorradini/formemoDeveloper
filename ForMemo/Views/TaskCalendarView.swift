@@ -1181,35 +1181,34 @@ private struct DayTasksInlineView: View {
                             Button {
                                 postpone(task, byHours: 1)
                             } label: {
-                                Label("1 hour", systemImage: "clock.badge")
+                                Label("+1 hour", systemImage: "clock.badge")
                             }
 
                             Button {
                                 postpone(task, byHours: 3)
                             } label: {
-                                Label("3 hours", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                                Label("+3 hours", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
                             }
 
                             Button {
                                 postpone(task, byDays: 1)
                             } label: {
-                                Label("1 day", systemImage: "sun.max")
+                                Label("+1 day", systemImage: "sun.max")
                             }
 
                             Button {
                                 postpone(task, byDays: 2)
                             } label: {
-                                Label("2 days", systemImage: "calendar")
+                                Label("+2 days", systemImage: "calendar")
                             }
 
                             Button {
                                 postpone(task, byDays: 3)
                             } label: {
-                                Label("3 days", systemImage: "calendar.badge.clock")
+                                Label("+3 days", systemImage: "calendar.badge.clock")
                             }
-
                         } label: {
-                            Label("Postpone", systemImage: "clock")
+                            Label("Reschedule", systemImage: "clock")
                         }
                     }
                     

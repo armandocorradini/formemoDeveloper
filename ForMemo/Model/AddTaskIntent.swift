@@ -393,7 +393,7 @@ private extension AddTaskIntent {
         now: Date,
         deadline: Date,
         leadTimeDays: Int
-    ) -> (offsetMinutes: Int, info: String) {
+    ) -> (offsetMinutes: Int?, info: String) {
         
         let secondsRemaining = deadline.timeIntervalSince(now)
         
@@ -482,7 +482,16 @@ private extension AddTaskIntent {
             Int(deadline.timeIntervalSince(finalReminderDate) / 60),
             0
         )
-        
+
+        if leadTimeDays > 0 {
+
+            let globalOffsetMinutes = leadTimeDays * 1440
+
+            if offsetMinutes == globalOffsetMinutes {
+                return (nil, String(localized: "when it's due"))
+            }
+        }
+
         return (offsetMinutes, description(forMinutes: offsetMinutes))
     }
     
