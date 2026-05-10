@@ -123,7 +123,7 @@ enum TaskStatus {
 }
 
 enum TaskMainTag: String, CaseIterable, Identifiable, Codable {
-    case health, family, work, pet, travel, transport, home, freetime
+    case family, freetime, health, home, pet, transport, travel, work
     var id: String { rawValue }
 }
 
@@ -215,7 +215,16 @@ extension TodoTask {
 // MARK: - TaskMainTag Localization & UI
 
 extension TaskMainTag {
-    
+
+    static var localizedSortedCases: [TaskMainTag] {
+        allCases.sorted {
+            String(localized: $0.localizedTitle)
+                .localizedCaseInsensitiveCompare(
+                    String(localized: $1.localizedTitle)
+                ) == .orderedAscending
+        }
+    }
+
     var localizedTitle: LocalizedStringResource {
         switch self {
         case .health:    return "tag.health"

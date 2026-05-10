@@ -556,7 +556,7 @@ struct NewTaskSheetView: View {
             Picker("Tag", selection: $draftTask.mainTag) {
                 Text("None").tag(TaskMainTag?.none)
                 
-                ForEach(TaskMainTag.allCases) { tag in
+                ForEach(TaskMainTag.localizedSortedCases) { tag in
                     Label(tag.localizedTitle, systemImage: tag.mainIcon)
                         .tag(Optional(tag))
                 }

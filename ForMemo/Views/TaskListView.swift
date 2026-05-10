@@ -330,7 +330,7 @@ struct TaskListView: View {
                                         // Usiamo Optional(nil) per far combaciare il tipo con selectedTagFilter
                                         Text("All").tag(nil as TaskMainTag?)
 
-                                        ForEach(TaskMainTag.allCases) { tag in
+                                        ForEach(TaskMainTag.localizedSortedCases) { tag in
                                             Label(tag.localizedTitle, systemImage: tag.mainIcon)
                                                 .tag(tag as TaskMainTag?)
                                         }
