@@ -85,6 +85,10 @@ struct FAQView: View {
                 answer: String(localized:"Snooze delays a notification. The current alert is removed and a new one is scheduled for the selected time.")
             ),
             FAQItem(
+                question: String(localized:"What is reschedule and how is it different from snooze?"),
+                answer: String(localized:"Reschedule changes the task deadline itself by moving it to a new date or time. Snooze only delays the current notification without changing the original deadline. Reschedule is useful when plans change, while snooze is meant for temporary delays.")
+            ),
+            FAQItem(
                 question: String(localized:"Why does snooze seem to disappear?"),
                 answer: String(localized:"Snooze is temporary. Once its time passes or the task changes, it is no longer shown.")
             ),
@@ -167,6 +171,18 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"What is “Add reminders automatically”?"),
                 answer: String(localized:"When using Siri, if “Add reminders automatically” is enabled, Siri adds a reminder automatically based on the task. If disabled, Siri will ask you which reminder to set.")
+            ),
+            FAQItem(
+                question: String(localized:"How can I use Siri with ForMemo?"),
+                answer: String(localized:"ForMemo supports three main Siri commands. “New ForMemo” creates a new task using natural language. “Search ForMemo” searches tasks by keyword. “Check ForMemo” reads tasks planned for a date or period such as today, tomorrow, weekends, weeks, or specific dates.")
+            ),
+            FAQItem(
+                question: String(localized:"Can Siri search tasks by keyword?"),
+                answer: String(localized:"Yes. Use commands like “Search ForMemo” followed by a keyword to find matching tasks.")
+            ),
+            FAQItem(
+                question: String(localized:"Can Siri read tasks for a specific date or period?"),
+                answer: String(localized:"Yes. Use “Check ForMemo” and say periods like today, tomorrow, this week, next week, weekend, next weekend, or a specific date.")
             )
         ]),
 

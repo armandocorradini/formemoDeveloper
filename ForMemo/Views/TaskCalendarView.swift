@@ -987,7 +987,9 @@ private struct DayTasksInlineView: View {
         do {
             try modelContext.save()
             modelContext.processPendingChanges()
+
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
+            NotificationCenter.default.post(name: .attachmentsShouldRefresh, object: nil)
 
         } catch {
             AppLogger.persistence.fault("Failed to postpone task: \(error)")

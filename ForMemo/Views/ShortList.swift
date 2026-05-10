@@ -19,30 +19,59 @@ struct ShortList: View {
                     .ignoresSafeArea()
                 
                 List {
-                    Section{
-                        VStack(alignment: .leading, spacing: 24) {
+                    Section {
+                        VStack(alignment: .leading, spacing: 20) {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(String(localized: "New \(appName)"))
+                                    .font(.headline)
+                                
+                                Text(String(localized: "Create a new task instantly using Siri."))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             
-                            Text(String(localized: "Add a task in \(appName)"))
-                                .padding(.top, 15)
                             Divider()
                             
-                            Text(String(localized: "Create a task in \(appName)"))
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(String(localized: "Search \(appName)"))
+                                    .font(.headline)
+                                
+                                Text(String(localized: "Search tasks, reminders and notes by text using Siri."))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
                             Divider()
                             
-                            Text(String(localized: "Remind me using \(appName)"))
-                            Divider()
-                            
-                            Text(String(localized: "New \(appName)"))
-                                .foregroundStyle(.green)
-                                .padding(.bottom, 15)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(String(localized: "Check \(appName)"))
+                                    .font(.headline)
+                                
+                                Text(String(localized: "Check upcoming tasks, reminders and due dates with Siri."))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
-                    }
-                    header: {
-                        Text("Try saying 'Hey Siri,' followed by:")
+                        .padding(.vertical, 8)
+                    } header: {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(String(localized: "Try saying 'Hey Siri,' followed by:"))
+                                .font(.headline)
+                            
+                            Text(String(localized: "Use natural voice commands to quickly create reminders and tasks."))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .textCase(nil)
                     } footer: {
-                        Text("Siri will ask for the activity title and due date, then create the record. Choose whether to set a reminder automatically or have Siri ask you.")
+                        Text(String(localized: "Use simple voice commands with Siri to create, search and check your reminders in seconds."))
                     }
+                    .listRowBackground(
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                    )
                 }
+                .listStyle(.insetGrouped)
                 .scrollContentBackground(.hidden)
                 .navigationTitle("Ask to Siri") // SwiftUI localizza automaticamente le stringhe letterali
                 .navigationBarTitleDisplayMode(.inline)

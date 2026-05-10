@@ -40,7 +40,7 @@ struct SearchTasksIntent: AppIntent {
         guard !normalizedQuery.isEmpty else {
             return .result(
                 dialog: IntentDialog(
-                    stringLiteral: "Please tell me what to search for."
+                    stringLiteral: String(localized: "Please tell me what to search for.")
                 )
             )
         }
@@ -96,25 +96,52 @@ struct SearchTasksIntent: AppIntent {
         timeFormatter.timeStyle = .short
         
         let limitedTasks = Array(tasks.prefix(7))
-        
-        let spokenTasks = limitedTasks.compactMap { task -> String? in
-            let cleanTitle = task.title
-                .trimmingCharacters(in: .whitespacesAndNewlines)
 
-            guard !cleanTitle.isEmpty else {
+        let calendar = Calendar.autoupdatingCurrent
+
+        let groupedTasks = Dictionary(grouping: limitedTasks) { task in
+            calendar.startOfDay(for: task.deadLine ?? Date())
+        }
+
+        let sortedDays = groupedTasks.keys.sorted()
+
+        let spokenTasks = sortedDays.compactMap { day -> String? in
+
+            guard let tasksForDay = groupedTasks[day] else {
                 return nil
             }
 
-            if let deadline = task.deadLine {
-                let spokenDate = dateFormatter.string(from: deadline)
-                let spokenTime = timeFormatter.string(from: deadline)
-
-                return String(
-                    localized: "\(cleanTitle) on \(spokenDate) at \(spokenTime)"
-                )
+            let sortedTasks = tasksForDay.sorted {
+                ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
             }
 
-            return cleanTitle
+            let spokenEntries = sortedTasks.compactMap { task -> String? in
+
+                let cleanTitle = task.title
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                guard !cleanTitle.isEmpty else {
+                    return nil
+                }
+
+                if let deadline = task.deadLine {
+
+                    let spokenTime = timeFormatter.string(from: deadline)
+                    let at = String(localized: "date.at")
+
+                    return "\(cleanTitle) \(at) \(spokenTime)"
+                }
+
+                return cleanTitle
+            }
+
+            guard !spokenEntries.isEmpty else {
+                return nil
+            }
+
+            let spokenDate = dateFormatter.string(from: day)
+
+            return "\(spokenDate): \(spokenEntries.joined(separator: ", "))"
         }
         
         var response = String(
@@ -122,7 +149,7 @@ struct SearchTasksIntent: AppIntent {
         )
         
         response += " "
-        response += spokenTasks.joined(separator: ", ")
+        response += spokenTasks.joined(separator: ". ")
         
         if tasks.count > 7 {
             let remaining = tasks.count - 7

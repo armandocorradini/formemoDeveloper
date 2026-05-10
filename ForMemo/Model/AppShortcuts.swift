@@ -31,19 +31,25 @@ struct AppShortcuts: AppShortcutsProvider {
             intent: GetTasksIntent(),
             phrases: [
                 // 🇬🇧 English
+                AppShortcutPhrase("Check \(.applicationName)"),
                 AppShortcutPhrase("Read \(.applicationName)"),
 
                 // 🇮🇹 Italiano
+                AppShortcutPhrase("Controlla \(.applicationName)"),
                 AppShortcutPhrase("Leggi \(.applicationName)"),
 
+                
                 // 🇩🇪 Deutsch
+                AppShortcutPhrase("Prüfe \(.applicationName)"),
                 AppShortcutPhrase("Lies \(.applicationName)"),
 
                 // 🇫🇷 Français
-                AppShortcutPhrase("Lire \(.applicationName)"),
+                AppShortcutPhrase("Montre \(.applicationName)"),
+                AppShortcutPhrase("Lis \(.applicationName)"),
 
                 // 🇪🇸 Español (España)
-                AppShortcutPhrase("Leer \(.applicationName)")
+                AppShortcutPhrase("Comprueba \(.applicationName)"),
+                AppShortcutPhrase("Lee \(.applicationName)")
             ],
             shortTitle: LocalizedStringResource("Get Tasks"),
             systemImageName: "checklist"
@@ -53,19 +59,25 @@ struct AppShortcuts: AppShortcutsProvider {
             intent: SearchTasksIntent(),
             phrases: [
                 // 🇬🇧 English
+                AppShortcutPhrase("Find \(.applicationName)"),
                 AppShortcutPhrase("Search \(.applicationName)"),
-
+                
                 // 🇮🇹 Italiano
+                AppShortcutPhrase("Trova \(.applicationName)"),
                 AppShortcutPhrase("Cerca \(.applicationName)"),
 
                 // 🇩🇪 Deutsch
+                AppShortcutPhrase("Finde \(.applicationName)"),
                 AppShortcutPhrase("Suche \(.applicationName)"),
-
+                
                 // 🇫🇷 Français
-                AppShortcutPhrase("Rechercher \(.applicationName)"),
-
+                AppShortcutPhrase("Trouve \(.applicationName)"),
+                AppShortcutPhrase("Cherche \(.applicationName)"),
+                
                 // 🇪🇸 Español (España)
-                AppShortcutPhrase("Buscar \(.applicationName)")
+                AppShortcutPhrase("Encuentra \(.applicationName)"),
+                AppShortcutPhrase("Busca \(.applicationName)")
+                
             ],
             shortTitle: LocalizedStringResource("Search Tasks"),
             systemImageName: "magnifyingglass"

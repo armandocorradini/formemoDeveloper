@@ -118,27 +118,9 @@ struct AddTaskIntent: AppIntent {
             
             let minutes: Int?
 
-            // MARK: - NONE
-
-            let words = normalized.components(separatedBy: CharacterSet.whitespacesAndNewlines)
-
-            let noKeywords = [
-                "no", "none",
-                "nessun", "nessuno", "niente",
-                "aucun",
-                "ningun",
-                "kein"
-            ]
-
-            if words.contains(where: { word in
-                noKeywords.contains(word)
-            }) {
-                minutes = nil
-            }
-
             // MARK: - AT DEADLINE
 
-            else if [
+            if [
                 // EN
                 "when it's due", "when it is due", "at the deadline",
                 "at due time", "only when due",

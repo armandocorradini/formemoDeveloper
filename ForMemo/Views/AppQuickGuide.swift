@@ -29,16 +29,16 @@ struct AppQuickGuideView: View {
             title: String(localized: "Use Siri Shortcuts"),
             description: String(localized:
                 """
-                Add tasks quickly using Siri. Try saying:
-                
-                • Add a task in \(appName)
-                • Create a task in \(appName)
-                • Remind me in \(appName)
-                
-                Best option:
-                • New \(appName)   
-                
-                You can let Siri decide the best reminder automatically or choose it yourself.
+                Control \(appName) with Siri using three simple commands:
+
+                • New \(appName)
+                Create a new task using natural language.
+
+                • Search \(appName)
+                Find tasks by keyword.
+
+                • Check \(appName)
+                Hear tasks planned for today, tomorrow, weekends, weeks or specific dates.
                 """
                                ),
             icon: "waveform.circle",

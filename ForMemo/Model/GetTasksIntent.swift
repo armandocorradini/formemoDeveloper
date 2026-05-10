@@ -2,32 +2,6 @@ import Foundation
 import AppIntents
 import SwiftData
 
-enum TaskPeriod: String, AppEnum {
-    
-    static var typeDisplayRepresentation = TypeDisplayRepresentation(
-        name: LocalizedStringResource("Period")
-    )
-    
-    static var caseDisplayRepresentations: [TaskPeriod: DisplayRepresentation] = [
-        .today: DisplayRepresentation(title: LocalizedStringResource("Today")),
-        .tomorrow: DisplayRepresentation(title: LocalizedStringResource("Tomorrow")),
-        .weekend: DisplayRepresentation(title: LocalizedStringResource("Weekend")),
-        .thisWeekend: DisplayRepresentation(title: LocalizedStringResource("This Weekend")),
-        .nextWeekend: DisplayRepresentation(title: LocalizedStringResource("Next Weekend")),
-        .thisWeek: DisplayRepresentation(title: LocalizedStringResource("This Week")),
-        .nextWeek: DisplayRepresentation(title: LocalizedStringResource("Next Week")),
-        .customDate: DisplayRepresentation(title: LocalizedStringResource("Specific Day"))
-    ]
-    
-    case today
-    case tomorrow
-    case weekend
-    case thisWeekend
-    case nextWeekend
-    case thisWeek
-    case nextWeek
-    case customDate
-}
 
 struct GetTasksIntent: AppIntent {
     
@@ -40,25 +14,16 @@ struct GetTasksIntent: AppIntent {
     static var openAppWhenRun = false
     
     @Parameter(
-        title: LocalizedStringResource("Period"),
+        title: LocalizedStringResource("Query"),
         requestValueDialog: IntentDialog(
-            stringLiteral: String(localized: "Which period would you like to check? Today, tomorrow, weekend, or next week?")
+            stringLiteral: String(localized: "Which period or date would you like to check?")
         )
     )
-    var period: TaskPeriod
-    
-    @Parameter(
-        title: LocalizedStringResource("Date"),
-        requestValueDialog: IntentDialog(
-            stringLiteral: String(localized: "Which specific day would you like to check?")
-        )
-    )
-    var customDate: Date?
+    var query: String
     
     static var parameterSummary: some ParameterSummary {
         Summary {
-            \.$period
-            \.$customDate
+            \.$query
         }
     }
     
@@ -68,93 +33,201 @@ struct GetTasksIntent: AppIntent {
     func perform() async throws -> some IntentResult & ProvidesDialog {
         
         print("GetTasksIntent started")
-        print("Requested date:", customDate as Any)
+        // print("Requested date:", targetDate as Any) // removed as targetDate is gone
         
         let context = ModelContext(Persistence.sharedModelContainer)
         let calendar = Calendar.autoupdatingCurrent
 
-        let now = Date()
-        
-        let referenceDate: Date
-        
-        switch period {
-        case .today:
-            referenceDate = now
-            
-        case .tomorrow:
-            referenceDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
-            
-        case .weekend, .thisWeekend:
-            referenceDate = calendar.nextWeekend(startingAfter: now)?.start ?? now
-            
-        case .nextWeekend:
-            let next = calendar.nextWeekend(startingAfter: now)?.end ?? now
-            referenceDate = calendar.nextWeekend(startingAfter: next)?.start ?? now
-            
-        case .thisWeek:
-            referenceDate = now
-            
-        case .nextWeek:
-            referenceDate = calendar.date(byAdding: .weekOfYear, value: 1, to: now) ?? now
-            
-        case .customDate:
-            guard let customDate else {
-                throw $customDate.needsValueError()
-            }
-            referenceDate = customDate
-        }
+        let normalizedQuery = query
+            .folding(options: .diacriticInsensitive, locale: .current)
+            .lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
 
+        let referenceDate: Date
         let dateInterval: DateInterval
 
-        switch period {
-        case .today, .tomorrow, .customDate:
-            let startOfDay = calendar.startOfDay(for: referenceDate)
-            let endOfDay = calendar.date(
-                byAdding: .day,
-                value: 1,
-                to: startOfDay
-            )!
+        if [
+            // EN
+            "today",
 
-            dateInterval = DateInterval(
-                start: startOfDay,
-                end: endOfDay
-            )
+            // IT
+            "oggi",
 
-        case .weekend, .thisWeekend:
-            if let weekendInterval = calendar.dateIntervalOfWeekend(containing: referenceDate) {
-                dateInterval = weekendInterval
-            } else {
-                let startOfDay = calendar.startOfDay(for: referenceDate)
+            // FR
+            "aujourd hui", "aujourd'hui",
 
-                dateInterval = DateInterval(
-                    start: startOfDay,
-                    end: calendar.date(byAdding: .day, value: 2, to: startOfDay)!
+            // ES
+            "hoy",
+
+            // DE
+            "heute"
+        ].contains(where: { normalizedQuery.contains($0) }) {
+
+            referenceDate = Date()
+
+            let start = calendar.startOfDay(for: referenceDate)
+            let end = calendar.date(byAdding: .day, value: 1, to: start)!
+
+            dateInterval = DateInterval(start: start, end: end)
+
+        } else if [
+            // EN
+            "tomorrow",
+
+            // IT
+            "domani",
+
+            // FR
+            "demain",
+
+            // ES
+            "manana", "mañana",
+
+            // DE
+            "morgen"
+        ].contains(where: { normalizedQuery.contains($0) }) {
+
+            referenceDate = calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+
+            let start = calendar.startOfDay(for: referenceDate)
+            let end = calendar.date(byAdding: .day, value: 1, to: start)!
+
+            dateInterval = DateInterval(start: start, end: end)
+
+        } else if [
+            // EN
+            "day after tomorrow",
+
+            // IT
+            "dopodomani",
+
+            // FR
+            "apres demain", "après demain",
+
+            // ES
+            "pasado manana", "pasado mañana",
+
+            // DE
+            "ubermorgen", "übermorgen"
+        ].contains(where: { normalizedQuery.contains($0) }) {
+
+            referenceDate = calendar.date(byAdding: .day, value: 2, to: Date()) ?? Date()
+
+            let start = calendar.startOfDay(for: referenceDate)
+            let end = calendar.date(byAdding: .day, value: 1, to: start)!
+
+            dateInterval = DateInterval(start: start, end: end)
+
+        } else if [
+            // EN
+            "next weekend",
+
+            // IT
+            "prossimo weekend", "weekend prossimo", "prossimo fine settimana",
+
+            // FR
+            "week end prochain", "weekend prochain",
+
+            // ES
+            "proximo fin de semana", "próximo fin de semana",
+            "el próximo fin de semana",
+
+            // DE
+            "nachstes wochenende", "nächstes wochenende"
+        ].contains(where: { normalizedQuery.contains($0) }) {
+
+            let next = calendar.nextWeekend(startingAfter: Date())?.end ?? Date()
+            referenceDate = calendar.nextWeekend(startingAfter: next)?.start ?? Date()
+
+            dateInterval = calendar.dateIntervalOfWeekend(containing: referenceDate) ?? DateInterval(start: referenceDate, end: calendar.date(byAdding: .day, value: 2, to: referenceDate)!)
+
+        } else if [
+            // EN
+            "weekend",
+
+            // IT
+            "weekend", "fine settimana",
+
+            // FR
+            "week end", "weekend",
+
+            // ES
+            "fin de semana",
+            "el fin de semana",
+
+            // DE
+            "wochenende"
+        ].contains(where: { normalizedQuery.contains($0) }) {
+
+            referenceDate = calendar.nextWeekend(startingAfter: Date())?.start ?? Date()
+
+            dateInterval = calendar.dateIntervalOfWeekend(containing: referenceDate) ?? DateInterval(start: referenceDate, end: calendar.date(byAdding: .day, value: 2, to: referenceDate)!)
+
+        } else if [
+            // EN
+            "next week",
+
+            // IT
+            "prossima settimana","settimana prossima",
+
+            // FR
+            "semaine prochaine",
+
+            // ES
+            "proxima semana", "próxima semana",
+            "la próxima semana",
+
+            // DE
+            "nächste woche", "nachste woche"
+        ].contains(where: { normalizedQuery.contains($0) }) {
+
+            referenceDate = calendar.date(byAdding: .weekOfYear, value: 1, to: Date()) ?? Date()
+
+            dateInterval = calendar.dateInterval(of: .weekOfYear, for: referenceDate)!
+
+        } else if [
+            // EN
+            "this week",
+
+            // IT
+            "questa settimana",
+
+            // FR
+            "cette semaine",
+
+            // ES
+            "esta semana",
+            "la semana actual",
+
+            // DE
+            "diese woche"
+        ].contains(where: { normalizedQuery.contains($0) }) {
+
+            referenceDate = Date()
+
+            dateInterval = calendar.dateInterval(of: .weekOfYear, for: referenceDate)!
+
+        } else {
+
+            let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue)
+            let nsRange = NSRange(normalizedQuery.startIndex..., in: normalizedQuery)
+
+            guard let match = detector?.firstMatch(in: normalizedQuery, options: [], range: nsRange),
+                  let detectedDate = match.date else {
+
+                return .result(
+                    dialog: IntentDialog(
+                        stringLiteral: String(localized: "I couldn't understand the date or period.")
+                    )
                 )
             }
 
-        case .nextWeekend:
-            if let weekendInterval = calendar.dateIntervalOfWeekend(containing: referenceDate) {
-                dateInterval = weekendInterval
-            } else {
-                let startOfDay = calendar.startOfDay(for: referenceDate)
+            referenceDate = detectedDate
 
-                dateInterval = DateInterval(
-                    start: startOfDay,
-                    end: calendar.date(byAdding: .day, value: 2, to: startOfDay)!
-                )
-            }
+            let start = calendar.startOfDay(for: referenceDate)
+            let end = calendar.date(byAdding: .day, value: 1, to: start)!
 
-        case .thisWeek, .nextWeek:
-            if let weekInterval = calendar.dateInterval(of: .weekOfYear, for: referenceDate) {
-                dateInterval = weekInterval
-            } else {
-                let startOfDay = calendar.startOfDay(for: referenceDate)
-
-                dateInterval = DateInterval(
-                    start: startOfDay,
-                    end: calendar.date(byAdding: .day, value: 7, to: startOfDay)!
-                )
-            }
+            dateInterval = DateInterval(start: start, end: end)
         }
 
         let intervalStart = dateInterval.start
@@ -209,35 +282,80 @@ struct GetTasksIntent: AppIntent {
         timeFormatter.dateStyle = .none
 
         let dateFormatterForTasks = DateFormatter()
-        dateFormatterForTasks.dateStyle = .short
-        dateFormatterForTasks.timeStyle = .none
+        dateFormatterForTasks.locale = Locale.autoupdatingCurrent
+        dateFormatterForTasks.setLocalizedDateFormatFromTemplate("EEEE d MMM")
 
         let limitedTasks = Array(tasks.prefix(7))
+        let calendarForGrouping = Calendar.autoupdatingCurrent
 
-        let spokenTasks = limitedTasks.compactMap { task -> String? in
-            let cleanTitle = task.title
-                .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-            
-            guard !cleanTitle.isEmpty else {
+        let groupedTasks = Dictionary(grouping: limitedTasks) { task in
+            calendarForGrouping.startOfDay(for: task.deadLine ?? Date())
+        }
+
+        let sortedDays = groupedTasks.keys.sorted()
+
+        let singleDayInterval = calendarForGrouping.isDate(
+            intervalStart,
+            inSameDayAs: calendar.date(byAdding: .second, value: -1, to: intervalEnd) ?? intervalStart
+        )
+
+        let spokenTasks = sortedDays.compactMap { day -> String? in
+
+            guard let tasksForDay = groupedTasks[day] else {
                 return nil
             }
-            
-            if let deadline = task.deadLine {
-                let spokenTaskDate = dateFormatterForTasks.string(from: deadline)
-                let spokenTaskTime = timeFormatter.string(from: deadline)
-                
+
+            let sortedTasks = tasksForDay.sorted {
+                ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
+            }
+
+            let spokenEntries = sortedTasks.compactMap { task -> String? in
+
+                let cleanTitle = task.title
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                guard !cleanTitle.isEmpty else {
+                    return nil
+                }
+
+                if let deadline = task.deadLine {
+
+                    let spokenTaskTime = timeFormatter.string(from: deadline)
+
+                    return String(
+                        format: NSLocalizedString(
+                            "%1$@ at %2$@",
+                            comment: "Task spoken format without repeated date"
+                        ),
+                        cleanTitle,
+                        spokenTaskTime
+                    )
+                }
+
+                return cleanTitle
+            }
+
+            guard !spokenEntries.isEmpty else {
+                return nil
+            }
+
+            if singleDayInterval {
+
+                return spokenEntries.joined(separator: ", ")
+
+            } else {
+
+                let spokenTaskDate = dateFormatterForTasks.string(from: day)
+
                 return String(
                     format: NSLocalizedString(
-                        "%1$@ on %2$@ at %3$@",
-                        comment: "Task spoken format"
+                        "%1$@: %2$@",
+                        comment: "Grouped tasks for day"
                     ),
-                    cleanTitle,
                     spokenTaskDate,
-                    spokenTaskTime
+                    spokenEntries.joined(separator: ", ")
                 )
             }
-            
-            return cleanTitle
         }
 
         let dateFormatter = DateFormatter()
@@ -246,30 +364,17 @@ struct GetTasksIntent: AppIntent {
 
         let spokenDate: String
 
-        switch period {
-        case .today:
+        if ["today", "oggi", "aujourd hui", "aujourd'hui", "hoy", "heute"]
+            .contains(where: { normalizedQuery.contains($0) }) {
             spokenDate = String(localized: "today")
-
-        case .tomorrow:
+        } else if ["tomorrow", "domani", "demain", "manana", "mañana", "morgen"]
+            .contains(where: { normalizedQuery.contains($0) }) {
             spokenDate = String(localized: "tomorrow")
-
-        case .weekend:
-            spokenDate = String(localized: "weekend")
-
-        case .thisWeekend:
-            spokenDate = String(localized: "this weekend")
-
-        case .nextWeekend:
-            spokenDate = String(localized: "next weekend")
-
-        case .thisWeek:
-            spokenDate = String(localized: "this week")
-
-        case .nextWeek:
-            spokenDate = String(localized: "next week")
-
-        case .customDate:
-            spokenDate = dateFormatter.string(from: referenceDate)
+        } else if ["day after tomorrow", "dopodomani", "apres demain", "après demain", "pasado manana", "pasado mañana", "ubermorgen", "übermorgen"]
+            .contains(where: { normalizedQuery.contains($0) }) {
+            spokenDate = String(localized: "day after tomorrow")
+        } else {
+            spokenDate = query
         }
 
         guard !tasks.isEmpty else {
@@ -289,7 +394,7 @@ struct GetTasksIntent: AppIntent {
         )
         
         response += " "
-        response += spokenTasks.joined(separator: ", ")
+        response += spokenTasks.joined(separator: ". ")
 
         let remainingTasks = Array(tasks.dropFirst(7))
 
