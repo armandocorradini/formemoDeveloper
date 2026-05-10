@@ -114,7 +114,7 @@ struct TaskListAppearanceView: View {
                 .init(top: 2, leading: 2, bottom: 2, trailing: 2)
             )
             .scrollContentBackground(.hidden)
-            .navigationTitle("List")
+            .navigationTitle("Customize")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

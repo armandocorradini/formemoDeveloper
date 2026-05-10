@@ -24,6 +24,7 @@ struct ShortList: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(String(localized: "New \(appName)"))
                                     .font(.headline)
+                                    .foregroundStyle(.blue)
                                 
                                 Text(String(localized: "Create a new task instantly using Siri."))
                                     .font(.caption)
@@ -35,6 +36,7 @@ struct ShortList: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(String(localized: "Search \(appName)"))
                                     .font(.headline)
+                                    .foregroundStyle(.blue)
                                 
                                 Text(String(localized: "Search tasks, reminders and notes by text using Siri."))
                                     .font(.caption)
@@ -46,6 +48,7 @@ struct ShortList: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(String(localized: "Check \(appName)"))
                                     .font(.headline)
+                                    .foregroundStyle(.blue)
                                 
                                 Text(String(localized: "Check upcoming tasks, reminders and due dates with Siri."))
                                     .font(.caption)
@@ -54,13 +57,22 @@ struct ShortList: View {
                         }
                         .padding(.vertical, 8)
                     } header: {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(String(localized: "Try saying 'Hey Siri,' followed by:"))
-                                .font(.headline)
+                        VStack(alignment: .leading, spacing: 16) {
+                            VStack(spacing: 12) {
+                                Image(systemName: "waveform.circle.fill")
+                                    .symbolRenderingMode(.hierarchical)
+                                    .font(.system(size: 64))
+                                    .foregroundStyle(.blue)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
                             
-                            Text(String(localized: "Use natural voice commands to quickly create reminders and tasks."))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            Text(String(localized: "Try saying 'Hey Siri,' followed by:"))
+                                .font(.title3)
+                                .foregroundStyle(.primary)
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.center)
+                                .padding(.bottom, 12)
                         }
                         .textCase(nil)
                     } footer: {
@@ -75,7 +87,7 @@ struct ShortList: View {
                 .scrollContentBackground(.hidden)
                 .navigationTitle("Ask to Siri") // SwiftUI localizza automaticamente le stringhe letterali
                 .navigationBarTitleDisplayMode(.inline)
-                .padding(.top,30)
+                .padding(.top, 8)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
