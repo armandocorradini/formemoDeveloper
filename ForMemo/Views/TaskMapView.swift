@@ -160,9 +160,19 @@ extension TaskMapView {
     }
     
     var mapModels: [TaskMapAnnotationModel] {
-        let tasksById: [UUID: TodoTask] = Dictionary(uniqueKeysWithValues: tasks.map { ($0.id, $0) })
+        let tasksById: [UUID: TodoTask] = Dictionary(
+            tasks.map { ($0.id, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
 
-        let grouped = Dictionary(grouping: tasks.compactMap { task -> (CLLocationCoordinate2D, TaskMapAnnotationModel.Item)? in
+        let uniqueTasks = Array(
+            Dictionary(
+                tasks.map { ($0.id, $0) },
+                uniquingKeysWith: { first, _ in first }
+            ).values
+        )
+
+        let grouped = Dictionary(grouping: uniqueTasks.compactMap { task -> (CLLocationCoordinate2D, TaskMapAnnotationModel.Item)? in
             guard let lat = task.locationLatitude,
                   let lon = task.locationLongitude else { return nil }
 
@@ -202,7 +212,7 @@ extension TaskMapView {
 
             let tagIcon = mostUrgentItem.flatMap { tasksById[$0.id]?.mainTag?.mainIcon }
 
-            let locationName = tasks.first {
+            let locationName = uniqueTasks.first {
                 $0.locationLatitude == coordinate.latitude &&
                 $0.locationLongitude == coordinate.longitude
             }?.locationName

@@ -89,6 +89,28 @@ struct ForMemoApp: App {
         Task { @MainActor in
             let context = sharedContainer.mainContext
             
+            let descriptor = FetchDescriptor<TodoTask>()
+            let allTasks = (try? context.fetch(descriptor)) ?? []
+
+            let grouped = Dictionary(grouping: allTasks, by: \.id)
+
+            var removedDuplicates = false
+
+            for (_, tasks) in grouped where tasks.count > 1 {
+
+                // tiene il primo
+                for duplicate in tasks.dropFirst() {
+                    context.delete(duplicate)
+                    removedDuplicates = true
+                }
+            }
+
+            if removedDuplicates {
+                try? context.save()
+            }
+            
+            
+            
             // 1️⃣ Setup notifiche (PRIMA DI TUTTO)
             await NotificationManager.shared.configure()
             
