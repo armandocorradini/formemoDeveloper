@@ -626,11 +626,13 @@ struct NewTaskSheetView: View {
     
     @MainActor
     private func saveTask() {
-        modelContext.insert(draftTask)
         
+        if draftTask.modelContext == nil {
+            modelContext.insert(draftTask)
+        }
+    
         do {
             try modelContext.save()
-            
             
         } catch {
             AppLogger.persistence.error("Save failed: \(error.localizedDescription)")
