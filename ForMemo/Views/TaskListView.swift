@@ -40,6 +40,7 @@ struct TaskListView: View {
 
     @State private var selectedTagFilter: TaskMainTag? = nil
     @State private var selectedPriorityFilter: TaskPriority? = nil
+    @State private var selectedPeriodFilter: TaskPeriodFilter? = nil
 
 
     @AppStorage("TaskListStyle")
@@ -52,6 +53,7 @@ struct TaskListView: View {
         let source = showCompleted ? completedQuery : todoQuery
 
         return source.filter { task in
+
             let matchesSearch =
             searchText.isEmpty ||
             task.title.localizedCaseInsensitiveContains(searchText)
@@ -64,7 +66,11 @@ struct TaskListView: View {
             selectedPriorityFilter == nil ||
             task.priority == selectedPriorityFilter
 
-            return matchesSearch && matchesTag && matchesPriority
+            let matchesPeriod =
+            selectedPeriodFilter == nil ||
+            selectedPeriodFilter?.matches(task.deadLine) == true
+
+            return matchesSearch && matchesTag && matchesPriority && matchesPeriod
         }
     }
     @State private var cachedTodo: [TodoTask] = []
@@ -104,6 +110,7 @@ struct TaskListView: View {
         hasher.combine(searchText)
         hasher.combine(selectedTagFilter)
         hasher.combine(selectedPriorityFilter)
+        hasher.combine(selectedPeriodFilter)
         hasher.combine(showCompleted)
         return hasher.finalize()
     }
@@ -112,11 +119,24 @@ struct TaskListView: View {
         let now = Date()
 
         func matches(_ task: TodoTask) -> Bool {
-            (searchText.isEmpty || task.title.localizedCaseInsensitiveContains(searchText))
-            &&
-            (selectedTagFilter == nil || task.mainTag == selectedTagFilter)
-            &&
-            (selectedPriorityFilter == nil || task.priority == selectedPriorityFilter)
+
+            let matchesSearch =
+            searchText.isEmpty ||
+            task.title.localizedCaseInsensitiveContains(searchText)
+
+            let matchesTag =
+            selectedTagFilter == nil ||
+            task.mainTag == selectedTagFilter
+
+            let matchesPriority =
+            selectedPriorityFilter == nil ||
+            task.priority == selectedPriorityFilter
+
+            let matchesPeriod =
+            selectedPeriodFilter == nil ||
+            selectedPeriodFilter?.matches(task.deadLine) == true
+
+            return matchesSearch && matchesTag && matchesPriority && matchesPeriod
         }
 
         let todo = todoQuery.lazy.filter { matches($0) }
@@ -168,10 +188,15 @@ struct TaskListView: View {
                     .fill(.ultraThinMaterial)
                     .ignoresSafeArea()
 
+            let isEmptyState =
+                todoQuery.isEmpty &&
+                completedQuery.isEmpty &&
+                !showNewTask
+            
                 listWithStyle {
 
                     List {
-                        if todoQuery.isEmpty && completedQuery.isEmpty && !showNewTask {
+                        if isEmptyState {
                             EmptySectionView(showQuickGuide: $showQuickGuide)
                         }
 
@@ -308,14 +333,15 @@ struct TaskListView: View {
                         ToolbarItem(placement: .topBarLeading) {
                             Menu {
                                 // Sezione per rimuovere tutti i filtri
-                                if selectedTagFilter != nil || selectedPriorityFilter != nil {
+                                if selectedTagFilter != nil || selectedPriorityFilter != nil || selectedPeriodFilter != nil {
                                     Button(role: .destructive) {
                                         selectedTagFilter = nil
                                         selectedPriorityFilter = nil
+                                        selectedPeriodFilter = nil
                                     } label: {
                                         Label(
                                             String(localized: "Remove Filters"),
-                                            systemImage: "line.3.horizontal.decrease.circle.slash"
+                                            systemImage: "line.3.horizontal.decrease.circle"
                                         )
                                     }
 
@@ -360,16 +386,37 @@ struct TaskListView: View {
                                     )
                                 }
 
+                                // MENU FILTRO PERIODO
+                                Menu {
+                                    Picker("Period", selection: $selectedPeriodFilter) {
+
+                                        Text("All").tag(nil as TaskPeriodFilter?)
+
+                                        ForEach(TaskPeriodFilter.allCases) { period in
+                                            Label(period.localizedTitle, systemImage: period.systemImage)
+                                                .tag(period as TaskPeriodFilter?)
+                                        }
+                                    }
+                                } label: {
+                                    Label(
+                                        String(localized: "Period"),
+                                        systemImage: "ellipsis.calendar"
+                                    )
+                                }
+
                             } label: {
                                 // Icona principale del Filtro nella Toolbar
                                 // Diventa blu se almeno un filtro è attivo
                                 Image(systemName: "line.3.horizontal.decrease.circle")
                                     .foregroundStyle(
-                                        selectedTagFilter != nil || selectedPriorityFilter != nil
+                                        selectedTagFilter != nil ||
+                                        selectedPriorityFilter != nil ||
+                                        selectedPeriodFilter != nil
                                         ? .red
                                         : .primary.opacity(0.7)
                                     )
                             }
+
                         }
 
                     }
@@ -690,6 +737,129 @@ struct TaskRow: View {
             highlightCriticalOverdue: highlightEnabled,
             showTodayExpiredLabel: showTodayExpiredLabel && !task.isCompleted
         )
+    }
+}
+
+// MARK: - Period Filter
+
+enum TaskPeriodFilter: String, CaseIterable, Identifiable {
+
+    case today
+    case tomorrow
+    case dayAfterTomorrow
+    case thisWeekend
+    case nextWeekend
+    case thisWeek
+    case nextWeek
+    case thisMonth
+
+    var id: String { rawValue }
+
+    var localizedTitle: LocalizedStringKey {
+        switch self {
+        case .today:
+            return "Today"
+        case .tomorrow:
+            return "Tomorrow"
+        case .dayAfterTomorrow:
+            return "Day After Tomorrow"
+        case .thisWeekend:
+            return "This Weekend"
+        case .nextWeekend:
+            return "Next Weekend"
+        case .thisWeek:
+            return "This Week"
+        case .nextWeek:
+            return "Next Week"
+        case .thisMonth:
+            return "This Month"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .today:
+            return "sun.max"
+        case .tomorrow:
+            return "sunrise"
+        case .dayAfterTomorrow:
+            return "calendar.badge.clock"
+        case .thisWeekend:
+            return "beach.umbrella"
+        case .nextWeekend:
+            return "calendar.badge.plus"
+        case .thisWeek:
+            return "calendar.badge"
+        case .nextWeek:
+            return "calendar.circle"
+        case .thisMonth:
+            return "calendar"
+        }
+    }
+
+    func matches(_ date: Date?) -> Bool {
+
+        guard let date else { return false }
+
+        let calendar = Calendar.current
+        let now = Date()
+
+        switch self {
+
+        case .today:
+            return calendar.isDateInToday(date)
+
+        case .tomorrow:
+            return calendar.isDateInTomorrow(date)
+
+        case .dayAfterTomorrow:
+
+            guard let target = calendar.date(byAdding: .day, value: 2, to: now) else {
+                return false
+            }
+
+            return calendar.isDate(date, inSameDayAs: target)
+
+        case .thisWeekend:
+
+            guard let weekend = calendar.nextWeekend(startingAfter: now) else {
+                return false
+            }
+
+            return date >= weekend.start && date < weekend.end
+
+        case .nextWeekend:
+
+            guard let firstWeekend = calendar.nextWeekend(startingAfter: now),
+                  let secondWeekend = calendar.nextWeekend(startingAfter: firstWeekend.end)
+            else {
+                return false
+            }
+
+            return date >= secondWeekend.start && date < secondWeekend.end
+
+        case .thisWeek:
+
+            guard let interval = calendar.dateInterval(of: .weekOfYear, for: now) else {
+                return false
+            }
+
+            return interval.contains(date)
+
+        case .nextWeek:
+
+            guard let nextWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: now),
+                  let interval = calendar.dateInterval(of: .weekOfYear, for: nextWeek)
+            else {
+                return false
+            }
+
+            return interval.contains(date)
+
+        case .thisMonth:
+
+            return calendar.isDate(date, equalTo: now, toGranularity: .month)
+        }
     }
 }
 
