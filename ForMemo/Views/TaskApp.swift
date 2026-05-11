@@ -135,15 +135,20 @@ struct ForMemoApp: App {
 
                 let sortedTasks = tasks.sorted {
 
+                    // 🔥 priorità ai task NON completati
+                    if $0.isCompleted != $1.isCompleted {
+                        return !$0.isCompleted
+                    }
+
                     let leftScore = taskScore($0)
                     let rightScore = taskScore($1)
 
-                    // 🔥 prima score
+                    // 🔥 poi score completezza
                     if leftScore != rightScore {
                         return leftScore > rightScore
                     }
 
-                    // 🔥 poi createdAt più recente
+                    // 🔥 infine createdAt più recente
                     return $0.createdAt > $1.createdAt
                 }
 
@@ -153,12 +158,12 @@ struct ForMemoApp: App {
 
 #if DEBUG
                 print("🧹 Duplicate cleanup for ID: \(id.uuidString)")
-                print("✅ Keeping task: \(keptTask.title)")
+                print("✅ Keeping task: \(keptTask.title) | completed: \(keptTask.isCompleted)")
 #endif
 
                 for duplicate in sortedTasks.dropFirst() {
 #if DEBUG
-                    print("❌ Removing duplicate: \(duplicate.title)")
+                    print("❌ Removing duplicate: \(duplicate.title) | completed: \(duplicate.isCompleted)")
 #endif
                     context.delete(duplicate)
                     removedDuplicates = true

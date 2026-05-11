@@ -11,10 +11,17 @@ enum AttachmentMigration {
         log("🚀 MIGRATION START")
         
         let versionKey = "attachmentMigrationVersion"
-        let currentVersion = 2   // 🔥 incrementato
-        
-        let savedVersion = UserDefaults.standard.integer(forKey: versionKey)
+        let attemptsKey = "attachmentMigrationAttempts"
+        let currentVersion = 2
+        let maxAttempts = 3
+
+        let defaults = UserDefaults.standard
+
+        let savedVersion = defaults.integer(forKey: versionKey)
+        let attempts = defaults.integer(forKey: attemptsKey)
+
         log("Version: \(savedVersion) → \(currentVersion)")
+        log("Migration attempts: \(attempts)/\(maxAttempts)")
         
         guard savedVersion < currentVersion else {
             log("⏭️ Migration already done")
@@ -24,10 +31,29 @@ enum AttachmentMigration {
         let success = migrate(context: context)
         
         if success {
-            UserDefaults.standard.set(currentVersion, forKey: versionKey)
+
+            defaults.set(currentVersion, forKey: versionKey)
+            defaults.set(0, forKey: attemptsKey)
+
             log("✅ Migration DONE")
+
         } else {
-            log("❌ Migration FAILED → retry next launch")
+
+            let newAttempts = attempts + 1
+            defaults.set(newAttempts, forKey: attemptsKey)
+
+            if newAttempts >= maxAttempts {
+
+                // 🔥 evita retry infiniti
+                defaults.set(currentVersion, forKey: versionKey)
+                defaults.set(0, forKey: attemptsKey)
+
+                log("⚠️ Migration skipped after \(maxAttempts) failed attempts")
+
+            } else {
+
+                log("❌ Migration FAILED → retry next launch")
+            }
         }
     }
     
@@ -48,7 +74,7 @@ enum AttachmentMigration {
         let fm = FileManager.default
         
         guard let files = try? fm.contentsOfDirectory(at: legacyDir, includingPropertiesForKeys: nil) else {
-            log("❌ Cannot read legacy directory")
+            log("⚠️ Cannot read legacy directory")
             return false
         }
         
@@ -119,3 +145,4 @@ enum AttachmentMigration {
         
     }
 }
+ 
