@@ -96,10 +96,70 @@ struct ForMemoApp: App {
 
             var removedDuplicates = false
 
-            for (_, tasks) in grouped where tasks.count > 1 {
+            func taskScore(_ task: TodoTask) -> Int {
 
-                // tiene il primo
-                for duplicate in tasks.dropFirst() {
+                var score = 0
+
+                // 🔥 attachments = priorità massima
+                score += (task.attachments?.count ?? 0) * 100
+
+                // 🔥 descrizione
+                if !task.taskDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    score += 20
+                }
+
+                // 🔥 location
+                if task.locationName != nil {
+                    score += 20
+                }
+
+                // 🔥 reminder
+                if task.reminderOffsetMinutes != nil {
+                    score += 10
+                }
+
+                // 🔥 deadline
+                if task.deadLine != nil {
+                    score += 10
+                }
+
+                // 🔥 task completato = leggermente preferito
+                if task.isCompleted {
+                    score += 5
+                }
+
+                return score
+            }
+
+            for (id, tasks) in grouped where tasks.count > 1 {
+
+                let sortedTasks = tasks.sorted {
+
+                    let leftScore = taskScore($0)
+                    let rightScore = taskScore($1)
+
+                    // 🔥 prima score
+                    if leftScore != rightScore {
+                        return leftScore > rightScore
+                    }
+
+                    // 🔥 poi createdAt più recente
+                    return $0.createdAt > $1.createdAt
+                }
+
+                guard let keptTask = sortedTasks.first else {
+                    continue
+                }
+
+#if DEBUG
+                print("🧹 Duplicate cleanup for ID: \(id.uuidString)")
+                print("✅ Keeping task: \(keptTask.title)")
+#endif
+
+                for duplicate in sortedTasks.dropFirst() {
+#if DEBUG
+                    print("❌ Removing duplicate: \(duplicate.title)")
+#endif
                     context.delete(duplicate)
                     removedDuplicates = true
                 }
@@ -107,6 +167,10 @@ struct ForMemoApp: App {
 
             if removedDuplicates {
                 try? context.save()
+
+#if DEBUG
+                print("✅ Duplicate cleanup completed")
+#endif
             }
             
             

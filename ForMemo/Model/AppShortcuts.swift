@@ -10,18 +10,23 @@ struct AppShortcuts: AppShortcutsProvider {
             phrases: [
                 // 🇬🇧 English
                 AppShortcutPhrase("New \(.applicationName)"),
+                AppShortcutPhrase("Add \(.applicationName)"),
 
                 // 🇮🇹 Italiano
                 AppShortcutPhrase("Nuovo \(.applicationName)"),
+                AppShortcutPhrase("Aggiungi \(.applicationName)"),
 
                 // 🇩🇪 Deutsch
                 AppShortcutPhrase("Neu \(.applicationName)"),
+                AppShortcutPhrase("Hinzufügen \(.applicationName)"),
 
                 // 🇫🇷 Français
                 AppShortcutPhrase("Nouveau \(.applicationName)"),
+                AppShortcutPhrase("Ajouter \(.applicationName)"),
 
                 // 🇪🇸 Español (España)
-                AppShortcutPhrase("Nuevo \(.applicationName)")
+                AppShortcutPhrase("Nuevo \(.applicationName)"),
+                AppShortcutPhrase("Añadir \(.applicationName)")
             ],
             shortTitle: LocalizedStringResource("Add Task"),
             systemImageName: "plus.circle.fill"
@@ -33,23 +38,28 @@ struct AppShortcuts: AppShortcutsProvider {
                 // 🇬🇧 English
                 AppShortcutPhrase("Check \(.applicationName)"),
                 AppShortcutPhrase("Read \(.applicationName)"),
+                AppShortcutPhrase("Report \(.applicationName)"),
 
                 // 🇮🇹 Italiano
                 AppShortcutPhrase("Controlla \(.applicationName)"),
                 AppShortcutPhrase("Leggi \(.applicationName)"),
+                AppShortcutPhrase("Report \(.applicationName)"),
 
                 
                 // 🇩🇪 Deutsch
                 AppShortcutPhrase("Prüfe \(.applicationName)"),
                 AppShortcutPhrase("Lies \(.applicationName)"),
+                AppShortcutPhrase("Bericht \(.applicationName)"),
 
                 // 🇫🇷 Français
                 AppShortcutPhrase("Montre \(.applicationName)"),
                 AppShortcutPhrase("Lis \(.applicationName)"),
+                AppShortcutPhrase("Rapport \(.applicationName)"),
 
                 // 🇪🇸 Español (España)
                 AppShortcutPhrase("Comprueba \(.applicationName)"),
-                AppShortcutPhrase("Lee \(.applicationName)")
+                AppShortcutPhrase("Lee \(.applicationName)"),
+                AppShortcutPhrase("Informe \(.applicationName)")
             ],
             shortTitle: LocalizedStringResource("Get Tasks"),
             systemImageName: "checklist"

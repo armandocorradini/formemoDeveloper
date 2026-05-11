@@ -115,12 +115,40 @@ struct AddTaskIntent: AppIntent {
             let normalized = reminderText
                 .folding(options: .diacriticInsensitive, locale: .current)
                 .lowercased()
-            
-            let minutes: Int?
+
+            // MARK: - NEGATIVE ANSWERS
+
+            var minutes: Int?
+
+            if [
+
+                // EN
+                "no", "nope", "no reminder", "none",
+
+                // IT
+                "no", "nessuno", "nessun promemoria",
+                "non serve", "non voglio",
+
+                // FR
+                "non", "aucun rappel",
+
+                // ES
+                "no", "ningún recordatorio",
+
+                // DE
+                "nein", "keine erinnerung"
+
+            ].contains(where: {
+                normalized.trimmingCharacters(in: .whitespacesAndNewlines) == $0
+            }) {
+
+                minutes = nil
+            }
 
             // MARK: - AT DEADLINE
 
-            if [
+            else if
+            [
                 // EN
                 "when it's due", "when it is due", "at the deadline",
                 "at due time", "only when due",
