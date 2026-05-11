@@ -411,6 +411,41 @@
           }
         }
       }
+    },
+    "Privacy - User Notifications Usage Description" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird verwendet, um Erinnerungen zu deinen Aufgaben zu senden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Used to send reminders about your tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se utiliza para enviar recordatorios sobre tus tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisé pour envoyer des rappels concernant vos tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa app usa le notifiche per inviare promemoria relativi alle tue attività."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

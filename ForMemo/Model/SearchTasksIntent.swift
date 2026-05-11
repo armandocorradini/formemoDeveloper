@@ -29,9 +29,10 @@ struct SearchTasksIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         
+#if DEBUG
         print("SearchTasksIntent started")
         print("Search query:", query)
-        
+#endif
         let context = ModelContext(Persistence.sharedModelContainer)
         
         let normalizedQuery = query
@@ -52,8 +53,12 @@ struct SearchTasksIntent: AppIntent {
         do {
             fetchedTasks = try context.fetch(descriptor)
         } catch {
-            print("SearchTasksIntent fetch error:", error)
             
+#if DEBUG
+            print("SearchTasksIntent fetch error:", error)
+
+
+#endif
             return .result(
                 dialog: IntentDialog(
                     stringLiteral: String(localized: "I couldn't access your reminders right now.")

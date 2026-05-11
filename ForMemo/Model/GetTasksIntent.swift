@@ -31,9 +31,11 @@ struct GetTasksIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        
+#if DEBUG
         print("GetTasksIntent started")
         // print("Requested date:", targetDate as Any) // removed as targetDate is gone
+#endif
+        
         
         let context = ModelContext(Persistence.sharedModelContainer)
         let calendar = Calendar.autoupdatingCurrent
@@ -252,8 +254,9 @@ struct GetTasksIntent: AppIntent {
         do {
             fetchedTasks = try context.fetch(descriptor)
         } catch {
+#if DEBUG
             print("GetTasksIntent fetch error:", error)
-            
+#endif
             return .result(
                 dialog: IntentDialog(
                     stringLiteral: String(localized: "I couldn't access your reminders right now.")
