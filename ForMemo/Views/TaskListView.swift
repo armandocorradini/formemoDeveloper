@@ -7,8 +7,6 @@ import Observation
 import os
 import Combine
 
-
-
 extension Notification.Name {
     static let taskDidChange = Notification.Name("taskDidChange")
 }
@@ -387,20 +385,37 @@ struct TaskListView: View {
                                 }
 
                                 // MENU FILTRO PERIODO
-                                Menu {
-                                    Picker("Period", selection: $selectedPeriodFilter) {
+                                Section {
 
-                                        Text("All").tag(nil as TaskPeriodFilter?)
+                                    Button {
+                                        selectedPeriodFilter = nil
+                                    } label: {
+                                        Label(
+                                            "All",
+                                            systemImage: selectedPeriodFilter == nil
+                                            ? "checkmark"
+                                            : "circle"
+                                        )
+                                    }
 
-                                        ForEach(TaskPeriodFilter.allCases) { period in
-                                            Label(period.localizedTitle, systemImage: period.systemImage)
-                                                .tag(period as TaskPeriodFilter?)
+                                    ForEach(TaskPeriodFilter.allCases) { period in
+
+                                        Button {
+                                            selectedPeriodFilter = period
+                                        } label: {
+                                            Label(
+                                                period.localizedTitle,
+                                                systemImage: selectedPeriodFilter == period
+                                                ? "checkmark"
+                                                : period.systemImage
+                                            )
                                         }
                                     }
-                                } label: {
+
+                                } header: {
                                     Label(
                                         String(localized: "Period"),
-                                        systemImage: "ellipsis.calendar"
+                                        systemImage: "calendar"
                                     )
                                 }
 
