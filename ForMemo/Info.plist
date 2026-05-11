@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>ForMemo uses your location in the background to notify you when you arrive at a saved task location.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>ForMemo uses your location to let you attach places to your tasks.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>Used to send reminders about your tasks.</string>
 	<key>UIBackgroundModes</key>

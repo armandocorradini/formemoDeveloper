@@ -303,7 +303,12 @@ struct SettingsView: View {
                                         LocationReminderManager.shared.requestPermissionIfNeeded()
                                         locationRemindersEnabled = false
 
-                                    case .authorizedWhenInUse, .denied, .restricted:
+                                    case .authorizedWhenInUse:
+
+                                        showLocationPermissionAlert = true
+                                        locationRemindersEnabled = false
+
+                                    case .denied, .restricted:
                                         showLocationPermissionAlert = true
                                         locationRemindersEnabled = false
 
@@ -666,7 +671,7 @@ Attivazione: \(triggerInfo)
                             exit(0)
                         }
                     } label: {
-                        Text("Reset Preferences")
+                        Text("Reset Preferences Reset PreferencesReset PreferencesReset PreferencesReset PreferencesReset Preferences")
                             .foregroundStyle(.red)
                     }
                 }
@@ -726,6 +731,13 @@ Attivazione: \(triggerInfo)
                     syncLocationPermission()
                 }
             }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: .locationPermissionChanged
+                )
+            ) { _ in
+                syncLocationPermission()
+            }
 
             .fullScreenCover(isPresented: $showSoundPicker) {
                 NotificationSoundPickerView(context: soundPickerContext)
@@ -772,9 +784,7 @@ Attivazione: \(triggerInfo)
         let hasPermission =
             CLLocationManager().authorizationStatus == .authorizedAlways
 
-        if !hasPermission {
-            locationRemindersEnabled = false
-        }
+        locationRemindersEnabled = hasPermission
     }
 
     private func openNotificationSettings() {

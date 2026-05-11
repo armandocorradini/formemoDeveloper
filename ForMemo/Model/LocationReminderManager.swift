@@ -40,12 +40,28 @@ private var triggeredRecently: [String: Date] = {
     // MARK: - Permissions
     
     func requestPermissionIfNeeded() {
+
         let status = manager.authorizationStatus
-        
+
         if status == .notDetermined {
-            manager.requestAlwaysAuthorization()
+            manager.requestWhenInUseAuthorization()
         }
     }
+    
+    func requestAlwaysPermission() {
+
+        manager.requestAlwaysAuthorization()
+
+    }
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+
+        NotificationCenter.default.post(
+            name: .locationPermissionChanged,
+            object: nil
+        )
+    }
+    
     
     func refreshMonitoring(tasks: [TodoTask]) {
         
@@ -367,3 +383,8 @@ extension LocationReminderManager {
 //    }
 //
 //}
+
+extension Notification.Name {
+    static let locationPermissionChanged =
+        Notification.Name("locationPermissionChanged")
+}
