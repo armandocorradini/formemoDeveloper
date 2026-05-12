@@ -23,6 +23,20 @@ struct ShareSheet: View {
         NavigationApp(rawValue: navigationAppRaw) ?? .appleMaps
     }
     
+    private var uniqueAttachments: [TaskAttachment] {
+        Array(
+            Dictionary(grouping: attachments, by: \.id)
+                .compactMap { $0.value.first }
+        )
+        .sorted {
+            if $0.createdAt != $1.createdAt {
+                return $0.createdAt < $1.createdAt
+            }
+
+            return $0.id.uuidString < $1.id.uuidString
+        }
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -47,7 +61,7 @@ struct ShareSheet: View {
                     Section("Attachments") {
                         HStack {
                             Button("Select All") {
-                                selectedAttachments = Set(attachments.map { $0.id })
+                                selectedAttachments = Set(uniqueAttachments.map { $0.id })
                             }
                             .buttonStyle(.plain)
                             .foregroundStyle(.blue)
@@ -60,7 +74,7 @@ struct ShareSheet: View {
                         }
                         
                         // Lista allegati: riga cliccabile per selezione/deselezione
-                        ForEach(attachments) { att in
+                        ForEach(uniqueAttachments, id: \.id) { att in
                             HStack(spacing: 12) {
                                 if isImage(att), let url = att.fileURL,
                                    let image = UIImage(contentsOfFile: url.path) {                                        Image(uiImage: image)
@@ -148,7 +162,7 @@ struct ShareSheet: View {
         }
         
         // --- Allegati selezionati
-        for att in attachments where selectedAttachments.contains(att.id) {
+        for att in uniqueAttachments where selectedAttachments.contains(att.id) {
             
             guard let url = att.fileURL else { continue }
             

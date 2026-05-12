@@ -135,7 +135,8 @@ struct AttachmentRow: View {
         HStack(spacing: 12) {
             
             if isAudio,
-               let url = attachment.fileURL {
+               let url = attachment.fileURL,
+               FileManager.default.fileExists(atPath: url.path) {
                 AudioPlayerRow(url: url)
             }
             
@@ -169,7 +170,8 @@ struct AttachmentRow: View {
     }
     
     private func loadImage() async {
-        guard let url = attachment.fileURL else {
+        guard let url = attachment.fileURL,
+              FileManager.default.fileExists(atPath: url.path) else {
             state = .failed
             return
         }

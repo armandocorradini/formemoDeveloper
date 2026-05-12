@@ -65,6 +65,8 @@ import SwiftData
                         text: $task.title,
                         axis: .vertical
                     )
+                    .lineLimit(1...10)
+                    .onSubmit(saveTask)
                     .font(.headline)
                     .strikethrough(task.isCompleted, color: .secondary)
                     .foregroundStyle(task.isCompleted ? .secondary : .primary)
@@ -75,6 +77,7 @@ import SwiftData
                     text: $task.taskDescription,
                     axis: .vertical
                 )
+                .onSubmit(saveTask)
                 .font(.headline)
                 .foregroundStyle(.secondary)
 

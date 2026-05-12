@@ -22,6 +22,7 @@ struct ScheduleSection: View {
                         if newValue {
                             task.deadLine = .now
                             task.snoozeUntil = nil
+                            saveTask()
                         } else {
                             showingDeleteDeadlineAlert.wrappedValue = true
                         }
@@ -71,6 +72,7 @@ struct ScheduleSection: View {
                                 task.reminderOffsetMinutes = newValue
                                 task.snoozeUntil = nil
                                 validateReminder()
+                                saveTask()
                             }
                         ),
                         notificationLeadTimeDays: notificationLeadTimeDays

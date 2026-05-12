@@ -66,7 +66,7 @@ import AVFAudio
 
                 Button(String(localized: "Open Settings")) {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
+                        UIApplication.shared.open(url, options: [:])
                     }
                 }
             } message: {
@@ -108,7 +108,7 @@ import AVFAudio
 
                 Button(String(localized: "Open Settings")) {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
-                        UIApplication.shared.open(url)
+                        UIApplication.shared.open(url, options: [:])
                     }
                 }
             } message: {

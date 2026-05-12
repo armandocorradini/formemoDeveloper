@@ -66,6 +66,7 @@ struct NotificationSoundPickerView: View {
             }
             
             .navigationTitle(context == .task ? "Notification sound" : "Location sound")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

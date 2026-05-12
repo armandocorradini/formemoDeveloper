@@ -114,10 +114,8 @@ struct TaskListView: View {
     }
 
     private func recomputeSections() {
-        let now = Date()
-
+      
         func matches(_ task: TodoTask) -> Bool {
-
             let matchesSearch =
             searchText.isEmpty ||
             task.title.localizedCaseInsensitiveContains(searchText)
@@ -143,23 +141,29 @@ struct TaskListView: View {
             let lhs = $0.deadLine ?? .distantFuture
             let rhs = $1.deadLine ?? .distantFuture
 
-            let lhsOverdue = lhs < now
-            let rhsOverdue = rhs < now
+            let lhsOverdue = lhs < Date()
+            let rhsOverdue = rhs < Date()
 
             if lhsOverdue != rhsOverdue {
                 return lhsOverdue
             }
 
-            return lhs < rhs
+            if lhs != rhs {
+                return lhs < rhs
+            }
+
+            return $0.id.uuidString < $1.id.uuidString
         }
 
         if showCompleted {
-            cachedCompleted = completedQuery.lazy
+            let sortedCompleted = completedQuery.lazy
                 .filter { matches($0) }
                 .sorted {
                     ($0.completedAt ?? .distantPast) >
                     ($1.completedAt ?? .distantPast)
                 }
+
+            cachedCompleted = sortedCompleted
         } else {
             cachedCompleted = []
         }
@@ -1015,6 +1019,7 @@ struct TodoSectionView: View {
     var body: some View {
 
         Section(String(localized:"To do (\(tasks.count))")) {
+
 
             ForEach(tasks, id: \.id) { t in
 

@@ -10,6 +10,21 @@ struct RecentlyDeletedView: View {
     private var items: [DeletedItem]
     
     @State private var selection = Set<DeletedItem.ID>()
+
+    private var visibleItems: [DeletedItem] {
+        items.filter { item in
+            if item.type == "task" {
+                return true
+            }
+            if item.type == "attachment" {
+                return items.first(where: {
+                    $0.type == "task" &&
+                    $0.taskID == item.taskID
+                }) == nil
+            }
+            return false
+        }
+    }
     
     var body: some View {
         List {
@@ -27,14 +42,7 @@ struct RecentlyDeletedView: View {
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
             } else {
-                ForEach(items.filter { item in
-                    if item.type == "task" { return true }
-                    if item.type == "attachment" {
-                        // show only if task still exists (single attachment deletion case)
-                        return items.first(where: { $0.type == "task" && $0.taskID == item.taskID }) == nil
-                    }
-                    return false
-                }) { item in
+                ForEach(visibleItems) { item in
                     
                     HStack(spacing: 12) {
                         
@@ -167,14 +175,23 @@ struct RecentlyDeletedView: View {
                         if selection.count == items.count {
                             selection.removeAll()
                         } else {
-                            selection = Set(items.map { $0.id })
+                            selection = Set(visibleItems.map { $0.id })
                         }
                     }
                     
                     Button {
+                        var restoredTaskIDs = Set<UUID>()
                         for id in selection {
                             if let item = items.first(where: { $0.id == id }) {
+                                if let taskID = item.taskID,
+                                   restoredTaskIDs.contains(taskID) {
+                                    continue
+                                }
                                 item.restore(in: context)
+                                if item.type == "task",
+                                   let taskID = item.taskID {
+                                    restoredTaskIDs.insert(taskID)
+                                }
                                 context.delete(item)
                             }
                         }
@@ -222,7 +239,10 @@ struct RecentlyDeletedView: View {
            let dir = TaskAttachment.trashDirectory {
             
             let url = dir.appendingPathComponent(trashName)
-            try? FileManager.default.removeItem(at: url)
+
+            if FileManager.default.fileExists(atPath: url.path) {
+                try? FileManager.default.removeItem(at: url)
+            }
         }
     }
     

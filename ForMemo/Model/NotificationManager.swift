@@ -22,6 +22,7 @@ final class NotificationManager: NSObject {
     private var isAppLaunching = true
     private var cloudKitRefreshScheduled = false
     private var isProcessingCloudKit = false
+    private var requiresUpgradeNotificationRebuild = false
     
     private let refreshQueue = DispatchQueue(label: "notification.refresh.serial")
 
@@ -79,6 +80,40 @@ final class NotificationManager: NSObject {
         
         center.setNotificationCategories([category])
 
+        // 🔥 Rebuild all notifications after app update
+        let currentBuild =
+            Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+
+        let lastBuild =
+            UserDefaults.standard.string(forKey: "lastInstalledBuild")
+
+        // 🔵 First version using this mechanism
+        if lastBuild == nil {
+
+            UserDefaults.standard.set(
+                currentBuild,
+                forKey: "lastInstalledBuild"
+            )
+
+        } else if lastBuild != currentBuild {
+
+#if DEBUG
+            print("🔔 Build changed: full notification rebuild")
+#endif
+
+            center.removeAllPendingNotificationRequests()
+
+            self.lastTasksSignature = ""
+
+            // 🔥 Delay rebuild until ModelContainer is available
+            self.requiresUpgradeNotificationRebuild = true
+
+            UserDefaults.standard.set(
+                currentBuild,
+                forKey: "lastInstalledBuild"
+            )
+        }
+
         // 🔵 Mark end of launch phase after short delay
         Task { [weak self] in
             try? await Task.sleep(for: .seconds(1.0))
@@ -102,6 +137,15 @@ final class NotificationManager: NSObject {
 
 
         guard let context = modelContainer?.mainContext else { return }
+
+        // 🔥 First refresh after upgrade:
+        // old AppStore versions may never have scheduled
+        // deadline notifications for existing tasks.
+        if requiresUpgradeNotificationRebuild {
+            lastTasksSignature = ""
+            requiresUpgradeNotificationRebuild = false
+            forceFullRefresh(using: context)
+        }
 
         let tasksInitial = fetchTasks(using: context)
         LocationReminderManager.shared.refreshMonitoring(tasks: tasksInitial)
@@ -318,11 +362,22 @@ final class NotificationManager: NSObject {
             }
 
             // 🔵 Deadline (always if future)
-            candidates.append(Event(
+            let deadlineEvent = Event(
                 id: "task.\(task.id.uuidString).deadline",
                 date: deadline,
                 type: "deadline"
-            ))
+            )
+
+            // 🔥 Legacy fix:
+            // old versions could schedule GLOBAL or REMINDER
+            // exactly at deadline.
+            // In that case ALWAYS prefer the dedicated deadline event.
+            candidates.removeAll {
+                ($0.type == "global" || $0.type == "reminder") &&
+                abs($0.date.timeIntervalSince(deadline)) < 1
+            }
+
+            candidates.append(deadlineEvent)
 
             return candidates.min(by: { $0.date < $1.date })
         }
@@ -422,7 +477,7 @@ final class NotificationManager: NSObject {
             
             switch next.type {
             case "snooze":
-                content = baseContent(task, title: String(localized: "⏰ Snoozed"))
+                content = baseContent(task, title: String(localized: "⏲️ Snoozed"))
 
             case "reminder":
                 let minutes = task.reminderOffsetMinutes ?? 0

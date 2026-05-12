@@ -58,8 +58,12 @@ import QuickLook
             _ controller: QLPreviewController,
             previewItemAt index: Int
         ) -> QLPreviewItem {
-            url as NSURL
+
+            guard FileManager.default.fileExists(atPath: url.path) else {
+                return NSURL()
+            }
+
+            return url as NSURL
         }
     }
 }
-

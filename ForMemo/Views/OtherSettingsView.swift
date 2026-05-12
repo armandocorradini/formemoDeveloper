@@ -66,7 +66,7 @@ struct OtherSettingsView: View {
                 Section(
                     header: Text(String(localized: "Notification and badge time"))
                 ) {
-                    Picker("Notify", selection: Binding(
+                    Picker("Notify global", selection: Binding(
                         get: { notificationLeadTimeDays },
                         set: { newValue in
                             notificationLeadTimeDays = newValue

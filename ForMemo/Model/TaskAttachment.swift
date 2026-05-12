@@ -33,37 +33,47 @@ final class TaskAttachment {
 extension TaskAttachment {
     
     static let attachmentsDirectory: URL? = {
-        
+
         let fm = FileManager.default
-        
+
         // 🔵 iCloud se disponibile
-        let ubiquity = fm.url(forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask")
-        if let containerURL = ubiquity {
-            
+        if let containerURL = fm.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) {
+
             let directory = containerURL
                 .appendingPathComponent("Documents", isDirectory: true)
                 .appendingPathComponent("TaskAttachments", isDirectory: true)
-            
+
             if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(at: directory, withIntermediateDirectories: true)
+                try? fm.createDirectory(
+                    at: directory,
+                    withIntermediateDirectories: true
+                )
             }
-            
+
             return directory
         }
-        
-        // 🟡 fallback locale
-        if let localURL = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
-            
+
+        // 🟡 FALLBACK LOCALE LEGACY
+        if let localURL = fm.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first {
+
             let directory = localURL
                 .appendingPathComponent("TaskAttachments", isDirectory: true)
-            
+
             if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(at: directory, withIntermediateDirectories: true)
+                try? fm.createDirectory(
+                    at: directory,
+                    withIntermediateDirectories: true
+                )
             }
-            
+
             return directory
         }
-        
+
         return nil
     }()
     
@@ -103,15 +113,34 @@ extension TaskAttachment {
     
     
     var fileURL: URL? {
-        guard let directory = Self.attachmentsDirectory else { return nil }
 
-        let url = directory.appendingPathComponent(relativePath)
         let fm = FileManager.default
 
-        // trigger download
-        try? fm.startDownloadingUbiquitousItem(at: url)
+        // 1️⃣ iCloud
+        if let cloud = Self.attachmentsDirectory?
+            .appendingPathComponent(relativePath),
+           fm.fileExists(atPath: cloud.path) {
 
-        return url
+            try? fm.startDownloadingUbiquitousItem(at: cloud)
+            return cloud
+        }
+
+        // 2️⃣ legacy locale
+        if let localBase = fm.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first {
+
+            let local = localBase
+                .appendingPathComponent("TaskAttachments")
+                .appendingPathComponent(relativePath)
+
+            if fm.fileExists(atPath: local.path) {
+                return local
+            }
+        }
+
+        return nil
     }
     
     var fileStatus: FileStatus {
@@ -364,6 +393,22 @@ extension DeletedItem {
         
         if type == "task" {
             
+            if let existingID = taskID {
+
+                let descriptor = FetchDescriptor<TodoTask>(
+                    predicate: #Predicate { $0.id == existingID }
+                )
+
+                if let existing = try? context.fetch(descriptor),
+                   !existing.isEmpty {
+
+            #if DEBUG
+                    print("⚠️ Restore skipped: task already exists")
+            #endif
+
+                    return
+                }
+            }
             let task = TodoTask(
                 id: taskID ?? UUID(),
                 title: title ?? "",

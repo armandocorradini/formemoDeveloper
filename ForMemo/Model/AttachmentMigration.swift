@@ -83,45 +83,70 @@ enum AttachmentMigration {
         for fileURL in files {
             let fileName = fileURL.lastPathComponent
             let newURL = iCloudDir.appendingPathComponent(fileName)
-            
+
             log("➡️ Migrating file: \(fileName)")
-            
+
             let newExists = fm.fileExists(atPath: newURL.path)
-            
+
             if newExists {
                 log("⏭️ Already exists in iCloud")
                 continue
             }
-            
+
             do {
+
+                // ensure parent dir exists
+                try fm.createDirectory(
+                    at: iCloudDir,
+                    withIntermediateDirectories: true
+                )
+
                 try fm.copyItem(at: fileURL, to: newURL)
-                
-                let size = (try? fm.attributesOfItem(atPath: newURL.path)[.size] as? Int64) ?? 0
-                
-                if size == 0 {
+
+                // force iCloud materialization/upload
+                var uploadReady = false
+
+                for _ in 0..<20 {
+
+                    if fm.fileExists(atPath: newURL.path) {
+
+                        let size = (try? fm.attributesOfItem(
+                            atPath: newURL.path
+                        )[.size] as? Int64) ?? 0
+
+                        if size > 0 {
+                            uploadReady = true
+                            break
+                        }
+                    }
+
+                    Thread.sleep(forTimeInterval: 0.25)
+                }
+
+                guard uploadReady else {
                     try? fm.removeItem(at: newURL)
-                    log("❌ Copied file empty")
+                    log("❌ Copied file not materialized")
                     continue
                 }
-                
+
+                // trigger ubiquitous upload/download state
+                try? fm.startDownloadingUbiquitousItem(at: newURL)
+
                 log("✅ Copied OK")
-                
+
             } catch {
                 log("❌ Copy error: \(error.localizedDescription)")
             }
         }
         
-        // 🔥 opzionale: aggiorna record SwiftData se esistono
-        let descriptor = FetchDescriptor<TaskAttachment>()
-        
-        if let attachments = try? context.fetch(descriptor) {
-            for attachment in attachments {
-                let fileName = (attachment.relativePath as NSString).lastPathComponent
-                attachment.relativePath = fileName
-            }
-            try? context.save()
-        }
-        
+        // verify migrated files exist physically
+        let migratedFiles = (try? fm.contentsOfDirectory(
+            at: iCloudDir,
+            includingPropertiesForKeys: nil
+        )) ?? []
+
+        log("☁️ iCloud files available: \(migratedFiles.count)")
+
         return true
     }
     

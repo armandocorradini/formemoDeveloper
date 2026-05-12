@@ -163,18 +163,16 @@ struct ForMemoApp: App {
 
                 for duplicate in sortedTasks.dropFirst() {
 #if DEBUG
-                    print("❌ Removing duplicate: \(duplicate.title) | completed: \(duplicate.isCompleted)")
+                    print("⚠️ Duplicate detected (not deleted): \(duplicate.title) | completed: \(duplicate.isCompleted)")
 #endif
-                    context.delete(duplicate)
+                    // context.delete(duplicate)
                     removedDuplicates = true
                 }
             }
 
             if removedDuplicates {
-                try? context.save()
-
 #if DEBUG
-                print("✅ Duplicate cleanup completed")
+                print("⚠️ Duplicate tasks detected during startup")
 #endif
             }
             

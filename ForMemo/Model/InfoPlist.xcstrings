@@ -412,7 +412,7 @@
         }
       }
     },
-    "Privacy - User Notifications Usage Description" : {
+    "NSUserNotificationsUsageDescription" : {
       "extractionState" : "manual",
       "localizations" : {
         "de" : {

@@ -37,7 +37,7 @@ struct GetTasksIntent: AppIntent {
 #endif
         
         
-        let context = ModelContext(Persistence.sharedModelContainer)
+        let context = Persistence.shared.mainContext
         let calendar = Calendar.autoupdatingCurrent
 
         let normalizedQuery = query

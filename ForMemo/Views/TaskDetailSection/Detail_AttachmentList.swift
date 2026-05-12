@@ -9,9 +9,19 @@ struct AttachmentList: View {
     let onPreview: (URL) -> Void
     
     var body: some View {
-        
-        ForEach(attachments, id: \.id) { attachment in
-            
+        let uniqueAttachments = Array(
+            Dictionary(grouping: attachments, by: \.id)
+                .compactMap { $0.value.first }
+        )
+        .sorted {
+            if $0.createdAt != $1.createdAt {
+                return $0.createdAt < $1.createdAt
+            }
+
+            return $0.id.uuidString < $1.id.uuidString
+        }
+
+        ForEach(uniqueAttachments, id: \.id) { attachment in
             AttachmentRowView(
                 attachment: attachment,
                 image: imageCache[attachment.id],
@@ -29,6 +39,7 @@ struct AttachmentRowView: View {
     let onDelete: (TaskAttachment) -> Void
     let onPreview: (URL) -> Void
     let onImageLoaded: (UIImage) -> Void
+    @State private var loadFailed = false
 
 
     var body: some View {
@@ -40,6 +51,10 @@ struct AttachmentRowView: View {
                         .scaledToFill()
                         .frame(width: 52, height: 52)
                         .clipShape(RoundedRectangle(cornerRadius: 6))
+                } else if loadFailed {
+                    Image(systemName: "photo")
+                        .frame(width: 52, height: 52)
+                        .foregroundStyle(.secondary)
                 } else {
                     ProgressView()
                         .frame(width: 52, height: 52)
@@ -100,34 +115,50 @@ struct AttachmentRowView: View {
     }
 
     private func load() async {
-        // 🔥 usa loader centralizzato (gestisce iCloud + sicurezza)
-        guard let data = await attachment.loadDataAsync() else {
-            // fallback per fermare spinner
+
+        guard let url = attachment.fileURL,
+              FileManager.default.fileExists(atPath: url.path) else {
+            await MainActor.run {
+                loadFailed = true
+            }
             return
         }
 
-        // 🔥 genera thumbnail
-        let thumbnail = await Task.detached(priority: .utility) {
-            downsample(data: data, to: CGSize(width: 52, height: 52))
+        // 🔥 thumbnail diretta da file URL
+        // evita caricamento completo Data in memoria
+        let thumbnail: UIImage? = await Task.detached(priority: .utility) {
+
+            guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+                return nil as UIImage?
+            }
+
+            let options: [CFString: Any] = [
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceThumbnailMaxPixelSize: 104,
+                kCGImageSourceCreateThumbnailWithTransform: true
+            ]
+
+            guard let cgImage = CGImageSourceCreateThumbnailAtIndex(
+                source,
+                0,
+                options as CFDictionary
+            ) else {
+                return nil as UIImage?
+            }
+
+            return UIImage(cgImage: cgImage)
+
         }.value
 
         guard let thumbnail else {
+            await MainActor.run {
+                loadFailed = true
+            }
             return
         }
 
         await MainActor.run {
             onImageLoaded(thumbnail)
         }
-    }
-    nonisolated private func downsample(data: Data, to size: CGSize) -> UIImage? {
-        let cfData = data as CFData
-        guard let source = CGImageSourceCreateWithData(cfData, nil) else { return nil }
-        let options: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceThumbnailMaxPixelSize: max(size.width, size.height) * 2,
-            kCGImageSourceCreateThumbnailWithTransform: true
-        ]
-        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
-        return UIImage(cgImage: cgImage)
     }
 }

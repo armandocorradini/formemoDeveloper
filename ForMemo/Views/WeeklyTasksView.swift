@@ -31,11 +31,16 @@ struct WeeklyTasksView: View {
         let endOfPeriod = calendar.date(byAdding: .day, value: taskWeekDays, to: startOfToday)?
             .addingTimeInterval(-1) ?? .now
         
-        return allTasks.filter { task in
+        let filtered = allTasks.filter { task in
             guard let deadline = task.deadLine else { return false }
             // Include tutto ciò che scade da stamattina all'ultimo secondo del settimo giorno
             return deadline >= startOfToday && deadline <= endOfPeriod
         }
+
+        return Array(
+            Dictionary(grouping: filtered, by: \.id)
+                .compactMap { $0.value.first }
+        )
     }
     
     
@@ -43,10 +48,15 @@ struct WeeklyTasksView: View {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: .now)
         
-        return allTasks.filter { task in
+        let filtered = allTasks.filter { task in
             guard let deadline = task.deadLine else { return false }
             return deadline < startOfToday
         }
+
+        return Array(
+            Dictionary(grouping: filtered, by: \.id)
+                .compactMap { $0.value.first }
+        )
     }
     
     private var dayTasks: [TodoTask] {

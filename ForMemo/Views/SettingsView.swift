@@ -263,6 +263,19 @@ struct SettingsView: View {
                                 .tint(.primary)
                         }
                     }
+
+                    NavigationLink {
+                        NotificationView()
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "clock.badge")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+
+                            Text("Scheduled Notifications")
+                                .tint(.primary)
+                        }
+                    }
                     
                     Button {
                         soundPickerContext = .task
@@ -442,15 +455,15 @@ struct SettingsView: View {
                                 var type = "❓ UNKNOWN"
 
                                 if id.contains(".deadline") {
-                                    type = "⏱ DEADLINE"
+                                    type = "⏰ DEADLINE"
                                 } else if id.contains(".global") {
-                                    type = "🌍 GLOBAL"
+                                    type = "⏱️ GLOBAL"
                                 } else if id.contains(".reminder") {
                                     type = "🔔 REMINDER"
                                 } else if id.contains(".snooze") {
-                                    type = "⏰ SNOOZE"
+                                    type = "⏲️ SNOOZE"
                                 } else if title.contains("Manca") || title.contains("days") {
-                                    type = "🌍 GLOBAL"
+                                    type = "⏱️ GLOBAL"
                                 }
 
                                 print("🔎 RAW ID:", id)

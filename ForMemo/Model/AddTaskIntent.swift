@@ -60,8 +60,7 @@ struct AddTaskIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let context = ModelContext(Persistence.shared)
-//        let context = Persistence.shared.mainContext
+        let context = Persistence.shared.mainContext
         let now = Date()
         
         let parsed = NaturalLanguageParser.parse(input)

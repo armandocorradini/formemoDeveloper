@@ -165,7 +165,7 @@ struct TaskCalendarView: View {
         .onChange(of: displayedMonth) { _, newValue in
             Task { @MainActor in await loadHolidays(for: newValue) }
         }
-        .task(id: tasks.count) {
+        .task(id: tasks.map(\.id)) {
             rebuildCache()
         }
         .sheet(item: $draftTask) { task in
@@ -929,6 +929,13 @@ private struct DayTasksInlineView: View {
     let tasks: [TodoTask]
     var onEditTask: (TodoTask) -> Void
 
+    private var uniqueTasks: [TodoTask] {
+        Array(
+            Dictionary(grouping: tasks, by: \.id)
+                .compactMap { $0.value.first }
+        )
+    }
+
     private func iconColor(for task: TodoTask) -> Color {
         if iconStyle == .monochrome {
             return .primary
@@ -1022,7 +1029,7 @@ private struct DayTasksInlineView: View {
         } else {
             
             List {
-                ForEach(tasks) { task in
+                ForEach(uniqueTasks) { task in
                     
                     Button {
                         onEditTask(task)
@@ -1113,8 +1120,13 @@ private struct DayTasksInlineView: View {
                                     task.snoozeUntil = nil
                                 }
                             }
-                            
-                            try? modelContext.save()
+
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                AppLogger.persistence.fault("Failed to save task completion: \(error)")
+                            }
+
                             NotificationManager.shared.refresh(force: true)
                             
                         } label: {
@@ -1157,7 +1169,12 @@ private struct DayTasksInlineView: View {
                                     task.snoozeUntil = nil
                                 }
                             }
-                            try? modelContext.save()
+                            do {
+                                try modelContext.save()
+                            } catch {
+                                AppLogger.persistence.fault("Failed to save task completion from context menu: \(error)")
+                            }
+
                             NotificationManager.shared.refresh(force: true)
                         } label: {
                             Label(

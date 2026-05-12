@@ -79,7 +79,7 @@ struct TaskDetailView: View {
     private var attachments: [TaskAttachment]
     
     private var taskAttachments: [TaskAttachment] {
-        attachments.filter { $0.task == task }
+        attachments.filter { $0.task?.id == task.id }
     }
     @Environment(\.scenePhase) private var scenePhase
     
@@ -150,7 +150,7 @@ struct TaskDetailView: View {
             subtitle: task.taskDescription,
             mainIcon: icon,
             statusColor: color,
-            hasValidAttachments: !attachments.isEmpty,
+            hasValidAttachments: !taskAttachments.isEmpty,
             hasLocation: task.locationName != nil && task.locationName != "",
             badgeText: task.daysRemainingBadgeText,
             prioritySystemImage: task.priority.systemImage,

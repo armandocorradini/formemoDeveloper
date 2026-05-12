@@ -180,7 +180,10 @@ import CoreLocation
                 String(localized: "Tags"),
                 selection: Binding<TaskMainTag?>(
                     get: { task.mainTag },
-                    set: { task.mainTag = $0 }
+                    set: {
+                        task.mainTag = $0
+                        saveTask()
+                    }
                 )
             ) {
 
