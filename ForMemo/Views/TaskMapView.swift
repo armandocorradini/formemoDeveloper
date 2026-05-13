@@ -172,9 +172,18 @@ extension TaskMapView {
             ).values
         )
 
-        let grouped = Dictionary(grouping: uniqueTasks.compactMap { task -> (CLLocationCoordinate2D, TaskMapAnnotationModel.Item)? in
+        var grouped: [String: [(CLLocationCoordinate2D, TaskMapAnnotationModel.Item)]] = [:]
+
+        for task in uniqueTasks {
+
             guard let lat = task.locationLatitude,
-                  let lon = task.locationLongitude else { return nil }
+                  let lon = task.locationLongitude,
+                  lat.isFinite,
+                  lon.isFinite else {
+                continue
+            }
+
+            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
 
             let urgency = computeUrgency(deadline: task.deadLine)
 
@@ -188,9 +197,11 @@ extension TaskMapView {
                 tagColor: task.mainTag?.color
             )
 
-            return (CLLocationCoordinate2D(latitude: lat, longitude: lon), item)
-        }) { pair in
-            "\(pair.0.latitude)-\(pair.0.longitude)"
+            let roundedLat = (lat * 10000).rounded() / 10000
+            let roundedLon = (lon * 10000).rounded() / 10000
+            let key = "\(roundedLat)-\(roundedLon)"
+
+            grouped[key, default: []].append((coordinate, item))
         }
 
         return grouped.map { _, pairs in
@@ -212,13 +223,18 @@ extension TaskMapView {
 
             let tagIcon = mostUrgentItem.flatMap { tasksById[$0.id]?.mainTag?.mainIcon }
 
-            let locationName = uniqueTasks.first {
-                $0.locationLatitude == coordinate.latitude &&
-                $0.locationLongitude == coordinate.longitude
-            }?.locationName
+            let matchingTask = uniqueTasks.first { task in
+                task.locationLatitude == coordinate.latitude &&
+                task.locationLongitude == coordinate.longitude
+            }
 
-            return TaskMapAnnotationModel(
-                id: items.first!.id,
+            let locationName = matchingTask?.locationName
+
+            let firstItemId = items.first?.id ?? UUID()
+            let stableId = firstItemId
+
+            let model = TaskMapAnnotationModel(
+                id: stableId,
                 coordinate: coordinate,
                 title: "",
                 tagIcon: tagIcon,
@@ -228,6 +244,8 @@ extension TaskMapView {
                 urgency: urgency,
                 items: items
             )
+
+            return model
         }
     }
     
@@ -289,6 +307,7 @@ extension TaskMapView {
         .buttonStyle(.plain)
     }
 }
+
 
 struct TaskAnnotationView: View {
     

@@ -37,10 +37,21 @@ struct WeeklyTasksView: View {
             return deadline >= startOfToday && deadline <= endOfPeriod
         }
 
-        return Array(
+        let uniqueTasks = Array(
             Dictionary(grouping: filtered, by: \.id)
                 .compactMap { $0.value.first }
         )
+
+        return uniqueTasks.sorted {
+            let firstDate = $0.deadLine ?? .distantFuture
+            let secondDate = $1.deadLine ?? .distantFuture
+
+            if firstDate != secondDate {
+                return firstDate < secondDate
+            }
+
+            return $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+        }
     }
     
     
@@ -53,10 +64,21 @@ struct WeeklyTasksView: View {
             return deadline < startOfToday
         }
 
-        return Array(
+        let uniqueTasks = Array(
             Dictionary(grouping: filtered, by: \.id)
                 .compactMap { $0.value.first }
         )
+
+        return uniqueTasks.sorted {
+            let firstDate = $0.deadLine ?? .distantPast
+            let secondDate = $1.deadLine ?? .distantPast
+
+            if firstDate != secondDate {
+                return firstDate < secondDate
+            }
+
+            return $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+        }
     }
     
     private var dayTasks: [TodoTask] {

@@ -268,7 +268,12 @@ struct FAQView: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: String(localized: "Search FAQ"))
+        .searchable(
+            text: $searchText,
+            placement: .navigationBarDrawer(displayMode: .always),
+            prompt: String(localized: "Search FAQ")
+        )
+        .scrollDismissesKeyboard(.immediately)
         .navigationTitle(String(localized: "Help"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

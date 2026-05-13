@@ -348,7 +348,25 @@ struct GetTasksIntent: AppIntent {
 
             } else {
 
-                let spokenTaskDate = dateFormatterForTasks.string(from: day)
+                let spokenTaskDate: String
+
+                if calendarForGrouping.isDateInToday(day) {
+
+                    spokenTaskDate = String(localized: "Today")
+
+                } else if calendarForGrouping.isDateInTomorrow(day) {
+
+                    spokenTaskDate = String(localized: "Tomorrow")
+
+                } else if let dayAfterTomorrow = calendarForGrouping.date(byAdding: .day, value: 2, to: Date()),
+                          calendarForGrouping.isDate(day, inSameDayAs: dayAfterTomorrow) {
+
+                    spokenTaskDate = String(localized: "Day After Tomorrow")
+
+                } else {
+
+                    spokenTaskDate = dateFormatterForTasks.string(from: day)
+                }
 
                 return String(
                     format: NSLocalizedString(

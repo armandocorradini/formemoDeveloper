@@ -5,13 +5,71 @@ import Foundation
 
 // MARK: - Intent
 
+struct AddTaskAutoIntent: AppIntent {
+
+    static var openAppWhenRun: Bool = false
+
+    static var title: LocalizedStringResource = "Add Task"
+    static var description = IntentDescription(
+        "Add a task with automatic reminders."
+    )
+
+    @Parameter(
+        title: "Task",
+        requestValueDialog: IntentDialog("What do you want to add?")
+    )
+    var input: String
+
+    @Parameter(
+        title: "Date",
+        requestValueDialog: IntentDialog("When should I schedule it?")
+    )
+    var date: Date?
+
+    static var parameterSummary: some ParameterSummary {
+        Summary("Add \(\.$input) at \(\.$date)")
+    }
+
+    init() {}
+
+    init(input: String, date: Date? = nil) {
+        self.input = input
+
+        let parsed = NaturalLanguageParser.parse(input)
+
+        if let parsedDate = parsed.date {
+            self.date = parsedDate
+        } else if let date {
+            self.date = date
+        } else {
+            self.date = nil
+        }
+    }
+
+    @MainActor
+    func perform() async throws -> some IntentResult & ProvidesDialog {
+
+        let intent = AddTaskIntent(
+            input: input,
+            date: date
+        )
+
+        return try await intent.perform()
+    }
+}
+
 struct AddTaskIntent: AppIntent {
+
+    static var openAppWhenRun: Bool = false
     
     static var title: LocalizedStringResource = "Add Task"
     static var description = IntentDescription("Add a task using natural language.")
     
     @AppStorage("notificationLeadTimeDays")
     private var notificationLeadTimeDays: Int = 1
+
+    @AppStorage("siriAutoReminderEnabled")
+    private var siriAutoReminderEnabled: Bool = true
     
     // MARK: - Parameters
     
@@ -29,13 +87,15 @@ struct AddTaskIntent: AppIntent {
     
     @Parameter(
         title: "Reminder",
-        requestValueDialog: IntentDialog("Do you want a reminder? If yes, when?")
+        requestValueDialog: IntentDialog(
+            "Tell me how long before you want the reminder, or say no reminder."
+        )
     )
     var reminderText: String?
     
     
     static var parameterSummary: some ParameterSummary {
-        Summary("Add \(\.$input) at \(\.$date) with reminder \(\.$reminderText)")
+        Summary("Add \(\.$input) at \(\.$date)")
     }
     
     // MARK: - Init
@@ -66,7 +126,27 @@ struct AddTaskIntent: AppIntent {
         let parsed = NaturalLanguageParser.parse(input)
         let finalTitle = parsed.title
         
-        let dueDate = date ?? parsed.date
+        var dueDate = date ?? parsed.date
+
+        // Siri often injects 06:00 when the user does not specify a time.
+        // Normalize this default value to 08:00.
+        if let unwrappedDueDate = dueDate {
+
+            let calendar = Calendar.current
+
+            let hour = calendar.component(.hour, from: unwrappedDueDate)
+            let minute = calendar.component(.minute, from: unwrappedDueDate)
+
+            if hour == 6 && minute == 0 {
+
+                dueDate = calendar.date(
+                    bySettingHour: 8,
+                    minute: 0,
+                    second: 0,
+                    of: unwrappedDueDate
+                )
+            }
+        }
         
         guard let dueDate else {
             throw $date.needsValueError()
@@ -82,7 +162,7 @@ struct AddTaskIntent: AppIntent {
             task.mainTag = inferredTag
         }
         
-        let autoReminderEnabled = UserDefaults.standard.bool(forKey: "siriAutoReminderEnabled")
+        let autoReminderEnabled = siriAutoReminderEnabled
         
         var reminderInfo: String
         
@@ -105,10 +185,15 @@ struct AddTaskIntent: AppIntent {
         
         else {
             
-            // 🔥 Apple style: UNA domanda sola
-            
+            // 🔥 Ask only when auto reminder is disabled.
+
             guard let reminderText, !reminderText.isEmpty else {
-                throw $reminderText.needsValueError()
+
+                let request = IntentDialog(
+                    "Tell me how long before you want the reminder, or say no reminder."
+                )
+
+                throw $reminderText.needsValueError(request)
             }
             
             let normalized = reminderText
@@ -119,28 +204,38 @@ struct AddTaskIntent: AppIntent {
 
             var minutes: Int?
 
+            let cleanedAnswer = normalized
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .replacingOccurrences(of: ".", with: "")
+                .replacingOccurrences(of: "!", with: "")
+                .replacingOccurrences(of: ",", with: "")
+
             if [
 
                 // EN
                 "no", "nope", "no reminder", "none",
 
                 // IT
-                "no", "nessuno", "nessun promemoria",
+                "no", "niente", "nessun", "nessuno", "nessun promemoria",
                 "non serve", "non voglio",
 
                 // FR
-                "non", "aucun rappel",
+                "non", "rien", "aucun", "aucun rappel",
 
                 // ES
-                "no", "ningún recordatorio",
+                "no", "nada", "ningun", "ningún",
+                "ningun recordatorio", "ningún recordatorio",
 
                 // DE
-                "nein", "keine erinnerung"
+                "nein", "nichts", "kein", "keine erinnerung"
 
             ].contains(where: {
-                normalized.trimmingCharacters(in: .whitespacesAndNewlines) == $0
+                cleanedAnswer == $0 ||
+                cleanedAnswer.hasPrefix($0 + " ")
             }) {
 
+                // 🔥 Explicit negative answer:
+                // no extra reminder before deadline.
                 minutes = nil
             }
 
@@ -270,8 +365,24 @@ struct AddTaskIntent: AppIntent {
                 throw $reminderText.needsValueError()
             }
             
+            // Avoid duplicate reminder == global notification timing.
+
+            if let minutes {
+
+                let globalMinutes = notificationLeadTimeDays * 24 * 60
+
+                if minutes == globalMinutes {
+
+                    let dialog = IntentDialog(
+                        "That reminder matches your global notification timing. Choose a different reminder time or say no reminder."
+                    )
+
+                    throw $reminderText.needsValueError(dialog)
+                }
+            }
+
             // 🔥 APPLY (coerente con ReminderScrubberControl)
-            
+
             task.reminderOffsetMinutes = minutes
             
             if minutes == nil {
@@ -292,13 +403,39 @@ struct AddTaskIntent: AppIntent {
             return .result(dialog: "Done")
         }
 
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
+        let calendar = Calendar.current
 
-        let formattedDate = formatter.string(from: dueDate)
+        let timeFormatter = DateFormatter()
+        timeFormatter.timeStyle = .short
+        timeFormatter.dateStyle = .none
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .none
+
+        let timeString = timeFormatter.string(from: dueDate)
         let at = String(localized: "date.at")
-        let spokenDate = formattedDate.replacingOccurrences(of: ", ", with: " \(at) ")
+
+        let spokenDate: String
+
+        if calendar.isDateInToday(dueDate) {
+
+            spokenDate = "\(String(localized: "Today")) \(at) \(timeString)"
+
+        } else if calendar.isDateInTomorrow(dueDate) {
+
+            spokenDate = "\(String(localized: "Tomorrow")) \(at) \(timeString)"
+
+        } else if let dayAfterTomorrow = calendar.date(byAdding: .day, value: 2, to: now),
+                  calendar.isDate(dueDate, inSameDayAs: dayAfterTomorrow) {
+
+            spokenDate = "\(String(localized: "Day After Tomorrow")) \(at) \(timeString)"
+
+        } else {
+
+            let formattedDate = dateFormatter.string(from: dueDate)
+            spokenDate = "\(formattedDate) \(at) \(timeString)"
+        }
 
         if task.reminderOffsetMinutes == nil {
             return .result(
@@ -362,9 +499,28 @@ struct NaturalLanguageParser {
         
         if let match = detector?.firstMatch(in: input, options: [], range: nsRange),
            let date = match.date {
-            
-            detectedDate = date
-            
+
+            let calendar = Calendar.current
+
+            let hour = calendar.component(.hour, from: date)
+            let minute = calendar.component(.minute, from: date)
+
+            // NSDataDetector/Siri commonly inject 06:00
+            // when no explicit time is provided.
+            if hour == 6 && minute == 0 {
+
+                detectedDate = calendar.date(
+                    bySettingHour: 8,
+                    minute: 0,
+                    second: 0,
+                    of: date
+                )
+
+            } else {
+
+                detectedDate = date
+            }
+
             if let range = Range(match.range, in: input) {
                 cleaned.removeSubrange(range)
             }

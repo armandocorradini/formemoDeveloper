@@ -10,6 +10,7 @@ struct PendingNotificationInfo: Identifiable {
     let triggerDate: Date?
     let identifier: String
     let categoryIdentifier: String
+    let taskID: UUID?
     let deadlineDate: Date?
 
     var notificationType: String {
@@ -120,7 +121,7 @@ struct NotificationView: View {
 
                             Button {
                                 Task {
-                                    await loadPendingNotifications()
+                                    await refreshAndReload()
                                 }
                             } label: {
                                 Image(systemName: "arrow.clockwise")
@@ -136,7 +137,7 @@ struct NotificationView: View {
 
                                 VStack(alignment: .leading, spacing: 6) {
 
-                                    Text("Upcoming Notifications")
+                                    Text(String(localized:"Upcoming Notifications"))
                                         .font(.subheadline.bold())
 
                                     Text(String(localized:"These are the next notifications currently scheduled on your device. The time shown below each task indicates when the notification will appear. Any additional notifications will be scheduled automatically afterwards."))
@@ -173,7 +174,7 @@ struct NotificationView: View {
 
                                             HStack(spacing: 4) {
 
-                                                Text("Deadline:")
+                                                Text(String(localized:"Deadline:"))
                                                     .foregroundStyle(.secondary)
 
                                                 Text(deadlineDateText(for: item.deadlineDate))
@@ -186,7 +187,7 @@ struct NotificationView: View {
 
                                             HStack(spacing: 4) {
 
-                                                Text("Next notification:")
+                                                Text(String(localized:"Next notification:"))
                                                     .foregroundStyle(.secondary)
 
 
@@ -219,7 +220,25 @@ struct NotificationView: View {
         .navigationTitle(String(localized: "Notifications"))
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            await loadPendingNotifications()
+            await refreshAndReload()
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIApplication.didBecomeActiveNotification
+            )
+        ) { _ in
+
+            Task {
+                await refreshAndReload()
+            }
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(for: .taskDidChange)
+        ) { _ in
+
+            Task {
+                await refreshAndReload()
+            }
         }
     }
 
@@ -297,7 +316,7 @@ struct NotificationView: View {
                 time: .shortened
             )
 
-            return "Today • \(time)"
+            return String(localized:"Today • \(time)")
         }
 
         return date.formatted(
@@ -324,7 +343,7 @@ struct NotificationView: View {
                 time: .shortened
             )
 
-            return "Today • \(time)"
+            return String(localized:"Today • \(time)")
         }
 
         return date.formatted(
@@ -334,6 +353,18 @@ struct NotificationView: View {
                 .hour()
                 .minute()
         )
+    }
+
+    @MainActor
+    private func refreshAndReload() async {
+
+        NotificationManager.shared.refresh(force: true)
+
+        // Allow UNUserNotificationCenter to commit
+        // the rebuilt pending requests.
+        try? await Task.sleep(for: .milliseconds(900))
+
+        await loadPendingNotifications()
     }
 
     @MainActor
@@ -357,9 +388,23 @@ struct NotificationView: View {
                 triggerDate = nil
             }
 
+            let taskID: UUID?
+
+            let identifierParts = request.identifier
+                .split(separator: ".")
+
+            if let uuidCandidate = identifierParts.first(where: {
+                UUID(uuidString: String($0)) != nil
+            }) {
+
+                taskID = UUID(uuidString: String(uuidCandidate))
+
+            } else {
+                taskID = nil
+            }
+
             let matchingTask = tasks.first {
-                $0.title == request.content.body ||
-                $0.title == request.content.title
+                $0.id == taskID
             }
 
             return PendingNotificationInfo(
@@ -369,6 +414,7 @@ struct NotificationView: View {
                 triggerDate: triggerDate,
                 identifier: request.identifier,
                 categoryIdentifier: request.content.categoryIdentifier,
+                taskID: taskID,
                 deadlineDate: matchingTask?.deadLine
             )
         }

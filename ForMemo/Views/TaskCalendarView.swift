@@ -930,10 +930,23 @@ private struct DayTasksInlineView: View {
     var onEditTask: (TodoTask) -> Void
 
     private var uniqueTasks: [TodoTask] {
-        Array(
+
+        let deduplicated = Array(
             Dictionary(grouping: tasks, by: \.id)
                 .compactMap { $0.value.first }
         )
+
+        return deduplicated.sorted {
+
+            let firstDate = $0.deadLine ?? .distantFuture
+            let secondDate = $1.deadLine ?? .distantFuture
+
+            if firstDate != secondDate {
+                return firstDate < secondDate
+            }
+
+            return $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+        }
     }
 
     private func iconColor(for task: TodoTask) -> Color {

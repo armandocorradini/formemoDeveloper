@@ -144,7 +144,18 @@ struct SearchTasksIntent: AppIntent {
                 return nil
             }
 
-            let spokenDate = dateFormatter.string(from: day)
+            let spokenDate: String
+
+            if calendar.isDateInToday(day) {
+                spokenDate = String(localized: "Today")
+            } else if calendar.isDateInTomorrow(day) {
+                spokenDate = String(localized: "Tomorrow")
+            } else if let dayAfterTomorrow = calendar.date(byAdding: .day, value: 2, to: Date()),
+                      calendar.isDate(day, inSameDayAs: dayAfterTomorrow) {
+                spokenDate = String(localized: "Day After Tomorrow")
+            } else {
+                spokenDate = dateFormatter.string(from: day)
+            }
 
             return "\(spokenDate): \(spokenEntries.joined(separator: ", "))"
         }
