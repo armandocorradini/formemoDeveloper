@@ -33,7 +33,7 @@ struct ReminderScrubberControl: View {
     private var maxValue: Int {
         switch mode {
         case .minutes: return 60
-        case .hours: return 23
+        case .hours: return 24
         case .days: return 7
         default: return 1
         }
@@ -66,10 +66,14 @@ struct ReminderScrubberControl: View {
             }
             
             if mode == .minutes || mode == .hours || mode == .days {
+
+                let minValue = mode == .minutes ? 5 : 1
+                let stepValue = mode == .minutes ? 5 : 1
+
                 Stepper(value: Binding(
                     get: { value },
                     set: { applyValue($0) }
-                ), in: 1...maxValue, step: 1) {
+                ), in: minValue...maxValue, step: stepValue) {
                     Text(stepperLabel)
                 }
             }
@@ -87,7 +91,7 @@ struct ReminderScrubberControl: View {
     private func applyMode(_ newMode: Mode) {
         switch newMode {
         case .none: localOffset = nil
-        case .minutes: localOffset = 1
+        case .minutes: localOffset = 5
         case .hours: localOffset = 60
         case .days: localOffset = 1440
         }
