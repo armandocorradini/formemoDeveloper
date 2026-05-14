@@ -11,6 +11,9 @@ struct OtherSettingsView: View {
     private var confirmTaskDeletion = true
     @AppStorage("notificationLeadTimeDays")
     private var notificationLeadTimeDays: Int = 1
+
+    @AppStorage("badgeMode")
+    private var badgeMode: Int = 1
     
     @AppStorage("badgeIncludeExpired") private var badgeIncludeExpired: Bool = true
     @AppStorage("badgeIncludeExpiredMigrated") private var badgeIncludeExpiredMigrated: Bool = false
@@ -70,7 +73,9 @@ struct OtherSettingsView: View {
                         get: { notificationLeadTimeDays },
                         set: { newValue in
                             notificationLeadTimeDays = newValue
-                            
+                            if newValue == -1 {
+                                badgeMode = 0
+                            }
                             // Aggiorna badge
                             NotificationManager.shared.refresh(force: true)
                         }
@@ -81,15 +86,25 @@ struct OtherSettingsView: View {
                     }
                     .pickerStyle(.menu)
                     
-                    Text(
+                  Text(
                         notificationLeadTimeDays == -1
-                        ? String(localized: "You’ll be notified at the exact time of the task. The badge updates when it’s due.")
-                        : String(localized: "You’ll receive a notification \(notificationLeadTimeDays) day(s) before the deadline and another at the time it’s due, when the badge is also updated.")
+                        ? String(localized: "You’ll receive a notification only at the exact time of the task. Since global notifications are disabled, the app badge updates only when tasks become overdue.")
+                        : String(localized: "You’ll receive a notification \(notificationLeadTimeDays) day(s) before the deadline and another at the time it’s due. You can choose below whether the app badge updates at the deadline or already with the global notification.")
                     )
                     .foregroundStyle(.blue)
                     .font(.footnote)
                     
                     Toggle("Show app badge", isOn: $showAppBadge)
+                    Picker("Badge updates", selection: $badgeMode) {
+
+                        Text("At deadline")
+                            .tag(0)
+
+                        Text("With global notification")
+                            .tag(1)
+                    }
+                    .pickerStyle(.menu)
+                    .disabled(notificationLeadTimeDays == -1)
 //
 //                    Toggle("Include expired tasks in badge", isOn: $badgeIncludeExpired)
                 }
@@ -107,6 +122,13 @@ struct OtherSettingsView: View {
                 NotificationManager.shared.refresh(force: true)
             }
             .onChange(of: notificationLeadTimeDays) { _, _ in
+                NotificationManager.shared.refresh(force: true)
+            }
+            .onChange(of: badgeMode) { _, _ in
+
+                UNUserNotificationCenter.current()
+                    .removeAllPendingNotificationRequests()
+
                 NotificationManager.shared.refresh(force: true)
             }
             .navigationTitle("")

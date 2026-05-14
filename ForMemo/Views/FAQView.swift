@@ -102,7 +102,7 @@ struct FAQView: View {
         FAQSection(title: String(localized: "Badges & Indicators"), items: [
             FAQItem(
                 question: String(localized:"How is the app badge calculated?"),
-                answer: String(localized:"The badge shows only tasks that need attention, based on their timing and your settings.")
+                answer: String(localized:"The app badge shows tasks that require attention based on the selected badge mode. In Settings > General, you can choose whether the badge updates only when tasks become overdue or before the deadline, at the moment the global notification is triggered. The badge updates automatically even if the app is closed.")
             ),
             FAQItem(
                 question: String(localized:"Why does the badge change suddenly?"),
@@ -118,8 +118,12 @@ struct FAQView: View {
                 answer: String(localized:"The badge updates automatically based on task changes and time. If it seems incorrect, try reopening the app or checking your notification settings.")
             ),
             FAQItem(
+                question: String(localized:"What is the difference between badge modes?"),
+                answer: String(localized:"At deadline updates the badge only when tasks become overdue. With global notification, the badge instead updates at the exact same moment the advance global notification is triggered. You can change this behavior anytime in Settings > General.")
+            ),
+            FAQItem(
                 question: String(localized:"Why is the badge different from what I expect?"),
-                answer: String(localized:"The badge shows the number of overdue tasks (tasks whose deadline has passed). Snoozing a notification does not remove a task from the badge, because the deadline does not change. The badge updates automatically when a task becomes due, even if the app is closed.")
+                answer: String(localized:"The badge behavior depends on the selected mode. In classic mode, tasks appear in the badge only after their deadline has passed. In global notification mode, tasks can appear earlier, when the advance notification is triggered.")
             ),
             // --- BEGIN NEW FAQItems ---
             FAQItem(

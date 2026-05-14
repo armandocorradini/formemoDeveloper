@@ -20,7 +20,7 @@ final class NotificationManager: NSObject {
   
     private var cloudKitDebounceTask: Task<Void, Never>?
     private var isAppLaunching = true
-    private var cloudKitRefreshScheduled = false
+//    private var cloudKitRefreshScheduled = false
     private var isProcessingCloudKit = false
     private var requiresUpgradeNotificationRebuild = false
     
@@ -520,11 +520,11 @@ final class NotificationManager: NSObject {
 
             case "deadline":
                 content = baseContent(task, title: String(localized: "⏰ Overdue"))
-                content.badge = NSNumber(value: badgeAtTrigger)
 
             default:
                 content = baseContent(task, title: String(localized: "Reminder"))
             }
+            content.badge = NSNumber(value: badgeAtTrigger)
             content.userInfo["type"] = next.type
             
             let interval = next.date.timeIntervalSinceNow
@@ -588,28 +588,18 @@ final class NotificationManager: NSObject {
         return c
     }
     
-    // MARK: - BADGEù
+    // MARK: - BADGE
     private func computeBadgeCount(at date: Date, tasks: [TodoTask]) -> Int {
-        
-        tasks.reduce(0) { count, task in
-            
-            guard !task.isCompleted,
-                  let deadline = task.deadLine else {
-                return count
-            }
-            
-            if deadline <= date {
-                return count + 1
-            }
-            
-            return count
-        }
+
+        TaskBadgePolicy.badgeCount(
+            tasks: tasks,
+            referenceDate: date
+        )
     }
     
     
-    
     private func computeBadgeCount(from tasks: [TodoTask]) -> Int {
-        
+
         TaskBadgePolicy.badgeCount(
             tasks: tasks,
             referenceDate: Date()

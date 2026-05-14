@@ -122,7 +122,9 @@ struct WeeklyTasksView: View {
                         
                         ForEach(weeklyTasks) { task in
                             WeeklyTaskRow(
-                                taskPendingDeletion: $taskPendingDeletion,task: task
+                                taskPendingDeletion: $taskPendingDeletion,
+                                taskWeekDays: taskWeekDays,
+                                task: task
                             )
                             .listRowSeparator(.hidden)
                             .listRowInsets(
@@ -228,13 +230,16 @@ private struct WeeklyTaskRow: View {
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
     
+    @AppStorage("tasklist.showTodayExpiredLabel")
+    private var showTodayExpiredLabel: Bool = true
+    
     @Binding var taskPendingDeletion: TodoTask?
     
     @Environment(\.modelContext)
     private var modelContext
 
     @Environment(\.colorScheme) private var colorScheme
-    
+    let taskWeekDays: Int
     let task: TodoTask
     
     var body: some View {
@@ -466,6 +471,22 @@ private struct WeeklyTaskRow: View {
         
         VStack(alignment: .leading, spacing: 6) {
             
+            if showTodayExpiredLabel && !task.isCompleted {
+
+                if isOverdue {
+
+                    Text(String(localized:"Overdue"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.red)
+
+                } else if isToday && taskWeekDays != 1 {
+
+                    Text(String(localized:"Today"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.orange)
+                }
+            }
+
             HStack(spacing: 6) {
                 
                 Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
@@ -524,6 +545,21 @@ private struct WeeklyTaskRow: View {
         }
     }
     
+    private var isToday: Bool {
+        guard let d = task.deadLine else { return false }
+
+        let now = Date()
+
+        return Calendar.current.isDateInToday(d) && d >= now
+    }
+
+    private var isOverdue: Bool {
+        guard let d = task.deadLine else { return false }
+        return d < Date()
+    }
+    
+    
+    
     // MARK: - Background
     
     private var cardBackground: some View {
@@ -551,7 +587,7 @@ private struct WeeklyTaskRow: View {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(
                     Color.white.opacity(
-                        colorScheme == .dark ? 0.015 : 0.035
+                        colorScheme == .dark ? 0.005 : 0.015
                     )
                 )
         }

@@ -54,7 +54,7 @@ struct AppQuickGuideView: View {
         
             .init(
                 title: String(localized:"Smart Badges"),
-                description: String(localized:"The app icon shows the number of overdue tasks. Inside the app, each task shows how many days are left."),
+                description: String(localized:"The app icon badge can show the number of overdue tasks or the number of tasks that reached the global notification time, depending on the selected badge mode in Settings > General. Inside the app, each task shows how many days are left."),
                 icon: "app.badge",
                 tint: .orange
             ),

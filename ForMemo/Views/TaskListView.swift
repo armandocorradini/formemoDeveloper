@@ -996,7 +996,7 @@ struct TodoSectionView: View {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(
                             Color.white.opacity(
-                                colorScheme == .dark ? 0.015 : 0.035
+                                colorScheme == .dark ? 0.005 : 0.015
                             )
                         )
                 }
