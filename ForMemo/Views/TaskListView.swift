@@ -187,9 +187,9 @@ struct TaskListView: View {
 
                 // 2. IL MATERIAL (Effetto vetro)
                 Rectangle()
-                    .fill(.ultraThinMaterial)
+                .fill(.ultraThinMaterial)
                     .ignoresSafeArea()
-
+                    
             let isEmptyState =
                 todoQuery.isEmpty &&
                 completedQuery.isEmpty &&
@@ -979,16 +979,35 @@ struct TodoSectionView: View {
                         }
                     }
             } else {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.clear)
+                ZStack {
+
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    backColor1.opacity(0.22),
+                                    backColor2.opacity(0.14)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(
+                            Color.white.opacity(
+                                colorScheme == .dark ? 0.015 : 0.035
+                            )
+                        )
+                }
                     .overlay(alignment: .leading) {
                         if let highlightOverlay {
                             RoundedRectangle(cornerRadius: style == .plain ? 1.3 : 1.3)
                                 .fill(highlightOverlay)
                                 .frame(width: style == .plain ? 1.3 : 1.3,
-                                       height: style == .plain ? 50 : 50)
+                                       height: style == .plain ? 46 : 46)
                                 .frame(maxHeight: .infinity, alignment: .center)
-                                .padding(.leading, style == .plain ? 12 : 8)
+                                .padding(.leading, style == .plain ? 12 : 11)
                                 .padding(.trailing, 8)
                         }
                     }

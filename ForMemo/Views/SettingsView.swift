@@ -369,7 +369,7 @@ struct SettingsView: View {
                                 showSoundPicker = true
                             } label: {
                                 HStack(spacing: 12) {
-                                    Image(systemName: "location.fill")
+                                    Image(systemName: "sensor.tag.radiowaves.forward")
                                         .foregroundStyle(.blue)
                                         .frame(width: iconWidth)
 

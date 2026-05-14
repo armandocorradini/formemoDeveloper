@@ -63,33 +63,14 @@ struct GetTasksIntent: AppIntent {
 
             // DE
             "heute"
-        ].contains(where: { normalizedQuery.contains($0) }) {
+        ].contains(where: {
+            normalizedQuery == $0 ||
+            normalizedQuery.hasPrefix($0 + " ") ||
+            normalizedQuery.hasSuffix(" " + $0) ||
+            normalizedQuery.contains(" " + $0 + " ")
+        }) {
 
             referenceDate = Date()
-
-            let start = calendar.startOfDay(for: referenceDate)
-            let end = calendar.date(byAdding: .day, value: 1, to: start)!
-
-            dateInterval = DateInterval(start: start, end: end)
-
-        } else if [
-            // EN
-            "tomorrow",
-
-            // IT
-            "domani",
-
-            // FR
-            "demain",
-
-            // ES
-            "manana", "mañana",
-
-            // DE
-            "morgen"
-        ].contains(where: { normalizedQuery.contains($0) }) {
-
-            referenceDate = calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date()
 
             let start = calendar.startOfDay(for: referenceDate)
             let end = calendar.date(byAdding: .day, value: 1, to: start)!
@@ -111,9 +92,43 @@ struct GetTasksIntent: AppIntent {
 
             // DE
             "ubermorgen", "übermorgen"
-        ].contains(where: { normalizedQuery.contains($0) }) {
+        ].contains(where: {
+            normalizedQuery == $0 ||
+            normalizedQuery.hasPrefix($0 + " ") ||
+            normalizedQuery.hasSuffix(" " + $0) ||
+            normalizedQuery.contains(" " + $0 + " ")
+        }) {
 
             referenceDate = calendar.date(byAdding: .day, value: 2, to: Date()) ?? Date()
+
+            let start = calendar.startOfDay(for: referenceDate)
+            let end = calendar.date(byAdding: .day, value: 1, to: start)!
+
+            dateInterval = DateInterval(start: start, end: end)
+
+        } else if [
+            // EN
+            "tomorrow",
+
+            // IT
+            "domani",
+
+            // FR
+            "demain",
+
+            // ES
+            "manana", "mañana",
+
+            // DE
+            "morgen"
+        ].contains(where: {
+            normalizedQuery == $0 ||
+            normalizedQuery.hasPrefix($0 + " ") ||
+            normalizedQuery.hasSuffix(" " + $0) ||
+            normalizedQuery.contains(" " + $0 + " ")
+        }) {
+
+            referenceDate = calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date()
 
             let start = calendar.startOfDay(for: referenceDate)
             let end = calendar.date(byAdding: .day, value: 1, to: start)!
@@ -136,7 +151,12 @@ struct GetTasksIntent: AppIntent {
 
             // DE
             "nachstes wochenende", "nächstes wochenende"
-        ].contains(where: { normalizedQuery.contains($0) }) {
+        ].contains(where: {
+            normalizedQuery == $0 ||
+            normalizedQuery.hasPrefix($0 + " ") ||
+            normalizedQuery.hasSuffix(" " + $0) ||
+            normalizedQuery.contains(" " + $0 + " ")
+        }) {
 
             let next = calendar.nextWeekend(startingAfter: Date())?.end ?? Date()
             referenceDate = calendar.nextWeekend(startingAfter: next)?.start ?? Date()
@@ -159,7 +179,12 @@ struct GetTasksIntent: AppIntent {
 
             // DE
             "wochenende"
-        ].contains(where: { normalizedQuery.contains($0) }) {
+        ].contains(where: {
+            normalizedQuery == $0 ||
+            normalizedQuery.hasPrefix($0 + " ") ||
+            normalizedQuery.hasSuffix(" " + $0) ||
+            normalizedQuery.contains(" " + $0 + " ")
+        }) {
 
             referenceDate = calendar.nextWeekend(startingAfter: Date())?.start ?? Date()
 
@@ -181,7 +206,12 @@ struct GetTasksIntent: AppIntent {
 
             // DE
             "nächste woche", "nachste woche"
-        ].contains(where: { normalizedQuery.contains($0) }) {
+        ].contains(where: {
+            normalizedQuery == $0 ||
+            normalizedQuery.hasPrefix($0 + " ") ||
+            normalizedQuery.hasSuffix(" " + $0) ||
+            normalizedQuery.contains(" " + $0 + " ")
+        }) {
 
             referenceDate = calendar.date(byAdding: .weekOfYear, value: 1, to: Date()) ?? Date()
 
@@ -198,12 +228,17 @@ struct GetTasksIntent: AppIntent {
             "cette semaine",
 
             // ES
-            "esta semana",
+            "esta settimana",
             "la semana actual",
 
             // DE
             "diese woche"
-        ].contains(where: { normalizedQuery.contains($0) }) {
+        ].contains(where: {
+            normalizedQuery == $0 ||
+            normalizedQuery.hasPrefix($0 + " ") ||
+            normalizedQuery.hasSuffix(" " + $0) ||
+            normalizedQuery.contains(" " + $0 + " ")
+        }) {
 
             referenceDate = Date()
 
@@ -386,14 +421,35 @@ struct GetTasksIntent: AppIntent {
         let spokenDate: String
 
         if ["today", "oggi", "aujourd hui", "aujourd'hui", "hoy", "heute"]
-            .contains(where: { normalizedQuery.contains($0) }) {
+            .contains(where: {
+                normalizedQuery == $0 ||
+                normalizedQuery.hasPrefix($0 + " ") ||
+                normalizedQuery.hasSuffix(" " + $0) ||
+                normalizedQuery.contains(" " + $0 + " ")
+            }) {
+
             spokenDate = String(localized: "today")
-        } else if ["tomorrow", "domani", "demain", "manana", "mañana", "morgen"]
-            .contains(where: { normalizedQuery.contains($0) }) {
-            spokenDate = String(localized: "tomorrow")
+
         } else if ["day after tomorrow", "dopodomani", "apres demain", "après demain", "pasado manana", "pasado mañana", "ubermorgen", "übermorgen"]
-            .contains(where: { normalizedQuery.contains($0) }) {
+            .contains(where: {
+                normalizedQuery == $0 ||
+                normalizedQuery.hasPrefix($0 + " ") ||
+                normalizedQuery.hasSuffix(" " + $0) ||
+                normalizedQuery.contains(" " + $0 + " ")
+            }) {
+
             spokenDate = String(localized: "day after tomorrow")
+
+        } else if ["tomorrow", "domani", "demain", "manana", "mañana", "morgen"]
+            .contains(where: {
+                normalizedQuery == $0 ||
+                normalizedQuery.hasPrefix($0 + " ") ||
+                normalizedQuery.hasSuffix(" " + $0) ||
+                normalizedQuery.contains(" " + $0 + " ")
+            }) {
+
+            spokenDate = String(localized: "tomorrow")
+
         } else {
             spokenDate = query
         }

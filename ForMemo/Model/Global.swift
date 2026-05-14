@@ -22,17 +22,25 @@ import SwiftUI
 //    blue: 1.0
 //).opacity(0.18)
 
-let backColor1: Color = Color(
-    red: 0.46,
-    green: 0.66,
-    blue: 1.0
-).opacity(0.34)
+let backColor1 = Color(
 
-let backColor2: Color = Color(
-    red: 0.78,
-    green: 0.66,
+    red: 0.42,
+
+    green: 0.64,
+
     blue: 1.0
-).opacity(0.24)
+
+).opacity(0.52)
+
+let backColor2 = Color(
+
+    red: 0.76,
+
+    green: 0.58,
+
+    blue: 1.0
+
+).opacity(0.42)
 
 // Ricava il display name dell'app
 let appName: String = {

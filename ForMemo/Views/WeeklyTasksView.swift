@@ -37,20 +37,18 @@ struct WeeklyTasksView: View {
             return deadline >= startOfToday && deadline <= endOfPeriod
         }
 
-        let uniqueTasks = Array(
-            Dictionary(grouping: filtered, by: \.id)
-                .compactMap { $0.value.first }
-        )
+        let unique = Dictionary(grouping: filtered, by: \.id)
+            .compactMap { $0.value.first }
 
-        return uniqueTasks.sorted {
-            let firstDate = $0.deadLine ?? .distantFuture
-            let secondDate = $1.deadLine ?? .distantFuture
+        return unique.sorted {
+            let lhs = $0.deadLine ?? .distantFuture
+            let rhs = $1.deadLine ?? .distantFuture
 
-            if firstDate != secondDate {
-                return firstDate < secondDate
+            if lhs != rhs {
+                return lhs < rhs
             }
 
-            return $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+            return $0.id.uuidString < $1.id.uuidString
         }
     }
     
@@ -64,20 +62,18 @@ struct WeeklyTasksView: View {
             return deadline < startOfToday
         }
 
-        let uniqueTasks = Array(
-            Dictionary(grouping: filtered, by: \.id)
-                .compactMap { $0.value.first }
-        )
+        let unique = Dictionary(grouping: filtered, by: \.id)
+            .compactMap { $0.value.first }
 
-        return uniqueTasks.sorted {
-            let firstDate = $0.deadLine ?? .distantPast
-            let secondDate = $1.deadLine ?? .distantPast
+        return unique.sorted {
+            let lhs = $0.deadLine ?? .distantFuture
+            let rhs = $1.deadLine ?? .distantFuture
 
-            if firstDate != secondDate {
-                return firstDate < secondDate
+            if lhs != rhs {
+                return lhs < rhs
             }
 
-            return $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+            return $0.id.uuidString < $1.id.uuidString
         }
     }
     
@@ -538,8 +534,27 @@ private struct WeeklyTaskRow: View {
         let isOverdue = deadline < Date()
         let shouldHighlight = highlightEnabled && isCritical && (isToday || isOverdue)
 
-        return RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(.clear)
+        return ZStack {
+
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            backColor1.opacity(0.22),
+                            backColor2.opacity(0.14)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(
+                    Color.white.opacity(
+                        colorScheme == .dark ? 0.015 : 0.035
+                    )
+                )
+        }
             .overlay(alignment: .leading) {
                 if shouldHighlight {
                     RoundedRectangle(cornerRadius: 3)
