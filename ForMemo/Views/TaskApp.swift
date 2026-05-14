@@ -72,6 +72,24 @@ struct ForMemoApp: App {
         if defaults.object(forKey: "showAppBadge") == nil {
             defaults.set(true, forKey: "showAppBadge")
         }
+
+        if defaults.object(forKey: "badgeMode") == nil {
+
+            let leadObject = defaults.object(forKey: "notificationLeadTimeDays")
+
+            // 🔥 Compatibility with previous versions:
+            // old versions implicitly used global badge mode
+            if let lead = leadObject as? Int,
+               lead != -1 {
+
+                defaults.set(1, forKey: "badgeMode")
+
+            } else {
+
+                defaults.set(0, forKey: "badgeMode")
+            }
+        }
+        defaults.synchronize()
         
         
         let sharedContainer = Persistence.sharedModelContainer
@@ -82,7 +100,10 @@ struct ForMemoApp: App {
         Task { @MainActor in
             let context = sharedContainer.mainContext
             
-            // 🔥 MIGRATION separata (non blocca startup)
+            // 🔥 Wait initial SwiftData / CloudKit stabilization
+            try? await Task.sleep(for: .seconds(2.0))
+
+            // 🔥 Attachment migration after stabilization
             AttachmentMigration.runIfNeeded(context: context)
         }
 
@@ -193,10 +214,10 @@ struct ForMemoApp: App {
                 object: nil
             )
             
-            // 4️⃣ Attendi sync SwiftData / UserDefaults
-            try? await Task.sleep(for: .milliseconds(300))
+            // 4️⃣ Wait migration / CloudKit materialization
+            try? await Task.sleep(for: .seconds(3.0))
             
-            // 5️⃣ Rebuild notifiche pulito
+            // 5️⃣ Final notification rebuild
             NotificationManager.shared.refresh(force: true)
         }
         
@@ -257,6 +278,11 @@ struct ForMemoApp: App {
                     
                     // 1️⃣ Applica azioni notifiche
                     NotificationActionProcessor.shared.processAll(using: context)
+
+                    // 🔥 Retry attachment migration/self-healing
+                    // after app becomes active and CloudKit stabilizes.
+                    try? await Task.sleep(for: .seconds(1.5))
+                    AttachmentMigration.runIfNeeded(context: context)
                     
                     // 2️⃣ 🔥 CLEANUP ALLEGATI (QUI è il punto giusto)
                     if autoDeleteCompletedAttachments {

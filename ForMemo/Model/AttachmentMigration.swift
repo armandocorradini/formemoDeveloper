@@ -5,23 +5,32 @@ import os
 enum AttachmentMigration {
     
     private static let logger = Logger(subsystem: "com.formemo.migration", category: "migration")
+    private static var isRunning = false
     
     static func runIfNeeded(context: ModelContext) {
         
         log("🚀 MIGRATION START")
         
+        // 🔥 Prevent overlapping migrations
+        guard !isRunning else {
+            log("⏭️ Migration already running")
+            return
+        }
+
+        isRunning = true
+
+        defer {
+            isRunning = false
+        }
+        
         let versionKey = "attachmentMigrationVersion"
-        let attemptsKey = "attachmentMigrationAttempts"
-        let currentVersion = 2
-        let maxAttempts = 3
+        let currentVersion = 3
 
         let defaults = UserDefaults.standard
 
         let savedVersion = defaults.integer(forKey: versionKey)
-        let attempts = defaults.integer(forKey: attemptsKey)
 
         log("Version: \(savedVersion) → \(currentVersion)")
-        log("Migration attempts: \(attempts)/\(maxAttempts)")
         
         guard savedVersion < currentVersion else {
             log("⏭️ Migration already done")
@@ -29,31 +38,16 @@ enum AttachmentMigration {
         }
         
         let success = migrate(context: context)
-        
+
         if success {
 
             defaults.set(currentVersion, forKey: versionKey)
-            defaults.set(0, forKey: attemptsKey)
 
             log("✅ Migration DONE")
 
         } else {
 
-            let newAttempts = attempts + 1
-            defaults.set(newAttempts, forKey: attemptsKey)
-
-            if newAttempts >= maxAttempts {
-
-                // 🔥 evita retry infiniti
-                defaults.set(currentVersion, forKey: versionKey)
-                defaults.set(0, forKey: attemptsKey)
-
-                log("⚠️ Migration skipped after \(maxAttempts) failed attempts")
-
-            } else {
-
-                log("❌ Migration FAILED → retry next launch")
-            }
+            log("⚠️ Migration partially completed - retry next launch")
         }
     }
     
@@ -65,23 +59,46 @@ enum AttachmentMigration {
             log("❌ iCloud dir missing")
             return false
         }
-        
+
         guard let legacyDir = legacyDirectory else {
-            log("❌ Legacy dir missing")
-            return false
+            log("⚠️ Legacy dir unavailable")
+            return true
         }
-        
+
+        // 🔥 No legacy attachments on this device
+        // (fresh install or already migrated)
+        guard FileManager.default.fileExists(atPath: legacyDir.path) else {
+            log("ℹ️ Legacy attachment directory not found")
+            return true
+        }
+
         let fm = FileManager.default
-        
-        guard let files = try? fm.contentsOfDirectory(at: legacyDir, includingPropertiesForKeys: nil) else {
+        var allFilesMigrated = true
+
+        guard let files = try? fm.contentsOfDirectory(
+            at: legacyDir,
+            includingPropertiesForKeys: nil
+        ) else {
             log("⚠️ Cannot read legacy directory")
             return false
+        }
+
+        // 🔥 Nothing to migrate
+        if files.isEmpty {
+            log("ℹ️ No legacy attachments to migrate")
+            return true
         }
         
         log("📦 Legacy files found: \(files.count)")
         
         for fileURL in files {
             let fileName = fileURL.lastPathComponent
+            // 🔥 Verify source file is readable
+            guard fm.isReadableFile(atPath: fileURL.path) else {
+                allFilesMigrated = false
+                log("❌ Legacy file unreadable: \(fileName)")
+                continue
+            }
             let newURL = iCloudDir.appendingPathComponent(fileName)
 
             log("➡️ Migrating file: \(fileName)")
@@ -125,7 +142,27 @@ enum AttachmentMigration {
 
                 guard uploadReady else {
                     try? fm.removeItem(at: newURL)
+                    allFilesMigrated = false
                     log("❌ Copied file not materialized")
+                    continue
+                }
+
+                // 🔥 verify copied file integrity
+                let originalSize = (try? fm.attributesOfItem(
+                    atPath: fileURL.path
+                )[.size] as? Int64) ?? 0
+
+                let copiedSize = (try? fm.attributesOfItem(
+                    atPath: newURL.path
+                )[.size] as? Int64) ?? 0
+
+                guard originalSize > 0,
+                      copiedSize == originalSize else {
+
+                    try? fm.removeItem(at: newURL)
+                    allFilesMigrated = false
+
+                    log("❌ Integrity verification failed")
                     continue
                 }
 
@@ -135,6 +172,7 @@ enum AttachmentMigration {
                 log("✅ Copied OK")
 
             } catch {
+                allFilesMigrated = false
                 log("❌ Copy error: \(error.localizedDescription)")
             }
         }
@@ -147,7 +185,7 @@ enum AttachmentMigration {
 
         log("☁️ iCloud files available: \(migratedFiles.count)")
 
-        return true
+        return allFilesMigrated
     }
     
     // MARK: - LEGACY PATH
@@ -164,7 +202,6 @@ enum AttachmentMigration {
     private static func log(_ message: String) {
 #if DEBUG
         print("🟣 MIGRATION:", message)
-        DebugLog.write(message)
 #endif
         logger.info("\(message)")
         

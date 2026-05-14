@@ -527,7 +527,7 @@ final class NotificationManager: NSObject {
             content.badge = NSNumber(value: badgeAtTrigger)
             content.userInfo["type"] = next.type
             
-            let interval = next.date.timeIntervalSinceNow
+            let interval = max(next.date.timeIntervalSinceNow, 5)
 
             // 🔥 FIX: avoid immediate triggers ONLY for reminder/global
             // Deadline must ALWAYS fire

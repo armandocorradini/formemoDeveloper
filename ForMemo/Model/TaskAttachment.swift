@@ -111,36 +111,140 @@ extension TaskAttachment {
         return nil
     }()
     
-    
-    var fileURL: URL? {
+    private static func legacyAttachmentsDirectory() -> URL? {
+
+        FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first?
+            .appendingPathComponent("TaskAttachments", isDirectory: true)
+    }
+
+    private static func cloudAttachmentsDirectory() -> URL? {
 
         let fm = FileManager.default
 
-        // 1️⃣ iCloud
-        if let cloud = Self.attachmentsDirectory?
+        guard let containerURL = fm.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) else {
+            return nil
+        }
+
+        return containerURL
+            .appendingPathComponent("Documents", isDirectory: true)
+            .appendingPathComponent("TaskAttachments", isDirectory: true)
+    }
+
+    private static func resolvedExistingURL(
+        relativePath: String
+    ) -> URL? {
+
+        let fm = FileManager.default
+
+        // 1️⃣ iCloud path
+        if let cloud = cloudAttachmentsDirectory()?
             .appendingPathComponent(relativePath),
            fm.fileExists(atPath: cloud.path) {
 
             try? fm.startDownloadingUbiquitousItem(at: cloud)
-            return cloud
-        }
 
-        // 2️⃣ legacy locale
-        if let localBase = fm.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first {
+            let values = try? cloud.resourceValues(forKeys: [
+                .ubiquitousItemDownloadingStatusKey,
+                .fileSizeKey
+            ])
 
-            let local = localBase
-                .appendingPathComponent("TaskAttachments")
-                .appendingPathComponent(relativePath)
+            let status = values?.ubiquitousItemDownloadingStatus
+            let size = values?.fileSize ?? 0
 
-            if fm.fileExists(atPath: local.path) {
-                return local
+            // 🔥 Return iCloud file only if really materialized
+            if status == .current || status == .downloaded {
+
+                if size > 0 {
+                    return cloud
+                }
             }
         }
 
+        // 2️⃣ Legacy local path
+        if let legacy = legacyAttachmentsDirectory()?
+            .appendingPathComponent(relativePath),
+           fm.fileExists(atPath: legacy.path) {
+
+            // 🔥 SELF-HEALING:
+            // if iCloud file is missing but legacy exists,
+            // silently restore it into iCloud container.
+            if let cloudDirectory = cloudAttachmentsDirectory() {
+
+                let cloudURL = cloudDirectory
+                    .appendingPathComponent(relativePath)
+
+                if !fm.fileExists(atPath: cloudURL.path) {
+
+                    // 🔥 Avoid restoring empty/corrupted legacy files
+                    let legacySize = (try? fm.attributesOfItem(
+                        atPath: legacy.path
+                    )[.size] as? Int64) ?? 0
+
+                    guard legacySize > 0 else {
+#if DEBUG
+                        AppLogger.persistence.error(
+                            "Self-healing skipped (empty legacy file): \(relativePath)"
+                        )
+#endif
+                        return legacy
+                    }
+
+                    try? fm.createDirectory(
+                        at: cloudURL.deletingLastPathComponent(),
+                        withIntermediateDirectories: true
+                    )
+
+                    do {
+                        try fm.copyItem(at: legacy, to: cloudURL)
+
+                        try? fm.startDownloadingUbiquitousItem(at: cloudURL)
+
+#if DEBUG
+                        AppLogger.persistence.debug(
+                            "♻️ Self-healed attachment: \(relativePath)"
+                        )
+#endif
+
+                        return cloudURL
+
+                    } catch {
+#if DEBUG
+                        AppLogger.persistence.error(
+                            "Self-healing failed: \(error.localizedDescription)"
+                        )
+#endif
+                    }
+                }
+            }
+
+            return legacy
+        }
+
+        // 3️⃣ Trash fallback (recovery)
+        if let trash = trashDirectory,
+           let recovered = try? fm.contentsOfDirectory(
+                at: trash,
+                includingPropertiesForKeys: nil
+           ).first(where: {
+                $0.lastPathComponent.hasSuffix(relativePath)
+           }) {
+
+            return recovered
+        }
+
         return nil
+    }
+    
+    var fileURL: URL? {
+
+        Self.resolvedExistingURL(
+            relativePath: relativePath
+        )
     }
     
     var fileStatus: FileStatus {
@@ -188,13 +292,19 @@ extension TaskAttachment {
         if (try? sourceURL.resourceValues(forKeys: [.isUbiquitousItemKey]))?.isUbiquitousItem == true {
             try? fm.startDownloadingUbiquitousItem(at: sourceURL)
 
-            // ⏳ attesa breve finché non è disponibile
+            // ⏳ wait briefly for real materialization
             for _ in 0..<10 {
-                let status = try? sourceURL.resourceValues(forKeys: [.ubiquitousItemDownloadingStatusKey])
+                let status = try? sourceURL.resourceValues(
+                    forKeys: [.ubiquitousItemDownloadingStatusKey]
+                )
+
                 if status?.ubiquitousItemDownloadingStatus == .current {
                     break
                 }
-                Thread.sleep(forTimeInterval: 0.1)
+
+                RunLoop.current.run(
+                    until: Date().addingTimeInterval(0.1)
+                )
             }
         }
 
@@ -251,23 +361,47 @@ extension TaskAttachment {
 extension TaskAttachment {
     
     func loadDataAsync() async -> Data? {
-        
-        guard let url = fileURL else { return nil }
-        
-        try? FileManager.default.startDownloadingUbiquitousItem(at: url)
-
-        for _ in 0..<30 { // ~6 secondi
-            if FileManager.default.fileExists(atPath: url.path) {
-                break
-            }
-            try? await Task.sleep(nanoseconds: 200_000_000)
-        }
-
-        guard FileManager.default.fileExists(atPath: url.path) else {
+        guard let url = fileURL else {
             return nil
         }
 
-        return try? Data(contentsOf: url)
+        let fm = FileManager.default
+
+        try? fm.startDownloadingUbiquitousItem(at: url)
+
+        // 🔥 Wait real materialization
+        for _ in 0..<40 {
+
+            let exists = fm.fileExists(atPath: url.path)
+
+            let values = try? url.resourceValues(forKeys: [
+                .ubiquitousItemDownloadingStatusKey
+            ])
+
+            let status = values?.ubiquitousItemDownloadingStatus
+
+            if exists && (status == .current || status == .downloaded || status == nil) {
+                break
+            }
+
+            try? await Task.sleep(nanoseconds: 200_000_000)
+        }
+
+        guard fm.fileExists(atPath: url.path) else {
+            return nil
+        }
+
+        guard let data = try? Data(contentsOf: url),
+              !data.isEmpty else {
+
+#if DEBUG
+            print("❌ Attachment read failed or empty: \(url.lastPathComponent)")
+#endif
+
+            return nil
+        }
+
+        return data
     }
 }
 
