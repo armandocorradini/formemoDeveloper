@@ -172,7 +172,7 @@ extension TaskRowContent {
     }
 //    private func layoutStyle10() -> some View {
 //        HStack(spacing: 14) {
-//            
+//
 //            // 📅 COLONNA DATA (sinistra)
 //            if showDateColumn {
 //
@@ -211,10 +211,10 @@ extension TaskRowContent {
 //                .scaleEffect(0.9)
 //                .frame(minWidth: 40)
 //                .offset(x: -4)
-//            
+//
 //            // CONTENUTO (titolo + meta)
 //            VStack(alignment: .leading, spacing: 4) {
-//                
+//
 //                // TITOLO
 //                todayExpiredLabel()
 //                HStack(spacing: 6) {
@@ -223,7 +223,7 @@ extension TaskRowContent {
 //                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
 //                        .strikethrough(model.isCompleted)
 //                        .lineLimit(1)
-//                    
+//
 //                    if model.recurrenceRule != nil {
 //                        HStack(spacing: 3) {
 //                            Image(systemName: "arrow.triangle.2.circlepath")
@@ -237,25 +237,25 @@ extension TaskRowContent {
 //                        }
 //                    }
 //                }
-//                
+//
 //                // META (remind + flags)
 //                HStack(spacing: 8) {
-//                    
+//
 //                    if model.reminderOffsetMinutes != nil {
 //                        HStack(spacing: 4) {
 //                            Image(systemName: "bell")
 //                            Text(formattedOffset(model: model))
 //                        }
 //                    }
-//                    
+//
 //                    Spacer()
-//                    
+//
 //                    flags(vertical: false)
 //                }
 //                .font(.caption2)
 //                .foregroundStyle(.primary).opacity(0.7)
 //            }
-//            
+//
 //            Spacer()
 //        }
 //        .padding(.vertical, 6)
@@ -368,7 +368,7 @@ extension TaskRowContent {
 extension TaskRowContent {
     
     private func layoutStyle9() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 2) {
 
             timeColumn(style: 9)
                 .frame(width: 52, alignment: .leading)
@@ -419,7 +419,7 @@ extension TaskRowContent {
     }
     
     private func layoutStyle1() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 2) {
             
             timeColumn(style: 1)
             
@@ -465,7 +465,7 @@ extension TaskRowContent {
     }
     
     private func layoutStyle2() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 2) {
 
             timeColumn(style: 2)
                 .frame(width: 52, alignment: .leading)
@@ -603,7 +603,7 @@ extension TaskRowContent {
     }
     
     private func layoutStyle5() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 2) {
 
             timeColumn(style: 5)
                 .frame(width: 52, alignment: .leading)
@@ -645,7 +645,7 @@ extension TaskRowContent {
     }
     
     private func layoutStyle6() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 2) {
 
             timeColumn(style: 6)
                 .frame(width: 52, alignment: .leading)
@@ -680,7 +680,7 @@ extension TaskRowContent {
     }
     
     private func layoutStyle7() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 2) {
 
             timeColumn(style: 7)
                 .frame(width: 52, alignment: .leading)
@@ -719,7 +719,7 @@ extension TaskRowContent {
     }
     
     private func layoutStyle8() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 2) {
 
             timeColumn(style: 8)
                 .frame(width: 52, alignment: .leading)
@@ -760,7 +760,7 @@ extension TaskRowContent {
     
     
     private func layoutStyle0() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 2) {
 
             // 📅 COLONNA DATA (sinistra)
             Group {
@@ -788,7 +788,7 @@ extension TaskRowContent {
                         .opacity(showDateColumn ? 1 : 0)
                 }
             }
-            .frame(width: 52, height: 44, alignment: .leading)
+            .frame(width: 38, height: 44, alignment: .leading)
 
             // 📌 CONTENUTO
             VStack(alignment: .leading, spacing: 6) {

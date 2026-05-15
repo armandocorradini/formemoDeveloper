@@ -47,30 +47,30 @@ struct TaskListView: View {
     @State private var taskPendingDeletion: TodoTask?
 
 
-    private var filteredTasks: [TodoTask] {
-        let source = showCompleted ? completedQuery : todoQuery
-
-        return source.filter { task in
-
-            let matchesSearch =
-            searchText.isEmpty ||
-            task.title.localizedCaseInsensitiveContains(searchText)
-
-            let matchesTag =
-            selectedTagFilter == nil ||
-            task.mainTag == selectedTagFilter
-
-            let matchesPriority =
-            selectedPriorityFilter == nil ||
-            task.priority == selectedPriorityFilter
-
-            let matchesPeriod =
-            selectedPeriodFilter == nil ||
-            selectedPeriodFilter?.matches(task.deadLine) == true
-
-            return matchesSearch && matchesTag && matchesPriority && matchesPeriod
-        }
-    }
+//    private var filteredTasks: [TodoTask] {
+//        let source = showCompleted ? completedQuery : todoQuery
+//
+//        return source.filter { task in
+//
+//            let matchesSearch =
+//            searchText.isEmpty ||
+//            task.title.localizedCaseInsensitiveContains(searchText)
+//
+//            let matchesTag =
+//            selectedTagFilter == nil ||
+//            task.mainTag == selectedTagFilter
+//
+//            let matchesPriority =
+//            selectedPriorityFilter == nil ||
+//            task.priority == selectedPriorityFilter
+//
+//            let matchesPeriod =
+//            selectedPeriodFilter == nil ||
+//            selectedPeriodFilter?.matches(task.deadLine) == true
+//
+//            return matchesSearch && matchesTag && matchesPriority && matchesPeriod
+//        }
+//    }
     @State private var cachedTodo: [TodoTask] = []
     @State private var cachedCompleted: [TodoTask] = []
     @State private var timerTask: Task<Void, Never>?
@@ -480,15 +480,11 @@ struct TaskListView: View {
         .onChange(of: scenePhase) {
             switch scenePhase {
             case .active:
+                recomputeSections()
                 startTimerIfNeeded()
             default:
                 stopTimer()
             }
-        }
-        .onReceive(
-            NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
-        ) { _ in
-            recomputeSections()
         }
         .onReceive(
             NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)
@@ -668,11 +664,10 @@ struct TaskRow: View {
 
 
     @AppStorage("selectedTaskRowStyle") private var selectedRowStyle: Int = 0
-
+    private let now = Date()
 
     private var isToday: Bool {
         guard let d = task.deadLine else { return false }
-        let now = Date()
         let startOfToday = Calendar.current.startOfDay(for: now)
 
         return d >= startOfToday && d >= now
@@ -680,12 +675,12 @@ struct TaskRow: View {
 
     private var isOverdue: Bool {
         guard let d = task.deadLine else { return false }
-        return d < Date()
+        return d < now
     }
 
     private var isOverdueToday: Bool {
         guard let d = task.deadLine else { return false }
-        return d < Date() && Calendar.current.isDateInToday(d)
+        return d < now && Calendar.current.isDateInToday(d)
     }
 
     private var dynamicRowHeight: CGFloat {
@@ -994,6 +989,7 @@ struct TodoSectionView: View {
         @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
         @AppStorage("tasklist.highlightEnabled") private var highlightEnabled: Bool = true
         @AppStorage("tasklist.highlightColor")  private var highlightColorHex: String = Color.red.toHex() ?? ""
+        private let now = Date()
 
         private var highlightColor: Color {
             Color(hex: highlightColorHex) ?? .red
@@ -1133,13 +1129,12 @@ struct TodoSectionView: View {
 
         private func isTaskToday(_ date: Date?) -> Bool {
             guard let date else { return false }
-            let now = Date()
             return Calendar.current.isDateInToday(date) && date >= now
         }
 
         private func isTaskOverdue(_ date: Date?) -> Bool {
             guard let date else { return false }
-            return date < Date()
+            return date < now
         }
     }
 
