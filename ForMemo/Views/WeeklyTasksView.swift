@@ -95,6 +95,51 @@ struct WeeklyTasksView: View {
         .capitalized
     }
     
+    enum RowPosition {
+        case single
+        case first
+        case middle
+        case last
+    }
+
+    private var groupedTasksByDay: [(date: Date, tasks: [TodoTask])] {
+
+        let calendar = Calendar.current
+
+        let grouped = Dictionary(grouping: weeklyTasks) { task in
+            calendar.startOfDay(for: task.deadLine ?? .now)
+        }
+
+        return grouped
+            .map { key, value in
+                (
+                    date: key,
+                    tasks: value.sorted {
+                        ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
+                    }
+                )
+            }
+            .sorted { $0.date < $1.date }
+    }
+
+
+    private func rowPosition(index: Int, total: Int) -> RowPosition {
+
+        if total == 1 {
+            return .single
+        }
+
+        if index == 0 {
+            return .first
+        }
+
+        if index == total - 1 {
+            return .last
+        }
+
+        return .middle
+    }
+
     var body: some View {
         ZStack {
             // 1. IL GRADIENTE (Sotto a tutto)
@@ -107,10 +152,19 @@ struct WeeklyTasksView: View {
             Rectangle()
                 .fill(.ultraThinMaterial)
                 .ignoresSafeArea()
+            Color.clear
+                .onAppear {
+                    UITableView.appearance().backgroundColor = .clear
+                    UITableViewCell.appearance().backgroundColor = .clear
+                    UITableViewHeaderFooterView.appearance().tintColor = .clear
+                    UITableViewHeaderFooterView.appearance().backgroundView = UIView(frame: .zero)
+                }
             List {
+//                headerView
+//                    .listRowInsets(.init(top: 0, leading: 0, bottom: 4, trailing: 0))
+//                    .listRowSeparator(.hidden)
+//                    .listRowBackground(Color.clear)
                 
-                Section {
-                    
                     if weeklyTasks.isEmpty {
                         
                         AppUnavailableView.empty(
@@ -120,31 +174,52 @@ struct WeeklyTasksView: View {
                         
                     } else {
                         
-                        ForEach(weeklyTasks) { task in
-                            WeeklyTaskRow(
-                                taskPendingDeletion: $taskPendingDeletion,
-                                taskWeekDays: taskWeekDays,
-                                task: task
-                            )
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(
-                                .init(top: 4, leading: 14, bottom: 4, trailing: 14)
-                            )
-                            .listRowBackground(Color.clear)
+                        ForEach(groupedTasksByDay, id: \.date) { group in
+
+                            Section {
+
+                                ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, task in
+
+                                    WeeklyTaskRow(
+                                        taskPendingDeletion: $taskPendingDeletion,
+                                        taskWeekDays: taskWeekDays,
+                                        task: task,
+                                        position: rowPosition(
+                                            index: index,
+                                            total: group.tasks.count
+                                        )
+                                    )
+                                    .listRowSeparator(.hidden)
+                                    .listRowInsets(
+                                        .init(top: 0, leading: 14, bottom: 0, trailing: 14)
+                                    )
+                                    .listRowBackground(Color.clear)
+                                }
+
+                            } header: {
+                                EmptyView()
+                            }
+                            .listSectionSeparator(.hidden)
+                            .listSectionSpacing(8)
                         }
                     }
-                    
-                } header: {
-                    headerView
-                }
             }
+            .background(Color.clear)
+            .listRowBackground(Color.clear)
             .listStyle(.plain)
+            .animation(.smooth(duration: 0.18), value: groupedTasksByDay.count)
+            .safeAreaInset(edge: .top, spacing: 0) {
+                headerView
+                    .padding(.top, 6)
+                    .padding(.bottom, 6)
+            }
             .navigationTitle(formattedDate)
             .navigationBarTitleDisplayMode(.inline)
             .navigationDestination(for: TodoTask.self) { task in
                 TaskDetailView(task: task)
             }
             .scrollContentBackground(.hidden)
+            .containerBackground(.clear, for: .navigation)
             // ALERT UNICO – STABILE
             .alert(
                 "Delete task?",
@@ -194,8 +269,8 @@ struct WeeklyTasksView: View {
                 
                 Spacer()
             }
-            .padding(.top, -35)
-            
+            .padding(.top, -15)
+            .padding(.bottom, 8)
             HStack {
                 Spacer()
                 Stepper("", value: $taskWeekDays, in: 1...7)
@@ -203,15 +278,15 @@ struct WeeklyTasksView: View {
                     .fixedSize()
                 Text("Next \(taskWeekDays) Days")
                     .foregroundStyle(Color(UIColor.label))
-                    .padding(3)
+                    .padding(6)
                 
                 Spacer()
             }
+            .padding(.vertical, 8)
         }
         .textCase(nil)
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
     }
-}
 
 // MARK: - Row
 
@@ -241,6 +316,7 @@ private struct WeeklyTaskRow: View {
     @Environment(\.colorScheme) private var colorScheme
     let taskWeekDays: Int
     let task: TodoTask
+    let position: WeeklyTasksView.RowPosition
     
     var body: some View {
         
@@ -253,7 +329,13 @@ private struct WeeklyTaskRow: View {
             
             ZStack(alignment: .topTrailing) {
                 HStack(spacing: 14) {
-                    dayBadge
+                    if position == .first || position == .single {
+                        dayBadge
+                    } else {
+                        Color.clear
+                            .frame(width: 44, height: 44)
+                    }
+
                     mainColumn
                     Spacer(minLength: 6)
                 }
@@ -279,11 +361,12 @@ private struct WeeklyTaskRow: View {
 
             }
             .padding(.vertical, 14)
-            .padding(.horizontal, 14)
+            .padding(.horizontal, 16)
             .background {
                 cardBackground
             }
         }
+        .animation(nil, value: task.deadLine)
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             completeAction
         }
@@ -563,6 +646,7 @@ private struct WeeklyTaskRow: View {
     // MARK: - Background
     
     private var cardBackground: some View {
+
         let deadline = task.deadLine ?? .distantFuture
 
         let isCritical = task.priority.systemImage == "flame"
@@ -571,46 +655,83 @@ private struct WeeklyTaskRow: View {
         let shouldHighlight = highlightEnabled && isCritical && (isToday || isOverdue)
 
         return ZStack {
-
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            shape
                 .fill(
-                    LinearGradient(
-                        colors: [
-                            backColor1.opacity(0.22),
-                            backColor2.opacity(0.14)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+                    Color.white.opacity(colorScheme == .dark ? 0.02 : 0.04)
                 )
 
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            shape
                 .fill(
-                    Color.white.opacity(
-                        colorScheme == .dark ? 0.005 : 0.015
-                    )
+                    Color(.systemBackground).opacity(0.3)
                 )
         }
-            .overlay(alignment: .leading) {
-                if shouldHighlight {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(highlightColor)
-                        .frame(width: 1.3, height: 39)
-                        .frame(maxHeight: .infinity, alignment: .center)
-                        .padding(.leading, 10)
-                }
+        .overlay(alignment: .leading) {
+
+            if shouldHighlight {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(highlightColor)
+                    .frame(width: 1.5, height: 38)
+                    .frame(maxHeight: .infinity, alignment: .center)
+                    .padding(.leading, 10)
             }
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(
-                        isOverdue
-                            ? Color.red
-                            : isToday
-                                ? Color.orange
-                                : Color.secondary,
-                        lineWidth: (isToday || isOverdue) ? 0.4 : 0.3
+        }
+        .overlay(alignment: .bottom) {
+
+            if position != .last && position != .single {
+
+                Divider()
+                    .overlay(
+                        colorScheme == .dark
+                        ? Color.white.opacity(0.14)
+                        : Color.black.opacity(0.10)
                     )
+                    .padding(.leading, 82)
+                    .padding(.trailing, 24)
+            }
+        }
+        .shadow(
+            color: .black.opacity(colorScheme == .dark ? 0.10 : 0.04),
+            radius: 3,
+            y: 1
+        )
+    }
+
+
+    private var shape: some InsettableShape {
+
+        switch position {
+        case .single:
+            UnevenRoundedRectangle(
+                topLeadingRadius: 22,
+                bottomLeadingRadius: 22,
+                bottomTrailingRadius: 22,
+                topTrailingRadius: 22
             )
+
+        case .first:
+            UnevenRoundedRectangle(
+                topLeadingRadius: 22,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 22
+            )
+
+        case .middle:
+            UnevenRoundedRectangle(
+                topLeadingRadius: 0,
+                bottomLeadingRadius: 0,
+                bottomTrailingRadius: 0,
+                topTrailingRadius: 0
+            )
+
+        case .last:
+            UnevenRoundedRectangle(
+                topLeadingRadius: 0,
+                bottomLeadingRadius: 22,
+                bottomTrailingRadius: 22,
+                topTrailingRadius: 0
+            )
+        }
     }
     
     // MARK: - Helpers
@@ -640,3 +761,6 @@ private func isTaskToday(_ date: Date?) -> Bool {
     guard let date else { return false }
     return Calendar.current.isDateInToday(date)
 }
+
+}
+

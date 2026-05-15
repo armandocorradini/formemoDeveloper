@@ -6,18 +6,7 @@ import UniformTypeIdentifiers // UTType
 import CoreLocation          // CLLocationCoordinate2D
 import os
 
-//struct TaskDetailView: View {
-//    @Bindable var task: TodoTask
-//    var isSheet: Bool = false
-//    var body: some View {
-//        Text("Hello")
-//    }
-//}
-//
-//
-//
-////
-////
+
 enum RecurrenceUI: String, CaseIterable, Identifiable {
     
     case none

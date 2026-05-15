@@ -19,7 +19,11 @@ enum TaskListAppearanceKeys {
     static let showTodayExpiredLabel = "tasklist.showTodayExpiredLabel"
 }
 
-
+struct EmptyModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+    }
+}
 struct TaskListAppearanceView: View {
     
     @AppStorage("TaskListStyle")
@@ -76,7 +80,6 @@ struct TaskListAppearanceView: View {
         String(localized: "Style 7"),
         String(localized: "Style 8"),
         String(localized: "Style 9"),
-        String(localized: "Style 10")
     ]
     
     @State private var refreshID = UUID()
@@ -165,11 +168,17 @@ struct TaskListAppearanceView: View {
     private var previewRow: some View {
 
         List {
-            TaskRow(task: previewTask)
-                .modifier(TodoSectionView.RowCardStyle(
-                    task: previewTask,
-                    style: listStyleChoice
-                ))
+            TaskRow(
+                task: previewTask,
+                showDateColumn: true
+            )
+                .modifier(
+                    TodoSectionView.RowCardStyle(
+                        task: previewTask,
+                        style: listStyleChoice,
+                        position: .single
+                    )
+                )
                 .padding(.horizontal, listStyleChoice == .plain ? 12 : 0)
                 .listRowInsets(
                     listStyleChoice == .cards
@@ -181,7 +190,7 @@ struct TaskListAppearanceView: View {
         .scrollDisabled(true)
         .contentMargins(.top, 18, for: .scrollContent)
         .contentMargins(.horizontal, 8, for: .scrollContent)
-        .frame(height: 110)
+        .frame(height: 135)
         .modifier(ListStyleModifier(style: listStyleChoice))
     }
     
@@ -364,4 +373,3 @@ extension Color {
                       Int(b * 255))
     }
 }
-

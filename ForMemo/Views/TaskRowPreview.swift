@@ -75,6 +75,7 @@ struct TaskRowPreview: View {
                     showPriority: showPriority,
                     showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
                     rowStyle: rowStyle,
+                    showDateColumn: true,
                     highlightCriticalOverdue: highlightEnabled,
                     showTodayExpiredLabel: showTodayExpiredLabel
                 )

@@ -12125,6 +12125,7 @@
       }
     },
     "Style 10" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

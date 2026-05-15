@@ -259,7 +259,7 @@ struct TaskListView: View {
                     .fullScreenCover(isPresented: $showQuickGuide) {
                         AppQuickGuideView()
                     }
-                    .listRowSpacing(listStyleChoice == .plain ? 0 : 7) // spazio tra le righe
+                    .listRowSpacing(listStyleChoice == .plain ? 0 : 0) // spazio tra le righe
                     .transaction { $0.animation = nil }
                     .transaction {
                         $0.disablesAnimations = true
@@ -274,7 +274,7 @@ struct TaskListView: View {
                     text: $searchText,
                     placement: .navigationBarDrawer(displayMode: .automatic),
                     prompt: "Search task")
-                        .toolbarBackground(.thinMaterial, for: .navigationBar)
+                        .toolbarBackground(.hidden, for: .navigationBar)
             
                 .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
                 .navigationBarTitleDisplayMode(.inline)
@@ -632,7 +632,8 @@ import SwiftData
 struct TaskRow: View {
     // Riceviamo il task direttamente. SwiftData gestisce la relazione in modo efficiente.
     let task: TodoTask
-
+    let showDateColumn: Bool
+    
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
 
@@ -682,11 +683,22 @@ struct TaskRow: View {
         return d < Date()
     }
 
+    private var isOverdueToday: Bool {
+        guard let d = task.deadLine else { return false }
+        return d < Date() && Calendar.current.isDateInToday(d)
+    }
+
     private var dynamicRowHeight: CGFloat {
-        if showTodayExpiredLabel && !task.isCompleted && (isToday || isOverdue) {
-            return 44
+
+        let hasStatusLabel =
+            showTodayExpiredLabel &&
+            !task.isCompleted &&
+            (isToday || isOverdue)
+
+        if hasStatusLabel {
+            return showDateColumn ? 74 : 80
         } else {
-            return 40
+            return 66
         }
     }
     // --- END PATCH ---
@@ -724,9 +736,8 @@ struct TaskRow: View {
             .contentShape(Rectangle())
             .alignmentGuide(.listRowSeparatorLeading) { d in d[.leading] }
             .frame(height: dynamicRowHeight)
-            .padding(.vertical, 2)
+
             .buttonStyle(.plain)
-            .listRowSeparatorTint(task.status.color.opacity(0.35))
     }
 
     private var rowContent: some View {
@@ -753,9 +764,15 @@ struct TaskRow: View {
             showPriority: showPriority,
             showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
             rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
+            showDateColumn: showDateColumn,
             highlightCriticalOverdue: highlightEnabled,
-            showTodayExpiredLabel: showTodayExpiredLabel && !task.isCompleted
+            showTodayExpiredLabel:
+                showTodayExpiredLabel &&
+                !task.isCompleted &&
+                (isToday || isOverdue)
         )
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.trailing, 14)
     }
 }
 
@@ -917,10 +934,62 @@ struct TodoSectionView: View {
     let tasks: [TodoTask]
     let modelContext: ModelContext
 
+    private var groupedTasksByDay: [(date: Date, tasks: [TodoTask])] {
+
+        let calendar = Calendar.current
+
+        let grouped = Dictionary(grouping: tasks) { task in
+            calendar.startOfDay(for: task.deadLine ?? .distantFuture)
+        }
+
+        return grouped
+            .map { key, value in
+                (
+                    date: key,
+                    tasks: value.sorted {
+                        let lhs = $0.deadLine ?? .distantFuture
+                        let rhs = $1.deadLine ?? .distantFuture
+
+                        if lhs != rhs {
+                            return lhs < rhs
+                        }
+
+                        return $0.id.uuidString < $1.id.uuidString
+                    }
+                )
+            }
+            .sorted { $0.date < $1.date }
+    }
+
+    enum DayRowPosition {
+        case single
+        case first
+        case middle
+        case last
+    }
+
+    private func rowPosition(index: Int, total: Int) -> DayRowPosition {
+
+        if total == 1 {
+            return .single
+        }
+
+        if index == 0 {
+            return .first
+        }
+
+        if index == total - 1 {
+            return .last
+        }
+
+        return .middle
+    }
+
     struct RowCardStyle: ViewModifier {
         @Environment(\.colorScheme) private var colorScheme
         let task: TodoTask
         let style: TaskListStyle
+        let position: DayRowPosition
 
         @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
         @AppStorage("tasklist.highlightEnabled") private var highlightEnabled: Bool = true
@@ -936,8 +1005,13 @@ struct TodoSectionView: View {
                 .padding(.trailing, style == .plain ? 12 : 0)
                 .listRowInsets(
                     style == .cards
-                    ? EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
-                    : EdgeInsets(top: 20, leading: 6, bottom: 20, trailing: 0)
+                    ? EdgeInsets(
+                        top: position == .first || position == .single ? 14 : 1,
+                        leading: 14,
+                        bottom: position == .first ? 6 : (position == .last || position == .single ? 4 : 1),
+                        trailing: 14
+                    )
+                    : EdgeInsets(top: 10, leading: 6, bottom: 10, trailing: 0)
                 )
                 .listRowBackground(cardBackground(for: task))
         }
@@ -947,15 +1021,6 @@ struct TodoSectionView: View {
             let isToday = isTaskToday(task.deadLine)
             let isOverdue = isTaskOverdue(task.deadLine)
             let isCritical = task.priority.systemImage == "flame"
-
-            let strokeColor: Color = {
-                if isOverdue { return .red }
-                if isToday { return .orange }
-                return .secondary
-            }()
-
-            let lineWidth: CGFloat =
-            (isToday || isOverdue) ? 0.4: 0.3
 
             let highlightOverlay: Color? = {
                 guard highlightEnabled, isCritical, (isOverdue || isToday) else {
@@ -979,42 +1044,90 @@ struct TodoSectionView: View {
                         }
                     }
             } else {
+
                 ZStack {
 
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    shape
                         .fill(
-                            LinearGradient(
-                                colors: [
-                                    backColor1.opacity(0.22),
-                                    backColor2.opacity(0.14)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+                            Color.white.opacity(
+                                colorScheme == .dark ? 0.02 : 0.04
                             )
                         )
 
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    shape
                         .fill(
-                            Color.white.opacity(
-                                colorScheme == .dark ? 0.005 : 0.015
-                            )
+                            Color(.systemBackground).opacity(0.3)
                         )
                 }
-                    .overlay(alignment: .leading) {
-                        if let highlightOverlay {
-                            RoundedRectangle(cornerRadius: style == .plain ? 1.3 : 1.3)
-                                .fill(highlightOverlay)
-                                .frame(width: style == .plain ? 1.3 : 1.3,
-                                       height: style == .plain ? 46 : 46)
-                                .frame(maxHeight: .infinity, alignment: .center)
-                                .padding(.leading, style == .plain ? 12 : 11)
-                                .padding(.trailing, 8)
-                        }
+                .overlay(alignment: .leading) {
+
+                    if let highlightOverlay {
+
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(highlightOverlay)
+                            .frame(width: 1.5, height: 38)
+                            .frame(maxHeight: .infinity, alignment: .center)
+                            .padding(.leading, 10)
                     }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .strokeBorder(strokeColor, lineWidth: lineWidth)
-                    )
+                }
+                .overlay(alignment: .bottomLeading) {
+
+                    if position != .last && position != .single {
+
+                        Rectangle()
+                            .fill(
+                                colorScheme == .dark
+                                ? Color.white.opacity(0.14)
+                                : Color.black.opacity(0.10)
+                            )
+                            .frame(height: 0.5)
+                            .padding(.leading, 76)
+                            .padding(.trailing, 24)
+                    }
+                }
+                .shadow(
+                    color: .black.opacity(
+                        colorScheme == .dark ? 0.10 : 0.04
+                    ),
+                    radius: 3,
+                    y: 1
+                )
+            }
+        }
+
+        private var shape: some InsettableShape {
+            switch position {
+            case .single:
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 22,
+                    bottomLeadingRadius: 22,
+                    bottomTrailingRadius: 22,
+                    topTrailingRadius: 22
+                )
+
+            case .first:
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 22,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 22
+                )
+
+            case .middle:
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 0,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 0
+                )
+
+            case .last:
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 0,
+                    bottomLeadingRadius: 22,
+                    bottomTrailingRadius: 22,
+                    topTrailingRadius: 0
+                )
             }
         }
 
@@ -1028,104 +1141,141 @@ struct TodoSectionView: View {
             guard let date else { return false }
             return date < Date()
         }
-
-        private func isTaskOverdueNow(_ date: Date?) -> Bool {
-            guard let date = date else { return false }
-            return date < Date()
-        }
     }
 
     var body: some View {
 
-        Section(String(localized:"To do (\(tasks.count))")) {
+        if listStyleChoice == .cards {
 
+            ForEach(groupedTasksByDay, id: \.date) { group in
 
-            ForEach(tasks, id: \.id) { t in
+                Section {
 
-                TaskRow(task: t)
+                    ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, t in
 
-                    .modifier(RowCardStyle(task: t, style: listStyleChoice))
-
-                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                        Button {
-                            toggleCompleted(t)
-                        } label: {
-                            Label("Completed", systemImage: "checkmark.circle")
-                        }
-                        .tint(.green)
+                        taskRow(
+                            for: t,
+                            position: rowPosition(
+                                index: index,
+                                total: group.tasks.count
+                            )
+                        )
                     }
 
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            if confirmTaskDeletion {
-                                taskPendingDeletion = t
-                            } else {
-                                withAnimation {
-                                    deleteTask(t, in: modelContext)
-                                }
-                                NotificationManager.shared.refresh()
-                            }
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    }
+                } header: {
 
-                    .contextMenu {
-                        Button(role: .destructive) {
-                            if confirmTaskDeletion {
-                                taskPendingDeletion = t
-                            } else {
-                                withAnimation {
-                                    deleteTask(t, in: modelContext)
-                                }
-                            }
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
+                    EmptyView()
+                }
+                .listSectionSeparator(.hidden)
+                .listSectionSpacing(8)
+            }
 
-                        Button {
-                            toggleCompleted(t)
-                        } label: {
-                            Label("Complete", systemImage: "checkmark.circle")
-                        }
+        } else {
 
-                        Menu {
-                            Button {
-                                postpone(t, byHours: 1)
-                            } label: {
-                                Label("+1 hour", systemImage: "clock.badge")
-                            }
+            Section(String(localized:"To do (\(tasks.count))")) {
 
-                            Button {
-                                postpone(t, byHours: 3)
-                            } label: {
-                                Label("+3 hours", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                            }
+                ForEach(tasks, id: \.id) { t in
 
-                            Button {
-                                postpone(t, byDays: 1)
-                            } label: {
-                                Label("+1 day", systemImage: "sun.max")
-                            }
-
-                            Button {
-                                postpone(t, byDays: 2)
-                            } label: {
-                                Label("+2 days", systemImage: "calendar")
-                            }
-
-                            Button {
-                                postpone(t, byDays: 3)
-                            } label: {
-                                Label("+3 days", systemImage: "calendar.badge.clock")
-                            }
-                        } label: {
-                            Label("Reschedule", systemImage: "clock")
-                        }
-                    }
+                    taskRow(for: t, position: .single)
+                }
             }
         }
     }
+    @ViewBuilder
+    private func taskRow(for t: TodoTask, position: DayRowPosition) -> some View {
+
+        TaskRow(
+            task: t,
+            showDateColumn: position == .first || position == .single
+        )
+
+        .modifier(
+            RowCardStyle(
+                task: t,
+                style: listStyleChoice,
+                position: position
+            )
+        )
+
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            Button {
+                toggleCompleted(t)
+            } label: {
+                Label("Completed", systemImage: "checkmark.circle")
+            }
+            .tint(.green)
+        }
+
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                if confirmTaskDeletion {
+                    taskPendingDeletion = t
+                } else {
+                    withAnimation {
+                        deleteTask(t, in: modelContext)
+                    }
+                    NotificationManager.shared.refresh()
+                }
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+
+        .contextMenu {
+            Button(role: .destructive) {
+                if confirmTaskDeletion {
+                    taskPendingDeletion = t
+                } else {
+                    withAnimation {
+                        deleteTask(t, in: modelContext)
+                    }
+                }
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+
+            Button {
+                toggleCompleted(t)
+            } label: {
+                Label("Complete", systemImage: "checkmark.circle")
+            }
+
+            Menu {
+                Button {
+                    postpone(t, byHours: 1)
+                } label: {
+                    Label("+1 hour", systemImage: "clock.badge")
+                }
+
+                Button {
+                    postpone(t, byHours: 3)
+                } label: {
+                    Label("+3 hours", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
+                }
+
+                Button {
+                    postpone(t, byDays: 1)
+                } label: {
+                    Label("+1 day", systemImage: "sun.max")
+                }
+
+                Button {
+                    postpone(t, byDays: 2)
+                } label: {
+                    Label("+2 days", systemImage: "calendar")
+                }
+
+                Button {
+                    postpone(t, byDays: 3)
+                } label: {
+                    Label("+3 days", systemImage: "calendar.badge.clock")
+                }
+            } label: {
+                Label("Reschedule", systemImage: "clock")
+            }
+        }
+    }
+
     @MainActor
     private func postpone(_ task: TodoTask, byHours hours: Int) {
 
@@ -1233,7 +1383,7 @@ struct CompletedSectionView: View {
                 RoundedRectangle(cornerRadius: 0, style: .continuous)
                     .fill(Color.clear)
             } else {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(Color.clear)
                     .overlay(
                         RoundedRectangle(cornerRadius: 26, style: .continuous)
@@ -1249,7 +1399,10 @@ struct CompletedSectionView: View {
 
             ForEach(tasks, id: \.id) { t in
 
-                TaskRow(task: t)
+                TaskRow(
+                    task: t,
+                    showDateColumn: true
+                )
 
                     .modifier(RowCardStyle( task: t, style: listStyleChoice))
 
