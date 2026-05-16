@@ -180,7 +180,9 @@ struct TaskTabView: View {
             .frame(height: 60)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 12)
-            .background(.ultraThinMaterial)
+            .background(
+                Color(uiColor: .systemBackground)
+            )
 //            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
             .clipShape(Capsule())
             .overlay(

@@ -695,6 +695,7 @@ Attivazione: \(triggerInfo)
                 }
 #endif
             }
+            .contentMargins(.bottom, 55, for: .scrollContent)
             .background {
                 ZStack {
                     LinearGradient(

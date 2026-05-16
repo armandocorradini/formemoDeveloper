@@ -153,16 +153,14 @@ struct TaskListAppearanceView: View {
         task.title = String(localized: "Preview")
         task.taskDescription = "Meeting with the medical team"
         task.priority = .critical
-        task.deadLine = Date().addingTimeInterval(120)
+        task.deadLine = Date().addingTimeInterval(-1800)
         task.reminderOffsetMinutes = 60
         task.isCompleted = false
         task.locationName = "Office"
         task.attachments = [TaskAttachment.previewMock]
-
-
+        
         return task
     }
-    
     
     @ViewBuilder
     private var previewRow: some View {
@@ -190,7 +188,7 @@ struct TaskListAppearanceView: View {
         .scrollDisabled(true)
         .contentMargins(.top, 18, for: .scrollContent)
         .contentMargins(.horizontal, 8, for: .scrollContent)
-        .frame(height: 135)
+        .frame(height: 120)
         .modifier(ListStyleModifier(style: listStyleChoice))
     }
     
@@ -273,7 +271,7 @@ struct TaskListAppearanceView: View {
                 .opacity(!highlightEnabled ? 0.4 : 1)
             }
             Toggle(
-                "Show “Today/Overdue”",
+                "Underline overdue tasks",
                 isOn: $showTodayExpiredLabel
             )
             Toggle("Show days badge", isOn: $showBadge)

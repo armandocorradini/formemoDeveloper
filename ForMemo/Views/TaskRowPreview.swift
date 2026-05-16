@@ -20,7 +20,7 @@ struct TaskRowPreview: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @AppStorage("tasklist.showTodayExpiredLabel")
-    private var showTodayExpiredLabel: Bool = true
+    private var highlightOverdueTasks: Bool = true
     
     
     let iconStyle: TaskIconStyle
@@ -53,7 +53,7 @@ struct TaskRowPreview: View {
             hasLocation: showLocation,
             badgeText: "3",
             prioritySystemImage: showPriority ? "flame" : nil,
-            deadLine: .now.addingTimeInterval(60 * 60),
+            deadLine: .now.addingTimeInterval(-1800),
             reminderOffsetMinutes: 60,
             shouldShowBadge: shouldDisplayBadge,
             isCompleted: false,
@@ -77,7 +77,7 @@ struct TaskRowPreview: View {
                     rowStyle: rowStyle,
                     showDateColumn: true,
                     highlightCriticalOverdue: highlightEnabled,
-                    showTodayExpiredLabel: showTodayExpiredLabel
+                    showTodayExpiredLabel: highlightOverdueTasks
                 )
                 .listRowSeparator(.hidden)
                 .listRowInsets(rowInsets)              // ✅ fondamentale
@@ -96,7 +96,11 @@ private extension TaskRowPreview {
     var rowInsets: EdgeInsets {
         switch listStyleChoice {
         case .cards:
+            return EdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14)
+
+        case .grouped:
             return EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8)
+
         case .plain:
             return EdgeInsets(top: 4, leading: 2, bottom: 4, trailing: 2)
         }
@@ -105,9 +109,9 @@ private extension TaskRowPreview {
     @ViewBuilder
     var rowBackground: some View {
         switch listStyleChoice {
-        case .cards:
+        case .cards, .grouped:
             let deadline = model.deadLine ?? .distantFuture
-            let isToday = Calendar.current.isDateInToday(deadline) && deadline >= Date()
+            let isToday = Calendar.current.isDateInToday(deadline)
             let isOverdue = deadline < Date()
             let isCritical = model.prioritySystemImage == "flame"
 
@@ -138,7 +142,11 @@ private extension View {
     func TaskListStyle(_ style: TaskListStyle) -> some View {
         switch style {
         case .cards:
+            self.listStyle(.plain)
+
+        case .grouped:
             self.listStyle(.insetGrouped)
+
         case .plain:
             self.listStyle(.plain)
         }

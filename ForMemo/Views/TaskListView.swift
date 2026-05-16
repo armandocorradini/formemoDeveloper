@@ -36,6 +36,8 @@ struct TaskListView: View {
     @State private var showNewTask = false
     @State private var showQuickGuide = false
 
+
+
     @State private var selectedTagFilter: TaskMainTag? = nil
     @State private var selectedPriorityFilter: TaskPriority? = nil
     @State private var selectedPeriodFilter: TaskPeriodFilter? = nil
@@ -194,6 +196,8 @@ struct TaskListView: View {
                 todoQuery.isEmpty &&
                 completedQuery.isEmpty &&
                 !showNewTask
+
+            // Removed shouldShowWelcome and shouldShowLoadingState
             
                 listWithStyle {
 
@@ -254,16 +258,17 @@ struct TaskListView: View {
                     } message: {
                         Text("This action cannot be undone.")
                     }
-                    .contentMargins(.horizontal, listStyleChoice == .plain ? 0 : 10, for: .scrollContent)
+                    .contentMargins(
+                        .horizontal,
+                        listStyleChoice == .plain ? 0 : 14,
+                        for: .scrollContent
+                    )
 
                     .fullScreenCover(isPresented: $showQuickGuide) {
                         AppQuickGuideView()
                     }
                     .listRowSpacing(listStyleChoice == .plain ? 0 : 0) // spazio tra le righe
                     .transaction { $0.animation = nil }
-                    .transaction {
-                        $0.disablesAnimations = true
-                    }
                 }
                 .navigationDestination(for: TodoTask.self) { task in
                     TaskDetailView(task: task)
@@ -517,11 +522,11 @@ struct TaskListView: View {
         case .plain:
             content().listStyle(.plain)
         case .cards:
+            content().listStyle(.plain)
+        case .grouped:
             content().listStyle(.insetGrouped)
         }
     }
-
-
 }
 
 
@@ -620,6 +625,7 @@ struct EmptySectionView: View {
     }
 }
 
+
 import SwiftUI
 import SwiftData
 
@@ -668,9 +674,7 @@ struct TaskRow: View {
 
     private var isToday: Bool {
         guard let d = task.deadLine else { return false }
-        let startOfToday = Calendar.current.startOfDay(for: now)
-
-        return d >= startOfToday && d >= now
+        return Calendar.current.isDateInToday(d)
     }
 
     private var isOverdue: Bool {
@@ -684,17 +688,7 @@ struct TaskRow: View {
     }
 
     private var dynamicRowHeight: CGFloat {
-
-        let hasStatusLabel =
-            showTodayExpiredLabel &&
-            !task.isCompleted &&
-            (isToday || isOverdue)
-
-        if hasStatusLabel {
-            return showDateColumn ? 74 : 80
-        } else {
-            return 66
-        }
+        74
     }
     // --- END PATCH ---
 
@@ -761,13 +755,10 @@ struct TaskRow: View {
             rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
             showDateColumn: showDateColumn,
             highlightCriticalOverdue: highlightEnabled,
-            showTodayExpiredLabel:
-                showTodayExpiredLabel &&
-                !task.isCompleted &&
-                (isToday || isOverdue)
+            showTodayExpiredLabel: showTodayExpiredLabel
         )
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.trailing, 14)
+        .padding(.trailing, rowStyleToUse == 0 ? 14 : 10)
     }
 }
 
@@ -896,17 +887,28 @@ enum TaskPeriodFilter: String, CaseIterable, Identifiable {
 
 // MARK: - List Style Enum
 enum TaskListStyle: String, CaseIterable {
-    case plain, cards
+    case plain
+    case cards
+    case grouped
+    
     var localizedName: LocalizedStringKey {
         switch self {
-        case .plain: return "Plain"
-        case .cards: return "Inset Grouped"
+        case .plain:
+            return "Plain"
+        case .cards:
+            return "Cards"
+        case .grouped:
+            return "Grouped"
         }
     }
     var iconName: String {
         switch self {
-        case .plain: return "list.bullet"
-        case .cards: return "rectangle.grid.1x3"
+        case .plain:
+            return "list.bullet"
+        case .cards:
+            return "square.on.square"
+        case .grouped:
+            return "rectangle.grid.1x3"
         }
     }
 }
@@ -989,7 +991,6 @@ struct TodoSectionView: View {
         @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
         @AppStorage("tasklist.highlightEnabled") private var highlightEnabled: Bool = true
         @AppStorage("tasklist.highlightColor")  private var highlightColorHex: String = Color.red.toHex() ?? ""
-        private let now = Date()
 
         private var highlightColor: Color {
             Color(hex: highlightColorHex) ?? .red
@@ -1000,14 +1001,26 @@ struct TodoSectionView: View {
                 .padding(.leading, style == .plain ? 16 : 10) // reduced spacing from highlight bar
                 .padding(.trailing, style == .plain ? 12 : 0)
                 .listRowInsets(
-                    style == .cards
+                    style == .grouped
                     ? EdgeInsets(
-                        top: position == .first || position == .single ? 14 : 1,
+                        top: 1,
                         leading: 14,
-                        bottom: position == .first ? 6 : (position == .last || position == .single ? 4 : 1),
+                        bottom: position == .last || position == .single ? 4 : 1,
                         trailing: 14
                     )
-                    : EdgeInsets(top: 10, leading: 6, bottom: 10, trailing: 0)
+                    : style == .cards
+                    ? EdgeInsets(
+                        top: 14,
+                        leading: 14,
+                        bottom: 14,
+                        trailing: 14
+                    )
+                    : EdgeInsets(
+                        top: 10,
+                        leading: 6,
+                        bottom: 10,
+                        trailing: 0
+                    )
                 )
                 .listRowBackground(cardBackground(for: task))
         }
@@ -1026,34 +1039,76 @@ struct TodoSectionView: View {
             }()
 
             if style == .plain {
-                RoundedRectangle(cornerRadius: 0, style: .continuous)
-                    .fill(Color.clear)
-                    .overlay(alignment: .leading) {
-                        if let highlightOverlay {
-                            RoundedRectangle(cornerRadius: style == .plain ? 1.3 : 1.3)
-                                .fill(highlightOverlay)
-                                .frame(width: style == .plain ? 1.3 : 1.3,
-                                       height: style == .plain ? 50 : 50)
-                                .frame(maxHeight: .infinity, alignment: .center)
-                                .padding(.leading, style == .plain ? 12 : 8)
-                                .padding(.trailing,8)
-                        }
+
+                ZStack {
+
+                    // PATCH: Replace first background layer with conditional isToday opacity
+                    RoundedRectangle(cornerRadius: 0, style: .continuous)
+                        .fill(
+                            isToday
+                            ? Color.white.opacity(
+                                colorScheme == .dark ? 0.02 : 0.04
+                            )
+                            : Color.clear
+                        )
+
+                    RoundedRectangle(cornerRadius: 0, style: .continuous)
+                        .fill(
+                            isToday
+                            ? Color(.systemBackground).opacity(0.5)
+                            : Color.clear
+                        )
+                }
+                .overlay(alignment: .leading) {
+                    if let highlightOverlay {
+                        RoundedRectangle(cornerRadius: 1.3)
+                            .fill(highlightOverlay)
+                            .frame(width: 1.3, height: 50)
+                            .frame(maxHeight: .infinity, alignment: .center)
+                            .padding(.leading, 12)
+                            .padding(.trailing, 8)
                     }
+                }
+                // PATCH: Add bottom separator overlay for plain style
+                .overlay(alignment: .bottomLeading) {
+                    Rectangle()
+                        .fill(
+                            colorScheme == .dark
+                            ? Color.white.opacity(0.10)
+                            : Color.black.opacity(0.06)
+                        )
+                        .frame(height: 0.5)
+                        .padding(.leading, 76)
+                }
+                // PATCH: Add subtle shadow for plain style
+                .shadow(
+                    color: .black.opacity(
+                        colorScheme == .dark ? 0.06 : 0.03
+                    ),
+                    radius: 1,
+                    y: 0
+                )
             } else {
 
                 ZStack {
 
-                    shape
-                        .fill(
-                            Color.white.opacity(
-                                colorScheme == .dark ? 0.02 : 0.04
-                            )
+                    (style == .cards
+                     ? AnyShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                     : AnyShape(shape))
+                    .fill(
+                        Color.white.opacity(
+                            colorScheme == .dark ? 0.02 : 0.04
                         )
+                    )
 
-                    shape
-                        .fill(
-                            Color(.systemBackground).opacity(0.3)
+                    (style == .cards
+                     ? AnyShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                     : AnyShape(shape))
+                    .fill(
+                        Color(.systemBackground).opacity(
+                            isToday ? 0.5 : 0.3
                         )
+                    )
                 }
                 .overlay(alignment: .leading) {
 
@@ -1068,7 +1123,9 @@ struct TodoSectionView: View {
                 }
                 .overlay(alignment: .bottomLeading) {
 
-                    if position != .last && position != .single {
+                    if style == .grouped &&
+                        position != .last &&
+                        position != .single {
 
                         Rectangle()
                             .fill(
@@ -1083,13 +1140,31 @@ struct TodoSectionView: View {
                 }
                 .shadow(
                     color: .black.opacity(
-                        colorScheme == .dark ? 0.10 : 0.04
+                        style == .cards
+                        ? (colorScheme == .dark ? 0.16 : 0.08)
+                        : (colorScheme == .dark ? 0.10 : 0.04)
                     ),
-                    radius: 3,
-                    y: 1
+                    radius: style == .cards ? 8 : 1,
+                    y: style == .cards ? 3 : 0
                 )
             }
         }
+        
+        private struct AnyShape: Shape, @unchecked Sendable {
+
+            private let pathBuilder: (CGRect) -> Path
+
+            init<S: Shape>(_ shape: S) {
+                self.pathBuilder = { rect in
+                    shape.path(in: rect)
+                }
+            }
+
+            func path(in rect: CGRect) -> Path {
+                pathBuilder(rect)
+            }
+        }
+        
 
         private var shape: some InsettableShape {
             switch position {
@@ -1129,18 +1204,18 @@ struct TodoSectionView: View {
 
         private func isTaskToday(_ date: Date?) -> Bool {
             guard let date else { return false }
-            return Calendar.current.isDateInToday(date) && date >= now
+            return Calendar.current.isDateInToday(date)
         }
 
         private func isTaskOverdue(_ date: Date?) -> Bool {
             guard let date else { return false }
-            return date < now
+            return date < Date()
         }
     }
 
     var body: some View {
 
-        if listStyleChoice == .cards {
+        if listStyleChoice == .grouped || listStyleChoice == .cards {
 
             ForEach(groupedTasksByDay, id: \.date) { group in
 
@@ -1181,7 +1256,14 @@ struct TodoSectionView: View {
 
         TaskRow(
             task: t,
-            showDateColumn: position == .first || position == .single
+            showDateColumn:
+                listStyleChoice == .cards
+                ? true
+                : (
+                    t.deadLine == nil
+                    ? (position == .first || position == .single)
+                    : (position == .first || position == .single)
+                )
         )
 
         .modifier(
@@ -1194,7 +1276,9 @@ struct TodoSectionView: View {
 
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             Button {
-                toggleCompleted(t)
+                withAnimation(.easeOut(duration: 0.12)) {
+                    toggleCompleted(t)
+                }
             } label: {
                 Label("Completed", systemImage: "checkmark.circle")
             }
@@ -1206,7 +1290,7 @@ struct TodoSectionView: View {
                 if confirmTaskDeletion {
                     taskPendingDeletion = t
                 } else {
-                    withAnimation {
+                    withAnimation(.easeOut(duration: 0.12)) {
                         deleteTask(t, in: modelContext)
                     }
                     NotificationManager.shared.refresh()
@@ -1358,32 +1442,106 @@ struct CompletedSectionView: View {
     struct RowCardStyle: ViewModifier {
         let task: TodoTask
         let style: TaskListStyle
+        let position: TodoSectionView.DayRowPosition
 
         func body(content: Content) -> some View {
             content
                 .padding(.leading, style == .plain ? 16 : 10)
                 .padding(.trailing, style == .plain ? 12 : 0)
                 .listRowInsets(
-                    style == .cards
-                    ? EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
+                    style == .grouped
+                    ? EdgeInsets(
+                        top: 1,
+                        leading: 14,
+                        bottom: position == .last || position == .single ? 4 : 1,
+                        trailing: 14
+                    )
                     : EdgeInsets(top: 20, leading: 6, bottom: 20, trailing: 0)
                 )
-                .listRowBackground(cardBackground(for: task))
+                .listRowBackground(cardBackground())
         }
 
         @ViewBuilder
-        private func cardBackground(for task: TodoTask) -> some View {
+        private func cardBackground() -> some View {
 
             if style == .plain {
+
                 RoundedRectangle(cornerRadius: 0, style: .continuous)
                     .fill(Color.clear)
+
             } else {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(Color.clear)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 26, style: .continuous)
-                            .strokeBorder(.secondary.opacity(0.3), lineWidth: 0.3)
-                    )
+
+                ZStack {
+
+                    (style == .cards
+                     ? AnyShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                     : AnyShape(shape))
+                    .fill(Color(.systemBackground).opacity(0.3))
+                }
+                .overlay(alignment: .bottomLeading) {
+
+                    if style == .grouped &&
+                        position != .last &&
+                        position != .single {
+
+                        Rectangle()
+                            .fill(Color.secondary.opacity(0.18))
+                            .frame(height: 0.5)
+                            .padding(.leading, 76)
+                            .padding(.trailing, 24)
+                    }
+                }
+            }
+        }
+
+        private struct AnyShape: Shape, @unchecked Sendable {
+
+            private let pathBuilder: (CGRect) -> Path
+
+            init<S: Shape>(_ shape: S) {
+                self.pathBuilder = { rect in
+                    shape.path(in: rect)
+                }
+            }
+
+            func path(in rect: CGRect) -> Path {
+                pathBuilder(rect)
+            }
+        }
+
+        private var shape: some InsettableShape {
+            switch position {
+            case .single:
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 22,
+                    bottomLeadingRadius: 22,
+                    bottomTrailingRadius: 22,
+                    topTrailingRadius: 22
+                )
+
+            case .first:
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 22,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 22
+                )
+
+            case .middle:
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 0,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0,
+                    topTrailingRadius: 0
+                )
+
+            case .last:
+                UnevenRoundedRectangle(
+                    topLeadingRadius: 0,
+                    bottomLeadingRadius: 22,
+                    bottomTrailingRadius: 22,
+                    topTrailingRadius: 0
+                )
             }
         }
     }
@@ -1391,19 +1549,36 @@ struct CompletedSectionView: View {
 
         Section(String(localized:"Completed (\(tasks.count))")) {
 
-
-            ForEach(tasks, id: \.id) { t in
+            ForEach(Array(tasks.enumerated()), id: \.element.id) { index, t in
 
                 TaskRow(
                     task: t,
                     showDateColumn: true
                 )
 
-                    .modifier(RowCardStyle( task: t, style: listStyleChoice))
+                    .modifier(
+                        RowCardStyle(
+                            task: t,
+                            style: listStyleChoice,
+                            position: {
+                                if tasks.count == 1 {
+                                    return .single
+                                } else if index == 0 {
+                                    return .first
+                                } else if index == tasks.count - 1 {
+                                    return .last
+                                } else {
+                                    return .middle
+                                }
+                            }()
+                        )
+                    )
 
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
-                            toggleCompleted(t)
+                            withAnimation(.easeOut(duration: 0.12)) {
+                                toggleCompleted(t)
+                            }
                         } label: {
                             Label("To do", systemImage: "arrow.uturn.left")
                         }
@@ -1417,7 +1592,7 @@ struct CompletedSectionView: View {
                                 taskPendingDeletion = t
                             } else {
 
-                                withAnimation {
+                                withAnimation(.easeOut(duration: 0.12)) {
                                     deleteTask(t, in: modelContext)
                                 }
                                 NotificationManager.shared.refresh()

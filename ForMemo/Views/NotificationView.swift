@@ -211,6 +211,7 @@ struct NotificationView: View {
 
                             }
                         }
+                        .contentMargins(.bottom, 55, for: .scrollContent)
                         .scrollContentBackground(.hidden)
                         .background(Color.clear)
                     }

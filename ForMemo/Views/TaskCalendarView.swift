@@ -762,6 +762,9 @@ private struct DayCell: View {
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
 
+    @AppStorage("tasklist.showTodayExpiredLabel")
+    private var showTodayExpiredLabel: Bool = true
+
     private func iconColor(for task: TodoTask) -> Color {
         if iconStyle == .monochrome {
             return .primary
@@ -874,10 +877,15 @@ private struct DayCell: View {
                             Text(task.title)
                                 .font(.system(size: 5, weight: .medium))
                                 .lineLimit(2)
-                                .foregroundStyle(
-                                    isOverdue(task) ? .red :
-                                        (task.isCompleted ? .secondary : .primary)
-                                )
+                                .foregroundStyle(task.isCompleted ? .secondary : .primary)
+                                .overlay(alignment: .bottomLeading) {
+                                    if showTodayExpiredLabel && isOverdue(task) {
+                                        Rectangle()
+                                            .fill(Color.red.opacity(0.75))
+                                            .frame(height: 0.8)
+                                            .offset(y: 1.5)
+                                    }
+                                }
                                 .strikethrough(task.isCompleted, color: .secondary)
 
                             if task.recurrenceRule != nil {
@@ -917,6 +925,9 @@ private struct DayTasksInlineView: View {
 
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
+
+    @AppStorage("tasklist.showTodayExpiredLabel")
+    private var showTodayExpiredLabel: Bool = true
 
     // New AppStorage properties for highlight
     @AppStorage("tasklist.highlightEnabled")
@@ -1073,11 +1084,16 @@ private struct DayTasksInlineView: View {
                                 HStack(spacing: 6) {
                                     Text(task.title)
                                         .font(.callout)
+                                        .foregroundStyle(task.isCompleted ? .secondary : .primary)
+                                        .overlay(alignment: .bottomLeading) {
+                                            if showTodayExpiredLabel && isOverdue(task) {
+                                                Rectangle()
+                                                    .fill(Color.red.opacity(0.75))
+                                                    .frame(height: 1)
+                                                    .offset(y: 2)
+                                            }
+                                        }
                                         .strikethrough(task.isCompleted)
-                                        .foregroundStyle(
-                                            isOverdue(task) ? .red :
-                                                (task.isCompleted ? .secondary : .primary)
-                                        )
 
                                     if task.recurrenceRule != nil {
                                         Image(systemName: "arrow.triangle.2.circlepath")

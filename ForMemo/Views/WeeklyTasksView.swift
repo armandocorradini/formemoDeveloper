@@ -204,6 +204,7 @@ struct WeeklyTasksView: View {
                         }
                     }
             }
+            .contentMargins(.bottom, 55, for: .scrollContent)
             .background(Color.clear)
             .listRowBackground(Color.clear)
             .listStyle(.plain)
@@ -536,7 +537,11 @@ private struct WeeklyTaskRow: View {
                 
                 Text(date, format: .dateTime.day())
                     .font(.title3.weight(.bold))
-                    .foregroundStyle(task.status.color)
+                    .foregroundStyle(
+                        Calendar.current.isDateInToday(date)
+                        ? .orange
+                        : .primary
+                    )
                 
             } else {
                 
@@ -554,21 +559,6 @@ private struct WeeklyTaskRow: View {
         
         VStack(alignment: .leading, spacing: 6) {
             
-            if showTodayExpiredLabel && !task.isCompleted {
-
-                if isOverdue {
-
-                    Text(String(localized:"Overdue"))
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.red)
-
-                } else if isToday && taskWeekDays != 1 {
-
-                    Text(String(localized:"Today"))
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.orange)
-                }
-            }
 
             HStack(spacing: 6) {
                 
@@ -580,6 +570,15 @@ private struct WeeklyTaskRow: View {
                 
                 Text(task.title)
                     .font(.headline)
+                    .foregroundStyle(.primary)
+                    .overlay(alignment: .bottomLeading) {
+                        if showTodayExpiredLabel && isOverdue {
+                            Rectangle()
+                                .fill(Color.red.opacity(0.75))
+                                .frame(height: 1)
+                                .offset(y: 2)
+                        }
+                    }
                     .lineLimit(1)
                 
                 if task.recurrenceRule != nil {
@@ -650,7 +649,7 @@ private struct WeeklyTaskRow: View {
         let deadline = task.deadLine ?? .distantFuture
 
         let isCritical = task.priority.systemImage == "flame"
-        let isToday = Calendar.current.isDateInToday(deadline) && deadline >= Date()
+        let isToday = Calendar.current.isDateInToday(deadline)
         let isOverdue = deadline < Date()
         let shouldHighlight = highlightEnabled && isCritical && (isToday || isOverdue)
 
@@ -662,7 +661,9 @@ private struct WeeklyTaskRow: View {
 
             shape
                 .fill(
-                    Color(.systemBackground).opacity(0.3)
+                    Color(.systemBackground).opacity(
+                        isToday ? 0.5 : 0.3
+                    )
                 )
         }
         .overlay(alignment: .leading) {

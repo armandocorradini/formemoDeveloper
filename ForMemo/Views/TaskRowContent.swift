@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 
 // MARK: - STYLE ENUM
@@ -44,8 +42,7 @@ struct TaskRowContent: View, TaskRowBaseLogic {
 
     private var isToday: Bool {
         guard let d = model.deadLine else { return false }
-        let now = Date()
-        return Calendar.current.isDateInToday(d) && d >= now
+        return Calendar.current.isDateInToday(d)
     }
 
     private var isOverdue: Bool {
@@ -68,17 +65,7 @@ struct TaskRowContent: View, TaskRowBaseLogic {
 
     @ViewBuilder
     private func todayExpiredLabel() -> some View {
-        if showTodayExpiredLabel {
-            if isToday {
-                Text("Today")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.orange)
-            } else if isOverdue {
-                Text("Overdue")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.red)
-            }
-        }
+        EmptyView()
     }
 
     var body: some View {
@@ -170,97 +157,6 @@ extension TaskRowContent {
 //        case .style10: layoutStyle10()
         }
     }
-//    private func layoutStyle10() -> some View {
-//        HStack(spacing: 14) {
-//
-//            // 📅 COLONNA DATA (sinistra)
-//            if showDateColumn {
-//
-//                Group {
-//
-//                    if let d = model.deadLine {
-//
-//                        VStack(spacing: 0) {
-//
-//                            Text(d, format: .dateTime.weekday(.abbreviated))
-//                                .font(.system(size: 10, weight: .semibold))
-//                                .textCase(.uppercase)
-//
-//                            Text(d, format: .dateTime.day())
-//                                .font(.system(size: 22, weight: .bold, design: .rounded))
-//                                .foregroundStyle(model.statusColor)
-//
-//                            Text(d, format: .dateTime.month(.abbreviated))
-//                                .font(.system(size: 11, weight: .medium))
-//                                .textCase(.uppercase)
-//                        }
-//
-//                    } else {
-//
-//                        Image(systemName: "clock.badge.questionmark")
-//                            .font(.system(size: 24, weight: .regular))
-//                            .foregroundStyle(.primary)
-//                            .frame(width: 52, height: 44, alignment: .leading)
-//                    }
-//                }
-//                .frame(width: 52, alignment: .leading)
-//                .pulseEffect(active: isUrgent(model: model))
-//            }
-//            // ICONA (sinistra)
-//            icon
-//                .scaleEffect(0.9)
-//                .frame(minWidth: 40)
-//                .offset(x: -4)
-//
-//            // CONTENUTO (titolo + meta)
-//            VStack(alignment: .leading, spacing: 4) {
-//
-//                // TITOLO
-//                todayExpiredLabel()
-//                HStack(spacing: 6) {
-//                    Text(model.title)
-//                        .font(.headline)
-//                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
-//                        .strikethrough(model.isCompleted)
-//                        .lineLimit(1)
-//
-//                    if model.recurrenceRule != nil {
-//                        HStack(spacing: 3) {
-//                            Image(systemName: "arrow.triangle.2.circlepath")
-//                                .font(.caption)
-//                                .foregroundStyle(.blue)
-//                            if let recurringFutureYearText {
-//                                Text(recurringFutureYearText)
-//                                    .font(.system(size: 9, weight: .semibold))
-//                                    .foregroundStyle(.secondary)
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                // META (remind + flags)
-//                HStack(spacing: 8) {
-//
-//                    if model.reminderOffsetMinutes != nil {
-//                        HStack(spacing: 4) {
-//                            Image(systemName: "bell")
-//                            Text(formattedOffset(model: model))
-//                        }
-//                    }
-//
-//                    Spacer()
-//
-//                    flags(vertical: false)
-//                }
-//                .font(.caption2)
-//                .foregroundStyle(.primary).opacity(0.7)
-//            }
-//
-//            Spacer()
-//        }
-//        .padding(.vertical, 6)
-//        .padding(.leading, 8)
-//    }
 }
 
 // MARK: - BASE COMPONENTS
@@ -326,7 +222,9 @@ extension TaskRowContent {
                             ? .headline
                             : .system(size: 22, weight: .bold, design: .rounded)
                         )
-                        .foregroundStyle(model.statusColor)
+                        .foregroundStyle(
+                            isToday ? Color.orange : .primary
+                        )
                         .opacity(showDateColumn ? 1 : 0)
 
                     Text(d, format: .dateTime.month(.abbreviated))
@@ -347,17 +245,11 @@ extension TaskRowContent {
                     }
                 }
                 .frame(width: 52, height: 44, alignment: .leading)
-                .shadow(
-                    color: .primary.opacity(0.6),
-                    radius: 0.5,
-                    x: 0.5,
-                    y: 0.5
-                )
-                .pulseEffect(active: isUrgent(model: model))
             } else {
-                Image(systemName: "questionmark.square")
+                Image(systemName: "clock.badge.questionmark")
                     .font(.system(size: 26, weight: .light))
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(.primary)
+                    .opacity(showDateColumn ? 1 : 0)
             }
         }
     }
@@ -384,8 +276,20 @@ extension TaskRowContent {
                     Text(model.title)
                         .font(.headline)
                         .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if showTodayExpiredLabel,
+                               !model.isCompleted,
+                               let deadline = model.deadLine,
+                               deadline < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
                         .strikethrough(model.isCompleted)
-                        .lineLimit(1)
+                 
 
                     if model.recurrenceRule != nil {
                         Image(systemName: "arrow.triangle.2.circlepath")
@@ -419,7 +323,7 @@ extension TaskRowContent {
     }
     
     private func layoutStyle1() -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: -4) {
             
             timeColumn(style: 1)
             
@@ -429,6 +333,19 @@ extension TaskRowContent {
                 HStack(spacing: 6) {
                     Text(model.title)
                         .font(.headline)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if showTodayExpiredLabel,
+                               !model.isCompleted,
+                               let deadline = model.deadLine,
+                               deadline < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
                         .strikethrough(model.isCompleted)
                     
                     if model.recurrenceRule != nil {
@@ -461,7 +378,7 @@ extension TaskRowContent {
             icon.scaleEffect(0.72)
         }
         .padding(1)
-        .padding(.leading, 8)
+        .padding(.leading, 2)
     }
     
     private func layoutStyle2() -> some View {
@@ -476,6 +393,19 @@ extension TaskRowContent {
                 HStack(spacing: 6) {
                     Text(model.title)
                         .font(.headline)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if showTodayExpiredLabel,
+                               !model.isCompleted,
+                               let deadline = model.deadLine,
+                               deadline < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
                         .strikethrough(model.isCompleted)
 
                     if model.recurrenceRule != nil {
@@ -505,7 +435,9 @@ extension TaskRowContent {
                 .font(.caption2)
                 .foregroundStyle(.primary).opacity(0.7)
             }
-            icon.scaleEffect(0.85)
+            icon
+                .scaleEffect(0.85)
+                .padding(.leading, 4)
         }
     }
     
@@ -523,8 +455,21 @@ extension TaskRowContent {
                 HStack(spacing: 6) {
                     Text(model.title)
                         .font(.headline)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if showTodayExpiredLabel,
+                               !model.isCompleted,
+                               let deadline = model.deadLine,
+                               deadline < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
                         .strikethrough(model.isCompleted)
-                        .lineLimit(1)
+                 
 
                     if model.recurrenceRule != nil {
                         HStack(spacing: 3) {
@@ -567,6 +512,19 @@ extension TaskRowContent {
                 HStack(spacing: 6) {
                     Text(model.title)
                         .font(.headline)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if showTodayExpiredLabel,
+                               !model.isCompleted,
+                               let deadline = model.deadLine,
+                               deadline < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
                         .strikethrough(model.isCompleted)
                     
                     if model.recurrenceRule != nil {
@@ -582,7 +540,7 @@ extension TaskRowContent {
                         }
                     }
                 }
-                    .lineLimit(1)
+
                 
                 if model.reminderOffsetMinutes != nil {
                     HStack {
@@ -609,11 +567,25 @@ extension TaskRowContent {
                 .frame(width: 52, alignment: .leading)
             
             icon
+                .padding(.trailing, 6)
             
             VStack(alignment: .leading) {
                 todayExpiredLabel()
                 HStack(spacing: 6) {
                     Text(model.title)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if showTodayExpiredLabel,
+                               !model.isCompleted,
+                               let deadline = model.deadLine,
+                               deadline < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
                         .font(.headline)
                         .strikethrough(model.isCompleted)
                     
@@ -662,6 +634,19 @@ extension TaskRowContent {
 
                 HStack(spacing: 6) {
                     Text(model.title)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if showTodayExpiredLabel,
+                               !model.isCompleted,
+                               let deadline = model.deadLine,
+                               deadline < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
                         .font(.headline)
                         .strikethrough(model.isCompleted)
 
@@ -680,7 +665,7 @@ extension TaskRowContent {
     }
     
     private func layoutStyle7() -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: -2) {
 
             timeColumn(style: 7)
                 .frame(width: 52, alignment: .leading)
@@ -695,6 +680,19 @@ extension TaskRowContent {
 
                 HStack(spacing: 6) {
                     Text(model.title)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if showTodayExpiredLabel,
+                               !model.isCompleted,
+                               let deadline = model.deadLine,
+                               deadline < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
                         .strikethrough(model.isCompleted)
 
                     if model.recurrenceRule != nil {
@@ -735,6 +733,19 @@ extension TaskRowContent {
                 HStack(spacing: 6) {
                     Text(model.title)
                         .font(.headline)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if showTodayExpiredLabel,
+                               !model.isCompleted,
+                               let deadline = model.deadLine,
+                               deadline < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
                         .strikethrough(model.isCompleted)
 
                     if model.recurrenceRule != nil {
@@ -773,7 +784,9 @@ extension TaskRowContent {
 
                         Text(d, format: .dateTime.day())
                             .font(.system(size: 22, weight: .bold, design: .rounded))
-                            .foregroundStyle(model.statusColor)
+                            .foregroundStyle(
+                                isToday ? Color.orange : .primary
+                            )
                             .opacity(showDateColumn ? 1 : 0)
 
                         Text(d, format: .dateTime.month(.abbreviated))
@@ -784,7 +797,7 @@ extension TaskRowContent {
                 } else {
                     Image(systemName: "clock.badge.questionmark")
                         .font(.system(size: 24, weight: .regular))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
                         .opacity(showDateColumn ? 1 : 0)
                 }
             }
@@ -817,8 +830,20 @@ extension TaskRowContent {
                         Text(model.title)
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                            .overlay(alignment: .bottomLeading) {
+                                if showTodayExpiredLabel,
+                                   !model.isCompleted,
+                                   let deadline = model.deadLine,
+                                   deadline < Date() {
+
+                                    Rectangle()
+                                        .fill(Color.red.opacity(0.75))
+                                        .frame(height: 1)
+                                        .offset(y: 2)
+                                }
+                            }
                             .strikethrough(model.isCompleted)
-                            .lineLimit(2)
+                   
                             .tracking(-0.2)
 
                         if model.recurrenceRule != nil {
@@ -884,12 +909,6 @@ extension TaskRowContent {
 
             Spacer(minLength: 0)
         }
-        .padding(.top, 10)
-        .padding(
-            .bottom,
-            showTodayExpiredLabel && (isToday || isOverdue)
-            ? 14
-            : 10
-        )
+        .padding(.vertical, 8)
     }
 }
