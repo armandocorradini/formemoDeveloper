@@ -1,3 +1,4 @@
+
 import SwiftUI
 import SwiftData
 
@@ -25,14 +26,6 @@ struct TaskTabView: View {
     @AppStorage("startupTab")
     private var startupTab: Int = 1
     
-    private var isMac: Bool {
-#if targetEnvironment(macCatalyst)
-        return true
-#else
-        return false
-#endif
-    }
-    
     private var safeAreaBottom: CGFloat {
         UIApplication.shared.connectedScenes
             .compactMap { ($0 as? UIWindowScene)?.keyWindow }
@@ -43,15 +36,7 @@ struct TaskTabView: View {
     
     var body: some View {
         
-        Group {
-            if isMac {
-                macLayout
-            } else if sizeClass == .regular {
-                iPadLayout
-            } else {
-                iPhoneLayout
-            }
-        }
+        rootLayout
         .onAppear {
             // Start from Home immediately
             selectedTab = 0
@@ -87,82 +72,21 @@ struct TaskTabView: View {
         }
     }
     
-    
-    // MARK: - macLayout Layout (UNCHANGED)
-    
-    private var macLayout: some View {
-        
-        NavigationSplitView {
-            
-            List(selection: Binding<Int?>(
-                get: { selectedTab },
-                set: { if let value = $0 { selectedTab = value } }
-            )) {
-                
-                Label(NSLocalizedString("home", comment: ""), systemImage: "house").tag(0)
-                Label(NSLocalizedString("list_tab", comment: ""), systemImage: "checklist").tag(1)
-                Label(NSLocalizedString("map_tab", comment: ""), systemImage: "map").tag(5)
-                Label(
-                    taskWeekDays == 1
-                    ? String(localized: "today_tab")
-                    : String(localized: "\(taskWeekDays) days_tab"),
-                    systemImage: "calendar.day.timeline.right"
-                ).tag(4)
-                Label(NSLocalizedString("calendar_tab", comment: ""), systemImage: "calendar").tag(3)
-                Label(NSLocalizedString("settings_tab", comment: ""), systemImage: "gear").tag(2)
-            }
-            .listStyle(.sidebar)
-            .navigationTitle("Tasks")
-            
-            
-        } detail: {
-            
-            switch selectedTab {
-            case 0:
-                HomeView()
-            case 1:
-                TaskListView()
-            case 5:
-                TaskMapView(mapPath: $mapPath)
-            case 4:
-                WeeklyTasksView()
-            case 3:
-                TaskCalendarView()
-            case 2:
-                SettingsView()
-            default:
-                HomeView()
-            }
-            
+    @ViewBuilder
+    private var rootLayout: some View {
+
+        if sizeClass == .regular {
+            iPadLayout
+        } else {
+            iPhoneLayout
         }
-        
     }
-    
     
     // MARK: - iPhone Layout
     
     private var iPhoneLayout: some View {
         ZStack {
-            switch selectedTab {
-            case 0:
-                NavigationStack(path: $homePath) {
-                    HomeView()
-                }
-            case 1:
-                NavigationStack(path: $listPath) {
-                    TaskListView()
-                }
-            case 5:
-                NavigationStack(path: $mapPath) { TaskMapView(mapPath: $mapPath) }
-            case 4:
-                NavigationStack(path: $weeklyPath) { WeeklyTasksView() }
-            case 3:
-                NavigationStack(path: $calendarPath) { TaskCalendarView() }
-            case 2:
-                NavigationStack(path: $settingsPath) { SettingsView() }
-            default:
-                NavigationStack(path: $homePath) { HomeView() }
-            }
+            currentTabView
         }
         .safeAreaInset(edge: .bottom) {
             HStack(spacing: 10) {
@@ -183,6 +107,7 @@ struct TaskTabView: View {
             .background(
                 Color(uiColor: .systemBackground)
             )
+            
 //            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
             .clipShape(Capsule())
             .overlay(
@@ -194,6 +119,70 @@ struct TaskTabView: View {
             .padding(.bottom, -8 )//avvicina la bar al fondo telefono
         }
         .ignoresSafeArea(.keyboard)
+    }
+    
+    @ViewBuilder
+    private var currentTabView: some View {
+
+        switch selectedTab {
+
+        case 0:
+            homeStack
+
+        case 1:
+            listStack
+
+        case 5:
+            mapStack
+
+        case 4:
+            weeklyStack
+
+        case 3:
+            calendarStack
+
+        case 2:
+            settingsStack
+
+        default:
+            homeStack
+        }
+    }
+
+    private var homeStack: some View {
+        NavigationStack(path: $homePath) {
+            HomeView()
+        }
+    }
+
+    private var listStack: some View {
+        NavigationStack(path: $listPath) {
+            TaskListView()
+        }
+    }
+
+    private var mapStack: some View {
+        NavigationStack(path: $mapPath) {
+            TaskMapView(mapPath: $mapPath)
+        }
+    }
+
+    private var weeklyStack: some View {
+        NavigationStack(path: $weeklyPath) {
+            WeeklyTasksView()
+        }
+    }
+
+    private var calendarStack: some View {
+        NavigationStack(path: $calendarPath) {
+            TaskCalendarView()
+        }
+    }
+
+    private var settingsStack: some View {
+        NavigationStack(path: $settingsPath) {
+            SettingsView()
+        }
     }
     
     // MARK: - iPad Layout

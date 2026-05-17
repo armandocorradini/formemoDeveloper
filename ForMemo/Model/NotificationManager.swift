@@ -527,12 +527,17 @@ final class NotificationManager: NSObject {
             content.badge = NSNumber(value: badgeAtTrigger)
             content.userInfo["type"] = next.type
             
-            let interval = max(next.date.timeIntervalSinceNow, 5)
+            let rawInterval = next.date.timeIntervalSinceNow
 
-            // 🔥 FIX: avoid immediate triggers ONLY for reminder/global
-            // Deadline must ALWAYS fire
-            if (next.type == "reminder" || next.type == "global") && interval <= 2 {
-                continue
+            // 🔥 Prevent valid reminder/global notifications from being lost
+            // when rebuild happens too close to the trigger time.
+            // Instead of skipping them, reschedule with a small safe delay.
+            let interval: TimeInterval
+
+            if (next.type == "reminder" || next.type == "global") && rawInterval <= 2 {
+                interval = 3
+            } else {
+                interval = max(rawInterval, 5)
             }
 
             let trigger = UNTimeIntervalNotificationTrigger(

@@ -28,6 +28,48 @@ struct GetTasksIntent: AppIntent {
     }
     
     init() {}
+    private static let todayKeywords = [
+        "today",
+        "oggi",
+        "aujourd hui",
+        "aujourd'hui",
+        "hoy",
+        "heute"
+    ]
+
+    private static let tomorrowKeywords = [
+        "tomorrow",
+        "domani",
+        "demain",
+        "manana",
+        "mañana",
+        "morgen"
+    ]
+
+    private static let dayAfterTomorrowKeywords = [
+        "day after tomorrow",
+        "dopodomani",
+        "apres demain",
+        "après demain",
+        "pasado manana",
+        "pasado mañana",
+        "ubermorgen",
+        "übermorgen"
+    ]
+
+    private func matches(
+        _ query: String,
+        keywords: [String]
+    ) -> Bool {
+
+        keywords.contains {
+            query == $0 ||
+            query.hasPrefix($0 + " ") ||
+            query.hasSuffix(" " + $0) ||
+            query.contains(" " + $0 + " ")
+        }
+    }
+    
     
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
@@ -420,40 +462,31 @@ struct GetTasksIntent: AppIntent {
 
         let spokenDate: String
 
-        if ["today", "oggi", "aujourd hui", "aujourd'hui", "hoy", "heute"]
-            .contains(where: {
-                normalizedQuery == $0 ||
-                normalizedQuery.hasPrefix($0 + " ") ||
-                normalizedQuery.hasSuffix(" " + $0) ||
-                normalizedQuery.contains(" " + $0 + " ")
-            }) {
+        if matches(
+            normalizedQuery,
+            keywords: Self.todayKeywords
+        ) {
 
             spokenDate = String(localized: "today")
 
-        } else if ["day after tomorrow", "dopodomani", "apres demain", "après demain", "pasado manana", "pasado mañana", "ubermorgen", "übermorgen"]
-            .contains(where: {
-                normalizedQuery == $0 ||
-                normalizedQuery.hasPrefix($0 + " ") ||
-                normalizedQuery.hasSuffix(" " + $0) ||
-                normalizedQuery.contains(" " + $0 + " ")
-            }) {
+        } else if matches(
+            normalizedQuery,
+            keywords: Self.dayAfterTomorrowKeywords
+        ) {
 
             spokenDate = String(localized: "day after tomorrow")
 
-        } else if ["tomorrow", "domani", "demain", "manana", "mañana", "morgen"]
-            .contains(where: {
-                normalizedQuery == $0 ||
-                normalizedQuery.hasPrefix($0 + " ") ||
-                normalizedQuery.hasSuffix(" " + $0) ||
-                normalizedQuery.contains(" " + $0 + " ")
-            }) {
+        } else if matches(
+            normalizedQuery,
+            keywords: Self.tomorrowKeywords
+        ) {
 
             spokenDate = String(localized: "tomorrow")
 
         } else {
+
             spokenDate = query
         }
-
         guard !tasks.isEmpty else {
             return .result(
                 dialog: IntentDialog(

@@ -1263,7 +1263,7 @@ private struct DayTasksInlineView: View {
                 }
                 
             }
-            
+            .contentMargins(.bottom,55, for:.scrollContent)
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .background(Color.clear)

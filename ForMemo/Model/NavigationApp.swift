@@ -13,3 +13,4 @@ enum NavigationApp: String, CaseIterable, Identifiable {
         }
     }
 }
+

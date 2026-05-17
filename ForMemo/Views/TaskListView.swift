@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 import SwiftData
 import PhotosUI
@@ -906,9 +904,9 @@ enum TaskListStyle: String, CaseIterable {
         case .plain:
             return "list.bullet"
         case .cards:
-            return "square.on.square"
-        case .grouped:
             return "rectangle.grid.1x3"
+        case .grouped:
+            return "square.on.square"
         }
     }
 }
@@ -923,6 +921,31 @@ extension View {
     }
 }
 struct TodoSectionView: View {
+    private func relativeHeaderTitle(for date: Date) -> LocalizedStringKey? {
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let target = calendar.startOfDay(for: date)
+
+        guard let days = calendar.dateComponents([.day], from: today, to: target).day else {
+            return nil
+        }
+
+        switch days {
+        case -2:
+            return "Day Before Yesterday"
+        case -1:
+            return "Yesterday"
+        case 0:
+            return "Today"
+        case 1:
+            return "Tomorrow"
+        case 2:
+            return "Day After Tomorrow"
+        default:
+            return nil
+        }
+    }
     @AppStorage("TaskListStyle") private var listStyleChoice: TaskListStyle = .plain
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
@@ -1010,9 +1033,9 @@ struct TodoSectionView: View {
                     )
                     : style == .cards
                     ? EdgeInsets(
-                        top: 14,
+                        top: position == .first || position == .single ? 18 : 0,
                         leading: 14,
-                        bottom: 14,
+                        bottom: position == .last || position == .single ? 18 : 0,
                         trailing: 14
                     )
                     : EdgeInsets(
@@ -1111,9 +1134,7 @@ struct TodoSectionView: View {
                     )
                 }
                 .overlay(alignment: .leading) {
-
                     if let highlightOverlay {
-
                         RoundedRectangle(cornerRadius: 3)
                             .fill(highlightOverlay)
                             .frame(width: 1.5, height: 38)
@@ -1234,7 +1255,21 @@ struct TodoSectionView: View {
 
                 } header: {
 
-                    EmptyView()
+                    if let title = relativeHeaderTitle(for: group.date) {
+
+                        HStack {
+                            Text(title)
+                                .font(.callout.weight(.bold))
+                                .foregroundStyle(
+                                    title == "Today"
+                                    ? Color.blue.opacity(0.92)
+                                    : Color.primary.opacity(0.72)
+                                )
+                            Spacer()
+                        }
+                        .padding(.horizontal, 18)
+                        .padding(.bottom, 4)
+                    }
                 }
                 .listSectionSeparator(.hidden)
                 .listSectionSpacing(8)
@@ -1627,6 +1662,7 @@ struct CompletedSectionView: View {
         }
     }
 
+    
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {
 

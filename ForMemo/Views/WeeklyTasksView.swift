@@ -1,12 +1,10 @@
+
 import SwiftUI
 import SwiftData
 import os
 
 struct WeeklyTasksView: View {
-    
-    
-    //    let iconStyle: TaskIconStyle
-    
+
     @AppStorage("TaskWeekDays")
     private var taskWeekDays: Int = 3
     
@@ -14,11 +12,21 @@ struct WeeklyTasksView: View {
     @Environment(\.modelContext) private var modelContext
     
     @State private var taskPendingDeletion: TodoTask?
+    @State private var draftTask: TodoTask?
     
+    
+    private static let activeTasksPredicate =
+        #Predicate<TodoTask> { !$0.isCompleted }
+
+    private static let activeTasksSortDescriptors = [
+        SortDescriptor<TodoTask>(\.deadLine, order: .forward)
+    ]
+
     @Query(
-        filter: #Predicate<TodoTask> { $0.isCompleted == false },
-        sort: [SortDescriptor(\.deadLine, order: .forward)]
+        filter: Self.activeTasksPredicate,
+        sort: Self.activeTasksSortDescriptors
     )
+
     private var allTasks: [TodoTask]
     
     private var weeklyTasks: [TodoTask] {
@@ -102,7 +110,14 @@ struct WeeklyTasksView: View {
         case last
     }
 
-    private var groupedTasksByDay: [(date: Date, tasks: [TodoTask])] {
+    private struct GroupedDay: Identifiable {
+        let date: Date
+        let tasks: [TodoTask]
+
+        var id: Date { date }
+    }
+
+    private var groupedTasksByDay: [GroupedDay] {
 
         let calendar = Calendar.current
 
@@ -112,7 +127,7 @@ struct WeeklyTasksView: View {
 
         return grouped
             .map { key, value in
-                (
+                GroupedDay(
                     date: key,
                     tasks: value.sorted {
                         ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
@@ -122,6 +137,28 @@ struct WeeklyTasksView: View {
             .sorted { $0.date < $1.date }
     }
 
+
+    private func relativeHeaderTitle(for date: Date) -> LocalizedStringKey? {
+
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let target = calendar.startOfDay(for: date)
+
+        guard let days = calendar.dateComponents([.day], from: today, to: target).day else {
+            return nil
+        }
+
+        switch days {
+        case 0:
+            return "Today"
+        case 1:
+            return "Tomorrow"
+        case 2:
+            return "Day After Tomorrow"
+        default:
+            return nil
+        }
+    }
 
     private func rowPosition(index: Int, total: Int) -> RowPosition {
 
@@ -166,41 +203,30 @@ struct WeeklyTasksView: View {
 //                    .listRowBackground(Color.clear)
                 
                     if weeklyTasks.isEmpty {
-                        
-                        AppUnavailableView.empty(
-                            taskWeekDays == 1 ? String(localized:"No tasks today") : String(localized:"No tasks these days"),
-                            systemImage: "ellipsis.calendar"
-                        )
-                        
+                        ContentUnavailableView {
+                            Label {
+                                Text(
+                                    taskWeekDays == 1
+                                    ? String(localized: "No tasks today")
+                                    : String(localized: "No tasks these days")
+                                )
+                                .font(.subheadline)
+                            } icon: {
+                                Image(systemName: "tray")
+                                    .resizable()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } description: {
+                            Text("Tap the green button to add a task.")
+                                .font(.subheadline)
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                     } else {
                         
-                        ForEach(groupedTasksByDay, id: \.date) { group in
-
-                            Section {
-
-                                ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, task in
-
-                                    WeeklyTaskRow(
-                                        taskPendingDeletion: $taskPendingDeletion,
-                                        taskWeekDays: taskWeekDays,
-                                        task: task,
-                                        position: rowPosition(
-                                            index: index,
-                                            total: group.tasks.count
-                                        )
-                                    )
-                                    .listRowSeparator(.hidden)
-                                    .listRowInsets(
-                                        .init(top: 0, leading: 14, bottom: 0, trailing: 14)
-                                    )
-                                    .listRowBackground(Color.clear)
-                                }
-
-                            } header: {
-                                EmptyView()
-                            }
-                            .listSectionSeparator(.hidden)
-                            .listSectionSpacing(8)
+                        ForEach(groupedTasksByDay) { group in
+                            groupedSection(for: group)
                         }
                     }
             }
@@ -216,8 +242,23 @@ struct WeeklyTasksView: View {
             }
             .navigationTitle(formattedDate)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        draftTask = TodoTask()
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.title2)
+                            .padding(.trailing, 5)
+                    }
+                }
+            }
             .navigationDestination(for: TodoTask.self) { task in
                 TaskDetailView(task: task)
+            }
+            .sheet(item: $draftTask) { task in
+                NewTaskSheetView(draftTask: task)
             }
             .scrollContentBackground(.hidden)
             .containerBackground(.clear, for: .navigation)
@@ -251,6 +292,52 @@ struct WeeklyTasksView: View {
         }
     }
     
+    @ViewBuilder
+    private func groupedSection(for group: GroupedDay) -> some View {
+
+        Section {
+
+            ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, task in
+
+                WeeklyTaskRow(
+                    taskPendingDeletion: $taskPendingDeletion,
+                    taskWeekDays: taskWeekDays,
+                    task: task,
+                    position: rowPosition(
+                        index: index,
+                        total: group.tasks.count
+                    )
+                )
+                .listRowSeparator(.hidden)
+                .listRowInsets(
+                    .init(top: 0, leading: 14, bottom: 0, trailing: 14)
+                )
+                .listRowBackground(Color.clear)
+            }
+
+        } header: {
+
+            if let title = relativeHeaderTitle(for: group.date) {
+
+                HStack {
+                    Text(title)
+                        .font(.callout.weight(.bold))
+                        .foregroundStyle(
+                            title == "Today"
+                            ? Color.blue.opacity(0.92)
+                            : Color.primary.opacity(0.72)
+                        )
+
+                    Spacer()
+                }
+                .padding(.horizontal, 18)
+                .padding(.bottom, 4)
+            }
+        }
+        .listSectionSeparator(.hidden)
+        .listSectionSpacing(8)
+    }
+
     // MARK: - Header
     
     private var headerView: some View {
@@ -270,8 +357,7 @@ struct WeeklyTasksView: View {
                 
                 Spacer()
             }
-            .padding(.top, -15)
-            .padding(.bottom, 8)
+
             HStack {
                 Spacer()
                 Stepper("", value: $taskWeekDays, in: 1...7)
@@ -279,14 +365,14 @@ struct WeeklyTasksView: View {
                     .fixedSize()
                 Text("Next \(taskWeekDays) Days")
                     .foregroundStyle(Color(UIColor.label))
-                    .padding(6)
+
                 
                 Spacer()
             }
-            .padding(.vertical, 8)
+            .padding(.top, 24)
         }
         .textCase(nil)
-        .padding(.vertical, 8)
+  
     }
 
 // MARK: - Row
@@ -318,6 +404,45 @@ private struct WeeklyTaskRow: View {
     let taskWeekDays: Int
     let task: TodoTask
     let position: WeeklyTasksView.RowPosition
+
+    private var hasAttachments: Bool {
+        !(task.attachments ?? []).isEmpty
+    }
+
+    private var hasLocation: Bool {
+        task.locationName?.isEmpty == false
+    }
+
+    private var priorityIconName: String? {
+        task.priority.systemImage
+    }
+
+    private var deadlineStateColor: Color {
+        guard let deadline = task.deadLine else {
+            return .secondary
+        }
+
+        let now = Date()
+        let calendar = Calendar.current
+
+        let isToday = calendar.isDateInToday(deadline) && deadline >= now
+        let isOverdue = deadline < now
+        let isCritical = priorityIconName == "flame"
+
+        if highlightEnabled && isCritical && (isToday || isOverdue) {
+            return highlightColor
+        }
+
+        if isToday {
+            return .orange
+        }
+
+        if isOverdue {
+            return .red
+        }
+
+        return .secondary
+    }
     
     var body: some View {
         
@@ -342,17 +467,17 @@ private struct WeeklyTaskRow: View {
                 }
 
                 VStack(spacing: 4) {
-                    if let priorityIcon = task.priority.systemImage {
-                        Image(systemName: priorityIcon)
-                            .foregroundStyle(priorityIcon == "flame" ? .red : .primary)
+                    if let priorityIconName {
+                        Image(systemName: priorityIconName)
+                            .foregroundStyle(priorityIconName == "flame" ? .red : .primary)
                     }
 
-                    if let attachments = task.attachments, !attachments.isEmpty {
+                    if hasAttachments {
                         Image(systemName: "paperclip")
                             .foregroundStyle(.primary)
                     }
 
-                    if task.locationName?.isEmpty == false {
+                    if hasLocation {
                         Image(systemName: "location.fill")
                             .foregroundStyle(.primary)
                     }
@@ -589,35 +714,13 @@ private struct WeeklyTaskRow: View {
             }
             
             HStack(spacing: 10) {
-                
                 if let date = task.deadLine {
                     Image(systemName: "clock")
                     Text(date, format: .dateTime.hour().minute())
-                        .foregroundStyle({
-                            if let deadline = task.deadLine {
-                                let now = Date()
-                                let calendar = Calendar.current
-                                let isToday = calendar.isDateInToday(deadline) && deadline >= now
-                                let isOverdue = deadline < now
-                                let isCritical = task.priority.systemImage == "flame"
-                                
-                                if highlightEnabled && isCritical && (isToday || isOverdue) {
-                                    return highlightColor
-                                } else if isToday {
-                                    return Color.orange
-                                } else if isOverdue {
-                                    return Color.red
-                                } else {
-                                    return Color.secondary
-                                }
-                            } else {
-                                return Color.secondary
-                            }
-                        }())
+                        .foregroundStyle(deadlineStateColor)
                 }
-                
+
                 if let minutes = task.reminderOffsetMinutes {
-                    
                     Image(systemName: "bell")
                     Text(reminderText(for: minutes))
                 }
@@ -648,7 +751,7 @@ private struct WeeklyTaskRow: View {
 
         let deadline = task.deadLine ?? .distantFuture
 
-        let isCritical = task.priority.systemImage == "flame"
+        let isCritical = priorityIconName == "flame"
         let isToday = Calendar.current.isDateInToday(deadline)
         let isOverdue = deadline < Date()
         let shouldHighlight = highlightEnabled && isCritical && (isToday || isOverdue)

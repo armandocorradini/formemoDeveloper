@@ -36,6 +36,7 @@ struct ScheduleSection: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(deadline.formatted(.dateTime.weekday(.wide)).capitalized)
                             .padding(.horizontal, 20)
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
                         DatePicker(
                             "",
@@ -51,6 +52,7 @@ struct ScheduleSection: View {
                         )
                         .labelsHidden()
                         .datePickerStyle(.compact)
+                        .fixedSize(horizontal: true, vertical: false)
                         .padding(.vertical, 4)
                         .padding(.horizontal, 6)
                         .overlay {
@@ -58,8 +60,9 @@ struct ScheduleSection: View {
                                 .stroke((deadline < .now ? Color.red : Color.clear), lineWidth: 2)
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Spacer()
+                    Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity)
 

@@ -684,7 +684,7 @@ Attivazione: \(triggerInfo)
                             exit(0)
                         }
                     } label: {
-                        Text("Reset Preferences Reset PreferencesReset PreferencesReset PreferencesReset PreferencesReset Preferences")
+                        Text("Reset Preferences")
                             .foregroundStyle(.red)
                     }
                 }

@@ -91,10 +91,9 @@ struct OtherSettingsView: View {
                         ? String(localized: "You’ll receive a notification only at the exact time of the task. Since global notifications are disabled, the app badge updates only when tasks become overdue.")
                         : String(localized: "You’ll receive a notification \(notificationLeadTimeDays) day(s) before the deadline and another at the time it’s due. You can choose below whether the app badge updates at the deadline or already with the global notification.")
                     )
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(.secondary)
                     .font(.footnote)
-                    
-                    Toggle("Show app badge", isOn: $showAppBadge)
+
                     Picker("Badge updates", selection: $badgeMode) {
 
                         Text("At deadline")
@@ -105,6 +104,8 @@ struct OtherSettingsView: View {
                     }
                     .pickerStyle(.menu)
                     .disabled(notificationLeadTimeDays == -1)
+                    
+                    Toggle("Show app badge", isOn: $showAppBadge)
 //
 //                    Toggle("Include expired tasks in badge", isOn: $badgeIncludeExpired)
                 }
@@ -160,3 +161,4 @@ struct OtherSettingsView: View {
         }
     }
 }
+

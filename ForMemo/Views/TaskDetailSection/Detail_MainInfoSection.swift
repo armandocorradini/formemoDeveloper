@@ -81,9 +81,11 @@ import SwiftData
                     axis: .vertical
                 )
                 .onSubmit(saveTask)
-                .font(.headline)
-                .foregroundStyle(.secondary)
+                .font(.body)
+                .foregroundStyle(.primary)
 
+                Divider()
+                
                 Toggle(isOn: Binding(
                     get: { task.isCompleted },
                     set: { newValue in
@@ -101,7 +103,8 @@ import SwiftData
                             dismiss()
                         }
                     }
-                )) {
+                ))
+                {
                     VStack(alignment: .leading) {
                         HStack {
                             Text("Completed")

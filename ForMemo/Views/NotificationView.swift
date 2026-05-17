@@ -145,8 +145,8 @@ struct NotificationView: View {
                                         .foregroundStyle(.secondary)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
-                                .padding(.top, -2)
-                                .padding(.bottom, 2)
+                                .padding(.top, -20)
+                                .padding(.bottom, -20)
 
                             }
                             .listRowBackground(Color.clear)
@@ -211,6 +211,7 @@ struct NotificationView: View {
 
                             }
                         }
+                        
                         .contentMargins(.bottom, 55, for: .scrollContent)
                         .scrollContentBackground(.hidden)
                         .background(Color.clear)

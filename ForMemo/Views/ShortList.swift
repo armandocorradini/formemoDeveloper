@@ -24,7 +24,7 @@ struct ShortList: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(String(localized: "New \(appName)"))
                                     .font(.headline)
-                                    .foregroundStyle(.blue)
+                                    .foregroundStyle(.primary)
                                 
                                 Text(String(localized: "Create a new task instantly using Siri."))
                                     .font(.caption)
@@ -36,7 +36,7 @@ struct ShortList: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(String(localized: "Search \(appName)"))
                                     .font(.headline)
-                                    .foregroundStyle(.blue)
+                                    .foregroundStyle(.primary)
                                 
                                 Text(String(localized: "Search tasks, reminders and notes by text using Siri."))
                                     .font(.caption)
@@ -48,7 +48,7 @@ struct ShortList: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text(String(localized: "Check \(appName)"))
                                     .font(.headline)
-                                    .foregroundStyle(.blue)
+                                    .foregroundStyle(.primary)
                                 
                                 Text(String(localized: "Check upcoming tasks, reminders and due dates with Siri."))
                                     .font(.caption)

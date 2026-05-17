@@ -274,7 +274,8 @@ struct NewTaskSheetView: View {
                 .font(.headline)
             
             TextField("Description", text: $draftTask.taskDescription, axis: .vertical)
-                .foregroundStyle(.secondary)
+                .font(.body)
+                .foregroundStyle(.primary)
             
         }
     }
@@ -592,6 +593,7 @@ struct NewTaskSheetView: View {
                 showingCamera = true
             } label: {
                 Label("Take Photo", systemImage: "camera")
+                    
             }
             
             PhotosPicker(
@@ -620,6 +622,8 @@ struct NewTaskSheetView: View {
                 Label("Scan Documents", systemImage: "scanner")
             }
         }
+        .disabled(!isTitleValid)
+        .opacity(isTitleValid ? 1 : 0.4)
     }
     
     // MARK: - SAVE

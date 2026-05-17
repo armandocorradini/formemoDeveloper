@@ -244,7 +244,6 @@ extension TaskMapView {
                 urgency: urgency,
                 items: items
             )
-
             return model
         }
     }
