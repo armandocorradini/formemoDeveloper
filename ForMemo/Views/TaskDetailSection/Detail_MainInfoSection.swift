@@ -42,7 +42,7 @@ import SwiftData
     var body: some View {
         Section {
             VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .top, spacing: 0) {
+                HStack(alignment: .center, spacing: 0) {
                     if shouldShowHighlight {
                         Rectangle()
                             .fill(highlightColor)
@@ -65,7 +65,7 @@ import SwiftData
                         text: $task.title,
                         axis: .vertical
                     )
-                    .lineLimit(1...10)
+                    .lineLimit(1...2)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .layoutPriority(1)
@@ -82,7 +82,7 @@ import SwiftData
                 )
                 .onSubmit(saveTask)
                 .font(.body)
-                .foregroundStyle(.primary)
+                .foregroundStyle(.primary).opacity(0.7)
 
                 Divider()
                 

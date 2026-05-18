@@ -1239,6 +1239,14 @@ struct TodoSectionView: View {
 
         if listStyleChoice == .grouped || listStyleChoice == .cards {
 
+            Section(String(localized: "To do (\(tasks.count))")) {
+                EmptyView()
+                    .frame(height: 0)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
+
             ForEach(groupedTasksByDay, id: \.date) { group in
 
                 Section {
