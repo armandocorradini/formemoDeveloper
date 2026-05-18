@@ -153,7 +153,7 @@ struct TaskListAppearanceView: View {
         task.title = String(localized: "Preview")
         task.taskDescription = "Meeting with the medical team"
         task.priority = .critical
-        task.deadLine = Date().addingTimeInterval(-1800)
+        task.deadLine = Date().addingTimeInterval(-10)
         task.reminderOffsetMinutes = 60
         task.isCompleted = false
         task.locationName = "Office"

@@ -863,22 +863,25 @@ extension TaskRowContent {
                     Spacer()
 
                     // 🔵 BADGE giorni – verticalmente allineato
-                    if model.shouldShowBadge,
-                       let badge = model.badgeText,
-                       let deadline = model.deadLine {
-
-                        VStack {
-                            Spacer(minLength: 0)
+                    Group {
+                        if model.shouldShowBadge,
+                           let badge = model.badgeText,
+                           let deadline = model.deadLine {
 
                             TaskBadgeView(
                                 deadline: deadline,
                                 badgeText: badge,
                                 statusColor: model.statusColor
                             )
+                            .padding(.trailing, 2)
+                            .padding(.top, 1)
+                            .padding(.bottom, 3)
 
-                            Spacer(minLength: 0)
+                        } else {
+
+                            Color.clear
+                                .frame(width: 24, height: 24)
                         }
-                        .frame(minHeight: 32)
                     }
                 }
 
