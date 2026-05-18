@@ -14,6 +14,7 @@ final class TaskAttachment {
     var createdAt: Date = Date()
     var relativePath: String = ""
     
+    
     var task: TodoTask?
     
     init(
@@ -240,6 +241,29 @@ extension TaskAttachment {
         return nil
     }
     
+    var isActuallyAvailable: Bool {
+
+        guard let url = fileURL else {
+            return false
+        }
+
+        let fm = FileManager.default
+
+        guard fm.fileExists(atPath: url.path) else {
+            return false
+        }
+
+        let size = (try? fm.attributesOfItem(
+            atPath: url.path
+        )[.size] as? Int64) ?? 0
+
+        guard size > 0 else {
+            return false
+        }
+
+        return true
+    }
+    
     var fileURL: URL? {
 
         Self.resolvedExistingURL(
@@ -400,6 +424,7 @@ extension TaskAttachment {
 
             return nil
         }
+
 
         return data
     }

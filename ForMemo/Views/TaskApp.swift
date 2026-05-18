@@ -96,6 +96,7 @@ struct ForMemoApp: App {
         self.container = sharedContainer
         
         NotificationManager.shared.modelContainer = sharedContainer
+        CloudSettingsSync.shared.start()
         
         Task { @MainActor in
             let context = sharedContainer.mainContext

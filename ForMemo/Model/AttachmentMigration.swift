@@ -73,6 +73,16 @@ enum AttachmentMigration {
         }
 
         let fm = FileManager.default
+
+        // 🔥 Build attachment lookup for sync verification
+        let descriptor = FetchDescriptor<TaskAttachment>()
+        let attachments = (try? context.fetch(descriptor)) ?? []
+
+        let attachmentsByRelativePath = Dictionary(
+            uniqueKeysWithValues: attachments.map {
+                ($0.relativePath, $0)
+            }
+        )
         var allFilesMigrated = true
 
         guard let files = try? fm.contentsOfDirectory(
@@ -137,7 +147,9 @@ enum AttachmentMigration {
                         }
                     }
 
-                    Thread.sleep(forTimeInterval: 0.25)
+                    RunLoop.current.run(
+                        until: Date().addingTimeInterval(0.25)
+                    )
                 }
 
                 guard uploadReady else {
@@ -169,6 +181,11 @@ enum AttachmentMigration {
                 // trigger ubiquitous upload/download state
                 try? fm.startDownloadingUbiquitousItem(at: newURL)
 
+                // 🔥 Attachment exists in database
+                if attachmentsByRelativePath[fileName] != nil {
+                    log("📎 Attachment metadata found")
+                }
+
                 log("✅ Copied OK")
 
             } catch {
@@ -184,6 +201,11 @@ enum AttachmentMigration {
         )) ?? []
 
         log("☁️ iCloud files available: \(migratedFiles.count)")
+
+        // 🔥 Persist verification state updates
+        if context.hasChanges {
+            try? context.save()
+        }
 
         return allFilesMigrated
     }

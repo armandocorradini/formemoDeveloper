@@ -116,8 +116,56 @@ struct AttachmentRowView: View {
 
     private func load() async {
 
-        guard let url = attachment.fileURL,
-              FileManager.default.fileExists(atPath: url.path) else {
+        guard let url = attachment.fileURL else {
+            await MainActor.run {
+                loadFailed = true
+            }
+            return
+        }
+
+        let fm = FileManager.default
+
+        try? fm.startDownloadingUbiquitousItem(at: url)
+
+        // 🔥 wait real iCloud materialization
+        var materialized = false
+
+        for _ in 0..<40 {
+
+            let exists = fm.fileExists(atPath: url.path)
+
+            let values = try? url.resourceValues(forKeys: [
+                .ubiquitousItemDownloadingStatusKey,
+                .fileSizeKey
+            ])
+
+            let status = values?.ubiquitousItemDownloadingStatus
+            let size = values?.fileSize ?? 0
+
+            if exists,
+               size > 0,
+               status == .current || status == .downloaded || status == nil {
+
+                materialized = true
+                break
+            }
+
+            try? await Task.sleep(
+                nanoseconds: 250_000_000
+            )
+        }
+
+        guard materialized else {
+            await MainActor.run {
+                loadFailed = true
+            }
+            return
+        }
+
+        // 🔥 final integrity verification
+        guard let data = try? Data(contentsOf: url),
+              !data.isEmpty else {
+
             await MainActor.run {
                 loadFailed = true
             }

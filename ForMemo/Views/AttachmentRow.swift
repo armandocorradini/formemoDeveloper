@@ -170,23 +170,39 @@ struct AttachmentRow: View {
     }
     
     private func loadImage() async {
-        guard let url = attachment.fileURL,
-              FileManager.default.fileExists(atPath: url.path) else {
+        guard let url = attachment.fileURL else {
             state = .failed
             return
         }
+
         let fm = FileManager.default
+
+        try? fm.startDownloadingUbiquitousItem(at: url)
+
+        for _ in 0..<25 {
+
+            if fm.fileExists(atPath: url.path) {
+                break
+            }
+
+            try? await Task.sleep(
+                nanoseconds: 200_000_000
+            )
+        }
+
+        guard fm.fileExists(atPath: url.path) else {
+
+            AppLogger.notifications.info(
+                "❌ FILE NOT MATERIALIZED:\(url.lastPathComponent)"
+            )
+
+            state = .failed
+            return
+        }
         
         // 🔥 1. CACHE (subito)
         if let cached = await ImageCache.shared.image(for: url) {
             state = .success(cached)
-            return
-        }
-        
-        // ❌ file non esiste
-        guard fm.fileExists(atPath: url.path) else {
-            AppLogger.notifications.info("❌ FILE NOT FOUND:\(url.lastPathComponent)")
-            state = .failed
             return
         }
         
@@ -202,6 +218,23 @@ struct AttachmentRow: View {
         if isCloud {
             state = .downloading
             try? fm.startDownloadingUbiquitousItem(at: url)
+
+            for _ in 0..<15 {
+
+                let values = try? url.resourceValues(forKeys: [
+                    .ubiquitousItemDownloadingStatusKey
+                ])
+
+                let status = values?.ubiquitousItemDownloadingStatus
+
+                if status == .current || status == .downloaded {
+                    break
+                }
+
+                try? await Task.sleep(
+                    nanoseconds: 200_000_000
+                )
+            }
         } else {
             state = .loading
         }

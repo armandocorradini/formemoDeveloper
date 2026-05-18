@@ -617,6 +617,7 @@ struct EmptySectionView: View {
                     // .padding(.horizontal) // Distanzia il blocco dai bordi dello schermo
                 }
             }
+            .padding(.top, -20)
             .listRowSeparator(.hidden)
             
         }

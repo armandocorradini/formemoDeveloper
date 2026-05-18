@@ -122,10 +122,17 @@ struct OtherSettingsView: View {
             .onChange(of: showAppBadge) { _, _ in
                 NotificationManager.shared.refresh(force: true)
             }
-            .onChange(of: notificationLeadTimeDays) { _, _ in
+            .onChange(of: notificationLeadTimeDays) { _, newValue in
+
+                CloudSettingsSync.shared
+                    .syncNotificationLeadTimeDays(newValue)
+
                 NotificationManager.shared.refresh(force: true)
             }
-            .onChange(of: badgeMode) { _, _ in
+            .onChange(of: badgeMode) { _, newValue in
+
+                CloudSettingsSync.shared
+                    .syncBadgeMode(newValue)
 
                 UNUserNotificationCenter.current()
                     .removeAllPendingNotificationRequests()

@@ -23,6 +23,8 @@ import AVFAudio
     @State private var showCameraPermissionAlert = false
     @State private var showMicrophonePermissionAlert = false
 
+     @State private var attachmentsReady = false
+     
     var body: some View {
 
         Section("Resources") {
@@ -30,6 +32,12 @@ import AVFAudio
             if taskAttachments.isEmpty {
                 Text("No attachments")
                     .foregroundStyle(.secondary)
+            }
+            
+            if !attachmentsReady {
+                Text("Syncing attachments...")
+                    .font(.caption)
+                    .foregroundStyle(.green)
             }
 
             AttachmentList(
@@ -61,6 +69,7 @@ import AVFAudio
             } label: {
                 Label("Take photo", systemImage: "camera")
             }
+            .disabled(!attachmentsReady)
             .alert(String(localized: "Camera Access Required"), isPresented: $showCameraPermissionAlert) {
                 Button(String(localized: "Cancel"), role: .cancel) { }
 
@@ -80,6 +89,7 @@ import AVFAudio
             ) {
                 Label("Add photos", systemImage: "photo")
             }
+            .disabled(!attachmentsReady)
 
             Button {
                 switch AVAudioApplication.shared.recordPermission {
@@ -103,6 +113,7 @@ import AVFAudio
             } label: {
                 Label("Record voice note", systemImage: "mic")
             }
+            .disabled(!attachmentsReady)
             .alert(String(localized: "Microphone Access Required"), isPresented: $showMicrophonePermissionAlert) {
                 Button(String(localized: "Cancel"), role: .cancel) { }
 
@@ -120,11 +131,38 @@ import AVFAudio
             } label: {
                 Label("Add files", systemImage: "doc")
             }
+            .disabled(!attachmentsReady)
 
             Button {
                 showScanner()
             } label: {
                 Label("Scan documents", systemImage: "scanner")
+            }
+            .disabled(!attachmentsReady)
+        }
+        .onAppear {
+            Task {
+
+                let start = Date()
+
+                while Date().timeIntervalSince(start) < 30 {
+
+                    let allReady = taskAttachments.allSatisfy {
+
+                        $0.fileStatus == .ready
+                        || $0.fileStatus == .missing
+                    }
+
+                    if allReady {
+                        break
+                    }
+
+                    try? await Task.sleep(
+                        for: .milliseconds(500)
+                    )
+                }
+
+                attachmentsReady = true
             }
         }
         .listRowBackground(Color(.systemBackground).opacity(0.3))

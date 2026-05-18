@@ -35,6 +35,26 @@ final class AttachmentImporter {
             contentType: contentType,
             task: task
         )
+
+        // 🔥 Verify physical file before exposing attachment
+        let verifiedSize = (try? FileManager.default.attributesOfItem(
+            atPath: destinationURL.path
+        )[.size] as? Int64) ?? 0
+
+        guard verifiedSize > 0,
+              let data = try? Data(contentsOf: destinationURL),
+              !data.isEmpty else {
+
+            try? FileManager.default.removeItem(at: destinationURL)
+
+            throw NSError(
+                domain: "AttachmentImporter",
+                code: 3,
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Attachment verification failed"
+                ]
+            )
+        }
         
         context.insert(attachment)
         
@@ -44,6 +64,13 @@ final class AttachmentImporter {
         task.attachments?.append(attachment)
         
         try context.save()
+        
+        context.processPendingChanges()
+
+        NotificationCenter.default.post(
+            name: .attachmentsShouldRefresh,
+            object: nil
+        )
     }
     
     private static func copyToAttachmentsFolder(originalURL: URL) throws -> URL {
@@ -69,6 +96,49 @@ final class AttachmentImporter {
         }
         
         try fm.copyItem(at: originalURL, to: destination)
+
+        // 🔥 Force iCloud materialization/upload
+        try? fm.startDownloadingUbiquitousItem(at: destination)
+
+        // 🔥 Verify readable non-empty file
+        var readable = false
+
+        var materialized = false
+
+        for _ in 0..<20 {
+
+            if fm.fileExists(atPath: destination.path) {
+
+                let size = (try? fm.attributesOfItem(
+                    atPath: destination.path
+                )[.size] as? Int64) ?? 0
+
+                if size > 0,
+                   let data = try? Data(contentsOf: destination),
+                   !data.isEmpty {
+
+                    materialized = true
+                    readable = true
+                    break
+                }
+            }
+
+            RunLoop.current.run(
+                until: Date().addingTimeInterval(0.25)
+            )
+        }
+
+        guard materialized, readable else {
+            try? fm.removeItem(at: destination)
+
+            throw NSError(
+                domain: "AttachmentImporter",
+                code: 2,
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Attachment materialization failed"
+                ]
+            )
+        }
         
         return destination
     }
