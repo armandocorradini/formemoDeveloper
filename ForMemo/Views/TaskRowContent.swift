@@ -279,8 +279,10 @@ extension TaskRowContent {
                         .overlay(alignment: .bottomLeading) {
                             if showTodayExpiredLabel,
                                !model.isCompleted,
-                               let deadline = model.deadLine,
-                               deadline < Date() {
+                               (
+                                    (model.deadLine ?? .distantFuture) < Date()
+                                    || model.title == String(localized: "Preview")
+                               ) {
 
                                 Rectangle()
                                     .fill(Color.red.opacity(0.75))
@@ -337,8 +339,10 @@ extension TaskRowContent {
                         .overlay(alignment: .bottomLeading) {
                             if showTodayExpiredLabel,
                                !model.isCompleted,
-                               let deadline = model.deadLine,
-                               deadline < Date() {
+                               (
+                                    (model.deadLine ?? .distantFuture) < Date()
+                                    || model.title == String(localized: "Preview")
+                               ) {
 
                                 Rectangle()
                                     .fill(Color.red.opacity(0.75))
@@ -397,8 +401,10 @@ extension TaskRowContent {
                         .overlay(alignment: .bottomLeading) {
                             if showTodayExpiredLabel,
                                !model.isCompleted,
-                               let deadline = model.deadLine,
-                               deadline < Date() {
+                               (
+                                    (model.deadLine ?? .distantFuture) < Date()
+                                    || model.title == String(localized: "Preview")
+                               ) {
 
                                 Rectangle()
                                     .fill(Color.red.opacity(0.75))
@@ -459,8 +465,10 @@ extension TaskRowContent {
                         .overlay(alignment: .bottomLeading) {
                             if showTodayExpiredLabel,
                                !model.isCompleted,
-                               let deadline = model.deadLine,
-                               deadline < Date() {
+                               (
+                                    (model.deadLine ?? .distantFuture) < Date()
+                                    || model.title == String(localized: "Preview")
+                               ) {
 
                                 Rectangle()
                                     .fill(Color.red.opacity(0.75))
@@ -516,8 +524,10 @@ extension TaskRowContent {
                         .overlay(alignment: .bottomLeading) {
                             if showTodayExpiredLabel,
                                !model.isCompleted,
-                               let deadline = model.deadLine,
-                               deadline < Date() {
+                               (
+                                    (model.deadLine ?? .distantFuture) < Date()
+                                    || model.title == String(localized: "Preview")
+                               ) {
 
                                 Rectangle()
                                     .fill(Color.red.opacity(0.75))
@@ -577,8 +587,10 @@ extension TaskRowContent {
                         .overlay(alignment: .bottomLeading) {
                             if showTodayExpiredLabel,
                                !model.isCompleted,
-                               let deadline = model.deadLine,
-                               deadline < Date() {
+                               (
+                                    (model.deadLine ?? .distantFuture) < Date()
+                                    || model.title == String(localized: "Preview")
+                               ) {
 
                                 Rectangle()
                                     .fill(Color.red.opacity(0.75))
@@ -638,8 +650,10 @@ extension TaskRowContent {
                         .overlay(alignment: .bottomLeading) {
                             if showTodayExpiredLabel,
                                !model.isCompleted,
-                               let deadline = model.deadLine,
-                               deadline < Date() {
+                               (
+                                    (model.deadLine ?? .distantFuture) < Date()
+                                    || model.title == String(localized: "Preview")
+                               ) {
 
                                 Rectangle()
                                     .fill(Color.red.opacity(0.75))
@@ -684,8 +698,10 @@ extension TaskRowContent {
                         .overlay(alignment: .bottomLeading) {
                             if showTodayExpiredLabel,
                                !model.isCompleted,
-                               let deadline = model.deadLine,
-                               deadline < Date() {
+                               (
+                                    (model.deadLine ?? .distantFuture) < Date()
+                                    || model.title == String(localized: "Preview")
+                               ) {
 
                                 Rectangle()
                                     .fill(Color.red.opacity(0.75))
@@ -737,8 +753,10 @@ extension TaskRowContent {
                         .overlay(alignment: .bottomLeading) {
                             if showTodayExpiredLabel,
                                !model.isCompleted,
-                               let deadline = model.deadLine,
-                               deadline < Date() {
+                               (
+                                    (model.deadLine ?? .distantFuture) < Date()
+                                    || model.title == String(localized: "Preview")
+                               ) {
 
                                 Rectangle()
                                     .fill(Color.red.opacity(0.75))
@@ -831,10 +849,12 @@ extension TaskRowContent {
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(model.isCompleted ? .secondary : .primary)
                             .overlay(alignment: .bottomLeading) {
-                                if showTodayExpiredLabel,
+                               if showTodayExpiredLabel,
                                    !model.isCompleted,
-                                   let deadline = model.deadLine,
-                                   deadline < Date() {
+                                   (
+                                        (model.deadLine ?? .distantFuture) < Date()
+                                        || model.title == String(localized: "Preview")
+                                   ) {
 
                                     Rectangle()
                                         .fill(Color.red.opacity(0.75))

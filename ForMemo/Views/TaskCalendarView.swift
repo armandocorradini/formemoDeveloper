@@ -1080,6 +1080,10 @@ private struct DayTasksInlineView: View {
                                         isOverdue(task) ? .red : .secondary
                                     )
                                     .frame(width: 52, alignment: .leading)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.75)
+                                    .allowsTightening(true)
+                                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
 
                                 HStack(spacing: 6) {
                                     Text(task.title)

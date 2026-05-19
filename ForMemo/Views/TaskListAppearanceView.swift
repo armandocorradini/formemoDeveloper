@@ -151,12 +151,12 @@ struct TaskListAppearanceView: View {
     private var previewTask: TodoTask {
         let task = TodoTask()
         task.title = String(localized: "Preview")
-        task.taskDescription = "Meeting with the medical team"
         task.priority = .critical
-        task.deadLine = Date().addingTimeInterval(-10)
+        task.deadLine = Date().addingTimeInterval(60)
         task.reminderOffsetMinutes = 60
         task.isCompleted = false
         task.locationName = "Office"
+        task.mainTag = .freetime
         task.attachments = [TaskAttachment.previewMock]
         
         return task
