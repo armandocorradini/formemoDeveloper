@@ -2643,6 +2643,34 @@
         }
       }
     },
+    "Can Siri read notifications from the app?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann Siri Benachrichtigungen der App vorlesen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puede Siri leer las notificaciones de la app?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri peut-il lire les notifications de l’application ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri può leggere le notifiche dell’app?"
+          }
+        }
+      }
+    },
     "Can Siri read tasks for a specific date or period?" : {
       "localizations" : {
         "de" : {
@@ -6096,6 +6124,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ho trovato %1$lld promemoria corrispondenti a %2$@:"
+          }
+        }
+      }
+    },
+    "If Siri notification announcements are enabled in iOS Settings, Siri can read %@ notifications aloud on supported devices such as AirPods or CarPlay." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn Siri-Mitteilungsankündigungen in den iOS-Einstellungen aktiviert sind, kann Siri die Benachrichtigungen von %@ auf unterstützten Geräten wie AirPods oder CarPlay laut vorlesen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si los anuncios de notificaciones de Siri están activados en los ajustes de iOS, Siri puede leer en voz alta las notificaciones de %@ en dispositivos compatibles como AirPods o CarPlay."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si les annonces de notifications Siri sont activées dans les réglages iOS, Siri peut lire à voix haute les notifications de %@ sur les appareils compatibles comme les AirPods ou CarPlay."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se gli annunci delle notifiche di Siri sono abilitati nelle Impostazioni di iOS, Siri può leggere ad alta voce le notifiche di %@ su dispositivi supportati come AirPods o CarPlay."
           }
         }
       }
@@ -11367,6 +11423,34 @@
         }
       }
     },
+    "Siri Notification Announcements" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri-Mitteilungsankündigungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anuncios de notificaciones de Siri"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annonces des notifications Siri"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annunci notifiche di Siri"
+          }
+        }
+      }
+    },
     "Siri replies briefly after creating a task." : {
       "localizations" : {
         "de" : {
@@ -15659,6 +15743,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Tutte le funzionalità funzionano offline e i dati sono salvati localmente sul dispositivo."
+          }
+        }
+      }
+    },
+    "Yes. If Siri notification announcements are enabled in iOS Settings, Siri can read ForMemo notifications aloud on supported devices such as AirPods or CarPlay." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Wenn Siri-Mitteilungen in den iOS-Einstellungen aktiviert sind, kann Siri ForMemo-Benachrichtigungen auf unterstützten Geräten wie AirPods oder CarPlay laut vorlesen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Si los anuncios de notificaciones de Siri están activados en los ajustes de iOS, Siri puede leer en voz alta las notificaciones de ForMemo en dispositivos compatibles como AirPods o CarPlay."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Si les annonces de notifications Siri sont activées dans les réglages iOS, Siri peut lire à voix haute les notifications de ForMemo sur les appareils compatibles comme les AirPods ou CarPlay."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Se gli annunci delle notifiche di Siri sono abilitati nelle Impostazioni di iOS, Siri può leggere ad alta voce le notifiche di ForMemo su dispositivi supportati come AirPods o CarPlay."
           }
         }
       }

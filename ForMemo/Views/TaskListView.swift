@@ -71,106 +71,82 @@ struct TaskListView: View {
 //            return matchesSearch && matchesTag && matchesPriority && matchesPeriod
 //        }
 //    }
-    @State private var cachedTodo: [TodoTask] = []
-    @State private var cachedCompleted: [TodoTask] = []
-    @State private var timerTask: Task<Void, Never>?
+    private var todoTasks: [TodoTask] {
 
-    private var nextDeadline: Date? {
         let now = Date()
+
         return todoQuery
-            .compactMap { $0.deadLine }
-            .filter { $0 > now }
-            .min()
-    }
+            .filter { task in
 
+                let matchesSearch =
+                searchText.isEmpty ||
+                task.title.localizedCaseInsensitiveContains(searchText)
 
-    private func startTimerIfNeeded() {
-        guard timerTask == nil else { return }
+                let matchesTag =
+                selectedTagFilter == nil ||
+                task.mainTag == selectedTagFilter
 
-        timerTask = Task {
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 30 * 1_000_000_000) // ogni 30 sec
-                await MainActor.run {
-                    recomputeSections()
-                }
+                let matchesPriority =
+                selectedPriorityFilter == nil ||
+                task.priority == selectedPriorityFilter
+
+                let matchesPeriod =
+                selectedPeriodFilter == nil ||
+                selectedPeriodFilter?.matches(task.deadLine) == true
+
+                return matchesSearch && matchesTag && matchesPriority && matchesPeriod
             }
-        }
-    }
+            .sorted {
+                let lhs = $0.deadLine ?? .distantFuture
+                let rhs = $1.deadLine ?? .distantFuture
 
-    private func stopTimer() {
-        timerTask?.cancel()
-        timerTask = nil
-    }
-    private var dependencyHash: Int {
-        var hasher = Hasher()
-        hasher.combine(todoQuery.count)
-        hasher.combine(completedQuery.count)
-        hasher.combine(searchText)
-        hasher.combine(selectedTagFilter)
-        hasher.combine(selectedPriorityFilter)
-        hasher.combine(selectedPeriodFilter)
-        hasher.combine(showCompleted)
-        return hasher.finalize()
-    }
+                let lhsOverdue = lhs < now
+                let rhsOverdue = rhs < now
 
-    private func recomputeSections() {
-      
-        func matches(_ task: TodoTask) -> Bool {
-            let matchesSearch =
-            searchText.isEmpty ||
-            task.title.localizedCaseInsensitiveContains(searchText)
-
-            let matchesTag =
-            selectedTagFilter == nil ||
-            task.mainTag == selectedTagFilter
-
-            let matchesPriority =
-            selectedPriorityFilter == nil ||
-            task.priority == selectedPriorityFilter
-
-            let matchesPeriod =
-            selectedPeriodFilter == nil ||
-            selectedPeriodFilter?.matches(task.deadLine) == true
-
-            return matchesSearch && matchesTag && matchesPriority && matchesPeriod
-        }
-
-        let todo = todoQuery.lazy.filter { matches($0) }
-
-        cachedTodo = todo.sorted {
-            let lhs = $0.deadLine ?? .distantFuture
-            let rhs = $1.deadLine ?? .distantFuture
-
-            let lhsOverdue = lhs < Date()
-            let rhsOverdue = rhs < Date()
-
-            if lhsOverdue != rhsOverdue {
-                return lhsOverdue
-            }
-
-            if lhs != rhs {
-                return lhs < rhs
-            }
-
-            return $0.id.uuidString < $1.id.uuidString
-        }
-
-        if showCompleted {
-            let sortedCompleted = completedQuery.lazy
-                .filter { matches($0) }
-                .sorted {
-                    ($0.completedAt ?? .distantPast) >
-                    ($1.completedAt ?? .distantPast)
+                if lhsOverdue != rhsOverdue {
+                    return lhsOverdue
                 }
 
-            cachedCompleted = sortedCompleted
-        } else {
-            cachedCompleted = []
-        }
+                if lhs != rhs {
+                    return lhs < rhs
+                }
+
+                return $0.id.uuidString < $1.id.uuidString
+            }
     }
 
-    private var todoTasks: [TodoTask] { cachedTodo }
-    private var completedTasks: [TodoTask] { cachedCompleted }
+    private var completedTasks: [TodoTask] {
+
+        guard showCompleted else {
+            return []
+        }
+
+        return completedQuery
+            .filter { task in
+
+                let matchesSearch =
+                searchText.isEmpty ||
+                task.title.localizedCaseInsensitiveContains(searchText)
+
+                let matchesTag =
+                selectedTagFilter == nil ||
+                task.mainTag == selectedTagFilter
+
+                let matchesPriority =
+                selectedPriorityFilter == nil ||
+                task.priority == selectedPriorityFilter
+
+                let matchesPeriod =
+                selectedPeriodFilter == nil ||
+                selectedPeriodFilter?.matches(task.deadLine) == true
+
+                return matchesSearch && matchesTag && matchesPriority && matchesPeriod
+            }
+            .sorted {
+                ($0.completedAt ?? .distantPast) >
+                ($1.completedAt ?? .distantPast)
+            }
+    }
     private static let backgroundGradient =
     LinearGradient(
         colors: [backColor1, backColor2],
@@ -220,7 +196,6 @@ struct TaskListView: View {
 
                         }
                     }
-                    .id(listStyleChoice)
                     .safeAreaInset(edge: .bottom) {
                         Color.clear.frame(height: 80)
                     }
@@ -266,7 +241,6 @@ struct TaskListView: View {
                         AppQuickGuideView()
                     }
                     .listRowSpacing(listStyleChoice == .plain ? 0 : 0) // spazio tra le righe
-                    .transaction { $0.animation = nil }
                 }
                 .navigationDestination(for: TodoTask.self) { task in
                     TaskDetailView(task: task)
@@ -467,47 +441,6 @@ struct TaskListView: View {
                         }
                     }
                 }
-        }
-        .onAppear {
-            recomputeSections()
-            startTimerIfNeeded()
-        }
-        .onDisappear {
-            stopTimer()
-        }
-        .onChange(of: dependencyHash) {
-            recomputeSections()
-            stopTimer()
-            startTimerIfNeeded()
-        }
-        .onChange(of: scenePhase) {
-            switch scenePhase {
-            case .active:
-                recomputeSections()
-                startTimerIfNeeded()
-            default:
-                stopTimer()
-            }
-        }
-        .onReceive(
-            NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)
-        ) { _ in
-            recomputeSections()
-        }
-        .onReceive(
-            NotificationCenter.default.publisher(for: .taskDidChange)
-                .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
-        ) { _ in
-            recomputeSections()
-        }
-        .onReceive(
-
-            NotificationCenter.default.publisher(for: .attachmentsShouldRefresh)
-                .debounce(for: .milliseconds(100), scheduler: RunLoop.main)
-        ) { _ in
-
-            recomputeSections()
-
         }
     }
 
@@ -1027,16 +960,16 @@ struct TodoSectionView: View {
                 .listRowInsets(
                     style == .grouped
                     ? EdgeInsets(
-                        top: 1,
+                        top: position == .first || position == .single ? 8 : 1,
                         leading: 14,
-                        bottom: position == .last || position == .single ? 4 : 1,
+                        bottom: position == .last || position == .single ? 8 : 1,
                         trailing: 14
                     )
                     : style == .cards
                     ? EdgeInsets(
                         top: position == .first || position == .single ? 18 : 0,
                         leading: 14,
-                        bottom: position == .last || position == .single ? 18 : 0,
+                        bottom: position == .last || position == .single ? 24 : 0,
                         trailing: 14
                     )
                     : EdgeInsets(
@@ -1124,6 +1057,12 @@ struct TodoSectionView: View {
                             colorScheme == .dark ? 0.02 : 0.04
                         )
                     )
+                    .padding(.top,
+                        (style == .grouped || style == .cards) &&
+                        (position == .first || position == .single)
+                        ? 8
+                        : 0
+                    )
 
                     (style == .cards
                      ? AnyShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
@@ -1132,6 +1071,12 @@ struct TodoSectionView: View {
                         Color(.systemBackground).opacity(
                             isToday ? 0.5 : 0.3
                         )
+                    )
+                    .padding(.top,
+                        (style == .grouped || style == .cards) &&
+                        (position == .first || position == .single)
+                        ? 8
+                        : 0
                     )
                 }
                 .overlay(alignment: .leading) {
@@ -1239,30 +1184,22 @@ struct TodoSectionView: View {
 
         if listStyleChoice == .grouped || listStyleChoice == .cards {
 
-            Section(String(localized: "To do (\(tasks.count))")) {
-                EmptyView()
-                    .frame(height: 0)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-            }
+            Section {
 
-            ForEach(groupedTasksByDay, id: \.date) { group in
+                HStack {
+                    Text(String(localized: "To do (\(tasks.count))"))
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(.primary.opacity(0.9))
+                    Spacer()
+                }
+                .padding(.horizontal, 18)
+                .padding(.top, 4)
+                .padding(.bottom, 6)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
 
-                Section {
-
-                    ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, t in
-
-                        taskRow(
-                            for: t,
-                            position: rowPosition(
-                                index: index,
-                                total: group.tasks.count
-                            )
-                        )
-                    }
-
-                } header: {
+                ForEach(groupedTasksByDay, id: \.date) { group in
 
                     if let title = relativeHeaderTitle(for: group.date) {
 
@@ -1277,12 +1214,28 @@ struct TodoSectionView: View {
                             Spacer()
                         }
                         .padding(.horizontal, 18)
+                        .padding(.top, group.date == groupedTasksByDay.first?.date ? 4 : 10)
                         .padding(.bottom, 4)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
+
+                    ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, t in
+
+                        taskRow(
+                            for: t,
+                            position: rowPosition(
+                                index: index,
+                                total: group.tasks.count
+                            )
+                        )
+                        // .padding(.top, ...) block removed as per instructions
                     }
                 }
-                .listSectionSeparator(.hidden)
-                .listSectionSpacing(8)
             }
+            .listSectionSeparator(.hidden)
+            .environment(\.defaultMinListRowHeight, 1)
 
         } else {
 

@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import UIKit
 
 enum DebugTools {
     
@@ -7,7 +8,7 @@ enum DebugTools {
     
     // MARK: - Generate
     
-    static func generateTasks(context: ModelContext, count: Int = 1000) {
+    static func generateTasks(context: ModelContext, count: Int = 400) {
         let start = Date()
         let calendar = Calendar.current
         let now = Date()
@@ -18,11 +19,48 @@ enum DebugTools {
         for i in 0..<count {
             let task = TodoTask(
                 title: testTitle,
-                deadLine: calendar.date(byAdding: .hour, value: i, to: now)
+                deadLine: calendar.date(byAdding: .hour, value: i * 24, to: now)
             )
             
             // 🔴 IMPORTANTE: evita notifiche / logiche pesanti
             task.isDebugTask = true
+
+            // 📎 Real debug attachment for performance testing
+            if i % 3 == 0,
+               let attachmentsDir = TaskAttachment.attachmentsDirectory {
+
+                let fileName = "debug_app_icon.png"
+                let destinationURL = attachmentsDir.appendingPathComponent(fileName)
+                let fm = FileManager.default
+
+                // Generate a real image file if missing
+                if !fm.fileExists(atPath: destinationURL.path) {
+
+                    let config = UIImage.SymbolConfiguration(pointSize: 120, weight: .regular)
+
+                    if let image = UIImage(
+                        systemName: "checkmark.circle.dotted",
+                        withConfiguration: config
+                    ),
+                    let data = image.pngData() {
+
+                        try? data.write(to: destinationURL)
+                    }
+                }
+
+                // Only create attachment if file really exists
+                if fm.fileExists(atPath: destinationURL.path) {
+
+                    let attachment = TaskAttachment(
+                        originalName: fileName,
+                        relativePath: fileName,
+                        contentType: "image/png",
+                        task: task
+                    )
+
+                    task.attachments = [attachment]
+                }
+            }
             
             context.insert(task)
         }

@@ -117,6 +117,14 @@ struct AppQuickGuideView: View {
                 icon: "bell.badge",
                 tint: .blue
             ),
+        .init(
+            title: String(localized: "Siri Notification Announcements"),
+            description: String(localized:
+                                    "If Siri notification announcements are enabled in iOS Settings, Siri can read \(appName) notifications aloud on supported devices such as AirPods or CarPlay."
+                               ),
+            icon: "waveform.badge.mic",
+            tint: .teal
+        ),
         
             .init(
                 title: String(localized: "Smart Notifications"),

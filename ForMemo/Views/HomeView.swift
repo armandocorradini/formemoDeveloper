@@ -62,6 +62,10 @@ struct HomeView: View {
                         Text("armando ♾️ corradini")
                             .font(.system(.body, design: .serif))
                             .italic()
+                        Text(appVersionString)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary.opacity(0.7))
+                            .padding(.top, 4)
                     }
                     .padding(.bottom, 40)
                 }
@@ -81,5 +85,12 @@ struct HomeView: View {
                 .ignoresSafeArea()
             }
         }
+    }
+    private var appVersionString: String {
+        let version =
+            Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let build =
+            Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+        return "v\(version) (\(build))"
     }
 }

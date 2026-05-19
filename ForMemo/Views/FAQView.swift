@@ -75,6 +75,10 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"Why do I receive notifications at unexpected times?"),
                 answer: String(localized:"Notification times depend on the task date, reminder settings, and system adjustments. The app avoids past or invalid times and schedules only valid future alerts.")
+            ),
+            FAQItem(
+                question: String(localized:"Can Siri read notifications from the app?"),
+                answer: String(localized:"Yes. If Siri notification announcements are enabled in iOS Settings, Siri can read ForMemo notifications aloud on supported devices such as AirPods or CarPlay.")
             )
         ]),
 
