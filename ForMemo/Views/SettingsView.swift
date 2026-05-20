@@ -650,6 +650,21 @@ Attivazione: \(triggerInfo)
                 } footer: {
                     Text("This permanently deletes all tasks, attachments, and data from this device. This action cannot be undone.")
                 }
+                Section("Support") {
+                    NavigationLink {
+                        ExportDiagnosticsView()
+                    } label: {
+                        Label {
+                            Text("Diagnostics")
+                                .foregroundStyle(.primary)
+                        } icon: {
+                            Image(systemName: "ladybug")
+                                .foregroundStyle(.orange)
+                                .frame(width: iconWidth)
+                        }
+                    }
+                }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
 #if DEBUG
                 Section("Debug") {
                     Button {

@@ -18,6 +18,7 @@ enum Persistence {
         ])
         
 //        let storeURL = URL.documentsDirectory.appendingPathComponent("local.store")
+        DebugLog.writeCloudKitEvent("Initializing CloudKit container")
         
         do {
             let configuration = ModelConfiguration(
@@ -25,13 +26,22 @@ enum Persistence {
                 cloudKitDatabase: .private("iCloud.corradini.armando.NewTask")
             )
             
-            return try ModelContainer(
+            let container = try ModelContainer(
                 for: schema,
                 configurations: [configuration]
             )
             
+            DebugLog.writeCloudKitEvent(
+                "CloudKit container initialized successfully"
+            )
+            
+            return container
+            
         } catch {
-
+            
+            DebugLog.writeCloudKitEvent(
+                "CloudKit initialization FAILED: \(error.localizedDescription)"
+            )
             AppLogger.persistence.fault("CloudKit ModelContainer error: \(error.localizedDescription)")
             AppLogger.persistence.error("CloudKit container: iCloud.corradini.armando.NewTask")
 

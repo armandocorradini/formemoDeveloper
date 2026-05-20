@@ -126,6 +126,9 @@ final class NotificationManager: NSObject {
 
     func refresh(force: Bool = false) {
         let now = Date()
+        DebugLog.writeCloudKitEvent(
+            "Notification refresh requested"
+        )
         
         if Date().timeIntervalSince(lastPushHandledSafe) < 1.0 {
             return
@@ -181,6 +184,10 @@ final class NotificationManager: NSObject {
 #if DEBUG
                 AppLogger.notifications.debug("Optimized refresh")
 #endif
+
+                DebugLog.writeCloudKitEvent(
+                    "Optimized notification refresh running"
+                )
 
                 guard let context = self.modelContainer?.mainContext else {
                     return
@@ -240,13 +247,22 @@ final class NotificationManager: NSObject {
 
         self.isProcessingCloudKit = true
 
+        DebugLog.writeCloudKitEvent(
+            "CloudKit debounce cancelled"
+        )
         cloudKitDebounceTask?.cancel()
 
         cloudKitDebounceTask = Task { [weak self] in
+            DebugLog.writeCloudKitEvent(
+                "CloudKit debounce scheduled"
+            )
             guard let self else { return }
 
             // 🔥 Coalescing forte
             try? await Task.sleep(for: .seconds(4.0))
+            DebugLog.writeCloudKitEvent(
+                "CloudKit debounce fired"
+            )
             guard !Task.isCancelled else { return }
 
             await MainActor.run {

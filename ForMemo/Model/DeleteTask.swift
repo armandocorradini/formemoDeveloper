@@ -22,6 +22,8 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
         }
     }
 
+    
+    DeletedFingerprintStore.markDeleted(task)
     context.delete(task)
 
     context.safeSave(operation: "DeleteTask")

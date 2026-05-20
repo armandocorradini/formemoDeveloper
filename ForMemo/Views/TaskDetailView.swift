@@ -425,12 +425,18 @@ struct TaskDetailView: View {
     private func saveTask() {
         do {
             try modelContext.save()
+            DebugLog.writeCloudKitEvent(
+                "TaskDetail context save completed"
+            )
             NotificationManager.shared.refresh()
 #if DEBUG
             AppLogger.notifications.info("💾 Saved")
 #endif
             
         } catch {
+            DebugLog.writeCloudKitEvent(
+                "TaskDetail context save FAILED: \(error.localizedDescription)"
+            )
             AppLogger.persistence.fault("CRITICAL SAVE FAILURE [TaskDetailView.saveTask]: \(error.localizedDescription)")
             modelContext.rollback()
             assertionFailure("CRITICAL: TaskDetailView.saveTask failed → rollback executed")
@@ -440,12 +446,19 @@ struct TaskDetailView: View {
     @MainActor
     private func debounceCloudKitUpdate() {
         
+        DebugLog.writeCloudKitEvent(
+            "TaskDetail CloudKit debounce cancelled"
+        )
         cloudKitDebounceTask?.cancel()
         
         cloudKitDebounceTask = Task { @MainActor in
-            
+            DebugLog.writeCloudKitEvent(
+                "TaskDetail CloudKit debounce scheduled"
+            )
             try? await Task.sleep(for: .seconds(1))
-            
+            DebugLog.writeCloudKitEvent(
+                "TaskDetail CloudKit debounce fired"
+            )
             guard !Task.isCancelled else { return }
             
             handleCloudKitUpdate()

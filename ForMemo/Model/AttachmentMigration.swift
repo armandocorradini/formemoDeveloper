@@ -226,7 +226,7 @@ enum AttachmentMigration {
         print("🟣 MIGRATION:", message)
 #endif
         logger.info("\(message)")
-        
+        DebugLog.writeAttachmentEvent(message)
     }
 }
  

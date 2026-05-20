@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import UIKit
+import SwiftUI
 
 enum DebugTools {
     
@@ -156,24 +157,266 @@ enum DebugTools {
 
 enum DebugLog {
     
-    static func write(_ message: String) {
-        
-        let url = FileManager.default
+    static var logURL: URL {
+        FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("migration.log")
+    }
+    
+    static func write(_ message: String) {
         
-        let line = "\(Date()): \(message)\n"
+        let formatter = ISO8601DateFormatter()
+        let timestamp = formatter.string(from: Date())
+        
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+        
+        let line = "[\(timestamp)] [v\(version) (\(build))] \(message)\n"
+        
+        if !FileManager.default.fileExists(atPath: logURL.path) {
+            FileManager.default.createFile(
+                atPath: logURL.path,
+                contents: nil
+            )
+        }
         
         if let data = line.data(using: .utf8) {
-            if FileManager.default.fileExists(atPath: url.path) {
-                if let handle = try? FileHandle(forWritingTo: url) {
-                    handle.seekToEndOfFile()
-                    handle.write(data)
-                    handle.closeFile()
+            
+            if FileManager.default.fileExists(atPath: logURL.path) {
+                
+                if let handle = try? FileHandle(
+                    forUpdating: logURL
+                ) {
+                    _ = try? handle.seekToEnd()
+                    try? handle.write(contentsOf: data)
+                    try? handle.close()
                 }
+                print(line)
+                
             } else {
-                try? data.write(to: url)
+                try? data.write(to: logURL)
+                print(line)
             }
+        }
+    }
+    
+    static func writeSeparator() {
+        write("────────────────────────────────────────")
+    }
+    
+    static func writeAppLaunch() {
+        
+        if !FileManager.default.fileExists(atPath: logURL.path) {
+            FileManager.default.createFile(
+                atPath: logURL.path,
+                contents: nil
+            )
+        }
+        
+        writeSeparator()
+        write("🚀 APP LAUNCH")
+    }
+    
+    static func writeCloudKitEvent(_ message: String) {
+        write("☁️ CLOUDKIT: \(message)")
+    }
+    
+    static func writeMigrationEvent(_ message: String) {
+        write("🟣 MIGRATION: \(message)")
+    }
+    
+    static func writeRecoveryEvent(_ message: String) {
+        write("🟠 RECOVERY: \(message)")
+    }
+    
+    static func writeRecoveryWindowStarted() {
+        writeRecoveryEvent("🚀 Recovery window started")
+    }
+    
+    static func writeRecoveryWindowExpired() {
+        writeRecoveryEvent("✅ Recovery window expired")
+    }
+    
+    static func writeFingerprintSkipped(_ title: String) {
+        writeRecoveryEvent(
+            "⏭️ Fingerprint skipped: \(title)"
+        )
+    }
+    
+    static func writeDeletedFingerprintBlocked(_ title: String) {
+        writeRecoveryEvent(
+            "🚫 Deleted fingerprint blocked: \(title)"
+        )
+    }
+    
+    static func writeAttachmentEvent(_ message: String) {
+        write("📎 ATTACHMENTS: \(message)")
+    }
+    
+    static func ensureLogFileExists() {
+        
+        if !FileManager.default.fileExists(atPath: logURL.path) {
+            
+            FileManager.default.createFile(
+                atPath: logURL.path,
+                contents: nil
+            )
+            
+            write("🚀 Diagnostics initialized")
+        }
+    }
+    
+    static func clear() {
+        try? FileManager.default.removeItem(at: logURL)
+    }
+}
+
+struct ExportDiagnosticsView: View {
+    @State private var logExists = false
+    @State private var logContent = ""
+    @State private var refreshID = UUID()
+
+    private func refreshDiagnostics() {
+        
+        logExists = FileManager.default.fileExists(
+            atPath: DebugLog.logURL.path
+        )
+        
+        if logExists {
+            logContent = (
+                try? String(
+                    contentsOf: DebugLog.logURL,
+                    encoding: .utf8
+                )
+            ) ?? "Unable to load log"
+        } else {
+            logContent = ""
+        }
+        refreshID = UUID()
+    }
+    
+    var body: some View {
+        List {
+            
+            Section("Diagnostics") {
+                
+                let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+                let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+                
+                LabeledContent("App Version") {
+                    Text("\(version) (\(build))")
+                }
+                
+                LabeledContent("Legacy Store") {
+                    Text(
+                        LegacyPersistence.legacyStoreExists
+                        ? "Available"
+                        : "Missing"
+                    )
+                }
+                
+                LabeledContent("Diagnostics File") {
+                    Text(
+                        logExists
+                        ? "Available"
+                        : "Missing"
+                    )
+                }
+                
+                let recoveryCompleted = UserDefaults.standard.bool(
+                    forKey: "legacyRecoveryCompleted"
+                )
+                
+                let recoveryStartDate = UserDefaults.standard.object(
+                    forKey: "legacyRecoveryStartDate"
+                ) as? Date
+                
+                let recoveredFingerprints = UserDefaults.standard.stringArray(
+                    forKey: "legacyRecoveredFingerprints"
+                ) ?? []
+                
+                LabeledContent("Recovery Status") {
+                    Text(
+                        recoveryCompleted
+                        ? "Completed"
+                        : "Active"
+                    )
+                }
+                
+                if let recoveryStartDate {
+                    
+                    let elapsed = Date().timeIntervalSince(
+                        recoveryStartDate
+                    )
+                    
+                    let remaining = max(
+                        0,
+                        14 - Int(elapsed / 86400)
+                    )
+                    
+                    LabeledContent("Recovery Remaining") {
+                        Text("\(remaining) days")
+                    }
+                }
+                
+                LabeledContent("Recovered Tasks") {
+                    Text("\(recoveredFingerprints.count)")
+                }
+                
+                ShareLink(
+                    item: DebugLog.logURL,
+                    preview: SharePreview(
+                        "ForMemo Diagnostics",
+                        image: Image(systemName: "ladybug")
+                    )
+                ) {
+                    Label(
+                        "Export Diagnostics Log",
+                        systemImage: "square.and.arrow.up"
+                    )
+                }
+                
+                if logExists {
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        
+                        Label(
+                            "Diagnostics Preview",
+                            systemImage: "doc.text.magnifyingglass"
+                        )
+                        .font(.headline)
+                        
+                        ScrollView {
+                            Text(logContent)
+                                .font(.caption.monospaced())
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .frame(minHeight: 180, maxHeight: 300)
+                    }
+                }
+                
+                Button(role: .destructive) {
+                    DebugLog.clear()
+                } label: {
+                    Label(
+                        "Clear Diagnostics Log",
+                        systemImage: "trash"
+                    )
+                }
+            }
+        }
+        .id(refreshID)
+        .navigationTitle("Diagnostics")
+        .onAppear {
+            DebugLog.ensureLogFileExists()
+            refreshDiagnostics()
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: UIApplication.didBecomeActiveNotification
+            )
+        ) { _ in
+            refreshDiagnostics()
         }
     }
 }

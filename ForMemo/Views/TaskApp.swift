@@ -10,8 +10,6 @@ import CoreLocation
 import AppKit
 #endif
 
-
-
 @main
 struct ForMemoApp: App {
     
@@ -92,11 +90,16 @@ struct ForMemoApp: App {
         defaults.synchronize()
         
         
+        DebugLog.writeAppLaunch()
+        print(DebugLog.logURL)
+        DebugLog.write("TEST")
+        
         let sharedContainer = Persistence.sharedModelContainer
         self.container = sharedContainer
         
         NotificationManager.shared.modelContainer = sharedContainer
         CloudSettingsSync.shared.start()
+        DebugLog.writeCloudKitEvent("CloudSettingsSync started")
         
         Task { @MainActor in
             let context = sharedContainer.mainContext
@@ -104,8 +107,12 @@ struct ForMemoApp: App {
             // 🔥 Wait initial SwiftData / CloudKit stabilization
             try? await Task.sleep(for: .seconds(2.0))
 
+            DebugLog.writeMigrationEvent("Initial CloudKit stabilization completed")
             // 🔥 Attachment migration after stabilization
             AttachmentMigration.runIfNeeded(context: context)
+            
+            LegacyTaskRecovery.runIfNeeded(context: context)
+            DebugLog.writeAttachmentEvent("Attachment migration completed")
         }
 
         Task { @MainActor in
@@ -256,6 +263,7 @@ struct ForMemoApp: App {
                 Task { @MainActor in
 
                     AppLogger.notifications.info("🟢 App became active")
+                    DebugLog.write("🟢 APP ACTIVE")
                     
                     // 🔥 AUTO-FIX LOCATION PERMISSIONS
                     let status = CLLocationManager().authorizationStatus
@@ -284,6 +292,7 @@ struct ForMemoApp: App {
                     // after app becomes active and CloudKit stabilizes.
                     try? await Task.sleep(for: .seconds(1.5))
                     AttachmentMigration.runIfNeeded(context: context)
+                    DebugLog.writeAttachmentEvent("Attachment self-healing completed")
                     
                     // 2️⃣ 🔥 CLEANUP ALLEGATI (QUI è il punto giusto)
                     if autoDeleteCompletedAttachments {
@@ -339,7 +348,7 @@ struct ForMemoApp: App {
 #if DEBUG
                 AppLogger.notifications.debug("📡 CloudKit push ricevuto")
 #endif
-
+                DebugLog.writeCloudKitEvent("Remote change notification received")
                 NotificationManager.shared.refreshFromCloudKit()
                 
                 let context = self.container.mainContext
