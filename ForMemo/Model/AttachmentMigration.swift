@@ -178,9 +178,6 @@ enum AttachmentMigration {
                     continue
                 }
 
-                // trigger ubiquitous upload/download state
-                try? fm.startDownloadingUbiquitousItem(at: newURL)
-
                 // 🔥 Attachment exists in database
                 if attachmentsByRelativePath[fileName] != nil {
                     log("📎 Attachment metadata found")

@@ -42,16 +42,21 @@ enum DeletedFingerprintStore {
     static func buildFingerprint(
         for task: TodoTask
     ) -> String {
-        
+
         let normalizedTitle = task.title
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
-        
+
         let deadline = Int(
             (task.deadLine ?? .distantPast)
                 .timeIntervalSince1970 / 60
         )
-        
-        return "\(normalizedTitle)|\(deadline)"
+
+        let created = Int(
+            task.createdAt
+                .timeIntervalSince1970 / 60
+        )
+
+        return "\(normalizedTitle)|\(deadline)|\(created)"
     }
 }

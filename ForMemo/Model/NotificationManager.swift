@@ -6,6 +6,25 @@ import os
 
 
 @MainActor
+final class CloudKitSyncMonitor {
+
+    static let shared = CloudKitSyncMonitor()
+
+    private var lastRemoteChange = Date.distantPast
+
+    private init() {}
+
+    func markRemoteChange() {
+        lastRemoteChange = Date()
+    }
+
+    var isStable: Bool {
+        Date().timeIntervalSince(lastRemoteChange) > 2.5
+    }
+}
+
+
+@MainActor
 final class NotificationManager: NSObject {
     
     static let shared = NotificationManager()
@@ -241,6 +260,7 @@ final class NotificationManager: NSObject {
         self.isProcessingCloudKit = true
 
         cloudKitDebounceTask?.cancel()
+        CloudKitSyncMonitor.shared.markRemoteChange()
 
         cloudKitDebounceTask = Task { [weak self] in
             guard let self else { return }
@@ -253,6 +273,14 @@ final class NotificationManager: NSObject {
                 self.refresh(force: true)
                 self.lastPushHandledSafe = Date()
             }
+
+            if !CloudKitSyncMonitor.shared.isStable {
+                await MainActor.run {
+                    self.isProcessingCloudKit = false
+                }
+                return
+            }
+
             NotificationCenter.default.post(
                 name: .cloudKitDidStabilize,
                 object: nil

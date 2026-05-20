@@ -33,7 +33,11 @@ struct SearchTasksIntent: AppIntent {
         print("SearchTasksIntent started")
         print("Search query:", query)
 #endif
-        let context = Persistence.shared.mainContext
+        let container = Persistence.makeModelContainer(
+            cloudKitEnabled: true
+        )
+
+        let context = container.mainContext
         
         let normalizedQuery = query
             .trimmingCharacters(in: .whitespacesAndNewlines)

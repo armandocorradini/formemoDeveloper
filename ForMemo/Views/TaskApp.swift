@@ -55,12 +55,22 @@ struct ForMemoApp: App {
     // MARK: - Persistence
     
     private let container: ModelContainer
+
+    private static let legacyBootstrapCompletedKey = "legacyBootstrapCompleted"
+
+    private static var needsLegacyBootstrap: Bool {
+        guard !UserDefaults.standard.bool(
+            forKey: legacyBootstrapCompletedKey
+        ) else {
+            return false
+        }
+        return LegacyPersistence.legacyStoreExists
+    }
     
     
     // MARK: - Init
     
     init() {
-        
         CrashDetector.markLaunchStarted()
         let defaults = UserDefaults.standard
 
@@ -89,129 +99,93 @@ struct ForMemoApp: App {
             }
         }
         defaults.synchronize()
-        
-        
+
+
         DebugLog.writeAppLaunch()
         print(DebugLog.logURL)
         DebugLog.write("TEST")
-        
-        let sharedContainer = Persistence.sharedModelContainer
-        self.container = sharedContainer
-        
-        NotificationManager.shared.modelContainer = sharedContainer
-        
-        RecoveryCoordinator.shared.configure(
-            modelContainer: sharedContainer
+
+        let sharedContainer = Persistence.makeModelContainer(
+            cloudKitEnabled: !Self.needsLegacyBootstrap
         )
-        
-        CloudSettingsSync.shared.start()
-        DebugLog.writeCloudKitEvent("CloudSettingsSync started")
+
+        self.container = sharedContainer
+
+        DebugLog.write(
+            Self.needsLegacyBootstrap
+            ? "🟠 BOOTSTRAP: App started with LOCAL container"
+            : "☁️ CLOUDKIT: App started with CloudKit container"
+        )
+
+        NotificationManager.shared.modelContainer = sharedContainer
+
+        if Self.needsLegacyBootstrap {
+
+            DebugLog.write(
+                "🟠 BOOTSTRAP: CloudKit DISABLED during legacy migration"
+            )
+
+        } else {
+
+            CloudSettingsSync.shared.start()
+
+            DebugLog.writeCloudKitEvent(
+                "CloudSettingsSync started"
+            )
+        }
         
         Task { @MainActor in
             let context = sharedContainer.mainContext
-            
-            // 🔥 Wait initial SwiftData / CloudKit stabilization
-            try? await Task.sleep(for: .seconds(2.0))
 
-            DebugLog.writeMigrationEvent("Initial CloudKit stabilization completed")
-            // 🔥 Attachment migration after stabilization
-            AttachmentMigration.runIfNeeded(context: context)
-            
-            DebugLog.writeAttachmentEvent("Attachment migration completed")
+            if Self.needsLegacyBootstrap {
+
+                DebugLog.write(
+                    "🟠 BOOTSTRAP: Starting offline-first legacy migration"
+                )
+
+                // 🔥 IMPORTANT:
+                // Legacy import MUST complete BEFORE CloudKit startup.
+                // This prevents CloudKit from downloading the same tasks
+                // while recovery is still importing them locally.
+
+                await LegacyTaskRecovery.runIfNeeded(
+                    context: context
+                )
+
+                // 🔥 Attachments migration AFTER local bootstrap.
+                AttachmentMigration.runIfNeeded(
+                    context: context
+                )
+
+                // 🔥 Reset old CloudKit database BEFORE enabling sync.
+                CloudKitResetManager.performLocalResetIfNeeded()
+
+                // 🔥 Bootstrap fully completed.
+                // Next app launch will start directly in CloudKit mode.
+                UserDefaults.standard.set(
+                    true,
+                    forKey: Self.legacyBootstrapCompletedKey
+                )
+
+                DebugLog.write(
+                    "🟠 BOOTSTRAP: Legacy migration completed"
+                )
+
+                DebugLog.write(
+                    "🟠 BOOTSTRAP: Restart app to enable CloudKit"
+                )
+
+            } else {
+
+                AttachmentMigration.runIfNeeded(
+                    context: context
+                )
+            }
         }
 
         Task { @MainActor in
             let context = sharedContainer.mainContext
-            
-            let descriptor = FetchDescriptor<TodoTask>()
-            let allTasks = (try? context.fetch(descriptor)) ?? []
 
-            let grouped = Dictionary(grouping: allTasks, by: \.id)
-
-            var removedDuplicates = false
-
-            func taskScore(_ task: TodoTask) -> Int {
-
-                var score = 0
-
-                // 🔥 attachments = priorità massima
-                score += (task.attachments?.count ?? 0) * 100
-
-                // 🔥 descrizione
-                if !task.taskDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    score += 20
-                }
-
-                // 🔥 location
-                if task.locationName != nil {
-                    score += 20
-                }
-
-                // 🔥 reminder
-                if task.reminderOffsetMinutes != nil {
-                    score += 10
-                }
-
-                // 🔥 deadline
-                if task.deadLine != nil {
-                    score += 10
-                }
-
-                // 🔥 task completato = leggermente preferito
-                if task.isCompleted {
-                    score += 5
-                }
-
-                return score
-            }
-
-            for (id, tasks) in grouped where tasks.count > 1 {
-
-                let sortedTasks = tasks.sorted {
-
-                    // 🔥 priorità ai task NON completati
-                    if $0.isCompleted != $1.isCompleted {
-                        return !$0.isCompleted
-                    }
-
-                    let leftScore = taskScore($0)
-                    let rightScore = taskScore($1)
-
-                    // 🔥 poi score completezza
-                    if leftScore != rightScore {
-                        return leftScore > rightScore
-                    }
-
-                    // 🔥 infine createdAt più recente
-                    return $0.createdAt > $1.createdAt
-                }
-
-                guard let keptTask = sortedTasks.first else {
-                    continue
-                }
-
-#if DEBUG
-                print("🧹 Duplicate cleanup for ID: \(id.uuidString)")
-                print("✅ Keeping task: \(keptTask.title) | completed: \(keptTask.isCompleted)")
-#endif
-
-                for duplicate in sortedTasks.dropFirst() {
-#if DEBUG
-                    print("⚠️ Duplicate detected (not deleted): \(duplicate.title) | completed: \(duplicate.isCompleted)")
-#endif
-                    // context.delete(duplicate)
-                    removedDuplicates = true
-                }
-            }
-
-            if removedDuplicates {
-#if DEBUG
-                print("⚠️ Duplicate tasks detected during startup")
-#endif
-            }
-            
-            
-            
             // 1️⃣ Setup notifiche (PRIMA DI TUTTO)
             await NotificationManager.shared.configure()
             
@@ -227,8 +201,8 @@ struct ForMemoApp: App {
                 object: nil
             )
             
-            // 4️⃣ Wait migration / CloudKit materialization
-            try? await Task.sleep(for: .seconds(3.0))
+            // 🔥 Longer stabilization after bootstrap / CloudKit startup.
+            try? await Task.sleep(for: .seconds(5.0))
             
             // 5️⃣ Final notification rebuild
             NotificationManager.shared.refresh(force: true)
@@ -294,8 +268,7 @@ struct ForMemoApp: App {
                     // 1️⃣ Applica azioni notifiche
                     NotificationActionProcessor.shared.processAll(using: context)
 
-                    // 🔥 Retry attachment migration/self-healing
-                    // after app becomes active and CloudKit stabilizes.
+                    // 🔥 Attachment integrity verification
                     try? await Task.sleep(for: .seconds(1.5))
                     AttachmentMigration.runIfNeeded(context: context)
                     DebugLog.writeAttachmentEvent("Attachment self-healing completed")
@@ -341,27 +314,30 @@ struct ForMemoApp: App {
     // MARK: - 🔥 CLOUDKIT REALTIME (VERO)
     
     private func startRemoteChangeObserver() {
-        
         NotificationCenter.default.addObserver(
             forName: .NSPersistentStoreRemoteChange,
             object: nil,
             queue: .main
         ) { _ in
-            
             Task { @MainActor in
-                
                 // 🔥 COALESCING CLOUDKIT PUSH
 #if DEBUG
                 AppLogger.notifications.debug("📡 CloudKit push ricevuto")
 #endif
                 DebugLog.writeCloudKitEvent("Remote change notification received")
+
                 NotificationManager.shared.refreshFromCloudKit()
-                
+
                 let context = self.container.mainContext
-                NotificationActionProcessor.shared.processAll(using: context)
-                
-                _ = try? context.fetch(FetchDescriptor<TodoTask>())
-                
+
+                NotificationActionProcessor.shared.processAll(
+                    using: context
+                )
+
+                _ = try? context.fetch(
+                    FetchDescriptor<TodoTask>()
+                )
+
                 // ✅ trigger UI
                 NotificationCenter.default.post(
                     name: .attachmentsShouldRefresh,
@@ -495,6 +471,7 @@ struct ForMemoApp: App {
         try? context.save()
     }
 }
+
 
 extension Notification.Name {
     static let locationPermissionAutoDisabled = Notification.Name("locationPermissionAutoDisabled")

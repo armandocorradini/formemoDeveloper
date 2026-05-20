@@ -79,7 +79,11 @@ struct GetTasksIntent: AppIntent {
 #endif
         
         
-        let context = Persistence.shared.mainContext
+        let container = Persistence.makeModelContainer(
+            cloudKitEnabled: true
+        )
+        
+        let context = container.mainContext
         let calendar = Calendar.autoupdatingCurrent
 
         let normalizedQuery = query

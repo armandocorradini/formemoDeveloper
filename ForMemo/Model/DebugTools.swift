@@ -358,16 +358,17 @@ struct ExportDiagnosticsView: View {
                 }
                 
                 let recoveryCompleted = UserDefaults.standard.bool(
-                    forKey: "legacyRecoveryCompleted"
+                    forKey: "legacyBootstrapCompleted"
                 )
-                
+
                 let recoveryStartDate = UserDefaults.standard.object(
                     forKey: "legacyRecoveryStartDate"
                 ) as? Date
+
+                let recoveredTasks = UserDefaults.standard.integer(
+                    forKey: "legacyImportedTasksCount"
+                )
                 
-                let recoveredFingerprints = UserDefaults.standard.stringArray(
-                    forKey: "legacyRecoveredFingerprints"
-                ) ?? []
                 
                 LabeledContent("Recovery Status") {
                     Text(
@@ -394,7 +395,7 @@ struct ExportDiagnosticsView: View {
                 }
                 
                 LabeledContent("Recovered Tasks") {
-                    Text("\(recoveredFingerprints.count)")
+                    Text("\(recoveredTasks)")
                 }
                 
                 ShareLink(

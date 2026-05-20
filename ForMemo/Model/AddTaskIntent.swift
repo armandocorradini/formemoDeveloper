@@ -120,7 +120,11 @@ struct AddTaskIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let context = Persistence.shared.mainContext
+        let container = Persistence.makeModelContainer(
+            cloudKitEnabled: true
+        )
+
+        let context = container.mainContext
         let now = Date()
         
         let parsed = NaturalLanguageParser.parse(input)
