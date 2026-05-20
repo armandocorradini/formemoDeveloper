@@ -98,6 +98,11 @@ struct ForMemoApp: App {
         self.container = sharedContainer
         
         NotificationManager.shared.modelContainer = sharedContainer
+        
+        RecoveryCoordinator.shared.configure(
+            modelContainer: sharedContainer
+        )
+        
         CloudSettingsSync.shared.start()
         DebugLog.writeCloudKitEvent("CloudSettingsSync started")
         
@@ -111,7 +116,6 @@ struct ForMemoApp: App {
             // 🔥 Attachment migration after stabilization
             AttachmentMigration.runIfNeeded(context: context)
             
-            await LegacyTaskRecovery.runIfNeeded(context: context)
             DebugLog.writeAttachmentEvent("Attachment migration completed")
         }
 

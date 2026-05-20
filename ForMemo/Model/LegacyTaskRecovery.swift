@@ -104,11 +104,9 @@ enum LegacyTaskRecovery {
             
             let legacyTasks = try legacyContext.fetch(descriptor)
             
-            log("⏳ Waiting CloudKit stabilization before recovery")
-            
-            try? await Task.sleep(
-                for: .seconds(15)
-            )
+//            try? await Task.sleep(
+//                for: .seconds(15)
+//            )
             
             let currentTasks = try context.fetch(descriptor)
             
