@@ -271,6 +271,40 @@ enum DebugLog {
     }
 }
 
+enum CrashDetector {
+
+    private static let activeKey = "appWasRunning"
+
+    static func markLaunchStarted() {
+
+        if detectPreviousCrash() {
+            DebugLog.write(
+                "⚠️ Previous session terminated unexpectedly"
+            )
+        }
+
+        UserDefaults.standard.set(
+            true,
+            forKey: activeKey
+        )
+    }
+
+    static func markLaunchCompleted() {
+
+        UserDefaults.standard.set(
+            false,
+            forKey: activeKey
+        )
+    }
+
+    static func detectPreviousCrash() -> Bool {
+
+        UserDefaults.standard.bool(
+            forKey: activeKey
+        )
+    }
+}
+
 struct ExportDiagnosticsView: View {
     @State private var logExists = false
     @State private var logContent = ""

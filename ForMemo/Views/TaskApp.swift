@@ -61,6 +61,7 @@ struct ForMemoApp: App {
     
     init() {
         
+        CrashDetector.markLaunchStarted()
         let defaults = UserDefaults.standard
 
         if defaults.object(forKey: "badgeIncludeExpired") == nil {
@@ -231,6 +232,7 @@ struct ForMemoApp: App {
             
             // 5️⃣ Final notification rebuild
             NotificationManager.shared.refresh(force: true)
+            CrashDetector.markLaunchCompleted()
         }
         
         // 6️⃣ CloudKit observer

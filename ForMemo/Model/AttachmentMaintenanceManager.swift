@@ -60,10 +60,10 @@ final class AttachmentMaintenanceManager {
                 context.insert(item)
 
                 context.delete(attachment)
-                context.processPendingChanges() // 🔥 sync UI immediata
             }
         }
         
+        context.processPendingChanges()
         context.safeSave(operation: "AttachmentCleanup")
 
     }
@@ -98,9 +98,9 @@ final class AttachmentMaintenanceManager {
             context.insert(item)
 
             context.delete(attachment)
-            context.processPendingChanges() // 🔥 sync UI immediata
         }
         
+        context.processPendingChanges()
         context.safeSave(operation: "AttachmentCleanup")
   
     }
@@ -124,9 +124,9 @@ final class AttachmentMaintenanceManager {
             context.insert(item)
 
             context.delete(attachment)
-            context.processPendingChanges() // 🔥 sync UI immediata
         }
         
+        context.processPendingChanges()
         context.safeSave(operation: "AttachmentCleanup")
         
     }

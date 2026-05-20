@@ -33,7 +33,7 @@ final class TaskAttachment {
 }
 extension TaskAttachment {
     
-    static let attachmentsDirectory: URL? = {
+    static var attachmentsDirectory: URL? = {
 
         let fm = FileManager.default
 
@@ -78,7 +78,7 @@ extension TaskAttachment {
         return nil
     }()
     
-    static let trashDirectory: URL? = {
+    static var trashDirectory: URL? = {
         
         let fm = FileManager.default
         

@@ -260,7 +260,11 @@ enum LegacyTaskRecovery {
                 .timeIntervalSince1970 / 60
         )
         
-        return "\(normalizedTitle)|\(deadline)"
+        let created = Int(
+            task.createdAt.timeIntervalSince1970 / 60
+        )
+        
+        return "\(normalizedTitle)|\(deadline)|\(created)"
     }
     
     // MARK: - Log
