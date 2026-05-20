@@ -1,6 +1,8 @@
 import Foundation
 import SwiftData
 import UIKit
+import UserNotifications
+import CloudKit
 import SwiftUI
 
 enum DebugTools {
@@ -215,6 +217,54 @@ enum DebugLog {
         
         writeSeparator()
         write("🚀 APP LAUNCH")
+        let device = UIDevice.current.model
+        let system = UIDevice.current.systemVersion
+
+        write("📱 Device: \(device)")
+        write("📱 iOS: \(system)")
+
+        UNUserNotificationCenter.current()
+            .getPendingNotificationRequests { requests in
+                DebugLog.write(
+                    "🔔 Pending notifications: \(requests.count)"
+                )
+            }
+
+        CKContainer.default().accountStatus { status, error in
+
+            if let error {
+                DebugLog.write(
+                    "☁️ iCloud account error: \(error.localizedDescription)"
+                )
+                return
+            }
+
+            let description: String
+
+            switch status {
+            case .available:
+                description = "available"
+
+            case .noAccount:
+                description = "noAccount"
+
+            case .restricted:
+                description = "restricted"
+
+            case .couldNotDetermine:
+                description = "couldNotDetermine"
+
+            case .temporarilyUnavailable:
+                description = "temporarilyUnavailable"
+
+            @unknown default:
+                description = "unknown"
+            }
+
+            DebugLog.write(
+                "☁️ iCloud account status: \(description)"
+            )
+        }
     }
     
     static func writeCloudKitEvent(_ message: String) {
@@ -341,17 +391,10 @@ struct ExportDiagnosticsView: View {
                     Text("\(version) (\(build))")
                 }
                 
+#if DEBUG
                 LabeledContent("Legacy Store") {
                     Text(
                         LegacyPersistence.legacyStoreExists
-                        ? "Available"
-                        : "Missing"
-                    )
-                }
-                
-                LabeledContent("Diagnostics File") {
-                    Text(
-                        logExists
                         ? "Available"
                         : "Missing"
                     )
@@ -397,7 +440,15 @@ struct ExportDiagnosticsView: View {
                 LabeledContent("Recovered Tasks") {
                     Text("\(recoveredTasks)")
                 }
+#endif
                 
+                HStack(){
+                    Text("Support")
+                        .foregroundStyle(.primary)
+
+                    Text("formemo.app@gmail.com")
+                        .foregroundStyle(.blue)
+                }
                 ShareLink(
                     item: DebugLog.logURL,
                     preview: SharePreview(
@@ -411,6 +462,7 @@ struct ExportDiagnosticsView: View {
                     )
                 }
                 
+#if DEBUG
                 if logExists {
                     
                     VStack(alignment: .leading, spacing: 8) {
@@ -438,6 +490,7 @@ struct ExportDiagnosticsView: View {
                         systemImage: "trash"
                     )
                 }
+#endif
             }
         }
         .id(refreshID)

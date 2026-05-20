@@ -474,6 +474,7 @@ struct EmptySectionView: View {
                     Text(String(localized:("Welcome!")))
                         .font(.largeTitle.bold())
                         .foregroundStyle(.primary)
+                        .padding(.top, 20)
 
                     Image(systemName: "checkmark.circle.dotted")
                         .resizable()
@@ -552,6 +553,12 @@ struct EmptySectionView: View {
             }
             .padding(.top, -20)
             .listRowSeparator(.hidden)
+            .listRowBackground(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .fill(Color(.systemBackground).opacity(0.3))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+            )
             
         }
     }

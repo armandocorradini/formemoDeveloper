@@ -211,7 +211,7 @@ struct TaskDetailView: View {
                 
                 metadataSection
             }
-            .contentMargins(.bottom, 55, for: .scrollContent)
+            .contentMargins(.bottom, 70, for: .scrollContent)
             .scrollContentBackground(.hidden)
             .scrollDismissesKeyboard(.interactively)
         }

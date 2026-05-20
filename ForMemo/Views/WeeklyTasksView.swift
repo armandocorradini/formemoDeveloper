@@ -230,7 +230,7 @@ struct WeeklyTasksView: View {
                         }
                     }
             }
-            .contentMargins(.bottom, 55, for: .scrollContent)
+            .contentMargins(.bottom, 70, for: .scrollContent)
             .background(Color.clear)
             .listRowBackground(Color.clear)
             .listStyle(.plain)
