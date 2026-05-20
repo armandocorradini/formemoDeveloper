@@ -75,7 +75,7 @@ enum LegacyTaskRecovery {
         let created: Int
     }
     
-    static func runIfNeeded(context: ModelContext) {
+    static func runIfNeeded(context: ModelContext) async {
         DebugLog.writeRecoveryEvent("Recovery started")
         
         guard shouldRunRecovery() else {
@@ -103,10 +103,24 @@ enum LegacyTaskRecovery {
             let descriptor = FetchDescriptor<TodoTask>()
             
             let legacyTasks = try legacyContext.fetch(descriptor)
+            
+            log("⏳ Waiting CloudKit stabilization before recovery")
+            
+            try? await Task.sleep(
+                for: .seconds(15)
+            )
+            
             let currentTasks = try context.fetch(descriptor)
             
             log("📦 Legacy tasks: \(legacyTasks.count)")
             log("☁️ Current tasks: \(currentTasks.count)")
+            
+            if currentTasks.count > 0 {
+                
+                log(
+                    "⚠️ Existing CloudKit tasks detected before recovery"
+                )
+            }
             
             guard !legacyTasks.isEmpty else {
                 log("ℹ️ Legacy store empty")

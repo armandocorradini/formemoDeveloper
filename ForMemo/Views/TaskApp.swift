@@ -111,7 +111,7 @@ struct ForMemoApp: App {
             // 🔥 Attachment migration after stabilization
             AttachmentMigration.runIfNeeded(context: context)
             
-            LegacyTaskRecovery.runIfNeeded(context: context)
+            await LegacyTaskRecovery.runIfNeeded(context: context)
             DebugLog.writeAttachmentEvent("Attachment migration completed")
         }
 
