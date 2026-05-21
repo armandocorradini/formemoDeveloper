@@ -64,6 +64,8 @@ struct ICSExporter {
                 let frequency: String
 
                 switch recurrenceRule {
+                case "hourly":
+                    frequency = "HOURLY"
                 case "daily":
                     frequency = "DAILY"
                 case "weekly":

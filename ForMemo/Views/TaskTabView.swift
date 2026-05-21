@@ -6,6 +6,7 @@ struct TaskTabView: View {
     
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
     
     @State private var selectedTab: Int = 0
@@ -104,17 +105,84 @@ struct TaskTabView: View {
             .frame(height: 60)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 12)
-            .background(
-                Color(uiColor: .systemBackground)
-            )
-            
-//            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .clipShape(Capsule())
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
-            )
-            .shadow(color: .black.opacity(0.15), radius: 10, y: 4)
+            .background {
+                Capsule(style: .continuous)
+                    .fill(.regularMaterial)
+                    .overlay {
+                        Capsule(style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.24),
+                                        Color.white.opacity(0.05),
+                                        Color.clear
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                    }
+                    .overlay(alignment: .top) {
+                        Capsule(style: .continuous)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.40),
+                                        Color.white.opacity(0.08)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                ),
+                                lineWidth: 0.8
+                            )
+                            .blur(radius: 0.25)
+                    }
+                    .overlay(alignment: .bottom) {
+                        Capsule(style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.black.opacity(0.10),
+                                        Color.clear
+                                    ],
+                                    startPoint: .bottom,
+                                    endPoint: .top
+                                )
+                            )
+                            .blur(radius: 6)
+                            .offset(y: 8)
+                    }
+                    .overlay {
+                        Capsule(style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.10),
+                                        Color.white.opacity(0.015)
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                    }
+                    .overlay(alignment: .topLeading) {
+                        Capsule(style: .continuous)
+                            .fill(
+                                RadialGradient(
+                                    colors: [
+                                        Color.white.opacity(colorScheme == .light ? 0.22 : 0.08),
+                                        Color.clear
+                                    ],
+                                    center: .topLeading,
+                                    startRadius: 4,
+                                    endRadius: 140
+                                )
+                            )
+                    }
+            }
+            .compositingGroup()
+            .shadow(color: .black.opacity(0.14), radius: 24, y: 12)
+            .shadow(color: .white.opacity(0.05), radius: 2, y: -1)
             .padding(.horizontal, 16)
             .padding(.bottom, 2)//avvicina o allontana la bar al fondo telefono
         }

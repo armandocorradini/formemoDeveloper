@@ -351,23 +351,21 @@ struct NewTaskSheetView: View {
                                 Spacer()
 
                                 Picker("", selection: $selectedRecurrence) {
-                                    ForEach(RecurrenceUI.allCases) { option in
+                                    ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
                                         Text({
                                             let plural = draftTask.recurrenceInterval > 1
 
                                             switch option {
+                                            case .hourly:
+                                                return NSLocalizedString(plural ? "hours" : "hour", comment: "")
                                             case .daily:
                                                 return NSLocalizedString(plural ? "days" : "day", comment: "")
-
                                             case .weekly:
                                                 return NSLocalizedString(plural ? "weeks" : "week", comment: "")
-
                                             case .monthly:
                                                 return NSLocalizedString(plural ? "months" : "month", comment: "")
-
                                             case .yearly:
                                                 return NSLocalizedString(plural ? "years" : "year", comment: "")
-
                                             case .none:
                                                 return NSLocalizedString("recurrence.none", comment: "")
                                             }
@@ -415,23 +413,21 @@ struct NewTaskSheetView: View {
                                 .tint(.primary)
 
                                 Picker("", selection: $selectedRecurrence) {
-                                    ForEach(RecurrenceUI.allCases) { option in
+                                    ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
                                         Text({
                                             let plural = draftTask.recurrenceInterval > 1
 
                                             switch option {
+                                            case .hourly:
+                                                return NSLocalizedString(plural ? "hours" : "hour", comment: "")
                                             case .daily:
                                                 return NSLocalizedString(plural ? "days" : "day", comment: "")
-
                                             case .weekly:
                                                 return NSLocalizedString(plural ? "weeks" : "week", comment: "")
-
                                             case .monthly:
                                                 return NSLocalizedString(plural ? "months" : "month", comment: "")
-
                                             case .yearly:
                                                 return NSLocalizedString(plural ? "years" : "year", comment: "")
-
                                             case .none:
                                                 return NSLocalizedString("recurrence.none", comment: "")
                                             }
@@ -767,11 +763,12 @@ extension RecurrenceUI {
     var localizationKey: String {
         switch self {
         case .none: return "recurrence.none"
+        case .hourly: return "recurrence.hourly"
         case .daily: return "recurrence.daily"
         case .weekly: return "recurrence.weekly"
         case .monthly: return "recurrence.monthly"
         case .yearly: return "recurrence.yearly"
         }
     }
-    }
+}
 

@@ -67,7 +67,7 @@ struct HomeView: View {
                             .foregroundStyle(.secondary.opacity(0.7))
                             .padding(.top, 4)
                     }
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 60)
                 }
                 .frame(maxWidth: .infinity)
             }

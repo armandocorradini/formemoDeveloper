@@ -134,7 +134,7 @@ struct AppQuickGuideView: View {
             ),
         .init(
             title: String(localized:"Recurring Tasks"),
-            description: String(localized:"Set tasks to repeat daily, weekly, monthly, or yearly. When you complete a recurring task, the next one is created automatically based on the selected frequency."),
+            description: String(localized:"Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the next one is created automatically based on the selected frequency."),
             icon: "arrow.triangle.2.circlepath",
             tint: .blue
         ),

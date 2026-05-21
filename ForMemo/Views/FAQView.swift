@@ -41,7 +41,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"How do recurring tasks work?"),
-                answer: String(localized:"You can set tasks to repeat daily, weekly, monthly, or yearly. When you complete a recurring task, the app automatically creates the next one based on the selected frequency, so you don’t need to recreate it manually. You can modify or stop recurrence at any time.")
+                answer: String(localized:"You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the app automatically creates the next one based on the selected frequency, so you don’t need to recreate it manually. You can modify or stop recurrence at any time.")
             )
         ]),
 

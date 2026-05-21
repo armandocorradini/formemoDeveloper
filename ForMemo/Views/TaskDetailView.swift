@@ -10,6 +10,7 @@ import os
 enum RecurrenceUI: String, CaseIterable, Identifiable {
     
     case none
+    case hourly
     case daily
     case weekly
     case monthly
@@ -20,6 +21,7 @@ enum RecurrenceUI: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .none: return "None"
+        case .hourly: return "Every hour"
         case .daily: return "Every day"
         case .weekly: return "Every week"
         case .monthly: return "Every month"

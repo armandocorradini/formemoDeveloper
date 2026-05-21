@@ -104,11 +104,16 @@ struct ScheduleSection: View {
                             Spacer()
 
                             Picker("", selection: $selectedRecurrence) {
-                                ForEach(RecurrenceUI.allCases) { option in
+                                ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
                                     Text({
                                         let plural = task.recurrenceInterval > 1
 
                                         switch option {
+                                        case .hourly:
+                                            return plural
+                                            ? String(localized: "hours")
+                                            : String(localized: "hour")
+
                                         case .daily:
                                             return plural
                                             ? String(localized: "days")
@@ -184,11 +189,16 @@ struct ScheduleSection: View {
 
                         if selectedRecurrence != .none {
                             Picker("", selection: $selectedRecurrence) {
-                                ForEach(RecurrenceUI.allCases) { option in
+                                ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
                                     Text({
                                         let plural = task.recurrenceInterval > 1
 
                                         switch option {
+                                        case .hourly:
+                                            return plural
+                                            ? String(localized: "hours")
+                                            : String(localized: "hour")
+
                                         case .daily:
                                             return plural
                                             ? String(localized: "days")

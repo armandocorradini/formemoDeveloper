@@ -13,6 +13,7 @@ enum TaskRowStyle: Int {
     case style7 = 7
     case style8 = 8
     case style9 = 9
+    case style10 = 10
 }
 
 // MARK: - MAIN ROW
@@ -154,8 +155,85 @@ extension TaskRowContent {
         case .style7: layoutStyle7()
         case .style8: layoutStyle8()
         case .style9: layoutStyle9()
-//        case .style10: layoutStyle10()
+        case .style10: layoutStyle10()
         }
+    }
+    private func layoutStyle10() -> some View {
+        HStack(spacing: 10) {
+
+            if let deadline = model.deadLine {
+                VStack(spacing: 0) {
+                    Text(deadline, format: .dateTime.weekday(.abbreviated))
+                        .font(.system(size: 9, weight: .bold))
+                        .textCase(.uppercase)
+                        .foregroundStyle(.secondary)
+
+                    Text(deadline, format: .dateTime.day())
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(isToday ? Color.orange : .primary)
+
+                    Text(deadline, format: .dateTime.month(.abbreviated))
+                        .font(.system(size: 10, weight: .semibold))
+                        .textCase(.uppercase)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(width: 42)
+                .opacity(showDateColumn ? 1 : 0)
+            }
+
+            Image(systemName: model.mainIcon)
+                .font(.system(size: 20, weight: .medium))
+                .foregroundStyle(model.mainTag?.color ?? model.statusColor)
+                .frame(width: 26)
+
+            VStack(alignment: .leading, spacing: 2) {
+
+                HStack(alignment: .top, spacing: 5) {
+                    Text(model.title)
+                        .font(.headline)
+                        .foregroundStyle(model.isCompleted ? .secondary : .primary)
+                        .overlay(alignment: .bottomLeading) {
+                            if !model.isCompleted,
+                               (model.deadLine ?? .distantFuture) < Date() {
+
+                                Rectangle()
+                                    .fill(Color.red.opacity(0.75))
+                                    .frame(height: 1)
+                                    .offset(y: 2)
+                            }
+                        }
+                        .lineLimit(1)
+                        .padding(.bottom, 4)
+                        .strikethrough(model.isCompleted)
+
+                    if model.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.blue)
+                    }
+                }
+
+                if let deadline = model.deadLine {
+                    Text(deadline, format: .dateTime.hour().minute())
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            if model.shouldShowBadge,
+               let badge = model.badgeText,
+               let deadline = model.deadLine {
+
+                TaskBadgeView(
+                    deadline: deadline,
+                    badgeText: badge,
+                    statusColor: model.statusColor
+                )
+            }
+        }
+        .padding(.vertical, 6)
     }
 }
 

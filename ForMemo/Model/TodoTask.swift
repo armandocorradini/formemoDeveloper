@@ -23,7 +23,7 @@ final class TodoTask {
     var snoozeUntil: Date? = nil
 
     // MARK: - Recurrence
-    var recurrenceRule: String? = nil // "daily", "weekly", "monthly", "yearly"
+    var recurrenceRule: String? = nil // "hourly", "daily", "weekly", "monthly", "yearly"
     var recurrenceInterval: Int = 1
     
     var isDebugTask: Bool = false
@@ -76,6 +76,8 @@ final class TodoTask {
         let calendar = Calendar.current
         
         switch rule {
+        case "hourly":
+            return calendar.date(byAdding: .hour, value: recurrenceInterval, to: date)
             
         case "daily":
             return calendar.date(byAdding: .day, value: recurrenceInterval, to: date)
@@ -345,6 +347,8 @@ extension TodoTask {
         let interval = max(1, recurrenceInterval)
         
         switch rule {
+        case "hourly":
+            deadLine = calendar.date(byAdding: .hour, value: interval, to: current)
             
         case "daily":
             deadLine = calendar.date(byAdding: .day, value: interval, to: current)

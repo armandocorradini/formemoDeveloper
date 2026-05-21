@@ -43,6 +43,9 @@ struct TaskListView: View {
 
     @AppStorage("TaskListStyle")
     private var listStyleChoice: TaskListStyle = .plain
+    
+    @AppStorage("TaskListShowDateEveryRow")
+    private var showDateEveryRow = false
 
     @State private var taskPendingDeletion: TodoTask?
 
@@ -422,17 +425,28 @@ struct TaskListView: View {
                     ToolbarItem(placement: .topBarLeading) {
                         Menu {
 
-                            Section {
-                                Picker("List Style", selection: $listStyleChoice) {
-                                    ForEach(TaskListStyle.allCases, id: \.self) { style in
-                                        Label(style.localizedName,
-                                              systemImage: style.iconName)
-                                        .tag(style)
-                                    }
+                            Section("Appearance") {
+
+                                Picker("Style", selection: $listStyleChoice) {
+
+                                    Label("Plain", systemImage: "list.bullet")
+                                        .tag(TaskListStyle.plain)
+
+                                    Label("Grouped", systemImage: "square.on.square")
+                                        .tag(TaskListStyle.grouped)
                                 }
-                                .pickerStyle(.inline)
-                            } header: {
-                                Text("List Style")
+                            }
+
+                            Section("Grouped Options") {
+
+                                Toggle(isOn: $showDateEveryRow) {
+
+                                    Label(
+                                        "Show Date On Every Row",
+                                        systemImage: "calendar.day.timeline.left.circle"
+                                    )
+                                }
+                                .disabled(listStyleChoice != .grouped)
                             }
 
                         } label: {
@@ -451,8 +465,6 @@ struct TaskListView: View {
 
         switch listStyleChoice {
         case .plain:
-            content().listStyle(.plain)
-        case .cards:
             content().listStyle(.plain)
         case .grouped:
             content().listStyle(.insetGrouped)
@@ -827,15 +839,12 @@ enum TaskPeriodFilter: String, CaseIterable, Identifiable {
 // MARK: - List Style Enum
 enum TaskListStyle: String, CaseIterable {
     case plain
-    case cards
     case grouped
     
     var localizedName: LocalizedStringKey {
         switch self {
         case .plain:
             return "Plain"
-        case .cards:
-            return "Cards"
         case .grouped:
             return "Grouped"
         }
@@ -844,8 +853,6 @@ enum TaskListStyle: String, CaseIterable {
         switch self {
         case .plain:
             return "list.bullet"
-        case .cards:
-            return "rectangle.grid.1x3"
         case .grouped:
             return "square.on.square"
         }
@@ -972,13 +979,6 @@ struct TodoSectionView: View {
                         bottom: position == .last || position == .single ? 8 : 1,
                         trailing: 14
                     )
-                    : style == .cards
-                    ? EdgeInsets(
-                        top: position == .first || position == .single ? 18 : 0,
-                        leading: 14,
-                        bottom: position == .last || position == .single ? 24 : 0,
-                        trailing: 14
-                    )
                     : EdgeInsets(
                         top: 10,
                         leading: 6,
@@ -1056,35 +1056,31 @@ struct TodoSectionView: View {
 
                 ZStack {
 
-                    (style == .cards
-                     ? AnyShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                     : AnyShape(shape))
-                    .fill(
-                        Color.white.opacity(
-                            colorScheme == .dark ? 0.02 : 0.04
+                    AnyShape(shape)
+                        .fill(
+                            Color.white.opacity(
+                                colorScheme == .dark ? 0.02 : 0.04
+                            )
                         )
-                    )
-                    .padding(.top,
-                        (style == .grouped || style == .cards) &&
-                        (position == .first || position == .single)
-                        ? 8
-                        : 0
-                    )
+                        .padding(.top,
+                                 style == .grouped &&
+                            (position == .first || position == .single)
+                            ? 8
+                            : 0
+                        )
 
-                    (style == .cards
-                     ? AnyShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                     : AnyShape(shape))
-                    .fill(
-                        Color(.systemBackground).opacity(
-                            isToday ? 0.5 : 0.3
+                    AnyShape(shape)
+                        .fill(
+                            Color(.systemBackground).opacity(
+                                isToday ? 0.5 : 0.3
+                            )
                         )
-                    )
-                    .padding(.top,
-                        (style == .grouped || style == .cards) &&
-                        (position == .first || position == .single)
-                        ? 8
-                        : 0
-                    )
+                        .padding(.top,
+                                 style == .grouped &&
+                            (position == .first || position == .single)
+                            ? 8
+                            : 0
+                        )
                 }
                 .overlay(alignment: .leading) {
                     if let highlightOverlay {
@@ -1114,12 +1110,10 @@ struct TodoSectionView: View {
                 }
                 .shadow(
                     color: .black.opacity(
-                        style == .cards
-                        ? (colorScheme == .dark ? 0.16 : 0.08)
-                        : (colorScheme == .dark ? 0.10 : 0.04)
+                        colorScheme == .dark ? 0.10 : 0.04
                     ),
-                    radius: style == .cards ? 8 : 1,
-                    y: style == .cards ? 3 : 0
+                    radius: 1,
+                    y: 0
                 )
             }
         }
@@ -1186,10 +1180,13 @@ struct TodoSectionView: View {
             return date < Date()
         }
     }
+    
+    @AppStorage("TaskListShowDateEveryRow")
+    private var showDateEveryRow = false
 
     var body: some View {
 
-        if listStyleChoice == .grouped || listStyleChoice == .cards {
+        if listStyleChoice == .grouped {
 
             Section {
 
@@ -1200,8 +1197,8 @@ struct TodoSectionView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 18)
-                .padding(.top, 4)
-                .padding(.bottom, 6)
+//                .padding(.top, 1)
+//                .padding(.bottom, 2)
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
@@ -1243,6 +1240,7 @@ struct TodoSectionView: View {
             }
             .listSectionSeparator(.hidden)
             .environment(\.defaultMinListRowHeight, 1)
+            .animation(.snappy(duration: 0.22), value: groupedTasksByDay.map(\.date))
 
         } else {
 
@@ -1261,13 +1259,9 @@ struct TodoSectionView: View {
         TaskRow(
             task: t,
             showDateColumn:
-                listStyleChoice == .cards
+                showDateEveryRow
                 ? true
-                : (
-                    t.deadLine == nil
-                    ? (position == .first || position == .single)
-                    : (position == .first || position == .single)
-                )
+                : (position == .first || position == .single)
         )
 
         .modifier(
@@ -1280,7 +1274,7 @@ struct TodoSectionView: View {
 
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             Button {
-                withAnimation(.easeOut(duration: 0.12)) {
+                withAnimation(.snappy(duration: 0.22)) {
                     toggleCompleted(t)
                 }
             } label: {
@@ -1325,31 +1319,41 @@ struct TodoSectionView: View {
 
             Menu {
                 Button {
-                    postpone(t, byHours: 1)
+                    withAnimation(.snappy(duration: 0.22)) {
+                        postpone(t, byHours: 1)
+                    }
                 } label: {
                     Label("+1 hour", systemImage: "clock.badge")
                 }
 
                 Button {
-                    postpone(t, byHours: 3)
+                    withAnimation(.snappy(duration: 0.22)) {
+                        postpone(t, byHours: 3)
+                    }
                 } label: {
                     Label("+3 hours", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
                 }
 
                 Button {
-                    postpone(t, byDays: 1)
+                    withAnimation(.snappy(duration: 0.22)) {
+                        postpone(t, byDays: 1)
+                    }
                 } label: {
                     Label("+1 day", systemImage: "sun.max")
                 }
 
                 Button {
-                    postpone(t, byDays: 2)
+                    withAnimation(.snappy(duration: 0.22)) {
+                        postpone(t, byDays: 2)
+                    }
                 } label: {
                     Label("+2 days", systemImage: "calendar")
                 }
 
                 Button {
-                    postpone(t, byDays: 3)
+                    withAnimation(.snappy(duration: 0.22)) {
+                        postpone(t, byDays: 3)
+                    }
                 } label: {
                     Label("+3 days", systemImage: "calendar.badge.clock")
                 }
@@ -1455,12 +1459,17 @@ struct CompletedSectionView: View {
                 .listRowInsets(
                     style == .grouped
                     ? EdgeInsets(
-                        top: 1,
+                        top: position == .first || position == .single ? 8 : 1,
                         leading: 14,
-                        bottom: position == .last || position == .single ? 4 : 1,
+                        bottom: position == .last || position == .single ? 8 : 1,
                         trailing: 14
                     )
-                    : EdgeInsets(top: 20, leading: 6, bottom: 20, trailing: 0)
+                    : EdgeInsets(
+                        top: 10,
+                        leading: 6,
+                        bottom: 10,
+                        trailing: 0
+                    )
                 )
                 .listRowBackground(cardBackground())
         }
@@ -1477,9 +1486,7 @@ struct CompletedSectionView: View {
 
                 ZStack {
 
-                    (style == .cards
-                     ? AnyShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-                     : AnyShape(shape))
+                    AnyShape(shape)
                     .fill(Color(.systemBackground).opacity(0.3))
                 }
                 .overlay(alignment: .bottomLeading) {
@@ -1580,7 +1587,7 @@ struct CompletedSectionView: View {
 
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
-                            withAnimation(.easeOut(duration: 0.12)) {
+                            withAnimation(.snappy(duration: 0.22)) {
                                 toggleCompleted(t)
                             }
                         } label: {

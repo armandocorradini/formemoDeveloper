@@ -26,8 +26,12 @@ struct EmptyModifier: ViewModifier {
 }
 struct TaskListAppearanceView: View {
     
-    @AppStorage("TaskListStyle")
-    private var listStyleChoice: TaskListStyle = .cards
+    @AppStorage("selectedTaskListStyle")
+    private var listStyleRawValue: String = TaskListStyle.grouped.rawValue
+
+    private var listStyleChoice: TaskListStyle {
+        TaskListStyle(rawValue: listStyleRawValue) ?? .grouped
+    }
     @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
     private var showBadgeOnlyWithPriority = true
     
@@ -80,6 +84,7 @@ struct TaskListAppearanceView: View {
         String(localized: "Style 7"),
         String(localized: "Style 8"),
         String(localized: "Style 9"),
+        String(localized: "Style 10")
     ]
     
     @State private var refreshID = UUID()
@@ -179,7 +184,7 @@ struct TaskListAppearanceView: View {
                 )
                 .padding(.horizontal, listStyleChoice == .plain ? 12 : 0)
                 .listRowInsets(
-                    listStyleChoice == .cards
+                    listStyleChoice == .grouped
                     ? EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
                     : EdgeInsets(top: 20, leading: 0, bottom: 20, trailing: 0)
                 )
@@ -304,7 +309,7 @@ private struct ListStyleModifier: ViewModifier {
     let style: TaskListStyle
 
     func body(content: Content) -> some View {
-        if style == .cards {
+        if style == .grouped {
             content.listStyle(.insetGrouped)
         } else {
             content.listStyle(.plain)
