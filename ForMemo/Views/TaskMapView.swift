@@ -1,12 +1,6 @@
-//
-//import SwiftUI
-//
-//struct TaskMapView: View {
-//    @Binding var mapPath: NavigationPath
-//    var body: some View {
-//        Text("Hello")
-//    }
-//}
+import SwiftUI
+
+
 enum UrgencyLevel {
     case none, soon, overdue
 }
@@ -48,7 +42,6 @@ struct TaskMapAnnotationModel: Identifiable, Equatable {
     }
 }
 
-import SwiftUI
 import MapKit
 import SwiftData
 

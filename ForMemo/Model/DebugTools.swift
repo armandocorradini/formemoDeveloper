@@ -11,7 +11,7 @@ enum DebugTools {
     
     // MARK: - Generate
     
-    static func generateTasks(context: ModelContext, count: Int = 20000) {
+    static func generateTasks(context: ModelContext, count: Int = 2000) {
         let start = Date()
         let calendar = Calendar.current
         let now = Date()
@@ -181,6 +181,19 @@ enum DebugLog {
                 contents: nil
             )
         }
+        if let attributes = try? FileManager.default.attributesOfItem(
+            atPath: logURL.path
+        ),
+           let fileSize = attributes[.size] as? Int,
+           fileSize > 3_000_000 {
+
+            try? "".write(
+                to: logURL,
+                atomically: true,
+                encoding: .utf8
+            )
+        }
+        
         
         if let data = line.data(using: .utf8) {
             

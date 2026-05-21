@@ -225,7 +225,7 @@ struct TaskListView: View {
                             withAnimation {
                                 deleteTask(task, in: modelContext)
                             }
-                            NotificationManager.shared.refresh()
+//  xx                          NotificationManager.shared.refresh()
                             taskPendingDeletion = nil
                         }
                         Button("Cancel", role: .cancel) {
@@ -437,7 +437,7 @@ struct TaskListView: View {
                                 }
                             }
 
-                            Section("Grouped Options") {
+                            Section() {
 
                                 Toggle(isOn: $showDateEveryRow) {
 
@@ -446,7 +446,6 @@ struct TaskListView: View {
                                         systemImage: "calendar.day.timeline.left.circle"
                                     )
                                 }
-                                .disabled(listStyleChoice != .grouped)
                             }
 
                         } label: {
@@ -559,26 +558,19 @@ struct EmptySectionView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading) // Espande il contenitore a tutto schermo a sx
-                    // .padding(.horizontal) // Distanzia il blocco dai bordi dello schermo
+                    .frame(maxWidth: 320, alignment: .leading)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.horizontal, 24)
                 }
             }
             .padding(.top, -20)
             .listRowSeparator(.hidden)
-            .listRowBackground(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .fill(Color(.systemBackground).opacity(0.3))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-            )
+            .listRowBackground(Color.clear)
             
         }
     }
 }
 
-
-import SwiftUI
-import SwiftData
 
 // MARK: - TaskRow
 @MainActor
@@ -958,6 +950,7 @@ struct TodoSectionView: View {
         let task: TodoTask
         let style: TaskListStyle
         let position: DayRowPosition
+        let showBottomSeparator: Bool
 
         @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
         @AppStorage("tasklist.highlightEnabled") private var highlightEnabled: Bool = true
@@ -1033,23 +1026,27 @@ struct TodoSectionView: View {
                             .padding(.trailing, 8)
                     }
                 }
-                // PATCH: Add bottom separator overlay for plain style
+                // PATCH: Add bottom separator overlay for plain style (updated)
                 .overlay(alignment: .bottomLeading) {
-                    Rectangle()
-                        .fill(
-                            colorScheme == .dark
-                            ? Color.white.opacity(0.10)
-                            : Color.black.opacity(0.06)
-                        )
-                        .frame(height: 0.5)
-                        .padding(.leading, 76)
+
+                    if showBottomSeparator {
+
+                        Rectangle()
+                            .fill(
+                                colorScheme == .dark
+                                ? Color.white.opacity(0.065)
+                                : Color.black.opacity(0.04)
+                            )
+                            .frame(height: 0.33)
+                            .padding(.leading, 76)
+                    }
                 }
-                // PATCH: Add subtle shadow for plain style
+                // PATCH: Add subtle shadow for plain style (updated)
                 .shadow(
                     color: .black.opacity(
-                        colorScheme == .dark ? 0.06 : 0.03
+                        colorScheme == .dark ? 0.035 : 0.018
                     ),
-                    radius: 1,
+                    radius: 0.6,
                     y: 0
                 )
             } else {
@@ -1091,28 +1088,29 @@ struct TodoSectionView: View {
                             .padding(.leading, 10)
                     }
                 }
+                // PATCH: Add bottom separator overlay for grouped style (updated)
                 .overlay(alignment: .bottomLeading) {
 
-                    if style == .grouped &&
-                        position != .last &&
+                    if position != .last &&
                         position != .single {
 
                         Rectangle()
                             .fill(
                                 colorScheme == .dark
-                                ? Color.white.opacity(0.14)
-                                : Color.black.opacity(0.10)
+                                ? Color.white.opacity(0.09)
+                                : Color.black.opacity(0.06)
                             )
-                            .frame(height: 0.5)
+                            .frame(height: 0.35)
                             .padding(.leading, 76)
                             .padding(.trailing, 24)
                     }
                 }
+                // PATCH: Add subtle shadow for grouped style (updated)
                 .shadow(
                     color: .black.opacity(
-                        colorScheme == .dark ? 0.10 : 0.04
+                        colorScheme == .dark ? 0.055 : 0.022
                     ),
-                    radius: 1,
+                    radius: 0.8,
                     y: 0
                 )
             }
@@ -1246,9 +1244,27 @@ struct TodoSectionView: View {
 
             Section(String(localized:"To do (\(tasks.count))")) {
 
-                ForEach(tasks, id: \.id) { t in
+                ForEach(Array(tasks.enumerated()), id: \.element.id) { index, t in
 
-                    taskRow(for: t, position: .single)
+                    let currentDay = Calendar.current.startOfDay(
+                        for: t.deadLine ?? .distantFuture
+                    )
+
+                    let previousDay: Date? = {
+
+                        guard index > 0 else { return nil }
+
+                        return Calendar.current.startOfDay(
+                            for: tasks[index - 1].deadLine ?? .distantFuture
+                        )
+                    }()
+
+                    let isFirstOfDay = previousDay != currentDay
+
+                    taskRow(
+                        for: t,
+                        position: isFirstOfDay ? .first : .middle
+                    )
                 }
             }
         }
@@ -1268,7 +1284,11 @@ struct TodoSectionView: View {
             RowCardStyle(
                 task: t,
                 style: listStyleChoice,
-                position: position
+                position: position,
+                showBottomSeparator:
+                    listStyleChoice == .plain
+                    ? position != .last && position != .single
+                    : true
             )
         )
 
@@ -1291,7 +1311,7 @@ struct TodoSectionView: View {
                     withAnimation(.easeOut(duration: 0.12)) {
                         deleteTask(t, in: modelContext)
                     }
-                    NotificationManager.shared.refresh()
+//   xx                 NotificationManager.shared.refresh()
                 }
             } label: {
                 Label("Delete", systemImage: "trash")
@@ -1606,7 +1626,7 @@ struct CompletedSectionView: View {
                                 withAnimation(.easeOut(duration: 0.12)) {
                                     deleteTask(t, in: modelContext)
                                 }
-                                NotificationManager.shared.refresh()
+//    xx                            NotificationManager.shared.refresh()
                             }
 
                         } label: {

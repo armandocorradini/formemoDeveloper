@@ -179,7 +179,8 @@ struct TaskListAppearanceView: View {
                     TodoSectionView.RowCardStyle(
                         task: previewTask,
                         style: listStyleChoice,
-                        position: .single
+                        position: .single,
+                        showBottomSeparator: false
                     )
                 )
                 .padding(.horizontal, listStyleChoice == .plain ? 12 : 0)
