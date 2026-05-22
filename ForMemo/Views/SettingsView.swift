@@ -5,23 +5,20 @@ import CoreData
 import CoreLocation
 
 
-// MARK: - SoundPickerContext
 enum SoundPickerContext {
     case task
     case location
 }
 
-// MARK: - SettingsView
 struct SettingsView: View {
     
     @Environment(\.modelContext) private var modelContext
 
+    
 #if DEBUG
     @State private var hasTestData: Bool = false
     @State private var areTestTasksCompleted: Bool = false
 #endif
-
-    
     @AppStorage("navigationApp")
     private var navigationAppRaw: String = NavigationApp.appleMaps.rawValue
     @State private var showQuickGuide = false
@@ -31,55 +28,36 @@ struct SettingsView: View {
     @State private var showOtherSettings = false
     @State private var showSiri = false
     @State private var showRecentlyDeleted = false
-
     @State private var showDeleteAllAlert = false
-    
     private var navigationApp: NavigationApp {
         NavigationApp(rawValue: navigationAppRaw) ?? .appleMaps
     }
-    
     @AppStorage("selectedTheme") private var selectedTheme: AppTheme = .system
-    @AppStorage("startupTab") private var startupTab: Int = 1
-    
     @AppStorage("autoDeleteCompletedAttachments")
     private var autoDeleteCompletedAttachments: Bool = false
     @AppStorage("siriShortConfirmation")
     private var siriShortConfirmation: Bool = false
-    
     @AppStorage("siriAutoReminderEnabled")
     private var siriAutoReminderEnabled: Bool = true
-    
     @AppStorage("attachmentRetentionDays")
     private var attachmentRetentionDays: Int = 30
-
     @AppStorage("recentlyDeletedRetentionDays")
     private var recentlyDeletedRetentionDays: Int = 30
-    
     @State private var isNotificationEnabled: Bool = false
     @Environment(\.scenePhase) private var scenePhase
-    
     @State private var showSoundPicker = false
     @State private var soundPickerContext: SoundPickerContext = .task
-    
     @State private var showDisclaimer = false
-    
     @AppStorage("notificationSoundName")
     private var notificationSoundName: String = ""
-
     @AppStorage("locationNotificationSoundName")
     private var locationNotificationSoundName: String = ""
-    
     @AppStorage("locationRemindersEnabled")
     private var locationRemindersEnabled: Bool = false
     @AppStorage("locationRadius")
     private var locationRadius: Int = 150
-
     @State private var showLocationPermissionAlert = false
-
     @State private var showImportReminders = false
-    @State private var showCalendarImport = false
-    @State private var showCSV = false
-    @State private var showCalendarSelection = false
 
     func checkNotificationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
@@ -90,9 +68,7 @@ struct SettingsView: View {
             }
         }
     }
-    
     var body: some View {
-        
         let iconWidth: CGFloat = 28
         NavigationStack {
             List {
@@ -128,15 +104,13 @@ struct SettingsView: View {
                     Button {
                         showQuickGuide = true
                     } label: {
-                        // Usiamo il componente Label per separare i colori
-                        HStack(spacing: 12) {
-                            Image(systemName: "questionmark.circle")
-                                .foregroundStyle(.blue) //
-                                .frame(width: iconWidth)
-                            
+                        Label {
                             Text("Quick Guide")
                                 .tint(.primary)
-                                .padding(.leading,6)
+                        } icon: {
+                            Image(systemName: "questionmark.circle")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
                         }
                     }
                     Button {
@@ -146,10 +120,8 @@ struct SettingsView: View {
                             Image(systemName: "text.book.closed")
                                 .foregroundStyle(.blue)
                                 .frame(width: iconWidth)
-                            
                             Text("FAQ")
                                 .tint(.primary)
-                                .padding(.leading,6)
                         }
                     }
                 }
@@ -345,16 +317,10 @@ struct SettingsView: View {
                                     
                                     Text("Trigger Distance")
                                         .foregroundStyle(.primary)
-                                    
-                                    
-                                        .foregroundStyle(.secondary)
-                                        .monospacedDigit()
                                 }
                                 HStack{
                                     Spacer()
-                                    
                                     Text(String(localized:"\(locationRadius)     meters"))
-//                                        .padding(.trailing,4)
                                     Stepper(
                                         "",
                                         value: $locationRadius,
@@ -519,10 +485,8 @@ Attivazione: \(triggerInfo)
                             Image(systemName: "waveform.circle")
                                 .foregroundStyle(.blue)
                                 .frame(width: iconWidth)
-                            
                             Text("Use with Siri")
                                 .foregroundStyle(.primary)
-                                .padding(.leading, 6)
                             Spacer()
                         }
                         .contentShape(Rectangle())
@@ -613,10 +577,8 @@ Attivazione: \(triggerInfo)
                             Image(systemName: "clock.arrow.circlepath")
                                 .foregroundStyle(.blue)
                                 .frame(width: iconWidth)
-                            
                             Text("Recently Deleted")
                                 .tint(.primary)
-                                .padding(.leading, 6)
                         }
                     }
                     Stepper(
@@ -649,9 +611,6 @@ Attivazione: \(triggerInfo)
                     }
                 }
                 .listRowBackground(Color(.systemBackground).opacity(0.3))
-                
-                
-                
                 Section {
                     Button(role: .destructive) {
                         showDataManagement = true
@@ -771,12 +730,10 @@ Attivazione: \(triggerInfo)
             ) { _ in
                 syncLocationPermission()
             }
-
             .fullScreenCover(isPresented: $showSoundPicker) {
                 NotificationSoundPickerView(context: soundPickerContext)
             }
             .fullScreenCover(isPresented: $showQuickGuide) {
-                // BackupView()
                 AppQuickGuideView()
             }
             .fullScreenCover(isPresented: $showFAQ) {
@@ -811,55 +768,40 @@ Attivazione: \(triggerInfo)
         }
     }
     // MARK: - Helpers
-
     private func syncLocationPermission() {
-
         let hasPermission =
             CLLocationManager().authorizationStatus == .authorizedAlways
-
         locationRemindersEnabled = hasPermission
     }
-
     private func openNotificationSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
         }
     }
     private func openLanguageSettings() {
-        // iOS non permette aprire direttamente la lingua,
-        // quindi apriamo le impostazioni generali
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
         }
     }
     @MainActor
     private func cleanupRecentlyDeleted() {
-        
         let cutoff = Calendar.current.date(
             byAdding: .day,
             value: -recentlyDeletedRetentionDays,
             to: .now
         )!
-        
         let descriptor = FetchDescriptor<DeletedItem>(
             predicate: #Predicate { $0.deletedAt <= cutoff }
         )
-        
         guard let items = try? modelContext.fetch(descriptor) else { return }
-        
         for item in items {
-            
-            // 🔥 delete file if exists
             if let trashName = item.trashFileName,
                let trashDir = TaskAttachment.trashDirectory {
-                
                 let url = trashDir.appendingPathComponent(trashName)
                 try? FileManager.default.removeItem(at: url)
             }
-            
             modelContext.delete(item)
         }
-        
         try? modelContext.save()
     }
 }
@@ -889,58 +831,40 @@ extension AppTheme {
 
 @MainActor
 func createTestReminder() async {
-    
     do {
         let access = RemindersAccess()
         try await access.requestAccess()
-        
         let store = access.getStore()
-        
         let reminder = EKReminder(eventStore: store)
         reminder.title = "Test \(appName)"
-        
-        // 🔥 usa calendario dedicato
         reminder.calendar = getOrCreateForMemoCalendar(store: store)
-        
         try store.save(reminder, commit: true)
-        
         print("✅ Reminder created in \(appName) list")
-        
     } catch {
         print("❌ Error:", error.localizedDescription)
     }
 }
 
 func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
-    
     let calendars = store.calendars(for: .reminder)
-    
     if let existing = calendars.first(where: { $0.title == "\(appName)" }) {
         UserDefaults.standard.set(existing.calendarIdentifier, forKey: "ForMemoCalendarID")
         return existing
     }
-    
     let calendar = EKCalendar(for: .reminder, eventStore: store)
     calendar.title = "\(appName)"
     calendar.source = store.defaultCalendarForNewReminders()?.source
-    
     try? store.saveCalendar(calendar, commit: true)
-    
     UserDefaults.standard.set(calendar.calendarIdentifier, forKey: "ForMemoCalendarID")
-    
     return calendar
 }
 
 struct CalendarPickerLoaderView: View {
-    
     @Binding var calendars: [EKCalendar]
     let onSelect: (EKCalendar) -> Void
-    
     @State private var isLoading = true
-    
     var body: some View {
         NavigationStack {
-            
             Group {
                 if isLoading {
                     ProgressView("Loading calendars...")
@@ -956,21 +880,15 @@ struct CalendarPickerLoaderView: View {
             }
         }
     }
-    
     private func load() async {
-        
         let engine = CalendarExportEngine()
-        
         do {
             try await engine.requestAccess()
-            
             let all = engine.availableCalendars()
-            
             await MainActor.run {
                 calendars = all
                 isLoading = false
             }
-            
         } catch {
             await MainActor.run {
                 isLoading = false

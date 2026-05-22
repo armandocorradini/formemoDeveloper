@@ -7,6 +7,11 @@ enum Persistence {
     private static let cloudKitContainerID =
         "iCloud.corradini.armando.NewTask"
 
+    // 🔥 Use the SAME local database path as legacy versions.
+    // Local DB is the permanent source of truth.
+    private static let legacyStoreURL =
+        URL.documentsDirectory.appendingPathComponent("local.store")
+
     private static let schema = Schema([
         TodoTask.self,
         TaskAttachment.self,
@@ -21,35 +26,23 @@ enum Persistence {
         DebugLog.write(
             cloudKitEnabled
             ? "☁️ CLOUDKIT: Preparing SwiftData container"
-            : "🟠 BOOTSTRAP: Preparing LOCAL SwiftData container"
+            : "🟠 BOOTSTRAP: Preparing LOCAL-FIRST SwiftData container"
         )
 
         do {
 
-            let configuration: ModelConfiguration
+            // 🔥 SINGLE PERSISTENT STORE
+            // Local database is ALWAYS the source of truth.
+            // CloudKit only adds sync capabilities on top.
 
-            if cloudKitEnabled {
-
-                configuration = ModelConfiguration(
-                    schema: schema,
-                    cloudKitDatabase: .private(cloudKitContainerID)
-                )
-
-            } else {
-
-                let bootstrapURL = URL.documentsDirectory
-                    .appendingPathComponent("bootstrap.store")
-
-                DebugLog.write(
-                    "🟠 BOOTSTRAP: Using isolated bootstrap store: \(bootstrapURL.lastPathComponent)"
-                )
-
-                configuration = ModelConfiguration(
-                    schema: schema,
-                    url: bootstrapURL,
-                    cloudKitDatabase: .none
-                )
-            }
+            let configuration = ModelConfiguration(
+                schema: schema,
+                url: legacyStoreURL,
+                cloudKitDatabase:
+                    cloudKitEnabled
+                    ? .private(cloudKitContainerID)
+                    : .none
+            )
 
             let container = try ModelContainer(
                 for: schema,
@@ -59,7 +52,7 @@ enum Persistence {
             DebugLog.write(
                 cloudKitEnabled
                 ? "☁️ CLOUDKIT: SwiftData container initialized"
-                : "🟠 BOOTSTRAP: LOCAL SwiftData container initialized"
+                : "🟠 BOOTSTRAP: LOCAL-FIRST container initialized"
             )
 
             return container

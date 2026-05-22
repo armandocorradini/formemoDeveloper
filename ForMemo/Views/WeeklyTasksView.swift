@@ -13,8 +13,7 @@ struct WeeklyTasksView: View {
     
     @State private var taskPendingDeletion: TodoTask?
     @State private var draftTask: TodoTask?
-    
-    
+
     private static let activeTasksPredicate =
         #Predicate<TodoTask> { !$0.isCompleted }
 
@@ -31,35 +30,24 @@ struct WeeklyTasksView: View {
     
     private var weeklyTasks: [TodoTask] {
         let calendar = Calendar.current
-        
-        // Inizio di oggi (00:00:00)
         let startOfToday = calendar.startOfDay(for: .now)
-        
-        // Fine dell'ultimo giorno del periodo (23:59:59)
         let endOfPeriod = calendar.date(byAdding: .day, value: taskWeekDays, to: startOfToday)?
             .addingTimeInterval(-1) ?? .now
-        
         let filtered = allTasks.filter { task in
             guard let deadline = task.deadLine else { return false }
-            // Include tutto ciò che scade da stamattina all'ultimo secondo del settimo giorno
             return deadline >= startOfToday && deadline <= endOfPeriod
         }
-
         let unique = Dictionary(grouping: filtered, by: \.id)
             .compactMap { $0.value.first }
-
         return unique.sorted {
             let lhs = $0.deadLine ?? .distantFuture
             let rhs = $1.deadLine ?? .distantFuture
-
             if lhs != rhs {
                 return lhs < rhs
             }
-
             return $0.id.uuidString < $1.id.uuidString
         }
     }
-    
     
     private var expiredTasks: [TodoTask] {
         let calendar = Calendar.current
@@ -84,14 +72,12 @@ struct WeeklyTasksView: View {
             return $0.id.uuidString < $1.id.uuidString
         }
     }
-    
     private var dayTasks: [TodoTask] {
         allTasks.filter { task in
             guard let deadline = task.deadLine else { return false }
             return Calendar.current.isDateInToday(deadline)
         }
     }
-    
     private var formattedDate: String {
         Date.now.formatted(
             .dateTime
@@ -176,16 +162,15 @@ struct WeeklyTasksView: View {
 
         return .middle
     }
-
     var body: some View {
         ZStack {
-            // 1. IL GRADIENTE (Sotto a tutto)
+            // Background gradient
             LinearGradient(colors: [backColor1, backColor2],
                            startPoint: .topLeading,
                            endPoint: .bottomTrailing)
             .ignoresSafeArea()
-            
-            // 2. IL MATERIAL (Effetto vetro)
+
+            // Glass material overlay
             Rectangle()
                 .fill(.ultraThinMaterial)
                 .ignoresSafeArea()
@@ -196,39 +181,34 @@ struct WeeklyTasksView: View {
                     UITableViewHeaderFooterView.appearance().tintColor = .clear
                     UITableViewHeaderFooterView.appearance().backgroundView = UIView(frame: .zero)
                 }
+
             List {
-//                headerView
-//                    .listRowInsets(.init(top: 0, leading: 0, bottom: 4, trailing: 0))
-//                    .listRowSeparator(.hidden)
-//                    .listRowBackground(Color.clear)
-                
-                    if weeklyTasks.isEmpty {
-                        ContentUnavailableView {
-                            Label {
-                                Text(
-                                    taskWeekDays == 1
-                                    ? String(localized: "No tasks today")
-                                    : String(localized: "No tasks these days")
-                                )
-                                .font(.subheadline)
-                            } icon: {
-                                Image(systemName: "tray")
-                                    .resizable()
-                                    .frame(width: 30, height: 30)
-                                    .foregroundStyle(.secondary)
-                            }
-                        } description: {
-                            Text("Tap the green button to add a task.")
-                                .font(.subheadline)
+                if weeklyTasks.isEmpty {
+                    ContentUnavailableView {
+                        Label {
+                            Text(
+                                taskWeekDays == 1
+                                ? String(localized: "No tasks today")
+                                : String(localized: "No tasks these days")
+                            )
+                            .font(.subheadline)
+                        } icon: {
+                            Image(systemName: "tray")
+                                .resizable()
+                                .frame(width: 30, height: 30)
+                                .foregroundStyle(.secondary)
                         }
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                    } else {
-                        
-                        ForEach(groupedTasksByDay) { group in
-                            groupedSection(for: group)
-                        }
+                    } description: {
+                        Text("Tap the green button to add a task.")
+                            .font(.subheadline)
                     }
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                } else {
+                    ForEach(groupedTasksByDay) { group in
+                        groupedSection(for: group)
+                    }
+                }
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
             .background(Color.clear)
@@ -262,7 +242,7 @@ struct WeeklyTasksView: View {
             }
             .scrollContentBackground(.hidden)
             .containerBackground(.clear, for: .navigation)
-            // ALERT UNICO – STABILE
+            // Shared delete confirmation alert
             .alert(
                 "Delete task?",
                 isPresented: Binding(
@@ -270,22 +250,17 @@ struct WeeklyTasksView: View {
                     set: { if !$0 { taskPendingDeletion = nil } }
                 )
             ) {
-                
                 Button("Delete", role: .destructive) {
-                    
                     if let task = taskPendingDeletion {
                         withAnimation {
                             deleteTask(task, in: modelContext)
                         }
-                        
                         taskPendingDeletion = nil
                     }
                 }
-                
                 Button("Cancel", role: .cancel) {
                     taskPendingDeletion = nil
                 }
-                
             } message: {
                 Text("This action cannot be undone.")
             }
@@ -375,7 +350,7 @@ struct WeeklyTasksView: View {
   
     }
 
-// MARK: - Row
+    // MARK: - Row
 
 private struct WeeklyTaskRow: View {
     
@@ -618,30 +593,21 @@ private struct WeeklyTaskRow: View {
 
     @MainActor
     private func completeTask() {
-        
         guard task.isCompleted == false else { return }
-        
         if task.recurrenceRule != nil {
-            
-            // 🔁 Ricorrenza: completa e rischedula
+            // Complete and reschedule recurring task
             task.completeRecurringTask(in: modelContext)
-            
         } else {
-            
             task.isCompleted = true
             task.completedAt = .now
             task.snoozeUntil = nil
         }
-        
         do {
             try modelContext.save()
-            
-            // 🔔 refresh notifiche
+            // Refresh notifications
             NotificationManager.shared.refresh(force: true)
-            
-            // 🔥 forza refresh UI liste
+            // Trigger list refresh
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
-
         } catch {
             AppLogger.persistence.fault("Failed to save completion: \(error)")
         }
@@ -859,7 +825,7 @@ private struct WeeklyTaskRow: View {
     }
 }
 
-// MARK: - Shared helper
+// MARK: - Shared Helper
 
 private func isTaskToday(_ date: Date?) -> Bool {
     guard let date else { return false }

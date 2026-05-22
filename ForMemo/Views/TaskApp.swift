@@ -6,6 +6,7 @@ import AppIntents
 import os
 import CoreLocation
 
+
 #if canImport(AppKit)
 import AppKit
 #endif
@@ -56,22 +57,14 @@ struct ForMemoApp: App {
     
     private let container: ModelContainer
 
-    private static let legacyBootstrapCompletedKey = "legacyBootstrapCompleted"
-
-    private static var needsLegacyBootstrap: Bool {
-        guard !UserDefaults.standard.bool(
-            forKey: legacyBootstrapCompletedKey
-        ) else {
-            return false
-        }
-        return LegacyPersistence.legacyStoreExists
-    }
     
     
     // MARK: - Init
     
     init() {
         CrashDetector.markLaunchStarted()
+        LaunchCoordinator.shared.launchDate = Date()
+        
         let defaults = UserDefaults.standard
 
         if defaults.object(forKey: "badgeIncludeExpired") == nil {
@@ -105,82 +98,38 @@ struct ForMemoApp: App {
         print(DebugLog.logURL)
         DebugLog.write("TEST")
 
+        // 🔥 SINGLE LOCAL-FIRST STORE
+        // Local database is the source of truth.
+        // CloudKit only syncs the same persistent store.
         let sharedContainer = Persistence.makeModelContainer(
-            cloudKitEnabled: !Self.needsLegacyBootstrap
+            cloudKitEnabled: true
         )
 
         self.container = sharedContainer
 
         DebugLog.write(
-            Self.needsLegacyBootstrap
-            ? "🟠 BOOTSTRAP: App started with LOCAL container"
-            : "☁️ CLOUDKIT: App started with CloudKit container"
+            "☁️ CLOUDKIT: App started with SINGLE LOCAL-FIRST container"
         )
 
         NotificationManager.shared.modelContainer = sharedContainer
 
-        if Self.needsLegacyBootstrap {
-
-            DebugLog.write(
-                "🟠 BOOTSTRAP: CloudKit DISABLED during legacy migration"
-            )
-
-        } else {
-
-            CloudSettingsSync.shared.start()
-
-            DebugLog.writeCloudKitEvent(
-                "CloudSettingsSync started"
-            )
-        }
+        
+        CloudSettingsSync.shared.start()
+        
+        DebugLog.writeCloudKitEvent(
+            "CloudSettingsSync started"
+        )
         
         Task { @MainActor in
             let context = sharedContainer.mainContext
 
-            if Self.needsLegacyBootstrap {
+            // 🔥 SINGLE LOCAL-FIRST STORE
+            // Existing SQLite database is reused directly.
+            // CloudKit only syncs the SAME local database.
 
-                DebugLog.write(
-                    "🟠 BOOTSTRAP: Starting offline-first legacy migration"
-                )
-
-                // 🔥 IMPORTANT:
-                // Legacy import MUST complete BEFORE CloudKit startup.
-                // This prevents CloudKit from downloading the same tasks
-                // while recovery is still importing them locally.
-
-                await LegacyTaskRecovery.runIfNeeded(
-                    context: context
-                )
-
-                // 🔥 Attachments migration AFTER local bootstrap.
-                AttachmentMigration.runIfNeeded(
-                    context: context
-                )
-
-                // 🔥 Reset old CloudKit database BEFORE enabling sync.
-                CloudKitResetManager.performLocalResetIfNeeded()
-
-                // 🔥 Bootstrap fully completed.
-                // Next app launch will start directly in CloudKit mode.
-                UserDefaults.standard.set(
-                    true,
-                    forKey: Self.legacyBootstrapCompletedKey
-                )
-
-                DebugLog.write(
-                    "🟠 BOOTSTRAP: Legacy migration completed"
-                )
-
-                DebugLog.write(
-                    "🟠 BOOTSTRAP: Restart app to enable CloudKit"
-                )
-
-            } else {
-
-                AttachmentMigration.runIfNeeded(
-                    context: context
-                )
-            }
+            AttachmentMigration.runIfNeeded(
+                context: context
+            )
         }
 
         Task { @MainActor in
@@ -201,8 +150,9 @@ struct ForMemoApp: App {
                 object: nil
             )
             
-            // 🔥 Longer stabilization after bootstrap / CloudKit startup.
-            try? await Task.sleep(for: .seconds(5.0))
+            // 🔥 Short stabilization.
+            // UI no longer depends on CloudKit hydration.
+            try? await Task.sleep(for: .milliseconds(250))
             
             // 5️⃣ Final notification rebuild
             NotificationManager.shared.refresh(force: true)
@@ -269,8 +219,11 @@ struct ForMemoApp: App {
                     NotificationActionProcessor.shared.processAll(using: context)
 
                     // 🔥 Attachment integrity verification
-                    try? await Task.sleep(for: .seconds(1.5))
+                    try? await Task.sleep(for: .milliseconds(300))
+
                     AttachmentMigration.runIfNeeded(context: context)
+                    
+                    
                     DebugLog.writeAttachmentEvent("Attachment self-healing completed")
                     
                     // 2️⃣ 🔥 CLEANUP ALLEGATI (QUI è il punto giusto)
@@ -293,10 +246,7 @@ struct ForMemoApp: App {
                     // 4️⃣ refresh notifiche (con piccolo delay SAFE)
                     try? await Task.sleep(for: .milliseconds(300))
                     NotificationManager.shared.refresh(force: true)
-                    
-                    // 🔥 SECOND PASS (fix CloudKit delayed pull on macOS)
-                    try? await Task.sleep(for: .seconds(1.5))
-                    NotificationManager.shared.refresh(force: true)
+
                 }
             case .inactive:
                 try? container.mainContext.save()
@@ -320,7 +270,7 @@ struct ForMemoApp: App {
             queue: .main
         ) { _ in
             Task { @MainActor in
-                // 🔥 COALESCING CLOUDKIT PUSH
+                // 🔥 CloudKit remote change
 #if DEBUG
                 AppLogger.notifications.debug("📡 CloudKit push ricevuto")
 #endif
@@ -348,21 +298,6 @@ struct ForMemoApp: App {
     }
     
     
-    // MARK: - STARTUP
-    
-    @MainActor
-    private func appStartup() async {
-
-        // 🔥 FONDAMENTALE — PRIMA DI TUTTO
-        await NotificationManager.shared.configure()
-
-        try? await Task.sleep(for: .milliseconds(200))
-
-        NotificationManager.shared.refresh(force: true)
-        
-      
-    }
-    
     
     // MARK: - Scene Activation
     
@@ -385,28 +320,7 @@ struct ForMemoApp: App {
         
         
     }
-    
-    
-    // MARK: - LIGHT SYNC (foreground)
-    
-    @MainActor
-    private func handleLightSync() {
-        
-        let context = container.mainContext
-        
-        _ = try? context.fetch(FetchDescriptor<TodoTask>())
-        
-        NotificationManager.shared.refresh()
-        
-        NotificationCenter.default.post(
-            name: .attachmentsShouldRefresh,
-            object: nil
-        )
-    }
-    
-    
-    // MARK: - COMPLETAMENTO DA NOTIFICA
-    
+
    
     // MARK: - Badge
     

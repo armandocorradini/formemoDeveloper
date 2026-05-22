@@ -1,7 +1,6 @@
 import SwiftUI
 import SwiftData
 import os
-//import EventKit
 
 struct TaskCalendarView: View {
     
@@ -32,8 +31,6 @@ struct TaskCalendarView: View {
     @State private var timer: Timer? = nil
     @State private var isLongPressing = false
     
-    
-    
     // Expanded calendar state (scroll driven)
     @State private var isExpanded: Bool = false
     
@@ -47,13 +44,10 @@ struct TaskCalendarView: View {
     
     @State private var holidayDates: Set<Date> = []
     @State private var tasksCache: [Date: [TodoTask]] = [:]
-    
-    
-    
     var body: some View {
         ZStack {
             
-            // Background globale
+            // Background
             LinearGradient(colors: [backColor1, backColor2],
                            startPoint: .topLeading,
                            endPoint: .bottomTrailing
@@ -177,29 +171,20 @@ struct TaskCalendarView: View {
     }
     
     private func prepareNewTask(on date: Date) {
-        
         let calendar = Calendar.current
-        
         let finalDate: Date
-        
         if calendar.isDateInToday(date) {
-            
-            // 👉 ORA CORRENTE
+            // Current time for today
             finalDate = Date()
-            
         } else {
-            
-            // 👉 08:00 per altri giorni
+            // Default morning time for future days
             var components = calendar.dateComponents([.year, .month, .day], from: date)
             components.hour = 8
             components.minute = 0
-            
             finalDate = calendar.date(from: components) ?? date
         }
-        
         let task = TodoTask()
         task.deadLine = finalDate
-        
         draftTask = task
     }
     
@@ -211,21 +196,21 @@ struct TaskCalendarView: View {
             .frame(width: 44, height: 44) // Area di tocco standard Apple
             .contentShape(Rectangle())
             .onTapGesture {
-                // Tocco singolo: cambia un solo mese
+                // Single month navigation
                 changeMonth(by: direction)
             }
             .gesture(
                 LongPressGesture(minimumDuration: 0.4)
                     .onEnded { _ in
                         isLongPressing = true
-                        // Avvia il timer per lo scorrimento rapido
+                        // Start rapid scrolling timer
                         timer = Timer.scheduledTimer(withTimeInterval: 0.15, repeats: true) { _ in
                             changeMonth(by: direction)
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         }
                     }
             )
-        // Rilasciando la pressione, fermiamo il timer
+            // Stop rapid scrolling when gesture ends
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0)
                     .onEnded { _ in
@@ -240,9 +225,7 @@ struct TaskCalendarView: View {
                 isLongPressing = false
             }
     }
-    
-    
-    // Funzione di supporto per il cambio mese
+    // Month navigation helper
     private func changeMonth(by value: Int) {
         monthDirection = value > 0 ? 1 : -1
         withAnimation(.snappy(duration: 0.2)) {
@@ -251,26 +234,18 @@ struct TaskCalendarView: View {
             }
         }
     }
-    
 }
 
 
 // MARK: - Scroll handling
 
 private extension TaskCalendarView {
-    
     func updateExpandedState(with offset: CGFloat) {
-        
         if offset > expandThreshold {
-            //            withAnimation(.snappy(duration: 0.25)) {
             isExpanded = true
-            //            }
         }
-        
         if offset < -expandThreshold {
-            //            withAnimation(.snappy(duration: 0.25)) {
             isExpanded = false
-            //            }
         }
     }
 }
@@ -322,7 +297,7 @@ private extension TaskCalendarView {
                 
                 Button("Today") {
                     let startOfToday = calendar.startOfDay(for: .now)
-                    // Usiamo un'animazione esplicita per il reset
+                    // Animated reset to current month
                     withAnimation(.snappy) {
                         displayedMonth = startOfToday
                         selectedDate = startOfToday
@@ -667,36 +642,28 @@ private extension HolidayProvider {
     }
 }
 
-// MARK: - Actions aggiornate
+// MARK: - Actions
 private extension TaskCalendarView {
-    
     @MainActor
     func toggleCompleted(_ task: TodoTask) {
-        
         if task.recurrenceRule != nil {
-            
-            // 🔁 Ricorrenza: completa e rischedula
+            // Complete and reschedule recurring task
             task.completeRecurringTask(in: modelContext)
-            
         } else {
-            
             task.isCompleted.toggle()
             task.completedAt = task.isCompleted ? .now : nil
             task.snoozeUntil = nil
         }
-        
         do {
             try modelContext.save()
-            
         } catch {
             AppLogger.persistence.fault("Failed to save context: \(error)")
         }
-        
         NotificationManager.shared.refresh(force: true)
     }
 }
 
-// MARK: - Grid aggiornato
+// MARK: - Calendar Grid
 private extension TaskCalendarView {
     
     var calendarGrid: some View {
@@ -734,7 +701,7 @@ private extension TaskCalendarView {
         )
     }
 }
-// MARK: - DayCell aggiornato con swipe e context menu
+// MARK: - Day Cell
 private struct DayCell: View {
     
     let date: Date
@@ -790,9 +757,6 @@ private struct DayCell: View {
                 }
                 
                 let isSunday = calendar.component(.weekday, from: date) == 1
-                
-                //                    Text("\(Calendar.current.component(.day, from: date))")
-                //                        .font(.callout.bold())
                 Text("\(calendar.component(.day, from: date))")
                     .font(.callout.bold())
                     .foregroundStyle(
@@ -921,6 +885,8 @@ private struct DayCell: View {
 private struct DayTasksInlineView: View {
     
     @Environment(\.modelContext) private var modelContext
+    @Query private var allTasks: [TodoTask]
+
     @AppStorage("confirmTaskDeletion") private var confirmTaskDeletion = true
 
     @AppStorage(TaskListAppearanceKeys.iconStyle)
@@ -1033,7 +999,7 @@ private struct DayTasksInlineView: View {
     
     var body: some View {
         
-        if tasks.isEmpty {
+        if tasks.isEmpty && allTasks.isEmpty {
             
             ContentUnavailableView {
                 Label {
@@ -1135,16 +1101,11 @@ private struct DayTasksInlineView: View {
                     .swipeActions(edge: .leading) {
                         
                         Button {
-                            
                             if task.recurrenceRule != nil {
-                                
-                                // 🔁 Ricorrenza: completa e rischedula
+                                // Complete and reschedule recurring task
                                 task.completeRecurringTask(in: modelContext)
-                                
                             } else {
-                                
                                 task.isCompleted.toggle()
-                                
                                 if task.isCompleted {
                                     task.completedAt = .now
                                     task.snoozeUntil = nil
@@ -1153,15 +1114,12 @@ private struct DayTasksInlineView: View {
                                     task.snoozeUntil = nil
                                 }
                             }
-
                             do {
                                 try modelContext.save()
                             } catch {
                                 AppLogger.persistence.fault("Failed to save task completion: \(error)")
                             }
-
                             NotificationManager.shared.refresh(force: true)
-                            
                         } label: {
                             Label(
                                 task.isCompleted ? "To do" : "Completed",
@@ -1190,7 +1148,7 @@ private struct DayTasksInlineView: View {
                         // Azione di completamento (quella che avevi nel leading swipe)
                         Button {
                             if task.recurrenceRule != nil {
-                                // 🔁 Ricorrenza: completa e rischedula
+                                // Complete and reschedule recurring task
                                 task.completeRecurringTask(in: modelContext)
                             } else {
                                 task.isCompleted.toggle()
@@ -1207,7 +1165,6 @@ private struct DayTasksInlineView: View {
                             } catch {
                                 AppLogger.persistence.fault("Failed to save task completion from context menu: \(error)")
                             }
-
                             NotificationManager.shared.refresh(force: true)
                         } label: {
                             Label(
@@ -1295,9 +1252,7 @@ private struct DayTasksInlineView: View {
             } message: {
                 Text("This action cannot be undone.")
             }
-            // .navigationDestination(for: TodoTask.self) { task in
-            //     TaskDetailView(task: task)
-            // }
+
         }
         
     }
@@ -1351,7 +1306,7 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
         scrollView.alwaysBounceVertical = true
         scrollView.alwaysBounceHorizontal = true
 
-        // Improve pinch zoom responsiveness and gesture handling
+        // Improve pinch zoom responsiveness
         scrollView.delaysContentTouches = false
         scrollView.canCancelContentTouches = true
         scrollView.panGestureRecognizer.cancelsTouchesInView = false
@@ -1380,7 +1335,7 @@ struct ZoomableScrollView<Content: View>: UIViewRepresentable {
         NSLayoutConstraint.activate([
             host.view.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
             host.view.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-            host.view.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor), // Ancoraggio fisso in alto
+            host.view.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
             host.view.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
             
             host.view.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)

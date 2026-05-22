@@ -1,18 +1,13 @@
-
 import SwiftUI
 import SwiftData
 
 struct TaskTabView: View {
     
-    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.modelContext) private var modelContext
     
     @State private var selectedTab: Int = 0
-    @State private var hasRedirected = false
     @State private var showSnoozeAlert = false
-    @Namespace private var tabAnimation
     
     @State private var homePath = NavigationPath()
     @State private var listPath = NavigationPath()
@@ -27,38 +22,34 @@ struct TaskTabView: View {
     @AppStorage("startupTab")
     private var startupTab: Int = 1
     
-    private var safeAreaBottom: CGFloat {
-        UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-            .first?
-            .safeAreaInsets.bottom ?? 0
-    }
     
     
     var body: some View {
         
         rootLayout
         .onAppear {
-            // Start from Home immediately
+
+            // Always start from Home.
             selectedTab = 0
-            
-            // 1) Wait 1.5s (data loading)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                
-                // Start faster rotation
-                NotificationCenter.default.post(name: Notification.Name("StartHomeIconRotationFast"), object: nil)
-                
-                // 2) Wait for rotation duration (assumed handled in HomeView)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    
-                    // 3) Additional delay before navigation
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        if selectedTab == 0 {
-                            withAnimation(.easeInOut(duration: 0.25)) {
-                                selectedTab = startupTab
-                            }
-                        }
-                    }
+
+            // Start Home icon animation.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+
+                NotificationCenter.default.post(
+                    name: Notification.Name("StartHomeIconRotationFast"),
+                    object: nil
+                )
+            }
+
+            // Fast transition to preferred startup tab.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+
+                guard selectedTab == 0 else {
+                    return
+                }
+
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    selectedTab = startupTab
                 }
             }
         }
@@ -321,30 +312,7 @@ struct TaskTabView: View {
         .buttonStyle(.plain)
     }
     
-    // MARK: - Redirect
     
-    private func handleInitialRedirect() {
-        // DISABLED: was overriding user tab selection
-    }
-    
-    @ViewBuilder
-    private func sidebarItem(_ title: String, _ icon: String, _ tag: Int) -> some View {
-        
-        Button {
-            selectedTab = tag
-        } label: {
-            Label(title, systemImage: icon)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 6)
-                .background(
-                    selectedTab == tag
-                    ? Color.accentColor.opacity(0.15)
-                    : Color.clear
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-        }
-        .buttonStyle(.plain)
-    }
     // MARK: - Custom Tab Item
     
     private func tabItem(_ icon: String, _ title: String, _ tag: Int) -> some View {
@@ -354,19 +322,10 @@ struct TaskTabView: View {
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
             if selectedTab != tag {
-
-                // Reset della tab che stai lasciando
-
                 resetTab(selectedTab)
-
                 selectedTab = tag
-
             } else {
-
-                // Tap sulla stessa tab → torna alla root
-
                 resetTab(tag)
-
             }
 
         } label: {

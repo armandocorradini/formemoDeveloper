@@ -4,26 +4,6 @@ import SwiftData
 @preconcurrency import UserNotifications
 import os
 
-
-@MainActor
-final class CloudKitSyncMonitor {
-
-    static let shared = CloudKitSyncMonitor()
-
-    private var lastRemoteChange = Date.distantPast
-
-    private init() {}
-
-    func markRemoteChange() {
-        lastRemoteChange = Date()
-    }
-
-    var isStable: Bool {
-        Date().timeIntervalSince(lastRemoteChange) > 2.5
-    }
-}
-
-
 @MainActor
 final class NotificationManager: NSObject {
     
@@ -37,21 +17,10 @@ final class NotificationManager: NSObject {
     @MainActor
     private var pendingRefresh = false
   
-    private var cloudKitDebounceTask: Task<Void, Never>?
     private var isAppLaunching = true
-//    private var cloudKitRefreshScheduled = false
-    private var isProcessingCloudKit = false
+
     private var requiresUpgradeNotificationRebuild = false
-    
-    private let refreshQueue = DispatchQueue(label: "notification.refresh.serial")
 
-    // 🔵 Safe access for AppDelegate (nonisolated)
-    private(set) var lastPushHandledSafe: Date = .distantPast
-
-    func setLastPushHandled(_ date: Date) {
-        lastPushHandledSafe = date
-    }
-    
     
     private override init() {
         super.init()
@@ -135,7 +104,7 @@ final class NotificationManager: NSObject {
 
         // 🔵 Mark end of launch phase after short delay
         Task { [weak self] in
-            try? await Task.sleep(for: .seconds(1.0))
+            try? await Task.sleep(for: .milliseconds(300))
             self?.isAppLaunching = false
         }
     }
@@ -146,11 +115,8 @@ final class NotificationManager: NSObject {
     func refresh(force: Bool = false) {
         let now = Date()
         
-        if Date().timeIntervalSince(lastPushHandledSafe) < 1.0 {
-            return
-        }
         // 🔴 Throttle più morbido (evita drop di aggiornamenti reali)
-        if !force && now.timeIntervalSince(lastRebuild) < 0.5 {
+        if !force && now.timeIntervalSince(lastRebuild) < 0.15 {
             return
         }
 
@@ -189,7 +155,7 @@ final class NotificationManager: NSObject {
 #endif
             guard let self else { return }
 
-            try? await Task.sleep(for: .seconds(force ? 0.5 : 1.5))
+            try? await Task.sleep(for: .milliseconds(force ? 150 : 400))
             guard !Task.isCancelled else { return }
 
             // --- MAIN ACTOR: fetch + signature ---
@@ -209,9 +175,7 @@ final class NotificationManager: NSObject {
                 let signature = self.signature(for: fetched)
 
                 if !force && signature == self.lastTasksSignature {
-                    self.refreshQueue.sync {
-                        self.pendingRefresh = false
-                    }
+                    self.pendingRefresh = false
                     return
                 }
 
@@ -220,7 +184,7 @@ final class NotificationManager: NSObject {
                 shouldRebuild = true
             }
 
-            // --- OUTSIDE MAIN ACTOR: heavy work ---
+            // --- Notification rebuild ---
             if shouldRebuild {
 #if DEBUG
                 print("🔥 REBUILD ESEGUITO")
@@ -244,53 +208,28 @@ final class NotificationManager: NSObject {
     // MARK: - CloudKit Optimized Refresh (coalescing)
 
     func refreshFromCloudKit() {
-        let now = Date()
 
-        // 🔥 HARD throttle globale (anti storm)
-        if now.timeIntervalSince(self.lastPushHandledSafe) < 2.0 {
-            return
-        }
+        // 🔥 Local database is already updated.
+        // We only refresh notifications and UI state.
 
-        // 🔥 Skip durante launch
-        if self.isAppLaunching { return }
+        guard !isAppLaunching else { return }
 
-        // 🔥 Se già in corso → STOP
-        if self.isProcessingCloudKit { return }
+        rebuildTask?.cancel()
 
-        self.isProcessingCloudKit = true
-
-        cloudKitDebounceTask?.cancel()
-        CloudKitSyncMonitor.shared.markRemoteChange()
-
-        cloudKitDebounceTask = Task { [weak self] in
+        rebuildTask = Task { [weak self] in
             guard let self else { return }
 
-            // 🔥 Coalescing forte
-            try? await Task.sleep(for: .seconds(4.0))
+            try? await Task.sleep(for: .seconds(1.0))
+
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
                 self.refresh(force: true)
-                self.lastPushHandledSafe = Date()
-            }
 
-            if !CloudKitSyncMonitor.shared.isStable {
-                await MainActor.run {
-                    self.isProcessingCloudKit = false
-                }
-                return
-            }
-
-            NotificationCenter.default.post(
-                name: .cloudKitDidStabilize,
-                object: nil
-            )
-
-            // 🔥 cooldown anti-loop
-            try? await Task.sleep(for: .seconds(3.0))
-
-            await MainActor.run {
-                self.isProcessingCloudKit = false
+                NotificationCenter.default.post(
+                    name: .cloudKitDidStabilize,
+                    object: nil
+                )
             }
         }
     }
@@ -310,7 +249,7 @@ final class NotificationManager: NSObject {
             // 🔴 Skip debug stress-test tasks (no notifications)
             if task.isDebugTask { continue }
             // (Snooze cleanup block removed)
-            // 🔵 MIGRATION: remove legacy "at deadline"
+
             if task.reminderOffsetMinutes == 0 {
                 task.reminderOffsetMinutes = nil
                 needsSave = true
@@ -584,7 +523,7 @@ final class NotificationManager: NSObject {
             )
         }
         
-        // 🚨 evita che rebuild vecchi sovrascrivano nuovi (SNOOZE FIX)
+        // Prevent stale rebuild cleanup
         guard rebuildStart >= self.lastRebuild else { return }
         
         let toRemove = existing.keys.filter { id in
@@ -763,7 +702,7 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             break
         }
         
-        // 2️⃣ 🔥 FIX CRITICO — applica SUBITO
+        // 2️⃣ Apply notification action changes immediately
         await MainActor.run {
             
             if let container = self.modelContainer {
@@ -772,7 +711,7 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 NotificationActionProcessor.shared.processAll(using: context)
                 context.processPendingChanges()
                 
-                // 🔥 HARDCORE: aggiorna badge IMMEDIATAMENTE
+                // Immediate badge refresh
                 let tasks = self.fetchTasks(using: context)
                 let badge = self.computeBadgeCount(from: tasks)
                 let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")

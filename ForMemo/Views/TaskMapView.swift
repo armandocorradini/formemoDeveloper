@@ -8,7 +8,6 @@ enum UrgencyLevel {
 struct TaskMapAnnotationModel: Identifiable, Equatable {
     let id: UUID
     let coordinate: CLLocationCoordinate2D
-    
     let title: String
     let tagIcon: String?
     let deadline: Date?
@@ -60,23 +59,13 @@ struct TaskMapView: View {
     @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
     private var tasks: [TodoTask]
     
-    @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 41.9028, longitude: 12.4964), // Roma default
-        span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
-    )
-    
     @State private var zoomLevel: Double = ZoomStore.zoomLevel
-    
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var storedLatDelta: Double = ZoomStore.latDelta
     @State private var storedLonDelta: Double = ZoomStore.lonDelta
     @State private var storedCenterLat: Double = ZoomStore.centerLat
     @State private var storedCenterLon: Double = ZoomStore.centerLon
-    
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var didInitializeLaunch = false
     @State private var hasSetInitialRegion = false
-
     @Binding var mapPath: NavigationPath
 
     var body: some View {
@@ -98,8 +87,6 @@ struct TaskMapView: View {
         .ignoresSafeArea()
         .task {
             guard !hasSetInitialRegion else { return }
-
-            // If we already have a stored zoom, restore ONLY that and skip bounding region
             if storedLatDelta != 0.2 {
                 let restoredRegion = MKCoordinateRegion(
                     center: CLLocationCoordinate2D(latitude: storedCenterLat, longitude: storedCenterLon),
@@ -109,8 +96,6 @@ struct TaskMapView: View {
                 hasSetInitialRegion = true
                 return
             }
-
-            // First launch: fit all annotations
             if let region = boundingRegion {
                 cameraPosition = .region(region)
                 hasSetInitialRegion = true
@@ -267,7 +252,6 @@ extension TaskMapView {
     
     var mapAnnotations: some MapContent {
         ForEach(mapModels.sorted { lhs, rhs in
-            // higher priority first (drawn later = on top)
             return urgencyPriority(lhs.urgency) < urgencyPriority(rhs.urgency)
         }) { item in
             Annotation("", coordinate: item.coordinate) {
@@ -348,17 +332,13 @@ struct TaskAnnotationView: View {
     }
     
     var body: some View {
-        
         VStack(spacing: 4) {
-            // 🔴 BASE DOT + RADAR PULSE (NO TAG ICON)
+            // Base marker
             ZStack {
-                // 🔴 BASE DOT
                 Circle()
                     .fill(baseColor)
                     .shadow(color: shadowColor, radius: 4)
                     .frame(width: 12, height: 12)
-
-                // 🔥 RADAR PULSE 1
                 if model.urgency != .none && zoomLevel < 0.08 {
                     Circle()
                         .stroke(baseColor, lineWidth: 3)
@@ -367,8 +347,6 @@ struct TaskAnnotationView: View {
                         .opacity(blink ? 0.0 : 1.0)
                         .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false), value: blink)
                 }
-
-                // 🔥 RADAR PULSE 2
                 if model.urgency != .none && zoomLevel < 0.08 {
                     Circle()
                         .stroke(baseColor.opacity(0.9), lineWidth: 2)
@@ -378,8 +356,6 @@ struct TaskAnnotationView: View {
                         .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false).delay(0.4), value: blink)
                 }
             }
-
-            // 🔍 DETTAGLIO SOLO SE ZOOM
             if zoomLevel < 0.05 {
                 detailView
                     .transition(.opacity)
@@ -387,7 +363,6 @@ struct TaskAnnotationView: View {
         }
         .onAppear {
             if model.urgency != .none && zoomLevel < 0.08 {
-                // 🔥 trigger continuous animation
                 withAnimation {
                     blink.toggle()
                 }
@@ -484,20 +459,16 @@ extension TaskAnnotationView {
         .shadow(radius: 2)
     }
     
-    
     private func shouldShowHighlight(for item: TaskMapAnnotationModel.Item) -> Bool {
         guard highlightEnabled else {
             return false
         }
-
         guard item.prioritySystemImage == "flame" else {
             return false
         }
-
         guard let deadline = item.deadline else {
             return false
         }
-
         return deadline < .now || Calendar.current.isDateInToday(deadline)
     }
 }

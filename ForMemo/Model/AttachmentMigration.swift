@@ -10,15 +10,11 @@ enum AttachmentMigration {
     static func runIfNeeded(context: ModelContext) {
         
         log("🚀 MIGRATION START")
-        
-        // 🔥 Prevent overlapping migrations
         guard !isRunning else {
             log("⏭️ Migration already running")
             return
         }
-
         isRunning = true
-
         defer {
             isRunning = false
         }
@@ -36,7 +32,6 @@ enum AttachmentMigration {
             log("⏭️ Migration already done")
             return
         }
-        
         let success = migrate(context: context)
 
         if success {
@@ -51,7 +46,7 @@ enum AttachmentMigration {
         }
     }
     
-    // MARK: - CORE
+    // MARK: - Migration
     
     private static func migrate(context: ModelContext) -> Bool {
         
@@ -65,16 +60,12 @@ enum AttachmentMigration {
             return true
         }
 
-        // 🔥 No legacy attachments on this device
-        // (fresh install or already migrated)
         guard FileManager.default.fileExists(atPath: legacyDir.path) else {
             log("ℹ️ Legacy attachment directory not found")
             return true
         }
-
         let fm = FileManager.default
 
-        // 🔥 Build attachment lookup for sync verification
         let descriptor = FetchDescriptor<TaskAttachment>()
         let attachments = (try? context.fetch(descriptor)) ?? []
 
@@ -93,105 +84,76 @@ enum AttachmentMigration {
             return false
         }
 
-        // 🔥 Nothing to migrate
         if files.isEmpty {
             log("ℹ️ No legacy attachments to migrate")
             return true
         }
-        
         log("📦 Legacy files found: \(files.count)")
         
         for fileURL in files {
             let fileName = fileURL.lastPathComponent
-            // 🔥 Verify source file is readable
             guard fm.isReadableFile(atPath: fileURL.path) else {
                 allFilesMigrated = false
                 log("❌ Legacy file unreadable: \(fileName)")
                 continue
             }
             let newURL = iCloudDir.appendingPathComponent(fileName)
-
             log("➡️ Migrating file: \(fileName)")
-
             let newExists = fm.fileExists(atPath: newURL.path)
 
             if newExists {
                 log("⏭️ Already exists in iCloud")
                 continue
             }
-
             do {
-
-                // ensure parent dir exists
                 try fm.createDirectory(
                     at: iCloudDir,
                     withIntermediateDirectories: true
                 )
-
                 try fm.copyItem(at: fileURL, to: newURL)
-
-                // force iCloud materialization/upload
                 var uploadReady = false
-
                 for _ in 0..<20 {
-
                     if fm.fileExists(atPath: newURL.path) {
-
                         let size = (try? fm.attributesOfItem(
                             atPath: newURL.path
                         )[.size] as? Int64) ?? 0
-
                         if size > 0 {
                             uploadReady = true
                             break
                         }
                     }
-
                     RunLoop.current.run(
                         until: Date().addingTimeInterval(0.25)
                     )
                 }
-
                 guard uploadReady else {
                     try? fm.removeItem(at: newURL)
                     allFilesMigrated = false
                     log("❌ Copied file not materialized")
                     continue
                 }
-
-                // 🔥 verify copied file integrity
                 let originalSize = (try? fm.attributesOfItem(
                     atPath: fileURL.path
                 )[.size] as? Int64) ?? 0
-
                 let copiedSize = (try? fm.attributesOfItem(
                     atPath: newURL.path
                 )[.size] as? Int64) ?? 0
-
                 guard originalSize > 0,
                       copiedSize == originalSize else {
-
                     try? fm.removeItem(at: newURL)
                     allFilesMigrated = false
-
                     log("❌ Integrity verification failed")
                     continue
                 }
-
-                // 🔥 Attachment exists in database
                 if attachmentsByRelativePath[fileName] != nil {
                     log("📎 Attachment metadata found")
                 }
-
                 log("✅ Copied OK")
-
             } catch {
                 allFilesMigrated = false
                 log("❌ Copy error: \(error.localizedDescription)")
             }
         }
-        
-        // verify migrated files exist physically
         let migratedFiles = (try? fm.contentsOfDirectory(
             at: iCloudDir,
             includingPropertiesForKeys: nil
@@ -199,15 +161,13 @@ enum AttachmentMigration {
 
         log("☁️ iCloud files available: \(migratedFiles.count)")
 
-        // 🔥 Persist verification state updates
         if context.hasChanges {
             try? context.save()
         }
-
         return allFilesMigrated
     }
     
-    // MARK: - LEGACY PATH
+    // MARK: - Legacy Path
     
     private static var legacyDirectory: URL? {
         FileManager.default
@@ -216,7 +176,7 @@ enum AttachmentMigration {
             .appendingPathComponent("TaskAttachments", isDirectory: true)
     }
     
-    // MARK: - LOG (TestFlight visible)
+    // MARK: - Logging
     
     private static func log(_ message: String) {
 #if DEBUG

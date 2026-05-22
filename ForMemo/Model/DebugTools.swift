@@ -11,7 +11,7 @@ enum DebugTools {
     
     // MARK: - Generate
     
-    static func generateTasks(context: ModelContext, count: Int = 2000) {
+    static func generateTasks(context: ModelContext, count: Int = 200) {
         let start = Date()
         let calendar = Calendar.current
         let now = Date()
@@ -25,10 +25,7 @@ enum DebugTools {
                 deadLine: calendar.date(byAdding: .hour, value: i * 24, to: now)
             )
             
-            // 🔴 IMPORTANTE: evita notifiche / logiche pesanti
             task.isDebugTask = true
-
-            // 📎 Real debug attachment for performance testing
             if i % 3 == 0,
                let attachmentsDir = TaskAttachment.attachmentsDirectory {
 
@@ -36,7 +33,6 @@ enum DebugTools {
                 let destinationURL = attachmentsDir.appendingPathComponent(fileName)
                 let fm = FileManager.default
 
-                // Generate a real image file if missing
                 if !fm.fileExists(atPath: destinationURL.path) {
 
                     let config = UIImage.SymbolConfiguration(pointSize: 120, weight: .regular)
@@ -51,7 +47,6 @@ enum DebugTools {
                     }
                 }
 
-                // Only create attachment if file really exists
                 if fm.fileExists(atPath: destinationURL.path) {
 
                     let attachment = TaskAttachment(
@@ -64,7 +59,6 @@ enum DebugTools {
                     task.attachments = [attachment]
                 }
             }
-            
             context.insert(task)
         }
         
@@ -99,10 +93,7 @@ enum DebugTools {
         
     }
     
-
-    
     // MARK: - Delete
-    
     static func deleteTasks(context: ModelContext) {
         let start = Date()
         
@@ -146,9 +137,7 @@ enum DebugTools {
         return tasks.allSatisfy { $0.isCompleted }
     }
 
-    
     // MARK: - Reset Preferences
-    
     static func resetPreferences() {
         if let bundleID = Bundle.main.bundleIdentifier {
             UserDefaults.standard.removePersistentDomain(forName: bundleID)
@@ -156,7 +145,6 @@ enum DebugTools {
         }
     }
 }
-
 enum DebugLog {
     
     static var logURL: URL {
@@ -183,8 +171,7 @@ enum DebugLog {
         }
         if let attributes = try? FileManager.default.attributesOfItem(
             atPath: logURL.path
-        ),
-           let fileSize = attributes[.size] as? Int,
+        ), let fileSize = attributes[.size] as? Int,
            fileSize > 3_000_000 {
 
             try? "".write(
@@ -193,8 +180,6 @@ enum DebugLog {
                 encoding: .utf8
             )
         }
-        
-        
         if let data = line.data(using: .utf8) {
             
             if FileManager.default.fileExists(atPath: logURL.path) {
@@ -214,11 +199,9 @@ enum DebugLog {
             }
         }
     }
-    
     static func writeSeparator() {
         write("────────────────────────────────────────")
     }
-    
     static func writeAppLaunch() {
         
         if !FileManager.default.fileExists(atPath: logURL.path) {
@@ -279,43 +262,34 @@ enum DebugLog {
             )
         }
     }
-    
     static func writeCloudKitEvent(_ message: String) {
         write("☁️ CLOUDKIT: \(message)")
     }
-    
     static func writeMigrationEvent(_ message: String) {
         write("🟣 MIGRATION: \(message)")
     }
-    
     static func writeRecoveryEvent(_ message: String) {
         write("🟠 RECOVERY: \(message)")
     }
-    
     static func writeRecoveryWindowStarted() {
         writeRecoveryEvent("🚀 Recovery window started")
     }
-    
     static func writeRecoveryWindowExpired() {
         writeRecoveryEvent("✅ Recovery window expired")
     }
-    
     static func writeFingerprintSkipped(_ title: String) {
         writeRecoveryEvent(
             "⏭️ Fingerprint skipped: \(title)"
         )
     }
-    
     static func writeDeletedFingerprintBlocked(_ title: String) {
         writeRecoveryEvent(
             "🚫 Deleted fingerprint blocked: \(title)"
         )
     }
-    
     static func writeAttachmentEvent(_ message: String) {
         write("📎 ATTACHMENTS: \(message)")
     }
-    
     static func ensureLogFileExists() {
         
         if !FileManager.default.fileExists(atPath: logURL.path) {
@@ -328,12 +302,10 @@ enum DebugLog {
             write("🚀 Diagnostics initialized")
         }
     }
-    
     static func clear() {
         try? FileManager.default.removeItem(at: logURL)
     }
 }
-
 enum CrashDetector {
 
     private static let activeKey = "appWasRunning"
@@ -367,7 +339,6 @@ enum CrashDetector {
         )
     }
 }
-
 struct ExportDiagnosticsView: View {
     @State private var logExists = false
     @State private var logContent = ""
@@ -404,58 +375,7 @@ struct ExportDiagnosticsView: View {
                     Text("\(version) (\(build))")
                 }
                 
-#if DEBUG
-                LabeledContent("Legacy Store") {
-                    Text(
-                        LegacyPersistence.legacyStoreExists
-                        ? "Available"
-                        : "Missing"
-                    )
-                }
-                
-                let recoveryCompleted = UserDefaults.standard.bool(
-                    forKey: "legacyBootstrapCompleted"
-                )
-
-                let recoveryStartDate = UserDefaults.standard.object(
-                    forKey: "legacyRecoveryStartDate"
-                ) as? Date
-
-                let recoveredTasks = UserDefaults.standard.integer(
-                    forKey: "legacyImportedTasksCount"
-                )
-                
-                
-                LabeledContent("Recovery Status") {
-                    Text(
-                        recoveryCompleted
-                        ? "Completed"
-                        : "Active"
-                    )
-                }
-                
-                if let recoveryStartDate {
-                    
-                    let elapsed = Date().timeIntervalSince(
-                        recoveryStartDate
-                    )
-                    
-                    let remaining = max(
-                        0,
-                        14 - Int(elapsed / 86400)
-                    )
-                    
-                    LabeledContent("Recovery Remaining") {
-                        Text("\(remaining) days")
-                    }
-                }
-                
-                LabeledContent("Recovered Tasks") {
-                    Text("\(recoveredTasks)")
-                }
-#endif
-                
-                HStack(){
+                HStack {
                     Text("Support")
                         .foregroundStyle(.primary)
 
@@ -477,9 +397,7 @@ struct ExportDiagnosticsView: View {
                 
 #if DEBUG
                 if logExists {
-                    
                     VStack(alignment: .leading, spacing: 8) {
-                        
                         Label(
                             "Diagnostics Preview",
                             systemImage: "doc.text.magnifyingglass"

@@ -12,16 +12,12 @@ final class CloudSettingsSync {
     
     private var isApplyingRemoteChange = false
     private var started = false
-    
     // MARK: - Keys
-    
     private enum Keys {
         static let badgeMode = "badgeMode"
         static let notificationLeadTimeDays = "notificationLeadTimeDays"
     }
-    
     // MARK: - Startup
-    
     func start() {
         
         guard !started else { return }
@@ -42,9 +38,7 @@ final class CloudSettingsSync {
         pushLocalValuesIfNeeded()
         applyRemoteChanges()
     }
-    
     // MARK: - Public Sync
-    
     func syncBadgeMode(_ value: Int) {
         
         guard !isApplyingRemoteChange else { return }
@@ -68,9 +62,7 @@ final class CloudSettingsSync {
         store.set(Int64(value), forKey: Keys.notificationLeadTimeDays)
         store.synchronize()
     }
-    
     // MARK: - Remote Merge
-    
     private func applyRemoteChanges() {
         
         isApplyingRemoteChange = true
@@ -81,9 +73,7 @@ final class CloudSettingsSync {
         var didChange = false
         
         if let remoteBadgeMode = store.object(
-
             forKey: Keys.badgeMode
-
         ) as? Int64 {
             
             let localBadgeMode = defaults.integer(forKey: Keys.badgeMode)
@@ -108,34 +98,16 @@ final class CloudSettingsSync {
         
         NotificationManager.shared.refresh(force: true)
     }
-    
-    
     private func pushLocalValuesIfNeeded() {
-
         let defaults = UserDefaults.standard
-
-        let localBadgeMode = defaults.integer(
-            forKey: Keys.badgeMode
-        )
-
-        let localLeadTime = defaults.integer(
-            forKey: Keys.notificationLeadTimeDays
-        )
-
+        let localBadgeMode = defaults.integer(forKey: Keys.badgeMode)
+        let localLeadTime = defaults.integer(forKey: Keys.notificationLeadTimeDays)
         if store.object(forKey: Keys.badgeMode) == nil {
-            store.set(
-                Int64(localBadgeMode),
-                forKey: Keys.badgeMode
-            )
+            store.set(Int64(localBadgeMode), forKey: Keys.badgeMode)
         }
-
         if store.object(forKey: Keys.notificationLeadTimeDays) == nil {
-            store.set(
-                Int64(localLeadTime),
-                forKey: Keys.notificationLeadTimeDays
-            )
+            store.set(Int64(localLeadTime), forKey: Keys.notificationLeadTimeDays)
         }
-
         store.synchronize()
     }
 }

@@ -3,7 +3,7 @@ import SwiftData
 import PhotosUI
 import Observation
 import os
-import Combine
+
 
 extension Notification.Name {
     static let taskDidChange = Notification.Name("taskDidChange")
@@ -14,9 +14,6 @@ struct TaskListView: View {
 
     @Environment(\.modelContext) private var modelContext
 
-    @Environment(\.scenePhase) private var scenePhase
-
-
     @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
     private var todoQuery: [TodoTask]
 
@@ -24,10 +21,6 @@ struct TaskListView: View {
     private var completedQuery: [TodoTask]
 
     @State private var draftTask: TodoTask?
-
-    //    @Query(sort: \TodoTask.deadLine, order: .forward)
-    //    private var tasks: [TodoTask]
-
 
     @State private var searchText = ""
     @State private var showCompleted = false
@@ -49,31 +42,6 @@ struct TaskListView: View {
 
     @State private var taskPendingDeletion: TodoTask?
 
-
-//    private var filteredTasks: [TodoTask] {
-//        let source = showCompleted ? completedQuery : todoQuery
-//
-//        return source.filter { task in
-//
-//            let matchesSearch =
-//            searchText.isEmpty ||
-//            task.title.localizedCaseInsensitiveContains(searchText)
-//
-//            let matchesTag =
-//            selectedTagFilter == nil ||
-//            task.mainTag == selectedTagFilter
-//
-//            let matchesPriority =
-//            selectedPriorityFilter == nil ||
-//            task.priority == selectedPriorityFilter
-//
-//            let matchesPeriod =
-//            selectedPeriodFilter == nil ||
-//            selectedPeriodFilter?.matches(task.deadLine) == true
-//
-//            return matchesSearch && matchesTag && matchesPriority && matchesPeriod
-//        }
-//    }
     private var todoTasks: [TodoTask] {
 
         let now = Date()
@@ -173,13 +141,13 @@ struct TaskListView: View {
                 todoQuery.isEmpty &&
                 completedQuery.isEmpty &&
                 !showNewTask
-
-            // Removed shouldShowWelcome and shouldShowLoadingState
             
                 listWithStyle {
 
                     List {
+
                         if isEmptyState {
+
                             EmptySectionView(showQuickGuide: $showQuickGuide)
                         }
 
@@ -225,7 +193,6 @@ struct TaskListView: View {
                             withAnimation {
                                 deleteTask(task, in: modelContext)
                             }
-//  xx                          NotificationManager.shared.refresh()
                             taskPendingDeletion = nil
                         }
                         Button("Cancel", role: .cancel) {
@@ -1195,8 +1162,7 @@ struct TodoSectionView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 18)
-//                .padding(.top, 1)
-//                .padding(.bottom, 2)
+
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
@@ -1232,7 +1198,7 @@ struct TodoSectionView: View {
                                 total: group.tasks.count
                             )
                         )
-                        // .padding(.top, ...) block removed as per instructions
+
                     }
                 }
             }
@@ -1311,7 +1277,7 @@ struct TodoSectionView: View {
                     withAnimation(.easeOut(duration: 0.12)) {
                         deleteTask(t, in: modelContext)
                     }
-//   xx                 NotificationManager.shared.refresh()
+
                 }
             } label: {
                 Label("Delete", systemImage: "trash")
@@ -1414,9 +1380,7 @@ struct TodoSectionView: View {
             AppLogger.persistence.fault("Failed to postpone task: \(error)")
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            NotificationManager.shared.refresh(force: true)
-        }
+        NotificationManager.shared.refresh(force: false)
     }
 
     @MainActor
@@ -1450,10 +1414,7 @@ struct TodoSectionView: View {
         modelContext.processPendingChanges()
         NotificationCenter.default.post(name: .taskDidChange, object: nil)
 
-        // 🔴 Fix swipe crash: delay refresh to let swipe close
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            NotificationManager.shared.refresh(force: true)
-        }
+        NotificationManager.shared.refresh(force: false)
     }
 }
 
@@ -1626,7 +1587,7 @@ struct CompletedSectionView: View {
                                 withAnimation(.easeOut(duration: 0.12)) {
                                     deleteTask(t, in: modelContext)
                                 }
-//    xx                            NotificationManager.shared.refresh()
+
                             }
 
                         } label: {
@@ -1694,10 +1655,7 @@ struct CompletedSectionView: View {
             AppLogger.persistence.fault("Failed to save context: \(error)")
         }
 
-        // 🔴 Fix swipe crash
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-            NotificationManager.shared.refresh(force: true)
-        }
+        NotificationManager.shared.refresh(force: false)
     }
 }
 
