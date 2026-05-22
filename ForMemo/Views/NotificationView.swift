@@ -145,9 +145,6 @@ struct NotificationView: View {
                                         .foregroundStyle(.secondary)
                                         .fixedSize(horizontal: false, vertical: true)
                                 }
-                                .padding(.top, -20)
-                                .padding(.bottom, -20)
-
                             }
                             .listRowBackground(Color.clear)
 
@@ -159,7 +156,7 @@ struct NotificationView: View {
 
                                         VStack(alignment: .leading, spacing: 6) {
 
-                                            HStack(alignment: .top) {
+                                            HStack(alignment: .center) {
 
                                                 Text(item.body)
                                                     .font(.headline.weight(.semibold))
@@ -197,6 +194,7 @@ struct NotificationView: View {
                                                 Spacer(minLength: 0)
                                             }
                                             .font(.subheadline)
+                                            .padding(.top, 4)
 
 
 

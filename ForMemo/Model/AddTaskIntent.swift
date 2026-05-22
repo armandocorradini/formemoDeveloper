@@ -567,7 +567,7 @@ private extension AddTaskIntent {
         let secondsRemaining = deadline.timeIntervalSince(now)
         
         guard secondsRemaining > 0 else {
-            return (0, description(forMinutes: 0))
+            return (nil, String(localized: "when it's due"))
         }
         
         let calendar = Calendar.autoupdatingCurrent
@@ -576,7 +576,7 @@ private extension AddTaskIntent {
         
         // 🔥 1. Se la scadenza è di notte → niente anticipo
         if deadlineHour >= 22 || deadlineHour < 7 {
-            return (0, description(forMinutes: 0))
+            return (nil, String(localized: "when it's due"))
         }
         
         // 🔥 2. Regole base
@@ -612,7 +612,7 @@ private extension AddTaskIntent {
         }
         
         guard baseOffsetHours > 0 else {
-            return (0, description(forMinutes: 0))
+            return (nil, String(localized: "when it's due"))
         }
         
         // 🔥 Calcolo reminder teorico
@@ -644,7 +644,7 @@ private extension AddTaskIntent {
         
         // 🔥 5. Evita passato
         guard finalReminderDate > now else {
-            return (0, description(forMinutes: 0))
+            return (nil, String(localized: "when it's due"))
         }
         
         let offsetMinutes = max(
