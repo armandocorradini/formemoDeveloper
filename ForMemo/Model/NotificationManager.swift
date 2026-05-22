@@ -140,9 +140,16 @@ final class NotificationManager: NSObject {
         let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
         applyBadge(showBadge ? badge : 0)
 
-        // 🔥 evita loop multipli
-        if pendingRefresh  {
-            return
+        // 🔥 Prevent overlapping rebuilds.
+        // A force refresh must invalidate the current rebuild.
+        if pendingRefresh {
+
+            if force {
+                rebuildTask?.cancel()
+                pendingRefresh = false
+            } else {
+                return
+            }
         }
 
         pendingRefresh = true
@@ -156,7 +163,15 @@ final class NotificationManager: NSObject {
             guard let self else { return }
 
             try? await Task.sleep(for: .milliseconds(force ? 150 : 400))
-            guard !Task.isCancelled else { return }
+
+            guard !Task.isCancelled else {
+
+                await MainActor.run {
+                    self.pendingRefresh = false
+                }
+
+                return
+            }
 
             // --- MAIN ACTOR: fetch + signature ---
             var tasks: [TodoTask] = []
@@ -272,7 +287,7 @@ final class NotificationManager: NSObject {
         let body = tasks
             .sorted { $0.id.uuidString < $1.id.uuidString }
             .map {
-                "\($0.id.uuidString)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)"
+                "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)"
             }
             .joined(separator: "|")
         
