@@ -10,6 +10,7 @@ struct WeeklyTasksView: View {
     
     @Environment(\.locale) private var appLocale
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     
     @State private var taskPendingDeletion: TodoTask?
     @State private var draftTask: TodoTask?
@@ -162,6 +163,51 @@ struct WeeklyTasksView: View {
 
         return .middle
     }
+
+    @ViewBuilder
+    private func groupedHeaderView(for group: GroupedDay) -> some View {
+        if let title = relativeHeaderTitle(for: group.date) {
+
+            let headerFillColor: Color = Color.secondary.opacity(0.06)
+            let headerStrokeColor: Color = Color.white.opacity(0.12)
+            let badgeFillColor: Color = Color.secondary.opacity(0.08)
+
+            HStack(spacing: 10) {
+
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.primary.opacity(0.82))
+
+                Text("\(group.tasks.count)")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(badgeFillColor)
+                    )
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(headerFillColor)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .stroke(headerStrokeColor, lineWidth: 1)
+                    )
+                    .shadow(
+                        color: .black.opacity(colorScheme == .dark ? 0.30 : 0.10),
+                        radius: 10,
+                        y: 4
+                    )
+            )
+            .padding(.leading, 30)
+            .padding(.trailing, 16)
+            .padding(.bottom, 4)
+        }
+    }
     var body: some View {
         ZStack {
             // Background gradient
@@ -291,23 +337,7 @@ struct WeeklyTasksView: View {
             }
 
         } header: {
-
-            if let title = relativeHeaderTitle(for: group.date) {
-
-                HStack {
-                    Text(title)
-                        .font(.callout.weight(.bold))
-                        .foregroundStyle(
-                            title == "Today"
-                            ? Color.blue.opacity(0.92)
-                            : Color.primary.opacity(0.72)
-                        )
-
-                    Spacer()
-                }
-                .padding(.horizontal, 18)
-                .padding(.bottom, 4)
-            }
+            groupedHeaderView(for: group)
         }
         .listSectionSeparator(.hidden)
         .listSectionSpacing(8)
@@ -723,6 +753,19 @@ private struct WeeklyTaskRow: View {
         let shouldHighlight = highlightEnabled && isCritical && (isToday || isOverdue)
 
         return ZStack {
+
+            shape
+                .fill(Color.black.opacity(colorScheme == .dark ? 0.30 : 0.10))
+                .blur(radius: 10)
+                .offset(y: 4)
+                .padding(.horizontal, 2)
+                .padding(
+                    .top,
+                    position == .first || position == .single
+                    ? 10
+                    : 2
+                )
+
             shape
                 .fill(
                     Color.white.opacity(colorScheme == .dark ? 0.02 : 0.04)
@@ -735,6 +778,7 @@ private struct WeeklyTaskRow: View {
                     )
                 )
         }
+        .compositingGroup()
         .overlay(alignment: .leading) {
 
             if shouldHighlight {
@@ -759,11 +803,7 @@ private struct WeeklyTaskRow: View {
                     .padding(.trailing, 24)
             }
         }
-        .shadow(
-            color: .black.opacity(colorScheme == .dark ? 0.10 : 0.04),
-            radius: 3,
-            y: 1
-        )
+        .compositingGroup()
     }
 
 

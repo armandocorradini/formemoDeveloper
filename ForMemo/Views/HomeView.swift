@@ -35,7 +35,7 @@ struct HomeView: View {
                         .symbolEffect(.rotate.clockwise, options: .repeat(1).speed(1), value: isAnimating)
                         .symbolEffect(.pulse, options: .repeat(nil).speed(0.3), value: isAnimating)
                         .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                 isAnimating = true
                             }
                         }

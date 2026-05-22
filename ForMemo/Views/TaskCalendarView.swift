@@ -833,14 +833,14 @@ private struct DayCell: View {
                     HStack(spacing: 3) {
 
                         Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                            .font(.system(size: 9, weight: .medium))
+                            .font(.system(size: 5, weight: .medium))
                             .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
                             .foregroundStyle(iconColor(for: task), .primary)
 
                         HStack(spacing: 3) {
                             Text(task.title)
-                                .font(.system(size: 5, weight: .medium))
-                                .lineLimit(2)
+                                .font(.system(size: 4, weight: .regular))
+                                .lineLimit(1)
                                 .foregroundStyle(task.isCompleted ? .secondary : .primary)
                                 .overlay(alignment: .bottomLeading) {
                                     if showTodayExpiredLabel && isOverdue(task) {
@@ -854,7 +854,7 @@ private struct DayCell: View {
 
                             if task.recurrenceRule != nil {
                                 Image(systemName: "arrow.triangle.2.circlepath")
-                                    .font(.system(size: 7))
+                                    .font(.system(size: 5))
                                     .foregroundStyle(.blue)
                             }
                         }

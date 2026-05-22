@@ -828,6 +828,69 @@ extension View {
     }
 }
 struct TodoSectionView: View {
+    @Environment(\.colorScheme) private var colorScheme
+    @ViewBuilder
+    private func groupedHeaderView(for group: (date: Date, tasks: [TodoTask])) -> some View {
+
+        if let title = relativeHeaderTitle(for: group.date) {
+
+            let isTodayGroup = Calendar.current.isDateInToday(group.date)
+
+            let headerFillColor: Color = Color.secondary.opacity(0.06)
+
+            let headerStrokeColor: Color = Color.white.opacity(0.12)
+
+            let badgeFillColor: Color = Color.secondary.opacity(0.10)
+
+            HStack(spacing: 10) {
+
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.primary.opacity(0.82))
+//                        isTodayGroup
+//                        ? Color.orange.opacity(0.95)
+//                        : Color.primary.opacity(0.82)
+//                    )
+
+//                Spacer()
+
+                Text("\(group.tasks.count)")
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(.primary.opacity(0.82))
+//                        isTodayGroup
+//                        ? Color.orange.opacity(0.95)
+//                        : .secondary
+//                    )
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(badgeFillColor)
+                    )
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, isTodayGroup ? 12 : 9)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(headerFillColor)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .stroke(headerStrokeColor, lineWidth: 1)
+                    )
+                    .shadow(
+                        color: .black.opacity(colorScheme == .dark ? 0.30 : 0.10),
+                        radius: 10,
+                        y: 4
+                    )
+            )
+            .padding(.horizontal, 16)
+            .padding(.top, isTodayGroup ? 18 : (group.date == groupedTasksByDay.first?.date ? 6 : 14))
+            .padding(.bottom, isTodayGroup ? 8 : 2)
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+        }
+    }
     private func relativeHeaderTitle(for date: Date) -> LocalizedStringKey? {
 
         let calendar = Calendar.current
@@ -1075,10 +1138,10 @@ struct TodoSectionView: View {
                 // PATCH: Add subtle shadow for grouped style (updated)
                 .shadow(
                     color: .black.opacity(
-                        colorScheme == .dark ? 0.055 : 0.022
+                        colorScheme == .dark ? 0.22 : 0.08
                     ),
-                    radius: 0.8,
-                    y: 0
+                    radius: 8,
+                    y: 3
                 )
             }
         }
@@ -1162,35 +1225,14 @@ struct TodoSectionView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 18)
-
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
 
                 ForEach(groupedTasksByDay, id: \.date) { group in
-
-                    if let title = relativeHeaderTitle(for: group.date) {
-
-                        HStack {
-                            Text(title)
-                                .font(.callout.weight(.bold))
-                                .foregroundStyle(
-                                    title == "Today"
-                                    ? Color.blue.opacity(0.92)
-                                    : Color.primary.opacity(0.72)
-                                )
-                            Spacer()
-                        }
-                        .padding(.horizontal, 18)
-                        .padding(.top, group.date == groupedTasksByDay.first?.date ? 4 : 10)
-                        .padding(.bottom, 4)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                    }
+                    groupedHeaderView(for: group)
 
                     ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, t in
-
                         taskRow(
                             for: t,
                             position: rowPosition(
@@ -1198,7 +1240,6 @@ struct TodoSectionView: View {
                                 total: group.tasks.count
                             )
                         )
-
                     }
                 }
             }
