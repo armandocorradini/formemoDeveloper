@@ -816,7 +816,9 @@ private struct WeeklyTaskRow: View {
             shape
                 .fill(
                     Color(.systemBackground).opacity(
-                        isToday ? 0.5 : 0.3
+                        isToday
+                        ? 0.50
+                        : (colorScheme == .dark ? 0.22 : 0.26)
                     )
                 )
         }
