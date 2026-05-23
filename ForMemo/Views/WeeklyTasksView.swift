@@ -721,6 +721,15 @@ private struct WeeklyTaskRow: View {
                     .foregroundStyle(.primary ,task.mainTag?.color ?? task.status.color)
                     .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
                     .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
+                    .modifier(
+                        DueIconEffectModifier(
+                            deadline: task.deadLine ?? .now,
+                            effect: DueIconEffect(
+                                rawValue: UserDefaults.standard.string(forKey: "dueIconEffect")
+                                ?? DueIconEffect.blink.rawValue
+                            ) ?? .blink
+                        )
+                    )
                 
                 Text(task.title)
                     .font(.headline)

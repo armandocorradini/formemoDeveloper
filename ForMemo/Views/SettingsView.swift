@@ -570,6 +570,18 @@ Attivazione: \(triggerInfo)
                                 .frame(width: iconWidth)
                         }
                     }
+                    NavigationLink {
+                        BackupRestoreView()
+                    } label: {
+                        Label {
+                            Text("Backup & Restore")
+                                .tint(.primary)
+                        } icon: {
+                            Image(systemName: "externaldrive.badge.icloud")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                        }
+                    }
                     Button {
                         showRecentlyDeleted = true
                     } label: {

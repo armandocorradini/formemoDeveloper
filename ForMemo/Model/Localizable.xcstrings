@@ -2220,6 +2220,34 @@
         }
       }
     },
+    "Attachments are not included" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhänge sind nicht enthalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los archivos adjuntos no están incluidos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les pièces jointes ne sont pas incluses"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli allegati non sono inclusi"
+          }
+        }
+      }
+    },
     "Attachments of completed tasks are automatically removed after the selected period. To-do tasks are not affected." : {
       "localizations" : {
         "de" : {
@@ -2330,6 +2358,174 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accesso iCloud automatico"
+          }
+        }
+      }
+    },
+    "Backup" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia de seguridad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sauvegarde"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup"
+          }
+        }
+      }
+    },
+    "Backup & Restore" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup & Wiederherstellung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia de seguridad y restauración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sauvegarde et restauration"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup & Restore"
+          }
+        }
+      }
+    },
+    "Backup Error" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup-Fehler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error de copia de seguridad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur de sauvegarde"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Errore Backup"
+          }
+        }
+      }
+    },
+    "Backup includes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Backup enthält"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La copia incluye"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sauvegarde inclut"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il backup include"
+          }
+        }
+      }
+    },
+    "Backups are stored independently from iCloud sync. You can use them to safely migrate all your ForMemo data to another device." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backups werden unabhängig von der iCloud-Synchronisierung gespeichert. Sie können verwendet werden, um alle Ihre ForMemo-Daten sicher auf ein anderes Gerät zu übertragen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las copias de seguridad se almacenan independientemente de la sincronización de iCloud. Puedes usarlas para transferir de forma segura todos tus datos de ForMemo a otro dispositivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les sauvegardes sont stockées indépendamment de la synchronisation iCloud. Vous pouvez les utiliser pour transférer en toute sécurité toutes vos données ForMemo vers un autre appareil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I backup vengono archiviati indipendentemente dalla sincronizzazione iCloud. Puoi usarli per trasferire in sicurezza tutti i dati di ForMemo su un altro dispositivo."
+          }
+        }
+      }
+    },
+    "Backups can be stored anywhere and restored even on a different Apple account." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backups können überall gespeichert und sogar mit einem anderen Apple-Account wiederhergestellt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las copias de seguridad pueden almacenarse en cualquier lugar y restaurarse incluso en una cuenta Apple diferente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les sauvegardes peuvent être enregistrées n’importe où et restaurées même sur un autre compte Apple."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I backup possono essere salvati ovunque e ripristinati anche su un account Apple diverso."
           }
         }
       }
@@ -3286,6 +3482,34 @@
         }
       }
     },
+    "Create a complete backup of tasks, reminders, recurrence rules, tags, priorities, locations and attachments." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellen Sie ein vollständiges Backup von Aufgaben, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Standorten und Anhängen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear una copia de seguridad completa de tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones y archivos adjuntos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer une sauvegarde complète des tâches, rappels, règles de récurrence, tags, priorités, emplacements et pièces jointes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea un backup completo di attività, promemoria, regole di ricorrenza, tag, priorità, posizioni e allegati."
+          }
+        }
+      }
+    },
     "Create a new task instantly using Siri." : {
       "comment" : "A description of how to create a new task using Siri.",
       "isCommentAutoGenerated" : true,
@@ -3345,6 +3569,34 @@
         }
       }
     },
+    "Create Backup" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup erstellen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear copia de seguridad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer une sauvegarde"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea Backup"
+          }
+        }
+      }
+    },
     "Created at" : {
       "localizations" : {
         "de" : {
@@ -3369,6 +3621,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Creato il"
+          }
+        }
+      }
+    },
+    "CSV, ICS, Apple Reminders and Calendar import/export transfer tasks information. Attachments are only included in full backups." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV-, ICS-, Apple Erinnerungen- und Kalender-Import/Export übertragen Aufgabeninformationen. Anhänge sind nur in vollständigen Backups enthalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La importación/exportación de CSV, ICS, Apple Reminders y Calendario transfiere la información de las tareas. Los archivos adjuntos solo se incluyen en las copias de seguridad completas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’import/export CSV, ICS, Apple Reminders et Calendrier transfèrent les informations des tâches. Les pièces jointes sont incluses uniquement dans les sauvegardes complètes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importazione/esportazione CSV, ICS, Apple Reminders e Calendario trasferiscono le informazioni delle attività. Gli allegati sono inclusi solo nei backup completi."
           }
         }
       }
@@ -6774,6 +7054,62 @@
         }
       }
     },
+    "Independent from iCloud Sync" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unabhängig von der iCloud-Synchronisierung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Independiente de la sincronización de iCloud"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indépendant de la synchronisation iCloud"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indipendente dalla sincronizzazione iCloud"
+          }
+        }
+      }
+    },
+    "Information" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informationen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Información"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informations"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informazioni"
+          }
+        }
+      }
+    },
     "Interactive Calendar" : {
       "localizations" : {
         "de" : {
@@ -9050,6 +9386,34 @@
         }
       }
     },
+    "Preparing Backup..." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup wird vorbereitet…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando copia de seguridad…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préparation de la sauvegarde…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparazione backup…"
+          }
+        }
+      }
+    },
     "Preview" : {
       "localizations" : {
         "de" : {
@@ -10365,6 +10729,146 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ripristina"
+          }
+        }
+      }
+    },
+    "Restore Backup" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup wiederherstellen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar copia de seguridad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurer une sauvegarde"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina Backup"
+          }
+        }
+      }
+    },
+    "Restore data from a previously exported backup." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stellen Sie Daten aus einem zuvor exportierten Backup wieder her."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaura datos desde una copia de seguridad exportada previamente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurer les données à partir d’une sauvegarde précédemment exportée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina i dati da un backup esportato in precedenza."
+          }
+        }
+      }
+    },
+    "Restore Error" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellungsfehler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error de restauración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur de restauration"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Errore Ripristino"
+          }
+        }
+      }
+    },
+    "Restoring a backup may overwrite your current local data." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Wiederherstellen eines Backups kann Ihre aktuellen lokalen Daten überschreiben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurar una copia de seguridad puede sobrescribir tus datos locales actuales."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauration d’une sauvegarde peut écraser vos données locales actuelles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il ripristino di un backup potrebbe sovrascrivere i dati locali correnti."
+          }
+        }
+      }
+    },
+    "Restoring Backup..." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup wird wiederhergestellt…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restaurando copia de seguridad…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restauration de la sauvegarde…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristino backup…"
           }
         }
       }
@@ -13083,6 +13587,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I task con priorità critica che sono in scadenza oggi o già scaduti vengono evidenziati per aiutarti a identificare rapidamente gli elementi più urgenti."
+          }
+        }
+      }
+    },
+    "Tasks, reminders, recurrence rules, tags, priorities, snooze state, locations and attachments are included in the backup archive." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgaben, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Snooze-Status, Standorte und Anhänge sind im Backup-Archiv enthalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, estado de snooze, ubicaciones y archivos adjuntos están incluidos en el archivo de copia de seguridad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les tâches, rappels, règles de récurrence, tags, priorités, état snooze, emplacements et pièces jointes sont inclus dans l’archive de sauvegarde."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività, promemoria, regole di ricorrenza, tag, priorità, stato snooze, posizioni e allegati sono inclusi nell’archivio di backup."
           }
         }
       }

@@ -171,6 +171,28 @@ struct ImportExportSettingsView: View {
                         Label("Export ICS file", systemImage: "doc")
                     }
                 }
+
+                Section("Information") {
+
+                    HStack(alignment: .top, spacing: 12) {
+
+                        Image(systemName: "info.circle.fill")
+                            .foregroundStyle(.blue)
+                            .padding(.top, 1)
+
+                        VStack(alignment: .leading, spacing: 6) {
+
+                            Text("Attachments are not included")
+
+                            Text(
+                                "CSV, ICS, Apple Reminders and Calendar import/export transfer tasks information. Attachments are only included in full backups."
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
             }
             .navigationTitle("Import & Export")
             .navigationBarBackButtonHidden(true)

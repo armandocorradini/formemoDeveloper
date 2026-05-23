@@ -1,6 +1,14 @@
+
 import Foundation
 
-struct TaskTransferObject: Identifiable, Hashable {
+struct AttachmentTransferObject: Hashable, Codable {
+
+    let originalName: String
+    let relativePath: String
+    let contentType: String
+}
+
+struct TaskTransferObject: Identifiable, Hashable, Codable {
     
     let id: UUID
     
@@ -11,6 +19,7 @@ struct TaskTransferObject: Identifiable, Hashable {
     let reminderOffsetMinutes: Int?
     
     let tag: String?
+    let attachments: [AttachmentTransferObject]?
     
     let latitude: Double?
     let longitude: Double?
@@ -36,6 +45,7 @@ struct TaskTransferObject: Identifiable, Hashable {
         deadline: Date?,
         reminderOffsetMinutes: Int?,
         tag: String?,
+        attachments: [AttachmentTransferObject]?,
         latitude: Double?,
         longitude: Double?,
         locationName: String?,
@@ -54,6 +64,7 @@ struct TaskTransferObject: Identifiable, Hashable {
         self.deadline = deadline
         self.reminderOffsetMinutes = reminderOffsetMinutes
         self.tag = tag
+        self.attachments = attachments
         self.latitude = latitude
         self.longitude = longitude
         self.locationName = locationName
@@ -83,6 +94,13 @@ extension TaskTransferObject {
             deadline: task.deadLine,
             reminderOffsetMinutes: task.reminderOffsetMinutes,
             tag: task.mainTagRaw,
+            attachments: task.attachments?.map {
+                AttachmentTransferObject(
+                    originalName: $0.originalName,
+                    relativePath: $0.relativePath,
+                    contentType: $0.contentType
+                )
+            },
             latitude: task.locationLatitude,
             longitude: task.locationLongitude,
             locationName: task.locationName,
@@ -134,7 +152,19 @@ extension TodoTask {
         
         self.completedAt = dto.completedAt
         self.snoozeUntil = dto.snoozeUntil
-        
+
+        if let attachmentDTOs = dto.attachments {
+
+            self.attachments = attachmentDTOs.map {
+                TaskAttachment(
+                    originalName: $0.originalName,
+                    relativePath: $0.relativePath,
+                    contentType: $0.contentType,
+                    task: self
+                )
+            }
+        }
+
         if let tag = dto.tag,
            let mapped = TaskMainTag(rawValue: tag) {
             self.mainTag = mapped
