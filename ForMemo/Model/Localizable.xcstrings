@@ -4379,6 +4379,34 @@
         }
       }
     },
+    "Diagnostics Preview" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnosevorschau"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista previa del diagnóstico"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aperçu du diagnostic"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anteprima Diagnostica"
+          }
+        }
+      }
+    },
     "Disclaimer" : {
       "localizations" : {
         "de" : {
@@ -13453,6 +13481,34 @@
         }
       }
     },
+    "The diagnostics report only contains technical app events and never personal task contents." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Diagnosebericht enthält nur technische App-Ereignisse und niemals persönliche Aufgabeninhalte."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El informe de diagnóstico solo contiene eventos técnicos de la aplicación y nunca contenido personal de las tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le rapport de diagnostic contient uniquement des événements techniques de l’application et jamais le contenu personnel des tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il report diagnostico contiene solo eventi tecnici dell’app e mai il contenuto personale delle attività."
+          }
+        }
+      }
+    },
     "The map automatically adjusts to show all tasks when it opens. After that, your zoom level is preserved." : {
       "localizations" : {
         "de" : {
@@ -16293,6 +16349,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Puoi creare attività manualmente o con Siri. Quando usi Siri, vieni guidato passo dopo passo: prima cosa aggiungere, poi quando e infine quale promemoria impostare. L’app salva l’attività con le informazioni fornite."
+          }
+        }
+      }
+    },
+    "You can preview the exact diagnostics information before exporting it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie können die genauen Diagnoseinformationen vor dem Export in der Vorschau anzeigen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puede previsualizar la información de diagnóstico exacta antes de exportarla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez prévisualiser les informations de diagnostic exactes avant de les exporter."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi visualizzare in anteprima le informazioni diagnostiche esatte prima di esportarle."
           }
         }
       }

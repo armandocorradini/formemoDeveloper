@@ -168,9 +168,17 @@ struct WeeklyTasksView: View {
     private func groupedHeaderView(for group: GroupedDay) -> some View {
         if let title = relativeHeaderTitle(for: group.date) {
 
-            let headerFillColor: Color = Color.secondary.opacity(0.06)
+            let isTodayGroup = Calendar.current.isDateInToday(group.date)
+
+            let headerFillColor: Color = isTodayGroup
+                ? Color.blue.opacity(colorScheme == .dark ? 0.14 : 0.06)
+                : Color.white.opacity(colorScheme == .dark ? 0.035 : 0.045)
+
             let headerStrokeColor: Color = Color.white.opacity(0.12)
-            let badgeFillColor: Color = Color.secondary.opacity(0.08)
+
+            let badgeFillColor: Color = isTodayGroup
+                ? Color.blue.opacity(colorScheme == .dark ? 0.18 : 0.10)
+                : Color.white.opacity(colorScheme == .dark ? 0.06 : 0.08)
 
             HStack(spacing: 10) {
 
@@ -180,7 +188,7 @@ struct WeeklyTasksView: View {
 
                 Text("\(group.tasks.count)")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.primary.opacity(0.95))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(
@@ -189,18 +197,43 @@ struct WeeklyTasksView: View {
                     )
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 9)
+            .padding(.vertical, isTodayGroup ? 12 : 9)
             .background(
                 Capsule(style: .continuous)
-                    .fill(headerFillColor)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .fill(headerFillColor)
+                    )
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(colorScheme == .dark ? 0.16 : 0.24),
+                                        Color.white.opacity(colorScheme == .dark ? 0.03 : 0.05),
+                                        Color.clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
                     .overlay(
                         Capsule(style: .continuous)
                             .stroke(headerStrokeColor, lineWidth: 1)
                     )
                     .shadow(
-                        color: .black.opacity(colorScheme == .dark ? 0.30 : 0.10),
-                        radius: 10,
-                        y: 4
+                        color: isTodayGroup
+                            ? Color.blue.opacity(colorScheme == .dark ? 0.18 : 0.06)
+                            : Color.white.opacity(colorScheme == .dark ? 0.05 : 0.03),
+                        radius: isTodayGroup ? 18 : 12,
+                        y: 6
+                    )
+                    .shadow(
+                        color: .black.opacity(colorScheme == .dark ? 0.20 : 0.06),
+                        radius: 12,
+                        y: 6
                     )
             )
             .padding(.leading, 30)

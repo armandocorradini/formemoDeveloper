@@ -345,18 +345,18 @@ struct ExportDiagnosticsView: View {
     @State private var refreshID = UUID()
 
     private func refreshDiagnostics() {
-        
         logExists = FileManager.default.fileExists(
             atPath: DebugLog.logURL.path
         )
-        
         if logExists {
-            logContent = (
-                try? String(
-                    contentsOf: DebugLog.logURL,
-                    encoding: .utf8
-                )
-            ) ?? "Unable to load log"
+            if let content = try? String(
+                contentsOf: DebugLog.logURL,
+                encoding: .utf8
+            ) {
+                logContent = String(content.prefix(12000))
+            } else {
+                logContent = "Unable to load log"
+            }
         } else {
             logContent = ""
         }
@@ -382,6 +382,11 @@ struct ExportDiagnosticsView: View {
                     Text("formemo.app@gmail.com")
                         .foregroundStyle(.blue)
                 }
+                
+                Text("The diagnostics report only contains technical app events and never personal task contents.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                
                 ShareLink(
                     item: DebugLog.logURL,
                     preview: SharePreview(
@@ -395,7 +400,6 @@ struct ExportDiagnosticsView: View {
                     )
                 }
                 
-#if DEBUG
                 if logExists {
                     VStack(alignment: .leading, spacing: 8) {
                         Label(
@@ -403,16 +407,22 @@ struct ExportDiagnosticsView: View {
                             systemImage: "doc.text.magnifyingglass"
                         )
                         .font(.headline)
-                        
+
+                        Text("You can preview the exact diagnostics information before exporting it.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+
                         ScrollView {
-                            Text(logContent)
+                            Text(String(logContent.prefix(12000)))
                                 .font(.caption.monospaced())
+                                .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(minHeight: 180, maxHeight: 300)
+                        .frame(height: 220)
                     }
                 }
-                
+
+                #if DEBUG
                 Button(role: .destructive) {
                     DebugLog.clear()
                 } label: {
@@ -421,7 +431,7 @@ struct ExportDiagnosticsView: View {
                         systemImage: "trash"
                     )
                 }
-#endif
+                #endif
             }
         }
         .id(refreshID)

@@ -836,31 +836,25 @@ struct TodoSectionView: View {
 
             let isTodayGroup = Calendar.current.isDateInToday(group.date)
 
-            let headerFillColor: Color = Color.secondary.opacity(0.06)
+            let headerFillColor: Color = isTodayGroup
+                ? Color.blue.opacity(colorScheme == .dark ? 0.14 : 0.06)
+                : Color.white.opacity(colorScheme == .dark ? 0.035 : 0.045)
 
             let headerStrokeColor: Color = Color.white.opacity(0.12)
 
-            let badgeFillColor: Color = Color.secondary.opacity(0.10)
+            let badgeFillColor: Color = isTodayGroup
+                ? Color.blue.opacity(colorScheme == .dark ? 0.18 : 0.10)
+                : Color.white.opacity(colorScheme == .dark ? 0.06 : 0.08)
 
             HStack(spacing: 10) {
 
                 Text(title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.primary.opacity(0.82))
-//                        isTodayGroup
-//                        ? Color.orange.opacity(0.95)
-//                        : Color.primary.opacity(0.82)
-//                    )
-
-//                Spacer()
 
                 Text("\(group.tasks.count)")
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.primary.opacity(0.82))
-//                        isTodayGroup
-//                        ? Color.orange.opacity(0.95)
-//                        : .secondary
-//                    )
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(
@@ -872,15 +866,40 @@ struct TodoSectionView: View {
             .padding(.vertical, isTodayGroup ? 12 : 9)
             .background(
                 Capsule(style: .continuous)
-                    .fill(headerFillColor)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .fill(headerFillColor)
+                    )
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(colorScheme == .dark ? 0.16 : 0.24),
+                                        Color.white.opacity(colorScheme == .dark ? 0.03 : 0.05),
+                                        Color.clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
                     .overlay(
                         Capsule(style: .continuous)
                             .stroke(headerStrokeColor, lineWidth: 1)
                     )
                     .shadow(
-                        color: .black.opacity(colorScheme == .dark ? 0.30 : 0.10),
-                        radius: 10,
-                        y: 4
+                        color: isTodayGroup
+                            ? Color.blue.opacity(colorScheme == .dark ? 0.18 : 0.06)
+                            : Color.white.opacity(colorScheme == .dark ? 0.05 : 0.03),
+                        radius: isTodayGroup ? 18 : 12,
+                        y: 6
+                    )
+                    .shadow(
+                        color: .black.opacity(colorScheme == .dark ? 0.20 : 0.06),
+                        radius: 12,
+                        y: 6
                     )
             )
             .padding(.horizontal, 16)
@@ -1029,34 +1048,97 @@ struct TodoSectionView: View {
 
                 ZStack {
 
-                    // PATCH: Replace first background layer with conditional isToday opacity
                     RoundedRectangle(cornerRadius: 0, style: .continuous)
                         .fill(
-                            isToday
-                            ? Color.white.opacity(
+                            Color.black.opacity(
+                                colorScheme == .dark ? 0.30 : 0.10
+                            )
+                        )
+                        .blur(radius: 10)
+                        .offset(y: 4)
+
+                    RoundedRectangle(cornerRadius: 0, style: .continuous)
+                        .fill(
+                            Color.white.opacity(
                                 colorScheme == .dark ? 0.02 : 0.04
                             )
-                            : Color.clear
                         )
 
                     RoundedRectangle(cornerRadius: 0, style: .continuous)
                         .fill(
-                            isToday
-                            ? Color(.systemBackground).opacity(0.5)
-                            : Color.clear
+                            Color(.systemBackground).opacity(
+                                isToday
+                                ? (colorScheme == .dark ? 0.50 : 0.60)
+                                : (colorScheme == .dark ? 0.30 : 0.38)
+                            )
                         )
+
+                    if isToday {
+
+                        RoundedRectangle(cornerRadius: 0, style: .continuous)
+                            .fill(.ultraThinMaterial)
+
+                        RoundedRectangle(cornerRadius: 0, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.blue.opacity(
+                                            colorScheme == .dark ? 0.20 : 0.10
+                                        ),
+                                        Color.cyan.opacity(
+                                            colorScheme == .dark ? 0.08 : 0.04
+                                        ),
+                                        Color.white.opacity(
+                                            colorScheme == .dark ? 0.10 : 0.05
+                                        ),
+                                        Color.clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+
+                        RoundedRectangle(cornerRadius: 0, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(
+                                            colorScheme == .dark ? 0.16 : 0.24
+                                        ),
+                                        Color.white.opacity(
+                                            colorScheme == .dark ? 0.03 : 0.05
+                                        ),
+                                        Color.clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .blendMode(.screen)
+
+                        RoundedRectangle(cornerRadius: 0, style: .continuous)
+                            .stroke(
+                                Color.white.opacity(
+                                    colorScheme == .dark ? 0.10 : 0.14
+                                ),
+                                lineWidth: 0.6
+                            )
+                    }
                 }
+                .compositingGroup()
+
                 .overlay(alignment: .leading) {
+
                     if let highlightOverlay {
+
                         RoundedRectangle(cornerRadius: 1.3)
                             .fill(highlightOverlay)
                             .frame(width: 1.3, height: 50)
                             .frame(maxHeight: .infinity, alignment: .center)
                             .padding(.leading, 12)
-                            .padding(.trailing, 8)
                     }
                 }
-                // PATCH: Add bottom separator overlay for plain style (updated)
+
                 .overlay(alignment: .bottomLeading) {
 
                     if showBottomSeparator {
@@ -1064,20 +1146,30 @@ struct TodoSectionView: View {
                         Rectangle()
                             .fill(
                                 colorScheme == .dark
-                                ? Color.white.opacity(0.065)
-                                : Color.black.opacity(0.04)
+                                ? Color.white.opacity(0.09)
+                                : Color.black.opacity(0.06)
                             )
-                            .frame(height: 0.33)
+                            .frame(height: 0.35)
                             .padding(.leading, 76)
+                            .padding(.trailing, 24)
                     }
                 }
-                // PATCH: Add subtle shadow for plain style (updated)
+
                 .shadow(
                     color: .black.opacity(
-                        colorScheme == .dark ? 0.035 : 0.018
+                        colorScheme == .dark ? 0.22 : 0.08
                     ),
-                    radius: 0.6,
-                    y: 0
+                    radius: 8,
+                    y: 3
+                )
+                .shadow(
+                    color: isToday
+                        ? Color.blue.opacity(
+                            colorScheme == .dark ? 0.16 : 0.08
+                        )
+                        : .clear,
+                    radius: 18,
+                    y: 6
                 )
             } else {
 
