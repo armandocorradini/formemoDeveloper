@@ -251,7 +251,7 @@ struct WeeklyTasksView: View {
                     )
             )
 //posizione capsula giorno (oggi, domani, ieri, ....
-            .padding(.top, 2)
+            .padding(.top, -8)
             .padding(.leading, TaskRowMetrics.groupedLeadingPadding - 30)
 //            .padding(.trailing, 16)
             .padding(.bottom, -(TaskRowMetrics.weeklyVerticalPadding / 7))
@@ -317,8 +317,8 @@ struct WeeklyTasksView: View {
             .animation(.smooth(duration: 0.18), value: groupedTasksByDay.count)
             .safeAreaInset(edge: .top, spacing: 0) {
                 headerView
-                    .padding(.top, 6)
-                    .padding(.bottom, 6)
+                    .padding(.top, 2)
+                    .padding(.bottom, 2)
             }
             .navigationTitle(formattedDate)
             .navigationBarTitleDisplayMode(.inline)
@@ -425,7 +425,7 @@ struct WeeklyTasksView: View {
                 
                 Spacer()
             }
-            .padding(.top, 24)
+            .padding(.top, 8)
         }
         .textCase(nil)
   

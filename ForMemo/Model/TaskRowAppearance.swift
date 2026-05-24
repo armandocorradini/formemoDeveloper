@@ -155,10 +155,10 @@ enum TaskRowTheme {
 
     // Opacità dei separator in dark mode.
     // Valori bassi riducono il rumore visivo.
-    static let separatorOpacityDark: Double = 0.09
+    static let separatorOpacityDark: Double = 0.39
 
     // Opacità dei separator in light mode.
-    static let separatorOpacityLight: Double = 0.06
+    static let separatorOpacityLight: Double = 0.26
 
     // Intensità ombre in dark mode.
     // Valori alti aumentano la percezione di profondità.
