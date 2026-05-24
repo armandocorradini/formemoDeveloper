@@ -90,12 +90,6 @@ struct WeeklyTasksView: View {
         .capitalized
     }
     
-    enum RowPosition {
-        case single
-        case first
-        case middle
-        case last
-    }
 
     private struct GroupedDay: Identifiable {
         let date: Date
@@ -147,7 +141,7 @@ struct WeeklyTasksView: View {
         }
     }
 
-    private func rowPosition(index: Int, total: Int) -> RowPosition {
+    private func rowPosition(index: Int, total: Int) -> TaskRowPosition {
 
         if total == 1 {
             return .single
@@ -180,7 +174,7 @@ struct WeeklyTasksView: View {
                 ? Color.blue.opacity(colorScheme == .dark ? 0.18 : 0.10)
                 : Color.white.opacity(colorScheme == .dark ? 0.06 : 0.08)
 
-            HStack(spacing: 10) {
+            HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
                 Text(title)
                     .font(.subheadline.weight(.semibold))
@@ -196,7 +190,7 @@ struct WeeklyTasksView: View {
                             .fill(badgeFillColor)
                     )
             }
-            .padding(.horizontal, 14)
+            .padding(.horizontal, TaskRowMetrics.groupedLeadingPadding)
             .padding(.vertical, isTodayGroup ? 12 : 9)
             .background(
                 Capsule(style: .continuous)
@@ -221,7 +215,27 @@ struct WeeklyTasksView: View {
                     )
                     .overlay(
                         Capsule(style: .continuous)
-                            .stroke(headerStrokeColor, lineWidth: 1)
+                            .stroke(
+                                isTodayGroup
+                                ? LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(colorScheme == .dark ? 0.42 : 0.70),
+                                        Color.white.opacity(colorScheme == .dark ? 0.10 : 0.18),
+                                        Color.clear
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                                : LinearGradient(
+                                    colors: [
+                                        headerStrokeColor,
+                                        headerStrokeColor
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: isTodayGroup ? 1.15 : 1
+                            )
                     )
                     .shadow(
                         color: isTodayGroup
@@ -236,9 +250,11 @@ struct WeeklyTasksView: View {
                         y: 6
                     )
             )
-            .padding(.leading, 30)
-            .padding(.trailing, 16)
-            .padding(.bottom, 4)
+//posizione capsula giorno (oggi, domani, ieri, ....
+            .padding(.top, 2)
+            .padding(.leading, TaskRowMetrics.groupedLeadingPadding - 30)
+//            .padding(.trailing, 16)
+            .padding(.bottom, -(TaskRowMetrics.weeklyVerticalPadding / 7))
         }
     }
     var body: some View {
@@ -290,6 +306,11 @@ struct WeeklyTasksView: View {
                 }
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
+            .contentMargins(
+                .horizontal,
+                TaskRowMetrics.groupedLeadingPadding,
+                for: .scrollContent
+            )
             .background(Color.clear)
             .listRowBackground(Color.clear)
             .listStyle(.plain)
@@ -363,17 +384,14 @@ struct WeeklyTasksView: View {
                     )
                 )
                 .listRowSeparator(.hidden)
-                .listRowInsets(
-                    .init(top: 0, leading: 14, bottom: 0, trailing: 14)
-                )
-                .listRowBackground(Color.clear)
+            
             }
 
         } header: {
             groupedHeaderView(for: group)
         }
         .listSectionSeparator(.hidden)
-        .listSectionSpacing(8)
+        .listSectionSpacing(TaskRowMetrics.weeklyVerticalPadding / 2)
     }
 
     // MARK: - Header
@@ -432,6 +450,11 @@ private struct WeeklyTaskRow: View {
     
     @AppStorage("tasklist.showTodayExpiredLabel")
     private var showTodayExpiredLabel: Bool = true
+    @AppStorage("selectedTaskRowStyle")
+    private var selectedRowStyle: Int = 0
+
+    @AppStorage("TaskListShowDateEveryRow")
+    private var showDateEveryRow = false
     
     @Binding var taskPendingDeletion: TodoTask?
     
@@ -441,7 +464,7 @@ private struct WeeklyTaskRow: View {
     @Environment(\.colorScheme) private var colorScheme
     let taskWeekDays: Int
     let task: TodoTask
-    let position: WeeklyTasksView.RowPosition
+    let position: TaskRowPosition
 
     private var hasAttachments: Bool {
         !(task.attachments ?? []).isEmpty
@@ -455,89 +478,38 @@ private struct WeeklyTaskRow: View {
         task.priority.systemImage
     }
 
-    private var deadlineStateColor: Color {
-        guard let deadline = task.deadLine else {
-            return .secondary
-        }
-
-        let now = Date()
-        let calendar = Calendar.current
-
-        let isToday = calendar.isDateInToday(deadline) && deadline >= now
-        let isOverdue = deadline < now
-        let isCritical = priorityIconName == "flame"
-
-        if highlightEnabled && isCritical && (isToday || isOverdue) {
-            return highlightColor
-        }
-
-        if isToday {
-            return .orange
-        }
-
-        if isOverdue {
-            return .red
-        }
-
-        return .secondary
-    }
     
     var body: some View {
-        
-        ZStack {
-            
-            NavigationLink(value: task) {
-                EmptyView()
-            }
-            .opacity(0)
-            
-            ZStack(alignment: .topTrailing) {
-                HStack(spacing: 14) {
-                    if position == .first || position == .single {
-                        dayBadge
-                    } else {
-                        Color.clear
-                            .frame(width: 44, height: 44)
-                    }
-
-                    mainColumn
-                    Spacer(minLength: 6)
-                }
-
-                VStack(spacing: 4) {
-                    if let priorityIconName {
-                        Image(systemName: priorityIconName)
-                            .foregroundStyle(priorityIconName == "flame" ? .red : .primary)
-                    }
-
-                    if hasAttachments {
-                        Image(systemName: "paperclip")
-                            .foregroundStyle(.primary)
-                    }
-
-                    if hasLocation {
-                        Image(systemName: "location.fill")
-                            .foregroundStyle(.primary)
-                    }
-                }
-                .font(.system(size: 10, weight: .semibold))
-                .padding(6)
-
-            }
-            .padding(.vertical, 14)
-            .padding(.horizontal, 16)
-            .background {
-                cardBackground
-            }
-        }
+        TaskRow(
+            task: task,
+            showDateColumn:
+                showDateEveryRow
+                ? true
+                : (position == .first || position == .single)
+        )
+        .padding(.leading, 10)
+        .frame(
+            minHeight: TaskRowMetrics.rowHeight,
+            alignment: .leading
+        )
+        .listRowBackground(
+            cardBackground
+        )
+        .contentShape(Rectangle())
+        .listRowInsets(
+            TaskRowMetrics.insets(
+                for: .grouped,
+                position: position
+            )
+        )
         .animation(nil, value: task.deadLine)
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             completeAction
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            
+
             Button(role: .destructive) {
-                
+
                 if confirmTaskDeletion {
                     taskPendingDeletion = task
                 } else {
@@ -545,12 +517,12 @@ private struct WeeklyTaskRow: View {
                         deleteTask(task, in: modelContext)
                     }
                 }
-                
+
             } label: {
                 Label("Delete", systemImage: "trash")
             }
         }
-        
+
         .contextMenu {
             Button(role: .destructive) {
                 if confirmTaskDeletion {
@@ -563,7 +535,7 @@ private struct WeeklyTaskRow: View {
             } label: {
                 Label("Delete", systemImage: "trash")
             }
-            
+
             Button {
                 completeTask()
             } label: {
@@ -604,7 +576,6 @@ private struct WeeklyTaskRow: View {
                 Label("Reschedule", systemImage: "clock")
             }
         }
-        
     }
     
     // MARK: - Actions
@@ -676,244 +647,34 @@ private struct WeeklyTaskRow: View {
         }
     }
     
-    // MARK: - Day badge
-    
-    private var dayBadge: some View {
-        
-        VStack(spacing: 2) {
-            
-            if let date = task.deadLine {
-                
-                Text(date, format: .dateTime.weekday(.abbreviated))
-                    .font(.caption2.weight(.semibold))
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-                
-                Text(date, format: .dateTime.day())
-                    .font(.title3.weight(.bold))
-                    .foregroundStyle(
-                        Calendar.current.isDateInToday(date)
-                        ? .orange
-                        : .primary
-                    )
-                
-            } else {
-                
-                Image(systemName: "calendar")
-                    .font(.title3)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(width: 44, height: 44)
-    }
-    
-    // MARK: - Main column
-    
-    private var mainColumn: some View {
-        
-        VStack(alignment: .leading, spacing: 6) {
-            
-
-            HStack(spacing: 6) {
-                
-                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                    .symbolRenderingMode(.palette)
-                    .foregroundStyle(.primary ,task.mainTag?.color ?? task.status.color)
-                    .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
-                    .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
-                    .modifier(
-                        DueIconEffectModifier(
-                            deadline: task.deadLine ?? .now,
-                            effect: DueIconEffect(
-                                rawValue: UserDefaults.standard.string(forKey: "dueIconEffect")
-                                ?? DueIconEffect.blink.rawValue
-                            ) ?? .blink
-                        )
-                    )
-                
-                Text(task.title)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-                    .overlay(alignment: .bottomLeading) {
-                        if showTodayExpiredLabel && isOverdue {
-                            Rectangle()
-                                .fill(Color.red.opacity(0.75))
-                                .frame(height: 1)
-                                .offset(y: 2)
-                        }
-                    }
-                    .lineLimit(1)
-                
-                if task.recurrenceRule != nil {
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                        .font(.caption)
-                        .foregroundStyle(.blue)
-                }
-            }
-            
-            HStack(spacing: 10) {
-                if let date = task.deadLine {
-                    Image(systemName: "clock")
-                    Text(date, format: .dateTime.hour().minute())
-                        .foregroundStyle(deadlineStateColor)
-                }
-
-                if let minutes = task.reminderOffsetMinutes {
-                    Image(systemName: "bell")
-                    Text(reminderText(for: minutes))
-                }
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-        }
-    }
-    
-    private var isToday: Bool {
-        guard let d = task.deadLine else { return false }
-
-        let now = Date()
-
-        return Calendar.current.isDateInToday(d) && d >= now
-    }
-
-    private var isOverdue: Bool {
-        guard let d = task.deadLine else { return false }
-        return d < Date()
-    }
-    
-    
-    
     // MARK: - Background
-    
     private var cardBackground: some View {
-
         let deadline = task.deadLine ?? .distantFuture
 
         let isCritical = priorityIconName == "flame"
         let isToday = Calendar.current.isDateInToday(deadline)
         let isOverdue = deadline < Date()
-        let shouldHighlight = highlightEnabled && isCritical && (isToday || isOverdue)
 
-        return ZStack {
+        let shouldHighlight =
+            highlightEnabled &&
+            isCritical &&
+            !task.isCompleted &&
+            (isToday || isOverdue)
 
-            shape
-                .fill(Color.black.opacity(colorScheme == .dark ? 0.30 : 0.10))
-                .blur(radius: 10)
-                .offset(y: 4)
-                .padding(.horizontal, 2)
-                .padding(
-                    .top,
-                    position == .first || position == .single
-                    ? 10
-                    : 2
-                )
-
-            shape
-                .fill(
-                    Color.white.opacity(colorScheme == .dark ? 0.02 : 0.04)
-                )
-
-            shape
-                .fill(
-                    Color(.systemBackground).opacity(
-                        isToday
-                        ? 0.50
-                        : (colorScheme == .dark ? 0.22 : 0.26)
-                    )
-                )
-        }
-        .compositingGroup()
-        .overlay(alignment: .leading) {
-
-            if shouldHighlight {
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(highlightColor)
-                    .frame(width: 1.5, height: 38)
-                    .frame(maxHeight: .infinity, alignment: .center)
-                    .padding(.leading, 10)
-            }
-        }
-        .overlay(alignment: .bottom) {
-
-            if position != .last && position != .single {
-
-                Divider()
-                    .overlay(
-                        colorScheme == .dark
-                        ? Color.white.opacity(0.14)
-                        : Color.black.opacity(0.10)
-                    )
-                    .padding(.leading, 82)
-                    .padding(.trailing, 24)
-            }
-        }
-        .compositingGroup()
+        return TaskRowSurface(
+            shape: AnyInsettableShape(
+                TaskRowShape(position: position)
+            ),
+            isToday: isToday,
+            isGrouped: true,
+            isHighlighted: shouldHighlight,
+            highlightColor: highlightColor,
+            showSeparator: position != .last && position != .single
+        )
     }
 
 
-    private var shape: some InsettableShape {
-
-        switch position {
-        case .single:
-            UnevenRoundedRectangle(
-                topLeadingRadius: 22,
-                bottomLeadingRadius: 22,
-                bottomTrailingRadius: 22,
-                topTrailingRadius: 22
-            )
-
-        case .first:
-            UnevenRoundedRectangle(
-                topLeadingRadius: 22,
-                bottomLeadingRadius: 0,
-                bottomTrailingRadius: 0,
-                topTrailingRadius: 22
-            )
-
-        case .middle:
-            UnevenRoundedRectangle(
-                topLeadingRadius: 0,
-                bottomLeadingRadius: 0,
-                bottomTrailingRadius: 0,
-                topTrailingRadius: 0
-            )
-
-        case .last:
-            UnevenRoundedRectangle(
-                topLeadingRadius: 0,
-                bottomLeadingRadius: 22,
-                bottomTrailingRadius: 22,
-                topTrailingRadius: 0
-            )
-        }
-    }
     
-    // MARK: - Helpers
-    private func reminderText(for minutes: Int) -> String {
-        
-        if minutes == 0 {
-            return String(localized: "At time of event")
-        }
-        
-        if minutes >= 1440 {
-            let days = minutes / 1440
-            return String(localized: "\(days) days before")
-        }
-        
-        if minutes >= 60 {
-            let hours = minutes / 60
-            return String(localized: "\(hours) hours before")
-        }
-        
-        return String(localized: "\(minutes) minutes before")
-    }
-}
-
-// MARK: - Shared Helper
-
-private func isTaskToday(_ date: Date?) -> Bool {
-    guard let date else { return false }
-    return Calendar.current.isDateInToday(date)
 }
 
 }

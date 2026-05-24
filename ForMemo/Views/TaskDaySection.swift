@@ -13,12 +13,7 @@ struct TaskDaySection: Identifiable {
     }
 }
 
-enum TaskRowPosition {
-    case single
-    case first
-    case middle
-    case last
-}
+
 
 extension TaskDaySection {
     

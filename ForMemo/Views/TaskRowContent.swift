@@ -71,8 +71,11 @@ struct TaskRowContent: View, TaskRowBaseLogic {
 
     var body: some View {
         content
-            .padding(.vertical, rowStyle == .style0 ? 0 : 0)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(
+                maxWidth: .infinity,
+                minHeight: TaskRowMetrics.rowHeight,
+                alignment: .leading
+            )
             .contentShape(Rectangle())
     }
 }
@@ -159,7 +162,7 @@ extension TaskRowContent {
         }
     }
     private func layoutStyle10() -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
             if let deadline = model.deadLine {
                 VStack(spacing: 0) {
@@ -177,14 +180,17 @@ extension TaskRowContent {
                         .textCase(.uppercase)
                         .foregroundStyle(.secondary)
                 }
-                .frame(width: 42)
+                .frame(width: TaskRowMetrics.dateColumnWidth)
                 .opacity(showDateColumn ? 1 : 0)
             }
 
             Image(systemName: model.mainIcon)
                 .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(model.mainTag?.color ?? model.statusColor)
-                .frame(width: 26)
+                .frame(
+                    width: TaskRowLayout.iconColumnWidth,
+                    alignment: .center
+                )
 
             VStack(alignment: .leading, spacing: 2) {
 
@@ -322,7 +328,11 @@ extension TaskRowContent {
                             .opacity(0.8)
                     }
                 }
-                .frame(width: 52, height: 44, alignment: .leading)
+                .frame(
+                    width: TaskRowMetrics.dateColumnWidth,
+                    height: 44,
+                    alignment: .center
+                )
             } else {
                 Image(systemName: "clock.badge.questionmark")
                     .font(.system(size: 26, weight: .light))
@@ -338,15 +348,20 @@ extension TaskRowContent {
 extension TaskRowContent {
     
     private func layoutStyle9() -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
             timeColumn(style: 9)
-                .frame(width: 52, alignment: .leading)
+                .frame(
+                    width: TaskRowMetrics.dateColumnWidth,
+                    alignment: .center
+                )
 
             icon
                 .scaleEffect(0.8)
-                .frame(minWidth: 40)
-                .offset(x: -4)
+                .frame(
+                    width: TaskRowLayout.iconColumnWidth,
+                    alignment: .center
+                )
 
             VStack(alignment: .leading, spacing: 6) {
                 todayExpiredLabel()
@@ -380,12 +395,12 @@ extension TaskRowContent {
 
                 HStack(spacing: 6) {
 
-                    if let deadline = model.deadLine {
-                        Image(systemName: "clock")
-                            .foregroundStyle(.primary)
-                        Text(deadline, format: .dateTime.hour().minute())
-                            .foregroundStyle(.primary)
-                    }
+//                    if let deadline = model.deadLine {
+//                        Image(systemName: "clock")
+//                            .foregroundStyle(.primary)
+//                        Text(deadline, format: .dateTime.hour().minute())
+//                            .foregroundStyle(.primary)
+//                    }
 
                     if model.reminderOffsetMinutes != nil {
                         Image(systemName: "bell")
@@ -403,9 +418,13 @@ extension TaskRowContent {
     }
     
     private func layoutStyle1() -> some View {
-        HStack(spacing: -4) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
             
             timeColumn(style: 1)
+                .frame(
+                    width: TaskRowMetrics.dateColumnWidth,
+                    alignment: .center
+                )
             
             VStack(alignment: .leading, spacing: 1) {
                 todayExpiredLabel()
@@ -457,17 +476,23 @@ extension TaskRowContent {
                 .font(.caption2)
                 .foregroundStyle(.primary).opacity(0.7)
             }
-            icon.scaleEffect(0.72)
+            icon
+                .scaleEffect(0.72)
+                .frame(
+                    width: TaskRowLayout.iconColumnWidth,
+                    alignment: .center
+                )
         }
-        .padding(1)
-        .padding(.leading, 2)
     }
     
     private func layoutStyle2() -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
             timeColumn(style: 2)
-                .frame(width: 52, alignment: .leading)
+                .frame(
+                    width: TaskRowMetrics.dateColumnWidth,
+                    alignment: .center
+                )
 
             VStack(alignment: .leading, spacing: 1) {
                 todayExpiredLabel()
@@ -521,18 +546,21 @@ extension TaskRowContent {
             }
             icon
                 .scaleEffect(0.85)
-                .padding(.leading, 4)
+                .frame(
+                    width: TaskRowLayout.iconColumnWidth,
+                    alignment: .center
+                )
         }
     }
     
     private func layoutStyle3() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
             VStack(spacing: 4) {
                 icon.scaleEffect(0.85)
                 flags(vertical: false)
             }
-            .frame(width: 36)
+            .frame(width: TaskRowLayout.iconColumnWidth)
 
             VStack(alignment: .leading, spacing: 6) {
                 todayExpiredLabel()
@@ -583,15 +611,22 @@ extension TaskRowContent {
             Spacer()
 
             timeColumn(style: 3)
-                .frame(width: 52, alignment: .leading)
+                .frame(
+                    width: TaskRowMetrics.dateColumnWidth,
+                    alignment: .center
+                )
         }
-        .padding(.leading, 8)
+
     }
     
     private func layoutStyle4() -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
             
             icon
+                .frame(
+                    width: TaskRowLayout.iconColumnWidth,
+                    alignment: .center
+                )
             
             VStack(alignment: .leading, spacing: 6) {
                 todayExpiredLabel()
@@ -642,20 +677,29 @@ extension TaskRowContent {
             VStack {
                 flags(vertical: false)
                 timeColumn(style: 4)
-                    .frame(width: 52, alignment: .leading)
+                    .frame(
+                        width: TaskRowMetrics.dateColumnWidth,
+                        alignment: .center
+                    )
             }
         }
-        .padding(.leading, 8)
+
     }
     
     private func layoutStyle5() -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
             timeColumn(style: 5)
-                .frame(width: 52, alignment: .leading)
+                .frame(
+                    width: TaskRowMetrics.dateColumnWidth,
+                    alignment: .center
+                )
             
             icon
-                .padding(.trailing, 6)
+                .frame(
+                    width: TaskRowLayout.iconColumnWidth,
+                    alignment: .center
+                )
             
             VStack(alignment: .leading) {
                 todayExpiredLabel()
@@ -694,8 +738,9 @@ extension TaskRowContent {
                 }
                 
                 if let deadline = model.deadLine {
-                    Text(deadline, format: .dateTime.day().month().hour().minute())
+                    Text(deadline, format: .dateTime.weekday(.wide))
                         .font(.caption2)
+                        .foregroundStyle(.secondary)
                 }
             }
             
@@ -703,14 +748,17 @@ extension TaskRowContent {
             
             flags(vertical: true)
         }
-        .padding(.leading, 8)
+
     }
     
     private func layoutStyle6() -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
             timeColumn(style: 6)
-                .frame(width: 52, alignment: .leading)
+                .frame(
+                    width: TaskRowMetrics.dateColumnWidth,
+                    alignment: .center
+                )
 
             VStack(alignment: .leading) {
 
@@ -757,10 +805,13 @@ extension TaskRowContent {
     }
     
     private func layoutStyle7() -> some View {
-        HStack(spacing: -2) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
             timeColumn(style: 7)
-                .frame(width: 52, alignment: .leading)
+                .frame(
+                    width: TaskRowMetrics.dateColumnWidth,
+                    alignment: .center
+                )
 
             VStack(alignment: .leading) {
 
@@ -811,10 +862,13 @@ extension TaskRowContent {
     }
     
     private func layoutStyle8() -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
             timeColumn(style: 8)
-                .frame(width: 52, alignment: .leading)
+                .frame(
+                    width: TaskRowMetrics.dateColumnWidth,
+                    alignment: .center
+                )
 
             VStack(alignment: .leading) {
 
@@ -867,7 +921,7 @@ extension TaskRowContent {
     
     
     private func layoutStyle0() -> some View {
-        HStack(spacing: 2) {
+        HStack(spacing: TaskRowLayout.dateToContentSpacing) {
 
             // 📅 COLONNA DATA (sinistra)
             Group {
@@ -897,7 +951,11 @@ extension TaskRowContent {
                         .opacity(showDateColumn ? 1 : 0)
                 }
             }
-            .frame(width: 38, height: 44, alignment: .leading)
+            .frame(
+                width: TaskRowMetrics.dateColumnWidth,
+                height: 44,
+                alignment: .center
+            )
 
             // 📌 CONTENUTO
             VStack(alignment: .leading, spacing: 6) {
@@ -922,6 +980,7 @@ extension TaskRowContent {
                             deadline: model.deadLine,
                             effect: selectedEffect
                         )
+
                     HStack(spacing: 6) {
                         Text(model.title)
                             .font(.system(size: 18, weight: .semibold))
@@ -1010,6 +1069,6 @@ extension TaskRowContent {
 
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
     }
 }
