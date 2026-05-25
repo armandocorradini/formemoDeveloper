@@ -2,6 +2,7 @@
 import SwiftUI
 import SwiftData
 import os
+import CoreLocation
 
 struct WeeklyTasksView: View {
 
@@ -11,6 +12,10 @@ struct WeeklyTasksView: View {
     @Environment(\.locale) private var appLocale
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @State private var weatherManager = WeatherManager.shared
+    
+    @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
+    
     
     @State private var taskPendingDeletion: TodoTask?
     @State private var draftTask: TodoTask?
@@ -189,9 +194,38 @@ struct WeeklyTasksView: View {
                         Capsule(style: .continuous)
                             .fill(badgeFillColor)
                     )
+
+                Spacer(minLength: 0)
+
+                if (locationAuthorizationStatus == .authorizedAlways
+                    || locationAuthorizationStatus == .authorizedWhenInUse),
+                   let weather = weatherManager.weather(for: group.date) {
+
+                    HStack(spacing: 6) {
+
+                        Image(systemName: weather.symbolName)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(
+                                isTodayGroup
+                                ? .yellow.opacity(0.95)
+                                : .primary.opacity(0.75)
+                            )
+
+                        Text("\(weather.minTemperature)°")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.primary.opacity(0.55))
+                            .monospacedDigit()
+
+                        Text("\(weather.maxTemperature)°")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.primary.opacity(0.82))
+                            .monospacedDigit()
+                    }
+                }
             }
             .padding(.horizontal, TaskRowMetrics.groupedLeadingPadding)
             .padding(.vertical, isTodayGroup ? 12 : 9)
+            .fixedSize(horizontal: true, vertical: false)
             .background(
                 Capsule(style: .continuous)
                     .fill(.ultraThinMaterial)
@@ -315,6 +349,16 @@ struct WeeklyTasksView: View {
             .listRowBackground(Color.clear)
             .listStyle(.plain)
             .animation(.smooth(duration: 0.18), value: groupedTasksByDay.count)
+            .task {
+                await weatherManager.refreshIfNeeded()
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: .locationPermissionChanged
+                )
+            ) { _ in
+                locationAuthorizationStatus = CLLocationManager().authorizationStatus
+            }
             .safeAreaInset(edge: .top, spacing: 0) {
                 headerView
                     .padding(.top, 2)

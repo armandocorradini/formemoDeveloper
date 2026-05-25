@@ -32,7 +32,7 @@ struct HomeView: View {
                         .frame(width: 180, height: 180)
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(.cyan, .blue)
-                        .symbolEffect(.rotate.clockwise, options: .repeat(1).speed(1), value: isAnimating)
+                        .symbolEffect(.rotate.clockwise, options: .repeat(1).speed(2), value: isAnimating)
                         .symbolEffect(.pulse, options: .repeat(nil).speed(0.3), value: isAnimating)
                         .onAppear {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {

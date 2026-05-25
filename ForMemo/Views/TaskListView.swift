@@ -2,6 +2,9 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 import Observation
+
+import WeatherKit
+import CoreLocation
 import os
 
 
@@ -841,23 +844,20 @@ extension View {
 }
 struct TodoSectionView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @State private var weatherManager = WeatherManager.shared
+    @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
+    
     @ViewBuilder
     private func groupedHeaderView(for group: (date: Date, tasks: [TodoTask])) -> some View {
-
         if let title = relativeHeaderTitle(for: group.date) {
-
             let isTodayGroup = Calendar.current.isDateInToday(group.date)
-
             let headerFillColor: Color = isTodayGroup
                 ? Color.blue.opacity(colorScheme == .dark ? 0.14 : 0.06)
                 : Color.white.opacity(colorScheme == .dark ? 0.035 : 0.045)
-
             let headerStrokeColor: Color = Color.white.opacity(0.12)
-
             let badgeFillColor: Color = isTodayGroup
                 ? Color.blue.opacity(colorScheme == .dark ? 0.18 : 0.10)
                 : Color.white.opacity(colorScheme == .dark ? 0.06 : 0.08)
-
             HStack(spacing: 10) {
 
                 Text(title)
@@ -873,9 +873,38 @@ struct TodoSectionView: View {
                         Capsule(style: .continuous)
                             .fill(badgeFillColor)
                     )
+
+                Spacer(minLength: 0)
+
+                if (locationAuthorizationStatus == .authorizedAlways
+                    || locationAuthorizationStatus == .authorizedWhenInUse),
+                   let weather = weatherManager.weather(for: group.date) {
+
+                    HStack(spacing: 6) {
+
+                        Image(systemName: weather.symbolName)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(
+                                isTodayGroup
+                                ? .yellow.opacity(0.95)
+                                : .primary.opacity(0.75)
+                            )
+
+                        Text("\(weather.minTemperature)°")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.primary.opacity(0.55))
+                            .monospacedDigit()
+
+                        Text("\(weather.maxTemperature)°")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.primary.opacity(0.82))
+                            .monospacedDigit()
+                    }
+                }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, isTodayGroup ? 12 : 9)
+            .fixedSize(horizontal: true, vertical: false)
             .background(
                 Capsule(style: .continuous)
                     .fill(.ultraThinMaterial)
@@ -1110,7 +1139,9 @@ struct TodoSectionView: View {
 
     var body: some View {
 
-        if listStyleChoice == .grouped {
+        Group {
+
+            if listStyleChoice == .grouped {
 
             HStack {
 
@@ -1175,6 +1206,18 @@ struct TodoSectionView: View {
                     )
                 }
             }
+        }
+        }
+        .task {
+            await weatherManager.refreshIfNeeded()
+            print("🌧️ Weather task fired")
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: .locationPermissionChanged
+            )
+        ) { _ in
+            locationAuthorizationStatus = CLLocationManager().authorizationStatus
         }
     }
     @ViewBuilder

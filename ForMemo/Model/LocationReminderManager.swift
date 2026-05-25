@@ -14,6 +14,13 @@ final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
     
     private var lastKnownLocation: CLLocation?
 
+    // Shared readonly location access for WeatherKit and other
+    // runtime-only services. Reuses the existing location pipeline
+    // without creating additional CLLocationManager instances.
+    var currentLocation: CLLocation? {
+        lastKnownLocation
+    }
+
 private var triggeredRecently: [String: Date] = {
     if let data = UserDefaults.standard.data(forKey: "locationTriggers"),
        let decoded = try? JSONDecoder().decode([String: Date].self, from: data) {
@@ -52,6 +59,24 @@ private var triggeredRecently: [String: Date] = {
 
         manager.requestAlwaysAuthorization()
 
+    }
+
+    // One-shot location refresh used by WeatherKit.
+    // Does not modify monitoring/geofence behavior.
+    func requestCurrentLocation() {
+
+        requestPermissionIfNeeded()
+
+        let now = Date()
+
+        // Prevent aggressive repeated requests.
+        guard now.timeIntervalSince(lastLocationRequest) > 15 else {
+            return
+        }
+
+        lastLocationRequest = now
+
+        manager.requestLocation()
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {

@@ -138,31 +138,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diese App nutzt die Kamera, um Dokumente zu scannen und Fotos an Ihre Aufgaben anzuhängen."
+            "value" : "Diese App verwendet die Kamera, um Kundenkarten und Dokumente zu scannen sowie Fotos an Ihre Aufgaben anzuhängen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This app uses the camera to scan documents and attach photos to your tasks."
+            "value" : "This app uses the camera to scan loyalty cards, documents, and attach photos to your tasks."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta aplicación utiliza la cámara para escanear documentos y adjuntar fotos a tus tareas."
+            "value" : "Esta aplicación utiliza la cámara para escanear tarjetas de fidelidad, documentos y adjuntar fotos a tus tareas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette application utilise l’appareil photo pour scanner des documents et joindre des photos à vos tâches."
+            "value" : "Cette application utilise l’appareil photo pour scanner des cartes de fidélité, des documents et joindre des photos à vos tâches."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa app usa la fotocamera per scansionare documenti e allegare foto alle tue attività."
+            "value" : "Questa app utilizza la fotocamera per scansionare carte fedeltà, documenti e allegare foto alle tue attività."
           }
         }
       }
@@ -173,31 +173,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo verwendet Ihren Standort im Hintergrund, um Sie zu benachrichtigen, wenn Sie an einem gespeicherten Aufgabenort ankommen."
+            "value" : "ForMemo verwendet Ihren Standort im Hintergrund, um Wettervorhersagen bereitzustellen und Sie zu benachrichtigen, wenn Sie einen gespeicherten Aufgabenort erreichen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo uses your location in the background to notify you when you arrive at a saved task location."
+            "value" : "ForMemo uses your location in the background to provide weather forecasts and notify you when you arrive at a saved task location."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo utiliza tu ubicación en segundo plano para avisarte cuando llegues a una ubicación asociada a una tarea guardada."
+            "value" : "ForMemo utiliza tu ubicación en segundo plano para proporcionar previsiones meteorológicas y avisarte cuando llegues a una ubicación guardada de una tarea."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo utilise votre position en arrière-plan pour vous notifier lorsque vous arrivez à un lieu associé à une tâche enregistrée."
+            "value" : "ForMemo utilise votre position en arrière-plan pour fournir des prévisions météo et vous avertir lorsque vous arrivez à l’emplacement enregistré d’une tâche."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo usa la tua posizione in background per notificarti quando arrivi in un luogo associato a un’attività salvata."
+            "value" : "ForMemo utilizza la tua posizione in background per fornire previsioni meteo e notificarti quando arrivi in una posizione salvata di un’attività."
           }
         }
       }

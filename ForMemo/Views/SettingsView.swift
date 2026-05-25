@@ -54,10 +54,13 @@ struct SettingsView: View {
     private var locationNotificationSoundName: String = ""
     @AppStorage("locationRemindersEnabled")
     private var locationRemindersEnabled: Bool = false
+    @AppStorage("showWeatherForecast")
+    private var showWeatherForecast: Bool = true
     @AppStorage("locationRadius")
     private var locationRadius: Int = 150
     @State private var showLocationPermissionAlert = false
     @State private var showImportReminders = false
+    @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
 
     func checkNotificationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
@@ -217,6 +220,26 @@ struct SettingsView: View {
                         .opacity(0.7)
                     } label: {
                         Label("Navigation app", systemImage: "iphone.badge.location")
+                    }
+
+                    if locationAuthorizationStatus == .authorizedAlways
+                        || locationAuthorizationStatus == .authorizedWhenInUse {
+
+                        Toggle(isOn: $showWeatherForecast) {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Weather Forecast")
+
+                                    Text("Weather data provided by Open-Meteo")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "cloud.sun")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
                     }
                 }
                 .listRowBackground(Color(.systemBackground).opacity(0.3))
@@ -781,8 +804,12 @@ Attivazione: \(triggerInfo)
     }
     // MARK: - Helpers
     private func syncLocationPermission() {
+        let status = CLLocationManager().authorizationStatus
+
+        locationAuthorizationStatus = status
+
         let hasPermission =
-            CLLocationManager().authorizationStatus == .authorizedAlways
+            status == .authorizedAlways
         locationRemindersEnabled = hasPermission
     }
     private func openNotificationSettings() {

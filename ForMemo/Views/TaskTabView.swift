@@ -15,6 +15,7 @@ struct TaskTabView: View {
     @State private var weeklyPath = NavigationPath()
     @State private var calendarPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
+    @State private var walletPath = NavigationPath()
     
     @AppStorage("TaskWeekDays")
     private var taskWeekDays: Int = 3
@@ -42,7 +43,7 @@ struct TaskTabView: View {
             }
 
             // Fast transition to preferred startup tab.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.50) {
 
                 guard selectedTab == 0 else {
                     return
@@ -90,6 +91,7 @@ struct TaskTabView: View {
                         : String(localized: "\(taskWeekDays) days_tab"),
                         4)
                 tabItem("calendar", NSLocalizedString("calendar_tab", comment: ""), 3)
+                tabItem("wallet.pass", NSLocalizedString("wallet_tab", comment: ""), 6)
                 tabItem("map", NSLocalizedString("map_tab", comment: ""), 5)
                 tabItem("gear", NSLocalizedString("settings_tab", comment: ""), 2)
             }
@@ -200,6 +202,9 @@ struct TaskTabView: View {
         case 3:
             calendarStack
 
+        case 6:
+            walletStack
+
         case 2:
             settingsStack
 
@@ -238,6 +243,12 @@ struct TaskTabView: View {
         }
     }
 
+    private var walletStack: some View {
+        NavigationStack(path: $walletPath) {
+            WalletView()
+        }
+    }
+
     private var settingsStack: some View {
         NavigationStack(path: $settingsPath) {
             SettingsView()
@@ -260,6 +271,7 @@ struct TaskTabView: View {
                            : String(localized: "days_tab \(taskWeekDays)"),
                            systemImage: "calendar.day.timeline.right", tag: 4)
                 sidebarRow(title: NSLocalizedString("calendar_tab", comment: ""), systemImage: "calendar", tag: 3)
+                sidebarRow(title: NSLocalizedString("wallet_tab", comment: ""), systemImage: "wallet.pass", tag: 6)
                 sidebarRow(title: NSLocalizedString("map_tab", comment: ""), systemImage: "map", tag: 5)
                 sidebarRow(title: NSLocalizedString("settings_tab", comment: ""), systemImage: "gear", tag: 2)
             }
@@ -280,6 +292,8 @@ struct TaskTabView: View {
                 NavigationStack { WeeklyTasksView() }
             case 3:
                 NavigationStack { TaskCalendarView() }
+            case 6:
+                NavigationStack { WalletView() }
             case 2:
                 NavigationStack { SettingsView() }
             default:
@@ -363,6 +377,8 @@ struct TaskTabView: View {
             if !weeklyPath.isEmpty { weeklyPath = NavigationPath() }
         case 3:
             if !calendarPath.isEmpty { calendarPath = NavigationPath() }
+        case 6:
+            if !walletPath.isEmpty { walletPath = NavigationPath() }
         case 2:
             if !settingsPath.isEmpty { settingsPath = NavigationPath() }
         default:

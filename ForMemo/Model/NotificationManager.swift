@@ -526,8 +526,12 @@ final class NotificationManager: NSObject {
                 interval = max(rawInterval, 5)
             }
 
+            // 🔥 Small stable stagger to reduce iOS notification stacking/grouping
+            // when many different tasks fire at the exact same time.
+            let spread = Double(abs(task.id.uuidString.hashValue % 3))
+            let finalInterval = interval + spread
             let trigger = UNTimeIntervalNotificationTrigger(
-                timeInterval: interval,
+                timeInterval: finalInterval,
                 repeats: false
             )
             
