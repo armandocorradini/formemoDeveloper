@@ -43,6 +43,22 @@ struct FAQView: View {
                 question: String(localized:"How do recurring tasks work?"),
                 answer: String(localized:"You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the app automatically creates the next one based on the selected frequency, so you don’t need to recreate it manually. You can modify or stop recurrence at any time.")
             )
+            ,FAQItem(
+                question: String(localized:"Does the app include weather forecasts?"),
+                answer: String(localized:"Yes. ForMemo can display weather forecasts directly inside task views and weekly planning views to help you organize your activities more easily.")
+            ),
+            FAQItem(
+                question: String(localized:"Do weather forecasts require location access?"),
+                answer: String(localized:"Yes. Weather forecasts depend on your device location. If location access is disabled, weather information may not be available.")
+            ),
+            FAQItem(
+                question: String(localized:"Does the app include a Wallet for loyalty cards?"),
+                answer: String(localized:"Yes. ForMemo includes a Wallet section where you can save and organize loyalty cards with their barcode always available.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I scan loyalty cards with the camera?"),
+                answer: String(localized:"Yes. You can quickly scan barcodes using the device camera and save loyalty cards directly inside the Wallet.")
+            )
         ]),
 
         // MARK: - NOTIFICATIONS
@@ -172,6 +188,10 @@ struct FAQView: View {
                 question: String(localized:"Why does location reminder not trigger when I arrive?"),
                 answer: String(localized:"Location accuracy, permissions, or system limits may affect this. Make sure location access is set to Always and that the task is actively monitored.")
             )
+            ,FAQItem(
+                question: String(localized:"Why is weather information not visible?"),
+                answer: String(localized:"Weather information requires location access. Make sure location permissions are enabled and weather forecasts are activated in app settings.")
+            )
         ]),
 
         // MARK: - SIRI & AUTOMATIONS
@@ -212,6 +232,10 @@ struct FAQView: View {
                 question: String(localized:"Can I delete all attachments at once?"),
                 answer: String(localized:"Yes. You can manually delete all attachments of completed tasks from settings.")
             )
+            ,FAQItem(
+                question: String(localized:"Can I save multiple loyalty cards from the same store?"),
+                answer: String(localized:"Yes. You can save multiple cards from the same store and distinguish them using the card holder field or custom notes.")
+            )
         ]),
 
         // MARK: - DATA
@@ -223,6 +247,22 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"Why do things change automatically?"),
                 answer: String(localized:"The app reacts to time, task updates, and system events to keep everything consistent.")
+            )
+            ,FAQItem(
+                question: String(localized:"Does the app support backup and restore?"),
+                answer: String(localized:"Yes. ForMemo allows you to create complete backups of your tasks, reminders, attachments, and settings so you can restore them later or transfer them to another device.")
+            ),
+            FAQItem(
+                question: String(localized:"Are attachments included in backups?"),
+                answer: String(localized:"Yes. Complete backups include task attachments such as images, documents, scans, and audio recordings.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I restore backups on another device?"),
+                answer: String(localized:"Yes. You can import a backup file on another compatible device to restore your tasks and related data.")
+            ),
+            FAQItem(
+                question: String(localized:"Does iCloud replace backups?"),
+                answer: String(localized:"No. iCloud synchronization and manual backups are separate features. Backups are still recommended for additional safety and portability.")
             )
         ])
     ]

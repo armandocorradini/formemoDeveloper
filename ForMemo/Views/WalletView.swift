@@ -20,7 +20,28 @@ struct WalletView: View {
 
     var body: some View {
 
-        NavigationStack {
+        ZStack {
+
+            LinearGradient(
+                colors: [backColor1, backColor2],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            Color.clear
+                .onAppear {
+                    UITableView.appearance().backgroundColor = .clear
+                    UITableViewCell.appearance().backgroundColor = .clear
+                    UITableViewHeaderFooterView.appearance().tintColor = .clear
+                    UITableViewHeaderFooterView.appearance().backgroundView = UIView(frame: .zero)
+                }
+
+            NavigationStack {
 
             Group {
 
@@ -66,9 +87,12 @@ struct WalletView: View {
                         .onDelete(perform: deleteCards)
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
+                    .background(Color.clear)
                 }
             }
             .navigationTitle("Wallet")
+            .containerBackground(.clear, for: .navigation)
             .toolbar {
 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -83,6 +107,7 @@ struct WalletView: View {
                 AddLoyaltyCardView()
             }
         }
+    }
     }
 
     // MARK: - Delete

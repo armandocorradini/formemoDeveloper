@@ -436,6 +436,7 @@ struct ExportDiagnosticsView: View {
         }
         .id(refreshID)
         .navigationTitle("Diagnostics")
+        .contentMargins(.bottom, 70, for: .scrollContent)
         .onAppear {
             DebugLog.ensureLogFileExists()
             refreshDiagnostics()

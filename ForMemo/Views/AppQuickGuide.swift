@@ -78,6 +78,27 @@ struct AppQuickGuideView: View {
             icon: "map",
             tint: .green
         ),
+
+        .init(
+            title: String(localized:"Integrated Weather"),
+            description: String(localized:"View weather forecasts directly inside task views and weekly planning to better organize your activities and appointments."),
+            icon: "cloud.sun",
+            tint: .cyan
+        ),
+
+        .init(
+            title: String(localized:"Wallet for Loyalty Cards"),
+            description: String(localized:"Store and organize your loyalty cards with barcodes always available directly inside the app."),
+            icon: "wallet.pass",
+            tint: .mint
+        ),
+
+        .init(
+            title: String(localized:"Barcode Scanner"),
+            description: String(localized:"Quickly scan loyalty cards using the device camera and automatically save barcode information into your Wallet."),
+            icon: "barcode.viewfinder",
+            tint: .orange
+        ),
         
             .init(
                 title: String(localized:"Selective Sharing"),
@@ -173,6 +194,13 @@ struct AppQuickGuideView: View {
                 description: String(localized:"Export your tasks to Calendar, CSV or ICS format to share or reuse them in other apps.\n\nNote: attachments are not included in exports."),
                 icon: "arrow.up.circle",
                 tint: .purple
+            ),
+
+            .init(
+                title: String(localized:"Backup & Restore"),
+                description: String(localized:"Create complete backups of tasks, reminders and attachments to safely restore your data or transfer everything to another device."),
+                icon: "externaldrive.badge.timemachine",
+                tint: .indigo
             )
     ]
     

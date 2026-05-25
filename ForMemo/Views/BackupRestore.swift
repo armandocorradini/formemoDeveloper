@@ -156,6 +156,7 @@ struct BackupRestoreView: View {
                 }
             }
             .scrollContentBackground(.hidden)
+            .contentMargins(.bottom, 70, for: .scrollContent)
         }
         .overlay {
 

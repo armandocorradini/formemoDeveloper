@@ -444,18 +444,20 @@ struct WeeklyTasksView: View {
         
         VStack {
             
-            HStack {
-                
-                Spacer()
-                
-                Image(systemName: "exclamationmark.circle.fill")
-                    .foregroundStyle(.red)
-                
-                Text("Overdue in previous days: \(expiredTasks.count)")
-                    .font(.body)
-                    .foregroundStyle(expiredTasks.count > 0 ? .red : .primary)
-                
-                Spacer()
+            if expiredTasks.count > 0 {
+                HStack {
+
+                    Spacer()
+
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .foregroundStyle(.red)
+
+                    Text("Overdue in previous days: \(expiredTasks.count)")
+                        .font(.body)
+                        .foregroundStyle(.red)
+
+                    Spacer()
+                }
             }
 
             HStack {

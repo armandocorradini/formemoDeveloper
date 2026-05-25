@@ -34,7 +34,7 @@ struct LoyaltyCardDetailView: View {
                         value: card.barcodeValue,
                         format: card.barcodeFormat
                     )
-                    .frame(height: 140)
+                    .frame(height: 280)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 24)
                         .background(

@@ -195,6 +195,7 @@ struct ImportExportSettingsView: View {
                 }
             }
             .navigationTitle("Import & Export")
+            .contentMargins(.bottom, 70, for: .scrollContent)
             .navigationBarBackButtonHidden(true)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

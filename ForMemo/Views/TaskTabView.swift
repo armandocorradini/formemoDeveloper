@@ -43,7 +43,7 @@ struct TaskTabView: View {
             }
 
             // Fast transition to preferred startup tab.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.50) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.80) {
 
                 guard selectedTab == 0 else {
                     return
@@ -91,8 +91,8 @@ struct TaskTabView: View {
                         : String(localized: "\(taskWeekDays) days_tab"),
                         4)
                 tabItem("calendar", NSLocalizedString("calendar_tab", comment: ""), 3)
-                tabItem("wallet.pass", NSLocalizedString("wallet_tab", comment: ""), 6)
                 tabItem("map", NSLocalizedString("map_tab", comment: ""), 5)
+                tabItem("wallet.pass", NSLocalizedString("wallet_tab", comment: ""), 6)
                 tabItem("gear", NSLocalizedString("settings_tab", comment: ""), 2)
             }
             .frame(height: 60)
@@ -271,8 +271,8 @@ struct TaskTabView: View {
                            : String(localized: "days_tab \(taskWeekDays)"),
                            systemImage: "calendar.day.timeline.right", tag: 4)
                 sidebarRow(title: NSLocalizedString("calendar_tab", comment: ""), systemImage: "calendar", tag: 3)
-                sidebarRow(title: NSLocalizedString("wallet_tab", comment: ""), systemImage: "wallet.pass", tag: 6)
                 sidebarRow(title: NSLocalizedString("map_tab", comment: ""), systemImage: "map", tag: 5)
+                sidebarRow(title: NSLocalizedString("wallet_tab", comment: ""), systemImage: "wallet.bifold", tag: 6)
                 sidebarRow(title: NSLocalizedString("settings_tab", comment: ""), systemImage: "gear", tag: 2)
             }
             .listStyle(.sidebar)

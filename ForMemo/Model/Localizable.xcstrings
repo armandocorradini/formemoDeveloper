@@ -2018,6 +2018,34 @@
         }
       }
     },
+    "Are attachments included in backups?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sind Anhänge in Backups enthalten?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Los archivos adjuntos están incluidos en las copias de seguridad?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "es pièces jointes sont-elles incluses dans les sauvegardes ?\n"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli allegati sono inclusi nei backup?"
+          }
+        }
+      }
+    },
     "Are you sure? This cannot be undone." : {
       "localizations" : {
         "de" : {
@@ -2675,6 +2703,34 @@
         }
       }
     },
+    "Barcode Scanner" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Barcode-Scanner"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escáner de códigos de barras"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scanner de codes-barres"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scanner Barcode"
+          }
+        }
+      }
+    },
     "Barcode Unavailable" : {
       "localizations" : {
         "de" : {
@@ -2989,6 +3045,90 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posso disattivare l’evidenziazione per le attività con priorità critica?"
+          }
+        }
+      }
+    },
+    "Can I restore backups on another device?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Backups auf einem anderen Gerät wiederherstellen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo restaurar copias de seguridad en otro dispositivo?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je restaurer des sauvegardes sur un autre appareil ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso ripristinare i backup su un altro dispositivo?"
+          }
+        }
+      }
+    },
+    "Can I save multiple loyalty cards from the same store?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich mehrere Kundenkarten desselben Geschäfts speichern?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo guardar varias tarjetas de fidelización de la misma tienda?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je enregistrer plusieurs cartes de fidélité du même magasin ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso salvare più carte fedeltà dello stesso negozio?"
+          }
+        }
+      }
+    },
+    "Can I scan loyalty cards with the camera?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Kundenkarten mit der Kamera scannen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo escanear tarjetas de fidelización con la cámara?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je scanner des cartes de fidélité avec l’appareil photo ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso scansionare carte fedeltà con la fotocamera?"
           }
         }
       }
@@ -3792,6 +3932,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Crea Backup"
+          }
+        }
+      }
+    },
+    "Create complete backups of tasks, reminders and attachments to safely restore your data or transfer everything to another device." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellen Sie vollständige Backups von Aufgaben, Erinnerungen und Anhängen, um Ihre Daten sicher wiederherzustellen oder auf ein anderes Gerät zu übertragen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea copias de seguridad completas de tareas, recordatorios y archivos adjuntos para restaurar tus datos de forma segura o transferirlos a otro dispositivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créez des sauvegardes complètes des tâches, rappels et pièces jointes afin de restaurer vos données en toute sécurité ou de les transférer vers un autre appareil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea backup completi di attività, promemoria e allegati per ripristinare in sicurezza i tuoi dati o trasferirli su un altro dispositivo."
           }
         }
       }
@@ -4914,38 +5082,176 @@
         }
       }
     },
-    "Disclaimer and Terms of Use\n\nThe %@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately.\n\n6. Map and Location Features: Map visualization and location-based features depend on device location services, GPS accuracy, and system conditions. The App does not guarantee the accuracy, precision, or real-time reliability of location data or map-based interactions.\n\n7. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n8. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n9. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n10. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n11. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n12. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %@, you confirm that you have read, understood, and fully accepted this Disclaimer." : {
-      "comment" : "The disclaimer text displayed in the disclaimer view.",
-      "isCommentAutoGenerated" : true,
+    "Disclaimer and Terms of Use\n\nThe %@ App (\"App\") is designed for personal task management, organization, and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, forecasts, and features are provided for informational purposes only and do not constitute any guarantee of execution, accuracy, or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, activities, and use of the information provided by the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, connectivity, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, GPS availability, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately or consistently.\n\n6. Map and Location Features: Map visualization and location-based features depend on device location services, GPS accuracy, network connectivity, and system conditions. The App does not guarantee the accuracy, precision, availability, or real-time reliability of location data or map-based interactions.\n\n7. Weather Information: Weather forecasts and weather-related information are provided for informational purposes only and may depend on third-party services, device location, network connectivity, and external data providers. The App does not guarantee the accuracy, completeness, availability, or reliability of weather information and such information should not be relied upon for safety-critical or professional decisions.\n\n8. Loyalty Cards and Barcodes: Loyalty cards, barcode information, and related data are stored for user convenience only. The App does not guarantee compatibility with external scanners, retail systems, stores, or third-party services. Users are responsible for verifying the validity and usability of stored barcode information.\n\n9. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, synchronization issues, delays, or failures related to local storage or cloud services.\n\n10. Backups and Synchronization: Backup, restore, and synchronization features depend on device conditions, storage availability, iCloud services, and external factors. The App does not guarantee that backups or synchronized data will always be available, complete, accurate, or recoverable.\n\n11. Third-Party Services: The App may rely on third-party services (such as iCloud, Maps services, weather providers, or Siri) for certain features. The developers are not responsible for the availability, performance, compatibility, reliability, or privacy practices of such services.\n\n12. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, software versions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n13. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, compatibility, or preservation of all information when interacting with third-party formats or services. Attachments are not included in import or export operations unless explicitly specified.\n\n14. No Critical Use: The App is not intended for emergency, medical, legal, safety-critical, or mission-critical purposes. Users should not rely on the App in situations where delays, inaccuracies, failures, or missing information could result in harm, injury, damages, or significant losses.\n\n15. Updates and Changes: The App and this Disclaimer may be updated, modified, suspended, or changed over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n16. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, inability to use, or reliance upon the App or any information provided within it.\n\nBy using %@, you confirm that you have read, understood, and fully accepted this Disclaimer." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haftungsausschluss und Nutzungsbedingungen\n\nDie App %1$@ (\\\"App\\\") ist für die persönliche Aufgabenverwaltung und Produktivitätszwecke konzipiert.\n\nDurch die Nutzung der App erkennen Sie Folgendes an und stimmen dem zu:\n\n1. Zweck der App: Die App ist ausschließlich für die persönliche Organisation bestimmt. Alle Informationen, Vorschläge und Funktionen werden nur zu Informationszwecken bereitgestellt und stellen keinerlei Garantie für Ausführung oder Ergebnis dar.\n\n2. Verantwortung des Nutzers: Die App wird \\\"wie sie ist\\\" bereitgestellt, ohne jegliche ausdrücklichen oder stillschweigenden Garantien. Sie sind allein verantwortlich für Ihre Entscheidungen, Handlungen und Aktivitäten, die sich aus der Nutzung der App ergeben.\n\n3. Benachrichtigungen, Badges und Erinnerungen: Benachrichtigungen, App-Badges, Erinnerungen und Snooze-Funktionen werden ausschließlich zu Informationszwecken bereitgestellt. Obwohl die App darauf ausgelegt ist, Benachrichtigungen zum richtigen Zeitpunkt zu planen, hängen deren Zustellung und Genauigkeit von Systemdiensten, Geräteeinstellungen und externen Faktoren ab. Die App garantiert nicht deren rechtzeitige Zustellung, Genauigkeit oder ordnungsgemäße Funktion. Sie sollten sich nicht ausschließlich auf diese Funktionen für kritische oder zeitabhängige Aufgaben verlassen.\n\n4. Standortbasierte Erinnerungen: Standortbasierte Erinnerungen hängen von Systemberechtigungen, Gerätezuständen und externen Faktoren ab und werden möglicherweise nicht immer wie erwartet ausgelöst.\n\n5. Sprachassistent (Siri): Sprachbefehle und Siri-Integrationen basieren auf Apple-Diensten und interpretieren Benutzereingaben möglicherweise nicht immer korrekt.\n\n6. Karten- und Standortfunktionen: Die Kartenanzeige und standortbasierten Funktionen hängen von den Ortungsdiensten des Geräts, der GPS-Genauigkeit und den Systembedingungen ab. Die App übernimmt keine Gewähr für die Genauigkeit, Präzision oder Echtzeit-Zuverlässigkeit von Standortdaten oder kartenbasierten Interaktionen.\n\n7. Daten und Speicherung: Daten können lokal auf Ihrem Gerät gespeichert oder über iCloud synchronisiert werden. Sie sind für die Verwaltung und Sicherung Ihrer Daten verantwortlich. Die Entwickler haften nicht für Datenverlust, Datenbeschädigung, unbefugten Zugriff oder Probleme im Zusammenhang mit Verzögerungen oder Ausfällen der iCloud-Synchronisierung.\n\n8. Dienste Dritter: Die App kann für bestimmte Funktionen auf Dienste Dritter (wie iCloud) angewiesen sein. Die Entwickler sind nicht verantwortlich für die Verfügbarkeit, Leistung, Kompatibilität oder Datenschutzpraktiken solcher Dienste.\n\n9. Verfügbarkeit von Funktionen: Die Funktionalität der App kann von Gerätezuständen, Systemeinstellungen, erteilten Berechtigungen und der Netzwerkverbindung abhängen. Eine kontinuierliche Verfügbarkeit oder ein fehlerfreier Betrieb aller Funktionen wird nicht garantiert.\n\n10. Import- und Exportfunktionen: Import- und Exportfunktionen werden aus Gründen der Benutzerfreundlichkeit bereitgestellt. Die App übernimmt keine Gewähr für die vollständige Datenintegrität, Vollständigkeit oder Kompatibilität mit Formaten oder Diensten Dritter. Anhänge sind nicht Bestandteil von Import- oder Exportvorgängen.\n\n11. Aktualisierungen und Änderungen: Die App und dieser Haftungsausschluss können jederzeit ohne vorherige Ankündigung aktualisiert oder geändert werden. Die fortgesetzte Nutzung der App gilt als Zustimmung zu diesen Änderungen.\n\n12. Haftungsbeschränkung: Soweit gesetzlich zulässig, haften die Entwickler nicht für Schäden, die sich aus der Nutzung oder der Unmöglichkeit der Nutzung der App ergeben.\n\nDurch die Nutzung von %2$@ bestätigen Sie, dass Sie diesen Haftungsausschluss gelesen, verstanden und vollständig akzeptiert haben."
+            "value" : "Haftungsausschluss und Nutzungsbedingungen\n\nDie %@ App („App“) wurde für persönliche Aufgabenverwaltung, Organisation und Produktivität entwickelt.\n\nDurch die Nutzung der App erkennen Sie Folgendes an und stimmen dem zu:\n\n1. Zweck der App: Die App dient ausschließlich der persönlichen Organisation. Alle Informationen, Vorschläge, Wettervorhersagen und Funktionen werden ausschließlich zu Informationszwecken bereitgestellt und stellen keinerlei Garantie für Ausführung, Genauigkeit oder Ergebnisse dar.\n\n2. Verantwortung des Nutzers: Die App wird „wie besehen“ ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt. Sie sind allein verantwortlich für Ihre Entscheidungen, Handlungen, Aktivitäten und die Nutzung der von der App bereitgestellten Informationen.\n\n3. Benachrichtigungen, Badges und Erinnerungen: Benachrichtigungen, App-Symbole, Erinnerungen und Snooze-Funktionen werden ausschließlich zu Informationszwecken bereitgestellt. Obwohl die App dafür entwickelt wurde, Benachrichtigungen zum richtigen Zeitpunkt zu planen, hängen deren Zustellung und Genauigkeit von Systemdiensten, Geräteeinstellungen, Konnektivität und externen Faktoren ab. Die App garantiert keine rechtzeitige Zustellung, Genauigkeit oder ordnungsgemäße Funktion dieser Funktionen. Sie sollten sich bei kritischen oder zeitabhängigen Aufgaben nicht ausschließlich auf diese Funktionen verlassen.\n\n4. Standortbasierte Erinnerungen: Standortbasierte Erinnerungen hängen von Systemberechtigungen, Gerätezustand, GPS-Verfügbarkeit und externen Faktoren ab und werden möglicherweise nicht immer wie erwartet ausgelöst.\n\n5. Sprachassistent (Siri): Sprachbefehle und Siri-Integrationen basieren auf Apple-Diensten und interpretieren Benutzereingaben möglicherweise nicht immer korrekt oder konsistent.\n\n6. Karten- und Standortfunktionen: Kartenansichten und standortbasierte Funktionen hängen von Ortungsdiensten des Geräts, GPS-Genauigkeit, Netzwerkverbindung und Systembedingungen ab. Die App garantiert nicht die Genauigkeit, Präzision, Verfügbarkeit oder Echtzeit-Zuverlässigkeit von Standortdaten oder kartenbasierten Interaktionen.\n\n7. Wetterinformationen: Wettervorhersagen und wetterbezogene Informationen werden ausschließlich zu Informationszwecken bereitgestellt und können von Drittanbieterdiensten, Gerätestandort, Netzwerkverbindung und externen Datenanbietern abhängen. Die App garantiert nicht die Genauigkeit, Vollständigkeit, Verfügbarkeit oder Zuverlässigkeit von Wetterinformationen, und diese Informationen sollten nicht für sicherheitskritische oder professionelle Entscheidungen verwendet werden.\n\n8. Kundenkarten und Barcodes: Kundenkarten, Barcode-Informationen und zugehörige Daten werden ausschließlich zur Benutzerfreundlichkeit gespeichert. Die App garantiert keine Kompatibilität mit externen Scannern, Kassensystemen, Geschäften oder Diensten Dritter. Nutzer sind selbst dafür verantwortlich, die Gültigkeit und Nutzbarkeit gespeicherter Barcode-Informationen zu überprüfen.\n\n9. Daten und Speicherung: Daten können lokal auf Ihrem Gerät gespeichert oder über iCloud synchronisiert werden. Sie sind selbst für die Verwaltung und Sicherung Ihrer Daten verantwortlich. Die Entwickler haften nicht für Datenverlust, Beschädigung, unbefugten Zugriff, Synchronisierungsprobleme, Verzögerungen oder Fehler im Zusammenhang mit lokaler Speicherung oder Cloud-Diensten.\n\n10. Backups und Synchronisierung: Backup-, Wiederherstellungs- und Synchronisierungsfunktionen hängen von Gerätezustand, verfügbarem Speicherplatz, iCloud-Diensten und externen Faktoren ab. Die App garantiert nicht, dass Backups oder synchronisierte Daten jederzeit verfügbar, vollständig, korrekt oder wiederherstellbar sind.\n\n11. Dienste Dritter: Die App kann für bestimmte Funktionen auf Dienste Dritter (wie iCloud, Kartendienste, Wetteranbieter oder Siri) angewiesen sein. Die Entwickler sind nicht verantwortlich für Verfügbarkeit, Leistung, Kompatibilität, Zuverlässigkeit oder Datenschutzpraktiken solcher Dienste.\n\n12. Verfügbarkeit von Funktionen: Die Funktionalität der App kann von Gerätezustand, Systemeinstellungen, erteilten Berechtigungen, Softwareversionen und Netzwerkverbindung abhängen. Eine kontinuierliche Verfügbarkeit oder ein fehlerfreier Betrieb aller Funktionen wird nicht garantiert.\n\n13. Import- und Exportfunktionen: Import- und Exportfunktionen werden aus Gründen der Benutzerfreundlichkeit bereitgestellt. Die App garantiert keine vollständige Datentreue, Vollständigkeit, Kompatibilität oder Erhaltung aller Informationen bei der Interaktion mit Formaten oder Diensten Dritter. Anhänge sind nicht in Import- oder Exportvorgängen enthalten, sofern nicht ausdrücklich anders angegeben.\n\n14. Keine kritische Nutzung: Die App ist nicht für Notfälle, medizinische, rechtliche, sicherheitskritische oder mission-critical Zwecke bestimmt. Nutzer sollten sich nicht auf die App verlassen, wenn Verzögerungen, Ungenauigkeiten, Fehler oder fehlende Informationen zu Schäden, Verletzungen, Verlusten oder erheblichen Konsequenzen führen könnten.\n\n15. Aktualisierungen und Änderungen: Die App und dieser Haftungsausschluss können im Laufe der Zeit ohne vorherige Ankündigung aktualisiert, geändert, ausgesetzt oder angepasst werden. Die fortgesetzte Nutzung der App gilt als Zustimmung zu solchen Änderungen.\n\n16. Haftungsbeschränkung: Soweit gesetzlich zulässig, haften die Entwickler nicht für Schäden, die aus der Nutzung, der Unmöglichkeit der Nutzung oder dem Vertrauen auf die App oder die darin enthaltenen Informationen entstehen.\n\nDurch die Nutzung von %@ bestätigen Sie, dass Sie diesen Haftungsausschluss gelesen, verstanden und vollständig akzeptiert haben."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Disclaimer and Terms of Use\n\nThe %1$@ App (\"App\") is designed for personal task management and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, and features are provided for informational purposes only and do not constitute any guarantee of execution or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, and activities based on the use of the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately.\n\n6. Map and Location Features: Map visualization and location-based features depend on device location services, GPS accuracy, and system conditions. The App does not guarantee the accuracy, precision, or real-time reliability of location data or map-based interactions.\n\n7. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, or issues related to iCloud synchronization delays or failures.\n\n8. Third-Party Services: The App may rely on third-party services (such as iCloud) for certain features. The developers are not responsible for the availability, performance, compatibility, or privacy practices of such services.\n\n9. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n10. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, or compatibility with third-party formats or services. Attachments are not included in import or export operations.\n\n11. Updates and Changes: The App and this Disclaimer may be updated or modified over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n12. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, or inability to use, the App.\n\nBy using %2$@, you confirm that you have read, understood, and fully accepted this Disclaimer."
+            "value" : "Disclaimer and Terms of Use\n\nThe %1$@ App (\"App\") is designed for personal task management, organization, and productivity purposes.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization. All information, suggestions, forecasts, and features are provided for informational purposes only and do not constitute any guarantee of execution, accuracy, or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, actions, activities, and use of the information provided by the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, and snooze functions are provided for informational purposes only. While the App is designed to schedule notifications at the appropriate time, their delivery and accuracy depend on system-level services, device settings, connectivity, and external factors. The App does not guarantee their timely delivery, accuracy, or proper functioning. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, device conditions, GPS availability, and external factors, and may not always trigger as expected.\n\n5. Voice Assistant (Siri): Voice commands and Siri integrations rely on Apple services and may not always interpret user input accurately or consistently.\n\n6. Map and Location Features: Map visualization and location-based features depend on device location services, GPS accuracy, network connectivity, and system conditions. The App does not guarantee the accuracy, precision, availability, or real-time reliability of location data or map-based interactions.\n\n7. Weather Information: Weather forecasts and weather-related information are provided for informational purposes only and may depend on third-party services, device location, network connectivity, and external data providers. The App does not guarantee the accuracy, completeness, availability, or reliability of weather information and such information should not be relied upon for safety-critical or professional decisions.\n\n8. Loyalty Cards and Barcodes: Loyalty cards, barcode information, and related data are stored for user convenience only. The App does not guarantee compatibility with external scanners, retail systems, stores, or third-party services. Users are responsible for verifying the validity and usability of stored barcode information.\n\n9. Data and Storage: Data may be stored locally on your device or synchronized via iCloud. You are responsible for managing and backing up your data. The developers are not responsible for any data loss, corruption, unauthorized access, synchronization issues, delays, or failures related to local storage or cloud services.\n\n10. Backups and Synchronization: Backup, restore, and synchronization features depend on device conditions, storage availability, iCloud services, and external factors. The App does not guarantee that backups or synchronized data will always be available, complete, accurate, or recoverable.\n\n11. Third-Party Services: The App may rely on third-party services (such as iCloud, Maps services, weather providers, or Siri) for certain features. The developers are not responsible for the availability, performance, compatibility, reliability, or privacy practices of such services.\n\n12. Feature Availability: The functionality of the App may depend on device conditions, system settings, granted permissions, software versions, and network connectivity. Continuous availability or correct operation of all features is not guaranteed.\n\n13. Import and Export Features: Import and export functionalities are provided for convenience. The App does not guarantee full data fidelity, completeness, compatibility, or preservation of all information when interacting with third-party formats or services. Attachments are not included in import or export operations unless explicitly specified.\n\n14. No Critical Use: The App is not intended for emergency, medical, legal, safety-critical, or mission-critical purposes. Users should not rely on the App in situations where delays, inaccuracies, failures, or missing information could result in harm, injury, damages, or significant losses.\n\n15. Updates and Changes: The App and this Disclaimer may be updated, modified, suspended, or changed over time without prior notice. Continued use of the App constitutes acceptance of such changes.\n\n16. Limitation of Liability: To the maximum extent permitted by applicable law, the developers shall not be liable for any damages arising from the use of, inability to use, or reliance upon the App or any information provided within it.\n\nBy using %2$@, you confirm that you have read, understood, and fully accepted this Disclaimer."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aviso legal y Términos de uso\n\nLa aplicación %1$@ (\\\"App\\\") está diseñada para la gestión personal de tareas y fines de productividad.\n\nAl utilizar la App, reconoces y aceptas lo siguiente:\n\n1. Finalidad de la App: La App está destinada exclusivamente a la organización personal. Toda la información, sugerencias y funcionalidades se proporcionan únicamente con fines informativos y no constituyen ninguna garantía de ejecución o resultado.\n\n2. Responsabilidad del usuario: La App se proporciona \\\"tal cual\\\", sin garantías de ningún tipo, expresas o implícitas. Eres el único responsable de tus decisiones, acciones y actividades basadas en el uso de la App.\n\n3. Notificaciones, insignias y recordatorios: Las notificaciones, insignias de la app, recordatorios y funciones de snooze se proporcionan únicamente con fines informativos. Aunque la App está diseñada para programar notificaciones en el momento adecuado, su entrega y precisión dependen de servicios del sistema, configuraciones del dispositivo y factores externos. La App no garantiza su entrega puntual, precisión o correcto funcionamiento. No debes confiar exclusivamente en estas funciones para tareas críticas o sensibles al tiempo.\n\n4. Recordatorios basados en ubicación: Dependen de permisos del sistema, condiciones del dispositivo y factores externos, y pueden no activarse como se espera.\n\n5. Asistente de voz (Siri): Los comandos de voz y las integraciones con Siri dependen de los servicios de Apple y pueden no interpretar correctamente la entrada del usuario.\n\n6. Funciones de mapa y ubicación: La visualización en mapa y las funciones basadas en ubicación dependen de los servicios de localización del dispositivo, la precisión del GPS y las condiciones del sistema. La App no garantiza la precisión, exactitud ni la fiabilidad en tiempo real de los datos de ubicación o de las interacciones en el mapa.\n\n7. Datos y almacenamiento: Los datos pueden almacenarse localmente en el dispositivo o sincronizarse mediante iCloud. Eres responsable de gestionar y realizar copias de seguridad de tus datos. Los desarrolladores no son responsables de la pérdida de datos, corrupción, accesos no autorizados o problemas relacionados con retrasos o fallos de sincronización de iCloud.\n\n8. Servicios de terceros: La App puede depender de servicios de terceros (como iCloud) para ciertas funciones. Los desarrolladores no son responsables de la disponibilidad, rendimiento, compatibilidad o prácticas de privacidad de dichos servicios.\n\n9. Disponibilidad de funciones: El funcionamiento de la App puede depender de las condiciones del dispositivo, la configuración del sistema, los permisos otorgados y la conectividad de red. No se garantiza la disponibilidad continua ni el correcto funcionamiento de todas las funciones.\n\n10. Funciones de importación y exportación: Se proporcionan por conveniencia. La App no garantiza la fidelidad completa de los datos, la integridad o la compatibilidad con formatos o servicios de terceros. Los archivos adjuntos no se incluyen en estas operaciones.\n\n11. Actualizaciones y cambios: La App y este Aviso legal pueden ser modificados sin previo aviso. El uso continuado implica la aceptación de dichos cambios.\n\n12. Limitación de responsabilidad: En la máxima medida permitida por la ley, los desarrolladores no serán responsables de daños derivados del uso o la imposibilidad de uso de la App.\n\nAl utilizar %2$@, confirmas que has leído, comprendido y aceptado este aviso legal."
+            "value" : "Descargo de responsabilidad y Términos de uso\n\nLa aplicación %@ (“App”) está diseñada para la gestión personal de tareas, organización y productividad.\n\nAl utilizar la App, reconoces y aceptas lo siguiente:\n\n1. Finalidad de la App: La App está destinada únicamente a la organización personal. Toda la información, sugerencias, previsiones y funciones se proporcionan únicamente con fines informativos y no constituyen ninguna garantía de ejecución, precisión o resultado.\n\n2. Responsabilidad del usuario: La App se proporciona “tal cual”, sin garantías de ningún tipo, expresas o implícitas. Eres el único responsable de tus decisiones, acciones, actividades y del uso de la información proporcionada por la App.\n\n3. Notificaciones, insignias y recordatorios: Las notificaciones, insignias del icono de la aplicación, recordatorios y funciones de snooze se proporcionan únicamente con fines informativos. Aunque la App está diseñada para programar notificaciones en el momento adecuado, su entrega y precisión dependen de servicios del sistema, configuraciones del dispositivo, conectividad y factores externos. La App no garantiza la entrega puntual, precisión ni el correcto funcionamiento de estas funciones. No debes depender exclusivamente de estas funciones para tareas críticas o sensibles al tiempo.\n\n4. Recordatorios basados en ubicación: Los recordatorios basados en ubicación dependen de permisos del sistema, condiciones del dispositivo, disponibilidad del GPS y factores externos, y es posible que no siempre se activen como se espera.\n\n5. Asistente de voz (Siri): Los comandos de voz y las integraciones con Siri dependen de los servicios de Apple y pueden no interpretar siempre la entrada del usuario de manera precisa o coherente.\n\n6. Funciones de mapas y ubicación: La visualización de mapas y las funciones basadas en ubicación dependen de los servicios de localización del dispositivo, la precisión del GPS, la conectividad de red y las condiciones del sistema. La App no garantiza la exactitud, precisión, disponibilidad ni la fiabilidad en tiempo real de los datos de ubicación o de las interacciones basadas en mapas.\n\n7. Información meteorológica: Las previsiones meteorológicas y la información relacionada con el clima se proporcionan únicamente con fines informativos y pueden depender de servicios de terceros, la ubicación del dispositivo, la conectividad de red y proveedores de datos externos. La App no garantiza la exactitud, integridad, disponibilidad ni la fiabilidad de la información meteorológica, y dicha información no debe utilizarse para decisiones críticas o profesionales.\n\n8. Tarjetas de fidelización y códigos de barras: Las tarjetas de fidelización, la información de códigos de barras y los datos relacionados se almacenan únicamente para comodidad del usuario. La App no garantiza la compatibilidad con escáneres externos, sistemas de venta, tiendas o servicios de terceros. Los usuarios son responsables de verificar la validez y usabilidad de la información de códigos de barras almacenada.\n\n9. Datos y almacenamiento: Los datos pueden almacenarse localmente en tu dispositivo o sincronizarse mediante iCloud. Eres responsable de gestionar y realizar copias de seguridad de tus datos. Los desarrolladores no son responsables de pérdidas de datos, corrupción, accesos no autorizados, problemas de sincronización, retrasos o fallos relacionados con el almacenamiento local o los servicios en la nube.\n\n10. Copias de seguridad y sincronización: Las funciones de copia de seguridad, restauración y sincronización dependen de las condiciones del dispositivo, la disponibilidad de almacenamiento, los servicios de iCloud y factores externos. La App no garantiza que las copias de seguridad o los datos sincronizados estén siempre disponibles, completos, precisos o recuperables.\n\n11. Servicios de terceros: La App puede depender de servicios de terceros (como iCloud, servicios de mapas, proveedores meteorológicos o Siri) para determinadas funciones. Los desarrolladores no son responsables de la disponibilidad, rendimiento, compatibilidad, fiabilidad o prácticas de privacidad de dichos servicios.\n\n12. Disponibilidad de funciones: La funcionalidad de la App puede depender de las condiciones del dispositivo, configuraciones del sistema, permisos concedidos, versiones de software y conectividad de red. No se garantiza la disponibilidad continua ni el correcto funcionamiento de todas las funciones.\n\n13. Funciones de importación y exportación: Las funciones de importación y exportación se proporcionan por conveniencia. La App no garantiza la fidelidad total de los datos, integridad, compatibilidad ni preservación de toda la información al interactuar con formatos o servicios de terceros. Los archivos adjuntos no se incluyen en las operaciones de importación o exportación salvo que se indique expresamente.\n\n14. No apta para usos críticos: La App no está destinada a fines de emergencia, médicos, legales, de seguridad o mission-critical. Los usuarios no deben confiar en la App en situaciones donde retrasos, inexactitudes, fallos o información faltante puedan causar daños, lesiones, pérdidas o consecuencias importantes.\n\n15. Actualizaciones y cambios: La App y este descargo de responsabilidad pueden actualizarse, modificarse, suspenderse o cambiarse con el tiempo sin previo aviso. El uso continuado de la App constituye la aceptación de dichos cambios.\n\n16. Limitación de responsabilidad: En la máxima medida permitida por la legislación aplicable, los desarrolladores no serán responsables de ningún daño derivado del uso, la imposibilidad de uso o la confianza depositada en la App o en cualquier información proporcionada en ella.\n\nAl utilizar %@, confirmas que has leído, comprendido y aceptado plenamente este descargo de responsabilidad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avertissement et conditions d'utilisation\n\nL'application %1$@ (\\\"App\\\") est conçue pour la gestion personnelle des tâches et des objectifs de productivité.\n\nEn utilisant l'App, vous reconnaissez et acceptez ce qui suit :\n\n1. Objectif de l'App : L'App est destinée uniquement à l'organisation personnelle. Toutes les informations, suggestions et fonctionnalités sont fournies à titre informatif uniquement et ne constituent aucune garantie d'exécution ou de résultat.\n\n2. Responsabilité de l'utilisateur : L'App est fournie \\\"en l'état\\\", sans garantie d'aucune sorte, expresse ou implicite. Vous êtes seul responsable de vos décisions, actions et activités résultant de l'utilisation de l'App.\n\n3. Notifications, badges et rappels : Les notifications, badges d'application, rappels et fonctions de snooze sont fournis uniquement à titre informatif. Bien que l'App soit conçue pour planifier les notifications au moment approprié, leur livraison et leur précision dépendent des services système, des paramètres de l'appareil et de facteurs externes. L'App ne garantit pas leur livraison en temps voulu, leur précision ou leur bon fonctionnement. Vous ne devez pas vous fier exclusivement à ces fonctionnalités pour des tâches critiques ou sensibles au temps.\n\n4. Rappels basés sur la localisation : Les rappels basés sur la localisation dépendent des autorisations système, de l'état de l'appareil et de facteurs externes, et peuvent ne pas se déclencher comme prévu.\n\n5. Assistant vocal (Siri) : Les commandes vocales et les intégrations Siri reposent sur les services Apple et peuvent ne pas interpréter correctement les entrées de l'utilisateur.\n\n6. Fonctionnalités de carte et de localisation : L'affichage de la carte et les fonctionnalités basées sur la localisation dépendent des services de localisation de l'appareil, de la précision du GPS et des conditions du système. L'App ne garantit pas l'exactitude, la précision ou la fiabilité en temps réel des données de localisation ou des interactions basées sur la carte.\n\n7. Données et stockage : Les données peuvent être stockées localement sur votre appareil ou synchronisées via iCloud. Vous êtes responsable de la gestion et de la sauvegarde de vos données. Les développeurs ne sont pas responsables des pertes de données, de la corruption, des accès non autorisés ou des problèmes liés aux retards ou aux échecs de synchronisation iCloud.\n\n8. Services tiers : L'App peut dépendre de services tiers (tels que iCloud) pour certaines fonctionnalités. Les développeurs ne sont pas responsables de la disponibilité, des performances, de la compatibilité ou des pratiques de confidentialité de ces services.\n\n9. Disponibilité des fonctionnalités : Le fonctionnement de l'App peut dépendre des conditions de l'appareil, des paramètres système, des autorisations accordées et de la connectivité réseau. La disponibilité continue ou le bon fonctionnement de toutes les fonctionnalités n'est pas garanti.\n\n10. Fonctionnalités d'importation et d'exportation : Les fonctions d'importation et d'exportation sont fournies pour plus de commodité. L'App ne garantit pas l'intégrité complète des données, leur exhaustivité ou leur compatibilité avec des formats ou services tiers. Les pièces jointes ne sont pas incluses dans ces opérations.\n\n11. Mises à jour et modifications : L'App et le présent avertissement peuvent être mis à jour ou modifiés à tout moment sans préavis. L'utilisation continue de l'App constitue une acceptation de ces modifications.\n\n12. Limitation de responsabilité : Dans toute la mesure permise par la loi applicable, les développeurs ne peuvent être tenus responsables des dommages résultant de l'utilisation ou de l'impossibilité d'utiliser l'App.\n\nEn utilisant %2$@, vous confirmez avoir lu, compris et accepté intégralement cet avertissement."
+            "value" : "Clause de non-responsabilité et Conditions d’utilisation\n\nL’application %@ (« App ») est conçue pour la gestion personnelle des tâches, l’organisation et la productivité.\n\nEn utilisant l’App, vous reconnaissez et acceptez ce qui suit :\n\n1. Objet de l’App : L’App est destinée uniquement à l’organisation personnelle. Toutes les informations, suggestions, prévisions et fonctionnalités sont fournies à titre informatif uniquement et ne constituent aucune garantie d’exécution, d’exactitude ou de résultat.\n\n2. Responsabilité de l’utilisateur : L’App est fournie « telle quelle », sans garantie d’aucune sorte, expresse ou implicite. Vous êtes seul responsable de vos décisions, actions, activités et de l’utilisation des informations fournies par l’App.\n\n3. Notifications, badges et rappels : Les notifications, badges de l’icône de l’application, rappels et fonctions de snooze sont fournis uniquement à titre informatif. Bien que l’App soit conçue pour programmer des notifications au moment approprié, leur livraison et leur exactitude dépendent des services système, des paramètres de l’appareil, de la connectivité et de facteurs externes. L’App ne garantit pas leur livraison en temps voulu, leur exactitude ou leur bon fonctionnement. Vous ne devez pas vous fier exclusivement à ces fonctionnalités pour des tâches critiques ou sensibles au temps.\n\n4. Rappels basés sur la localisation : Les rappels basés sur la localisation dépendent des autorisations système, des conditions de l’appareil, de la disponibilité du GPS et de facteurs externes, et peuvent ne pas toujours se déclencher comme prévu.\n\n5. Assistant vocal (Siri) : Les commandes vocales et les intégrations Siri reposent sur les services Apple et peuvent ne pas toujours interpréter correctement ou de manière cohérente les commandes de l’utilisateur.\n\n6. Fonctionnalités de carte et de localisation : L’affichage des cartes et les fonctionnalités basées sur la localisation dépendent des services de localisation de l’appareil, de la précision du GPS, de la connectivité réseau et des conditions système. L’App ne garantit pas l’exactitude, la précision, la disponibilité ou la fiabilité en temps réel des données de localisation ou des interactions basées sur la carte.\n\n7. Informations météorologiques : Les prévisions météorologiques et informations liées à la météo sont fournies uniquement à titre informatif et peuvent dépendre de services tiers, de la localisation de l’appareil, de la connectivité réseau et de fournisseurs de données externes. L’App ne garantit pas l’exactitude, l’exhaustivité, la disponibilité ou la fiabilité des informations météorologiques, et celles-ci ne doivent pas être utilisées pour des décisions critiques ou professionnelles.\n\n8. Cartes de fidélité et codes-barres : Les cartes de fidélité, informations de codes-barres et données associées sont stockées uniquement pour la commodité de l’utilisateur. L’App ne garantit pas la compatibilité avec des scanners externes, systèmes de vente, magasins ou services tiers. Les utilisateurs sont responsables de vérifier la validité et l’utilisabilité des informations de codes-barres enregistrées.\n\n9. Données et stockage : Les données peuvent être stockées localement sur votre appareil ou synchronisées via iCloud. Vous êtes responsable de la gestion et de la sauvegarde de vos données. Les développeurs ne sont pas responsables des pertes de données, corruptions, accès non autorisés, problèmes de synchronisation, retards ou défaillances liés au stockage local ou aux services cloud.\n\n10. Sauvegardes et synchronisation : Les fonctionnalités de sauvegarde, restauration et synchronisation dépendent des conditions de l’appareil, de l’espace de stockage disponible, des services iCloud et de facteurs externes. L’App ne garantit pas que les sauvegardes ou données synchronisées seront toujours disponibles, complètes, exactes ou récupérables.\n\n11. Services tiers : L’App peut dépendre de services tiers (tels qu’iCloud, services de cartographie, fournisseurs météo ou Siri) pour certaines fonctionnalités. Les développeurs ne sont pas responsables de la disponibilité, des performances, de la compatibilité, de la fiabilité ou des pratiques de confidentialité de ces services.\n\n12. Disponibilité des fonctionnalités : Les fonctionnalités de l’App peuvent dépendre des conditions de l’appareil, des paramètres système, des autorisations accordées, des versions logicielles et de la connectivité réseau. La disponibilité continue ou le bon fonctionnement de toutes les fonctionnalités n’est pas garanti.\n\n13. Fonctions d’importation et d’exportation : Les fonctionnalités d’importation et d’exportation sont fournies pour des raisons de commodité. L’App ne garantit pas la fidélité complète des données, l’exhaustivité, la compatibilité ou la conservation de toutes les informations lors de l’interaction avec des formats ou services tiers. Les pièces jointes ne sont pas incluses dans les opérations d’importation ou d’exportation sauf indication explicite contraire.\n\n14. Aucun usage critique : L’App n’est pas destinée à des usages d’urgence, médicaux, juridiques, de sécurité ou mission-critical. Les utilisateurs ne doivent pas se fier à l’App dans des situations où des retards, inexactitudes, défaillances ou informations manquantes pourraient entraîner des dommages, blessures, pertes ou conséquences importantes.\n\n15. Mises à jour et modifications : L’App et cette clause de non-responsabilité peuvent être mis à jour, modifiés, suspendus ou changés au fil du temps sans préavis. L’utilisation continue de l’App constitue l’acceptation de ces modifications.\n\n16. Limitation de responsabilité : Dans la mesure maximale autorisée par la loi applicable, les développeurs ne pourront être tenus responsables de tout dommage résultant de l’utilisation, de l’impossibilité d’utiliser ou de la confiance accordée à l’App ou aux informations qu’elle contient.\n\nEn utilisant %@, vous confirmez avoir lu, compris et pleinement accepté cette clause de non-responsabilité."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disclaimer e Termini di Utilizzo\n\nL'app %1$@ (\\\"App\\\") è progettata per la gestione personale delle attività e per finalità di produttività.\n\nUtilizzando l'App, dichiari di aver letto, compreso e accettato quanto segue:\n\n1. Finalità dell'App: L'App è destinata esclusivamente all'organizzazione personale. Tutte le informazioni, i suggerimenti e le funzionalità sono forniti solo a scopo informativo e non costituiscono alcuna garanzia di esecuzione o risultato.\n\n2. Responsabilità dell'utente: L'App è fornita \\\"così com'è\\\", senza garanzie di alcun tipo, espresse o implicite. Sei l'unico responsabile delle tue decisioni, azioni e attività derivanti dall'utilizzo dell'App.\n\n3. Notifiche, badge e promemoria: Notifiche, badge dell'app, promemoria e funzioni di snooze sono forniti esclusivamente a scopo informativo. Sebbene l'App sia progettata per programmare notifiche nei tempi appropriati, la loro consegna e accuratezza dipendono da servizi di sistema, impostazioni del dispositivo e fattori esterni. L'App non garantisce la consegna puntuale, l'accuratezza o il corretto funzionamento di tali funzionalità. Non fare affidamento esclusivo su queste funzioni per attività critiche o sensibili al tempo.\n\n4. Promemoria basati sulla posizione: I promemoria basati sulla posizione dipendono dalle autorizzazioni di sistema, dalle condizioni del dispositivo e da fattori esterni e potrebbero non attivarsi sempre come previsto.\n\n5. Assistente vocale (Siri): I comandi vocali e le integrazioni con Siri si basano sui servizi Apple e potrebbero non interpretare sempre correttamente l'input dell'utente.\n\n6. Funzionalità mappa e posizione: La visualizzazione sulla mappa e le funzionalità basate sulla posizione dipendono dai servizi di localizzazione del dispositivo, dalla precisione del GPS e da condizioni di sistema. L'App non garantisce l'accuratezza, la precisione o l'affidabilità in tempo reale dei dati di posizione o delle interazioni basate sulla mappa.\n\n7. Dati e archiviazione: I dati possono essere archiviati localmente sul dispositivo o sincronizzati tramite iCloud. Sei responsabile della gestione e del backup dei tuoi dati. Gli sviluppatori non sono responsabili per eventuali perdite di dati, corruzioni, accessi non autorizzati o problemi legati a ritardi o errori di sincronizzazione iCloud.\n\n8. Servizi di terze parti: L'App può fare affidamento su servizi di terze parti (come iCloud) per alcune funzionalità. Gli sviluppatori non sono responsabili per la disponibilità, le prestazioni, la compatibilità o le pratiche sulla privacy di tali servizi.\n\n9. Disponibilità delle funzionalità: Il funzionamento dell'App può dipendere dalle condizioni del dispositivo, dalle impostazioni di sistema, dalle autorizzazioni concesse e dalla connettività di rete. Non è garantita la disponibilità continua o il corretto funzionamento di tutte le funzionalità.\n\n10. Funzionalità di importazione ed esportazione: Le funzionalità di importazione ed esportazione sono fornite per comodità. L'App non garantisce la completa fedeltà dei dati, la completezza o la compatibilità con formati o servizi di terze parti. Gli allegati non sono inclusi nelle operazioni di importazione o esportazione.\n\n11. Aggiornamenti e modifiche: L'App e il presente Disclaimer possono essere aggiornati o modificati nel tempo senza preavviso. L'utilizzo continuato dell'App costituisce accettazione di tali modifiche.\n\n12. Limitazione di responsabilità: Nella misura massima consentita dalla legge applicabile, gli sviluppatori non saranno responsabili per eventuali danni derivanti dall'uso o dall'impossibilità di utilizzare l'App.\n\nUtilizzando %2$@, confermi di aver letto, compreso e accettato integralmente il presente Disclaimer."
+            "value" : "Disclaimer e Termini di Utilizzo\n\nL’App %@ (\"App\") è progettata per la gestione personale delle attività, l’organizzazione e la produttività.\n\nUtilizzando l’App, riconosci e accetti quanto segue:\n\n1. Scopo dell’App: L’App è destinata esclusivamente all’organizzazione personale. Tutte le informazioni, i suggerimenti, le previsioni e le funzionalità sono forniti esclusivamente a scopo informativo e non costituiscono alcuna garanzia di esecuzione, accuratezza o risultato.\n\n2. Responsabilità dell’Utente: L’App è fornita “così com’è”, senza garanzie di alcun tipo, espresse o implicite. Sei l’unico responsabile delle tue decisioni, azioni, attività e dell’utilizzo delle informazioni fornite dall’App.\n\n3. Notifiche, Badge e Promemoria: Notifiche, badge dell’app, promemoria e funzioni snooze sono forniti esclusivamente a scopo informativo. Sebbene l’App sia progettata per programmare notifiche al momento appropriato, la loro consegna e accuratezza dipendono da servizi di sistema, impostazioni del dispositivo, connettività e fattori esterni. L’App non garantisce la consegna puntuale, l’accuratezza o il corretto funzionamento di tali funzionalità. Non dovresti fare affidamento esclusivo su queste funzioni per attività critiche o sensibili al tempo.\n\n4. Promemoria Basati sulla Posizione: I promemoria basati sulla posizione dipendono dai permessi di sistema, dalle condizioni del dispositivo, dalla disponibilità del GPS e da fattori esterni e potrebbero non attivarsi sempre come previsto.\n\n5. Assistente Vocale (Siri): I comandi vocali e le integrazioni con Siri dipendono dai servizi Apple e potrebbero non interpretare sempre l’input dell’utente in modo accurato o coerente.\n\n6. Funzionalità Mappa e Posizione: La visualizzazione della mappa e le funzionalità basate sulla posizione dipendono dai servizi di localizzazione del dispositivo, dall’accuratezza del GPS, dalla connettività di rete e dalle condizioni del sistema. L’App non garantisce accuratezza, precisione, disponibilità o affidabilità in tempo reale dei dati di posizione o delle interazioni basate sulla mappa.\n\n7. Informazioni Meteo: Le previsioni e le informazioni meteorologiche sono fornite esclusivamente a scopo informativo e possono dipendere da servizi di terze parti, posizione del dispositivo, connettività di rete e fornitori di dati esterni. L’App non garantisce accuratezza, completezza, disponibilità o affidabilità delle informazioni meteo e tali informazioni non devono essere utilizzate per decisioni critiche o professionali.\n\n8. Carte Fedeltà e Barcode: Le carte fedeltà, le informazioni sui barcode e i relativi dati sono memorizzati esclusivamente per comodità dell’utente. L’App non garantisce compatibilità con scanner esterni, sistemi di vendita, negozi o servizi di terze parti. Gli utenti sono responsabili della verifica della validità e dell’utilizzabilità delle informazioni barcode memorizzate.\n\n9. Dati e Archiviazione: I dati possono essere archiviati localmente sul dispositivo o sincronizzati tramite iCloud. Sei responsabile della gestione e del backup dei tuoi dati. Gli sviluppatori non sono responsabili per perdita di dati, corruzione, accessi non autorizzati, problemi di sincronizzazione, ritardi o malfunzionamenti relativi all’archiviazione locale o ai servizi cloud.\n\n10. Backup e Sincronizzazione: Le funzionalità di backup, ripristino e sincronizzazione dipendono dalle condizioni del dispositivo, dalla disponibilità di spazio, dai servizi iCloud e da fattori esterni. L’App non garantisce che backup o dati sincronizzati siano sempre disponibili, completi, accurati o recuperabili.\n\n11. Servizi di Terze Parti: L’App può dipendere da servizi di terze parti (come iCloud, servizi mappe, fornitori meteo o Siri) per alcune funzionalità. Gli sviluppatori non sono responsabili della disponibilità, delle prestazioni, della compatibilità, dell’affidabilità o delle pratiche sulla privacy di tali servizi.\n\n12. Disponibilità delle Funzionalità: Le funzionalità dell’App possono dipendere dalle condizioni del dispositivo, dalle impostazioni di sistema, dai permessi concessi, dalle versioni software e dalla connettività di rete. La disponibilità continua o il corretto funzionamento di tutte le funzionalità non sono garantiti.\n\n13. Funzioni di Importazione ed Esportazione: Le funzionalità di importazione ed esportazione sono fornite per comodità. L’App non garantisce fedeltà completa dei dati, completezza, compatibilità o conservazione di tutte le informazioni durante l’interazione con formati o servizi di terze parti. Gli allegati non sono inclusi nelle operazioni di importazione o esportazione salvo diversa indicazione esplicita.\n\n14. Nessun Utilizzo Critico: L’App non è destinata a utilizzi di emergenza, medici, legali, di sicurezza o mission-critical. Gli utenti non devono fare affidamento sull’App in situazioni in cui ritardi, imprecisioni, malfunzionamenti o informazioni mancanti potrebbero causare danni, lesioni, perdite o conseguenze rilevanti.\n\n15. Aggiornamenti e Modifiche: L’App e questo Disclaimer possono essere aggiornati, modificati, sospesi o cambiati nel tempo senza preavviso. L’utilizzo continuato dell’App costituisce accettazione di tali modifiche.\n\n16. Limitazione di Responsabilità: Nella misura massima consentita dalla legge applicabile, gli sviluppatori non saranno responsabili per eventuali danni derivanti dall’utilizzo, dall’impossibilità di utilizzare o dall’affidamento sull’App o sulle informazioni fornite al suo interno.\n\nUtilizzando %@, confermi di aver letto, compreso e accettato integralmente questo Disclaimer."
+          }
+        }
+      }
+    },
+    "Do weather forecasts require location access?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benötigen Wettervorhersagen Zugriff auf den Standort?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Las previsiones meteorológicas requieren acceso a la ubicación?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les prévisions météo nécessitent-elles l’accès à la localisation ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le previsioni meteo richiedono l’accesso alla posizione?"
+          }
+        }
+      }
+    },
+    "Does iCloud replace backups?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ersetzt iCloud Backups?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿iCloud sustituye las copias de seguridad?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud remplace-t-il les sauvegardes ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud sostituisce i backup?"
+          }
+        }
+      }
+    },
+    "Does the app include a Wallet for loyalty cards?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enthält die App ein Wallet für Kundenkarten?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿La aplicación incluye un Wallet para tarjetas de fidelización?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’application inclut-elle un Wallet pour les cartes de fidélité ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app include un Wallet per le carte fedeltà?"
+          }
+        }
+      }
+    },
+    "Does the app include weather forecasts?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enthält die App Wettervorhersagen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿La aplicación incluye previsiones meteorológicas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’application inclut-elle des prévisions météo ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app include previsioni meteo?"
+          }
+        }
+      }
+    },
+    "Does the app support backup and restore?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unterstützt die App Backup und Wiederherstellung?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿La aplicación admite copia de seguridad y restauración?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’application prend-elle en charge la sauvegarde et la restauration ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’app supporta backup e ripristino?"
           }
         }
       }
@@ -7337,6 +7643,34 @@
         }
       }
     },
+    "Integrated Weather" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Integriertes Wetter"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meteo integrado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Météo intégrée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meteo Integrato"
+          }
+        }
+      }
+    },
     "Interactive Calendar" : {
       "localizations" : {
         "de" : {
@@ -8856,6 +9190,34 @@
         }
       }
     },
+    "No. iCloud synchronization and manual backups are separate features. Backups are still recommended for additional safety and portability." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nein. Die iCloud-Synchronisierung und manuelle Backups sind getrennte Funktionen. Backups werden weiterhin für zusätzliche Sicherheit und Portabilität empfohlen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No. La sincronización de iCloud y las copias de seguridad manuales son funciones independientes. Las copias de seguridad siguen siendo recomendables para mayor seguridad y portabilidad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non. La synchronisation iCloud et les sauvegardes manuelles sont des fonctionnalités distinctes. Les sauvegardes restent recommandées pour plus de sécurité et de portabilité."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No. La sincronizzazione iCloud e i backup manuali sono funzionalità separate. I backup sono comunque consigliati per maggiore sicurezza e portabilità."
+          }
+        }
+      }
+    },
     "None" : {
       "localizations" : {
         "de" : {
@@ -10005,6 +10367,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guida rapida"
+          }
+        }
+      }
+    },
+    "Quickly scan loyalty cards using the device camera and automatically save barcode information into your Wallet." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scannen Sie Kundenkarten schnell mit der Kamera des Geräts und speichern Sie Barcode-Informationen automatisch in Ihrem Wallet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escanea rápidamente tarjetas de fidelización usando la cámara del dispositivo y guarda automáticamente la información del código de barras en tu Wallet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scannez rapidement les cartes de fidélité à l’aide de l’appareil photo de l’appareil et enregistrez automatiquement les informations du code-barres dans votre Wallet."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scansiona rapidamente le carte fedeltà usando la fotocamera del dispositivo e salva automaticamente le informazioni del barcode nel tuo Wallet."
           }
         }
       }
@@ -12926,6 +13316,34 @@
         }
       }
     },
+    "Store and organize your loyalty cards with barcodes always available directly inside the app." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speichern und organisieren Sie Ihre Kundenkarten mit jederzeit verfügbaren Barcodes direkt in der App."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda y organiza tus tarjetas de fidelización con códigos de barras siempre disponibles directamente en la aplicación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrez et organisez vos cartes de fidélité avec des codes-barres toujours disponibles directement dans l’application."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva e organizza le tue carte fedeltà con barcode sempre disponibili direttamente nell’app."
+          }
+        }
+      }
+    },
     "Store Name" : {
       "localizations" : {
         "de" : {
@@ -15810,6 +16228,34 @@
         }
       }
     },
+    "View weather forecasts directly inside task views and weekly planning to better organize your activities and appointments." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sehen Sie Wettervorhersagen direkt in Aufgabenansichten und der Wochenplanung, um Ihre Aktivitäten und Termine besser zu organisieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consulta las previsiones meteorológicas directamente en las vistas de tareas y en la planificación semanal para organizar mejor tus actividades y citas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consultez les prévisions météo directement dans les vues des tâches et la planification hebdomadaire afin de mieux organiser vos activités et rendez-vous."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visualizza le previsioni meteo direttamente nelle viste attività e nella pianificazione settimanale per organizzare meglio attività e appuntamenti."
+          }
+        }
+      }
+    },
     "Visible elements" : {
       "localizations" : {
         "de" : {
@@ -15950,6 +16396,34 @@
         }
       }
     },
+    "Wallet for Loyalty Cards" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet für Kundenkarten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet para tarjetas de fidelización"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet pour cartes de fidélité"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet per Carte Fedeltà"
+          }
+        }
+      }
+    },
     "wallet_tab" : {
       "localizations" : {
         "de" : {
@@ -16030,6 +16504,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Previsioni Meteo"
+          }
+        }
+      }
+    },
+    "Weather information requires location access. Make sure location permissions are enabled and weather forecasts are activated in app settings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wetterinformationen benötigen Zugriff auf den Standort. Stellen Sie sicher, dass die Standortberechtigungen aktiviert sind und Wettervorhersagen in den App-Einstellungen aktiviert wurden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La información meteorológica requiere acceso a la ubicación. Asegúrate de que los permisos de localización estén habilitados y de que las previsiones meteorológicas estén activadas en los ajustes de la aplicación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les informations météo nécessitent l’accès à la localisation. Assurez-vous que les autorisations de localisation sont activées et que les prévisions météo sont activées dans les paramètres de l’application."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le informazioni meteo richiedono l’accesso alla posizione. Assicurati che i permessi di localizzazione siano abilitati e che le previsioni meteo siano attivate nelle impostazioni dell’app."
           }
         }
       }
@@ -16934,6 +17436,34 @@
         }
       }
     },
+    "Why is weather information not visible?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum werden Wetterinformationen nicht angezeigt?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué la información meteorológica no es visible?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi les informations météo ne sont-elles pas visibles ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché le informazioni meteo non sono visibili?"
+          }
+        }
+      }
+    },
     "With global notification" : {
       "comment" : "A label displayed in the settings view.",
       "isCommentAutoGenerated" : true,
@@ -17044,6 +17574,118 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Tutte le funzionalità funzionano offline e i dati sono salvati localmente sul dispositivo."
+          }
+        }
+      }
+    },
+    "Yes. Complete backups include task attachments such as images, documents, scans, and audio recordings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Vollständige Backups enthalten Aufgabenanhänge wie Bilder, Dokumente, Scans und Audioaufnahmen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Las copias de seguridad completas incluyen archivos adjuntos de tareas como imágenes, documentos, escaneos y grabaciones de audio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Les sauvegardes complètes incluent les pièces jointes des tâches telles que les images, documents, scans et enregistrements audio."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. I backup completi includono allegati delle attività come immagini, documenti, scansioni e registrazioni audio."
+          }
+        }
+      }
+    },
+    "Yes. ForMemo allows you to create complete backups of your tasks, reminders, attachments, and settings so you can restore them later or transfer them to another device." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. ForMemo ermöglicht es Ihnen, vollständige Backups Ihrer Aufgaben, Erinnerungen, Anhänge und Einstellungen zu erstellen, damit Sie diese später wiederherstellen oder auf ein anderes Gerät übertragen können."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. ForMemo te permite crear copias de seguridad completas de tus tareas, recordatorios, archivos adjuntos y ajustes para poder restaurarlos más adelante o transferirlos a otro dispositivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. ForMemo vous permet de créer des sauvegardes complètes de vos tâches, rappels, pièces jointes et paramètres afin de pouvoir les restaurer plus tard ou les transférer vers un autre appareil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. ForMemo ti permette di creare backup completi di attività, promemoria, allegati e impostazioni così da poterli ripristinare in seguito o trasferire su un altro dispositivo."
+          }
+        }
+      }
+    },
+    "Yes. ForMemo can display weather forecasts directly inside task views and weekly planning views to help you organize your activities more easily." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. ForMemo kann Wettervorhersagen direkt in Aufgabenansichten und Wochenplanungsansichten anzeigen, damit Sie Ihre Aktivitäten einfacher organisieren können."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. ForMemo puede mostrar previsiones meteorológicas directamente en las vistas de tareas y en la planificación semanal para ayudarte a organizar mejor tus actividades."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. ForMemo peut afficher les prévisions météo directement dans les vues des tâches et de la planification hebdomadaire afin de vous aider à mieux organiser vos activités."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. ForMemo può mostrare le previsioni meteo direttamente nelle viste attività e nella pianificazione settimanale per aiutarti a organizzare meglio le tue attività."
+          }
+        }
+      }
+    },
+    "Yes. ForMemo includes a Wallet section where you can save and organize loyalty cards with their barcode always available." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. ForMemo enthält einen Wallet-Bereich, in dem Sie Kundenkarten mit jederzeit verfügbarem Barcode speichern und organisieren können."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. ForMemo incluye una sección Wallet donde puedes guardar y organizar tarjetas de fidelización con su código de barras siempre disponible."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. ForMemo inclut une section Wallet où vous pouvez enregistrer et organiser des cartes de fidélité avec leur code-barres toujours disponible."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. ForMemo include una sezione Wallet dove puoi salvare e organizzare carte fedeltà con il loro barcode sempre disponibile."
           }
         }
       }
@@ -17160,6 +17802,34 @@
         }
       }
     },
+    "Yes. Weather forecasts depend on your device location. If location access is disabled, weather information may not be available." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Wettervorhersagen hängen vom Standort Ihres Geräts ab. Wenn der Standortzugriff deaktiviert ist, sind Wetterinformationen möglicherweise nicht verfügbar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Las previsiones meteorológicas dependen de la ubicación de tu dispositivo. Si el acceso a la ubicación está desactivado, es posible que la información meteorológica no esté disponible."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Les prévisions météo dépendent de la localisation de votre appareil. Si l’accès à la localisation est désactivé, les informations météo peuvent ne pas être disponibles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Le previsioni meteo dipendono dalla posizione del dispositivo. Se l’accesso alla posizione è disabilitato, le informazioni meteo potrebbero non essere disponibili."
+          }
+        }
+      }
+    },
     "Yes. You can attach files, images, documents, and record audio." : {
       "localizations" : {
         "de" : {
@@ -17250,6 +17920,34 @@
         }
       }
     },
+    "Yes. You can import a backup file on another compatible device to restore your tasks and related data." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sie können eine Backup-Datei auf einem anderen kompatiblen Gerät importieren, um Ihre Aufgaben und zugehörigen Daten wiederherzustellen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes importar un archivo de copia de seguridad en otro dispositivo compatible para restaurar tus tareas y datos relacionados."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez importer un fichier de sauvegarde sur un autre appareil compatible afin de restaurer vos tâches et données associées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare le tue attività e i relativi dati."
+          }
+        }
+      }
+    },
     "Yes. You can manually delete all attachments of completed tasks from settings." : {
       "localizations" : {
         "de" : {
@@ -17274,6 +17972,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Puoi eliminare manualmente tutti gli allegati delle attività completate dalle impostazioni."
+          }
+        }
+      }
+    },
+    "Yes. You can quickly scan barcodes using the device camera and save loyalty cards directly inside the Wallet." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sie können Barcodes schnell mit der Kamera des Geräts scannen und Kundenkarten direkt im Wallet speichern."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes escanear rápidamente códigos de barras usando la cámara del dispositivo y guardar tarjetas de fidelización directamente en el Wallet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez scanner rapidement des codes-barres à l’aide de l’appareil photo de l’appareil et enregistrer directement les cartes de fidélité dans le Wallet."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi scansionare rapidamente i barcode usando la fotocamera del dispositivo e salvare le carte fedeltà direttamente nel Wallet."
+          }
+        }
+      }
+    },
+    "Yes. You can save multiple cards from the same store and distinguish them using the card holder field or custom notes." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sie können mehrere Karten desselben Geschäfts speichern und diese mithilfe des Karteninhaberfelds oder benutzerdefinierter Notizen unterscheiden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes guardar varias tarjetas de la misma tienda y diferenciarlas usando el campo del titular de la tarjeta o notas personalizadas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez enregistrer plusieurs cartes du même magasin et les distinguer à l’aide du champ titulaire de la carte ou de notes personnalisées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi salvare più carte dello stesso negozio e distinguerle usando il campo intestatario della carta o note personalizzate."
           }
         }
       }

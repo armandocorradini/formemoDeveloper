@@ -13,7 +13,7 @@ struct AddLoyaltyCardView: View {
     @State private var storeName = ""
     @State private var cardHolder = ""
     @State private var barcodeValue = ""
-    @State private var barcodeFormat = "Code128"
+    @State private var barcodeFormat = "code128"
     @State private var notes = ""
     @State private var showScanner = false
 
@@ -170,20 +170,36 @@ private struct BarcodeScannerSheet: UIViewControllerRepresentable {
                 return
             }
 
-            guard case .barcode(let barcode) = first else {
+            handle(first)
+        }
+
+        func dataScanner(
+            _ dataScanner: DataScannerViewController,
+            didTapOn item: RecognizedItem
+        ) {
+
+            handle(item)
+        }
+
+        private func handle(_ item: RecognizedItem) {
+
+            guard case .barcode(let barcode) = item else {
                 return
             }
 
-            guard let payload = barcode.payloadStringValue else {
+            guard let payload = barcode.payloadStringValue,
+                  !payload.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 return
             }
 
-            parent.barcodeValue = payload
+            DispatchQueue.main.async {
 
-            parent.barcodeFormat =
-                String(describing: barcode.observation.symbology)
+                self.parent.barcodeValue = payload
 
-            parent.dismiss()
+                self.parent.barcodeFormat = barcode.observation.symbology.rawValue
+
+                self.parent.dismiss()
+            }
         }
     }
 }
