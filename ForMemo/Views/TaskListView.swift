@@ -214,10 +214,12 @@ struct TaskListView: View {
                 }
                 .scrollDismissesKeyboard(.immediately)
 
-                .searchable(
+                .searchableIf(
+                    !(todoQuery.isEmpty && completedQuery.isEmpty),
                     text: $searchText,
                     placement: .navigationBarDrawer(displayMode: .automatic),
-                    prompt: "Search task")
+                    prompt: "Search task"
+                )
                         .toolbarBackground(.hidden, for: .navigationBar)
             
                 .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
@@ -820,9 +822,18 @@ enum TaskListStyle: String, CaseIterable {
 }
 extension View {
     @ViewBuilder
-    func searchableIf(_ condition: Bool, text: Binding<String>, prompt: LocalizedStringKey = "Search task") -> some View {
+    func searchableIf(
+        _ condition: Bool,
+        text: Binding<String>,
+        placement: SearchFieldPlacement = .navigationBarDrawer(displayMode: .automatic),
+        prompt: LocalizedStringKey = "Search task"
+    ) -> some View {
         if condition {
-            self.searchable(text: text, prompt: prompt)
+            self.searchable(
+                text: text,
+                placement: placement,
+                prompt: prompt
+            )
         } else {
             self
         }
