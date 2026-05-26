@@ -45,7 +45,7 @@ struct FAQView: View {
             )
             ,FAQItem(
                 question: String(localized:"Does the app include weather forecasts?"),
-                answer: String(localized:"Yes. ForMemo can display weather forecasts directly inside task views and weekly planning views to help you organize your activities more easily.")
+                answer: String(localized:"Yes. ForMemo can display weather forecasts directly inside task views and weekly planning views to help you organize your activities more easily. Tap the weather info to open the detailed weekly weather forecast view.")
             ),
             FAQItem(
                 question: String(localized:"Do weather forecasts require location access?"),

@@ -846,10 +846,12 @@ struct TodoSectionView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var weatherManager = WeatherManager.shared
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
+    @State private var showWeatherForecast = false
     
     @ViewBuilder
     private func groupedHeaderView(for group: (date: Date, tasks: [TodoTask])) -> some View {
         if let title = relativeHeaderTitle(for: group.date) {
+            let _ = weatherManager.refreshID
             let isTodayGroup = Calendar.current.isDateInToday(group.date)
             let headerFillColor: Color = isTodayGroup
                 ? Color.blue.opacity(colorScheme == .dark ? 0.14 : 0.06)
@@ -880,26 +882,32 @@ struct TodoSectionView: View {
                     || locationAuthorizationStatus == .authorizedWhenInUse),
                    let weather = weatherManager.weather(for: group.date) {
 
-                    HStack(spacing: 6) {
+                    Button {
+                        showWeatherForecast = true
+                    } label: {
 
-                        Image(systemName: weather.symbolName)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(
-                                isTodayGroup
-                                ? .yellow.opacity(0.95)
-                                : .primary.opacity(0.75)
-                            )
+                        HStack(spacing: 6) {
 
-                        Text("\(weather.minTemperature)°")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.primary.opacity(0.55))
-                            .monospacedDigit()
+                            Image(systemName: weather.symbolName)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(
+                                    isTodayGroup
+                                    ? .yellow.opacity(0.95)
+                                    : .primary.opacity(0.75)
+                                )
 
-                        Text("\(weather.maxTemperature)°")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.primary.opacity(0.82))
-                            .monospacedDigit()
+                            Text("\(weather.minTemperature)°")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.primary.opacity(0.55))
+                                .monospacedDigit()
+
+                            Text("\(weather.maxTemperature)°")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.primary.opacity(0.82))
+                                .monospacedDigit()
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, 14)
@@ -1218,6 +1226,9 @@ struct TodoSectionView: View {
             )
         ) { _ in
             locationAuthorizationStatus = CLLocationManager().authorizationStatus
+        }
+        .fullScreenCover(isPresented: $showWeatherForecast) {
+                WeatherForecastView()
         }
     }
     @ViewBuilder

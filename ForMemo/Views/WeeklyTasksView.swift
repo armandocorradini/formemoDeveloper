@@ -19,6 +19,7 @@ struct WeeklyTasksView: View {
     
     @State private var taskPendingDeletion: TodoTask?
     @State private var draftTask: TodoTask?
+    @State private var showWeatherForecast = false
 
     private static let activeTasksPredicate =
         #Predicate<TodoTask> { !$0.isCompleted }
@@ -166,6 +167,7 @@ struct WeeklyTasksView: View {
     @ViewBuilder
     private func groupedHeaderView(for group: GroupedDay) -> some View {
         if let title = relativeHeaderTitle(for: group.date) {
+            let _ = weatherManager.refreshID
 
             let isTodayGroup = Calendar.current.isDateInToday(group.date)
 
@@ -201,7 +203,11 @@ struct WeeklyTasksView: View {
                     || locationAuthorizationStatus == .authorizedWhenInUse),
                    let weather = weatherManager.weather(for: group.date) {
 
-                    HStack(spacing: 6) {
+                    Button {
+                        showWeatherForecast = true
+                    } label: {
+
+                        HStack(spacing: 6) {
 
                         Image(systemName: weather.symbolName)
                             .font(.subheadline.weight(.semibold))
@@ -220,7 +226,9 @@ struct WeeklyTasksView: View {
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.primary.opacity(0.82))
                             .monospacedDigit()
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.horizontal, TaskRowMetrics.groupedLeadingPadding)
@@ -383,6 +391,9 @@ struct WeeklyTasksView: View {
             }
             .sheet(item: $draftTask) { task in
                 NewTaskSheetView(draftTask: task)
+            }
+            .fullScreenCover(isPresented: $showWeatherForecast) {
+                    WeatherForecastView()
             }
             .scrollContentBackground(.hidden)
             .containerBackground(.clear, for: .navigation)

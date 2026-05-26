@@ -1,5 +1,3 @@
-
-
 import Foundation
 import CoreLocation
 import Observation
@@ -10,9 +8,26 @@ import SwiftUI
 struct DailyWeatherInfo {
 
     let date: Date
+
     let symbolName: String
+
     let minTemperature: Int
     let maxTemperature: Int
+
+    let precipitationChance: Int
+    let precipitationAmount: Double
+
+    let windSpeed: Int
+
+    let sunrise: Date?
+    let sunset: Date?
+
+    let uvIndex: Int?
+    let airQualityIndex: Int?
+
+    let morningSymbolName: String
+    let afternoonSymbolName: String
+    let eveningSymbolName: String
 }
 
 // MARK: - Weather Manager
@@ -37,14 +52,27 @@ private struct OpenMeteoResponse: Decodable {
 private struct OpenMeteoDaily: Decodable {
 
     let time: [String]
+
     let weathercode: [Int]
+
     let temperature_2m_min: [Double]
     let temperature_2m_max: [Double]
+
+    let precipitation_probability_max: [Double]
+    let precipitation_sum: [Double]
+
+    let wind_speed_10m_max: [Double]
+
+    let sunrise: [String]
+    let sunset: [String]
+
+    let uv_index_max: [Double?]
 }
 
     private(set) var weatherByDay: [Date: DailyWeatherInfo] = [:]
 
     private(set) var isAvailable: Bool = false
+    private(set) var refreshID = UUID()
 
     private var lastRefresh: Date = .distantPast
 
@@ -55,11 +83,16 @@ private struct OpenMeteoDaily: Decodable {
     // MARK: - Public
 
     func weather(for date: Date) -> DailyWeatherInfo? {
+
         guard showWeatherForecast else {
             return nil
         }
+
         let key = Calendar.current.startOfDay(for: date)
-        return weatherByDay[key]
+
+        let snapshot = weatherByDay
+
+        return snapshot[key]
     }
 
     func refreshIfNeeded() async {
@@ -68,6 +101,7 @@ private struct OpenMeteoDaily: Decodable {
 #endif
         guard showWeatherForecast else {
             weatherByDay = [:]
+            refreshID = UUID()
             isAvailable = false
             return
         }
@@ -115,16 +149,29 @@ private struct OpenMeteoDaily: Decodable {
             let latitude = location.coordinate.latitude
             let longitude = location.coordinate.longitude
 
-            let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto"
+            let urlString = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=\(latitude)&longitude=\(longitude)&daily=pm10_max&timezone=auto"
 
-            guard let url = URL(string: urlString) else {
+            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max&timezone=auto"
+
+            guard let url = URL(string: forecastURLString),
+                  let airQualityURL = URL(string: urlString) else {
                 isAvailable = false
                 return
             }
 
-            let (data, _) = try await URLSession.shared.data(from: url)
+            async let forecastResponse = URLSession.shared.data(from: url)
+            async let airQualityResponse = URLSession.shared.data(from: airQualityURL)
+
+            let (data, _) = try await forecastResponse
+            let (airQualityData, _) = try await airQualityResponse
 
             let decoded = try JSONDecoder().decode(OpenMeteoResponse.self, from: data)
+
+            let airQualityDecoded = try JSONSerialization.jsonObject(with: airQualityData) as? [String: Any]
+
+            let airQualityDaily = (airQualityDecoded?["daily"] as? [String: Any])
+
+            let pm10Values = airQualityDaily?["pm10_max"] as? [Double?] ?? []
 
             var updated: [Date: DailyWeatherInfo] = [:]
 
@@ -139,15 +186,46 @@ private struct OpenMeteoDaily: Decodable {
 
                 let key = Calendar.current.startOfDay(for: date)
 
+                let precipitationChance = decoded.daily.precipitation_probability_max[index]
+
+                let precipitationAmount = decoded.daily.precipitation_sum[index]
+
+                let windSpeed = decoded.daily.wind_speed_10m_max[index]
+
+                let uvIndex = decoded.daily.uv_index_max[index]
+
+                let airQuality = index < pm10Values.count
+                    ? pm10Values[index]
+                    : nil
+
+                let sunrise = ISO8601DateFormatter().date(
+                    from: decoded.daily.sunrise[index]
+                )
+
+                let sunset = ISO8601DateFormatter().date(
+                    from: decoded.daily.sunset[index]
+                )
+
                 updated[key] = DailyWeatherInfo(
                     date: date,
                     symbolName: symbol(for: decoded.daily.weathercode[index]),
                     minTemperature: Int(decoded.daily.temperature_2m_min[index].rounded()),
-                    maxTemperature: Int(decoded.daily.temperature_2m_max[index].rounded())
+                    maxTemperature: Int(decoded.daily.temperature_2m_max[index].rounded()),
+                    precipitationChance: Int(precipitationChance.rounded()),
+                    precipitationAmount: precipitationAmount,
+                    windSpeed: Int(windSpeed.rounded()),
+                    sunrise: sunrise,
+                    sunset: sunset,
+                    uvIndex: uvIndex.map { Int($0.rounded()) },
+                    airQualityIndex: airQuality.map { Int($0.rounded()) },
+                    morningSymbolName: symbol(for: decoded.daily.weathercode[index]),
+                    afternoonSymbolName: symbol(for: decoded.daily.weathercode[index]),
+                    eveningSymbolName: symbol(for: decoded.daily.weathercode[index])
                 )
             }
 
             weatherByDay = updated
+            refreshID = UUID()
 
 #if DEBUG
             print("🌤️ Weather forecast loaded: \(updated.count) days")
@@ -162,10 +240,10 @@ private struct OpenMeteoDaily: Decodable {
             print("❌ Open-Meteo fetch error:", error)
 #endif
 
+            refreshID = UUID()
             isAvailable = false
         }
     }
-}
 
     // MARK: - Weather Symbol Mapping
 
@@ -201,3 +279,4 @@ private struct OpenMeteoDaily: Decodable {
             return "cloud.fill"
         }
     }
+}

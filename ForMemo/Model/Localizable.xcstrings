@@ -730,6 +730,34 @@
         }
       }
     },
+    "%lld km/h" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld km/h"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld km/h"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld km/h"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld km/h"
+          }
+        }
+      }
+    },
     "%lld minutes before" : {
       "localizations" : {
         "de" : {
@@ -2066,6 +2094,34 @@
         }
       }
     },
+    "AQI %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LQI %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ICA %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IQA %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AQI %lld"
+          }
+        }
+      }
+    },
     "Are attachments deleted automatically?" : {
       "localizations" : {
         "de" : {
@@ -2954,7 +3010,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kalender"
+            "value" : "Kal"
           }
         },
         "en" : {
@@ -2966,19 +3022,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Calendario"
+            "value" : "Cal"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Calendrier"
+            "value" : "Cal"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Calendario"
+            "value" : "Cal"
           }
         }
       }
@@ -3659,6 +3715,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chiudi"
+          }
+        }
+      }
+    },
+    "Cloudy" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewölkt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nublado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuageux"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuvoloso"
           }
         }
       }
@@ -6252,6 +6336,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "FAQ"
+          }
+        }
+      }
+    },
+    "Fog" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nebel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niebla"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brouillard"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nebbia"
+          }
+        }
+      }
+    },
+    "Forecast" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorhersage"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pronóstico"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prévisions"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previsioni"
           }
         }
       }
@@ -10047,6 +10187,34 @@
         }
       }
     },
+    "Partly Cloudy" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilweise bewölkt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parcialmente nublado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partiellement nuageux"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parzialmente nuvoloso"
+          }
+        }
+      }
+    },
     "Period" : {
       "localizations" : {
         "de" : {
@@ -10587,6 +10755,34 @@
         }
       }
     },
+    "Rain" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lluvia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pluie"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pioggia"
+          }
+        }
+      }
+    },
     "Ready to save" : {
       "localizations" : {
         "de" : {
@@ -10611,6 +10807,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pronto per il salvataggio"
+          }
+        }
+      }
+    },
+    "Real-time weather forecast for the next 7 days" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Echtzeit-Wettervorhersage für die nächsten 7 Tage"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pronóstico meteorológico en tiempo real para los próximos 7 días"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prévisions météo en temps réel pour les 7 prochains jours"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previsioni meteo in tempo reale per i prossimi 7 giorni"
           }
         }
       }
@@ -13474,6 +13698,34 @@
         }
       }
     },
+    "Snow" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schnee"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nieve"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neige"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neve"
+          }
+        }
+      }
+    },
     "Sound" : {
       "localizations" : {
         "de" : {
@@ -13498,6 +13750,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suono"
+          }
+        }
+      }
+    },
+    "Source: Open-Meteo" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quelle: Open-Meteo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fuente: Open-Meteo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Source : Open-Meteo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonte: Open-Meteo"
           }
         }
       }
@@ -13920,6 +14200,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stile 10"
+          }
+        }
+      }
+    },
+    "Sunny" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonnig"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soleado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ensoleillé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soleggiato"
           }
         }
       }
@@ -14446,6 +14754,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tocca il pulsante verde per aggiungere un'attività."
+          }
+        }
+      }
+    },
+    "Tap the weather info to open the detailed weekly forecast view." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tippe auf die Wetterinformationen, um die detaillierte Wochenvorhersage zu öffnen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca la información meteorológica para abrir la vista detallada del pronóstico semanal."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touchez les informations météo pour ouvrir la vue détaillée des prévisions hebdomadaires."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca le info meteo per aprire la vista dettagliata delle previsioni settimanali."
           }
         }
       }
@@ -15544,6 +15880,34 @@
         }
       }
     },
+    "Thunderstorm" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gewitter"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tormenta eléctrica"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orage"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temporale"
+          }
+        }
+      }
+    },
     "Title" : {
       "localizations" : {
         "de" : {
@@ -16384,6 +16748,62 @@
         }
       }
     },
+    "UV %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UV %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UV %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UV %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UV %lld"
+          }
+        }
+      }
+    },
+    "Variable Conditions" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wechselhafte Bedingungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condiciones variables"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conditions variables"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condizioni variabili"
+          }
+        }
+      }
+    },
     "View" : {
       "localizations" : {
         "de" : {
@@ -16466,34 +16886,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Visualizza i task direttamente sulla mappa. I task con una posizione vengono mostrati come pin. Tocca un pin per aprire i dettagli del task. La mappa si adatta automaticamente a tutti i task al primo avvio e mantiene il livello di zoom successivamente."
-          }
-        }
-      }
-    },
-    "View weather forecasts directly inside task views and weekly planning to better organize your activities and appointments." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sehen Sie Wettervorhersagen direkt in Aufgabenansichten und der Wochenplanung, um Ihre Aktivitäten und Termine besser zu organisieren."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Consulta las previsiones meteorológicas directamente en las vistas de tareas y en la planificación semanal para organizar mejor tus actividades y citas."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Consultez les prévisions météo directement dans les vues des tâches et la planification hebdomadaire afin de mieux organiser vos activités et rendez-vous."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Visualizza le previsioni meteo direttamente nelle viste attività e nella pianificazione settimanale per organizzare meglio attività e appuntamenti."
           }
         }
       }
@@ -16802,6 +17194,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "settimana"
+          }
+        }
+      }
+    },
+    "Weekly Forecast" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wöchentliche Vorhersage"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pronóstico semanal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prévisions hebdomadaires"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Previsioni settimanali"
           }
         }
       }
@@ -17876,30 +18296,30 @@
         }
       }
     },
-    "Yes. ForMemo can display weather forecasts directly inside task views and weekly planning views to help you organize your activities more easily." : {
+    "Yes. ForMemo can display weather forecasts directly inside task views and weekly planning views to help you organize your activities more easily. Tap the weather info to open the detailed weekly weather forecast view." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. ForMemo kann Wettervorhersagen direkt in Aufgabenansichten und Wochenplanungsansichten anzeigen, damit Sie Ihre Aktivitäten einfacher organisieren können."
+            "value" : "Ja. ForMemo kann Wettervorhersagen direkt in Aufgabenansichten und Wochenplanungen anzeigen, damit du deine Aktivitäten und Termine einfacher organisieren kannst. Tippe auf die Wetterinformationen, um die detaillierte Wochenwettervorhersage zu öffnen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. ForMemo puede mostrar previsiones meteorológicas directamente en las vistas de tareas y en la planificación semanal para ayudarte a organizar mejor tus actividades."
+            "value" : "Sí. ForMemo puede mostrar pronósticos meteorológicos directamente dentro de las vistas de tareas y de planificación semanal para ayudarte a organizar más fácilmente tus actividades y citas. Toca la información meteorológica para abrir la vista detallada del pronóstico meteorológico semanal."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. ForMemo peut afficher les prévisions météo directement dans les vues des tâches et de la planification hebdomadaire afin de vous aider à mieux organiser vos activités."
+            "value" : "Oui. ForMemo peut afficher les prévisions météo directement dans les vues des tâches et la planification hebdomadaire afin de vous aider à organiser plus facilement vos activités et rendez-vous. Touchez les informations météo pour ouvrir la vue détaillée des prévisions météo hebdomadaires."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. ForMemo può mostrare le previsioni meteo direttamente nelle viste attività e nella pianificazione settimanale per aiutarti a organizzare meglio le tue attività."
+            "value" : "Sì. ForMemo può mostrare le previsioni meteo direttamente nelle viste attività e nella pianificazione settimanale per aiutarti a organizzare più facilmente attività e appuntamenti. Tocca le info meteo per aprire la vista dettagliata delle previsioni settimanali."
           }
         }
       }
