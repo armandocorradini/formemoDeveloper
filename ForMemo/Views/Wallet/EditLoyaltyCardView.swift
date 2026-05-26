@@ -94,7 +94,7 @@ struct EditLoyaltyCardView: View {
                                 } label: {
                                     Label(
                                         "Remove Logo",
-                                        systemImage: "trash"
+                                        systemImage: "xmark.circle"
                                     )
                                 }
                             }

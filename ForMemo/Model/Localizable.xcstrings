@@ -3302,7 +3302,32 @@
       }
     },
     "Card Color" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartenfarbe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color de la tarjeta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couleur de la carte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colore Carta"
+          }
+        }
+      }
     },
     "Card Holder" : {
       "localizations" : {
@@ -3449,7 +3474,32 @@
       }
     },
     "Choose Logo" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logo auswählen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir logotipo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir un logo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli Logo"
+          }
+        }
+      }
     },
     "Choose saved location" : {
       "comment" : "A label for a button that opens a menu of saved locations.",
@@ -3827,37 +3877,33 @@
         }
       }
     },
-    "Create a complete backup of tasks, reminders, recurrence rules, tags, priorities, locations and attachments." : {
-      "extractionState" : "stale",
+    "Create a complete backup of tasks, reminders, recurrence rules, tags, priorities, locations, Wallet cards and attachments." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstellen Sie ein vollständiges Backup von Aufgaben, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Standorten und Anhängen."
+            "value" : "Erstellen Sie ein vollständiges Backup von Aufgaben, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Standorten, Wallet-Karten und Anhängen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crear una copia de seguridad completa de tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones y archivos adjuntos."
+            "value" : "Crea una copia de seguridad completa de tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, tarjetas Wallet y archivos adjuntos."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créer une sauvegarde complète des tâches, rappels, règles de récurrence, tags, priorités, emplacements et pièces jointes."
+            "value" : "Créez une sauvegarde complète des tâches, rappels, règles de récurrence, tags, priorités, emplacements, cartes Wallet et pièces jointes."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea un backup completo di attività, promemoria, regole di ricorrenza, tag, priorità, posizioni e allegati."
+            "value" : "Crea un backup completo di attività, promemoria, regole di ricorrenza, tag, priorità, posizioni, carte Wallet e allegati."
           }
         }
       }
-    },
-    "Create a complete backup of tasks, reminders, recurrence rules, tags, priorities, locations, Wallet cards and attachments." : {
-
     },
     "Create a new task instantly using Siri." : {
       "comment" : "A description of how to create a new task using Siri.",
@@ -5449,10 +5495,60 @@
       }
     },
     "Edit" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica"
+          }
+        }
+      }
     },
     "Edit Card" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karte bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar tarjeta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier la carte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica Carta"
+          }
+        }
+      }
     },
     "Enable camera access in Settings to take photos." : {
       "comment" : "A message displayed in an alert that explains why the user needs to enable camera access.",
@@ -11277,7 +11373,32 @@
       }
     },
     "Remove Logo" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logo entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar logotipo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer le logo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi Logo"
+          }
+        }
+      }
     },
     "Repeat" : {
       "comment" : "A label that lets you choose how often a task repeats.",
@@ -14367,37 +14488,33 @@
         }
       }
     },
-    "Tasks, reminders, recurrence rules, tags, priorities, snooze state, locations and attachments are included in the backup archive." : {
-      "extractionState" : "stale",
+    "Tasks, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards and attachments are included in the backup archive." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aufgaben, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Snooze-Status, Standorte und Anhänge sind im Backup-Archiv enthalten."
+            "value" : "Aufgaben, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Snooze-Status, Standorte, Wallet-Karten und Anhänge sind im Backup-Archiv enthalten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, estado de snooze, ubicaciones y archivos adjuntos están incluidos en el archivo de copia de seguridad."
+            "value" : "Las tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, estado de snooze, ubicaciones, tarjetas Wallet y archivos adjuntos están incluidos en el archivo de copia de seguridad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les tâches, rappels, règles de récurrence, tags, priorités, état snooze, emplacements et pièces jointes sont inclus dans l’archive de sauvegarde."
+            "value" : "Les tâches, rappels, règles de récurrence, tags, priorités, état snooze, emplacements, cartes Wallet et pièces jointes sont inclus dans l’archive de sauvegarde."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attività, promemoria, regole di ricorrenza, tag, priorità, stato snooze, posizioni e allegati sono inclusi nell’archivio di backup."
+            "value" : "Attività, promemoria, regole di ricorrenza, tag, priorità, stato snooze, posizioni, carte Wallet e allegati sono inclusi nell’archivio di backup."
           }
         }
       }
-    },
-    "Tasks, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards and attachments are included in the backup archive." : {
-
     },
     "Tell me how long before you want the reminder, or say no reminder." : {
       "localizations" : {
@@ -15295,32 +15412,30 @@
         }
       }
     },
-    "This will permanently delete all your tasks, attachments, and data from this device. This action cannot be undone." : {
-      "comment" : "A description of the data that will be erased when the user deletes their data.",
-      "isCommentAutoGenerated" : true,
+    "This will permanently delete all your tasks, attachments, Wallet cards, and data from this device. This action cannot be undone." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dadurch werden alle Ihre Aufgaben, Anhänge und Daten auf diesem Gerät dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
+            "value" : "Dadurch werden alle Aufgaben, Anhänge, Wallet-Karten und Daten dauerhaft von diesem Gerät gelöscht.\nDiese Aktion kann nicht rückgängig gemacht werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esto eliminará permanentemente todas tus tareas, archivos adjuntos y datos de este dispositivo. Esta acción no se puede deshacer."
+            "value" : "Esto eliminará permanentemente todas tus tareas, archivos adjuntos, tarjetas Wallet y datos de este dispositivo.\nThis action cannot be undone."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cela supprimera définitivement toutes vos tâches, pièces jointes et données de cet appareil. Cette action est irréversible."
+            "value" : "Cela supprimera définitivement toutes vos tâches, pièces jointes, cartes Wallet et données de cet appareil.\nCette action est irréversible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa operazione eliminerà definitivamente tutte le tue attività, gli allegati e i dati da questo dispositivo. Non può essere annullata."
+            "value" : "Questo eliminerà definitivamente tutte le attività, gli allegati, le carte Wallet e i dati da questo dispositivo.\nQuesta azione non può essere annullata."
           }
         }
       }
