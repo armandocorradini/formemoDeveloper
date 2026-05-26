@@ -16,24 +16,35 @@ final class LoyaltyCard {
 
     var notes: String?
 
+    // Optional custom card color stored as HEX string
+    var colorHex: String?
+
+    // Optional logo image stored as compressed image data
+    @Attribute(.externalStorage)
+    var logoData: Data?
+
     var createdAt: Date = Date()
 
     init(
+        id: UUID = UUID(),
         storeName: String,
         cardHolder: String? = nil,
         barcodeValue: String,
         barcodeFormat: String,
-        notes: String? = nil
+        notes: String? = nil,
+        colorHex: String? = nil,
+        logoData: Data? = nil,
+        createdAt: Date = Date()
     ) {
 
-
+        self.id = id
         self.storeName = storeName
         self.cardHolder = cardHolder
-
         self.barcodeValue = barcodeValue
         self.barcodeFormat = barcodeFormat
-
         self.notes = notes
-
+        self.colorHex = colorHex
+        self.logoData = logoData
+        self.createdAt = createdAt
     }
 }

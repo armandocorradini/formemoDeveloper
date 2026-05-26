@@ -89,7 +89,7 @@ struct AppQuickGuideView: View {
         .init(
             title: String(localized:"Wallet for Loyalty Cards"),
             description: String(localized:"Store and organize your loyalty cards with barcodes always available directly inside the app."),
-            icon: "wallet.pass",
+            icon: "creditcard",
             tint: .mint
         ),
 

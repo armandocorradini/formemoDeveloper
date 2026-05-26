@@ -1,9 +1,9 @@
-
-
 import SwiftUI
 import SwiftData
 import VisionKit
 import Vision
+import PhotosUI
+import UIKit
 
 struct AddLoyaltyCardView: View {
 
@@ -16,12 +16,69 @@ struct AddLoyaltyCardView: View {
     @State private var barcodeFormat = "code128"
     @State private var notes = ""
     @State private var showScanner = false
+    @State private var selectedLogoItem: PhotosPickerItem?
+    @State private var logoData: Data?
+    @State private var selectedColor: Color = .blue
+    @State private var isLoadingLogo = false
 
     var body: some View {
 
         NavigationStack {
 
             Form {
+
+                Section {
+
+                    HStack(spacing: 16) {
+
+                        Group {
+                            if let logoData,
+                               let uiImage = UIImage(data: logoData) {
+
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 72, height: 72)
+                                    .clipped()
+
+                            } else {
+
+                                Image(systemName: "photo")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .padding(18)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .frame(width: 72, height: 72)
+                        .background(.ultraThinMaterial)
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: 18,
+                                style: .continuous
+                            )
+                        )
+
+                        PhotosPicker(
+                            selection: $selectedLogoItem,
+                            matching: .images
+                        ) {
+                            Label(
+                                "Choose Logo",
+                                systemImage: "photo.badge.plus"
+                            )
+                        }
+                    }
+                }
+
+                Section {
+
+                    ColorPicker(
+                        "Card Color",
+                        selection: $selectedColor,
+                        supportsOpacity: false
+                    )
+                }
 
                 Section {
 
@@ -71,16 +128,45 @@ struct AddLoyaltyCardView: View {
                     Button("Save") {
                         saveCard()
                     }
-                    .disabled(storeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                              || barcodeValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(
+                        storeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        || barcodeValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        || isLoadingLogo
+                    )
                 }
             }
         }
-            .sheet(isPresented: $showScanner) {
+        .sheet(isPresented: $showScanner) {
                 BarcodeScannerSheet(
                     barcodeValue: $barcodeValue,
                     barcodeFormat: $barcodeFormat
                 )
+            }
+            .onChange(of: selectedLogoItem) { _, newItem in
+
+                guard let newItem else {
+                    return
+                }
+
+                isLoadingLogo = true
+
+                Task {
+                    defer {
+                        DispatchQueue.main.async {
+                            isLoadingLogo = false
+                        }
+                    }
+
+                    if let data = try? await newItem.loadTransferable(type: Data.self),
+                       let image = UIImage(data: data) {
+
+                        let compressed = image.jpegData(compressionQuality: 0.7)
+
+                        await MainActor.run {
+                            logoData = compressed
+                        }
+                    }
+                }
             }
     }
 
@@ -93,12 +179,16 @@ struct AddLoyaltyCardView: View {
         let cleanedBarcode = barcodeValue.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        let colorHex = selectedColor.toHex()
+
         let card = LoyaltyCard(
             storeName: cleanedStore,
             cardHolder: cleanedHolder.isEmpty ? nil : cleanedHolder,
             barcodeValue: cleanedBarcode,
             barcodeFormat: barcodeFormat,
-            notes: cleanedNotes.isEmpty ? nil : cleanedNotes
+            notes: cleanedNotes.isEmpty ? nil : cleanedNotes,
+            colorHex: colorHex,
+            logoData: logoData
         )
 
         modelContext.insert(card)
@@ -200,6 +290,31 @@ private struct BarcodeScannerSheet: UIViewControllerRepresentable {
 
                 self.parent.dismiss()
             }
+        }
+    }
+}
+
+private extension UIImage {
+
+    func resizedForWalletLogo(maxDimension: CGFloat = 300) -> UIImage {
+
+        let longestSide = max(size.width, size.height)
+
+        guard longestSide > maxDimension else {
+            return self
+        }
+
+        let scale = maxDimension / longestSide
+
+        let newSize = CGSize(
+            width: size.width * scale,
+            height: size.height * scale
+        )
+
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+
+        return renderer.image { _ in
+            draw(in: CGRect(origin: .zero, size: newSize))
         }
     }
 }

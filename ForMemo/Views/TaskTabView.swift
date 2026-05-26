@@ -92,7 +92,7 @@ struct TaskTabView: View {
                         4)
                 tabItem("calendar", NSLocalizedString("calendar_tab", comment: ""), 3)
                 tabItem("map", NSLocalizedString("map_tab", comment: ""), 5)
-                tabItem("wallet.pass", NSLocalizedString("wallet_tab", comment: ""), 6)
+                tabItem("creditcard", NSLocalizedString("wallet_tab", comment: ""), 6)
                 tabItem("gear", NSLocalizedString("settings_tab", comment: ""), 2)
             }
             .frame(height: 60)

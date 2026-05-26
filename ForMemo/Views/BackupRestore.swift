@@ -7,6 +7,8 @@ struct BackupRestoreView: View {
 
     @Query(sort: \TodoTask.createdAt, order: .forward)
     private var tasks: [TodoTask]
+    @Query(sort: \LoyaltyCard.createdAt, order: .forward)
+    private var loyaltyCards: [LoyaltyCard]
     @State private var isCreatingBackup = false
     @State private var isRestoringBackup = false
     @State private var showRestoreConfirmation = false
@@ -62,7 +64,8 @@ struct BackupRestoreView: View {
                                 isCreatingBackup = true
 
                                 let url = try await BackupManager.createBackup(
-                                    tasks: tasks
+                                    tasks: tasks,
+                                    loyaltyCards: loyaltyCards
                                 )
 
                                 exportURL = url
@@ -83,7 +86,7 @@ struct BackupRestoreView: View {
                                 Text("Create Backup")
 
                                 Text(
-                                    "Create a complete backup of tasks, reminders, recurrence rules, tags, priorities, locations and attachments."
+                                    "Create a complete backup of tasks, reminders, recurrence rules, tags, priorities, locations, Wallet cards and attachments."
                                 )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -128,7 +131,7 @@ struct BackupRestoreView: View {
                             Text("Backup includes")
 
                             Text(
-                                "Tasks, reminders, recurrence rules, tags, priorities, snooze state, locations and attachments are included in the backup archive."
+                                "Tasks, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards and attachments are included in the backup archive."
                             )
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -284,23 +287,27 @@ private struct BackupArchive: Codable {
         case version
         case createdAt
         case tasks
+        case loyaltyCards
         case attachmentFiles
     }
 
     let version: Int
     let createdAt: Date
     let tasks: [TaskTransferObject]
+    let loyaltyCards: [LoyaltyCardTransferObject]
     let attachmentFiles: [String: Data]
 
     init(
         version: Int,
         createdAt: Date,
         tasks: [TaskTransferObject],
+        loyaltyCards: [LoyaltyCardTransferObject],
         attachmentFiles: [String: Data]
     ) {
         self.version = version
         self.createdAt = createdAt
         self.tasks = tasks
+        self.loyaltyCards = loyaltyCards
         self.attachmentFiles = attachmentFiles
     }
 
@@ -318,6 +325,10 @@ private struct BackupArchive: Codable {
         tasks = try taskData.map {
             try decoder.decode(TaskTransferObject.self, from: $0)
         }
+        loyaltyCards = try container.decode(
+            [LoyaltyCardTransferObject].self,
+            forKey: .loyaltyCards
+        )
         attachmentFiles = try container.decode(
             [String: Data].self,
             forKey: .attachmentFiles
@@ -339,16 +350,46 @@ private struct BackupArchive: Codable {
 
         try container.encode(encodedTasks, forKey: .tasks)
         try container.encode(
+            loyaltyCards,
+            forKey: .loyaltyCards
+        )
+        try container.encode(
             attachmentFiles,
             forKey: .attachmentFiles
         )
     }
 }
 
+private struct LoyaltyCardTransferObject: Codable {
+
+    let id: UUID
+    let storeName: String
+    let cardHolder: String?
+    let barcodeValue: String
+    let barcodeFormat: String
+    let notes: String?
+    let colorHex: String?
+    let logoData: Data?
+    let createdAt: Date
+
+    init(card: LoyaltyCard) {
+        self.id = card.id
+        self.storeName = card.storeName
+        self.cardHolder = card.cardHolder
+        self.barcodeValue = card.barcodeValue
+        self.barcodeFormat = card.barcodeFormat
+        self.notes = card.notes
+        self.colorHex = card.colorHex
+        self.logoData = card.logoData
+        self.createdAt = card.createdAt
+    }
+}
+
 private enum BackupManager {
 
     static func createBackup(
-        tasks: [TodoTask]
+        tasks: [TodoTask],
+        loyaltyCards: [LoyaltyCard]
     ) async throws -> URL {
 
         var attachmentPayload: [String: Data] = [:]
@@ -394,6 +435,9 @@ private enum BackupManager {
             createdAt: .now,
             tasks: tasks.map {
                 TaskTransferObject(task: $0)
+            },
+            loyaltyCards: loyaltyCards.map {
+                LoyaltyCardTransferObject(card: $0)
             },
             attachmentFiles: attachmentPayload
         )
@@ -472,6 +516,33 @@ private enum BackupManager {
                     )
                 }
             }
+        }
+
+        for cardDTO in archive.loyaltyCards {
+
+            let descriptor = FetchDescriptor<LoyaltyCard>(
+                predicate: #Predicate { $0.id == cardDTO.id }
+            )
+
+            let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
+
+            guard !alreadyExists else {
+                continue
+            }
+
+            let card = LoyaltyCard(
+                id: cardDTO.id,
+                storeName: cardDTO.storeName,
+                cardHolder: cardDTO.cardHolder,
+                barcodeValue: cardDTO.barcodeValue,
+                barcodeFormat: cardDTO.barcodeFormat,
+                notes: cardDTO.notes,
+                colorHex: cardDTO.colorHex,
+                logoData: cardDTO.logoData,
+                createdAt: cardDTO.createdAt
+            )
+
+            modelContext.insert(card)
         }
 
         for dto in archive.tasks {
