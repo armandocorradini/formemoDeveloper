@@ -29,7 +29,7 @@ struct TaskListView: View {
     @State private var showCompleted = false
     @State private var showNewTask = false
     @State private var showQuickGuide = false
-
+    @State private var showWeatherForecast = false
 
 
     @State private var selectedTagFilter: TaskMainTag? = nil
@@ -155,12 +155,15 @@ struct TaskListView: View {
                         }
 
                         if !todoTasks.isEmpty {
-                            TodoSectionView( taskPendingDeletion: $taskPendingDeletion,
-                                             tasks: todoTasks,
-                                             modelContext: modelContext
-
+                            TodoSectionView(
+                                taskPendingDeletion: $taskPendingDeletion,
+                                openWeatherForecast: {
+                                    showWeatherForecast = true
+                                },
+                                tasks: todoTasks,
+                                modelContext: modelContext
                             )
-                        }
+                                                     }
 
                         if showCompleted && !completedTasks.isEmpty {
                             CompletedSectionView( taskPendingDeletion: $taskPendingDeletion,
@@ -227,6 +230,11 @@ struct TaskListView: View {
             
                 .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
                 .navigationBarTitleDisplayMode(.inline)
+                .fullScreenCover(isPresented: $showWeatherForecast) {
+                    NavigationStack {
+                        WeatherForecastView()
+                    }
+                }
                 .sheet(item: $draftTask) { task in
                     NewTaskSheetView(draftTask: task)
                 }
@@ -846,7 +854,6 @@ struct TodoSectionView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var weatherManager = WeatherManager.shared
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
-    @State private var showWeatherForecast = false
     
     @ViewBuilder
     private func groupedHeaderView(for group: (date: Date, tasks: [TodoTask])) -> some View {
@@ -883,7 +890,7 @@ struct TodoSectionView: View {
                    let weather = weatherManager.weather(for: group.date) {
 
                     Button {
-                        showWeatherForecast = true
+                        openWeatherForecast()
                     } label: {
 
                         HStack(spacing: 6) {
@@ -1008,7 +1015,8 @@ struct TodoSectionView: View {
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
     @Binding var taskPendingDeletion: TodoTask?
-
+    let openWeatherForecast: () -> Void
+    
     let tasks: [TodoTask]
     let modelContext: ModelContext
 
@@ -1226,11 +1234,6 @@ struct TodoSectionView: View {
             )
         ) { _ in
             locationAuthorizationStatus = CLLocationManager().authorizationStatus
-        }
-        .fullScreenCover(isPresented: $showWeatherForecast) {
-            NavigationStack {
-                WeatherForecastView()
-            }
         }
     }
     @ViewBuilder

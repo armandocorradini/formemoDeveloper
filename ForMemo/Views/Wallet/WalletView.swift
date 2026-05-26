@@ -77,7 +77,7 @@ struct WalletView: View {
 
                     List {
                         Color.clear
-                            .frame(height: 0)
+                            .frame(height: -6)
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
 
@@ -209,13 +209,13 @@ struct WalletView: View {
                                         y: 10
                                     )
                                 )
-                                .padding(.vertical, 2)
+                                .padding(.vertical, 1)
                             }
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                             .listRowInsets(
                                 EdgeInsets(
-                                    top: 1,
+                                    top: -2,
                                     leading: 18,
                                     bottom: 6,
                                     trailing: 18
@@ -245,6 +245,7 @@ struct WalletView: View {
                         }
                         .onDelete(perform: deleteCards)
                     }
+                    .contentMargins(.bottom, 70, for: .scrollContent)
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
