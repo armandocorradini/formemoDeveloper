@@ -1228,7 +1228,9 @@ struct TodoSectionView: View {
             locationAuthorizationStatus = CLLocationManager().authorizationStatus
         }
         .fullScreenCover(isPresented: $showWeatherForecast) {
+            NavigationStack {
                 WeatherForecastView()
+            }
         }
     }
     @ViewBuilder

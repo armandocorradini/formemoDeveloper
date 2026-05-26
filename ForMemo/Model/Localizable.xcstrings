@@ -14758,34 +14758,6 @@
         }
       }
     },
-    "Tap the weather info to open the detailed weekly forecast view." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tippe auf die Wetterinformationen, um die detaillierte Wochenvorhersage zu öffnen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toca la información meteorológica para abrir la vista detallada del pronóstico semanal."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Touchez les informations météo pour ouvrir la vue détaillée des prévisions hebdomadaires."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tocca le info meteo per aprire la vista dettagliata delle previsioni settimanali."
-          }
-        }
-      }
-    },
     "Task" : {
       "localizations" : {
         "de" : {
@@ -17138,6 +17110,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Previsioni Meteo"
+          }
+        }
+      }
+    },
+    "Weather forecasts are available for today, tomorrow and the day after tomorrow directly inside task views and weekly planning. Tap the weather info to open the detailed weekly forecast view." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wettervorhersagen sind für heute, morgen und übermorgen direkt in den Aufgabenansichten und der Wochenplanung verfügbar. Tippe auf die Wetterinformationen, um die detaillierte Wochenvorhersage zu öffnen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los pronósticos meteorológicos están disponibles para hoy, mañana y pasado mañana directamente dentro de las vistas de tareas y de la planificación semanal. Toca la información meteorológica para abrir la vista detallada del pronóstico semanal."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les prévisions météo sont disponibles pour aujourd’hui, demain et après-demain directement dans les vues des tâches et la planification hebdomadaire. Touchez les informations météo pour ouvrir la vue détaillée des prévisions hebdomadaires."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le previsioni meteo sono disponibili per oggi, domani e dopodomani direttamente nelle viste attività e nella pianificazione settimanale. Tocca le info meteo per aprire la vista dettagliata delle previsioni settimanali."
           }
         }
       }

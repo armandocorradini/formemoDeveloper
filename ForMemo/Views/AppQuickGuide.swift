@@ -81,7 +81,7 @@ struct AppQuickGuideView: View {
 
         .init(
             title: String(localized:"Integrated Weather"),
-            description: String(localized:"Tap the weather info to open the detailed weekly forecast view."),
+            description: String(localized:"Weather forecasts are available for today, tomorrow and the day after tomorrow directly inside task views and weekly planning. Tap the weather info to open the detailed weekly forecast view."),
             icon: "cloud.sun",
             tint: .cyan
         ),

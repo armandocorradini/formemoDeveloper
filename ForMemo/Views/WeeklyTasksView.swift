@@ -393,7 +393,9 @@ struct WeeklyTasksView: View {
                 NewTaskSheetView(draftTask: task)
             }
             .fullScreenCover(isPresented: $showWeatherForecast) {
+                NavigationStack {
                     WeatherForecastView()
+                }
             }
             .scrollContentBackground(.hidden)
             .containerBackground(.clear, for: .navigation)

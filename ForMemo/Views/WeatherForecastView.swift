@@ -9,8 +9,7 @@ struct WeatherForecastView: View {
 
     var body: some View {
 
-        NavigationStack {
-            ZStack {
+        ZStack {
                 LinearGradient(
                     colors: [backColor1, backColor2],
                     startPoint: .topLeading,
@@ -47,7 +46,6 @@ struct WeatherForecastView: View {
                     }
                 }
             }
-        }
     }
 
     // MARK: - Header
