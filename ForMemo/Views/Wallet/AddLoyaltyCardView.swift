@@ -4,6 +4,7 @@ import VisionKit
 import Vision
 import PhotosUI
 import UIKit
+import AVFoundation
 
 struct AddLoyaltyCardView: View {
 
@@ -16,10 +17,12 @@ struct AddLoyaltyCardView: View {
     @State private var barcodeFormat = "code128"
     @State private var notes = ""
     @State private var showScanner = false
+    @State private var showCamera = false
     @State private var selectedLogoItem: PhotosPickerItem?
     @State private var logoData: Data?
     @State private var selectedColor: Color = .blue
     @State private var isLoadingLogo = false
+    @State private var capturedImage: UIImage?
 
     var body: some View {
 
@@ -59,14 +62,38 @@ struct AddLoyaltyCardView: View {
                             )
                         )
 
-                        PhotosPicker(
-                            selection: $selectedLogoItem,
-                            matching: .images
-                        ) {
-                            Label(
-                                "Choose Logo",
-                                systemImage: "photo.badge.plus"
-                            )
+                        VStack(alignment: .leading, spacing: 10) {
+
+                            PhotosPicker(
+                                selection: $selectedLogoItem,
+                                matching: .images
+                            ) {
+                                HStack {
+                                    Label(
+                                        "Choose Logo",
+                                        systemImage: "photo.badge.plus"
+                                    )
+
+                                    Spacer(minLength: 0)
+                                }
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                showCamera = true
+                            } label: {
+                                HStack {
+                                    Label(
+                                        "Take Photo",
+                                        systemImage: "camera.fill"
+                                    )
+
+                                    Spacer(minLength: 0)
+                                }
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -142,32 +169,47 @@ struct AddLoyaltyCardView: View {
                     barcodeFormat: $barcodeFormat
                 )
             }
-            .onChange(of: selectedLogoItem) { _, newItem in
+        .sheet(isPresented: $showCamera) {
+            CameraImagePicker(image: $capturedImage)
+        }
+        .onChange(of: selectedLogoItem) { _, newItem in
 
-                guard let newItem else {
-                    return
+            guard let newItem else {
+                return
+            }
+
+            isLoadingLogo = true
+
+            Task {
+                defer {
+                    DispatchQueue.main.async {
+                        isLoadingLogo = false
+                    }
                 }
 
-                isLoadingLogo = true
+                if let data = try? await newItem.loadTransferable(type: Data.self),
+                   let image = UIImage(data: data) {
 
-                Task {
-                    defer {
-                        DispatchQueue.main.async {
-                            isLoadingLogo = false
-                        }
-                    }
+                    let resized = image.resizedForWalletLogo(maxDimension: 300)
+                    let compressed = resized.jpegData(compressionQuality: 0.65)
 
-                    if let data = try? await newItem.loadTransferable(type: Data.self),
-                       let image = UIImage(data: data) {
-
-                        let compressed = image.jpegData(compressionQuality: 0.7)
-
-                        await MainActor.run {
-                            logoData = compressed
-                        }
+                    await MainActor.run {
+                        logoData = compressed
                     }
                 }
             }
+        }
+        .onChange(of: capturedImage) { _, newImage in
+
+            guard let newImage else {
+                return
+            }
+
+            let resized = newImage.resizedForWalletLogo(maxDimension: 300)
+            let compressed = resized.jpegData(compressionQuality: 0.65)
+
+            logoData = compressed
+        }
     }
 
     // MARK: - Save
@@ -290,6 +332,66 @@ private struct BarcodeScannerSheet: UIViewControllerRepresentable {
 
                 self.parent.dismiss()
             }
+        }
+    }
+}
+
+private struct CameraImagePicker: UIViewControllerRepresentable {
+
+    @Environment(\.dismiss)
+    private var dismiss
+
+    @Binding var image: UIImage?
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        picker.allowsEditing = true
+
+        return picker
+    }
+
+    func updateUIViewController(
+        _ uiViewController: UIImagePickerController,
+        context: Context
+    ) {
+
+    }
+
+    final class Coordinator:
+        NSObject,
+        UINavigationControllerDelegate,
+        UIImagePickerControllerDelegate {
+
+        let parent: CameraImagePicker
+
+        init(_ parent: CameraImagePicker) {
+            self.parent = parent
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]
+        ) {
+
+            let edited = info[.editedImage] as? UIImage
+            let original = info[.originalImage] as? UIImage
+
+            parent.image = edited ?? original
+
+            parent.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(
+            _ picker: UIImagePickerController
+        ) {
+            parent.dismiss()
         }
     }
 }

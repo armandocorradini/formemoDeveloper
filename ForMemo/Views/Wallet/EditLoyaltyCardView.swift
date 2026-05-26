@@ -1,22 +1,28 @@
-
-
 import SwiftUI
 import SwiftData
 import PhotosUI
 import UIKit
 import CoreGraphics
+import AVFoundation
 
 struct EditLoyaltyCardView: View {
+    private enum ActivePicker: Identifiable {
+        case camera
+
+        var id: Int { 0 }
+    }
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
     @Bindable var card: LoyaltyCard
 
-    @State private var selectedLogoItem: PhotosPickerItem?
+    @State private var activePicker: ActivePicker?
     @State private var selectedColor: Color = .blue
     @State private var isLoadingLogo = false
     @State private var previewLogoData: Data?
+    @State private var capturedImage: UIImage?
+    @State private var selectedPhotoItem: PhotosPickerItem?
 
     var body: some View {
 
@@ -71,14 +77,35 @@ struct EditLoyaltyCardView: View {
                         VStack(alignment: .leading, spacing: 10) {
 
                             PhotosPicker(
-                                selection: $selectedLogoItem,
+                                selection: $selectedPhotoItem,
                                 matching: .images
                             ) {
-                                Label(
-                                    "Choose Logo",
-                                    systemImage: "photo.badge.plus"
-                                )
+                                HStack {
+                                    Label(
+                                        "Choose Logo",
+                                        systemImage: "photo.badge.plus"
+                                    )
+
+                                    Spacer(minLength: 0)
+                                }
+                                .contentShape(Rectangle())
                             }
+                            .buttonStyle(.plain)
+
+                            Button {
+                                activePicker = .camera
+                            } label: {
+                                HStack {
+                                    Label(
+                                        "Take Photo",
+                                        systemImage: "camera.fill"
+                                    )
+
+                                    Spacer(minLength: 0)
+                                }
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
 
                             if (previewLogoData ?? card.logoData) != nil {
 
@@ -183,20 +210,16 @@ struct EditLoyaltyCardView: View {
             .onChange(of: selectedColor) { _, newValue in
                 card.colorHex = newValue.toHex()
             }
-            .onChange(of: selectedLogoItem) { _, newItem in
+            .sheet(item: $activePicker) { _ in
+                CameraImagePicker(image: $capturedImage)
+            }
+            .onChange(of: selectedPhotoItem) { _, newItem in
 
                 guard let newItem else {
                     return
                 }
 
-                isLoadingLogo = true
-
                 Task {
-                    defer {
-                        DispatchQueue.main.async {
-                            isLoadingLogo = false
-                        }
-                    }
 
                     guard let data = try? await newItem.loadTransferable(type: Data.self),
                           let image = UIImage(data: data) else {
@@ -212,21 +235,101 @@ struct EditLoyaltyCardView: View {
                     await MainActor.run {
                         previewLogoData = compressed
                         card.logoData = compressed
-
-                        // Force SwiftUI + SwiftData refresh
-                        card.colorHex = card.colorHex
                     }
 
                     do {
                         try modelContext.save()
                         modelContext.processPendingChanges()
                     } catch {
-                        print("Failed to save logo: \(error)")
+                        print("Failed to save selected logo: \(error)")
                     }
+                }
+            }
+            .onChange(of: capturedImage) { _, newImage in
+
+                guard let newImage else {
+                    return
+                }
+                let resized = newImage.resizedForWalletLogo(maxDimension: 300)
+
+                guard let compressed = resized.jpegData(compressionQuality: 0.65) else {
+                    return
+                }
+
+                previewLogoData = compressed
+                card.logoData = compressed
+
+                do {
+                    try modelContext.save()
+                    modelContext.processPendingChanges()
+                } catch {
+                    print("Failed to save captured logo: \(error)")
                 }
             }
         }
     }
+
+
+private struct CameraImagePicker: UIViewControllerRepresentable {
+
+    @Environment(\.dismiss)
+    private var dismiss
+
+    @Binding var image: UIImage?
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.cameraCaptureMode = .photo
+        picker.delegate = context.coordinator
+        picker.allowsEditing = true
+
+        return picker
+    }
+
+    func updateUIViewController(
+        _ uiViewController: UIImagePickerController,
+        context: Context
+    ) {
+
+    }
+
+    final class Coordinator:
+        NSObject,
+        UINavigationControllerDelegate,
+        UIImagePickerControllerDelegate {
+
+        let parent: CameraImagePicker
+
+        init(_ parent: CameraImagePicker) {
+            self.parent = parent
+        }
+
+        func imagePickerController(
+            _ picker: UIImagePickerController,
+            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]
+        ) {
+
+            let edited = info[.editedImage] as? UIImage
+            let original = info[.originalImage] as? UIImage
+
+            parent.image = edited ?? original
+
+            parent.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(
+            _ picker: UIImagePickerController
+        ) {
+            parent.dismiss()
+        }
+    }
+}
 
     // MARK: - Save
 

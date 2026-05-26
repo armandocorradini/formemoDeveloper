@@ -7,15 +7,29 @@ struct LoyaltyCardDetailView: View {
 
     var body: some View {
 
+        ZStack {
+
+            LinearGradient(
+                colors: [backColor1, backColor2],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
         ScrollView {
 
-            VStack(spacing: 28) {
+            VStack(spacing: 18) {
+                Spacer(minLength: 18)
 
-                VStack(spacing: 12) {
+                VStack(spacing: 18) {
 
-                    VStack(spacing: 12) {
+                    VStack(spacing: 0) {
 
-                        HStack(spacing: 12) {
+                        HStack(alignment: .top, spacing: 14) {
 
                             if let data = card.logoData,
                                let uiImage = UIImage(data: data) {
@@ -23,10 +37,10 @@ struct LoyaltyCardDetailView: View {
                                 Image(uiImage: uiImage)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(width: 58, height: 58)
+                                    .frame(width: 54, height: 54)
                                     .clipShape(
                                         RoundedRectangle(
-                                            cornerRadius: 16,
+                                            cornerRadius: 14,
                                             style: .continuous
                                         )
                                     )
@@ -34,13 +48,13 @@ struct LoyaltyCardDetailView: View {
                             } else {
 
                                 Image(systemName: "wallet.pass.fill")
-                                    .font(.system(size: 28))
+                                    .font(.system(size: 26, weight: .semibold))
                                     .foregroundStyle(.white.opacity(0.92))
-                                    .frame(width: 58, height: 58)
+                                    .frame(width: 54, height: 54)
                                     .background(.white.opacity(0.12))
                                     .clipShape(
                                         RoundedRectangle(
-                                            cornerRadius: 16,
+                                            cornerRadius: 14,
                                             style: .continuous
                                         )
                                     )
@@ -49,42 +63,52 @@ struct LoyaltyCardDetailView: View {
                             VStack(alignment: .leading, spacing: 4) {
 
                                 Text(card.storeName)
-                                    .font(.title.bold())
+                                    .font(.system(size: 22, weight: .bold))
                                     .foregroundStyle(.white)
+                                    .lineLimit(1)
 
                                 if let holder = card.cardHolder,
                                    !holder.isEmpty {
 
                                     Text(holder)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.white.opacity(0.75))
+                                        .font(.subheadline.weight(.medium))
+                                        .foregroundStyle(.white.opacity(0.72))
+                                        .lineLimit(1)
                                 }
                             }
 
                             Spacer(minLength: 0)
                         }
 
-                        GeneratedBarcodeView(
-                            value: card.barcodeValue,
-                            format: card.barcodeFormat
-                        )
-                        .frame(height: 220)
-                        .scaleEffect(x: 1, y: 2.1, anchor: .center)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(.white)
-                        .clipShape(
-                            RoundedRectangle(
-                                cornerRadius: 22,
-                                style: .continuous
+                        Spacer(minLength: 0)
+
+                        VStack {
+
+                            GeneratedBarcodeView(
+                                value: card.barcodeValue,
+                                format: card.barcodeFormat
                             )
-                        )
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 58)
+                            .scaleEffect(x: 1, y: 1.18, anchor: .center)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(.white)
+                            .clipShape(
+                                RoundedRectangle(
+                                    cornerRadius: 16,
+                                    style: .continuous
+                                )
+                            )
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
+                    .padding(20)
+                    .frame(maxWidth: 390)
+                    .frame(height: 246)
                     .background(
                         RoundedRectangle(
-                            cornerRadius: 26,
+                            cornerRadius: 30,
                             style: .continuous
                         )
                         .fill(
@@ -98,7 +122,7 @@ struct LoyaltyCardDetailView: View {
                             y: 8
                         )
                     )
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 14)
 
                     Text(card.barcodeValue)
                         .font(.system(.body, design: .monospaced))
@@ -132,9 +156,11 @@ struct LoyaltyCardDetailView: View {
             }
             .padding(.bottom, 40)
         }
-        .background(Color(.systemGroupedBackground))
+        }
         .navigationTitle("Card")
         .navigationBarTitleDisplayMode(.inline)
+        .scrollContentBackground(.hidden)
+        .containerBackground(.clear, for: .navigation)
     }
 }
 
