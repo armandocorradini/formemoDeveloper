@@ -76,11 +76,6 @@ struct WalletView: View {
                 } else {
 
                     List {
-                        Color.clear
-                            .frame(height: -6)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-
                         ForEach(filteredCards) { card in
 
                             NavigationLink {
@@ -103,7 +98,11 @@ struct WalletView: View {
                                                 .resizable()
                                                 .scaledToFit()
                                                 .padding(12)
-                                                .foregroundStyle(.white.opacity(0.92))
+                                                .foregroundStyle(
+                                                    isLightCardColor(card.colorHex)
+                                                    ? Color.black.opacity(0.82)
+                                                    : Color.white.opacity(0.92)
+                                                )
                                         }
                                     }
                                     .frame(width: 56, height: 56)
@@ -246,6 +245,7 @@ struct WalletView: View {
                         .onDelete(perform: deleteCards)
                     }
                     .contentMargins(.bottom, 70, for: .scrollContent)
+                    .contentMargins(.top, 10, for: .scrollContent)
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
@@ -300,6 +300,31 @@ struct WalletView: View {
 
         try? modelContext.save()
     }
+    
+    private func isLightCardColor(_ hex: String?) -> Bool {
+
+        guard
+            let hex,
+            let uiColor = UIColor(
+                Color(hex: hex) ?? .blue
+            ).cgColor.components
+        else {
+            return false
+        }
+
+        let red = uiColor[0]
+        let green = uiColor[1]
+        let blue = uiColor[2]
+
+        let brightness =
+            ((red * 299) +
+             (green * 587) +
+             (blue * 114)) / 1000
+
+        return brightness > 0.68
+    }
+    
+    
 }
 
 #Preview {

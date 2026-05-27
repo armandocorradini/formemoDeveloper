@@ -5,6 +5,32 @@ struct LoyaltyCardDetailView: View {
 
     let card: LoyaltyCard
 
+    private var cardBackgroundColor: Color {
+        Color(
+            hex: card.colorHex ?? "#3B82F6"
+        ) ?? .blue
+    }
+
+    private var prefersDarkText: Bool {
+        UIColor(cardBackgroundColor).isLightColor
+    }
+
+    private var primaryTextColor: Color {
+        prefersDarkText ? .black.opacity(0.88) : .white
+    }
+
+    private var secondaryTextColor: Color {
+        prefersDarkText
+            ? .black.opacity(0.68)
+            : .white.opacity(0.92)
+    }
+
+    private var textShadowColor: Color {
+        prefersDarkText
+            ? .white.opacity(0.18)
+            : .black.opacity(0.45)
+    }
+
     var body: some View {
 
         ZStack {
@@ -47,11 +73,19 @@ struct LoyaltyCardDetailView: View {
 
                             } else {
 
-                                Image(systemName: "wallet.pass.fill")
+                                Image(systemName: "creditcard.fill")
                                     .font(.system(size: 26, weight: .semibold))
-                                    .foregroundStyle(.white.opacity(0.92))
+                                    .foregroundStyle(
+                                        prefersDarkText
+                                        ? Color.black.opacity(0.82)
+                                        : Color.white.opacity(0.92)
+                                    )
                                     .frame(width: 54, height: 54)
-                                    .background(.white.opacity(0.12))
+                                    .background(
+                                        prefersDarkText
+                                        ? Color.black.opacity(0.08)
+                                        : Color.white.opacity(0.12)
+                                    )
                                     .clipShape(
                                         RoundedRectangle(
                                             cornerRadius: 14,
@@ -64,18 +98,29 @@ struct LoyaltyCardDetailView: View {
 
                                 Text(card.storeName)
                                     .font(.system(size: 22, weight: .bold))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(primaryTextColor)
                                     .lineLimit(1)
+                                    .shadow(color: textShadowColor, radius: 2, y: 1)
 
                                 if let holder = card.cardHolder,
                                    !holder.isEmpty {
 
                                     Text(holder)
                                         .font(.subheadline.weight(.medium))
-                                        .foregroundStyle(.white.opacity(0.72))
+                                        .foregroundStyle(secondaryTextColor)
                                         .lineLimit(1)
+                                        .shadow(color: textShadowColor.opacity(0.8), radius: 1.5, y: 1)
                                 }
                             }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(.black.opacity(0.10))
+                            .clipShape(
+                                RoundedRectangle(
+                                    cornerRadius: 14,
+                                    style: .continuous
+                                )
+                            )
 
                             Spacer(minLength: 0)
                         }
@@ -111,17 +156,14 @@ struct LoyaltyCardDetailView: View {
                             cornerRadius: 30,
                             style: .continuous
                         )
-                        .fill(
-                            Color(
-                                hex: card.colorHex ?? "#3B82F6"
-                            ) ?? .blue
-                        )
+                        .fill(cardBackgroundColor)
                         .shadow(
                             color: .black.opacity(0.14),
                             radius: 18,
                             y: 8
                         )
                     )
+
                     .padding(.horizontal, 14)
 
                     Text(card.barcodeValue)
@@ -176,4 +218,32 @@ struct LoyaltyCardDetailView: View {
             notes: "Main family card", colorHex: "#00A86B"
         )
     )
+}
+
+
+
+private extension UIColor {
+
+    var isLightColor: Bool {
+
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+
+        getRed(
+            &red,
+            green: &green,
+            blue: &blue,
+            alpha: &alpha
+        )
+
+        let brightness = (
+            (red * 299) +
+            (green * 587) +
+            (blue * 114)
+        ) / 1000
+
+        return brightness > 0.68
+    }
 }
