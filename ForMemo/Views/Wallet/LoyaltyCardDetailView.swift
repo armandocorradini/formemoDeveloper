@@ -4,7 +4,9 @@ import UIKit
 struct LoyaltyCardDetailView: View {
 
     let card: LoyaltyCard
-
+    @State private var zoomScale: CGFloat = 1
+    @State private var lastZoomScale: CGFloat = 1
+    
     private var cardBackgroundColor: Color {
         Color(
             hex: card.colorHex ?? "#3B82F6"
@@ -49,6 +51,7 @@ struct LoyaltyCardDetailView: View {
         ScrollView {
 
             VStack(spacing: 18) {
+                
                 Spacer(minLength: 18)
 
                 VStack(spacing: 18) {
@@ -125,32 +128,37 @@ struct LoyaltyCardDetailView: View {
                             Spacer(minLength: 0)
                         }
 
-                        Spacer(minLength: 0)
+                        Spacer(minLength: 12)
 
-                        VStack {
+                        HStack {
+
+                            Spacer(minLength: 0)
 
                             GeneratedBarcodeView(
                                 value: card.barcodeValue,
                                 format: card.barcodeFormat
                             )
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 58)
-                            .scaleEffect(x: 1, y: 1.18, anchor: .center)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
+                            .frame(maxWidth: 320)
+                            .frame(height: 92)
+                            .scaleEffect(x: 1, y: 1.22, anchor: .center)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
                             .background(.white)
                             .clipShape(
                                 RoundedRectangle(
-                                    cornerRadius: 16,
+                                    cornerRadius: 18,
                                     style: .continuous
                                 )
                             )
+
+                            Spacer(minLength: 0)
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+
+                        Spacer(minLength: 12)
                     }
                     .padding(20)
-                    .frame(maxWidth: 390)
-                    .frame(height: 246)
+                    .frame(maxWidth: 410)
+                    .frame(height: 318)
                     .background(
                         RoundedRectangle(
                             cornerRadius: 30,
@@ -163,8 +171,7 @@ struct LoyaltyCardDetailView: View {
                             y: 8
                         )
                     )
-
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 10)
 
                     Text(card.barcodeValue)
                         .font(.system(.body, design: .monospaced))
@@ -196,6 +203,32 @@ struct LoyaltyCardDetailView: View {
 
                 Spacer(minLength: 20)
             }
+            .scaleEffect(zoomScale)
+            .animation(.smooth(duration: 0.16), value: zoomScale)
+            .gesture(
+                MagnificationGesture()
+                    .onChanged { value in
+
+                        let delta = value / lastZoomScale
+
+                        lastZoomScale = value
+
+                        zoomScale *= delta
+
+                        zoomScale = min(max(zoomScale, 1), 4)
+                    }
+                    .onEnded { _ in
+
+                        lastZoomScale = 1
+                    }
+            )
+            .onTapGesture(count: 2) {
+
+                withAnimation(.spring(duration: 0.28)) {
+
+                    zoomScale = zoomScale > 1.2 ? 1 : 2
+                }
+            }
             .padding(.bottom, 40)
         }
         }
@@ -205,7 +238,6 @@ struct LoyaltyCardDetailView: View {
         .containerBackground(.clear, for: .navigation)
     }
 }
-
 
 #Preview {
 
