@@ -157,6 +157,7 @@ struct WeatherForecastView: View {
                 forecastRow(for: date)
             }
         }
+        .padding(.horizontal, -8)
     }
 
     @ViewBuilder
@@ -214,6 +215,9 @@ struct WeatherForecastView: View {
                         Text(weatherDescription(for: weather.symbolName))
                             .font(.subheadline.weight(.semibold))
                             .multilineTextAlignment(.trailing)
+                            .lineLimit(1)
+                            .layoutPriority(1)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
 
                         Image(systemName: weather.symbolName)
                             .symbolRenderingMode(.multicolor)
