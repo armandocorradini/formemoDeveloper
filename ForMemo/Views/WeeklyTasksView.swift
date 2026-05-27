@@ -207,25 +207,25 @@ struct WeeklyTasksView: View {
                         showWeatherForecast = true
                     } label: {
 
-                        HStack(spacing: 6) {
+                        HStack(spacing: 7) {
 
-                        Image(systemName: weather.symbolName)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(
-                                isTodayGroup
-                                ? .yellow.opacity(0.95)
-                                : .primary.opacity(0.75)
-                            )
+                            Image(systemName: weather.symbolName)
+                                .symbolRenderingMode(.multicolor)
+                                .font(.subheadline.weight(.semibold))
 
-                        Text("\(weather.minTemperature)°")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.primary.opacity(0.55))
-                            .monospacedDigit()
+                            Text("\(weather.minTemperature)°")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.primary.opacity(0.55))
+                                .monospacedDigit()
 
-                        Text("\(weather.maxTemperature)°")
-                            .font(.caption.weight(.semibold))
-                            .foregroundStyle(.primary.opacity(0.82))
-                            .monospacedDigit()
+                            Text("·")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary.opacity(0.6))
+
+                            Text("\(weather.maxTemperature)°")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.primary.opacity(0.90))
+                                .monospacedDigit()
                         }
                     }
                     .buttonStyle(.plain)

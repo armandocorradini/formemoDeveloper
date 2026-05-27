@@ -76,14 +76,8 @@ struct WeatherForecastView: View {
                     )
 
                 Image(systemName: "cloud.sun.fill")
+                    .symbolRenderingMode(.multicolor)
                     .font(.system(size: 26))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.yellow, .orange],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
             }
 
             VStack(spacing: 2) {
@@ -222,14 +216,8 @@ struct WeatherForecastView: View {
                             .multilineTextAlignment(.trailing)
 
                         Image(systemName: weather.symbolName)
+                            .symbolRenderingMode(.multicolor)
                             .font(.system(size: 22))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.yellow, .orange],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 24)
@@ -262,13 +250,9 @@ struct WeatherForecastView: View {
 
                     HStack(alignment: .center, spacing: 14) {
 
-//                        if let uvIndex = weather.uvIndex {
-//
-//                            Text("UV \(uvIndex)")
-//                                .font(.caption.weight(.semibold))
-//                                .foregroundStyle(uvColor(for: uvIndex))
-//                        }
-               
+                        Image(systemName: weather.morningSymbolName)
+                            .symbolRenderingMode(.multicolor)
+                            .font(.caption)
 
                         if let sunrise = weather.sunrise {
 
@@ -283,6 +267,10 @@ struct WeatherForecastView: View {
                             .font(.caption)
                         }
 
+                        Image(systemName: weather.afternoonSymbolName)
+                            .symbolRenderingMode(.multicolor)
+                            .font(.caption)
+
                         if let sunset = weather.sunset {
 
                             Label(
@@ -295,6 +283,10 @@ struct WeatherForecastView: View {
                             )
                             .font(.caption)
                         }
+
+                        Image(systemName: weather.eveningSymbolName)
+                            .symbolRenderingMode(.multicolor)
+                            .font(.caption)
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
 
@@ -383,17 +375,36 @@ struct WeatherForecastView: View {
     private func weatherDescription(for symbol: String) -> String {
 
         switch symbol {
+
         case "sun.max.fill":
             return String(localized: "Sunny")
+
+        case "moon.stars.fill":
+            return String(localized: "Clear Night")
 
         case "cloud.sun.fill":
             return String(localized: "Partly Cloudy")
 
+        case "cloud.moon.fill":
+            return String(localized: "Partly Cloudy Night")
+
         case "cloud.fill":
             return String(localized: "Cloudy")
 
-        case "cloud.rain.fill":
-            return String(localized: "Rain")
+        case "cloud.drizzle.fill":
+            return String(localized: "Drizzle")
+
+        case "cloud.sun.rain.fill":
+            return String(localized: "Scattered Showers")
+
+        case "cloud.moon.rain.fill":
+            return String(localized: "Night Showers")
+
+        case "cloud.heavyrain.fill":
+            return String(localized: "Heavy Rain")
+
+        case "cloud.sleet.fill":
+            return String(localized: "Sleet")
 
         case "cloud.snow.fill":
             return String(localized: "Snow")

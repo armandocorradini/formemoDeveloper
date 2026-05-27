@@ -25,6 +25,8 @@ struct DailyWeatherInfo {
     let uvIndex: Int?
     let airQualityIndex: Int?
 
+    let cloudCover: Int?
+
     let morningSymbolName: String
     let afternoonSymbolName: String
     let eveningSymbolName: String
@@ -67,6 +69,9 @@ private struct OpenMeteoDaily: Decodable {
     let sunset: [String]
 
     let uv_index_max: [Double?]
+    let cloud_cover_mean: [Int]
+    
+
 }
 
     private(set) var weatherByDay: [Date: DailyWeatherInfo] = [:]
@@ -151,7 +156,7 @@ private struct OpenMeteoDaily: Decodable {
 
             let urlString = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=\(latitude)&longitude=\(longitude)&daily=pm10_max&timezone=auto"
 
-            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max&timezone=auto"
+            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max,cloud_cover_mean&timezone=auto"
 
             guard let url = URL(string: forecastURLString),
                   let airQualityURL = URL(string: urlString) else {
@@ -208,7 +213,11 @@ private struct OpenMeteoDaily: Decodable {
 
                 updated[key] = DailyWeatherInfo(
                     date: date,
-                    symbolName: symbol(for: decoded.daily.weathercode[index]),
+                    symbolName: symbol(
+                        for: decoded.daily.weathercode[index],
+                        cloudCover: decoded.daily.cloud_cover_mean[index],
+                        isDay: true
+                    ),
                     minTemperature: Int(decoded.daily.temperature_2m_min[index].rounded()),
                     maxTemperature: Int(decoded.daily.temperature_2m_max[index].rounded()),
                     precipitationChance: Int(precipitationChance.rounded()),
@@ -218,9 +227,22 @@ private struct OpenMeteoDaily: Decodable {
                     sunset: sunset,
                     uvIndex: uvIndex.map { Int($0.rounded()) },
                     airQualityIndex: airQuality.map { Int($0.rounded()) },
-                    morningSymbolName: symbol(for: decoded.daily.weathercode[index]),
-                    afternoonSymbolName: symbol(for: decoded.daily.weathercode[index]),
-                    eveningSymbolName: symbol(for: decoded.daily.weathercode[index])
+                    cloudCover: decoded.daily.cloud_cover_mean[index],
+                    morningSymbolName: symbol(
+                        for: decoded.daily.weathercode[index],
+                        cloudCover: decoded.daily.cloud_cover_mean[index],
+                        isDay: true
+                    ),
+                    afternoonSymbolName: symbol(
+                        for: decoded.daily.weathercode[index],
+                        cloudCover: decoded.daily.cloud_cover_mean[index],
+                        isDay: true
+                    ),
+                    eveningSymbolName: symbol(
+                        for: decoded.daily.weathercode[index],
+                        cloudCover: decoded.daily.cloud_cover_mean[index],
+                        isDay: false
+                    )
                 )
             }
 
@@ -247,36 +269,280 @@ private struct OpenMeteoDaily: Decodable {
 
     // MARK: - Weather Symbol Mapping
 
-    private func symbol(for weatherCode: Int) -> String {
+    private func symbol(
+        for weatherCode: Int,
+        cloudCover: Int?,
+        isDay: Bool = true
+    ) -> String {
 
-        switch weatherCode {
+        let condition = WeatherCondition(code: weatherCode)
 
-        case 0:
-            return "sun.max.fill"
+        return condition.symbolName(
+            isDay: isDay,
+            cloudCover: cloudCover
+        )
+    }
+}
 
-        case 1, 2:
-            return "cloud.sun.fill"
+// MARK: - Weather Condition
 
-        case 3:
-            return "cloud.fill"
+enum WeatherCondition: Int, Sendable {
 
-        case 45, 48:
-            return "cloud.fog.fill"
+    // Clear / Clouds
 
-        case 51, 53, 55:
-            return "cloud.drizzle.fill"
+    case clearSky = 0
+    case mainlyClear = 1
+    case partlyCloudy = 2
+    case overcast = 3
 
-        case 61, 63, 65:
-            return "cloud.rain.fill"
+    // Fog
 
-        case 71, 73, 75:
-            return "snow"
+    case fog = 45
+    case depositingRimeFog = 48
 
-        case 95, 96, 99:
+    // Drizzle
+
+    case drizzleLight = 51
+    case drizzleModerate = 53
+    case drizzleDense = 55
+
+    // Freezing Drizzle
+
+    case freezingDrizzleLight = 56
+    case freezingDrizzleDense = 57
+
+    // Rain
+
+    case rainSlight = 61
+    case rainModerate = 63
+    case rainHeavy = 65
+
+    // Freezing Rain
+
+    case freezingRainLight = 66
+    case freezingRainHeavy = 67
+
+    // Snow
+
+    case snowFallSlight = 71
+    case snowFallModerate = 73
+    case snowFallHeavy = 75
+    case snowGrains = 77
+
+    // Rain Showers
+
+    case rainShowersSlight = 80
+    case rainShowersModerate = 81
+    case rainShowersViolent = 82
+
+    // Snow Showers
+
+    case snowShowersSlight = 85
+    case snowShowersHeavy = 86
+
+    // Thunderstorm
+
+    case thunderstorm = 95
+    case thunderstormHailSlight = 96
+    case thunderstormHailHeavy = 99
+
+    // Unknown
+
+    case unknown = -1
+
+    init(code: Int?) {
+
+        guard let code else {
+            self = .unknown
+            return
+        }
+
+        self = Self(rawValue: code) ?? .unknown
+    }
+}
+
+// MARK: - Symbol Mapping
+
+extension WeatherCondition {
+
+    nonisolated
+    func symbolName(
+        isDay: Bool,
+        cloudCover: Int? = nil
+    ) -> String {
+
+        let clouds = max(0, min(cloudCover ?? 0, 100))
+
+        switch self {
+
+        // =====================================================
+        // Thunderstorm
+        // =====================================================
+
+        case .thunderstorm,
+             .thunderstormHailSlight,
+             .thunderstormHailHeavy:
+
             return "cloud.bolt.rain.fill"
 
-        default:
+        // =====================================================
+        // Snow
+        // =====================================================
+
+        case .snowFallSlight,
+             .snowFallModerate,
+             .snowFallHeavy,
+             .snowGrains,
+             .snowShowersSlight,
+             .snowShowersHeavy:
+
+            return "cloud.snow.fill"
+
+        // =====================================================
+        // Heavy Rain
+        // =====================================================
+
+        case .rainHeavy,
+             .freezingRainHeavy,
+             .rainShowersViolent:
+
+            return "cloud.heavyrain.fill"
+
+        // =====================================================
+        // Moderate Rain
+        // =====================================================
+
+        case .rainModerate,
+             .freezingRainLight,
+             .rainShowersModerate:
+
+            return isDay
+                ? "cloud.sun.rain.fill"
+                : "cloud.moon.rain.fill"
+
+        // =====================================================
+        // Light Rain / Drizzle
+        // =====================================================
+
+        case .rainSlight,
+             .rainShowersSlight,
+             .drizzleLight,
+             .drizzleModerate:
+
+            if clouds < 55 {
+
+                return isDay
+                    ? "cloud.sun.rain.fill"
+                    : "cloud.moon.rain.fill"
+            }
+
+            return "cloud.drizzle.fill"
+
+        // =====================================================
+        // Dense / Freezing Drizzle
+        // =====================================================
+
+        case .drizzleDense,
+             .freezingDrizzleLight,
+             .freezingDrizzleDense:
+
+            return "cloud.sleet.fill"
+
+        // =====================================================
+        // Fog
+        // =====================================================
+
+        case .fog,
+             .depositingRimeFog:
+
+            return "cloud.fog.fill"
+
+        // =====================================================
+        // Clear Sky
+        // =====================================================
+
+        case .clearSky:
+
+            switch clouds {
+
+            case 0..<12:
+
+                return isDay
+                    ? "sun.max.fill"
+                    : "moon.stars.fill"
+
+            case 12..<58:
+
+                return isDay
+                    ? "cloud.sun.fill"
+                    : "cloud.moon.fill"
+
+            case 58..<88:
+
+                return isDay
+                    ? "cloud.sun.fill"
+                    : "cloud.moon.fill"
+
+            default:
+
+                return "cloud.fill"
+            }
+
+        // =====================================================
+        // Mainly Clear
+        // =====================================================
+
+        case .mainlyClear:
+
+            switch clouds {
+
+            case 0..<82:
+
+                return isDay
+                    ? "cloud.sun.fill"
+                    : "cloud.moon.fill"
+
+            default:
+
+                return "cloud.fill"
+            }
+
+        // =====================================================
+        // Partly Cloudy
+        // =====================================================
+
+        case .partlyCloudy:
+
+            switch clouds {
+
+            case 0..<90:
+
+                return isDay
+                    ? "cloud.sun.fill"
+                    : "cloud.moon.fill"
+
+            default:
+
+                return "cloud.fill"
+            }
+
+        // =====================================================
+        // Overcast
+        // =====================================================
+
+        case .overcast:
+
             return "cloud.fill"
+
+        // =====================================================
+        // Unknown
+        // =====================================================
+
+        case .unknown:
+
+            return isDay
+                ? "cloud.sun.fill"
+                : "cloud.moon.fill"
         }
     }
 }

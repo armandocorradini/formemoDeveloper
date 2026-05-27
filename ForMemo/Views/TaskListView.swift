@@ -854,6 +854,34 @@ struct TodoSectionView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var weatherManager = WeatherManager.shared
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
+
+    @ViewBuilder
+    private func weatherCapsuleView(
+        weather: DailyWeatherInfo,
+        isTodayGroup: Bool
+    ) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: weather.symbolName)
+                .symbolRenderingMode(.multicolor)
+                .font(.subheadline)
+
+            Text("\(weather.minTemperature)°")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+
+            if isTodayGroup {
+                Text("·")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary.opacity(0.7))
+            }
+
+            Text("\(weather.maxTemperature)°")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.primary.opacity(0.9))
+                .monospacedDigit()
+        }
+    }
     
     @ViewBuilder
     private func groupedHeaderView(for group: (date: Date, tasks: [TodoTask])) -> some View {
@@ -892,27 +920,10 @@ struct TodoSectionView: View {
                     Button {
                         openWeatherForecast()
                     } label: {
-
-                        HStack(spacing: 6) {
-
-                            Image(systemName: weather.symbolName)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(
-                                    isTodayGroup
-                                    ? .yellow.opacity(0.95)
-                                    : .primary.opacity(0.75)
-                                )
-
-                            Text("\(weather.minTemperature)°")
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(.primary.opacity(0.55))
-                                .monospacedDigit()
-
-                            Text("\(weather.maxTemperature)°")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(.primary.opacity(0.82))
-                                .monospacedDigit()
-                        }
+                        weatherCapsuleView(
+                            weather: weather,
+                            isTodayGroup: isTodayGroup
+                        )
                     }
                     .buttonStyle(.plain)
                 }
