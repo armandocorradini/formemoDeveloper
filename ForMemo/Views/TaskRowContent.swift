@@ -208,9 +208,9 @@ extension TaskRowContent {
                                     .offset(y: 2)
                             }
                         }
-                        .lineLimit(1)
                         .padding(.bottom, 4)
                         .strikethrough(model.isCompleted)
+                        .lineLimit(2)
 
                     if model.recurrenceRule != nil {
                         Image(systemName: "arrow.triangle.2.circlepath")
@@ -384,6 +384,7 @@ extension TaskRowContent {
                             }
                         }
                         .strikethrough(model.isCompleted)
+                        .lineLimit(2)
                  
 
                     if model.recurrenceRule != nil {
@@ -448,6 +449,7 @@ extension TaskRowContent {
                             }
                         }
                         .strikethrough(model.isCompleted)
+                        .lineLimit(2)
                     
                     if model.recurrenceRule != nil {
                         HStack(spacing: 3) {
@@ -516,6 +518,7 @@ extension TaskRowContent {
                             }
                         }
                         .strikethrough(model.isCompleted)
+                        .lineLimit(2)
 
                     if model.recurrenceRule != nil {
                         HStack(spacing: 3) {
@@ -583,6 +586,7 @@ extension TaskRowContent {
                             }
                         }
                         .strikethrough(model.isCompleted)
+                        .lineLimit(2)
                  
 
                     if model.recurrenceRule != nil {
@@ -722,6 +726,7 @@ extension TaskRowContent {
                         }
                         .font(.headline)
                         .strikethrough(model.isCompleted)
+                        .lineLimit(2)
                     
                     if model.recurrenceRule != nil {
                         HStack(spacing: 3) {
@@ -789,6 +794,7 @@ extension TaskRowContent {
                         }
                         .font(.headline)
                         .strikethrough(model.isCompleted)
+                        .lineLimit(2)
 
                     if model.recurrenceRule != nil {
                         Image(systemName: "arrow.triangle.2.circlepath")
@@ -839,6 +845,7 @@ extension TaskRowContent {
                             }
                         }
                         .strikethrough(model.isCompleted)
+                        .lineLimit(2)
 
                     if model.recurrenceRule != nil {
                         HStack(spacing: 3) {
@@ -897,6 +904,7 @@ extension TaskRowContent {
                             }
                         }
                         .strikethrough(model.isCompleted)
+                        .lineLimit(2)
 
                     if model.recurrenceRule != nil {
                         HStack(spacing: 3) {
@@ -1000,8 +1008,8 @@ extension TaskRowContent {
                                 }
                             }
                             .strikethrough(model.isCompleted)
-                   
                             .tracking(-0.2)
+                            .lineLimit(2)
 
                         if model.recurrenceRule != nil {
                             HStack(spacing: 3) {

@@ -1509,14 +1509,13 @@ struct CompletedSectionView: View {
     }
     var body: some View {
         Section(String(localized:"Completed (\(tasks.count))")) {
-            if listStyleChoice == .grouped {
+//            if listStyleChoice == .grouped {
+////                Color.clear
+////                    .frame(height: -30)
+////                    .listRowBackground(Color.clear)
+////                    .listRowSeparator(.hidden)
+//            }
 
-                Color.clear
-                    .frame(height: 2)
-                    .listRowBackground(Color.clear)
-                    .listRowSeparator(.hidden)
-            }
-            
             ForEach(Array(tasks.enumerated()), id: \.element.id) { index, t in
                 TaskRow(
                     task: t,
