@@ -31,7 +31,7 @@ struct EditLoyaltyCardView: View {
         }
 
         return LoyaltyCardLogoStore.load(
-            relativePath: card.logoRelativePath
+            relativePath: "\(card.id.uuidString).jpg"
         )
     }
 
@@ -125,10 +125,8 @@ struct EditLoyaltyCardView: View {
                                     previewLogoData = nil
 
                                     LoyaltyCardLogoStore.delete(
-                                        relativePath: card.logoRelativePath
+                                        relativePath: "\(card.id.uuidString).jpg"
                                     )
-
-                                    card.logoRelativePath = nil
                                 } label: {
                                     Label(
                                         "Remove Logo",
@@ -217,7 +215,7 @@ struct EditLoyaltyCardView: View {
                     hex: card.colorHex ?? "#3B82F6"
                 ) ?? .blue
                 previewLogoData = LoyaltyCardLogoStore.load(
-                    relativePath: card.logoRelativePath
+                    relativePath: "\(card.id.uuidString).jpg"
                 )
             }
             .onChange(of: selectedColor) { _, newValue in
@@ -249,12 +247,10 @@ struct EditLoyaltyCardView: View {
 
                         previewLogoData = compressed
 
-                        if let relativePath = LoyaltyCardLogoStore.save(
+                        _ = LoyaltyCardLogoStore.save(
                             imageData: compressed,
                             for: card.id
-                        ) {
-                            card.logoRelativePath = relativePath
-                        }
+                        )
                     }
 
                     do {
@@ -278,12 +274,10 @@ struct EditLoyaltyCardView: View {
 
                 previewLogoData = compressed
 
-                if let relativePath = LoyaltyCardLogoStore.save(
+                _ = LoyaltyCardLogoStore.save(
                     imageData: compressed,
                     for: card.id
-                ) {
-                    card.logoRelativePath = relativePath
-                }
+                )
 
                 do {
                     try modelContext.save()

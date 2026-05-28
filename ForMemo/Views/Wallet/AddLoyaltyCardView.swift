@@ -234,6 +234,13 @@ struct AddLoyaltyCardView: View {
 
         modelContext.insert(card)
 
+        if let logoData {
+            _ = LoyaltyCardLogoStore.save(
+                imageData: logoData,
+                for: card.id
+            )
+        }
+
         try? modelContext.save()
 
         dismiss()

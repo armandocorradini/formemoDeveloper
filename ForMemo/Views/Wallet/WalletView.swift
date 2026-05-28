@@ -79,7 +79,7 @@ struct WalletView: View {
                         ForEach(filteredCards) { card in
 
                             let logoData = LoyaltyCardLogoStore.load(
-                                relativePath: card.logoRelativePath
+                                relativePath: "\(card.id.uuidString).jpg"
                             )
 
                             NavigationLink {

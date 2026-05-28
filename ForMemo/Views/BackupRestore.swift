@@ -373,7 +373,6 @@ private struct BackupArchive: Codable {
 }
 
 private struct LoyaltyCardTransferObject: Codable {
-
     let id: UUID
     let storeName: String
     let cardHolder: String?
@@ -381,7 +380,6 @@ private struct LoyaltyCardTransferObject: Codable {
     let barcodeFormat: String
     let notes: String?
     let colorHex: String?
-    let logoFileName: String?
     let createdAt: Date
 
     init(card: LoyaltyCard) {
@@ -392,7 +390,6 @@ private struct LoyaltyCardTransferObject: Codable {
         self.barcodeFormat = card.barcodeFormat
         self.notes = card.notes
         self.colorHex = card.colorHex
-        self.logoFileName = card.logoRelativePath
         self.createdAt = card.createdAt
     }
 }
@@ -445,10 +442,11 @@ private enum BackupManager {
 
         for card in loyaltyCards {
 
-            guard let relativePath = card.logoRelativePath,
-                  let logoData = LoyaltyCardLogoStore.load(
-                      relativePath: relativePath
-                  ) else {
+            let relativePath = "\(card.id.uuidString).jpg"
+
+            guard let logoData = LoyaltyCardLogoStore.load(
+                relativePath: relativePath
+            ) else {
                 continue
             }
 
@@ -583,7 +581,6 @@ private enum BackupManager {
                 barcodeFormat: cardDTO.barcodeFormat,
                 notes: cardDTO.notes,
                 colorHex: cardDTO.colorHex,
-                logoRelativePath: cardDTO.logoFileName,
                 createdAt: cardDTO.createdAt
             )
 
