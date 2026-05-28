@@ -289,6 +289,7 @@ private struct BackupArchive: Codable {
         case tasks
         case loyaltyCards
         case attachmentFiles
+        case loyaltyCardLogoFiles
     }
 
     let version: Int
@@ -296,19 +297,22 @@ private struct BackupArchive: Codable {
     let tasks: [TaskTransferObject]
     let loyaltyCards: [LoyaltyCardTransferObject]
     let attachmentFiles: [String: Data]
+    let loyaltyCardLogoFiles: [String: Data]
 
     init(
         version: Int,
         createdAt: Date,
         tasks: [TaskTransferObject],
         loyaltyCards: [LoyaltyCardTransferObject],
-        attachmentFiles: [String: Data]
+        attachmentFiles: [String: Data],
+        loyaltyCardLogoFiles: [String: Data]
     ) {
         self.version = version
         self.createdAt = createdAt
         self.tasks = tasks
         self.loyaltyCards = loyaltyCards
         self.attachmentFiles = attachmentFiles
+        self.loyaltyCardLogoFiles = loyaltyCardLogoFiles
     }
 
     init(from decoder: Decoder) throws {
@@ -332,6 +336,10 @@ private struct BackupArchive: Codable {
         attachmentFiles = try container.decode(
             [String: Data].self,
             forKey: .attachmentFiles
+        )
+        loyaltyCardLogoFiles = try container.decode(
+            [String: Data].self,
+            forKey: .loyaltyCardLogoFiles
         )
     }
 
@@ -357,6 +365,10 @@ private struct BackupArchive: Codable {
             attachmentFiles,
             forKey: .attachmentFiles
         )
+        try container.encode(
+            loyaltyCardLogoFiles,
+            forKey: .loyaltyCardLogoFiles
+        )
     }
 }
 
@@ -369,7 +381,7 @@ private struct LoyaltyCardTransferObject: Codable {
     let barcodeFormat: String
     let notes: String?
     let colorHex: String?
-    let logoData: Data?
+    let logoFileName: String?
     let createdAt: Date
 
     init(card: LoyaltyCard) {
@@ -380,7 +392,7 @@ private struct LoyaltyCardTransferObject: Codable {
         self.barcodeFormat = card.barcodeFormat
         self.notes = card.notes
         self.colorHex = card.colorHex
-        self.logoData = card.logoData
+        self.logoFileName = card.logoRelativePath
         self.createdAt = card.createdAt
     }
 }
@@ -393,6 +405,7 @@ private enum BackupManager {
     ) async throws -> URL {
 
         var attachmentPayload: [String: Data] = [:]
+        var loyaltyLogoPayload: [String: Data] = [:]
 
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
 
@@ -430,6 +443,18 @@ private enum BackupManager {
             }
         }
 
+        for card in loyaltyCards {
+
+            guard let relativePath = card.logoRelativePath,
+                  let logoData = LoyaltyCardLogoStore.load(
+                      relativePath: relativePath
+                  ) else {
+                continue
+            }
+
+            loyaltyLogoPayload[relativePath] = logoData
+        }
+
         let archive = BackupArchive(
             version: 1,
             createdAt: .now,
@@ -439,7 +464,8 @@ private enum BackupManager {
             loyaltyCards: loyaltyCards.map {
                 LoyaltyCardTransferObject(card: $0)
             },
-            attachmentFiles: attachmentPayload
+            attachmentFiles: attachmentPayload,
+            loyaltyCardLogoFiles: loyaltyLogoPayload
         )
 
         let encoder = JSONEncoder()
@@ -518,6 +544,25 @@ private enum BackupManager {
             }
         }
 
+        if let logoDirectory = LoyaltyCardLogoStore.directoryURL {
+
+            try FileManager.default.createDirectory(
+                at: logoDirectory,
+                withIntermediateDirectories: true
+            )
+
+            for (relativePath, logoData) in archive.loyaltyCardLogoFiles {
+
+                let fileURL = logoDirectory
+                    .appendingPathComponent(relativePath)
+
+                try logoData.write(
+                    to: fileURL,
+                    options: .atomic
+                )
+            }
+        }
+
         for cardDTO in archive.loyaltyCards {
 
             let descriptor = FetchDescriptor<LoyaltyCard>(
@@ -538,7 +583,7 @@ private enum BackupManager {
                 barcodeFormat: cardDTO.barcodeFormat,
                 notes: cardDTO.notes,
                 colorHex: cardDTO.colorHex,
-                logoData: cardDTO.logoData,
+                logoRelativePath: cardDTO.logoFileName,
                 createdAt: cardDTO.createdAt
             )
 

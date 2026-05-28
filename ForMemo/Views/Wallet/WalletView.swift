@@ -78,6 +78,10 @@ struct WalletView: View {
                     List {
                         ForEach(filteredCards) { card in
 
+                            let logoData = LoyaltyCardLogoStore.load(
+                                relativePath: card.logoRelativePath
+                            )
+
                             NavigationLink {
                                 LoyaltyCardDetailView(card: card)
                             } label: {
@@ -85,7 +89,7 @@ struct WalletView: View {
                                 HStack(spacing: 14) {
 
                                     Group {
-                                        if let data = card.logoData,
+                                        if let data = logoData,
                                            let uiImage = UIImage(data: data) {
 
                                             Image(uiImage: uiImage)

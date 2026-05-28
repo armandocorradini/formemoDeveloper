@@ -229,8 +229,7 @@ struct AddLoyaltyCardView: View {
             barcodeValue: cleanedBarcode,
             barcodeFormat: barcodeFormat,
             notes: cleanedNotes.isEmpty ? nil : cleanedNotes,
-            colorHex: colorHex,
-            logoData: logoData
+            colorHex: colorHex
         )
 
         modelContext.insert(card)

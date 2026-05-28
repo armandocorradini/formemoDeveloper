@@ -24,6 +24,17 @@ struct EditLoyaltyCardView: View {
     @State private var capturedImage: UIImage?
     @State private var selectedPhotoItem: PhotosPickerItem?
 
+    private var currentLogoData: Data? {
+
+        if let previewLogoData {
+            return previewLogoData
+        }
+
+        return LoyaltyCardLogoStore.load(
+            relativePath: card.logoRelativePath
+        )
+    }
+
     var body: some View {
 
         NavigationStack {
@@ -35,7 +46,8 @@ struct EditLoyaltyCardView: View {
                     HStack(spacing: 16) {
 
                         Group {
-                            if let data = (previewLogoData ?? card.logoData),
+
+                            if let data = currentLogoData,
                                let uiImage = UIImage(data: data) {
 
                                 Image(uiImage: uiImage)
@@ -107,17 +119,16 @@ struct EditLoyaltyCardView: View {
                             }
                             .buttonStyle(.plain)
 
-                            if (previewLogoData ?? card.logoData) != nil {
+                            if currentLogoData != nil {
 
                                 Button(role: .destructive) {
                                     previewLogoData = nil
-                                    card.logoData = nil
 
-                                    do {
-                                        try modelContext.save()
-                                    } catch {
-                                        print("Failed to remove logo: \(error)")
-                                    }
+                                    LoyaltyCardLogoStore.delete(
+                                        relativePath: card.logoRelativePath
+                                    )
+
+                                    card.logoRelativePath = nil
                                 } label: {
                                     Label(
                                         "Remove Logo",
@@ -205,7 +216,9 @@ struct EditLoyaltyCardView: View {
                 selectedColor = Color(
                     hex: card.colorHex ?? "#3B82F6"
                 ) ?? .blue
-                previewLogoData = card.logoData
+                previewLogoData = LoyaltyCardLogoStore.load(
+                    relativePath: card.logoRelativePath
+                )
             }
             .onChange(of: selectedColor) { _, newValue in
                 card.colorHex = newValue.toHex()
@@ -233,8 +246,15 @@ struct EditLoyaltyCardView: View {
                     }
 
                     await MainActor.run {
+
                         previewLogoData = compressed
-                        card.logoData = compressed
+
+                        if let relativePath = LoyaltyCardLogoStore.save(
+                            imageData: compressed,
+                            for: card.id
+                        ) {
+                            card.logoRelativePath = relativePath
+                        }
                     }
 
                     do {
@@ -257,7 +277,13 @@ struct EditLoyaltyCardView: View {
                 }
 
                 previewLogoData = compressed
-                card.logoData = compressed
+
+                if let relativePath = LoyaltyCardLogoStore.save(
+                    imageData: compressed,
+                    for: card.id
+                ) {
+                    card.logoRelativePath = relativePath
+                }
 
                 do {
                     try modelContext.save()

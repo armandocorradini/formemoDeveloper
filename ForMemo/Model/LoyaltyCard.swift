@@ -1,5 +1,3 @@
-
-
 import Foundation
 import SwiftData
 
@@ -19,9 +17,10 @@ final class LoyaltyCard {
     // Optional custom card color stored as HEX string
     var colorHex: String?
 
-    // Optional logo image stored as compressed image data
-    @Attribute(.externalStorage)
-    var logoData: Data?
+    // Optional filesystem path for the logo image.
+    // Keeping only lightweight metadata inside SwiftData
+    // dramatically improves CloudKit reliability.
+    var logoRelativePath: String?
 
     var createdAt: Date = Date()
 
@@ -33,7 +32,7 @@ final class LoyaltyCard {
         barcodeFormat: String,
         notes: String? = nil,
         colorHex: String? = nil,
-        logoData: Data? = nil,
+        logoRelativePath: String? = nil,
         createdAt: Date = Date()
     ) {
 
@@ -44,7 +43,12 @@ final class LoyaltyCard {
         self.barcodeFormat = barcodeFormat
         self.notes = notes
         self.colorHex = colorHex
-        self.logoData = logoData
+        self.logoRelativePath = logoRelativePath
         self.createdAt = createdAt
+    }
+
+    var hasLogo: Bool {
+
+        logoRelativePath != nil
     }
 }

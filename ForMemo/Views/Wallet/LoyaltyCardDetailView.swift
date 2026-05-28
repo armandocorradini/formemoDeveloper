@@ -60,7 +60,9 @@ struct LoyaltyCardDetailView: View {
 
                         HStack(alignment: .top, spacing: 14) {
 
-                            if let data = card.logoData,
+                            if let data = LoyaltyCardLogoStore.load(
+                                relativePath: card.logoRelativePath
+                            ),
                                let uiImage = UIImage(data: data) {
 
                                 Image(uiImage: uiImage)
