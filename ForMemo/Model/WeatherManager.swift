@@ -77,6 +77,7 @@ private struct OpenMeteoHourly: Decodable {
     let weather_code: [Int]
     let cloud_cover: [Int]
     let precipitation_probability: [Int]
+    let precipitation: [Double]
 }
 
     private(set) var weatherByDay: [Date: DailyWeatherInfo] = [:]
@@ -172,7 +173,7 @@ private struct OpenMeteoHourly: Decodable {
 
             let urlString = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=\(latitude)&longitude=\(longitude)&daily=pm10_max&timezone=auto"
 
-            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max,cloud_cover_mean&hourly=weather_code,cloud_cover,precipitation_probability&forecast_days=7&timezone=auto"
+            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max,cloud_cover_mean&hourly=weather_code,cloud_cover,precipitation_probability,precipitation&forecast_days=7&timezone=auto"
 
             guard let url = URL(string: forecastURLString),
                   let airQualityURL = URL(string: urlString) else {
@@ -221,9 +222,25 @@ private struct OpenMeteoHourly: Decodable {
                     hourlyCodes: daytimeCodes
                 )
 
-                let precipitationChance = decoded.daily.precipitation_probability_max[index]
+                let daytimePrecipitationChance = daytimePrecipitationProbability(
+                    for: date,
+                    hourly: decoded.hourly
+                )
 
-                let precipitationAmount = decoded.daily.precipitation_sum[index]
+                let daytimePrecipitationAmount = daytimePrecipitationAmount(
+                    for: date,
+                    hourly: decoded.hourly
+                )
+
+                let precipitationChance = max(
+                    Double(daytimePrecipitationChance),
+                    decoded.daily.precipitation_probability_max[index] * 0.45
+                )
+
+                let precipitationAmount = max(
+                    daytimePrecipitationAmount,
+                    decoded.daily.precipitation_sum[index] * 0.35
+                )
 
                 let windSpeed = decoded.daily.wind_speed_10m_max[index]
 
@@ -302,14 +319,17 @@ private struct OpenMeteoHourly: Decodable {
 
         let sunshineScore = max(
             0,
-            100
+            115
             - clouds
-            - (precipitationChance / 2)
-            - Int(precipitationAmount * 4)
+            - Int(Double(precipitationChance) * 0.38)
+            - Int(precipitationAmount * 3.2)
         )
+        let severeWeatherCodes: Set<Int> = [63, 65, 81, 82, 95, 96, 99]
+
+        let isSevereWeather = severeWeatherCodes.contains(weatherCode)
 
         // Strong rain
-        if precipitationAmount >= 12 {
+        if precipitationAmount >= 8 {
             return "cloud.heavyrain.fill"
         }
 
@@ -327,9 +347,11 @@ private struct OpenMeteoHourly: Decodable {
                 : "cloud.moon.rain.fill"
         }
 
-        // Pleasant / variable days
-        if sunshineScore >= 42,
-           precipitationAmount < 3 {
+
+        // Pleasant / mostly dry days
+        if sunshineScore >= 28,
+           precipitationAmount < 2,
+           precipitationChance < 72 {
 
             return isDay
                 ? "cloud.sun.fill"
@@ -343,13 +365,39 @@ private struct OpenMeteoHourly: Decodable {
             return "wind"
         }
 
-        // Slight rain should stay visually lighter
-        if precipitationChance <= 55,
-           precipitationAmount < 2 {
+        // Light precipitation should not dominate the whole day icon
+        // Persistent drizzle / humid grey weather
+        if precipitationAmount >= 0.3,
+           precipitationAmount < 1.2,
+           precipitationChance >= 55,
+           clouds >= 70 {
+
+            return "cloud.drizzle.fill"
+        }
+
+        // Ignore isolated weak showers during otherwise pleasant days
+        if !isSevereWeather,
+           sunshineScore >= 46,
+           precipitationAmount < 2.2,
+           precipitationChance < 72 {
 
             return isDay
-                ? "cloud.sun.rain.fill"
-                : "cloud.moon.rain.fill"
+                ? "cloud.sun.fill"
+                : "cloud.moon.fill"
+        }
+
+        // Real scattered showers only if truly relevant
+        if precipitationAmount >= 2.2,
+           precipitationChance >= 68 {
+
+            if sunshineScore >= 42 {
+
+                return isDay
+                    ? "cloud.sun.rain.fill"
+                    : "cloud.moon.rain.fill"
+            }
+
+            return "cloud.rain.fill"
         }
 
         return condition.symbolName(
@@ -380,12 +428,83 @@ private struct OpenMeteoHourly: Decodable {
 
                 let hour = calendar.component(.hour, from: parsedDate)
 
-                guard (9...18).contains(hour) else {
+                guard (10...17).contains(hour) else {
                     return nil
                 }
 
                 return hourly.weather_code[safe: index]
             }
+    }
+
+    private func daytimePrecipitationProbability(
+        for date: Date,
+        hourly: OpenMeteoHourly
+    ) -> Int {
+
+        let formatter = ISO8601DateFormatter()
+
+        let values = zip(hourly.time.indices, hourly.time)
+            .compactMap { index, rawDate -> Int? in
+
+                guard let parsedDate = formatter.date(from: rawDate) else {
+                    return nil
+                }
+
+                let calendar = Calendar.current
+
+                guard calendar.isDate(parsedDate, inSameDayAs: date) else {
+                    return nil
+                }
+
+                let hour = calendar.component(.hour, from: parsedDate)
+
+                guard (10...17).contains(hour) else {
+                    return nil
+                }
+
+                return hourly.precipitation_probability[safe: index]
+            }
+
+        guard !values.isEmpty else {
+            return 0
+        }
+
+        let sorted = values.sorted()
+
+        // Use median instead of average to avoid a single rainy hour
+        // making the entire day look rainy.
+        return sorted[sorted.count / 2]
+    }
+
+    private func daytimePrecipitationAmount(
+        for date: Date,
+        hourly: OpenMeteoHourly
+    ) -> Double {
+
+        let formatter = ISO8601DateFormatter()
+
+        return zip(hourly.time.indices, hourly.time)
+            .compactMap { index, rawDate -> Double? in
+
+                guard let parsedDate = formatter.date(from: rawDate) else {
+                    return nil
+                }
+
+                let calendar = Calendar.current
+
+                guard calendar.isDate(parsedDate, inSameDayAs: date) else {
+                    return nil
+                }
+
+                let hour = calendar.component(.hour, from: parsedDate)
+
+                guard (10...17).contains(hour) else {
+                    return nil
+                }
+
+                return hourly.precipitation[safe: index]
+            }
+            .reduce(0, +) / 2.8
     }
 
     private func dominantDaytimeWeatherCode(
@@ -397,13 +516,76 @@ private struct OpenMeteoHourly: Decodable {
             return fallback
         }
 
-        let counts = Dictionary(
-            grouping: hourlyCodes,
-            by: { $0 }
-        )
-        .mapValues(\.count)
+        var weightedScores: [Int: Double] = [:]
 
-        return counts.max(by: { $0.value < $1.value })?.key ?? fallback
+        for code in hourlyCodes {
+
+            let baseWeight: Double
+
+            switch code {
+
+            // Clear / pleasant
+            case 0:
+                baseWeight = 5.5
+
+            case 1:
+                baseWeight = 5.0
+
+            case 2:
+                baseWeight = 4.2
+
+            // Overcast
+            case 3:
+                baseWeight = 2.4
+
+            // Fog
+            case 45, 48:
+                baseWeight = 1.8
+
+            // Drizzle
+            case 51, 53, 55:
+                baseWeight = 1.4
+
+            // Light rain / isolated showers
+            case 61, 80:
+                baseWeight = 0.9
+
+            // Moderate rain
+            case 63, 81:
+                baseWeight = 0.45
+
+            // Heavy rain / violent showers
+            case 65, 82:
+                baseWeight = 0.15
+
+            // Thunderstorm
+            case 95, 96, 99:
+                baseWeight = 0.08
+
+            default:
+                baseWeight = 1.0
+            }
+
+            weightedScores[code, default: 0] += baseWeight
+        }
+
+        // Strong sunshine bias
+        let sunshineHours = hourlyCodes.filter {
+            [0, 1, 2].contains($0)
+        }.count
+
+        if sunshineHours >= 5 {
+
+            if sunshineHours >= 7 {
+                return 0
+            }
+
+            return 1
+        }
+
+        return weightedScores
+            .max(by: { $0.value < $1.value })?
+            .key ?? fallback
     }
 }
 

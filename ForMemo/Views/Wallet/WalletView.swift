@@ -245,6 +245,24 @@ struct WalletView: View {
                                     Label("Delete", systemImage: "trash")
                                 }
                             }
+                            .contextMenu {
+
+                                Button {
+                                    editingCard = card
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+
+                                Button(role: .destructive) {
+
+                                    if let index = cards.firstIndex(where: { $0.id == card.id }) {
+                                        deleteCards(at: IndexSet(integer: index))
+                                    }
+
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
                         .onDelete(perform: deleteCards)
                     }
