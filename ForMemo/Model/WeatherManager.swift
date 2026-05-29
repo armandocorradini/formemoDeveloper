@@ -26,10 +26,6 @@ struct DailyWeatherInfo {
     let airQualityIndex: Int?
 
     let cloudCover: Int?
-
-    let morningSymbolName: String
-    let afternoonSymbolName: String
-    let eveningSymbolName: String
 }
 
 // MARK: - Weather Manager
@@ -83,6 +79,8 @@ private struct OpenMeteoDaily: Decodable {
 
     private let refreshInterval: TimeInterval = 1800
 
+    private var retryCount = 0
+
     private init() {}
 
     // MARK: - Public
@@ -124,6 +122,13 @@ private struct OpenMeteoDaily: Decodable {
 
         guard let location = LocationReminderManager.shared.currentLocation else {
 
+            guard retryCount < 3 else {
+                isAvailable = false
+                return
+            }
+
+            retryCount += 1
+
 #if DEBUG
             print("📍 No current location available for WeatherKit")
 #endif
@@ -150,6 +155,8 @@ private struct OpenMeteoDaily: Decodable {
 #if DEBUG
             print("🌦️ Weather refresh for: \(location.coordinate.latitude), \(location.coordinate.longitude)")
 #endif
+
+            retryCount = 0
 
             let latitude = location.coordinate.latitude
             let longitude = location.coordinate.longitude
@@ -183,6 +190,8 @@ private struct OpenMeteoDaily: Decodable {
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = [.withFullDate]
 
+            let dateTimeFormatter = ISO8601DateFormatter()
+
             for index in decoded.daily.time.indices {
 
                 guard let date = formatter.date(from: decoded.daily.time[index]) else {
@@ -203,11 +212,11 @@ private struct OpenMeteoDaily: Decodable {
                     ? pm10Values[index]
                     : nil
 
-                let sunrise = ISO8601DateFormatter().date(
+                let sunrise = dateTimeFormatter.date(
                     from: decoded.daily.sunrise[index]
                 )
 
-                let sunset = ISO8601DateFormatter().date(
+                let sunset = dateTimeFormatter.date(
                     from: decoded.daily.sunset[index]
                 )
 
@@ -227,22 +236,7 @@ private struct OpenMeteoDaily: Decodable {
                     sunset: sunset,
                     uvIndex: uvIndex.map { Int($0.rounded()) },
                     airQualityIndex: airQuality.map { Int($0.rounded()) },
-                    cloudCover: decoded.daily.cloud_cover_mean[index],
-                    morningSymbolName: symbol(
-                        for: decoded.daily.weathercode[index],
-                        cloudCover: decoded.daily.cloud_cover_mean[index],
-                        isDay: true
-                    ),
-                    afternoonSymbolName: symbol(
-                        for: decoded.daily.weathercode[index],
-                        cloudCover: decoded.daily.cloud_cover_mean[index],
-                        isDay: true
-                    ),
-                    eveningSymbolName: symbol(
-                        for: decoded.daily.weathercode[index],
-                        cloudCover: decoded.daily.cloud_cover_mean[index],
-                        isDay: false
-                    )
+                    cloudCover: decoded.daily.cloud_cover_mean[index]
                 )
             }
 
@@ -465,19 +459,13 @@ extension WeatherCondition {
 
             switch clouds {
 
-            case 0..<12:
+            case 0..<20:
 
                 return isDay
                     ? "sun.max.fill"
                     : "moon.stars.fill"
 
-            case 12..<58:
-
-                return isDay
-                    ? "cloud.sun.fill"
-                    : "cloud.moon.fill"
-
-            case 58..<88:
+            case 20..<85:
 
                 return isDay
                     ? "cloud.sun.fill"
@@ -496,7 +484,7 @@ extension WeatherCondition {
 
             switch clouds {
 
-            case 0..<82:
+            case 0..<92:
 
                 return isDay
                     ? "cloud.sun.fill"
@@ -513,18 +501,9 @@ extension WeatherCondition {
 
         case .partlyCloudy:
 
-            switch clouds {
-
-            case 0..<90:
-
-                return isDay
-                    ? "cloud.sun.fill"
-                    : "cloud.moon.fill"
-
-            default:
-
-                return "cloud.fill"
-            }
+            return isDay
+                ? "cloud.sun.fill"
+                : "cloud.moon.fill"
 
         // =====================================================
         // Overcast

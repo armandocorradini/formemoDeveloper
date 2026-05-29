@@ -5,6 +5,9 @@ struct WeatherForecastView: View {
     @Environment(\.dismiss)
     private var dismiss
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
     private let weatherManager = WeatherManager.shared
 
     var body: some View {
@@ -23,7 +26,7 @@ struct WeatherForecastView: View {
 
                 ScrollView {
 
-                    VStack(spacing: 18) {
+                    VStack(spacing: 14) {
 
                         forecastHeader
                         forecastCards
@@ -52,61 +55,53 @@ struct WeatherForecastView: View {
 
     private var forecastHeader: some View {
 
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
 
             ZStack {
 
                 Circle()
                     .fill(.ultraThinMaterial)
-                    .frame(width: 58, height: 58)
+                    .frame(width: 50, height: 50)
                     .overlay(
                         Circle()
                             .stroke(
                                 LinearGradient(
                                     colors: [
-                                        Color.white.opacity(0.35),
-                                        Color.white.opacity(0.06),
+                                        Color.white.opacity(0.28),
+                                        Color.white.opacity(0.05),
                                         Color.clear
                                     ],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 ),
-                                lineWidth: 1.2
+                                lineWidth: 1
                             )
                     )
 
                 Image(systemName: "cloud.sun.fill")
                     .symbolRenderingMode(.multicolor)
-                    .font(.system(size: 26))
+                    .font(.system(size: 22))
             }
 
-            VStack(spacing: 2) {
+            Text("Weekly Forecast")
+                .font(.headline.weight(.bold))
 
-                Text("Weekly Forecast")
-                    .font(.title2.bold())
-
-                Label("Source: Open-Meteo", systemImage: "network")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Text("Real-time weather forecast for the next 7 days")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
+            Label("Source: Open-Meteo", systemImage: "network")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
+        .padding(.vertical, 8)
         .padding(.horizontal, 18)
         .background(
             RoundedRectangle(
-                cornerRadius: 34,
+                cornerRadius: 28,
                 style: .continuous
             )
             .fill(.ultraThinMaterial)
             .overlay(
                 RoundedRectangle(
-                    cornerRadius: 34,
+                    cornerRadius: 28,
                     style: .continuous
                 )
                 .fill(
@@ -122,7 +117,7 @@ struct WeatherForecastView: View {
             )
             .overlay(
                 RoundedRectangle(
-                    cornerRadius: 34,
+                    cornerRadius: 28,
                     style: .continuous
                 )
                 .stroke(
@@ -140,8 +135,8 @@ struct WeatherForecastView: View {
             )
             .shadow(
                 color: .black.opacity(0.18),
-                radius: 18,
-                y: 10
+                radius: 12,
+                y: 6
             )
         )
     }
@@ -150,14 +145,13 @@ struct WeatherForecastView: View {
 
     private var forecastCards: some View {
 
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
 
             ForEach(nextDays, id: \.self) { date in
 
                 forecastRow(for: date)
             }
         }
-        .padding(.horizontal, -8)
     }
 
     @ViewBuilder
@@ -165,13 +159,13 @@ struct WeatherForecastView: View {
 
         let weather = weatherManager.weather(for: date)
 
-        HStack(alignment: .top, spacing: 18) {
+        HStack(alignment: .center, spacing: 18) {
 
             VStack(alignment: .leading, spacing: 0) {
 
                 Text(dayTitle(for: date))
-                    .font(.subheadline.weight(.semibold))
-                    .frame(height: 24)
+                    .font(.subheadline.weight(.bold))
+                    .frame(height: 22)
 
                 Text(
                     date.formatted(
@@ -182,7 +176,7 @@ struct WeatherForecastView: View {
                 )
                 .font(.caption.weight(.medium))
                 .foregroundStyle(.secondary)
-                .frame(height: 24, alignment: .center)
+                .frame(height: 20, alignment: .center)
 
                 if let weather {
 
@@ -213,7 +207,7 @@ struct WeatherForecastView: View {
                         Spacer(minLength: 0)
 
                         Text(weatherDescription(for: weather.symbolName))
-                            .font(.subheadline.weight(.semibold))
+                            .font(.callout.weight(.semibold))
                             .multilineTextAlignment(.trailing)
                             .lineLimit(1)
                             .layoutPriority(1)
@@ -223,8 +217,7 @@ struct WeatherForecastView: View {
                             .symbolRenderingMode(.multicolor)
                             .font(.system(size: 22))
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 24)
+                    .frame(minHeight: 24)
 
                     HStack(alignment: .center, spacing: 14) {
 
@@ -250,13 +243,9 @@ struct WeatherForecastView: View {
                         
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
-                    .frame(height: 24)
+                    .frame(minHeight: 24)
 
                     HStack(alignment: .center, spacing: 14) {
-
-                        Image(systemName: weather.morningSymbolName)
-                            .symbolRenderingMode(.multicolor)
-                            .font(.caption)
 
                         if let sunrise = weather.sunrise {
 
@@ -271,10 +260,6 @@ struct WeatherForecastView: View {
                             .font(.caption)
                         }
 
-                        Image(systemName: weather.afternoonSymbolName)
-                            .symbolRenderingMode(.multicolor)
-                            .font(.caption)
-
                         if let sunset = weather.sunset {
 
                             Label(
@@ -287,11 +272,8 @@ struct WeatherForecastView: View {
                             )
                             .font(.caption)
                         }
-
-                        Image(systemName: weather.eveningSymbolName)
-                            .symbolRenderingMode(.multicolor)
-                            .font(.caption)
                     }
+                    .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .trailing)
 
                     HStack(spacing: 18) {
@@ -313,7 +295,7 @@ struct WeatherForecastView: View {
                                 systemImage: "aqi.medium"
                             )
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(.mint)
+                            .foregroundStyle(aqiColor(for: airQuality))
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
@@ -325,23 +307,28 @@ struct WeatherForecastView: View {
             }
         }
         .padding(.horizontal, 18)
-        .padding(.vertical, 11)
+        .padding(.vertical, 9)
         .background(
             RoundedRectangle(
-                cornerRadius: 30,
+                cornerRadius: 28,
                 style: .continuous
             )
             .fill(.ultraThinMaterial)
             .overlay(
                 RoundedRectangle(
-                    cornerRadius: 30,
+                    cornerRadius: 28,
                     style: .continuous
                 )
                 .fill(
                     LinearGradient(
-                        colors: [
+                        colors: colorScheme == .dark
+                        ? [
                             Color.black.opacity(0.22),
                             Color.black.opacity(0.08)
+                        ]
+                        : [
+                            Color.white.opacity(0.55),
+                            Color.white.opacity(0.12)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -350,7 +337,7 @@ struct WeatherForecastView: View {
             )
             .overlay(
                 RoundedRectangle(
-                    cornerRadius: 30,
+                    cornerRadius: 28,
                     style: .continuous
                 )
                 .stroke(
@@ -367,7 +354,9 @@ struct WeatherForecastView: View {
                 )
             )
             .shadow(
-                color: .black.opacity(0.16),
+                color: colorScheme == .dark
+                ? .black.opacity(0.16)
+                : .black.opacity(0.06),
                 radius: 14,
                 y: 8
             )
@@ -445,6 +434,23 @@ struct WeatherForecastView: View {
             return .yellow
 
         case 3..<6:
+            return .orange
+
+        default:
+            return .red
+        }
+    }
+
+    private func aqiColor(for index: Int) -> Color {
+
+        switch index {
+        case 0..<50:
+            return .green
+
+        case 50..<100:
+            return .yellow
+
+        case 100..<150:
             return .orange
 
         default:
