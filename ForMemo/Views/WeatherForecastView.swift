@@ -80,7 +80,7 @@ struct WeatherForecastView: View {
 
                 Image(systemName: "cloud.sun.fill")
                     .symbolRenderingMode(.multicolor)
-                    .font(.system(size: 22))
+                    .font(.system(size: 23, weight: .medium))
             }
 
             Text("Weekly Forecast")
@@ -215,7 +215,7 @@ struct WeatherForecastView: View {
 
                         Image(systemName: weather.symbolName)
                             .symbolRenderingMode(.multicolor)
-                            .font(.system(size: 22))
+                            .font(.system(size: 23, weight: .medium))
                     }
                     .frame(minHeight: 24)
 
@@ -273,7 +273,7 @@ struct WeatherForecastView: View {
                             .font(.caption)
                         }
                     }
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary.opacity(0.72))
                     .frame(maxWidth: .infinity, alignment: .trailing)
 
                     HStack(spacing: 18) {

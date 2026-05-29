@@ -211,15 +211,15 @@ struct WeeklyTasksView: View {
 
                             Image(systemName: weather.symbolName)
                                 .symbolRenderingMode(.multicolor)
-                                .font(.subheadline.weight(.semibold))
+                                .font(.subheadline.weight(.medium))
 
                             Text("\(weather.minTemperature)°")
                                 .font(.caption.weight(.medium))
                                 .foregroundStyle(.primary.opacity(0.55))
                                 .monospacedDigit()
 
-                            Text("·")
-                                .font(.caption2)
+                            Text("/")
+                                .font(.caption2.weight(.medium))
                                 .foregroundStyle(.secondary.opacity(0.6))
 
                             Text("\(weather.maxTemperature)°")

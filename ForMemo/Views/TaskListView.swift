@@ -861,24 +861,23 @@ struct TodoSectionView: View {
         isTodayGroup: Bool
     ) -> some View {
         HStack(spacing: 7) {
+
             Image(systemName: weather.symbolName)
                 .symbolRenderingMode(.multicolor)
-                .font(.subheadline)
+                .font(.subheadline.weight(.medium))
 
             Text("\(weather.minTemperature)°")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.primary.opacity(0.55))
                 .monospacedDigit()
 
-            if isTodayGroup {
-                Text("·")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary.opacity(0.7))
-            }
+            Text("/")
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(.secondary.opacity(0.6))
 
             Text("\(weather.maxTemperature)°")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary.opacity(0.9))
+                .foregroundStyle(.primary.opacity(0.90))
                 .monospacedDigit()
         }
     }

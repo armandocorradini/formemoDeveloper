@@ -767,6 +767,7 @@ Attivazione: \(triggerInfo)
             }
             .fullScreenCover(isPresented: $showSoundPicker) {
                 NotificationSoundPickerView(context: soundPickerContext)
+                    .id(soundPickerContext)
             }
             .fullScreenCover(isPresented: $showQuickGuide) {
                 AppQuickGuideView()

@@ -40,6 +40,9 @@
     "·" : {
       "shouldTranslate" : false
     },
+    "/" : {
+      "shouldTranslate" : false
+    },
     "%@" : {
       "localizations" : {
         "de" : {

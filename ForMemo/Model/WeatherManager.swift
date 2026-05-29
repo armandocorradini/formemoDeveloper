@@ -45,13 +45,14 @@ final class WeatherManager {
 private struct OpenMeteoResponse: Decodable {
 
     let daily: OpenMeteoDaily
+    let hourly: OpenMeteoHourly
 }
 
 private struct OpenMeteoDaily: Decodable {
 
     let time: [String]
 
-    let weathercode: [Int]
+    let weather_code: [Int]
 
     let temperature_2m_min: [Double]
     let temperature_2m_max: [Double]
@@ -67,7 +68,15 @@ private struct OpenMeteoDaily: Decodable {
     let uv_index_max: [Double?]
     let cloud_cover_mean: [Int]
     
+}
 
+private struct OpenMeteoHourly: Decodable {
+
+    let time: [String]
+
+    let weather_code: [Int]
+    let cloud_cover: [Int]
+    let precipitation_probability: [Int]
 }
 
     private(set) var weatherByDay: [Date: DailyWeatherInfo] = [:]
@@ -163,7 +172,7 @@ private struct OpenMeteoDaily: Decodable {
 
             let urlString = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=\(latitude)&longitude=\(longitude)&daily=pm10_max&timezone=auto"
 
-            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max,cloud_cover_mean&timezone=auto"
+            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max,cloud_cover_mean&hourly=weather_code,cloud_cover,precipitation_probability&forecast_days=7&timezone=auto"
 
             guard let url = URL(string: forecastURLString),
                   let airQualityURL = URL(string: urlString) else {
@@ -200,6 +209,18 @@ private struct OpenMeteoDaily: Decodable {
 
                 let key = Calendar.current.startOfDay(for: date)
 
+                let weatherCode = decoded.daily.weather_code[safe: index] ?? 0
+
+                let daytimeCodes = hourlyWeatherCodes(
+                    for: date,
+                    hourly: decoded.hourly
+                )
+
+                let dominantWeatherCode = dominantDaytimeWeatherCode(
+                    fallback: weatherCode,
+                    hourlyCodes: daytimeCodes
+                )
+
                 let precipitationChance = decoded.daily.precipitation_probability_max[index]
 
                 let precipitationAmount = decoded.daily.precipitation_sum[index]
@@ -223,8 +244,11 @@ private struct OpenMeteoDaily: Decodable {
                 updated[key] = DailyWeatherInfo(
                     date: date,
                     symbolName: symbol(
-                        for: decoded.daily.weathercode[index],
+                        for: dominantWeatherCode,
                         cloudCover: decoded.daily.cloud_cover_mean[index],
+                        precipitationChance: Int(precipitationChance.rounded()),
+                        precipitationAmount: precipitationAmount,
+                        windSpeed: Int(windSpeed.rounded()),
                         isDay: true
                     ),
                     minTemperature: Int(decoded.daily.temperature_2m_min[index].rounded()),
@@ -266,15 +290,120 @@ private struct OpenMeteoDaily: Decodable {
     private func symbol(
         for weatherCode: Int,
         cloudCover: Int?,
+        precipitationChance: Int,
+        precipitationAmount: Double,
+        windSpeed: Int,
         isDay: Bool = true
     ) -> String {
 
         let condition = WeatherCondition(code: weatherCode)
 
+        let clouds = max(0, min(cloudCover ?? 0, 100))
+
+        let sunshineScore = max(
+            0,
+            100
+            - clouds
+            - (precipitationChance / 2)
+            - Int(precipitationAmount * 4)
+        )
+
+        // Strong rain
+        if precipitationAmount >= 12 {
+            return "cloud.heavyrain.fill"
+        }
+
+        // Real thunderstorms only
+        if [95, 96, 99].contains(weatherCode) {
+
+            if precipitationChance >= 80,
+               precipitationAmount >= 8 {
+
+                return "cloud.bolt.rain.fill"
+            }
+
+            return isDay
+                ? "cloud.sun.rain.fill"
+                : "cloud.moon.rain.fill"
+        }
+
+        // Pleasant / variable days
+        if sunshineScore >= 42,
+           precipitationAmount < 3 {
+
+            return isDay
+                ? "cloud.sun.fill"
+                : "cloud.moon.fill"
+        }
+
+        // Windy dry conditions
+        if windSpeed >= 45,
+           precipitationAmount < 1 {
+
+            return "wind"
+        }
+
+        // Slight rain should stay visually lighter
+        if precipitationChance <= 55,
+           precipitationAmount < 2 {
+
+            return isDay
+                ? "cloud.sun.rain.fill"
+                : "cloud.moon.rain.fill"
+        }
+
         return condition.symbolName(
             isDay: isDay,
             cloudCover: cloudCover
         )
+    }
+
+    private func hourlyWeatherCodes(
+        for date: Date,
+        hourly: OpenMeteoHourly
+    ) -> [Int] {
+
+        let formatter = ISO8601DateFormatter()
+
+        return zip(hourly.time.indices, hourly.time)
+            .compactMap { index, rawDate in
+
+                guard let parsedDate = formatter.date(from: rawDate) else {
+                    return nil
+                }
+
+                let calendar = Calendar.current
+
+                guard calendar.isDate(parsedDate, inSameDayAs: date) else {
+                    return nil
+                }
+
+                let hour = calendar.component(.hour, from: parsedDate)
+
+                guard (9...18).contains(hour) else {
+                    return nil
+                }
+
+                return hourly.weather_code[safe: index]
+            }
+    }
+
+    private func dominantDaytimeWeatherCode(
+        fallback: Int,
+        hourlyCodes: [Int]
+    ) -> Int {
+
+        guard !hourlyCodes.isEmpty else {
+            return fallback
+        }
+
+        let counts = Dictionary(
+            grouping: hourlyCodes,
+            by: { $0 }
+        )
+        .mapValues(\.count)
+
+        return counts.max(by: { $0.value < $1.value })?.key ?? fallback
     }
 }
 
@@ -523,5 +652,17 @@ extension WeatherCondition {
                 ? "cloud.sun.fill"
                 : "cloud.moon.fill"
         }
+    }
+}
+
+private extension Array {
+
+    subscript(safe index: Int) -> Element? {
+
+        guard indices.contains(index) else {
+            return nil
+        }
+
+        return self[index]
     }
 }
