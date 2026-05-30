@@ -10,6 +10,7 @@ struct DailyWeatherInfo {
     let date: Date
 
     let symbolName: String
+    let weatherCode: Int
 
     let minTemperature: Int
     let maxTemperature: Int
@@ -105,7 +106,62 @@ private struct OpenMeteoHourly: Decodable {
 
         let snapshot = weatherByDay
 
-        return snapshot[key]
+        guard var weather = snapshot[key] else {
+            return nil
+        }
+
+        if Calendar.current.isDateInToday(date),
+           let sunrise = weather.sunrise,
+           let sunset = weather.sunset {
+
+            let now = Date()
+
+            let calendar = Calendar.current
+
+            let currentHour = calendar.component(.hour, from: now)
+            let sunriseHour = calendar.component(.hour, from: sunrise)
+            let sunsetHour = calendar.component(.hour, from: sunset)
+
+            let isDay = currentHour >= sunriseHour
+                && currentHour < sunsetHour
+
+            weather = DailyWeatherInfo(
+                date: weather.date,
+                symbolName: {
+
+                    let generated = symbol(
+                        for: weather.weatherCode,
+                        cloudCover: weather.cloudCover,
+                        precipitationChance: weather.precipitationChance,
+                        precipitationAmount: weather.precipitationAmount,
+                        windSpeed: weather.windSpeed,
+                        isDay: isDay
+                    )
+
+                    guard !isDay else {
+                        return generated
+                    }
+
+                    return generated
+                        .replacingOccurrences(of: "sun.max", with: "moon.stars")
+                        .replacingOccurrences(of: "cloud.sun", with: "cloud.moon")
+                        .replacingOccurrences(of: "sun.haze", with: "moon.haze")
+                }(),
+                weatherCode: weather.weatherCode,
+                minTemperature: weather.minTemperature,
+                maxTemperature: weather.maxTemperature,
+                precipitationChance: weather.precipitationChance,
+                precipitationAmount: weather.precipitationAmount,
+                windSpeed: weather.windSpeed,
+                sunrise: weather.sunrise,
+                sunset: weather.sunset,
+                uvIndex: weather.uvIndex,
+                airQualityIndex: weather.airQualityIndex,
+                cloudCover: weather.cloudCover
+            )
+        }
+
+        return weather
     }
 
     func refreshIfNeeded() async {
@@ -200,7 +256,13 @@ private struct OpenMeteoHourly: Decodable {
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = [.withFullDate]
 
-            let dateTimeFormatter = ISO8601DateFormatter()
+            let localDateFormatter = DateFormatter()
+
+            localDateFormatter.locale = Locale(identifier: "en_US_POSIX")
+
+            localDateFormatter.timeZone = .current
+
+            localDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
 
             for index in decoded.daily.time.indices {
 
@@ -250,13 +312,33 @@ private struct OpenMeteoHourly: Decodable {
                     ? pm10Values[index]
                     : nil
 
-                let sunrise = dateTimeFormatter.date(
+                let sunrise = localDateFormatter.date(
                     from: decoded.daily.sunrise[index]
                 )
 
-                let sunset = dateTimeFormatter.date(
+                let sunset = localDateFormatter.date(
                     from: decoded.daily.sunset[index]
                 )
+
+                let now = Date()
+
+                let isCurrentlyDaytime: Bool
+
+                if Calendar.current.isDateInToday(date),
+                   let sunrise,
+                   let sunset {
+
+                    let currentHour = Calendar.current.component(.hour, from: now)
+                    let sunriseHour = Calendar.current.component(.hour, from: sunrise)
+                    let sunsetHour = Calendar.current.component(.hour, from: sunset)
+
+                    isCurrentlyDaytime = currentHour >= sunriseHour
+                        && currentHour < sunsetHour
+
+                } else {
+
+                    isCurrentlyDaytime = true
+                }
 
                 updated[key] = DailyWeatherInfo(
                     date: date,
@@ -266,8 +348,9 @@ private struct OpenMeteoHourly: Decodable {
                         precipitationChance: Int(precipitationChance.rounded()),
                         precipitationAmount: precipitationAmount,
                         windSpeed: Int(windSpeed.rounded()),
-                        isDay: true
+                        isDay: isCurrentlyDaytime
                     ),
+                    weatherCode: dominantWeatherCode,
                     minTemperature: Int(decoded.daily.temperature_2m_min[index].rounded()),
                     maxTemperature: Int(decoded.daily.temperature_2m_max[index].rounded()),
                     precipitationChance: Int(precipitationChance.rounded()),

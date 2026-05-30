@@ -78,7 +78,7 @@ struct WeatherForecastView: View {
                             )
                     )
 
-                Image(systemName: "cloud.sun.fill")
+                Image(systemName: headerWeatherSymbol)
                     .symbolRenderingMode(.multicolor)
                     .font(.system(size: 23, weight: .medium))
             }
@@ -487,6 +487,16 @@ struct WeatherForecastView: View {
                 .weekday(.wide)
         )
     }
+}
+
+private var headerWeatherSymbol: String {
+
+    let now = Date()
+    let hour = Calendar.current.component(.hour, from: now)
+
+    return (hour >= 20 || hour < 6)
+        ? "cloud.moon.fill"
+        : "cloud.sun.fill"
 }
 
 #Preview {
