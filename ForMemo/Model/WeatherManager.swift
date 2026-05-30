@@ -412,6 +412,13 @@ private struct OpenMeteoHourly: Decodable {
     ) -> [Int] {
 
         let formatter = ISO8601DateFormatter()
+        let calendar = Calendar.current
+
+        let (startHour, endHour) = weatherEvaluationWindow(for: date)
+
+    #if DEBUG
+        print("🌤️ Weather code window: \(startHour)-\(endHour)")
+    #endif
 
         return zip(hourly.time.indices, hourly.time)
             .compactMap { index, rawDate in
@@ -420,15 +427,13 @@ private struct OpenMeteoHourly: Decodable {
                     return nil
                 }
 
-                let calendar = Calendar.current
-
                 guard calendar.isDate(parsedDate, inSameDayAs: date) else {
                     return nil
                 }
 
                 let hour = calendar.component(.hour, from: parsedDate)
 
-                guard (10...17).contains(hour) else {
+                guard (startHour...endHour).contains(hour) else {
                     return nil
                 }
 
@@ -442,6 +447,13 @@ private struct OpenMeteoHourly: Decodable {
     ) -> Int {
 
         let formatter = ISO8601DateFormatter()
+        let calendar = Calendar.current
+
+        let (startHour, endHour) = weatherEvaluationWindow(for: date)
+
+    #if DEBUG
+        print("🌧️ Rain probability window: \(startHour)-\(endHour)")
+    #endif
 
         let values = zip(hourly.time.indices, hourly.time)
             .compactMap { index, rawDate -> Int? in
@@ -450,15 +462,13 @@ private struct OpenMeteoHourly: Decodable {
                     return nil
                 }
 
-                let calendar = Calendar.current
-
                 guard calendar.isDate(parsedDate, inSameDayAs: date) else {
                     return nil
                 }
 
                 let hour = calendar.component(.hour, from: parsedDate)
 
-                guard (10...17).contains(hour) else {
+                guard (startHour...endHour).contains(hour) else {
                     return nil
                 }
 
@@ -471,8 +481,6 @@ private struct OpenMeteoHourly: Decodable {
 
         let sorted = values.sorted()
 
-        // Use median instead of average to avoid a single rainy hour
-        // making the entire day look rainy.
         return sorted[sorted.count / 2]
     }
 
@@ -482,6 +490,13 @@ private struct OpenMeteoHourly: Decodable {
     ) -> Double {
 
         let formatter = ISO8601DateFormatter()
+        let calendar = Calendar.current
+
+        let (startHour, endHour) = weatherEvaluationWindow(for: date)
+
+    #if DEBUG
+        print("🌦️ Rain amount window: \(startHour)-\(endHour)")
+    #endif
 
         return zip(hourly.time.indices, hourly.time)
             .compactMap { index, rawDate -> Double? in
@@ -490,15 +505,13 @@ private struct OpenMeteoHourly: Decodable {
                     return nil
                 }
 
-                let calendar = Calendar.current
-
                 guard calendar.isDate(parsedDate, inSameDayAs: date) else {
                     return nil
                 }
 
                 let hour = calendar.component(.hour, from: parsedDate)
 
-                guard (10...17).contains(hour) else {
+                guard (startHour...endHour).contains(hour) else {
                     return nil
                 }
 
@@ -586,6 +599,63 @@ private struct OpenMeteoHourly: Decodable {
         return weightedScores
             .max(by: { $0.value < $1.value })?
             .key ?? fallback
+    }
+    
+    
+    private func weatherEvaluationWindow(
+        for date: Date
+    ) -> (startHour: Int, endHour: Int) {
+
+        let calendar = Calendar.current
+
+        guard calendar.isDateInToday(date) else {
+
+            return (10, 17)
+        }
+
+        let currentHour = calendar.component(.hour, from: .now)
+
+        switch currentHour {
+
+        case ..<10:
+
+            return (10, 17)
+
+        case 10..<14:
+
+            return (
+                currentHour,
+                min(currentHour + 7, 18)
+            )
+
+        case 14..<16:
+
+            return (
+                currentHour,
+                min(currentHour + 5, 19)
+            )
+
+        case 16..<18:
+
+            return (
+                currentHour,
+                min(currentHour + 4, 20)
+            )
+
+        case 18..<21:
+
+            return (
+                currentHour,
+                21
+            )
+
+        default:
+
+            return (
+                currentHour,
+                23
+            )
+        }
     }
 }
 

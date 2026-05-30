@@ -5,9 +5,18 @@ import CoreData
 import CoreLocation
 
 
-enum SoundPickerContext {
+enum SoundPickerContext: Identifiable {
     case task
     case location
+
+    var id: String {
+        switch self {
+        case .task:
+            return "task"
+        case .location:
+            return "location"
+        }
+    }
 }
 
 struct SettingsView: View {
@@ -45,8 +54,7 @@ struct SettingsView: View {
     private var recentlyDeletedRetentionDays: Int = 30
     @State private var isNotificationEnabled: Bool = false
     @Environment(\.scenePhase) private var scenePhase
-    @State private var showSoundPicker = false
-    @State private var soundPickerContext: SoundPickerContext = .task
+    @State private var soundPickerContext: SoundPickerContext?
     @State private var showDisclaimer = false
     @AppStorage("notificationSoundName")
     private var notificationSoundName: String = ""
@@ -274,7 +282,6 @@ struct SettingsView: View {
                     
                     Button {
                         soundPickerContext = .task
-                        showSoundPicker = true
                     } label: {
                         HStack(spacing: 12) {
                             Image(systemName: "music.note")
@@ -355,7 +362,6 @@ struct SettingsView: View {
                             }
                             Button {
                                 soundPickerContext = .location
-                                showSoundPicker = true
                             } label: {
                                 HStack(spacing: 12) {
                                     Image(systemName: "sensor.tag.radiowaves.forward")
@@ -765,9 +771,8 @@ Attivazione: \(triggerInfo)
             ) { _ in
                 syncLocationPermission()
             }
-            .fullScreenCover(isPresented: $showSoundPicker) {
-                NotificationSoundPickerView(context: soundPickerContext)
-                    .id(soundPickerContext)
+            .fullScreenCover(item: $soundPickerContext) { context in
+                NotificationSoundPickerView(context: context)
             }
             .fullScreenCover(isPresented: $showQuickGuide) {
                 AppQuickGuideView()
