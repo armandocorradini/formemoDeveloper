@@ -42,8 +42,9 @@ final class AttachmentImporter {
         )[.size] as? Int64) ?? 0
 
         guard verifiedSize > 0,
-              let data = try? Data(contentsOf: destinationURL),
-              !data.isEmpty else {
+              FileManager.default.isReadableFile(
+                atPath: destinationURL.path
+              ) else {
 
             try? FileManager.default.removeItem(at: destinationURL)
 
@@ -97,35 +98,25 @@ final class AttachmentImporter {
         
         try fm.copyItem(at: originalURL, to: destination)
 
-        // 🔥 Force iCloud materialization/upload
-        try? fm.startDownloadingUbiquitousItem(at: destination)
-
         // 🔥 Verify readable non-empty file
         var readable = false
 
         var materialized = false
 
         for _ in 0..<20 {
-
             if fm.fileExists(atPath: destination.path) {
-
                 let size = (try? fm.attributesOfItem(
                     atPath: destination.path
                 )[.size] as? Int64) ?? 0
-
                 if size > 0,
-                   let data = try? Data(contentsOf: destination),
-                   !data.isEmpty {
+                   fm.isReadableFile(atPath: destination.path) {
 
                     materialized = true
                     readable = true
                     break
                 }
             }
-
-            RunLoop.current.run(
-                until: Date().addingTimeInterval(0.25)
-            )
+            Thread.sleep(forTimeInterval: 0.08)
         }
 
         guard materialized, readable else {

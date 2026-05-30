@@ -70,8 +70,12 @@ struct TaskDetailView: View {
     private var attachments: [TaskAttachment]
     
     private var taskAttachments: [TaskAttachment] {
-        attachments.filter { $0.task?.id == task.id }
+        attachments.filter {
+            $0.task?.persistentModelID == task.persistentModelID
+        }
     }
+    
+    
     @Environment(\.scenePhase) private var scenePhase
     
     @State private var cameraPhoto: PhotosPickerItem?
@@ -352,7 +356,18 @@ struct TaskDetailView: View {
             }
         }
         .sheet(item: $previewItem) { item in
-            QuickLookPreview(url: item.url)
+
+            if FileManager.default.fileExists(atPath: item.url.path) {
+
+                QuickLookPreview(url: item.url)
+
+            } else {
+
+                ContentUnavailableView(
+                    "File unavailable",
+                    systemImage: "icloud.slash"
+                )
+            }
         }
         .sheet(isPresented: $showingLocationPicker) {
             LocationPickerView { name, coordinate in
@@ -500,15 +515,39 @@ struct TaskDetailView: View {
         
         let attachments = taskAttachments
         
-        Task(priority: .utility) {
-            
+        Task.detached(priority: .utility) {
+
             for attachment in attachments {
-                
-                guard let url = attachment.fileURL else { continue }
-                
-                try? FileManager.default.startDownloadingUbiquitousItem(at: url)
-                
-                _ = try? url.checkResourceIsReachable()
+
+                guard let url = attachment.fileURL else {
+                    continue
+                }
+
+                autoreleasepool {
+
+                    do {
+
+                        let values = try url.resourceValues(
+                            forKeys: [
+                                .isUbiquitousItemKey,
+                                .ubiquitousItemDownloadingStatusKey
+                            ]
+                        )
+
+                        guard values.isUbiquitousItem == true else {
+                            return
+                        }
+
+                        if values.ubiquitousItemDownloadingStatus
+                            != URLUbiquitousItemDownloadingStatus.current {
+
+                            try? FileManager.default.startDownloadingUbiquitousItem(at: url)
+                        }
+
+                    } catch {
+
+                    }
+                }
             }
         }
     }
