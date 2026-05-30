@@ -198,7 +198,7 @@ struct AppQuickGuideView: View {
 
             .init(
                 title: String(localized:"Backup & Restore"),
-                description: String(localized:"Create complete backups of tasks, reminders and attachments to safely restore your data or transfer everything to another device."),
+                description: String(localized:"Create complete backups of tasks, reminders, attachments and loyalty cards to safely restore your data or transfer everything to another device."),
                 icon: "externaldrive.badge.timemachine",
                 tint: .indigo
             )

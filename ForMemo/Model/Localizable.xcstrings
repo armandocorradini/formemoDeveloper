@@ -2181,6 +2181,34 @@
         }
       }
     },
+    "Are loyalty cards included in backups?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sind Kundenkarten in den Backups enthalten?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Las tarjetas de fidelidad están incluidas en las copias de seguridad?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les cartes de fidélité sont-elles incluses dans les sauvegardes ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le carte fedeltà sono incluse nei backup?"
+          }
+        }
+      }
+    },
     "Are you sure? This cannot be undone." : {
       "localizations" : {
         "de" : {
@@ -4183,30 +4211,30 @@
         }
       }
     },
-    "Create complete backups of tasks, reminders and attachments to safely restore your data or transfer everything to another device." : {
+    "Create complete backups of tasks, reminders, attachments and loyalty cards to safely restore your data or transfer everything to another device." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstellen Sie vollständige Backups von Aufgaben, Erinnerungen und Anhängen, um Ihre Daten sicher wiederherzustellen oder auf ein anderes Gerät zu übertragen."
+            "value" : "Erstelle vollständige Backups von Aufgaben, Erinnerungen, Anhängen und Kundenkarten, um deine Daten sicher wiederherzustellen oder alles auf ein anderes Gerät zu übertragen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea copias de seguridad completas de tareas, recordatorios y archivos adjuntos para restaurar tus datos de forma segura o transferirlos a otro dispositivo."
+            "value" : "Crea copias de seguridad completas de tareas, recordatorios, archivos adjuntos y tarjetas de fidelidad para restaurar tus datos de forma segura o transferirlo todo a otro dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez des sauvegardes complètes des tâches, rappels et pièces jointes afin de restaurer vos données en toute sécurité ou de les transférer vers un autre appareil."
+            "value" : "Créez des sauvegardes complètes des tâches, rappels, pièces jointes et cartes de fidélité afin de restaurer vos données en toute sécurité ou de tout transférer vers un autre appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea backup completi di attività, promemoria e allegati per ripristinare in sicurezza i tuoi dati o trasferirli su un altro dispositivo."
+            "value" : "Crea backup completi di attività, promemoria, allegati e carte fedeltà per ripristinare in sicurezza i tuoi dati o trasferire tutto su un altro dispositivo."
           }
         }
       }
@@ -6539,30 +6567,30 @@
         }
       }
     },
-    "ForMemo lets you create, organize, and manage tasks in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking." : {
+    "ForMemo lets you create, organize, and manage tasks in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards, with barcode scanning and quick access to your saved cards.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo hilft dir, Aufgaben einfach und intuitiv zu erstellen, zu organisieren und zu verwalten.\n\nDu kannst Aufgaben schnell erstellen, auch mit Siri. Anhänge (Fotos, Dokumente, Audio) können direkt in der App hinzugefügt werden.\n\nWenn du ein Fälligkeitsdatum festlegst, plant die App automatisch eine Benachrichtigung: zum Zeitpunkt der Fälligkeit oder im Voraus (1 bis 7 Tage), je nach Einstellungen.\nDu kannst außerdem eine eigene Erinnerung und eine standortbasierte Benachrichtigung hinzufügen.\n\nBei Erinnerungen kannst du selbst wählen, wann du benachrichtigt werden möchtest, oder mit Siri den optimalen Zeitpunkt automatisch festlegen lassen.\n\nDu kannst einer Aufgabe einen Ort zuweisen und wirst benachrichtigt, wenn du dort ankommst. Navigations-Apps können direkt geöffnet werden.\n\nDie App bietet Anpassungsoptionen, einen hellen oder dunklen Modus sowie verschiedene Ansichten.\n\nDu kannst Aufgaben aus Kalender, Apple Erinnerungen oder CSV-Dateien importieren und in Kalender, CSV oder im ICS-Format exportieren.\n\nVerfügbar in Englisch, Italienisch, Französisch, Deutsch und Spanisch.\n\nDeine Daten bleiben auf deinem Gerät (oder in iCloud, wenn aktiviert). Kein Konto erforderlich und kein Tracking."
+            "value" : "ForMemo ermöglicht es dir, Aufgaben einfach und intuitiv zu erstellen, zu organisieren und zu verwalten.\n\nDu kannst Aufgaben schnell erstellen, sogar mit Siri. Anhänge (Fotos, Dokumente, Audio) können direkt in der App hinzugefügt werden.\n\nWenn du ein Fälligkeitsdatum festlegst, plant die App automatisch eine Benachrichtigung: zum Fälligkeitszeitpunkt oder im Voraus (von 1 bis 7 Tagen), basierend auf deinen Einstellungen. Du kannst außerdem eine benutzerdefinierte Erinnerung und eine standortbasierte Benachrichtigung hinzufügen.\n\nMit Erinnerungen kannst du wählen, wann du benachrichtigt werden möchtest, oder mit Siri die Erinnerungen automatisch festlegen lassen.\n\nDu kannst einen Standort mit einer Aufgabe verknüpfen und bei deiner Ankunft eine Benachrichtigung erhalten, mit der Möglichkeit, Navigations-Apps zu öffnen.\n\nDie App bietet Anpassungsoptionen, Hell- und Dunkelmodus sowie verschiedene Ansichtslayouts.\n\nDu kannst Aufgaben aus Kalender, Apple Erinnerungen oder CSV-Dateien importieren und im Kalender-, CSV- oder ICS-Format exportieren.\n\nDie App enthält außerdem einen Wallet-Bereich für Kundenkarten mit Barcode-Scan und schnellem Zugriff auf gespeicherte Karten.\n\nVerfügbar auf Englisch, Italienisch, Französisch, Deutsch und Spanisch.\n\nDeine Daten bleiben auf deinem Gerät (oder in iCloud, falls aktiviert). Kein Konto erforderlich und kein Tracking."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo te permite crear, organizar y gestionar tareas de forma sencilla e intuitiva.\n\nPuedes crear tareas rápidamente, incluso con Siri. Los archivos adjuntos (fotos, documentos, audio) se pueden añadir directamente en la app.\n\nCuando estableces una fecha de vencimiento, la app programa automáticamente una notificación en el momento indicado y, con antelación (de 1 a 7 días) según la configuración.\nTambién puedes añadir un recordatorio personalizado y una notificación basada en la ubicación.\n\nCon los recordatorios puedes elegir cuándo recibir la notificación o, usando Siri, dejar que se configure automáticamente.\n\nPuedes asociar una ubicación a una tarea y recibir una notificación al llegar, con la opción de abrir apps de navegación.\n\nLa app ofrece opciones de personalización, modo claro u oscuro y diferentes vistas.\n\nPuedes importar tareas desde Calendario, Recordatorios de Apple o archivos CSV, y exportarlas a Calendario, CSV o formato ICS.\n\nDisponible en inglés, italiano, francés, alemán y español.\n\nTus datos permanecen en tu dispositivo (o en iCloud si está activado). No se requiere cuenta ni hay seguimiento."
+            "value" : "ForMemo te permite crear, organizar y gestionar tareas de forma simple e intuitiva.\n\nPuedes crear tareas rápidamente, incluso con Siri. Los archivos adjuntos (fotos, documentos, audio) pueden añadirse directamente dentro de la aplicación.\n\nCuando estableces una fecha de vencimiento, la aplicación programa automáticamente una notificación: en la hora prevista o con antelación (de 1 a 7 días), según tu configuración. También puedes añadir un recordatorio personalizado y una notificación basada en la ubicación.\n\nCon los recordatorios, puedes elegir cuándo recibir una notificación o, usando Siri, dejar que se configuren automáticamente.\n\nPuedes asociar una ubicación a una tarea y recibir una notificación al llegar, con la posibilidad de abrir aplicaciones de navegación para llegar allí.\n\nLa aplicación ofrece opciones de personalización, modo claro y oscuro y diferentes diseños de visualización.\n\nPuedes importar tareas desde Calendario, Recordatorios de Apple o archivos CSV, y exportarlas en formato Calendario, CSV o ICS.\n\nLa aplicación también incluye una sección Wallet para tarjetas de fidelidad, con escaneo de códigos de barras y acceso rápido a tus tarjetas guardadas.\n\nDisponible en inglés, italiano, francés, alemán y español.\n\nTus datos permanecen en tu dispositivo (o en iCloud, si está habilitado). No se requiere cuenta y no hay seguimiento."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo vous permet de créer, organiser et gérer vos tâches de manière simple et intuitive.\n\nVous pouvez créer rapidement des tâches, même avec Siri. Les pièces jointes (photos, documents, audio) peuvent être ajoutées directement dans l’app.\n\nLorsque vous définissez une date d’échéance, l’app programme automatiquement une notification : à l’heure prévue ou à l’avance (de 1 à 7 jours), selon vos réglages.\nVous pouvez également ajouter un rappel personnalisé et une notification basée sur la position.\n\nAvec les rappels, vous pouvez choisir quand être averti ou, en utilisant Siri, laisser l’app définir automatiquement le meilleur moment.\n\nVous pouvez associer un lieu à une tâche et recevoir une notification lorsque vous arrivez, avec la possibilité d’ouvrir des apps de navigation pour vous y rendre.\n\nL’app propose des options de personnalisation, un mode clair ou sombre et différentes vues.\n\nVous pouvez importer des tâches depuis Calendrier, Rappels Apple ou des fichiers CSV, et les exporter vers Calendrier, CSV ou au format ICS.\n\nDisponible en anglais, italien, français, allemand et espagnol.\n\nVos données restent sur votre appareil (ou sur iCloud si activé). Aucun compte requis et aucun suivi."
+            "value" : "ForMemo vous permet de créer, organiser et gérer vos tâches de manière simple et intuitive.\n\nVous pouvez créer rapidement des tâches, même avec Siri. Des pièces jointes (photos, documents, audio) peuvent être ajoutées directement dans l’application.\n\nLorsque vous définissez une date d’échéance, l’application programme automatiquement une notification : à l’heure prévue ou à l’avance (de 1 à 7 jours), selon vos paramètres. Vous pouvez également ajouter un rappel personnalisé et une notification basée sur la localisation.\n\nAvec les rappels, vous pouvez choisir quand être notifié ou, avec Siri, les laisser être configurés automatiquement.\n\nVous pouvez associer un lieu à une tâche et recevoir une notification à votre arrivée, avec la possibilité d’ouvrir des applications de navigation pour vous y rendre.\n\nL’application propose des options de personnalisation, un mode clair et sombre, ainsi que différentes mises en page.\n\nVous pouvez importer des tâches depuis Calendrier, Rappels Apple ou des fichiers CSV, et les exporter aux formats Calendrier, CSV ou ICS.\n\nL’application inclut également une section Wallet pour les cartes de fidélité, avec lecture de codes-barres et accès rapide à vos cartes enregistrées.\n\nDisponible en anglais, italien, français, allemand et espagnol.\n\nVos données restent sur votre appareil (ou sur iCloud, si activé). Aucun compte requis et aucun suivi."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo ti permette di creare, organizzare e gestire attività in modo semplice e intuitivo.\n\nPuoi creare attività rapidamente, anche con Siri. Gli allegati (foto, documenti, audio) possono essere aggiunti direttamente nell’app.\n\nQuando imposti una scadenza, l’app crea automaticamente una notifica alla scadenza, e in anticipo (da 1 a 7 giorni) in base alle impostazioni.\nPuoi anche aggiungere un promemoria personalizzato e una notifica basata sulla posizione.\n\nCon i promemoria puoi scegliere manualmente quando essere avvisato oppure, usando Siri, lasciare che venga impostato automaticamente.\n\nPuoi associare un luogo a un’attività e ricevere una notifica quando arrivi a destinazione, con possibilità di aprire app di navigazione.\n\nL’app offre opzioni di personalizzazione, tema chiaro o scuro e diverse modalità di visualizzazione.\n\nPuoi importare attività da Calendario, Promemoria Apple o file CSV, ed esportarle in Calendario, CSV o formato ICS.\n\nDisponibile in italiano, inglese, francese, tedesco e spagnolo.\n\nI tuoi dati restano sul dispositivo (o su iCloud, se attivo). Nessun account richiesto e nessun tracciamento."
+            "value" : "ForMemo ti permette di creare, organizzare e gestire attività in modo semplice e intuitivo.\n\nPuoi creare rapidamente attività, anche con Siri. Allegati (foto, documenti, audio) possono essere aggiunti direttamente all’interno dell’app.\n\nQuando imposti una data di scadenza, l’app programma automaticamente una notifica: all’orario della scadenza oppure in anticipo (da 1 a 7 giorni), in base alle tue impostazioni. Puoi anche aggiungere un promemoria personalizzato e una notifica basata sulla posizione.\n\nCon i promemoria puoi scegliere quando ricevere una notifica oppure, usando Siri, lasciare che vengano impostati automaticamente.\n\nPuoi associare una posizione a un’attività e ricevere una notifica quando arrivi, con la possibilità di aprire app di navigazione per raggiungerla.\n\nL’app offre opzioni di personalizzazione, modalità chiara e scura e diversi layout di visualizzazione.\n\nPuoi importare attività da Calendario, Promemoria Apple o file CSV, ed esportarle in formato Calendario, CSV o ICS.\n\nL’app include anche una sezione Wallet per le carte fedeltà, con scansione barcode e accesso rapido alle carte salvate.\n\nDisponibile in inglese, italiano, francese, tedesco e spagnolo.\n\nI tuoi dati restano sul tuo dispositivo (o su iCloud, se abilitato). Nessun account richiesto e nessun tracciamento."
           }
         }
       }
@@ -18439,30 +18467,30 @@
         }
       }
     },
-    "Yes. ForMemo allows you to create complete backups of your tasks, reminders, attachments, and settings so you can restore them later or transfer them to another device." : {
+    "Yes. ForMemo allows you to create complete backups of your tasks, reminders, attachments, loyalty cards, and settings so you can restore them later or transfer them to another device." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. ForMemo ermöglicht es Ihnen, vollständige Backups Ihrer Aufgaben, Erinnerungen, Anhänge und Einstellungen zu erstellen, damit Sie diese später wiederherstellen oder auf ein anderes Gerät übertragen können."
+            "value" : "Ja. ForMemo ermöglicht es dir, vollständige Backups deiner Aufgaben, Erinnerungen, Anhänge, Kundenkarten und Einstellungen zu erstellen, damit du sie später wiederherstellen oder auf ein anderes Gerät übertragen kannst."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. ForMemo te permite crear copias de seguridad completas de tus tareas, recordatorios, archivos adjuntos y ajustes para poder restaurarlos más adelante o transferirlos a otro dispositivo."
+            "value" : "Sí. ForMemo te permite crear copias de seguridad completas de tus tareas, recordatorios, archivos adjuntos, tarjetas de fidelidad y configuraciones para poder restaurarlas más adelante o transferirlo todo a otro dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. ForMemo vous permet de créer des sauvegardes complètes de vos tâches, rappels, pièces jointes et paramètres afin de pouvoir les restaurer plus tard ou les transférer vers un autre appareil."
+            "value" : "Oui. ForMemo vous permet de créer des sauvegardes complètes de vos tâches, rappels, pièces jointes, cartes de fidélité et paramètres afin de pouvoir les restaurer plus tard ou tout transférer vers un autre appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. ForMemo ti permette di creare backup completi di attività, promemoria, allegati e impostazioni così da poterli ripristinare in seguito o trasferire su un altro dispositivo."
+            "value" : "Sì. ForMemo ti permette di creare backup completi di attività, promemoria, allegati, carte fedeltà e impostazioni, così da poterli ripristinare in seguito o trasferire tutto su un altro dispositivo."
           }
         }
       }
@@ -18547,6 +18575,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Se gli annunci delle notifiche di Siri sono abilitati nelle Impostazioni di iOS, Siri può leggere ad alta voce le notifiche di ForMemo su dispositivi supportati come AirPods o CarPlay."
+          }
+        }
+      }
+    },
+    "Yes. Loyalty cards saved in the Wallet section are included in backups and can be restored on compatible devices." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Kundenkarten, die im Wallet-Bereich gespeichert sind, werden in Backups einbezogen und können auf kompatiblen Geräten wiederhergestellt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Las tarjetas de fidelidad guardadas en la sección Wallet están incluidas en las copias de seguridad y pueden restaurarse en dispositivos compatibles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Les cartes de fidélité enregistrées dans la section Wallet sont incluses dans les sauvegardes et peuvent être restaurées sur des appareils compatibles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Le carte fedeltà salvate nella sezione Wallet sono incluse nei backup e possono essere ripristinate su dispositivi compatibili."
           }
         }
       }
@@ -18753,30 +18809,30 @@
         }
       }
     },
-    "Yes. You can import a backup file on another compatible device to restore your tasks and related data." : {
+    "Yes. You can import a backup file on another compatible device to restore your tasks, loyalty cards, attachments, and related data." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Sie können eine Backup-Datei auf einem anderen kompatiblen Gerät importieren, um Ihre Aufgaben und zugehörigen Daten wiederherzustellen."
+            "value" : "Ja. Du kannst eine Backup-Datei auf einem anderen kompatiblen Gerät importieren, um deine Aufgaben, Kundenkarten, Anhänge und zugehörigen Daten wiederherzustellen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes importar un archivo de copia de seguridad en otro dispositivo compatible para restaurar tus tareas y datos relacionados."
+            "value" : "Sí. Puedes importar un archivo de copia de seguridad en otro dispositivo compatible para restaurar tus tareas, tarjetas de fidelidad, archivos adjuntos y datos relacionados."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Vous pouvez importer un fichier de sauvegarde sur un autre appareil compatible afin de restaurer vos tâches et données associées."
+            "value" : "Oui. Vous pouvez importer un fichier de sauvegarde sur un autre appareil compatible afin de restaurer vos tâches, cartes de fidélité, pièces jointes et données associées."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare le tue attività e i relativi dati."
+            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare attività, carte fedeltà, allegati e dati correlati."
           }
         }
       }
