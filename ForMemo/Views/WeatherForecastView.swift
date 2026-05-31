@@ -160,93 +160,93 @@ struct WeatherForecastView: View {
 
         let weather = weatherManager.weather(for: date)
 
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
 
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 8) {
 
-                Text(dayTitle(for: date))
-                    .font(.subheadline.weight(.bold))
-                    .frame(height: 22)
+                HStack(alignment: .center, spacing: 10) {
 
-                Text(
-                    date.formatted(
-                        .dateTime
-                            .day()
-                            .month(.abbreviated)
-                    )
-                )
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-                .frame(height: 20, alignment: .center)
+                    VStack(alignment: .leading, spacing: 1) {
+
+                        Text(dayTitle(for: date))
+                            .font(.subheadline.weight(.bold))
+
+                        Text(
+                            date.formatted(
+                                .dateTime
+                                    .day()
+                                    .month(.abbreviated)
+                            )
+                        )
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    }
+                    .frame(minHeight: 32, alignment: .center)
+
+                    Spacer(minLength: 0)
+
+                    if let weather {
+
+                        HStack(alignment: .center, spacing: 4) {
+
+                            Text(weatherDescription(for: weather.symbolName))
+                                .font(.callout.weight(.medium))
+                                .lineLimit(2)
+                                .multilineTextAlignment(.trailing)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(width: 110, alignment: .trailing)
+
+                            Image(systemName: weather.symbolName)
+                                .symbolRenderingMode(.multicolor)
+                                .font(.system(size: 23, weight: .medium))
+                                .offset(y: -1)
+                        }
+                    }
+                }
+                .frame(minHeight: 32, alignment: .center)
 
                 if let weather {
 
-                    HStack(spacing: 14) {
+                    HStack(alignment: .center, spacing: 14) {
 
                         Label(
                             "\(weather.minTemperature)°",
                             systemImage: "thermometer.low"
                         )
+                        .font(.callout.weight(.medium))
 
                         Label(
                             "\(weather.maxTemperature)°",
                             systemImage: "thermometer.high"
                         )
-                    }
-                    .frame(height: 24, alignment: .center)
-                }
-            }
-
-            Spacer(minLength: 0)
-
-            if let weather {
-
-                VStack(alignment: .trailing, spacing: 0) {
-
-                    HStack(alignment: .center, spacing: 6) {
+                        .font(.callout.weight(.medium))
 
                         Spacer(minLength: 0)
 
-                        Text(weatherDescription(for: weather.symbolName))
-                            .font(.callout.weight(.semibold))
-                            .multilineTextAlignment(.trailing)
-                            .lineLimit(1)
-                            .layoutPriority(1)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
+                        HStack(alignment: .center, spacing: 10) {
 
-                        Image(systemName: weather.symbolName)
-                            .symbolRenderingMode(.multicolor)
-                            .font(.system(size: 23, weight: .medium))
+                            Label(
+                                (Double(weather.precipitationChance) / 100)
+                                    .formatted(
+                                        .percent
+                                            .precision(.fractionLength(0))
+                                    ),
+                                systemImage: "cloud.rain"
+                            )
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.secondary)
+
+                            Label(
+                                "\(weather.windSpeed) km/h",
+                                systemImage: "wind"
+                            )
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(windColor(for: weather.windSpeed))
+                        }
                     }
-                    .frame(minHeight: 24)
+                    .frame(height: 24, alignment: .center)
 
-                    HStack(alignment: .center, spacing: 14) {
-
-                        Label(
-                            (Double(weather.precipitationChance) / 100)
-                                .formatted(
-                                    .percent
-                                        .precision(.fractionLength(0))
-                                ),
-                            systemImage: "cloud.rain"
-                        )
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        
-                        
-                        Label(
-                            "\(weather.windSpeed) km/h",
-                            systemImage: "wind"
-                        )
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(windColor(for: weather.windSpeed))
-
-                        
-                    }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .frame(minHeight: 24)
-
-                    HStack(alignment: .center, spacing: 14) {
+                    HStack(spacing: 14) {
 
                         if let sunrise = weather.sunrise {
 
@@ -273,11 +273,8 @@ struct WeatherForecastView: View {
                             )
                             .font(.caption)
                         }
-                    }
-                    .foregroundStyle(.primary.opacity(0.72))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
 
-                    HStack(spacing: 18) {
+                        Spacer(minLength: 0)
 
                         if let uvIndex = weather.uvIndex {
 
@@ -299,16 +296,19 @@ struct WeatherForecastView: View {
                             .foregroundStyle(aqiColor(for: airQuality))
                         }
                     }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .foregroundStyle(.primary.opacity(0.72))
                 }
+            }
 
-            } else {
+            if weather == nil {
+
+                Spacer(minLength: 0)
 
                 ProgressView()
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 9)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
         .background(
             RoundedRectangle(
                 cornerRadius: 28,
@@ -487,6 +487,7 @@ struct WeatherForecastView: View {
             .dateTime
                 .weekday(.wide)
         )
+        .capitalized
     }
 }
 

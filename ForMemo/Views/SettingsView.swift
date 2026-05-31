@@ -185,10 +185,20 @@ struct SettingsView: View {
 
                     
                     HStack(spacing: 12){
-                        Image(systemName: "paintbrush").foregroundStyle(.blue)
+                        Image(systemName: "paintbrush")
+                            .foregroundStyle(.blue)
                             .frame(width: iconWidth)
-                        Text("Theme")
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Theme")
+
+                            Text("Optimized for Dark Mode")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
                         Spacer()
+
                         Picker("", selection: $selectedTheme) {
                             ForEach(AppTheme.allCases) { theme in
                                 Text(theme.description).tag(theme)

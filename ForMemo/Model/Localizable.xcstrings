@@ -10234,6 +10234,34 @@
         }
       }
     },
+    "Optimized for Dark Mode" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimiert für den Dunkelmodus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimizado para el modo oscuro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optimisé pour le mode sombre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ottimizzato per la modalità scura"
+          }
+        }
+      }
+    },
     "Optional Notes" : {
       "localizations" : {
         "de" : {
