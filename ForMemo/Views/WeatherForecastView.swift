@@ -31,7 +31,8 @@ struct WeatherForecastView: View {
                         forecastHeader
                         forecastCards
                     }
-                    .padding()
+                    .padding(.horizontal, 8)
+                    .padding(.top, 12)
                     .padding(.bottom, 40)
                 }
             }
@@ -159,7 +160,7 @@ struct WeatherForecastView: View {
 
         let weather = weatherManager.weather(for: date)
 
-        HStack(alignment: .center, spacing: 18) {
+        HStack(alignment: .center, spacing: 12) {
 
             VStack(alignment: .leading, spacing: 0) {
 
@@ -202,7 +203,7 @@ struct WeatherForecastView: View {
 
                 VStack(alignment: .trailing, spacing: 0) {
 
-                    HStack(alignment: .center, spacing: 10) {
+                    HStack(alignment: .center, spacing: 6) {
 
                         Spacer(minLength: 0)
 
@@ -306,7 +307,7 @@ struct WeatherForecastView: View {
                 ProgressView()
             }
         }
-        .padding(.horizontal, 18)
+        .padding(.horizontal, 16)
         .padding(.vertical, 9)
         .background(
             RoundedRectangle(

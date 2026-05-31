@@ -1186,6 +1186,81 @@ struct TodoSectionView: View {
 
             ForEach(Array(groupedTasksByDay.enumerated()), id: \.element.date) { groupIndex, group in
 
+                let shouldShowUpcomingCapsule = {
+
+                    guard groupIndex > 0 else {
+                        return false
+                    }
+
+                    let previousDate = groupedTasksByDay[groupIndex - 1].date
+
+                    return relativeHeaderTitle(for: previousDate) != nil
+                        && relativeHeaderTitle(for: group.date) == nil
+                }()
+
+                if shouldShowUpcomingCapsule {
+                    let upcomingTasksCount = groupedTasksByDay[groupIndex...]
+                        .reduce(0) { partialResult, group in
+                            partialResult + group.tasks.count
+                        }
+
+                    HStack(spacing: 10) {
+
+                        Text(String(localized: "Upcoming"))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color.primary.opacity(0.82))
+
+                        Text("\(upcomingTasksCount)")
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(.primary.opacity(0.82))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule(style: .continuous)
+                                    .fill(
+                                        Color.white.opacity(
+                                            colorScheme == .dark ? 0.06 : 0.08
+                                        )
+                                    )
+                            )
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 9)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                Capsule(style: .continuous)
+                                    .fill(
+                                        Color.white.opacity(
+                                            colorScheme == .dark ? 0.035 : 0.045
+                                        )
+                                    )
+                            )
+                            .overlay(
+                                Capsule(style: .continuous)
+                                    .stroke(
+                                        LinearGradient(
+                                            colors: [
+                                                Color.white.opacity(colorScheme == .dark ? 0.12 : 0.22),
+                                                Color.white.opacity(colorScheme == .dark ? 0.05 : 0.08)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        ),
+                                        lineWidth: 1
+                                    )
+                            )
+                    )
+                    .padding(.leading, TaskRowMetrics.groupedLeadingPadding - 7)
+                    .padding(.top, group.date == groupedTasksByDay.first?.date ? 4 : 8)
+                    .padding(.bottom, TaskRowMetrics.weeklyVerticalPadding - 10)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
+
                 Section {
                     ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, t in
 
