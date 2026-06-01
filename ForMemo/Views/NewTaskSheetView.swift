@@ -84,6 +84,7 @@ struct NewTaskSheetView: View {
     
     @State private var showingCamera = false
     @State private var libraryPickerItems: [PhotosPickerItem] = []
+    @State private var photoImportMessage: String?
     @State private var showingFileImporter = false
     @State private var showingScanner = false
     @State private var capturedImage: UIImage?
@@ -96,12 +97,12 @@ struct NewTaskSheetView: View {
     init(draftTask: TodoTask) {
         self._draftTask = Bindable(wrappedValue: draftTask)
         
-        // 🔥 Sync UI ← MODEL (repeat)
-        if let rule = draftTask.recurrenceRule {
-            self._selectedRecurrence = State(
-                initialValue: RecurrenceUI(rawValue: rule) ?? .none
-            )
-        }
+        // 🔥 Sync UI ← MODEL
+        self._selectedRecurrence = State(
+            initialValue: RecurrenceUI(
+                rawValue: draftTask.recurrenceRule ?? ""
+            ) ?? .none
+        )
     }
     
     private var isTitleValid: Bool {
@@ -240,6 +241,19 @@ struct NewTaskSheetView: View {
                 .onChange(of: libraryPickerItems) {
                     Task { @MainActor in await importPhotos(libraryPickerItems) }
                 }
+                .alert(
+                    "Photo import incomplete",
+                    isPresented: Binding(
+                        get: { photoImportMessage != nil },
+                        set: { if !$0 { photoImportMessage = nil } }
+                    )
+                ) {
+                    Button("OK", role: .cancel) {
+                        photoImportMessage = nil
+                    }
+                } message: {
+                    Text(photoImportMessage ?? "")
+                }
                 .onChange(of: notificationLeadTimeDays) { _, _ in
                     NotificationManager.shared.refresh(force: true)
                 }
@@ -351,7 +365,7 @@ struct NewTaskSheetView: View {
                                 Spacer()
 
                                 Picker("", selection: $selectedRecurrence) {
-                                    ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
+                                    ForEach(RecurrenceUI.allCases) { option in
                                         Text({
                                             let plural = draftTask.recurrenceInterval > 1
 
@@ -413,7 +427,7 @@ struct NewTaskSheetView: View {
                                 .tint(.primary)
 
                                 Picker("", selection: $selectedRecurrence) {
-                                    ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
+                                    ForEach(RecurrenceUI.allCases) { option in
                                         Text({
                                             let plural = draftTask.recurrenceInterval > 1
 
@@ -447,9 +461,13 @@ struct NewTaskSheetView: View {
 
                         if newValue == .none {
                             draftTask.recurrenceRule = nil
+                            draftTask.recurrenceInterval = 1
                         } else {
                             draftTask.recurrenceRule = newValue.rawValue
-                            draftTask.recurrenceInterval = 1
+
+                            if draftTask.recurrenceInterval < 1 {
+                                draftTask.recurrenceInterval = 1
+                            }
                         }
                     }
                 }
@@ -595,7 +613,8 @@ struct NewTaskSheetView: View {
             PhotosPicker(
                 selection: $libraryPickerItems,
                 maxSelectionCount: 10,
-                matching: .images
+                matching: .images,
+                preferredItemEncoding: .current
             ) {
                 Label("Add Photos", systemImage: "photo.on.rectangle.angled")
             }
@@ -645,24 +664,39 @@ struct NewTaskSheetView: View {
     
     @MainActor
     private func importPhotos(_ items: [PhotosPickerItem]) async {
-        
+        var importedCount = 0
+        var skippedCount = 0
+
         for item in items {
-            
-            guard let data = try? await item.loadTransferable(type: Data.self) else { continue }
-            
-            let filename = "Photo-\(UUID().uuidString).jpg"
+            guard let data = try? await item.loadTransferable(type: Data.self) else {
+                skippedCount += 1
+                AppLogger.app.error("Photo import skipped: unable to load selected item")
+                continue
+            }
+
+            let imageType = item.supportedContentTypes.first { $0.conforms(to: .image) }
+            let fileExtension = imageType?.preferredFilenameExtension ?? "jpg"
+            let filename = "Photo-\(UUID().uuidString).\(fileExtension)"
             let tmpURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent(filename)
-            
+
             do {
                 try data.write(to: tmpURL)
                 await saveAttachment(from: tmpURL)
+                importedCount += 1
             } catch {
-                AppLogger.app.error("Photo write error:\(error)")
+                skippedCount += 1
+                AppLogger.app.error("Photo write error:\(error.localizedDescription)")
             }
         }
-        
+
         libraryPickerItems.removeAll()
+
+        if skippedCount > 0 {
+            photoImportMessage = String(
+                localized: "Imported \(importedCount) photos. \(skippedCount) could not be loaded from Photos/iCloud. Open Photos, download them locally, then try again."
+            )
+        }
     }
     
     @MainActor

@@ -246,26 +246,6 @@ struct TaskListView: View {
 
                     ToolbarItem(placement: .topBarTrailing) {
 
-//                        Button {
-//                            withAnimation(.snappy) {
-//
-//                                let testTasks = tasks.filter { $0.title == "ProvaProva" }
-//
-//                                if testTasks.isEmpty {
-//                                    createTestTasks()
-//                                } else {
-//                                    deleteTestTasks()
-//                                }
-//                            }
-//                        } label: {
-//                            Image(systemName: "plus.circle.fill")
-//                                .foregroundStyle(.green)
-//                                .font(.title2)
-//                        }
-//
-//
-
-
 
                         Button {
                             withAnimation(.snappy) {

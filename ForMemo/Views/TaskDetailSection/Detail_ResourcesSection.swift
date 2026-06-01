@@ -85,7 +85,8 @@ import AVFAudio
             PhotosPicker(
                 selection: $photoItems,
                 maxSelectionCount: 10,
-                matching: .images
+                matching: .images,
+                preferredItemEncoding: .current
             ) {
                 Label("Add photos", systemImage: "photo")
             }

@@ -19,11 +19,11 @@ enum TaskListAppearanceKeys {
     static let showTodayExpiredLabel = "tasklist.showTodayExpiredLabel"
 }
 
-struct EmptyModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-    }
-}
+//struct EmptyModifier: ViewModifier {
+//    func body(content: Content) -> some View {
+//        content
+//    }
+//}
 struct TaskListAppearanceView: View {
     
     @AppStorage("selectedTaskListStyle")

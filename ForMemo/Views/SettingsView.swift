@@ -884,70 +884,70 @@ extension AppTheme {
     }
 }
 
-@MainActor
-func createTestReminder() async {
-    do {
-        let access = RemindersAccess()
-        try await access.requestAccess()
-        let store = access.getStore()
-        let reminder = EKReminder(eventStore: store)
-        reminder.title = "Test \(appName)"
-        reminder.calendar = getOrCreateForMemoCalendar(store: store)
-        try store.save(reminder, commit: true)
-        print("✅ Reminder created in \(appName) list")
-    } catch {
-        print("❌ Error:", error.localizedDescription)
-    }
-}
-
-func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
-    let calendars = store.calendars(for: .reminder)
-    if let existing = calendars.first(where: { $0.title == "\(appName)" }) {
-        UserDefaults.standard.set(existing.calendarIdentifier, forKey: "ForMemoCalendarID")
-        return existing
-    }
-    let calendar = EKCalendar(for: .reminder, eventStore: store)
-    calendar.title = "\(appName)"
-    calendar.source = store.defaultCalendarForNewReminders()?.source
-    try? store.saveCalendar(calendar, commit: true)
-    UserDefaults.standard.set(calendar.calendarIdentifier, forKey: "ForMemoCalendarID")
-    return calendar
-}
-
-struct CalendarPickerLoaderView: View {
-    @Binding var calendars: [EKCalendar]
-    let onSelect: (EKCalendar) -> Void
-    @State private var isLoading = true
-    var body: some View {
-        NavigationStack {
-            Group {
-                if isLoading {
-                    ProgressView("Loading calendars...")
-                } else {
-                    CalendarPickerView(
-                        calendars: calendars,
-                        onSelect: onSelect
-                    )
-                }
-            }
-            .task {
-                await load()
-            }
-        }
-    }
-    private func load() async {
-        let engine = CalendarExportEngine()
-        do {
-            try await engine.requestAccess()
-            let all = engine.availableCalendars()
-            await MainActor.run {
-                calendars = all
-                isLoading = false
-            }
-        } catch {
-            await MainActor.run {
-                isLoading = false
-            }
-        }
-    }
-}
+//@MainActor
+//func createTestReminder() async {
+//    do {
+//        let access = RemindersAccess()
+//        try await access.requestAccess()
+//        let store = access.getStore()
+//        let reminder = EKReminder(eventStore: store)
+//        reminder.title = "Test \(appName)"
+//        reminder.calendar = getOrCreateForMemoCalendar(store: store)
+//        try store.save(reminder, commit: true)
+//        print("✅ Reminder created in \(appName) list")
+//    } catch {
+//        print("❌ Error:", error.localizedDescription)
+//    }
+//}
+//
+//func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
+//    let calendars = store.calendars(for: .reminder)
+//    if let existing = calendars.first(where: { $0.title == "\(appName)" }) {
+//        UserDefaults.standard.set(existing.calendarIdentifier, forKey: "ForMemoCalendarID")
+//        return existing
+//    }
+//    let calendar = EKCalendar(for: .reminder, eventStore: store)
+//    calendar.title = "\(appName)"
+//    calendar.source = store.defaultCalendarForNewReminders()?.source
+//    try? store.saveCalendar(calendar, commit: true)
+//    UserDefaults.standard.set(calendar.calendarIdentifier, forKey: "ForMemoCalendarID")
+//    return calendar
+//}
+//
+//struct CalendarPickerLoaderView: View {
+//    @Binding var calendars: [EKCalendar]
+//    let onSelect: (EKCalendar) -> Void
+//    @State private var isLoading = true
+//    var body: some View {
+//        NavigationStack {
+//            Group {
+//                if isLoading {
+//                    ProgressView("Loading calendars...")
+//                } else {
+//                    CalendarPickerView(
+//                        calendars: calendars,
+//                        onSelect: onSelect
+//                    )
+//                }
+//            }
+//            .task {
+//                await load()
+//            }
+//        }
+//    }
+//    private func load() async {
+//        let engine = CalendarExportEngine()
+//        do {
+//            try await engine.requestAccess()
+//            let all = engine.availableCalendars()
+//            await MainActor.run {
+//                calendars = all
+//                isLoading = false
+//            }
+//        } catch {
+//            await MainActor.run {
+//                isLoading = false
+//            }
+//        }
+//    }
+//}

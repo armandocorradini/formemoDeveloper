@@ -95,6 +95,7 @@ struct TaskDetailView: View {
     @State private var validationMessage: String? = nil
     
     @State private var photoItems: [PhotosPickerItem] = []
+    @State private var photoImportMessage: String?
     
     @State private var selectedPhotos: [PhotosPickerItem] = []
     @State private var showCameraPicker = false
@@ -409,6 +410,19 @@ struct TaskDetailView: View {
         } message: {
             Text("The set date will be permanently removed.")
         }
+        .alert(
+            "Photo import incomplete",
+            isPresented: Binding(
+                get: { photoImportMessage != nil },
+                set: { if !$0 { photoImportMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {
+                photoImportMessage = nil
+            }
+        } message: {
+            Text(photoImportMessage ?? "")
+        }
         .onAppear {
             onAppearAction()
         }
@@ -699,28 +713,39 @@ struct TaskDetailView: View {
     }
     @MainActor
     private func importPhotos(from items: [PhotosPickerItem]) async {
-        
+        var importedCount = 0
+        var skippedCount = 0
+
         for item in items {
-            
             guard let data = try? await item.loadTransferable(type: Data.self) else {
+                skippedCount += 1
+                AppLogger.app.error("Photo import skipped: unable to load selected item")
                 continue
             }
-            
-            let filename = "Photo-\(UUID().uuidString)"
+
+            let imageType = item.supportedContentTypes.first { $0.conforms(to: .image) }
+            let fileExtension = imageType?.preferredFilenameExtension ?? "jpg"
+            let filename = "Photo-\(UUID().uuidString).\(fileExtension)"
             let tmpURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent(filename)
-                .appendingPathExtension("jpg")
-            
+
             do {
                 try data.write(to: tmpURL)
                 await saveAttachment(from: tmpURL)
+                importedCount += 1
             } catch {
-                
-                AppLogger.app.error("Failed to write photo:\(error))")
+                skippedCount += 1
+                AppLogger.app.error("Failed to write photo:\(error.localizedDescription)")
             }
         }
-        
-        selectedPhotos.removeAll()
+
+        photoItems.removeAll()
+
+        if skippedCount > 0 {
+            photoImportMessage = String(
+                localized: "Imported \(importedCount) photos. \(skippedCount) could not be loaded from Photos/iCloud. Open Photos, download them locally, then try again."
+            )
+        }
     }
     
     

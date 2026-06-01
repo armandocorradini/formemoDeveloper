@@ -104,7 +104,7 @@ struct ScheduleSection: View {
                             Spacer()
 
                             Picker("", selection: $selectedRecurrence) {
-                                ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
+                                ForEach(RecurrenceUI.allCases) { option in
                                     Text({
                                         let plural = task.recurrenceInterval > 1
 
@@ -189,7 +189,7 @@ struct ScheduleSection: View {
 
                         if selectedRecurrence != .none {
                             Picker("", selection: $selectedRecurrence) {
-                                ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
+                                ForEach(RecurrenceUI.allCases) { option in
                                     Text({
                                         let plural = task.recurrenceInterval > 1
 
