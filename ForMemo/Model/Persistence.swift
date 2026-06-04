@@ -17,7 +17,8 @@ enum Persistence {
         TaskAttachment.self,
         DeletedItem.self,
         LoyaltyCard.self,
-        TripList.self
+        TripList.self,
+        DocumentItem.self
     ])
 
 

@@ -16,6 +16,7 @@ struct TaskTabView: View {
     @State private var mapPath = NavigationPath()
     @State private var walletPath = NavigationPath()
     @State private var TripsPath = NavigationPath()
+    @State private var documentsPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
     
     @AppStorage("TaskWeekDays")
@@ -124,12 +125,12 @@ struct TaskTabView: View {
                         Capsule()
                             .fill(Color.accentColor)
                             .frame(width: 16, height: 3)
-                            .opacity([0,2,6,7].contains(selectedTab) ? 1 : 0)
+                            .opacity([0,2,6,7,8].contains(selectedTab) ? 1 : 0)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 49)
                     .foregroundStyle(
-                        [0,2,6,7].contains(selectedTab)
+                        [0,2,6,7,8].contains(selectedTab)
                         ? Color.accentColor
                         : Color.secondary
                     )
@@ -182,6 +183,22 @@ struct TaskTabView: View {
                                 Text("Trips")
                             }
                             .foregroundStyle(selectedTab == 7 ? Color.accentColor : Color.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Button {
+                            selectedTab = 8
+                            showMorePopover = false
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: selectedTab == 8 ? "doc.text.fill" : "doc.text")
+                                    .frame(width: 22)
+                                Text(String(localized: "Documents"))
+                            }
+                            .foregroundStyle(selectedTab == 8 ? Color.accentColor : Color.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         }
@@ -277,6 +294,11 @@ struct TaskTabView: View {
                 TravelKitListView()
             }
             
+        case 8:
+            NavigationStack(path: $documentsPath) {
+                DocumentsView()
+            }
+            
         case 2:
             NavigationStack(path: $settingsPath) {
                 SettingsView()
@@ -311,6 +333,7 @@ struct TaskTabView: View {
                 sidebarRow(String(localized: "Start_tab"), "house", 0)
                 sidebarRow(String(localized: "wallet_tab"), "wallet.bifold", 6)
                 sidebarRow("Trips", "suitcase.rolling", 7)
+                sidebarRow(String(localized: "Documents"), "doc.text", 8)
                 sidebarRow(String(localized: "settings_tab"), "gear", 2)
             }
             .listStyle(.sidebar)
@@ -434,6 +457,11 @@ struct TaskTabView: View {
         case 7:
             if !TripsPath.isEmpty {
                 TripsPath = NavigationPath()
+            }
+        
+        case 8:
+            if !documentsPath.isEmpty {
+                documentsPath = NavigationPath()
             }
             
         case 2:

@@ -68,7 +68,7 @@ struct RecentlyDeletedView: View {
                                         .symbolRenderingMode(.hierarchical)
                                         .foregroundStyle(.orange)
                                 } else if item.type == "loyaltycard" {
-                                    Image(systemName: "wallet.pass")
+                                    Image(systemName: "creditcard")
                                         .symbolRenderingMode(.hierarchical)
                                         .foregroundStyle(.blue)
                                 } else
