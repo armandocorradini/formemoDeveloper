@@ -18,6 +18,11 @@ final class DocumentItem {
 
     var notes: String = ""
 
+    var notificationEnabled: Bool = false
+
+    // Days before expiry (0 = same day)
+    var notificationDaysBefore: Int = 30
+
     var sortOrder: Int = 0
 
     var createdAt: Date = Date()
@@ -31,6 +36,8 @@ final class DocumentItem {
         issueDate: Date? = nil,
         expiryDate: Date? = nil,
         notes: String = "",
+        notificationEnabled: Bool = false,
+        notificationDaysBefore: Int = 30,
         sortOrder: Int = 0
     ) {
         self.name = name
@@ -39,6 +46,8 @@ final class DocumentItem {
         self.issueDate = issueDate
         self.expiryDate = expiryDate
         self.notes = notes
+        self.notificationEnabled = notificationEnabled
+        self.notificationDaysBefore = notificationDaysBefore
         self.sortOrder = sortOrder
     }
 
@@ -91,6 +100,36 @@ final class DocumentItem {
         }
 
         return .valid
+    }
+}
+
+extension DocumentItem {
+
+    @MainActor
+    static func createDeletedDocumentRecord(
+        from document: DocumentItem,
+        in context: ModelContext
+    ) {
+
+        let item = DeletedItem(type: "document")
+
+        item.documentID = document.id
+
+        item.documentName = document.name
+        item.documentTypeRaw = document.documentTypeRaw
+        item.documentNumber = document.documentNumber
+
+        item.documentIssueDate = document.issueDate
+        item.documentExpiryDate = document.expiryDate
+
+        item.documentNotes = document.notes
+
+        item.documentNotificationEnabled = document.notificationEnabled
+        item.documentNotificationDaysBefore = document.notificationDaysBefore
+
+        item.documentCreatedAt = document.createdAt
+
+        context.insert(item)
     }
 }
 
@@ -148,6 +187,20 @@ enum DocumentType: String, CaseIterable, Codable {
     case professionalLicense
 
     case other
+
+    static var localizedSortedCases: [DocumentType] {
+
+        let sorted = allCases
+            .filter { $0 != .other }
+            .sorted {
+                String(localized: $0.localizedTitle)
+                    .localizedCaseInsensitiveCompare(
+                        String(localized: $1.localizedTitle)
+                    ) == .orderedAscending
+            }
+
+        return sorted + [.other]
+    }
 
     var localizedTitle: LocalizedStringResource {
         switch self {

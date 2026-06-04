@@ -71,8 +71,13 @@ struct RecentlyDeletedView: View {
                                     Image(systemName: "creditcard")
                                         .symbolRenderingMode(.hierarchical)
                                         .foregroundStyle(.blue)
-                                } else
-                                if let raw = item.mainTagRaw,
+                                } else if item.type == "document" {
+                                    let icon = DocumentType(rawValue: item.documentTypeRaw ?? "")?.systemImage ?? "doc.text"
+
+                                    Image(systemName: icon)
+                                        .symbolRenderingMode(.hierarchical)
+                                        .foregroundStyle(.green)
+                                } else if let raw = item.mainTagRaw,
                                    let tag = TaskMainTag(rawValue: raw) {
                                     Image(systemName: tag.mainIcon)
                                         .symbolRenderingMode(.hierarchical)
@@ -270,6 +275,8 @@ struct RecentlyDeletedView: View {
 
         case "trip":
             return item.tripName ?? "Trip"
+        case "document":
+            return item.documentName ?? "Document"
 
         default:
             return item.fileName ?? item.title ?? "Item"

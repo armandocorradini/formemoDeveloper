@@ -611,6 +611,67 @@ final class NotificationManager: NSObject {
 #endif
         }
     }
+
+    @MainActor
+    func removeDocumentNotification(
+        documentID: UUID
+    ) {
+
+        UNUserNotificationCenter.current()
+            .removePendingNotificationRequests(
+                withIdentifiers: [
+                    "document.\(documentID.uuidString)"
+                ]
+            )
+    }
+
+    @MainActor
+    func scheduleDocumentNotification(
+        id: UUID,
+        title: String,
+        triggerDate: Date
+    ) async {
+
+        guard triggerDate > Date() else { return }
+
+        let content = UNMutableNotificationContent()
+
+        content.title = String(localized: "Document Expiring")
+        content.body = title
+
+        let soundName =
+            UserDefaults.standard.string(
+                forKey: "notificationSoundName"
+            ) ?? ""
+
+        if soundName.isEmpty {
+            content.sound = .default
+        } else {
+            content.sound = UNNotificationSound(
+                named: UNNotificationSoundName(
+                    rawValue: soundName
+                )
+            )
+        }
+
+        let interval = triggerDate.timeIntervalSinceNow
+
+        guard interval > 1 else { return }
+
+        let trigger = UNTimeIntervalNotificationTrigger(
+            timeInterval: interval,
+            repeats: false
+        )
+
+        let request = UNNotificationRequest(
+            identifier: "document.\(id.uuidString)",
+            content: content,
+            trigger: trigger
+        )
+
+        try? await UNUserNotificationCenter.current()
+            .add(request)
+    }
 }
 
 // MARK: - DELEGATE

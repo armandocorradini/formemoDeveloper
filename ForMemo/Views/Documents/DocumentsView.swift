@@ -71,13 +71,19 @@ struct DocumentsView: View {
             }
             .onDelete { indexSet in
                 for index in indexSet {
-                    modelContext.delete(filteredDocuments[index])
+                    deleteDocument(
+                        filteredDocuments[index],
+                        in: modelContext
+                    )
                 }
-                try? modelContext.save()
             }
         }
+        .contentMargins(.bottom, 70, for: .scrollContent)
         .navigationTitle(String(localized: "Documents"))
-        .searchable(text: $searchText)
+        .searchable(
+            text: $searchText,
+            placement: .navigationBarDrawer(displayMode: .always)
+        )
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

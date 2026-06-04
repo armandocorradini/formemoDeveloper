@@ -147,6 +147,13 @@ struct ResetAppView: View {
             for trip in tripLists {
                 modelContext.delete(trip)
             }
+
+            // 🔴 Documents
+            let documents = try modelContext.fetch(FetchDescriptor<DocumentItem>())
+
+            for document in documents {
+                modelContext.delete(document)
+            }
             
             // 🔴 Recently Deleted
             let deletedItems = try modelContext.fetch(FetchDescriptor<DeletedItem>())

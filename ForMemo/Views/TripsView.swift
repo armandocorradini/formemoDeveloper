@@ -18,9 +18,18 @@ struct TravelKitListView: View {
     @State private var showNewCategorySheet = false
     @State private var editingCategory: TripList?
     @State private var isEditingCategory = false
+    @State private var searchText = ""
 
     private var visibleCategories: [TripList] {
-        categories
+
+        guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return categories
+        }
+
+        return categories.filter {
+            localizedTripText($0.name)
+                .localizedCaseInsensitiveContains(searchText)
+        }
     }
     
     var body: some View {
@@ -157,6 +166,10 @@ struct TravelKitListView: View {
 //                preloadTripLocalizationKeys()
 //            }
             .navigationTitle(String(localized: "Trips"))
+            .searchable(
+                text: $searchText,
+                placement: .navigationBarDrawer(displayMode: .always)
+            )
             .task {
                 // Backfill old categories created before templates existed.
                 for category in categories {

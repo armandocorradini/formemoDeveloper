@@ -1516,6 +1516,34 @@
         }
       }
     },
+    "1 Day Before" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 Tag vorher"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 día antes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 jour avant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 giorno prima"
+          }
+        }
+      }
+    },
     "A-Z" : {
       "shouldTranslate" : false
     },
@@ -4829,35 +4857,6 @@
         }
       }
     },
-    "Collapse" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reduzieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contraer"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Réduire"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Comprimi"
-          }
-        }
-      }
-    },
     "Compass" : {
       "localizations" : {
         "de" : {
@@ -5204,30 +5203,30 @@
         }
       }
     },
-    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards and attachments." : {
+    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards, documents and attachments." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstellen Sie ein vollständiges Backup von Aufgaben, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Standorten, Wallet-Karten und Anhängen."
+            "value" : "Erstellt eine vollständige Sicherung von Aufgaben, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Standorten, Wallet-Karten, Dokumenten und Anhängen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea una copia de seguridad completa de tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, tarjetas Wallet y archivos adjuntos."
+            "value" : "Crea una copia de seguridad completa de tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, tarjetas Wallet, documentos y archivos adjuntos."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez une sauvegarde complète des tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, emplacements, cartes Wallet et pièces jointes."
+            "value" : "Crée une sauvegarde complète des tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, emplacements, cartes Wallet, documents et pièces jointes."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea un backup completo di attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, posizioni, carte Wallet e allegati."
+            "value" : "Crea un backup completo di attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, posizioni, carte Wallet, documenti e allegati."
           }
         }
       }
@@ -5992,6 +5991,34 @@
       }
     },
     "Days before" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tage vorher"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Días antes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jours avant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giorni prima"
+          }
+        }
+      }
+    },
+    "Days Before" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6887,6 +6914,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Documento"
+          }
+        }
+      }
+    },
+    "Document Expiring" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokument läuft ab"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento próximo a caducar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Document arrivant à expiration"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento in scadenza"
+          }
+        }
+      }
+    },
+    "Document Expiry:" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumentenablauf:"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caducidad del documento:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expiration du document :"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scadenza documento:"
           }
         }
       }
@@ -13035,6 +13118,34 @@
         }
       }
     },
+    "Notify Before Expiry" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vor Ablauf benachrichtigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificar antes de la caducidad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifier avant l'expiration"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvisa prima della scadenza"
+          }
+        }
+      }
+    },
     "Notify global" : {
       "comment" : "A toggle that allows the user to choose how many days before a task's deadline they'll be notified.",
       "isCommentAutoGenerated" : true,
@@ -15921,6 +16032,34 @@
         }
       }
     },
+    "Same Day" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Am selben Tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El mismo día"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le jour même"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stesso giorno"
+          }
+        }
+      }
+    },
     "Save" : {
       "localizations" : {
         "de" : {
@@ -17997,34 +18136,6 @@
         }
       }
     },
-    "Status" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Status"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Estado"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Statut"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stato"
-          }
-        }
-      }
-    },
     "Stay on track with intelligent reminders. Every task includes a notification at the due time. You can add custom reminders, enable an automatic early notification (1–7 days before), and quickly snooze notifications when needed." : {
       "comment" : "Description of the smart notifications feature.",
       "isCommentAutoGenerated" : true,
@@ -18949,35 +19060,6 @@
         }
       }
     },
-    "tag.Start" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        }
-      }
-    },
     "tag.transport" : {
       "localizations" : {
         "de" : {
@@ -19390,30 +19472,30 @@
         }
       }
     },
-    "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards and attachments are included in the backup archive." : {
+    "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards, documents and attachments are included in the backup archive." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aufgaben, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Schlummerstatus, Standorte, Wallet-Karten und Anhänge sind im Backup-Archiv enthalten."
+            "value" : "Aufgaben, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Schlummerstatus, Standorte, Wallet-Karten, Dokumente und Anhänge sind im Backup-Archiv enthalten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, estado de aplazamiento, ubicaciones, tarjetas Wallet y archivos adjuntos están incluidos en el archivo de copia de seguridad."
+            "value" : "Las tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, estado de aplazamiento, ubicaciones, tarjetas Wallet, documentos y archivos adjuntos están incluidos en el archivo de copia de seguridad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, état de report, emplacements, cartes Wallet et pièces jointes sont inclus dans l’archive de sauvegarde."
+            "value" : "Les tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, état de report, emplacements, cartes Wallet, documents et pièces jointes sont inclus dans l'archive de sauvegarde."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, stato di posticipo, posizioni, carte Wallet e allegati sono inclusi nell’archivio di backup."
+            "value" : "Attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, stato di posticipo, posizioni, carte Wallet, documenti e allegati sono inclusi nell'archivio di backup."
           }
         }
       }

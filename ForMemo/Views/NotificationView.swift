@@ -29,6 +29,10 @@ struct PendingNotificationInfo: Identifiable {
             return String(localized: "Reminder")
         }
 
+        if lower.contains("document") {
+            return String(localized: "Document")
+        }
+
         if lower.contains("global") {
             return String(localized: "Global")
         }
@@ -52,6 +56,10 @@ struct PendingNotificationInfo: Identifiable {
             return "🔔"
         }
 
+        if lower.contains("document") {
+            return "📄"
+        }
+
         if lower.contains("global") {
             return "⏱️"
         }
@@ -64,7 +72,9 @@ struct NotificationView: View {
 
     @State private var pending: [PendingNotificationInfo] = []
     @State private var isLoading = true
+
     @Query private var tasks: [TodoTask]
+    @Query private var documents: [DocumentItem]
 
     private let gradient = LinearGradient(
         colors: [backColor1, backColor2],
@@ -171,8 +181,12 @@ struct NotificationView: View {
 
                                             HStack(spacing: 4) {
 
-                                                Text(String(localized:"Deadline:"))
-                                                    .foregroundStyle(.secondary)
+                                                Text(
+                                                    item.identifier.lowercased().contains("document")
+                                                    ? String(localized: "Document Expiry:")
+                                                    : String(localized:"Deadline:")
+                                                )
+                                                .foregroundStyle(.secondary)
 
                                                 Text(deadlineDateText(for: item.deadlineDate))
                                                     .foregroundStyle(.primary)
@@ -406,6 +420,10 @@ struct NotificationView: View {
             let matchingTask = tasks.first {
                 $0.id == taskID
             }
+            let matchingDocument = documents.first {
+                request.identifier ==
+                "document.\($0.id.uuidString)"
+            }
 
             return PendingNotificationInfo(
                 id: request.identifier,
@@ -415,7 +433,9 @@ struct NotificationView: View {
                 identifier: request.identifier,
                 categoryIdentifier: request.content.categoryIdentifier,
                 taskID: taskID,
-                deadlineDate: matchingTask?.deadLine
+                deadlineDate:
+                    matchingTask?.deadLine
+                    ?? matchingDocument?.expiryDate
             )
         }
         .sorted {

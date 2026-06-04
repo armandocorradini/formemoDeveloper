@@ -518,6 +518,23 @@ final class DeletedItem {
     var tripSortOrder: Int?
 
     var tripSectionsData: Data?
+
+    // DOCUMENT
+    var documentID: UUID?
+
+    var documentName: String?
+    var documentTypeRaw: String?
+    var documentNumber: String?
+
+    var documentIssueDate: Date?
+    var documentExpiryDate: Date?
+
+    var documentNotes: String?
+
+    var documentNotificationEnabled: Bool?
+    var documentNotificationDaysBefore: Int?
+
+    var documentCreatedAt: Date?
     
     init(type: String) {
         self.type = type
@@ -746,7 +763,36 @@ extension DeletedItem {
 
             context.insert(trip)
         }
-        
+
+        if type == "document" {
+
+            if let existingID = documentID {
+
+                let descriptor = FetchDescriptor<DocumentItem>()
+
+                if let documents = try? context.fetch(descriptor),
+                   documents.contains(where: { $0.id == existingID }) {
+                    return
+                }
+            }
+
+            let document = DocumentItem(
+                name: documentName ?? ""
+            )
+
+            document.id = documentID ?? UUID()
+            document.documentTypeRaw = documentTypeRaw ?? DocumentType.other.rawValue
+            document.documentNumber = documentNumber ?? ""
+            document.issueDate = documentIssueDate
+            document.expiryDate = documentExpiryDate
+            document.notes = documentNotes ?? ""
+            document.notificationEnabled = documentNotificationEnabled ?? false
+            document.notificationDaysBefore = documentNotificationDaysBefore ?? 30
+            document.createdAt = documentCreatedAt ?? Date()
+
+            context.insert(document)
+        }
+
         context.safeSave(operation: "DeletedItemRestore")
     }
 }

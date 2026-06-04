@@ -11,6 +11,8 @@ struct BackupRestoreView: View {
     private var loyaltyCards: [LoyaltyCard]
     @Query(sort: \TripList.sortOrder)
     private var tripLists: [TripList]
+    @Query(sort: \DocumentItem.createdAt, order: .forward)
+    private var documents: [DocumentItem]
     @State private var isCreatingBackup = false
     @State private var isRestoringBackup = false
     @State private var showRestoreConfirmation = false
@@ -68,7 +70,8 @@ struct BackupRestoreView: View {
                                 let url = try await BackupManager.createBackup(
                                     tasks: tasks,
                                     loyaltyCards: loyaltyCards,
-                                    tripLists: tripLists
+                                    tripLists: tripLists,
+                                    documents: documents
                                 )
 
                                 exportURL = url
@@ -89,7 +92,7 @@ struct BackupRestoreView: View {
                                 Text("Create Backup")
 
                                 Text(
-                                    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards and attachments."
+                                    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards, documents and attachments."
                                 )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -134,7 +137,7 @@ struct BackupRestoreView: View {
                             Text("Backup includes")
 
                             Text(
-                                "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards and attachments are included in the backup archive."
+                                "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards, documents and attachments are included in the backup archive."
                             )
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -292,6 +295,7 @@ private struct BackupArchive: Codable {
         case tasks
         case loyaltyCards
         case tripLists
+        case documents
         case attachmentFiles
         case loyaltyCardLogoFiles
     }
@@ -301,6 +305,7 @@ private struct BackupArchive: Codable {
     let tasks: [TaskTransferObject]
     let loyaltyCards: [LoyaltyCardTransferObject]
     let tripLists: [TripListTransferObject]
+    let documents: [DocumentTransferObject]
     let attachmentFiles: [String: Data]
     let loyaltyCardLogoFiles: [String: Data]
 
@@ -310,6 +315,7 @@ private struct BackupArchive: Codable {
         tasks: [TaskTransferObject],
         loyaltyCards: [LoyaltyCardTransferObject],
         tripLists: [TripListTransferObject],
+        documents: [DocumentTransferObject],
         attachmentFiles: [String: Data],
         loyaltyCardLogoFiles: [String: Data]
     ) {
@@ -318,6 +324,7 @@ private struct BackupArchive: Codable {
         self.tasks = tasks
         self.loyaltyCards = loyaltyCards
         self.tripLists = tripLists
+        self.documents = documents
         self.attachmentFiles = attachmentFiles
         self.loyaltyCardLogoFiles = loyaltyCardLogoFiles
     }
@@ -343,6 +350,10 @@ private struct BackupArchive: Codable {
         tripLists = try container.decode(
             [TripListTransferObject].self,
             forKey: .tripLists
+        )
+        documents = try container.decode(
+            [DocumentTransferObject].self,
+            forKey: .documents
         )
         attachmentFiles = try container.decode(
             [String: Data].self,
@@ -377,6 +388,10 @@ private struct BackupArchive: Codable {
             forKey: .tripLists
         )
         try container.encode(
+            documents,
+            forKey: .documents
+        )
+        try container.encode(
             attachmentFiles,
             forKey: .attachmentFiles
         )
@@ -409,6 +424,32 @@ private struct LoyaltyCardTransferObject: Codable {
     }
 }
 
+private struct DocumentTransferObject: Codable {
+
+    let id: UUID
+    let name: String
+    let documentTypeRaw: String
+    let documentNumber: String
+    let issueDate: Date?
+    let expiryDate: Date?
+    let notes: String
+    let notificationEnabled: Bool
+    let notificationDaysBefore: Int
+    let createdAt: Date
+
+    init(document: DocumentItem) {
+        self.id = document.id
+        self.name = document.name
+        self.documentTypeRaw = document.documentTypeRaw
+        self.documentNumber = document.documentNumber
+        self.issueDate = document.issueDate
+        self.expiryDate = document.expiryDate
+        self.notes = document.notes
+        self.notificationEnabled = document.notificationEnabled
+        self.notificationDaysBefore = document.notificationDaysBefore
+        self.createdAt = document.createdAt
+    }
+}
 private struct TripListTransferObject: Codable {
     let id: UUID
     let name: String
@@ -440,7 +481,8 @@ private enum BackupManager {
     static func createBackup(
         tasks: [TodoTask],
         loyaltyCards: [LoyaltyCard],
-        tripLists: [TripList]
+        tripLists: [TripList],
+        documents: [DocumentItem]
     ) async throws -> URL {
 
         var attachmentPayload: [String: Data] = [:]
@@ -506,6 +548,9 @@ private enum BackupManager {
             },
             tripLists: tripLists.map {
                 TripListTransferObject(tripList: $0)
+            },
+            documents: documents.map {
+                DocumentTransferObject(document: $0)
             },
             attachmentFiles: attachmentPayload,
             loyaltyCardLogoFiles: loyaltyLogoPayload
@@ -604,6 +649,33 @@ private enum BackupManager {
                     options: .atomic
                 )
             }
+        }
+
+        for dto in archive.documents {
+
+            let descriptor = FetchDescriptor<DocumentItem>(
+                predicate: #Predicate { $0.id == dto.id }
+            )
+
+            let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
+
+            guard !alreadyExists else {
+                continue
+            }
+
+            let document = DocumentItem(name: dto.name)
+
+            document.id = dto.id
+            document.documentTypeRaw = dto.documentTypeRaw
+            document.documentNumber = dto.documentNumber
+            document.issueDate = dto.issueDate
+            document.expiryDate = dto.expiryDate
+            document.notes = dto.notes
+            document.notificationEnabled = dto.notificationEnabled
+            document.notificationDaysBefore = dto.notificationDaysBefore
+            document.createdAt = dto.createdAt
+
+            modelContext.insert(document)
         }
 
         for tripDTO in archive.tripLists {

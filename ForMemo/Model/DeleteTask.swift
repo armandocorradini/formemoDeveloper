@@ -67,3 +67,21 @@ func deleteTrip(
         operation: "DeleteTrip"
     )
 }
+
+@MainActor
+func deleteDocument(
+    _ document: DocumentItem,
+    in context: ModelContext
+) {
+
+    DocumentItem.createDeletedDocumentRecord(
+        from: document,
+        in: context
+    )
+
+    context.delete(document)
+
+    context.safeSave(
+        operation: "DeleteDocument"
+    )
+}
