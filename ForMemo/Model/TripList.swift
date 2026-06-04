@@ -65,6 +65,35 @@ final class TripList {
     }
 }
 
+extension TripList {
+
+    @MainActor
+    static func createDeletedTripRecord(
+        from trip: TripList,
+        in context: ModelContext
+    ) {
+
+        let item = DeletedItem(type: "trip")
+
+        item.tripID = trip.id
+
+        item.tripName = trip.name
+        item.tripIcon = trip.icon
+
+        item.tripColorHex = trip.colorHex
+        item.tripNotes = trip.notes
+
+        item.tripSystemTemplate = trip.systemTemplate
+        item.tripSortOrder = trip.sortOrder
+
+        item.tripSectionsData = try? JSONEncoder().encode(
+            trip.sections
+        )
+
+        context.insert(item)
+    }
+}
+
 // MARK: - Embedded Section
 
 struct TripSectionData: Codable, Identifiable, Hashable {

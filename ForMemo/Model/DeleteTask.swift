@@ -30,3 +30,40 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
     
     NotificationManager.shared.refresh()
 }
+
+
+@MainActor
+func deleteLoyaltyCard(
+    _ card: LoyaltyCard,
+    in context: ModelContext
+) {
+
+    LoyaltyCard.createDeletedCardRecord(
+        from: card,
+        in: context
+    )
+
+    context.delete(card)
+
+    context.safeSave(
+        operation: "DeleteLoyaltyCard"
+    )
+}
+
+@MainActor
+func deleteTrip(
+    _ trip: TripList,
+    in context: ModelContext
+) {
+
+    TripList.createDeletedTripRecord(
+        from: trip,
+        in: context
+    )
+
+    context.delete(trip)
+
+    context.safeSave(
+        operation: "DeleteTrip"
+    )
+}

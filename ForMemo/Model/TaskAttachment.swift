@@ -490,6 +490,34 @@ final class DeletedItem {
     var fileName: String?
     var relativePath: String?
     var trashFileName: String?
+
+    // LOYALTY CARD
+    var loyaltyCardID: UUID?
+
+    var storeName: String?
+    var cardHolder: String?
+
+    var barcodeValue: String?
+    var barcodeFormat: String?
+
+    var loyaltyNotes: String?
+    var loyaltyColorHex: String?
+
+    var loyaltySortOrder: Int?
+
+    // TRIP
+    var tripID: UUID?
+
+    var tripName: String?
+    var tripIcon: String?
+
+    var tripColorHex: String?
+    var tripNotes: String?
+
+    var tripSystemTemplate: String?
+    var tripSortOrder: Int?
+
+    var tripSectionsData: Data?
     
     init(type: String) {
         self.type = type
@@ -657,6 +685,66 @@ extension DeletedItem {
                 context.insert(attachment)
                 task.attachments?.append(attachment)
             }
+        }
+
+        if type == "loyaltycard" {
+
+            if let existingID = loyaltyCardID {
+
+                let descriptor = FetchDescriptor<LoyaltyCard>()
+
+                if let cards = try? context.fetch(descriptor),
+                   cards.contains(where: { $0.id == existingID }) {
+                    return
+                }
+            }
+
+            let card = LoyaltyCard(
+                id: loyaltyCardID ?? UUID(),
+                storeName: storeName ?? "",
+                cardHolder: cardHolder,
+                barcodeValue: barcodeValue ?? "",
+                barcodeFormat: barcodeFormat ?? "code128",
+                notes: loyaltyNotes,
+                colorHex: loyaltyColorHex,
+                sortOrder: loyaltySortOrder ?? 0
+            )
+
+            context.insert(card)
+        }
+
+        if type == "trip" {
+
+            if let existingID = tripID {
+
+                let descriptor = FetchDescriptor<TripList>()
+
+                if let trips = try? context.fetch(descriptor),
+                   trips.contains(where: { $0.id == existingID }) {
+                    return
+                }
+            }
+
+            let sections = (
+                try? JSONDecoder().decode(
+                    [TripSectionData].self,
+                    from: tripSectionsData ?? Data()
+                )
+            ) ?? []
+
+            let trip = TripList(
+                name: tripName ?? "",
+                icon: tripIcon ?? "suitcase.rolling",
+                colorHex: tripColorHex ?? "",
+                notes: tripNotes ?? "",
+                systemTemplate: tripSystemTemplate ?? "",
+                sortOrder: tripSortOrder ?? 0,
+                sections: sections
+            )
+
+            trip.id = tripID ?? UUID()
+
+            context.insert(trip)
         }
         
         context.safeSave(operation: "DeletedItemRestore")

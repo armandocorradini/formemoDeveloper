@@ -22,7 +22,7 @@ struct RecentlyDeletedView: View {
                     $0.taskID == item.taskID
                 }) == nil
             }
-            return false
+            return true
         }
     }
     
@@ -63,6 +63,15 @@ struct RecentlyDeletedView: View {
                             )
                         } else {
                             VStack {
+                                if item.type == "trip" {
+                                    Image(systemName: item.tripIcon ?? "suitcase.rolling")
+                                        .symbolRenderingMode(.hierarchical)
+                                        .foregroundStyle(.orange)
+                                } else if item.type == "loyaltycard" {
+                                    Image(systemName: "wallet.pass")
+                                        .symbolRenderingMode(.hierarchical)
+                                        .foregroundStyle(.blue)
+                                } else
                                 if let raw = item.mainTagRaw,
                                    let tag = TaskMainTag(rawValue: raw) {
                                     Image(systemName: tag.mainIcon)
@@ -85,7 +94,7 @@ struct RecentlyDeletedView: View {
                         
                         VStack(alignment: .leading, spacing: 4) {
                             
-                            Text(item.type == "task" ? title(for: item) : (item.fileName ?? "Attachment"))
+                            Text(title(for: item))
                                 .lineLimit(1)
                             
                             if item.type == "task" {
@@ -247,10 +256,23 @@ struct RecentlyDeletedView: View {
     }
     
     private func title(for item: DeletedItem) -> String {
-        if item.type == "task" {
+
+        switch item.type {
+
+        case "task":
             return item.title ?? "Untitled Task"
-        } else {
+
+        case "attachment":
             return item.fileName ?? "Attachment"
+
+        case "loyaltycard":
+            return item.storeName ?? "Loyalty Card"
+
+        case "trip":
+            return item.tripName ?? "Trip"
+
+        default:
+            return item.fileName ?? item.title ?? "Item"
         }
     }
     

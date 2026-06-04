@@ -42,3 +42,30 @@ final class LoyaltyCard {
         self.createdAt = createdAt
     }
 }
+
+extension LoyaltyCard {
+
+    @MainActor
+    static func createDeletedCardRecord(
+        from card: LoyaltyCard,
+        in context: ModelContext
+    ) {
+
+        let item = DeletedItem(type: "loyaltycard")
+
+        item.loyaltyCardID = card.id
+
+        item.storeName = card.storeName
+        item.cardHolder = card.cardHolder
+
+        item.barcodeValue = card.barcodeValue
+        item.barcodeFormat = card.barcodeFormat
+
+        item.loyaltyNotes = card.notes
+        item.loyaltyColorHex = card.colorHex
+
+        item.loyaltySortOrder = card.sortOrder
+
+        context.insert(item)
+    }
+}

@@ -98,7 +98,7 @@ struct TravelKitListView: View {
 
                                 Button(role: .destructive) {
                                     withAnimation {
-                                        modelContext.delete(category)
+                                        deleteTrip(category, in: modelContext)
                                     }
                                 } label: {
                                     Label(String(localized: "Delete"), systemImage: "trash")
@@ -120,7 +120,7 @@ struct TravelKitListView: View {
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 withAnimation {
-                                    modelContext.delete(category)
+                                    deleteTrip(category, in: modelContext)
                                 }
                             } label: {
                                 Label(String(localized: "Delete"), systemImage: "trash")
@@ -130,9 +130,12 @@ struct TravelKitListView: View {
                 }
 
                 .onDelete { indexSet in
-                    
+
                     for index in indexSet {
-                        modelContext.delete(categories[index])
+                        deleteTrip(
+                            categories[index],
+                            in: modelContext
+                        )
                     }
                 }
                 .onMove { source, destination in

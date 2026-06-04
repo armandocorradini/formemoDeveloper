@@ -430,10 +430,11 @@ struct WalletView: View {
     private func deleteCards(at offsets: IndexSet) {
 
         for index in offsets {
-            modelContext.delete(cards[index])
+            deleteLoyaltyCard(
+                cards[index],
+                in: modelContext
+            )
         }
-
-        try? modelContext.save()
     }
     
     private func isLightCardColor(_ hex: String?) -> Bool {
