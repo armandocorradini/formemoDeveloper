@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct HomeView: View {
+struct StartView: View {
     
     @State private var isAnimating = false
     

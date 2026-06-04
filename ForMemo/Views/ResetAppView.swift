@@ -28,7 +28,7 @@ struct ResetAppView: View {
                             .foregroundStyle(.red)
                     }
                     
-                    Text("This will permanently delete all your tasks, attachments, Wallet cards, and data from this device. This action cannot be undone.")
+                    Text("This will permanently delete all your tasks, attachments, trip checklists, Wallet cards, and data from this device. This action cannot be undone.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -139,6 +139,13 @@ struct ResetAppView: View {
 
             for card in loyaltyCards {
                 modelContext.delete(card)
+            }
+
+            // 🔴 Trip Lists
+            let tripLists = try modelContext.fetch(FetchDescriptor<TripList>())
+
+            for trip in tripLists {
+                modelContext.delete(trip)
             }
             
             // 🔴 Recently Deleted

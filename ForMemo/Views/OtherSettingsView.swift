@@ -46,7 +46,7 @@ struct OtherSettingsView: View {
                         String(localized: "View"),
                         selection: $startupTab
                     ) {
-                        Text(String(localized: "Home"))
+                        Text(String(localized: "Start"))
                             .tag(0)
                         
                         Text(String(localized: "List"))
@@ -59,6 +59,12 @@ struct OtherSettingsView: View {
                             .tag(3)
                         Text(String(localized: "Map"))
                             .tag(5)
+                        
+                        Text(String(localized: "Wallet"))
+                            .tag(6)
+                        
+                        Text("Trips")
+                            .tag(7)
                     }
                     .pickerStyle(.navigationLink)
                     //                .labelsHidden()

@@ -16,7 +16,7 @@ final class LoyaltyCard {
 
     // Optional custom card color stored as HEX string
     var colorHex: String?
-
+    var sortOrder: Int = 0
     var createdAt: Date = Date()
 
     init(
@@ -27,6 +27,7 @@ final class LoyaltyCard {
         barcodeFormat: String,
         notes: String? = nil,
         colorHex: String? = nil,
+        sortOrder: Int = 0,
         createdAt: Date = Date()
     ) {
 
@@ -37,6 +38,7 @@ final class LoyaltyCard {
         self.barcodeFormat = barcodeFormat
         self.notes = notes
         self.colorHex = colorHex
+        self.sortOrder = sortOrder
         self.createdAt = createdAt
     }
 }

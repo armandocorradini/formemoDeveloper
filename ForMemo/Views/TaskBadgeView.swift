@@ -45,7 +45,7 @@ struct TaskBadgeView: View {
                             }
                         }
                     )
-                    .foregroundColor(
+                    .foregroundStyle(
                         isFilled
                         ? (colorScheme == .light ? .black : .white)
                         : statusColor

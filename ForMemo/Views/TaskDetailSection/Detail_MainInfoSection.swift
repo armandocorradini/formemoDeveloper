@@ -119,7 +119,7 @@ import SwiftData
                         if let completedDate = task.completedAt {
                             Text("at \(completedDate.formatted(date: .numeric, time: .shortened))")
                                 .font(.body)
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
 
                         if task.recurrenceRule != nil {

@@ -16,7 +16,8 @@ enum Persistence {
         TodoTask.self,
         TaskAttachment.self,
         DeletedItem.self,
-        LoyaltyCard.self
+        LoyaltyCard.self,
+        TripList.self
     ])
 
 
@@ -60,6 +61,9 @@ enum Persistence {
 
         } catch {
 
+            print("❌ SWIFTDATA ERROR:")
+            print(error)
+
             DebugLog.write(
                 "❌ SwiftData container initialization FAILED: \(error.localizedDescription)"
             )
@@ -68,8 +72,14 @@ enum Persistence {
                 "SwiftData ModelContainer error: \(error.localizedDescription)"
             )
 
-            fatalError(
-                "SwiftData ModelContainer initialization failed: \(error.localizedDescription)"
+            return try! ModelContainer(
+                for: schema,
+                configurations: [
+                    ModelConfiguration(
+                        schema: schema,
+                        isStoredInMemoryOnly: true
+                    )
+                ]
             )
         }
     }

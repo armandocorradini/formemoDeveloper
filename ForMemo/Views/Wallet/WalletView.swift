@@ -6,11 +6,11 @@ struct WalletView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     @Query(
         sort: [
-            SortDescriptor(\LoyaltyCard.storeName, order: .forward),
-            SortDescriptor(\LoyaltyCard.cardHolder, order: .forward)
+            SortDescriptor(\LoyaltyCard.sortOrder, order: .forward)
         ],
         animation: .smooth
     )
@@ -19,15 +19,38 @@ struct WalletView: View {
     @State private var showAddCard = false
     @State private var editingCard: LoyaltyCard?
     @State private var searchText = ""
+    @State private var selectedCard: LoyaltyCard?
+    @State private var pendingSortMode: String?
+    @State private var showCustomSortInfo = false
+
+    @AppStorage("walletSortMode")
+    private var walletSortMode: String = "alphabetical"
+
     private var filteredCards: [LoyaltyCard] {
+
+        let source: [LoyaltyCard]
+
+        if walletSortMode == "custom" {
+            source = cards.sorted { $0.sortOrder < $1.sortOrder }
+        } else {
+            source = cards.sorted {
+                let storeCompare = $0.storeName.localizedCaseInsensitiveCompare($1.storeName)
+
+                if storeCompare == .orderedSame {
+                    return ($0.cardHolder ?? "") < ($1.cardHolder ?? "")
+                }
+
+                return storeCompare == .orderedAscending
+            }
+        }
 
         let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmed.isEmpty else {
-            return cards
+            return source
         }
 
-        return cards.filter {
+        return source.filter {
             $0.storeName.localizedCaseInsensitiveContains(trimmed)
             || ($0.cardHolder?.localizedCaseInsensitiveContains(trimmed) ?? false)
         }
@@ -54,6 +77,25 @@ struct WalletView: View {
                     UITableViewCell.appearance().backgroundColor = .clear
                     UITableViewHeaderFooterView.appearance().tintColor = .clear
                     UITableViewHeaderFooterView.appearance().backgroundView = UIView(frame: .zero)
+
+                    if cards.allSatisfy({ $0.sortOrder == 0 }) && !cards.isEmpty {
+
+                        let alphabetical = cards.sorted {
+                            let storeCompare = $0.storeName.localizedCaseInsensitiveCompare($1.storeName)
+
+                            if storeCompare == .orderedSame {
+                                return ($0.cardHolder ?? "") < ($1.cardHolder ?? "")
+                            }
+
+                            return storeCompare == .orderedAscending
+                        }
+
+                        for (index, card) in alphabetical.enumerated() {
+                            card.sortOrder = index + 1
+                        }
+
+                        try? modelContext.save()
+                    }
                 }
 
             NavigationStack {
@@ -82,8 +124,8 @@ struct WalletView: View {
                                 relativePath: "\(card.id.uuidString).jpg"
                             )
 
-                            NavigationLink {
-                                LoyaltyCardDetailView(card: card)
+                            Button {
+                                selectedCard = card
                             } label: {
 
                                 HStack(spacing: 14) {
@@ -214,6 +256,7 @@ struct WalletView: View {
                                 )
                                 .padding(.vertical, 1)
                             }
+                            .buttonStyle(.plain)
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
                             .listRowInsets(
@@ -247,23 +290,27 @@ struct WalletView: View {
                             }
                             .contextMenu {
 
-                                Button {
-                                    editingCard = card
-                                } label: {
-                                    Label("Edit", systemImage: "pencil")
-                                }
+                                if sizeClass == .regular {
 
-                                Button(role: .destructive) {
-
-                                    if let index = cards.firstIndex(where: { $0.id == card.id }) {
-                                        deleteCards(at: IndexSet(integer: index))
+                                    Button {
+                                        editingCard = card
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
                                     }
 
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                                    Button(role: .destructive) {
+
+                                        if let index = cards.firstIndex(where: { $0.id == card.id }) {
+                                            deleteCards(at: IndexSet(integer: index))
+                                        }
+
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
                             }
                         }
+                        .onMove(perform: moveCards)
                         .onDelete(perform: deleteCards)
                     }
                     .contentMargins(.bottom, 70, for: .scrollContent)
@@ -277,6 +324,9 @@ struct WalletView: View {
                         prompt: Text("Search cards")
                     )
                 }
+            }
+            .navigationDestination(item: $selectedCard) { card in
+                LoyaltyCardDetailView(card: card)
             }
             .navigationTitle("Wallet")
             .toolbar {
@@ -294,6 +344,37 @@ struct WalletView: View {
                     }
                 }
 
+                ToolbarItem(placement: .topBarLeading) {
+
+                    Picker(
+                        "Order",
+                        selection: Binding(
+                            get: { walletSortMode },
+                            set: { newValue in
+
+                                guard newValue != walletSortMode else { return }
+
+                                if newValue == "custom" {
+                                    pendingSortMode = newValue
+                                    showCustomSortInfo = true
+                                } else {
+                                    walletSortMode = newValue
+                                }
+                            }
+                        )
+                    ) {
+                        Label("A-Z", systemImage: "textformat.abc")
+                            .tag("alphabetical")
+
+                        Label("Custom", systemImage: "arrow.up.arrow.down")
+                            .tag("custom")
+                    }
+                    .labelStyle(.iconOnly)
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                }
+
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showAddCard = true
@@ -308,8 +389,40 @@ struct WalletView: View {
             .sheet(item: $editingCard) { card in
                 EditLoyaltyCardView(card: card)
             }
+            .confirmationDialog(
+                "Custom Order",
+                isPresented: $showCustomSortInfo,
+                titleVisibility: .visible
+            ) {
+
+                Button("Enable Custom Order") {
+                    walletSortMode = "custom"
+                    pendingSortMode = nil
+                }
+
+                Button("Cancel", role: .cancel) {
+                    pendingSortMode = nil
+                }
+
+            } message: {
+                Text("You can reorder cards by entering edit mode and dragging a card by holding the reorder handle.")
+            }
         }
     }
+    }
+
+    private func moveCards(from source: IndexSet, to destination: Int) {
+
+        guard walletSortMode == "custom" else { return }
+
+        var reordered = filteredCards
+        reordered.move(fromOffsets: source, toOffset: destination)
+
+        for (index, card) in reordered.enumerated() {
+            card.sortOrder = index + 1
+        }
+
+        try? modelContext.save()
     }
 
     // MARK: - Delete

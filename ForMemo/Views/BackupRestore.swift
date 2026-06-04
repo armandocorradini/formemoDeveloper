@@ -9,6 +9,8 @@ struct BackupRestoreView: View {
     private var tasks: [TodoTask]
     @Query(sort: \LoyaltyCard.createdAt, order: .forward)
     private var loyaltyCards: [LoyaltyCard]
+    @Query(sort: \TripList.sortOrder)
+    private var tripLists: [TripList]
     @State private var isCreatingBackup = false
     @State private var isRestoringBackup = false
     @State private var showRestoreConfirmation = false
@@ -65,7 +67,8 @@ struct BackupRestoreView: View {
 
                                 let url = try await BackupManager.createBackup(
                                     tasks: tasks,
-                                    loyaltyCards: loyaltyCards
+                                    loyaltyCards: loyaltyCards,
+                                    tripLists: tripLists
                                 )
 
                                 exportURL = url
@@ -86,7 +89,7 @@ struct BackupRestoreView: View {
                                 Text("Create Backup")
 
                                 Text(
-                                    "Create a complete backup of tasks, reminders, recurrence rules, tags, priorities, locations, Wallet cards and attachments."
+                                    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards and attachments."
                                 )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -131,7 +134,7 @@ struct BackupRestoreView: View {
                             Text("Backup includes")
 
                             Text(
-                                "Tasks, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards and attachments are included in the backup archive."
+                                "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards and attachments are included in the backup archive."
                             )
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -288,6 +291,7 @@ private struct BackupArchive: Codable {
         case createdAt
         case tasks
         case loyaltyCards
+        case tripLists
         case attachmentFiles
         case loyaltyCardLogoFiles
     }
@@ -296,6 +300,7 @@ private struct BackupArchive: Codable {
     let createdAt: Date
     let tasks: [TaskTransferObject]
     let loyaltyCards: [LoyaltyCardTransferObject]
+    let tripLists: [TripListTransferObject]
     let attachmentFiles: [String: Data]
     let loyaltyCardLogoFiles: [String: Data]
 
@@ -304,6 +309,7 @@ private struct BackupArchive: Codable {
         createdAt: Date,
         tasks: [TaskTransferObject],
         loyaltyCards: [LoyaltyCardTransferObject],
+        tripLists: [TripListTransferObject],
         attachmentFiles: [String: Data],
         loyaltyCardLogoFiles: [String: Data]
     ) {
@@ -311,6 +317,7 @@ private struct BackupArchive: Codable {
         self.createdAt = createdAt
         self.tasks = tasks
         self.loyaltyCards = loyaltyCards
+        self.tripLists = tripLists
         self.attachmentFiles = attachmentFiles
         self.loyaltyCardLogoFiles = loyaltyCardLogoFiles
     }
@@ -332,6 +339,10 @@ private struct BackupArchive: Codable {
         loyaltyCards = try container.decode(
             [LoyaltyCardTransferObject].self,
             forKey: .loyaltyCards
+        )
+        tripLists = try container.decode(
+            [TripListTransferObject].self,
+            forKey: .tripLists
         )
         attachmentFiles = try container.decode(
             [String: Data].self,
@@ -360,6 +371,10 @@ private struct BackupArchive: Codable {
         try container.encode(
             loyaltyCards,
             forKey: .loyaltyCards
+        )
+        try container.encode(
+            tripLists,
+            forKey: .tripLists
         )
         try container.encode(
             attachmentFiles,
@@ -394,11 +409,38 @@ private struct LoyaltyCardTransferObject: Codable {
     }
 }
 
+private struct TripListTransferObject: Codable {
+    let id: UUID
+    let name: String
+    let icon: String
+    let colorHex: String
+    let notes: String
+    let systemTemplate: String
+    let sortOrder: Int
+    let createdAt: Date
+    let updatedAt: Date
+    let sections: [TripSectionData]
+
+    init(tripList: TripList) {
+        self.id = tripList.id
+        self.name = tripList.name
+        self.icon = tripList.icon
+        self.colorHex = tripList.colorHex
+        self.notes = tripList.notes
+        self.systemTemplate = tripList.systemTemplate
+        self.sortOrder = tripList.sortOrder
+        self.createdAt = tripList.createdAt
+        self.updatedAt = tripList.updatedAt
+        self.sections = tripList.sections
+    }
+}
+
 private enum BackupManager {
 
     static func createBackup(
         tasks: [TodoTask],
-        loyaltyCards: [LoyaltyCard]
+        loyaltyCards: [LoyaltyCard],
+        tripLists: [TripList]
     ) async throws -> URL {
 
         var attachmentPayload: [String: Data] = [:]
@@ -461,6 +503,9 @@ private enum BackupManager {
             },
             loyaltyCards: loyaltyCards.map {
                 LoyaltyCardTransferObject(card: $0)
+            },
+            tripLists: tripLists.map {
+                TripListTransferObject(tripList: $0)
             },
             attachmentFiles: attachmentPayload,
             loyaltyCardLogoFiles: loyaltyLogoPayload
@@ -559,6 +604,35 @@ private enum BackupManager {
                     options: .atomic
                 )
             }
+        }
+
+        for tripDTO in archive.tripLists {
+
+            let descriptor = FetchDescriptor<TripList>(
+                predicate: #Predicate { $0.id == tripDTO.id }
+            )
+
+            let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
+
+            guard !alreadyExists else {
+                continue
+            }
+
+            let trip = TripList(
+                name: tripDTO.name,
+                icon: tripDTO.icon,
+                colorHex: tripDTO.colorHex,
+                notes: tripDTO.notes,
+                systemTemplate: tripDTO.systemTemplate,
+                sortOrder: tripDTO.sortOrder,
+                sections: tripDTO.sections
+            )
+
+            trip.id = tripDTO.id
+            trip.createdAt = tripDTO.createdAt
+            trip.updatedAt = tripDTO.updatedAt
+
+            modelContext.insert(trip)
         }
 
         for cardDTO in archive.loyaltyCards {
