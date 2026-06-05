@@ -33,8 +33,21 @@ struct TravelKitListView: View {
     }
     
     var body: some View {
-        
-        NavigationStack {
+
+        ZStack {
+
+            LinearGradient(
+                colors: [backColor1, backColor2],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            NavigationStack {
             
             List {
                 
@@ -162,13 +175,17 @@ struct TravelKitListView: View {
                 }
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
 //            .onAppear {
 //                preloadTripLocalizationKeys()
 //            }
             .navigationTitle(String(localized: "Trips"))
+            .navigationBarTitleDisplayMode(.inline)
             .searchable(
                 text: $searchText,
-                placement: .navigationBarDrawer(displayMode: .always)
+                placement: .navigationBarDrawer(displayMode: .automatic),
+                prompt: Text("Search trips")
             )
             .task {
                 // Backfill old categories created before templates existed.
@@ -514,6 +531,7 @@ struct TravelKitListView: View {
                         }
                     }
                 }
+            }
             }
         }
     }

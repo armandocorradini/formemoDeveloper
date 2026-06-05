@@ -47,6 +47,7 @@ private let weatherManager = WeatherManager.shared
             }
             .navigationTitle("Forecast")
             .navigationBarTitleDisplayMode(.inline)
+            .contentMargins(.bottom, 70, for: .scrollContent)
             .toolbar {
                 if showsCloseButton {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -87,7 +88,26 @@ private let weatherManager = WeatherManager.shared
             ZStack {
 
                 Circle()
-                    .fill(.ultraThinMaterial)
+                    .fill(
+                        LinearGradient(
+                            colors: {
+                                let hour = Calendar.current.component(.hour, from: Date())
+                                let isNight = hour >= 20 || hour < 6
+
+                                return isNight
+                                ? [
+                                    Color.indigo.opacity(colorScheme == .dark ? 0.75 : 0.55),
+                                    Color.blue.opacity(colorScheme == .dark ? 0.45 : 0.30)
+                                  ]
+                                : [
+                                    Color.blue.opacity(colorScheme == .dark ? 0.55 : 0.35),
+                                    Color.cyan.opacity(colorScheme == .dark ? 0.35 : 0.20)
+                                  ]
+                            }(),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
                     .frame(width: 50, height: 50)
                     .overlay(
                         Circle()
@@ -417,7 +437,11 @@ private let weatherManager = WeatherManager.shared
                 cornerRadius: 28,
                 style: .continuous
             )
-            .fill(.ultraThinMaterial)
+            .fill(
+                colorScheme == .dark
+                ? Color(red: 0.07, green: 0.08, blue: 0.13)
+                : Color.white.opacity(0.72)
+            )
             .overlay(
                 RoundedRectangle(
                     cornerRadius: 28,
@@ -425,14 +449,26 @@ private let weatherManager = WeatherManager.shared
                 )
                 .fill(
                     LinearGradient(
-                        colors: colorScheme == .dark
-                        ? [
-                            Color.black.opacity(0.22),
-                            Color.black.opacity(0.08)
-                        ]
-                        : [
-                            Color.white.opacity(0.55),
-                            Color.white.opacity(0.12)
+                        colors: [
+                            Color.white.opacity(colorScheme == .dark ? 0.10 : 0.28),
+                            Color.clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+            )
+            .overlay(
+                RoundedRectangle(
+                    cornerRadius: 28,
+                    style: .continuous
+                )
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(colorScheme == .dark ? 0.14 : 0.22),
+                            Color.white.opacity(colorScheme == .dark ? 0.015 : 0.05),
+                            Color.clear
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -447,22 +483,20 @@ private let weatherManager = WeatherManager.shared
                 .stroke(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.22),
-                            Color.white.opacity(0.04),
+                            Color.white.opacity(colorScheme == .dark ? 0.18 : 0.26),
+                            Color.white.opacity(colorScheme == .dark ? 0.025 : 0.06),
                             Color.clear
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 1
+                    lineWidth: 1.05
                 )
             )
             .shadow(
-                color: colorScheme == .dark
-                ? .black.opacity(0.16)
-                : .black.opacity(0.06),
-                radius: 14,
-                y: 8
+                color: .black.opacity(colorScheme == .dark ? 0.52 : 0.12),
+                radius: 22,
+                y: 10
             )
         )
     }

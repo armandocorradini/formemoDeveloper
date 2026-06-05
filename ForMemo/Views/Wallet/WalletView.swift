@@ -184,89 +184,15 @@ struct WalletView: View {
                                     }
 
                                     Spacer(minLength: 0)
+
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.tertiary)
                                 }
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 12)
-                                .background(
-                                    RoundedRectangle(
-                                        cornerRadius: 24,
-                                        style: .continuous
-                                    )
-                                    .fill(
-                                        colorScheme == .dark
-                                        ? Color(red: 0.07, green: 0.08, blue: 0.13)
-                                        : Color.white.opacity(0.72)
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(
-                                            cornerRadius: 24,
-                                            style: .continuous
-                                        )
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [
-                                                    Color.white.opacity(colorScheme == .dark ? 0.10 : 0.28),
-                                                    Color.clear
-                                                ],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            )
-                                        )
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(
-                                            cornerRadius: 24,
-                                            style: .continuous
-                                        )
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [
-                                                    Color.white.opacity(colorScheme == .dark ? 0.14 : 0.22),
-                                                    Color.white.opacity(colorScheme == .dark ? 0.015 : 0.05),
-                                                    Color.clear
-                                                ],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            )
-                                        )
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(
-                                            cornerRadius: 24,
-                                            style: .continuous
-                                        )
-                                        .stroke(
-                                            LinearGradient(
-                                                colors: [
-                                                    Color.white.opacity(colorScheme == .dark ? 0.18 : 0.26),
-                                                    Color.white.opacity(colorScheme == .dark ? 0.025 : 0.06),
-                                                    Color.clear
-                                                ],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            ),
-                                            lineWidth: 1.05
-                                        )
-                                    )
-                                    .shadow(
-                                        color: .black.opacity(colorScheme == .dark ? 0.52 : 0.12),
-                                        radius: 22,
-                                        y: 10
-                                    )
-                                )
-                                .padding(.vertical, 1)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(
-                                EdgeInsets(
-                                    top: -2,
-                                    leading: 18,
-                                    bottom: 6,
-                                    trailing: 18
-                                )
-                            )
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
 
                                 Button {
@@ -315,7 +241,7 @@ struct WalletView: View {
                     }
                     .contentMargins(.bottom, 70, for: .scrollContent)
                     .contentMargins(.top, 10, for: .scrollContent)
-                    .listStyle(.plain)
+                    .listStyle(.insetGrouped)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
                     .searchable(
@@ -329,6 +255,7 @@ struct WalletView: View {
                 LoyaltyCardDetailView(card: card)
             }
             .navigationTitle("Wallet")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
 
                 ToolbarItem(placement: .principal) {

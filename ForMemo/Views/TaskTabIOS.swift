@@ -145,8 +145,14 @@ struct TaskTabView: View {
                             showMorePopover = false
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: selectedTab == 0 ? "house.fill" : "house")
-                                    .frame(width: 22)
+                                VStack(spacing: 4) {
+                                    Image(systemName: "house")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 0 ? 1 : 0)
+                                }
                                 Text(String(localized: "Start_tab"))
                             }
                             .foregroundStyle(selectedTab == 0 ? Color.accentColor : Color.primary)
@@ -163,8 +169,14 @@ struct TaskTabView: View {
                             showMorePopover = false
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: selectedTab == 5 ? "map.fill" : "map")
-                                    .frame(width: 22)
+                                VStack(spacing: 4) {
+                                    Image(systemName: "map")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 5 ? 1 : 0)
+                                }
                                 Text(String(localized: "map_tab"))
                             }
                             .foregroundStyle(selectedTab == 5 ? Color.accentColor : Color.primary)
@@ -180,8 +192,14 @@ struct TaskTabView: View {
                             showMorePopover = false
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: selectedTab == 7 ? "suitcase.rolling.fill" : "suitcase.rolling")
-                                    .frame(width: 22)
+                                VStack(spacing: 4) {
+                                    Image(systemName: "suitcase.rolling")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 7 ? 1 : 0)
+                                }
                                 Text("Trips")
                             }
                             .foregroundStyle(selectedTab == 7 ? Color.accentColor : Color.primary)
@@ -196,8 +214,14 @@ struct TaskTabView: View {
                             showMorePopover = false
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: selectedTab == 8 ? "doc.text.fill" : "doc.text")
-                                    .frame(width: 22)
+                                VStack(spacing: 4) {
+                                    Image(systemName: "doc.text")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 8 ? 1 : 0)
+                                }
                                 Text(String(localized: "Documents"))
                             }
                             .foregroundStyle(selectedTab == 8 ? Color.accentColor : Color.primary)
@@ -212,8 +236,14 @@ struct TaskTabView: View {
                             showMorePopover = false
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: selectedTab == 9 ? "cloud.sun.fill" : "cloud.sun")
-                                    .frame(width: 22)
+                                VStack(spacing: 4) {
+                                    Image(systemName: "cloud.sun")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 9 ? 1 : 0)
+                                }
                                 Text("Forecast")
                             }
                             .foregroundStyle(selectedTab == 9 ? Color.accentColor : Color.primary)
@@ -230,8 +260,14 @@ struct TaskTabView: View {
                             showMorePopover = false
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: selectedTab == 2 ? "gearshape.fill" : "gear")
-                                    .frame(width: 22)
+                                VStack(spacing: 4) {
+                                    Image(systemName: "gear")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 2 ? 1 : 0)
+                                }
                                 Text(String(localized: "settings_tab"))
                             }
                             .foregroundStyle(selectedTab == 2 ? Color.accentColor : Color.primary)

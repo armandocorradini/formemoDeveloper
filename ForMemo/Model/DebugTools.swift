@@ -147,10 +147,13 @@ enum DebugTools {
 }
 enum DebugLog {
     
+    private static let logQueue = DispatchQueue(
+        label: "ForMemo.Diagnostics"
+    )
     static var logURL: URL {
         FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("migration.log")
+            .appendingPathComponent("ForMemoDiagnostics.log")
     }
     
     static func write(_ message: String) {
@@ -182,20 +185,25 @@ enum DebugLog {
         }
         if let data = line.data(using: .utf8) {
             
-            if FileManager.default.fileExists(atPath: logURL.path) {
+            logQueue.async {
                 
-                if let handle = try? FileHandle(
-                    forUpdating: logURL
-                ) {
-                    _ = try? handle.seekToEnd()
-                    try? handle.write(contentsOf: data)
-                    try? handle.close()
+                if FileManager.default.fileExists(atPath: logURL.path) {
+                    
+                    if let handle = try? FileHandle(
+                        forUpdating: logURL
+                    ) {
+                        _ = try? handle.seekToEnd()
+                        try? handle.write(contentsOf: data)
+                        try? handle.close()
+                    }
+                    
+                } else {
+                    try? data.write(to: logURL)
                 }
-                print(line)
                 
-            } else {
-                try? data.write(to: logURL)
+                #if DEBUG
                 print(line)
+                #endif
             }
         }
     }
@@ -218,12 +226,51 @@ enum DebugLog {
 
         write("📱 Device: \(device)")
         write("📱 iOS: \(system)")
+        
+        let memoryGB = Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824
+        write("💾 Device Memory: \(String(format: "%.1f", memoryGB)) GB")
+
+        if let values = try? URL(fileURLWithPath: NSHomeDirectory())
+            .resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]),
+           let available = values.volumeAvailableCapacityForImportantUsage {
+
+            let availableGB = Double(available) / 1_073_741_824
+
+            write(
+                "📦 Free Storage: \(String(format: "%.1f", availableGB)) GB"
+            )
+        }
 
         UNUserNotificationCenter.current()
             .getPendingNotificationRequests { requests in
                 DebugLog.write(
                     "🔔 Pending notifications: \(requests.count)"
                 )
+                
+                UNUserNotificationCenter.current()
+                    .getNotificationSettings { settings in
+
+                        let status: String
+
+                        switch settings.authorizationStatus {
+                        case .authorized:
+                            status = "authorized"
+                        case .denied:
+                            status = "denied"
+                        case .notDetermined:
+                            status = "notDetermined"
+                        case .provisional:
+                            status = "provisional"
+                        case .ephemeral:
+                            status = "ephemeral"
+                        @unknown default:
+                            status = "unknown"
+                        }
+
+                        DebugLog.write(
+                            "🔔 Notification authorization: \(status)"
+                        )
+                    }
             }
 
         CKContainer.default().accountStatus { status, error in
@@ -290,6 +337,54 @@ enum DebugLog {
     static func writeAttachmentEvent(_ message: String) {
         write("📎 ATTACHMENTS: \(message)")
     }
+    static func writeDatabaseSnapshot(context: ModelContext) {
+
+        let taskCount = (try? context.fetchCount(
+            FetchDescriptor<TodoTask>()
+        )) ?? 0
+
+        let documentCount = (try? context.fetchCount(
+            FetchDescriptor<DocumentItem>()
+        )) ?? 0
+
+        let tripCount = (try? context.fetchCount(
+            FetchDescriptor<TripList>()
+        )) ?? 0
+
+        let cardCount = (try? context.fetchCount(
+            FetchDescriptor<LoyaltyCard>()
+        )) ?? 0
+
+        let deletedCount = (try? context.fetchCount(
+            FetchDescriptor<DeletedItem>()
+        )) ?? 0
+
+        write("📊 Tasks: \(taskCount)")
+        write("📊 Documents: \(documentCount)")
+        write("📊 Trips: \(tripCount)")
+        write("📊 Loyalty Cards: \(cardCount)")
+        write("📊 Deleted Items: \(deletedCount)")
+
+        if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+           let files = try? FileManager.default.contentsOfDirectory(
+                at: attachmentsDirectory,
+                includingPropertiesForKeys: [.fileSizeKey]
+           ) {
+
+            let totalSize = files.reduce(Int64(0)) { partial, url in
+                let size = (try? url.resourceValues(
+                    forKeys: [.fileSizeKey]
+                ).fileSize) ?? 0
+
+                return partial + Int64(size)
+            }
+
+            let sizeMB = Double(totalSize) / 1_048_576
+
+            write("📎 Attachment Files: \(files.count)")
+            write("📎 Attachment Size: \(String(format: "%.1f", sizeMB)) MB")
+        }
+    }
     static func ensureLogFileExists() {
         
         if !FileManager.default.fileExists(atPath: logURL.path) {
@@ -349,13 +444,47 @@ struct ExportDiagnosticsView: View {
             atPath: DebugLog.logURL.path
         )
         if logExists {
-            if let content = try? String(
-                contentsOf: DebugLog.logURL,
-                encoding: .utf8
-            ) {
+            do {
+
+                let data = try Data(contentsOf: DebugLog.logURL)
+
+                let content = String(
+                    decoding: data,
+                    as: UTF8.self
+                )
+
                 logContent = String(content.prefix(12000))
-            } else {
-                logContent = "Unable to load log"
+
+            } catch {
+
+                DebugLog.write(
+                    "⚠️ Diagnostics read failed: \(error.localizedDescription)"
+                )
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+
+                    if let data = try? Data(contentsOf: DebugLog.logURL) {
+
+                        let retryContent = String(
+                            decoding: data,
+                            as: UTF8.self
+                        )
+
+                        logContent = String(retryContent.prefix(12000))
+
+                    } else {
+
+                        logContent = [
+                            "Unable to load log",
+                            error.localizedDescription,
+                            DebugLog.logURL.path
+                        ].joined(separator: "\n\n")
+                    }
+
+                    refreshID = UUID()
+                }
+
+                return
             }
         } else {
             logContent = ""
@@ -387,6 +516,7 @@ struct ExportDiagnosticsView: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 
+                // Exports ForMemoDiagnostics.log
                 ShareLink(
                     item: DebugLog.logURL,
                     preview: SharePreview(
@@ -439,7 +569,12 @@ struct ExportDiagnosticsView: View {
         .contentMargins(.bottom, 70, for: .scrollContent)
         .onAppear {
             DebugLog.ensureLogFileExists()
-            refreshDiagnostics()
+
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + 0.3
+            ) {
+                refreshDiagnostics()
+            }
         }
         .onReceive(
             NotificationCenter.default.publisher(

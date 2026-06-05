@@ -24,111 +24,129 @@ struct DocumentsView: View {
 
     var body: some View {
 
-        List {
+        ZStack {
 
-            if filteredDocuments.isEmpty {
+            LinearGradient(
+                colors: [backColor1, backColor2],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-                ContentUnavailableView(
-                    "No Documents",
-                    systemImage: "doc.text.fill",
-                    description: Text("Tap + to add a document")
-                )
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-            }
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
 
-            ForEach(filteredDocuments) { document in
+            List {
 
-                NavigationLink {
-                    DocumentDetailView(document: document)
-                } label: {
+                if filteredDocuments.isEmpty {
 
-                    HStack(spacing: 12) {
+                    ContentUnavailableView(
+                        "No Documents",
+                        systemImage: "doc.text.fill",
+                        description: Text("Tap + to add a document")
+                    )
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                }
 
-                        Image(systemName: document.documentType.systemImage)
-                            .font(.title3)
-                            .frame(width: 28)
+                ForEach(filteredDocuments) { document in
 
-                        VStack(alignment: .leading, spacing: 4) {
+                    NavigationLink {
+                        DocumentDetailView(document: document)
+                    } label: {
 
-                            Text(document.name)
-                                .font(.headline)
+                        HStack(spacing: 12) {
 
-                            if let expiryDate = document.expiryDate {
+                            Image(systemName: document.documentType.systemImage)
+                                .font(.title3)
+                                .frame(width: 28)
 
-                                HStack(spacing: 6) {
+                            VStack(alignment: .leading, spacing: 4) {
 
-                                    Text(
-                                        expiryDate.formatted(
-                                            date: .abbreviated,
-                                            time: .omitted
-                                        )
-                                    )
-                                    .font(.caption2)
+                                Text(document.name)
+                                    .font(.headline)
 
-                                    if document.notificationEnabled,
-                                       let reminderDate = Calendar.current.date(
-                                            byAdding: .day,
-                                            value: -document.notificationDaysBefore,
-                                            to: expiryDate
-                                       ) {
+                                if let expiryDate = document.expiryDate {
 
-                                        Image(systemName: "bell.fill")
-                                            .font(.caption2)
-                                            .foregroundStyle(.blue)
-                                            .padding(.leading, 4)
+                                    HStack(spacing: 6) {
 
                                         Text(
-                                            reminderDate.formatted(
+                                            expiryDate.formatted(
                                                 date: .abbreviated,
                                                 time: .omitted
                                             )
                                         )
                                         .font(.caption2)
+
+                                        if document.notificationEnabled,
+                                           let reminderDate = Calendar.current.date(
+                                                byAdding: .day,
+                                                value: -document.notificationDaysBefore,
+                                                to: expiryDate
+                                           ) {
+
+                                            Image(systemName: "bell.fill")
+                                                .font(.caption2)
+                                                .foregroundStyle(.blue)
+                                                .padding(.leading, 4)
+
+                                            Text(
+                                                reminderDate.formatted(
+                                                    date: .abbreviated,
+                                                    time: .omitted
+                                                )
+                                            )
+                                            .font(.caption2)
+                                        }
                                     }
+                                    .foregroundStyle(.secondary)
                                 }
-                                .foregroundStyle(.secondary)
                             }
+
+                            Spacer()
+
+                            Circle()
+                                .fill(statusColor(for: document))
+                                .frame(width: 10, height: 10)
                         }
-
-                        Spacer()
-
-                        Circle()
-                            .fill(statusColor(for: document))
-                            .frame(width: 10, height: 10)
+                    }
+                }
+                .onDelete { indexSet in
+                    for index in indexSet {
+                        deleteDocument(
+                            filteredDocuments[index],
+                            in: modelContext
+                        )
                     }
                 }
             }
-            .onDelete { indexSet in
-                for index in indexSet {
-                    deleteDocument(
-                        filteredDocuments[index],
-                        in: modelContext
-                    )
+            .contentMargins(.bottom, 70, for: .scrollContent)
+            .listStyle(.insetGrouped)
+            .scrollContentBackground(.hidden)
+            .navigationTitle(String(localized: "Documents"))
+            .navigationBarTitleDisplayMode(.inline)
+            .searchable(
+                text: $searchText,
+                placement: .navigationBarDrawer(displayMode: .automatic),
+                prompt: Text("Search documents")
+            )
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        let document = DocumentItem(name: "")
+                        modelContext.insert(document)
+                        try? modelContext.save()
+                        newDocument = document
+                    } label: {
+                        Image(systemName: "plus")
+                    }
                 }
             }
-        }
-        .contentMargins(.bottom, 70, for: .scrollContent)
-        .navigationTitle(String(localized: "Documents"))
-        .searchable(
-            text: $searchText,
-            placement: .navigationBarDrawer(displayMode: .always)
-        )
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    let document = DocumentItem(name: "")
-                    modelContext.insert(document)
-                    try? modelContext.save()
-                    newDocument = document
-                } label: {
-                    Image(systemName: "plus")
+            .sheet(item: $newDocument) { document in
+                NavigationStack {
+                    DocumentDetailView(document: document)
                 }
-            }
-        }
-        .sheet(item: $newDocument) { document in
-            NavigationStack {
-                DocumentDetailView(document: document)
             }
         }
     }
