@@ -207,9 +207,6 @@ enum DebugLog {
             }
         }
     }
-    static func writeSeparator() {
-        write("────────────────────────────────────────")
-    }
     static func writeAppLaunch() {
         
         if !FileManager.default.fileExists(atPath: logURL.path) {
@@ -219,7 +216,6 @@ enum DebugLog {
             )
         }
         
-        writeSeparator()
         write("🚀 APP LAUNCH")
         let device = UIDevice.current.model
         let system = UIDevice.current.systemVersion
@@ -548,13 +544,16 @@ struct ExportDiagnosticsView: View {
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(height: 220)
+                        .frame(height: 160)
                     }
                 }
 
                 #if DEBUG
                 Button(role: .destructive) {
                     DebugLog.clear()
+                    logExists = false
+                    logContent = ""
+                    refreshID = UUID()
                 } label: {
                     Label(
                         "Clear Diagnostics Log",
