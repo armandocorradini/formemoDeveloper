@@ -16880,7 +16880,32 @@
       }
     },
     "Search documents" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumente suchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar documentos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher des documents"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca documenti"
+          }
+        }
+      }
     },
     "Search FAQ" : {
       "comment" : "A label for a search bar.",
@@ -17059,7 +17084,32 @@
       }
     },
     "Search trips" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reisen suchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar viajes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher des voyages"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca viaggi"
+          }
+        }
+      }
     },
     "Section Name" : {
       "localizations" : {
@@ -20433,30 +20483,30 @@
         }
       }
     },
-    "The diagnostics report only contains technical app events and never personal task contents." : {
+    "The diagnostics report only contains technical app events, configuration information and aggregate item counts. Task titles, notes, attachments, document details, card information and personal contents are never included." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Der Diagnosebericht enthält nur technische App-Ereignisse und niemals persönliche Aufgabeninhalte."
+            "value" : "Le rapport de diagnostic contient uniquement des événements techniques de l’application, des informations de configuration et des décomptes agrégés des éléments. Les titres des tâches, les notes, les pièces jointes, les détails des documents, les informations des cartes et les contenus personnels ne sont jamais inclus."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El informe de diagnóstico solo contiene eventos técnicos de la aplicación y nunca contenido personal de las tareas."
+            "value" : "El informe de diagnóstico contiene únicamente eventos técnicos de la aplicación, información de configuración y recuentos agregados de elementos. Los títulos de las tareas, las notas, los archivos adjuntos, los detalles de los documentos, la información de las tarjetas y los contenidos personales nunca se incluyen."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le rapport de diagnostic contient uniquement des événements techniques de l’application et jamais le contenu personnel des tâches."
+            "value" : "Le rapport de diagnostic contient uniquement des événements techniques de l’application, des informations de configuration et des décomptes agrégés des éléments. Les titres des tâches, les notes, les pièces jointes, les détails des documents, les informations des cartes et les contenus personnels ne sont jamais inclus."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il report diagnostico contiene solo eventi tecnici dell’app e mai il contenuto personale delle attività."
+            "value" : "Il report diagnostico contiene esclusivamente eventi tecnici dell’app, informazioni di configurazione e conteggi aggregati degli elementi. I titoli delle attività, le note, gli allegati, i dettagli dei documenti, le informazioni delle carte e i contenuti personali non vengono mai inclusi."
           }
         }
       }

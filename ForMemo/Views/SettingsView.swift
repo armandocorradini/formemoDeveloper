@@ -498,7 +498,7 @@ Attivazione: \(triggerInfo)
                         }
                     } label: {
                         HStack(spacing: 12) {
-                            Image(systemName: "ladybug")
+                            Image(systemName: "waveform.path.ecg.magnifyingglass")
                                 .foregroundStyle(.red)
                                 .frame(width: iconWidth)
 
@@ -655,7 +655,7 @@ Attivazione: \(triggerInfo)
                             Text("Diagnostics")
                                 .foregroundStyle(.primary)
                         } icon: {
-                            Image(systemName: "ladybug")
+                            Image(systemName: "waveform.path.ecg.magnifyingglass")
                                 .foregroundStyle(.orange)
                                 .frame(width: iconWidth)
                         }

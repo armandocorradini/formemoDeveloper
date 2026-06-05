@@ -512,7 +512,7 @@ struct ExportDiagnosticsView: View {
                         .foregroundStyle(.blue)
                 }
                 
-                Text("The diagnostics report only contains technical app events and never personal task contents.")
+                Text("The diagnostics report only contains technical app events, configuration information and aggregate item counts. Task titles, notes, attachments, document details, card information and personal contents are never included.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 
@@ -521,7 +521,7 @@ struct ExportDiagnosticsView: View {
                     item: DebugLog.logURL,
                     preview: SharePreview(
                         "ForMemo Diagnostics",
-                        image: Image(systemName: "ladybug")
+                        image: Image(systemName: "waveform.path.ecg.magnifyingglass")
                     )
                 ) {
                     Label(
