@@ -55,9 +55,39 @@ struct DocumentsView: View {
                                 .font(.headline)
 
                             if let expiryDate = document.expiryDate {
-                                Text(expiryDate.formatted(date: .abbreviated, time: .omitted))
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+
+                                HStack(spacing: 6) {
+
+                                    Text(
+                                        expiryDate.formatted(
+                                            date: .abbreviated,
+                                            time: .omitted
+                                        )
+                                    )
+                                    .font(.caption2)
+
+                                    if document.notificationEnabled,
+                                       let reminderDate = Calendar.current.date(
+                                            byAdding: .day,
+                                            value: -document.notificationDaysBefore,
+                                            to: expiryDate
+                                       ) {
+
+                                        Image(systemName: "bell.fill")
+                                            .font(.caption2)
+                                            .foregroundStyle(.blue)
+                                            .padding(.leading, 4)
+
+                                        Text(
+                                            reminderDate.formatted(
+                                                date: .abbreviated,
+                                                time: .omitted
+                                            )
+                                        )
+                                        .font(.caption2)
+                                    }
+                                }
+                                .foregroundStyle(.secondary)
                             }
                         }
 

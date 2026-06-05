@@ -17,6 +17,7 @@ struct TaskTabView: View {
     @State private var walletPath = NavigationPath()
     @State private var TripsPath = NavigationPath()
     @State private var documentsPath = NavigationPath()
+    @State private var weatherPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
     
     @AppStorage("TaskWeekDays")
@@ -104,9 +105,9 @@ struct TaskTabView: View {
                 )
                 
                 tabItem(
-                    "map",
-                    String(localized: "map_tab"),
-                    5
+                    "wallet.bifold",
+                    String(localized: "wallet_tab"),
+                    6
                 )
                 
                 Button {
@@ -125,12 +126,12 @@ struct TaskTabView: View {
                         Capsule()
                             .fill(Color.accentColor)
                             .frame(width: 16, height: 3)
-                            .opacity([0,2,6,7,8].contains(selectedTab) ? 1 : 0)
+                            .opacity([0,2,5,7,8,9].contains(selectedTab) ? 1 : 0)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 49)
                     .foregroundStyle(
-                        [0,2,6,7,8].contains(selectedTab)
+                        [0,2,5,7,8,9].contains(selectedTab)
                         ? Color.accentColor
                         : Color.secondary
                     )
@@ -158,20 +159,21 @@ struct TaskTabView: View {
                         Divider()
 
                         Button {
-                            selectedTab = 6
+                            selectedTab = 5
                             showMorePopover = false
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: selectedTab == 6 ? "wallet.bifold.fill" : "wallet.bifold")
+                                Image(systemName: selectedTab == 5 ? "map.fill" : "map")
                                     .frame(width: 22)
-                                Text(String(localized: "wallet_tab"))
+                                Text(String(localized: "map_tab"))
                             }
-                            .foregroundStyle(selectedTab == 6 ? Color.accentColor : Color.primary)
+                            .foregroundStyle(selectedTab == 5 ? Color.accentColor : Color.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .frame(maxWidth: .infinity, alignment: .leading)
+
 
                         Button {
                             selectedTab = 7
@@ -199,6 +201,22 @@ struct TaskTabView: View {
                                 Text(String(localized: "Documents"))
                             }
                             .foregroundStyle(selectedTab == 8 ? Color.accentColor : Color.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Button {
+                            selectedTab = 9
+                            showMorePopover = false
+                        } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: selectedTab == 9 ? "cloud.sun.fill" : "cloud.sun")
+                                    .frame(width: 22)
+                                Text("Forecast")
+                            }
+                            .foregroundStyle(selectedTab == 9 ? Color.accentColor : Color.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         }
@@ -298,6 +316,10 @@ struct TaskTabView: View {
             NavigationStack(path: $documentsPath) {
                 DocumentsView()
             }
+        case 9:
+            NavigationStack(path: $weatherPath) {
+                WeatherForecastView()
+            }
             
         case 2:
             NavigationStack(path: $settingsPath) {
@@ -334,6 +356,7 @@ struct TaskTabView: View {
                 sidebarRow(String(localized: "wallet_tab"), "wallet.bifold", 6)
                 sidebarRow("Trips", "suitcase.rolling", 7)
                 sidebarRow(String(localized: "Documents"), "doc.text", 8)
+                sidebarRow("Forecast", "cloud.sun", 9)
                 sidebarRow(String(localized: "settings_tab"), "gear", 2)
             }
             .listStyle(.sidebar)
@@ -462,6 +485,10 @@ struct TaskTabView: View {
         case 8:
             if !documentsPath.isEmpty {
                 documentsPath = NavigationPath()
+            }
+        case 9:
+            if !weatherPath.isEmpty {
+                weatherPath = NavigationPath()
             }
             
         case 2:

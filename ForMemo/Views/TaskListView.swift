@@ -232,7 +232,7 @@ struct TaskListView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .fullScreenCover(isPresented: $showWeatherForecast) {
                     NavigationStack {
-                        WeatherForecastView()
+                        WeatherForecastView(showsCloseButton: true)
                     }
                 }
                 .sheet(item: $draftTask) { task in

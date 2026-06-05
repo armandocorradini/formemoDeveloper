@@ -90,6 +90,7 @@ struct BackupRestoreView: View {
                             VStack(alignment: .leading, spacing: 2) {
 
                                 Text("Create Backup")
+                                    .foregroundStyle(.blue)
 
                                 Text(
                                     "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards, documents and attachments."
@@ -115,6 +116,7 @@ struct BackupRestoreView: View {
                             VStack(alignment: .leading, spacing: 2) {
 
                                 Text("Restore Backup")
+                                    .foregroundStyle(.blue)
 
                                 Text(
                                     "Restore data from a previously exported backup."

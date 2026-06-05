@@ -102,6 +102,8 @@ final class NotificationManager: NSObject {
             )
         }
 
+        await rebuildDocumentNotifications()
+
         // 🔵 Mark end of launch phase after short delay
         Task { [weak self] in
             try? await Task.sleep(for: .milliseconds(300))
@@ -240,6 +242,10 @@ final class NotificationManager: NSObject {
 
             await MainActor.run {
                 self.refresh(force: true)
+
+                Task {
+                    await self.rebuildDocumentNotifications()
+                }
 
                 NotificationCenter.default.post(
                     name: .cloudKitDidStabilize,
@@ -609,6 +615,63 @@ final class NotificationManager: NSObject {
                 AppLogger.notifications.error("Badge error: \(error.localizedDescription)")
             }
 #endif
+        }
+    }
+
+    @MainActor
+    func rebuildDocumentNotifications() async {
+
+        guard let context = modelContainer?.mainContext else {
+            return
+        }
+
+        let documents =
+            (try? context.fetch(
+                FetchDescriptor<DocumentItem>()
+            )) ?? []
+
+        for document in documents {
+
+            removeDocumentNotification(
+                documentID: document.id
+            )
+
+            guard document.notificationEnabled,
+                  let expiryDate = document.expiryDate else {
+                continue
+            }
+
+            let triggerDate = Calendar.current.date(
+                byAdding: .day,
+                value: -document.notificationDaysBefore,
+                to: expiryDate
+            )
+
+            guard let triggerDate else {
+                continue
+            }
+
+
+// documenti con reminder oltre 1 anno → non occupano slot di notifica;
+// quando entreranno nell’orizzonte di 1 anno verranno schedulati automaticamente dai rebuild già presenti;
+            
+            let oneYearFromNow = Calendar.current.date(
+                byAdding: .year,
+                value: 1,
+                to: Date()
+            ) ?? .distantFuture
+
+            guard triggerDate <= oneYearFromNow else {
+                continue
+            }
+//
+            
+            
+            await scheduleDocumentNotification(
+                id: document.id,
+                title: document.name,
+                triggerDate: triggerDate
+            )
         }
     }
 

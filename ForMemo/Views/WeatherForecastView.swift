@@ -1,9 +1,15 @@
 import SwiftUI
 
 struct WeatherForecastView: View {
-
     @Environment(\.dismiss)
     private var dismiss
+
+    let showsCloseButton: Bool
+
+    init(showsCloseButton: Bool = false) {
+        self.showsCloseButton = showsCloseButton
+    }
+
 
     @Environment(\.colorScheme)
     private var colorScheme
@@ -39,14 +45,14 @@ struct WeatherForecastView: View {
             .navigationTitle("Forecast")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-
-                ToolbarItem(placement: .topBarTrailing) {
-
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.headline)
+                if showsCloseButton {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.headline)
+                        }
                     }
                 }
             }
@@ -146,11 +152,28 @@ struct WeatherForecastView: View {
 
     private var forecastCards: some View {
 
-        VStack(spacing: 8) {
+        let hasForecast = nextDays.contains {
+            weatherManager.weather(for: $0) != nil
+        }
 
-            ForEach(nextDays, id: \.self) { date in
+        return VStack(spacing: 8) {
 
-                forecastRow(for: date)
+            if !hasForecast {
+
+                ContentUnavailableView(
+                    String(localized: "Weather Unavailable"),
+                    systemImage: "wifi.slash",
+                    description: Text(
+                        String(localized: "Unable to load the weather forecast. Check your internet connection and try again.")
+                    )
+                )
+                .padding(.top, 40)
+
+            } else {
+
+                ForEach(nextDays, id: \.self) { date in
+                    forecastRow(for: date)
+                }
             }
         }
     }
