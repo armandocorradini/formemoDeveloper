@@ -2420,6 +2420,34 @@
         }
       }
     },
+    "Are documents included in backups?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sind Dokumente in Backups enthalten?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Se incluyen los documentos en las copias de seguridad?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les documents sont-ils inclus dans les sauvegardes ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I documenti sono inclusi nei backup?"
+          }
+        }
+      }
+    },
     "Are loyalty cards included in backups?" : {
       "localizations" : {
         "de" : {
@@ -2444,6 +2472,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le carte fedeltà sono incluse nei backup?"
+          }
+        }
+      }
+    },
+    "Are trip lists included in backups?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sind Reiselisten in Backups enthalten?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Se incluyen las listas de viaje en las copias de seguridad?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les listes de voyage sont-elles incluses dans les sauvegardes ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le liste viaggio sono incluse nei backup?"
+          }
+        }
+      }
+    },
+    "Are Trip Lists synchronized and backed up?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werden Trip Lists synchronisiert und gesichert?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Las Trip Lists se sincronizan y se incluyen en las copias de seguridad?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les Trip Lists sont-elles synchronisées et sauvegardées ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Trip Lists vengono sincronizzate e salvate nei backup?"
           }
         }
       }
@@ -3899,6 +3983,118 @@
         }
       }
     },
+    "Can I open navigation apps from a task?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Navigations-Apps aus einer Aufgabe heraus öffnen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "v¿Puedo abrir aplicaciones de navegación desde una tarea?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je ouvrir des applications de navigation à partir d’une tâche ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso aprire le app di navigazione da un’attività?"
+          }
+        }
+      }
+    },
+    "Can I organize travel packing lists?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Packlisten für Reisen organisieren?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo organizar listas de equipaje para viajes?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je organiser des listes de voyage ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso organizzare liste di viaggio?"
+          }
+        }
+      }
+    },
+    "Can I receive reminders before a document expires?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Erinnerungen vor dem Ablauf eines Dokuments erhalten?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo recibir recordatorios antes de que expire un documento?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je recevoir des rappels avant l’expiration d’un document ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso ricevere promemoria prima della scadenza di un documento?"
+          }
+        }
+      }
+    },
+    "Can I record audio directly from the app?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Audio direkt in der App aufnehmen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo grabar audio directamente desde la aplicación?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je enregistrer de l’audio directement depuis l’application ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso registrare audio direttamente dall’app?"
+          }
+        }
+      }
+    },
     "Can I restore backups on another device?" : {
       "localizations" : {
         "de" : {
@@ -3955,6 +4151,34 @@
         }
       }
     },
+    "Can I scan documents and attach them to tasks?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Dokumente scannen und an Aufgaben anhängen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo escanear documentos y adjuntarlos a tareas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je numériser des documents et les joindre aux tâches ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso scansionare documenti e allegarli alle attività?"
+          }
+        }
+      }
+    },
     "Can I scan loyalty cards with the camera?" : {
       "localizations" : {
         "de" : {
@@ -3983,6 +4207,62 @@
         }
       }
     },
+    "Can I transfer my data to another device?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich meine Daten auf ein anderes Gerät übertragen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo transferir mis datos a otro dispositivo?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je transférer mes données vers un autre appareil ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso trasferire i miei dati su un altro dispositivo?"
+          }
+        }
+      }
+    },
+    "Can I view hourly weather conditions?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich stündliche Wetterbedingungen anzeigen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo ver las condiciones meteorológicas por hora?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je consulter les conditions météorologiques heure par heure ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso visualizzare le condizioni meteo orarie?"
+          }
+        }
+      }
+    },
     "Can I view tasks on a map?" : {
       "localizations" : {
         "de" : {
@@ -4007,6 +4287,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posso visualizzare le attività su una mappa?"
+          }
+        }
+      }
+    },
+    "Can Siri automatically add reminders?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann Siri automatisch Erinnerungen hinzufügen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puede Siri añadir recordatorios automáticamente?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri peut-il ajouter automatiquement des rappels ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri può aggiungere automaticamente i promemoria?"
+          }
+        }
+      }
+    },
+    "Can Siri automatically assign categories?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann Siri automatisch Kategorien zuweisen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puede Siri asignar categorías automáticamente?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri peut-il attribuer automatiquement des catégories ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri può assegnare automaticamente le categorie?"
           }
         }
       }
@@ -7058,6 +7394,34 @@
         }
       }
     },
+    "Documents & Trips" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumente & Reisen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documentos y Viajes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documents et Voyages"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documenti e Viaggi"
+          }
+        }
+      }
+    },
     "Does iCloud replace backups?" : {
       "localizations" : {
         "de" : {
@@ -8512,58 +8876,58 @@
         }
       }
     },
-    "ForMemo lets you create, organize, and manage tasks in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards, with barcode scanning and quick access to your saved cards.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking." : {
+    "ForMemo lets you create, organize, and manage tasks in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards, with barcode scanning and quick access to your saved cards.\n\nYou can create and manage Trip Lists (packing lists) for your travels, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, loyalty cards, trips, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo ermöglicht es dir, Aufgaben einfach und intuitiv zu erstellen, zu organisieren und zu verwalten.\n\nDu kannst Aufgaben schnell erstellen, sogar mit Siri. Anhänge (Fotos, Dokumente, Audio) können direkt in der App hinzugefügt werden.\n\nWenn du ein Fälligkeitsdatum festlegst, plant die App automatisch eine Benachrichtigung: zum Fälligkeitszeitpunkt oder im Voraus (von 1 bis 7 Tagen), basierend auf deinen Einstellungen. Du kannst außerdem eine benutzerdefinierte Erinnerung und eine standortbasierte Benachrichtigung hinzufügen.\n\nMit Erinnerungen kannst du wählen, wann du benachrichtigt werden möchtest, oder mit Siri die Erinnerungen automatisch festlegen lassen.\n\nDu kannst einen Standort mit einer Aufgabe verknüpfen und bei deiner Ankunft eine Benachrichtigung erhalten, mit der Möglichkeit, Navigations-Apps zu öffnen.\n\nDie App bietet Anpassungsoptionen, Hell- und Dunkelmodus sowie verschiedene Ansichtslayouts.\n\nDu kannst Aufgaben aus Kalender, Apple Erinnerungen oder CSV-Dateien importieren und im Kalender-, CSV- oder ICS-Format exportieren.\n\nDie App enthält außerdem einen Wallet-Bereich für Kundenkarten mit Barcode-Scan und schnellem Zugriff auf gespeicherte Karten.\n\nVerfügbar auf Englisch, Italienisch, Französisch, Deutsch und Spanisch.\n\nDeine Daten bleiben auf deinem Gerät (oder in iCloud, falls aktiviert). Kein Konto erforderlich und kein Tracking."
+            "value" : "ForMemo ermöglicht es Ihnen, Aufgaben einfach und intuitiv zu erstellen, zu organisieren und zu verwalten.\n\nSie können neue Aufgaben schnell erstellen, auch mit Siri. Anhänge wie Fotos, Dokumente und Audioaufnahmen können direkt in der App hinzugefügt werden.\n\nWenn Sie ein Fälligkeitsdatum festlegen, plant die App automatisch eine Benachrichtigung: entweder zum Fälligkeitszeitpunkt oder im Voraus (1 bis 7 Tage vorher), je nach Ihren Einstellungen. Sie können außerdem eine benutzerdefinierte Erinnerung und eine standortbasierte Benachrichtigung hinzufügen.\n\nMit Erinnerungen können Sie festlegen, wann Sie benachrichtigt werden möchten, oder Siri die Einrichtung automatisch übernehmen lassen.\n\nSie können einer Aufgabe einen Standort zuweisen und eine Benachrichtigung erhalten, wenn Sie dort ankommen, mit der Möglichkeit, Navigations-Apps zu öffnen.\n\nDie App bietet Anpassungsoptionen, einen hellen und dunklen Modus sowie verschiedene Ansichtslayouts.\n\nSie können Aufgaben aus Kalender, Apple Erinnerungen oder CSV-Dateien importieren und in Kalender, CSV oder das ICS-Format exportieren.\n\nDie App enthält außerdem einen Wallet-Bereich für Kundenkarten mit Barcode-Scan und schnellem Zugriff auf gespeicherte Karten.\n\nSie können Trip Lists (Reiselisten) erstellen und verwalten sowie wichtige Dokumente und deren Ablaufdaten im Bereich Documents verfolgen. Darüber hinaus können Sie Fotos, Dokumente, PDFs, Audioaufnahmen und gescannte Seiten direkt an Aufgaben anhängen.\n\nIntegrierte Wettervorhersagen mit detaillierten Wochen- und Stundenansichten helfen Ihnen bei der Planung Ihrer Aktivitäten.\n\nEine vollständige Backup- und Wiederherstellungsfunktion steht zur Verfügung und umfasst Aufgaben, Erinnerungen, Anhänge, Kundenkarten, Reiselisten, Dokumente und App-Einstellungen.\n\nVerfügbar auf Deutsch, Englisch, Italienisch, Französisch und Spanisch.\n\nIhre Daten bleiben auf Ihrem Gerät (oder in iCloud, wenn aktiviert). Kein Konto erforderlich und kein Tracking."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo te permite crear, organizar y gestionar tareas de forma simple e intuitiva.\n\nPuedes crear tareas rápidamente, incluso con Siri. Los archivos adjuntos (fotos, documentos, audio) pueden añadirse directamente dentro de la aplicación.\n\nCuando estableces una fecha de vencimiento, la aplicación programa automáticamente una notificación: en la hora prevista o con antelación (de 1 a 7 días), según tu configuración. También puedes añadir un recordatorio personalizado y una notificación basada en la ubicación.\n\nCon los recordatorios, puedes elegir cuándo recibir una notificación o, usando Siri, dejar que se configuren automáticamente.\n\nPuedes asociar una ubicación a una tarea y recibir una notificación al llegar, con la posibilidad de abrir aplicaciones de navegación para llegar allí.\n\nLa aplicación ofrece opciones de personalización, modo claro y oscuro y diferentes diseños de visualización.\n\nPuedes importar tareas desde Calendario, Recordatorios de Apple o archivos CSV, y exportarlas en formato Calendario, CSV o ICS.\n\nLa aplicación también incluye una sección Wallet para tarjetas de fidelidad, con escaneo de códigos de barras y acceso rápido a tus tarjetas guardadas.\n\nDisponible en inglés, italiano, francés, alemán y español.\n\nTus datos permanecen en tu dispositivo (o en iCloud, si está habilitado). No se requiere cuenta y no hay seguimiento."
+            "value" : "ForMemo te permite crear, organizar y gestionar tareas de forma sencilla e intuitiva.\n\nPuedes crear nuevas tareas rápidamente, incluso con Siri. Se pueden añadir archivos adjuntos (fotos, documentos y grabaciones de audio) directamente dentro de la aplicación.\n\nCuando estableces una fecha de vencimiento, la aplicación programa automáticamente una notificación: a la hora prevista o con antelación (de 1 a 7 días), según tu configuración. También puedes añadir un recordatorio personalizado y una notificación basada en la ubicación.\n\nCon los recordatorios puedes elegir cuándo recibir avisos o permitir que Siri los configure automáticamente.\n\nPuedes asociar una ubicación a una tarea y recibir una notificación al llegar, con la posibilidad de abrir aplicaciones de navegación para llegar al destino.\n\nLa aplicación ofrece opciones de personalización, modo claro y oscuro y diferentes diseños de visualización.\n\nPuedes importar tareas desde Calendario, Recordatorios de Apple o archivos CSV, y exportarlas a Calendario, CSV o formato ICS.\n\nLa aplicación también incluye una sección Wallet para tarjetas de fidelización, con escaneo de códigos de barras y acceso rápido a las tarjetas guardadas.\n\nPuedes crear y gestionar Trip Lists (listas de viaje) y realizar un seguimiento de documentos importantes y sus fechas de vencimiento en la sección Documents. También puedes adjuntar fotos, documentos, PDF, grabaciones de audio y páginas escaneadas directamente a las tareas.\n\nLas previsiones meteorológicas están integradas, incluyendo vistas detalladas semanales y por horas para ayudarte a planificar tus actividades.\n\nEstá disponible una función completa de copia de seguridad y restauración que incluye tareas, recordatorios, archivos adjuntos, tarjetas de fidelización, listas de viaje, documentos y configuraciones de la aplicación.\n\nDisponible en español, inglés, italiano, francés y alemán.\n\nTus datos permanecen en tu dispositivo (o en iCloud, si está habilitado). No se requiere cuenta y no hay seguimiento."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo vous permet de créer, organiser et gérer vos tâches de manière simple et intuitive.\n\nVous pouvez créer rapidement des tâches, même avec Siri. Des pièces jointes (photos, documents, audio) peuvent être ajoutées directement dans l’application.\n\nLorsque vous définissez une date d’échéance, l’application programme automatiquement une notification : à l’heure prévue ou à l’avance (de 1 à 7 jours), selon vos paramètres. Vous pouvez également ajouter un rappel personnalisé et une notification basée sur la localisation.\n\nAvec les rappels, vous pouvez choisir quand être notifié ou, avec Siri, les laisser être configurés automatiquement.\n\nVous pouvez associer un lieu à une tâche et recevoir une notification à votre arrivée, avec la possibilité d’ouvrir des applications de navigation pour vous y rendre.\n\nL’application propose des options de personnalisation, un mode clair et sombre, ainsi que différentes mises en page.\n\nVous pouvez importer des tâches depuis Calendrier, Rappels Apple ou des fichiers CSV, et les exporter aux formats Calendrier, CSV ou ICS.\n\nL’application inclut également une section Wallet pour les cartes de fidélité, avec lecture de codes-barres et accès rapide à vos cartes enregistrées.\n\nDisponible en anglais, italien, français, allemand et espagnol.\n\nVos données restent sur votre appareil (ou sur iCloud, si activé). Aucun compte requis et aucun suivi."
+            "value" : "ForMemo vous permet de créer, organiser et gérer vos tâches de manière simple et intuitive.\n\nVous pouvez créer rapidement de nouvelles tâches, même avec Siri. Des pièces jointes (photos, documents et enregistrements audio) peuvent être ajoutées directement dans l’application.\n\nLorsque vous définissez une échéance, l’application programme automatiquement une notification : à l’heure prévue ou à l’avance (de 1 à 7 jours), selon vos paramètres. Vous pouvez également ajouter un rappel personnalisé et une notification basée sur la localisation.\n\nAvec les rappels, vous pouvez choisir quand être averti ou laisser Siri les configurer automatiquement.\n\nVous pouvez associer un lieu à une tâche et recevoir une notification lorsque vous arrivez à destination, avec la possibilité d’ouvrir une application de navigation.\n\nL’application propose des options de personnalisation, un mode clair et sombre ainsi que différentes vues d’affichage.\n\nVous pouvez importer des tâches depuis Calendrier, Rappels Apple ou des fichiers CSV, et les exporter vers Calendrier, CSV ou le format ICS.\n\nL’application comprend également une section Wallet pour les cartes de fidélité, avec lecture des codes-barres et accès rapide à vos cartes enregistrées.\n\nVous pouvez créer et gérer des Trip Lists (listes de voyage) et suivre les documents importants ainsi que leurs dates d’expiration dans la section Documents. Vous pouvez également joindre des photos, documents, PDF, enregistrements audio et pages numérisées directement aux tâches.\n\nLes prévisions météorologiques sont intégrées, avec des vues détaillées hebdomadaires et horaires pour vous aider à planifier vos activités.\n\nUne fonction complète de sauvegarde et de restauration est disponible, incluant les tâches, rappels, pièces jointes, cartes de fidélité, listes de voyage, documents et paramètres de l’application.\n\nDisponible en français, anglais, italien, allemand et espagnol.\n\nVos données restent sur votre appareil (ou sur iCloud si activé). Aucun compte requis et aucun suivi."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo ti permette di creare, organizzare e gestire attività in modo semplice e intuitivo.\n\nPuoi creare rapidamente attività, anche con Siri. Allegati (foto, documenti, audio) possono essere aggiunti direttamente all’interno dell’app.\n\nQuando imposti una data di scadenza, l’app programma automaticamente una notifica: all’orario della scadenza oppure in anticipo (da 1 a 7 giorni), in base alle tue impostazioni. Puoi anche aggiungere un promemoria personalizzato e una notifica basata sulla posizione.\n\nCon i promemoria puoi scegliere quando ricevere una notifica oppure, usando Siri, lasciare che vengano impostati automaticamente.\n\nPuoi associare una posizione a un’attività e ricevere una notifica quando arrivi, con la possibilità di aprire app di navigazione per raggiungerla.\n\nL’app offre opzioni di personalizzazione, modalità chiara e scura e diversi layout di visualizzazione.\n\nPuoi importare attività da Calendario, Promemoria Apple o file CSV, ed esportarle in formato Calendario, CSV o ICS.\n\nL’app include anche una sezione Wallet per le carte fedeltà, con scansione barcode e accesso rapido alle carte salvate.\n\nDisponibile in inglese, italiano, francese, tedesco e spagnolo.\n\nI tuoi dati restano sul tuo dispositivo (o su iCloud, se abilitato). Nessun account richiesto e nessun tracciamento."
+            "value" : "ForMemo ti consente di creare, organizzare e gestire attività in modo semplice e intuitivo.\n\nPuoi creare rapidamente nuove attività, anche con Siri. È possibile aggiungere allegati (foto, documenti e registrazioni audio) direttamente all’interno dell’app.\n\nQuando imposti una data di scadenza, l’app pianifica automaticamente una notifica: all’ora della scadenza oppure in anticipo (da 1 a 7 giorni), in base alle tue impostazioni. Puoi anche aggiungere un promemoria personalizzato e una notifica basata sulla posizione.\n\nCon i promemoria puoi scegliere quando essere avvisato oppure, utilizzando Siri, lasciare che vengano impostati automaticamente.\n\nPuoi associare una posizione a un’attività e ricevere una notifica quando arrivi sul posto, con la possibilità di aprire le app di navigazione per raggiungere la destinazione.\n\nL’app offre opzioni di personalizzazione, modalità chiara e scura e diversi layout di visualizzazione.\n\nPuoi importare attività da Calendario, Promemoria Apple o file CSV ed esportarle in Calendario, CSV o formato ICS.\n\nL’app include anche una sezione Wallet per le carte fedeltà, con scansione dei codici a barre e accesso rapido alle carte salvate.\n\nPuoi creare e gestire Trip Lists (liste viaggio) per i tuoi spostamenti e tenere traccia dei documenti importanti e delle relative scadenze nella sezione Documents. Puoi inoltre allegare foto, documenti, PDF, registrazioni audio e pagine scansionate direttamente alle attività.\n\nSono integrate le previsioni meteo, incluse viste dettagliate settimanali e orarie per aiutarti a pianificare le tue attività.\n\nÈ disponibile un sistema completo di backup e ripristino che include attività, promemoria, allegati, carte fedeltà, liste viaggio, documenti e impostazioni dell’app.\n\nDisponibile in italiano, inglese, francese, tedesco e spagnolo.\n\nI tuoi dati rimangono sul dispositivo (o su iCloud, se abilitato). Nessun account richiesto e nessun tracciamento."
           }
         }
       }
     },
-    "ForMemo supports three main Siri commands. “New ForMemo” creates a new task using natural language. “Search ForMemo” searches tasks by keyword. “Check ForMemo” reads tasks planned for a date or period such as today, tomorrow, weekends, weeks, or specific dates." : {
+    "ForMemo supports three main Siri commands:\n\n• “New ForMemo” creates a new task using natural language. The app can automatically assign a category and reminder based on your task title and deadline.\n• “Search ForMemo” lets you search tasks by keyword.\n• “Check ForMemo” reads tasks planned for a date or period such as today, tomorrow, weekends, weeks, or specific dates.\n\nAutomatic category and reminder assignment can be enabled in Settings for Siri-created tasks." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo unterstützt drei Hauptbefehle für Siri. \"Neu ForMemo\" erstellt eine neue Aufgabe mit natürlicher Sprache.\n\n\"Suche ForMemo\" sucht Aufgaben nach Schlüsselwörtern. \n\n\"Prüfe ForMemo\" liest Aufgaben für ein Datum oder einen Zeitraum wie heute, morgen, Wochenenden, Wochen oder bestimmte Daten vor."
+            "value" : "ForMemo unterstützt drei Hauptbefehle für Siri:\n\n• „Neues ForMemo“ erstellt mit natürlicher Sprache eine neue Aufgabe. Die App kann automatisch eine Kategorie und eine Erinnerung basierend auf Titel und Fälligkeitsdatum zuweisen.\n\n• „ForMemo suchen“ ermöglicht die Suche nach Aufgaben über Schlüsselwörter.\n\n• „ForMemo prüfen“ liest Aufgaben für einen bestimmten Tag oder Zeitraum wie heute, morgen, Wochenenden, Wochen oder bestimmte Daten vor.\n\nDie automatische Zuweisung von Kategorien und Erinnerungen kann in den Einstellungen für mit Siri erstellte Aufgaben aktiviert werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo admite tres comandos principales de Siri. \"Nuevo ForMemo\" crea una nueva tarea usando lenguaje natural.\n\n\"Busca ForMemo\" busca tareas mediante palabras clave. \n\n\"Comprueba ForMemo\" lee las tareas previstas para una fecha o un período como hoy, mañana, fines de semana, semanas o fechas específicas."
+            "value" : "ForMemo admite tres comandos principales de Siri:\n\n• «Nuevo ForMemo» crea una nueva tarea utilizando lenguaje natural. La aplicación puede asignar automáticamente una categoría y un recordatorio según el título y la fecha de vencimiento.\n\n• «Buscar ForMemo» permite buscar tareas mediante palabras clave.\n\n• «Comprobar ForMemo» lee las tareas programadas para una fecha o período como hoy, mañana, fines de semana, semanas o fechas específicas.\n\nLa asignación automática de categorías y recordatorios puede activarse en Ajustes para las tareas creadas con Siri."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo prend en charge trois principales commandes Siri. \"Nouveau ForMemo\" crée une nouvelle tâche avec le langage naturel.\n\n\"Cherche ForMemo\" recherche des tâches par mot-clé. \n\n\"Montre ForMemo\" lit les tâches prévues pour une date ou une période comme aujourd’hui, demain, les week-ends, les semaines ou des dates spécifiques."
+            "value" : "ForMemo prend en charge trois principales commandes Siri :\n\n• « Nouveau ForMemo » crée une nouvelle tâche en langage naturel. L’application peut attribuer automatiquement une catégorie et un rappel selon le titre et l’échéance.\n\n• « Rechercher ForMemo » permet de rechercher des tâches par mot-clé.\n\n• « Vérifier ForMemo » lit les tâches prévues pour une date ou une période donnée, comme aujourd’hui, demain, les week-ends, les semaines ou des dates spécifiques.\n\nL’attribution automatique des catégories et des rappels peut être activée dans les Réglages pour les tâches créées avec Siri."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo supporta tre principali comandi Siri. \"Nuovo ForMemo\" crea una nuova attività usando il linguaggio naturale.\n\n\"Cerca ForMemo\" cerca attività tramite parole chiave. \n\n\"Controlla ForMemo\" legge le attività previste per una data o un periodo come oggi, domani, weekend, settimane o date specifiche."
+            "value" : "ForMemo supporta tre principali comandi Siri:\n\n• “Nuovo ForMemo” crea una nuova attività utilizzando il linguaggio naturale. L’app può assegnare automaticamente una categoria e un promemoria in base al titolo e alla scadenza dell’attività.\n\n• “Cerca ForMemo” consente di cercare attività tramite parole chiave.\n\n• “Controlla ForMemo” legge le attività pianificate per una data o un periodo come oggi, domani, fine settimana, settimane o date specifiche.\n\nL’assegnazione automatica di categorie e promemoria può essere attivata nelle Impostazioni per le attività create con Siri."
           }
         }
       }
@@ -11339,6 +11703,7 @@
       }
     },
     "Make sure notifications are enabled in iOS Settings, Focus modes are not blocking alerts, and the task has a valid date or reminder. The app only schedules notifications when they are meaningful." : {
+      "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11796,6 +12161,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Altro"
+          }
+        }
+      }
+    },
+    "Most features work offline. Weather forecasts, cloud synchronization, and some online services require an internet connection." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die meisten Funktionen arbeiten offline. Wettervorhersagen, Cloud-Synchronisierung und einige Online-Dienste erfordern eine Internetverbindung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La mayoría de las funciones funcionan sin conexión. Las previsiones meteorológicas, la sincronización en la nube y algunos servicios en línea requieren conexión a Internet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La plupart des fonctionnalités fonctionnent hors ligne. Les prévisions météo, la synchronisation cloud et certains services en ligne nécessitent une connexion Internet."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La maggior parte delle funzionalità funziona offline. Le previsioni meteo, la sincronizzazione cloud e alcuni servizi online richiedono una connessione Internet."
           }
         }
       }
@@ -13058,34 +13451,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notifiche e promemoria"
-          }
-        }
-      }
-    },
-    "Notifications are updated dynamically. If a task changes, old notifications are removed and replaced with new ones, which can make them appear different." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Benachrichtigungen werden dynamisch aktualisiert. Wenn sich eine Aufgabe ändert, werden alte Hinweise entfernt und durch neue ersetzt, was sie unterschiedlich erscheinen lassen kann."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Las notificaciones se actualizan dinámicamente. Si una tarea cambia, las anteriores se eliminan y se sustituyen por nuevas, lo que puede hacer que parezcan diferentes."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les notifications sont mises à jour dynamiquement. Si une tâche change, les anciennes notifications sont supprimées et remplacées par de nouvelles, ce qui peut les faire paraître différentes."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Le notifiche vengono aggiornate dinamicamente. Se un’attività cambia, quelle vecchie vengono rimosse e sostituite con nuove, quindi possono sembrare diverse."
           }
         }
       }
@@ -19978,6 +20343,34 @@
         }
       }
     },
+    "The Documents section helps you keep track of important documents and their expiration dates. You can store document details, issue dates, expiry dates, notes, and receive reminders before a document expires." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Bereich Dokumente hilft Ihnen dabei, wichtige Dokumente und deren Ablaufdaten zu verwalten. Sie können Dokumentdetails, Ausstellungsdaten, Ablaufdaten und Notizen speichern sowie Erinnerungen vor dem Ablauf erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sección Documentos te ayuda a realizar un seguimiento de los documentos importantes y sus fechas de vencimiento. Puedes almacenar detalles del documento, fechas de emisión y vencimiento, notas y recibir recordatorios antes de que expire."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La section Documents vous aide à suivre les documents importants et leurs dates d’expiration. Vous pouvez enregistrer les détails du document, les dates d’émission et d’expiration, des notes et recevoir des rappels avant l’expiration."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La sezione Documenti ti aiuta a tenere traccia dei documenti importanti e delle relative scadenze. Puoi memorizzare dettagli del documento, date di emissione, date di scadenza, note e ricevere promemoria prima della scadenza."
+          }
+        }
+      }
+    },
     "The map automatically adjusts to show all tasks when it opens. After that, your zoom level is preserved." : {
       "localizations" : {
         "de" : {
@@ -21366,6 +21759,34 @@
         }
       }
     },
+    "Trip Lists are travel packing lists that can be organized into sections. Items can include notes, quantities, links, locations, due dates, and completion status." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trip Lists sind Reise-Packlisten, die in Abschnitte unterteilt werden können. Elemente können Notizen, Mengen, Links, Orte, Fälligkeitsdaten und einen Erledigungsstatus enthalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las Trip Lists son listas de equipaje para viajes que pueden organizarse en secciones. Los elementos pueden incluir notas, cantidades, enlaces, ubicaciones, fechas límite y estado de finalización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les Trip Lists sont des listes de voyage pouvant être organisées en sections. Les éléments peuvent inclure des notes, des quantités, des liens, des lieux, des échéances et un état d’achèvement."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Trip Lists sono liste di viaggio organizzabili in sezioni. Gli elementi possono includere note, quantità, link, posizioni, date di scadenza e stato di completamento."
+          }
+        }
+      }
+    },
     "Trip Name" : {
       "localizations" : {
         "de" : {
@@ -21509,7 +21930,32 @@
       }
     },
     "Unable to load the weather forecast. Check your internet connection and try again." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Wettervorhersage konnte nicht geladen werden. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudieron cargar las previsiones meteorológicas. Comprueba tu conexión a Internet e inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de charger les prévisions météorologiques. Vérifiez votre connexion Internet et réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile caricare le previsioni meteo. Controlla la connessione Internet e riprova."
+          }
+        }
+      }
     },
     "Underline overdue tasks" : {
       "comment" : "A toggle to underline overdue tasks.",
@@ -22221,6 +22667,34 @@
         }
       }
     },
+    "Weather data is provided by Open-Meteo. Different weather providers may use different forecasting models and update schedules." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Wetterdaten werden von Open-Meteo bereitgestellt. Verschiedene Wetterdienste können unterschiedliche Vorhersagemodelle und Aktualisierungsintervalle verwenden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los datos meteorológicos son proporcionados por Open-Meteo. Diferentes proveedores meteorológicos pueden utilizar distintos modelos de predicción y frecuencias de actualización."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les données météo sont fournies par Open-Meteo. Différents fournisseurs météo peuvent utiliser des modèles de prévision et des fréquences de mise à jour différents."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I dati meteo sono forniti da Open-Meteo. Diversi fornitori di servizi meteorologici possono utilizzare modelli previsionali e frequenze di aggiornamento differenti."
+          }
+        }
+      }
+    },
     "Weather data provided by Open-Meteo" : {
       "localizations" : {
         "de" : {
@@ -22334,7 +22808,32 @@
       }
     },
     "Weather Unavailable" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wetter nicht verfügbar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meteorología no disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Météo indisponible"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meteo non disponibile"
+          }
+        }
+      }
     },
     "week" : {
       "localizations" : {
@@ -22444,6 +22943,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Benvenuto!"
+          }
+        }
+      }
+    },
+    "What are Trip Lists?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was sind Trip Lists?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué son las Trip Lists?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Que sont les Trip Lists ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cosa sono le Trip Lists?"
           }
         }
       }
@@ -22644,6 +23171,62 @@
         }
       }
     },
+    "What is the Documents section used for?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wofür wird der Bereich Dokumente verwendet?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Para qué sirve la sección Documentos?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À quoi sert la section Documents ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A cosa serve la sezione Documenti?"
+          }
+        }
+      }
+    },
+    "What is the Documents section?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was ist der Bereich Dokumente?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué es la sección Documentos?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qu’est-ce que la section Documents ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Che cos’è la sezione Documenti?"
+          }
+        }
+      }
+    },
     "What would you like to search for?" : {
       "comment" : "The dialog to be shown when the user is prompted to enter a search query.",
       "isCommentAutoGenerated" : true,
@@ -22786,6 +23369,34 @@
         }
       }
     },
+    "Which file types can I attach?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Welche Dateitypen kann ich anhängen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué tipos de archivos puedo adjuntar?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quels types de fichiers puis-je joindre ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quali tipi di file posso allegare?"
+          }
+        }
+      }
+    },
     "Which period or date would you like to check?" : {
       "comment" : "Request value dialog text for the Get Tasks intent.",
       "isCommentAutoGenerated" : true,
@@ -22840,34 +23451,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Perché non ricevo notifiche?"
-          }
-        }
-      }
-    },
-    "Why are my notifications not working?" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Warum funktionieren meine Benachrichtigungen nicht?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Por qué no funcionan mis notificaciones?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pourquoi mes notifications ne fonctionnent-elles pas ?"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Perché le notifiche non funzionano?"
           }
         }
       }
@@ -23008,34 +23591,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Perché ricevo notifiche in orari inaspettati?"
-          }
-        }
-      }
-    },
-    "Why do notifications seem inconsistent?" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Warum wirken Benachrichtigungen inkonsistent?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Por qué las notificaciones parecen incoherentes?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pourquoi les notifications semblent incohérentes ?"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Perché le notifiche sembrano incoerenti?"
           }
         }
       }
@@ -23264,6 +23819,34 @@
         }
       }
     },
+    "Why is weather information different from other weather apps?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warum unterscheiden sich die Wetterinformationen von anderen Wetter-Apps?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Por qué la información meteorológica es diferente de la de otras aplicaciones meteorológicas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pourquoi les informations météo diffèrent-elles de celles d’autres applications météo ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perché le informazioni meteo sono diverse da quelle di altre app meteo?"
+          }
+        }
+      }
+    },
     "Why is weather information not visible?" : {
       "localizations" : {
         "de" : {
@@ -23406,30 +23989,30 @@
         }
       }
     },
-    "Yes. All features work offline and data is stored locally on your device." : {
+    "Yes. Audio recordings can be attached directly to tasks." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Alle Funktionen funktionieren offline und die Daten werden lokal auf dem Gerät gespeichert."
+            "value" : "Ja. Audioaufnahmen können direkt an Aufgaben angehängt werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Todas las funciones funcionan sin conexión y los datos se guardan localmente en el dispositivo."
+            "value" : "Sí. Las grabaciones de audio pueden adjuntarse directamente a las tareas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Toutes les fonctionnalités fonctionnent hors ligne et les données sont stockées localement sur votre appareil."
+            "value" : "Oui. Les enregistrements audio peuvent être joints directement aux tâches."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Tutte le funzionalità funzionano offline e i dati sono salvati localmente sul dispositivo."
+            "value" : "Sì. Le registrazioni audio possono essere allegate direttamente alle attività."
           }
         }
       }
@@ -23462,30 +24045,58 @@
         }
       }
     },
-    "Yes. ForMemo allows you to create complete backups of your tasks, reminders, attachments, loyalty cards, and settings so you can restore them later or transfer them to another device." : {
+    "Yes. Document records, expiry dates, notes, and reminder settings stored in the Documents section are included in backups." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. ForMemo ermöglicht es dir, vollständige Backups deiner Aufgaben, Erinnerungen, Anhänge, Kundenkarten und Einstellungen zu erstellen, damit du sie später wiederherstellen oder auf ein anderes Gerät übertragen kannst."
+            "value" : "Ja. Dokumenteinträge, Ablaufdaten, Notizen und Erinnerungseinstellungen, die im Bereich Dokumente gespeichert sind, werden in Backups eingeschlossen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. ForMemo te permite crear copias de seguridad completas de tus tareas, recordatorios, archivos adjuntos, tarjetas de fidelidad y configuraciones para poder restaurarlas más adelante o transferirlo todo a otro dispositivo."
+            "value" : "Sí. Los registros de documentos, fechas de vencimiento, notas y configuraciones de recordatorios almacenados en la sección Documentos se incluyen en las copias de seguridad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. ForMemo vous permet de créer des sauvegardes complètes de vos tâches, rappels, pièces jointes, cartes de fidélité et paramètres afin de pouvoir les restaurer plus tard ou tout transférer vers un autre appareil."
+            "value" : "Oui. Les informations relatives aux documents, les dates d’expiration, les notes et les paramètres de rappel enregistrés dans la section Documents sont inclus dans les sauvegardes."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. ForMemo ti permette di creare backup completi di attività, promemoria, allegati, carte fedeltà e impostazioni, così da poterli ripristinare in seguito o trasferire tutto su un altro dispositivo."
+            "value" : "Sì. I dati dei documenti, le date di scadenza, le note e le impostazioni dei promemoria memorizzati nella sezione Documenti sono inclusi nei backup."
+          }
+        }
+      }
+    },
+    "Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, loyalty cards and logos, trip lists, documents, and app settings. You can restore them later or transfer everything to another device." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. ForMemo ermöglicht die Erstellung vollständiger Backups mit Aufgaben, Erinnerungen, Anhängen, Kundenkarten und deren Logos, Reiselisten, Dokumenten und App-Einstellungen. Diese können später wiederhergestellt oder auf ein anderes Gerät übertragen werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. ForMemo te permite crear copias de seguridad completas que incluyen tareas, recordatorios, archivos adjuntos, tarjetas de fidelización y sus logotipos, listas de viaje, documentos y configuraciones de la aplicación. Puedes restaurarlas posteriormente o transferir todos tus datos a otro dispositivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. ForMemo vous permet de créer des sauvegardes complètes incluant les tâches, rappels, pièces jointes, cartes de fidélité et leurs logos, listes de voyage, documents et paramètres de l’application. Vous pouvez les restaurer ultérieurement ou transférer toutes vos données vers un autre appareil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. ForMemo consente di creare backup completi che includono attività, promemoria, allegati, carte fedeltà e relativi loghi, liste viaggio, documenti e impostazioni dell’app. Puoi ripristinarli successivamente o trasferire tutto su un altro dispositivo."
           }
         }
       }
@@ -23518,30 +24129,58 @@
         }
       }
     },
-    "Yes. ForMemo includes a Wallet section where you can save and organize loyalty cards with their barcode always available." : {
+    "Yes. ForMemo includes a Wallet section where you can save and organize loyalty cards, barcodes, card holder information, notes, custom colors, and optional logos." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. ForMemo enthält einen Wallet-Bereich, in dem Sie Kundenkarten mit jederzeit verfügbarem Barcode speichern und organisieren können."
+            "value" : "Ja. ForMemo enthält einen Wallet-Bereich, in dem Sie Kundenkarten, Barcodes, Karteninhaberinformationen, Notizen, benutzerdefinierte Farben und optionale Logos speichern und organisieren können."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. ForMemo incluye una sección Wallet donde puedes guardar y organizar tarjetas de fidelización con su código de barras siempre disponible."
+            "value" : "Sí. ForMemo incluye una sección Wallet donde puedes guardar y organizar tarjetas de fidelización, códigos de barras, información del titular, notas, colores personalizados y logotipos opcionales."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. ForMemo inclut une section Wallet où vous pouvez enregistrer et organiser des cartes de fidélité avec leur code-barres toujours disponible."
+            "value" : "Oui. ForMemo comprend une section Wallet où vous pouvez enregistrer et organiser des cartes de fidélité, des codes-barres, les informations du titulaire, des notes, des couleurs personnalisées et des logos facultatifs."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. ForMemo include una sezione Wallet dove puoi salvare e organizzare carte fedeltà con il loro barcode sempre disponibile."
+            "value" : "Sì. ForMemo include una sezione Wallet in cui puoi salvare e organizzare carte fedeltà, codici a barre, informazioni del titolare, note, colori personalizzati e loghi opzionali."
+          }
+        }
+      }
+    },
+    "Yes. If enabled in Settings, Siri can automatically add reminders based on the task deadline." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Wenn diese Funktion in den Einstellungen aktiviert ist, kann Siri automatisch Erinnerungen basierend auf dem Fälligkeitsdatum der Aufgabe hinzufügen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Si está habilitado en Ajustes, Siri puede añadir automáticamente recordatorios según la fecha límite de la tarea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Si cette option est activée dans les Réglages, Siri peut automatiquement ajouter des rappels en fonction de l’échéance de la tâche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Se abilitato nelle Impostazioni, Siri può aggiungere automaticamente promemoria in base alla scadenza dell’attività."
           }
         }
       }
@@ -23574,30 +24213,58 @@
         }
       }
     },
-    "Yes. Loyalty cards saved in the Wallet section are included in backups and can be restored on compatible devices." : {
+    "Yes. Loyalty cards, barcodes, notes, custom colors, and loyalty card logos are included in backups and can be restored on compatible devices." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Kundenkarten, die im Wallet-Bereich gespeichert sind, werden in Backups einbezogen und können auf kompatiblen Geräten wiederhergestellt werden."
+            "value" : "Ja. Kundenkarten, Barcodes, Notizen, benutzerdefinierte Farben und Logos von Kundenkarten sind in Backups enthalten und können auf kompatiblen Geräten wiederhergestellt werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Las tarjetas de fidelidad guardadas en la sección Wallet están incluidas en las copias de seguridad y pueden restaurarse en dispositivos compatibles."
+            "value" : "Sí. Las tarjetas de fidelización, códigos de barras, notas, colores personalizados y logotipos de las tarjetas de fidelización están incluidos en las copias de seguridad y pueden restaurarse en dispositivos compatibles."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Les cartes de fidélité enregistrées dans la section Wallet sont incluses dans les sauvegardes et peuvent être restaurées sur des appareils compatibles."
+            "value" : "Oui. Les cartes de fidélité, codes-barres, notes, couleurs personnalisées et logos des cartes de fidélité sont inclus dans les sauvegardes et peuvent être restaurés sur des appareils compatibles."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Le carte fedeltà salvate nella sezione Wallet sono incluse nei backup e possono essere ripristinate su dispositivi compatibili."
+            "value" : "Sì. Carte fedeltà, codici a barre, note, colori personalizzati e loghi delle carte fedeltà sono inclusi nei backup e possono essere ripristinati su dispositivi compatibili."
+          }
+        }
+      }
+    },
+    "Yes. Tasks created with Siri can automatically receive a category based on the task title." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Mit Siri erstellte Aufgaben können automatisch eine Kategorie basierend auf dem Titel der Aufgabe erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Las tareas creadas con Siri pueden recibir automáticamente una categoría según el título de la tarea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Les tâches créées avec Siri peuvent automatiquement recevoir une catégorie en fonction du titre de la tâche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Le attività create con Siri possono ricevere automaticamente una categoria in base al titolo dell’attività."
           }
         }
       }
@@ -23626,6 +24293,146 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. I task con una posizione vengono mostrati come pin sulla mappa. Tocca un pin per aprire i dettagli del task."
+          }
+        }
+      }
+    },
+    "Yes. Tasks with a saved location can be opened directly in supported navigation apps." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Aufgaben mit gespeichertem Standort können direkt in unterstützten Navigations-Apps geöffnet werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Las tareas con una ubicación guardada pueden abrirse directamente en aplicaciones de navegación compatibles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Les tâches associées à un lieu enregistré peuvent être ouvertes directement dans les applications de navigation compatibles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Le attività con una posizione salvata possono essere aperte direttamente nelle app di navigazione supportate."
+          }
+        }
+      }
+    },
+    "Yes. The detailed forecast view includes weather conditions throughout the day to help you better plan your activities." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Die detaillierte Vorhersageansicht zeigt Wetterbedingungen für den gesamten Tag, um die Planung Ihrer Aktivitäten zu erleichtern."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. La vista detallada del pronóstico incluye las condiciones meteorológicas durante todo el día para ayudarte a planificar mejor tus actividades."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. La vue détaillée des prévisions inclut les conditions météorologiques tout au long de la journée afin de vous aider à mieux planifier vos activités."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. La vista dettagliata delle previsioni include le condizioni meteo durante tutta la giornata per aiutarti a pianificare meglio le tue attività."
+          }
+        }
+      }
+    },
+    "Yes. The Trips section lets you create and manage packing lists for your travels." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Im Bereich Reisen können Sie Packlisten für Ihre Reisen erstellen und verwalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. La sección Viajes te permite crear y gestionar listas de equipaje para tus viajes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. La section Voyages vous permet de créer et gérer des listes de préparation pour vos déplacements."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. La sezione Viaggi ti consente di creare e gestire liste di viaggio per i tuoi spostamenti."
+          }
+        }
+      }
+    },
+    "Yes. Trip lists, sections, items, notes, quantities, links, locations, due dates, and templates are included in backups." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Reiselisten, Abschnitte, Elemente, Notizen, Mengen, Links, Orte, Fälligkeitsdaten und Vorlagen sind in Backups enthalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Las listas de viaje, secciones, elementos, notas, cantidades, enlaces, ubicaciones, fechas de vencimiento y plantillas se incluyen en las copias de seguridad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Les listes de voyage, sections, éléments, notes, quantités, liens, lieux, échéances et modèles sont inclus dans les sauvegardes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Liste viaggio, sezioni, elementi, note, quantità, link, posizioni, date di scadenza e modelli sono inclusi nei backup."
+          }
+        }
+      }
+    },
+    "Yes. Trip Lists, sections, items, notes, quantities, links, locations, due dates, and templates are synchronized with iCloud if enabled and included in manual backups." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Trip Lists, Abschnitte, Elemente, Notizen, Mengen, Links, Orte, Fälligkeitsdaten und Vorlagen werden mit iCloud synchronisiert, sofern aktiviert, und sind in manuellen Backups enthalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Las Trip Lists, secciones, elementos, notas, cantidades, enlaces, ubicaciones, fechas de vencimiento y plantillas se sincronizan con iCloud si está habilitado y se incluyen en las copias de seguridad manuales."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Les Trip Lists, sections, éléments, notes, quantités, liens, lieux, échéances et modèles sont synchronisés avec iCloud si celui-ci est activé et sont inclus dans les sauvegardes manuelles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Le Trip Lists, le sezioni, gli elementi, le note, le quantità, i link, le posizioni, le date di scadenza e i modelli vengono sincronizzati con iCloud, se abilitato, e sono inclusi nei backup manuali."
           }
         }
       }
@@ -23804,30 +24611,58 @@
         }
       }
     },
-    "Yes. You can import a backup file on another compatible device to restore your tasks, loyalty cards, attachments, and related data." : {
+    "Yes. You can enable a reminder and choose how many days before the expiration date you want to be notified." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Du kannst eine Backup-Datei auf einem anderen kompatiblen Gerät importieren, um deine Aufgaben, Kundenkarten, Anhänge und zugehörigen Daten wiederherzustellen."
+            "value" : "Ja. Sie können eine Erinnerung aktivieren und auswählen, wie viele Tage vor dem Ablaufdatum Sie benachrichtigt werden möchten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes importar un archivo de copia de seguridad en otro dispositivo compatible para restaurar tus tareas, tarjetas de fidelidad, archivos adjuntos y datos relacionados."
+            "value" : "Sí. Puedes activar un recordatorio y elegir cuántos días antes de la fecha de vencimiento deseas recibir una notificación."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Vous pouvez importer un fichier de sauvegarde sur un autre appareil compatible afin de restaurer vos tâches, cartes de fidélité, pièces jointes et données associées."
+            "value" : "Oui. Vous pouvez activer un rappel et choisir combien de jours avant la date d’expiration vous souhaitez être averti."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare attività, carte fedeltà, allegati e dati correlati."
+            "value" : "Sì. Puoi attivare un promemoria e scegliere quanti giorni prima della scadenza desideri ricevere una notifica."
+          }
+        }
+      }
+    },
+    "Yes. You can import a backup file on another compatible device to restore your tasks, loyalty cards, attachments, trips, documents, and related data." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sie können eine Sicherungsdatei auf ein anderes kompatibles Gerät importieren, um Aufgaben, Kundenkarten, Anhänge, Reisen, Dokumente und zugehörige Daten wiederherzustellen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes importar un archivo de copia de seguridad en otro dispositivo compatible para restaurar tus tareas, tarjetas de fidelización, archivos adjuntos, viajes, documentos y datos relacionados."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez importer un fichier de sauvegarde sur un autre appareil compatible afin de restaurer vos tâches, cartes de fidélité, pièces jointes, voyages, documents et données associées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare attività, carte fedeltà, allegati, viaggi, documenti e dati correlati."
           }
         }
       }
@@ -23888,6 +24723,34 @@
         }
       }
     },
+    "Yes. You can restore a backup on another compatible device and continue using your data." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sie können ein Backup auf einem anderen kompatiblen Gerät wiederherstellen und Ihre Daten weiterhin nutzen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes restaurar una copia de seguridad en otro dispositivo compatible y seguir utilizando tus datos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez restaurer une sauvegarde sur un autre appareil compatible et continuer à utiliser vos données."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi ripristinare un backup su un altro dispositivo compatibile e continuare a utilizzare i tuoi dati."
+          }
+        }
+      }
+    },
     "Yes. You can save multiple cards from the same store and distinguish them using the card holder field or custom notes." : {
       "localizations" : {
         "de" : {
@@ -23912,6 +24775,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Puoi salvare più carte dello stesso negozio e distinguerle usando il campo intestatario della carta o note personalizzate."
+          }
+        }
+      }
+    },
+    "Yes. You can use your device camera to scan pages and attach them directly to a task." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sie können die Kamera Ihres Geräts verwenden, um Seiten zu scannen und direkt an eine Aufgabe anzuhängen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes usar la cámara de tu dispositivo para escanear páginas y adjuntarlas directamente a una tarea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez utiliser l’appareil photo de votre appareil pour numériser des pages et les joindre directement à une tâche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi utilizzare la fotocamera del dispositivo per scansionare pagine e allegarle direttamente a un’attività."
           }
         }
       }
@@ -23942,6 +24833,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ieri"
+          }
+        }
+      }
+    },
+    "You can attach photos, scanned documents, files, PDFs, and audio recordings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sie können Fotos, gescannte Dokumente, Dateien, PDFs und Audioaufnahmen anhängen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes adjuntar fotos, documentos escaneados, archivos, PDF y grabaciones de audio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez joindre des photos, des documents numérisés, des fichiers, des PDF et des enregistrements audio."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi allegare foto, documenti scansionati, file, PDF e registrazioni audio."
           }
         }
       }
