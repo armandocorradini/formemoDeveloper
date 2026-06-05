@@ -182,6 +182,7 @@ struct WeatherForecastView: View {
     private func forecastRow(for date: Date) -> some View {
 
         let weather = weatherManager.weather(for: date)
+        let hourlyForecast = weatherManager.hourlyWeather(for: date)
 
         HStack(alignment: .top, spacing: 12) {
 
@@ -320,6 +321,33 @@ struct WeatherForecastView: View {
                         }
                     }
                     .foregroundStyle(.primary.opacity(0.72))
+
+                    if !hourlyForecast.isEmpty {
+
+                        Rectangle()
+                            .fill(.secondary.opacity(0.30))
+                            .frame(height: 0.5)
+                            .padding(.vertical, 4)
+
+                        HStack(spacing: 0) {
+
+                            ForEach(hourlyForecast, id: \.date) { item in
+
+                                VStack(spacing: 2) {
+
+                                    Image(systemName: item.symbolName)
+                                        .symbolRenderingMode(.multicolor)
+                                        .font(.caption2)
+
+                                    Text("\(item.hour)")
+                                        .font(.system(size: 9, weight: .medium))
+                                        .foregroundStyle(.secondary)
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .padding(.top, 2)
+                    }
                 }
             }
 

@@ -29,6 +29,15 @@ struct DailyWeatherInfo {
     let cloudCover: Int?
 }
 
+struct HourlyWeatherInfo {
+
+    let date: Date
+    let hour: Int
+    let symbolName: String
+}
+
+
+
 // MARK: - Weather Manager
 
 @MainActor
@@ -82,7 +91,9 @@ private struct OpenMeteoHourly: Decodable {
 }
 
     private(set) var weatherByDay: [Date: DailyWeatherInfo] = [:]
-
+    private(set) var hourlyWeatherByDay: [Date: [HourlyWeatherInfo]] = [:]
+    
+    
     private(set) var isAvailable: Bool = false
     private(set) var refreshID = UUID()
 
@@ -163,6 +174,16 @@ private struct OpenMeteoHourly: Decodable {
 
         return weather
     }
+    
+    
+    func hourlyWeather(for date: Date) -> [HourlyWeatherInfo] {
+
+        let key = Calendar.current.startOfDay(for: date)
+
+        return hourlyWeatherByDay[key] ?? []
+    }
+    
+    
 
     func refreshIfNeeded() async {
 #if DEBUG
@@ -253,6 +274,8 @@ private struct OpenMeteoHourly: Decodable {
 
             var updated: [Date: DailyWeatherInfo] = [:]
 
+            var hourlyUpdated: [Date: [HourlyWeatherInfo]] = [:]
+            
             let formatter = ISO8601DateFormatter()
             formatter.formatOptions = [.withFullDate]
 
@@ -263,6 +286,41 @@ private struct OpenMeteoHourly: Decodable {
             localDateFormatter.timeZone = .current
 
             localDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
+            
+            for index in decoded.hourly.time.indices {
+
+                guard let parsedDate = localDateFormatter.date(
+                    from: decoded.hourly.time[index]
+                ) else {
+                    continue
+                }
+
+                let key = Calendar.current.startOfDay(for: parsedDate)
+                let hour = Calendar.current.component(.hour, from: parsedDate)
+
+                guard hour % 2 == 0,
+                      hour >= 0,
+                      hour <= 22 else {
+                    continue
+                }
+
+                let weatherCode = decoded.hourly.weather_code[safe: index] ?? 0
+                let cloudCover = decoded.hourly.cloud_cover[safe: index]
+
+                let symbolName = WeatherCondition(code: weatherCode)
+                    .symbolName(
+                        isDay: hour >= 6 && hour < 20,
+                        cloudCover: cloudCover
+                    )
+
+                hourlyUpdated[key, default: []].append(
+                    HourlyWeatherInfo(
+                        date: parsedDate,
+                        hour: hour,
+                        symbolName: symbolName
+                    )
+                )
+            }
 
             for index in decoded.daily.time.indices {
 
@@ -365,6 +423,7 @@ private struct OpenMeteoHourly: Decodable {
             }
 
             weatherByDay = updated
+            hourlyWeatherByDay = hourlyUpdated
             refreshID = UUID()
 
 #if DEBUG
