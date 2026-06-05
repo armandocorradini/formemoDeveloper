@@ -81,16 +81,23 @@ struct AppQuickGuideView: View {
 
         .init(
             title: String(localized:"Integrated Weather"),
-            description: String(localized:"Weather forecasts are available for today, tomorrow and the day after tomorrow directly inside task views and weekly planning. Tap the weather info to open the detailed weekly forecast view."),
+            description: String(localized:"Weather forecasts are available for today, tomorrow and the day after tomorrow directly inside task views and weekly planning. Tap the weather information to open the detailed forecast view with weekly and hourly conditions."),
             icon: "cloud.sun",
             tint: .cyan
         ),
 
         .init(
             title: String(localized:"Wallet for Loyalty Cards"),
-            description: String(localized:"Store and organize your loyalty cards with barcodes always available directly inside the app."),
+            description: String(localized:"Store and organize loyalty cards with barcodes, card holder information, notes, custom colors and optional logos always available inside the app."),
             icon: "creditcard",
             tint: .mint
+        ),
+
+        .init(
+            title: String(localized:"Documents Expiry Tracker"),
+            description: String(localized:"Keep track of important documents, expiry dates, notes and reminders. Receive notifications before documents expire."),
+            icon: "doc.text",
+            tint: .brown
         ),
 
         .init(
@@ -98,6 +105,13 @@ struct AppQuickGuideView: View {
             description: String(localized:"Quickly scan loyalty cards using the device camera and automatically save barcode information into your Wallet."),
             icon: "barcode.viewfinder",
             tint: .orange
+        ),
+
+        .init(
+            title: String(localized:"Trip Lists"),
+            description: String(localized:"Create and manage travel packing lists organized into sections. Items can include notes, quantities, links, locations and due dates."),
+            icon: "suitcase.rolling",
+            tint: .mint
         ),
         
             .init(
@@ -198,7 +212,7 @@ struct AppQuickGuideView: View {
 
             .init(
                 title: String(localized:"Backup & Restore"),
-                description: String(localized:"Create complete backups of tasks, reminders, attachments and loyalty cards to safely restore your data or transfer everything to another device."),
+                description: String(localized:"Create complete backups of tasks, reminders, attachments, loyalty cards and logos, trip lists, document records and app settings. Restore everything safely on the same or another device."),
                 icon: "externaldrive.badge.timemachine",
                 tint: .indigo
             )

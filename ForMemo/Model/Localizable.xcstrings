@@ -5626,6 +5626,34 @@
         }
       }
     },
+    "Create and manage travel packing lists organized into sections. Items can include notes, quantities, links, locations and due dates." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellen und verwalten Sie Reise-Packlisten, die in Abschnitte unterteilt sind. Elemente können Notizen, Mengen, Links, Orte und Fälligkeitsdaten enthalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea y gestiona listas de viaje organizadas en secciones. Los elementos pueden incluir notas, cantidades, enlaces, ubicaciones y fechas de vencimiento."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créez et gérez des listes de voyage organisées en sections. Les éléments peuvent inclure des notes, des quantités, des liens, des lieux et des échéances."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea e gestisci liste di viaggio organizzate in sezioni. Gli elementi possono includere note, quantità, link, posizioni e date di scadenza."
+          }
+        }
+      }
+    },
     "Create Backup" : {
       "localizations" : {
         "de" : {
@@ -5654,30 +5682,30 @@
         }
       }
     },
-    "Create complete backups of tasks, reminders, attachments and loyalty cards to safely restore your data or transfer everything to another device." : {
+    "Create complete backups of tasks, reminders, attachments, loyalty cards and logos, trip lists, document records and app settings. Restore everything safely on the same or another device." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstelle vollständige Backups von Aufgaben, Erinnerungen, Anhängen und Kundenkarten, um deine Daten sicher wiederherzustellen oder alles auf ein anderes Gerät zu übertragen."
+            "value" : "Erstellen Sie vollständige Backups von Aufgaben, Erinnerungen, Anhängen, Kundenkarten und deren Logos, Reiselisten, Dokumenten und App-Einstellungen. Stellen Sie alles sicher auf demselben oder einem anderen Gerät wieder her."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea copias de seguridad completas de tareas, recordatorios, archivos adjuntos y tarjetas de fidelidad para restaurar tus datos de forma segura o transferirlo todo a otro dispositivo."
+            "value" : "Crea copias de seguridad completas de tareas, recordatorios, archivos adjuntos, tarjetas de fidelización y sus logotipos, listas de viaje, documentos y configuraciones de la aplicación. Restaura todo de forma segura en el mismo dispositivo o en otro."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez des sauvegardes complètes des tâches, rappels, pièces jointes et cartes de fidélité afin de restaurer vos données en toute sécurité ou de tout transférer vers un autre appareil."
+            "value" : "Créez des sauvegardes complètes des tâches, rappels, pièces jointes, cartes de fidélité et de leurs logos, listes de voyage, documents et paramètres de l’application. Restaurez tout en toute sécurité sur le même appareil ou sur un autre."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea backup completi di attività, promemoria, allegati e carte fedeltà per ripristinare in sicurezza i tuoi dati o trasferire tutto su un altro dispositivo."
+            "value" : "Crea backup completi di attività, promemoria, allegati, carte fedeltà e relativi loghi, liste viaggio, documenti e impostazioni dell’app. Ripristina tutto in sicurezza sullo stesso dispositivo o su un altro."
           }
         }
       }
@@ -7418,6 +7446,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Documenti e Viaggi"
+          }
+        }
+      }
+    },
+    "Documents Expiry Tracker" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dokumentenablauf-Verwaltung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguimiento de Vencimiento de Documentos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivi des Dates d’Expiration des Documents"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestione Scadenze Documenti"
           }
         }
       }
@@ -11089,6 +11145,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Giacca"
+          }
+        }
+      }
+    },
+    "Keep track of important documents, expiry dates, notes and reminders. Receive notifications before documents expire." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Behalten Sie wichtige Dokumente, Ablaufdaten, Notizen und Erinnerungen im Blick. Erhalten Sie Benachrichtigungen, bevor Dokumente ablaufen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Realiza un seguimiento de documentos importantes, fechas de vencimiento, notas y recordatorios. Recibe notificaciones antes de que los documentos expiren."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivez les documents importants, les dates d’expiration, les notes et les rappels. Recevez des notifications avant l’expiration de vos documents."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni traccia dei documenti importanti, delle date di scadenza, delle note e dei promemoria. Ricevi notifiche prima della scadenza dei documenti."
           }
         }
       }
@@ -18559,30 +18643,30 @@
         }
       }
     },
-    "Store and organize your loyalty cards with barcodes always available directly inside the app." : {
+    "Store and organize loyalty cards with barcodes, card holder information, notes, custom colors and optional logos always available inside the app." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Speichern und organisieren Sie Ihre Kundenkarten mit jederzeit verfügbaren Barcodes direkt in der App."
+            "value" : "Speichern und organisieren Sie Kundenkarten mit Barcodes, Karteninhaberinformationen, Notizen, benutzerdefinierten Farben und optionalen Logos, die jederzeit in der App verfügbar sind."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarda y organiza tus tarjetas de fidelización con códigos de barras siempre disponibles directamente en la aplicación."
+            "value" : "Guarda y organiza tarjetas de fidelización con códigos de barras, información del titular, notas, colores personalizados y logotipos opcionales siempre disponibles dentro de la aplicación."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enregistrez et organisez vos cartes de fidélité avec des codes-barres toujours disponibles directement dans l’application."
+            "value" : "Enregistrez et organisez vos cartes de fidélité avec codes-barres, informations du titulaire, notes, couleurs personnalisées et logos facultatifs, toujours disponibles dans l’application."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salva e organizza le tue carte fedeltà con barcode sempre disponibili direttamente nell’app."
+            "value" : "Salva e organizza carte fedeltà con codici a barre, informazioni del titolare, note, colori personalizzati e loghi opzionali sempre disponibili all’interno dell’app."
           }
         }
       }
@@ -21759,6 +21843,34 @@
         }
       }
     },
+    "Trip Lists" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reiselisten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listas de Viaje"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listes de Voyage"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liste Viaggio"
+          }
+        }
+      }
+    },
     "Trip Lists are travel packing lists that can be organized into sections. Items can include notes, quantities, links, locations, due dates, and completion status." : {
       "localizations" : {
         "de" : {
@@ -22751,30 +22863,30 @@
         }
       }
     },
-    "Weather forecasts are available for today, tomorrow and the day after tomorrow directly inside task views and weekly planning. Tap the weather info to open the detailed weekly forecast view." : {
+    "Weather forecasts are available for today, tomorrow and the day after tomorrow directly inside task views and weekly planning. Tap the weather information to open the detailed forecast view with weekly and hourly conditions." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wettervorhersagen sind für heute, morgen und übermorgen direkt in den Aufgabenansichten und der Wochenplanung verfügbar. Tippe auf die Wetterinformationen, um die detaillierte Wochenvorhersage zu öffnen."
+            "value" : "Wettervorhersagen für heute, morgen und übermorgen sind direkt in den Aufgabenansichten und der Wochenplanung verfügbar. Tippen Sie auf die Wetterinformationen, um die detaillierte Vorhersage mit Wochen- und Stundenansicht zu öffnen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Los pronósticos meteorológicos están disponibles para hoy, mañana y pasado mañana directamente dentro de las vistas de tareas y de la planificación semanal. Toca la información meteorológica para abrir la vista detallada del pronóstico semanal."
+            "value" : "Las previsiones meteorológicas para hoy, mañana y pasado mañana están disponibles directamente en las vistas de tareas y en la planificación semanal. Toca la información meteorológica para abrir la vista detallada con previsiones semanales y por horas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les prévisions météo sont disponibles pour aujourd’hui, demain et après-demain directement dans les vues des tâches et la planification hebdomadaire. Touchez les informations météo pour ouvrir la vue détaillée des prévisions hebdomadaires."
+            "value" : "Les prévisions météo pour aujourd’hui, demain et après-demain sont disponibles directement dans les vues des tâches et la planification hebdomadaire. Touchez les informations météo pour ouvrir la vue détaillée avec prévisions hebdomadaires et horaires."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le previsioni meteo sono disponibili per oggi, domani e dopodomani direttamente nelle viste attività e nella pianificazione settimanale. Tocca le info meteo per aprire la vista dettagliata delle previsioni settimanali."
+            "value" : "Le previsioni meteo per oggi, domani e dopodomani sono disponibili direttamente nelle viste delle attività e nella pianificazione settimanale. Tocca le informazioni meteo per aprire la vista dettagliata con previsioni settimanali e orarie."
           }
         }
       }
