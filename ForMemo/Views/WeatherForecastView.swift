@@ -14,10 +14,13 @@ struct WeatherForecastView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
-    private let weatherManager = WeatherManager.shared
+private let weatherManager = WeatherManager.shared
+
+@State private var showUnavailableMessage = false
 
     var body: some View {
 
+        let _ = weatherManager.refreshID
         ZStack {
                 LinearGradient(
                     colors: [backColor1, backColor2],
@@ -53,6 +56,23 @@ struct WeatherForecastView: View {
                             Image(systemName: "xmark")
                                 .font(.headline)
                         }
+                    }
+                }
+            }
+            .onAppear {
+
+                showUnavailableMessage = false
+
+                Task {
+
+                    await weatherManager.refreshIfNeeded()
+
+                    try? await Task.sleep(for: .seconds(3))
+                    await MainActor.run {
+                        let hasForecast = nextDays.contains {
+                            weatherManager.weather(for: $0) != nil
+                        }
+                        showUnavailableMessage = !hasForecast
                     }
                 }
             }
@@ -160,14 +180,29 @@ struct WeatherForecastView: View {
 
             if !hasForecast {
 
-                ContentUnavailableView(
-                    String(localized: "Weather Unavailable"),
-                    systemImage: "wifi.slash",
-                    description: Text(
-                        String(localized: "Unable to load the weather forecast. Check your internet connection and try again.")
+                if showUnavailableMessage {
+
+                    ContentUnavailableView(
+                        String(localized: "Weather Unavailable"),
+                        systemImage: "wifi.slash",
+                        description: Text(
+                            String(localized: "Unable to load the weather forecast. Check your internet connection and try again.")
+                        )
                     )
-                )
-                .padding(.top, 40)
+                    .padding(.top, 40)
+
+                } else {
+
+                    VStack(spacing: 12) {
+
+                        ProgressView()
+
+                        Text(String(localized: "Loading Forecast..."))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.top, 40)
+                }
 
             } else {
 
@@ -333,6 +368,12 @@ struct WeatherForecastView: View {
 
                             ForEach(hourlyForecast, id: \.date) { item in
 
+                                let currentHour = Calendar.current.component(.hour, from: Date())
+                                let nextForecastHour = hourlyForecast.first(where: { $0.hour >= currentHour })?.hour
+                                let highlightHour = Calendar.current.isDateInToday(date)
+                                    ? nextForecastHour
+                                    : nil
+
                                 VStack(spacing: 2) {
 
                                     Image(systemName: item.symbolName)
@@ -340,8 +381,19 @@ struct WeatherForecastView: View {
                                         .font(.caption2)
 
                                     Text("\(item.hour)")
-                                        .font(.system(size: 9, weight: .medium))
-                                        .foregroundStyle(.secondary)
+                                        .font(
+                                            .system(
+                                                size: 9,
+                                                weight: highlightHour == item.hour
+                                                    ? .bold
+                                                    : .medium
+                                            )
+                                        )
+                                        .foregroundStyle(
+                                            highlightHour == item.hour
+                                                ? .blue
+                                                : .secondary
+                                        )
                                 }
                                 .frame(maxWidth: .infinity)
                             }

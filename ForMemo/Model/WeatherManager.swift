@@ -307,11 +307,33 @@ private struct OpenMeteoHourly: Decodable {
                 let weatherCode = decoded.hourly.weather_code[safe: index] ?? 0
                 let cloudCover = decoded.hourly.cloud_cover[safe: index]
 
-                let symbolName = WeatherCondition(code: weatherCode)
-                    .symbolName(
-                        isDay: hour >= 6 && hour < 20,
-                        cloudCover: cloudCover
+                let precipitationChance =
+                    decoded.hourly.precipitation_probability[safe: index] ?? 0
+
+                let precipitationAmount =
+                    decoded.hourly.precipitation[safe: index] ?? 0
+
+                let symbolName: String
+
+                if Calendar.current.isDateInToday(parsedDate) {
+
+                    symbolName = symbol(
+                        for: weatherCode,
+                        cloudCover: cloudCover,
+                        precipitationChance: precipitationChance,
+                        precipitationAmount: precipitationAmount,
+                        windSpeed: 0,
+                        isDay: hour >= 6 && hour < 20
                     )
+
+                } else {
+
+                    symbolName = WeatherCondition(code: weatherCode)
+                        .symbolName(
+                            isDay: hour >= 6 && hour < 20,
+                            cloudCover: cloudCover
+                        )
+                }
 
                 hourlyUpdated[key, default: []].append(
                     HourlyWeatherInfo(
@@ -1034,7 +1056,14 @@ extension WeatherCondition {
 
         case .overcast:
 
-            return "cloud.fill"
+            switch clouds {
+            case 0..<85:
+                return isDay
+                    ? "cloud.sun.fill"
+                    : "cloud.moon.fill"
+            default:
+                return "cloud.fill"
+            }
 
         // =====================================================
         // Unknown
