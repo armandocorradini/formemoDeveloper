@@ -115,14 +115,14 @@ struct TaskTabView: View {
                 } label: {
                     
                     VStack(spacing: 4) {
-                        
+
                         Image(systemName: "square.grid.2x2")
                             .font(.system(size: 21, weight: .regular))
                             .frame(height: 22)
-                        
+
                         Text("More")
                             .font(.system(size: 9, weight: .medium))
-                        
+
                         Capsule()
                             .fill(Color.accentColor)
                             .frame(width: 16, height: 3)
@@ -130,6 +130,7 @@ struct TaskTabView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 49)
+                    .contentShape(Rectangle())
                     .foregroundStyle(
                         [0,2,5,7,8,9].contains(selectedTab)
                         ? Color.accentColor
@@ -437,14 +438,11 @@ struct TaskTabView: View {
         
         Button {
             
-//            UIImpactFeedbackGenerator(style: .light)
-//                .impactOccurred()
-            
             if selectedTab != tag {
                 withAnimation(nil) {
                     selectedTab = tag
                 }
-                resetTab(selectedTab)
+                resetTab(tag)
 
             } else {
                 resetTab(tag)
@@ -470,6 +468,7 @@ struct TaskTabView: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 49)
+            .contentShape(Rectangle())
             .foregroundStyle(
                 selectedTab == tag
                 ? Color.accentColor

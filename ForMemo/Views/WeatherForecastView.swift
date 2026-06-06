@@ -443,6 +443,14 @@ private let weatherManager = WeatherManager.shared
                                                 ? Color.white
                                                 : Color.white.opacity(0.85)
                                         )
+                                        .overlay(alignment: .bottom) {
+                                            if highlightHour == item.hour {
+                                                Capsule()
+                                                    .fill(.primary)
+                                                    .frame(width: 10, height: 3)
+                                                    .offset(y: 6)
+                                            }
+                                        }
                                 }
                                 .frame(maxWidth: .infinity)
                             }
