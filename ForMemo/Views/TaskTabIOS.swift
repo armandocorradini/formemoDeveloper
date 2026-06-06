@@ -138,7 +138,7 @@ struct TaskTabView: View {
                     // Bubble background removed
                 }
                 .popover(isPresented: $showMorePopover, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 10) {
 
                         Button {
                             selectedTab = 0
@@ -277,26 +277,11 @@ struct TaskTabView: View {
                         .buttonStyle(.plain)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding()
+                    .padding(.vertical, 13)
+                    .padding(.trailing, 36)
+                    .padding(.leading, 20)
                     .fixedSize(horizontal: true, vertical: false)
-                    .background {
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .fill(.clear)
-                            .glassEffect()
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                                    .fill(Color.accentColor.opacity(0.06))
-                            }
-                            .shadow(color: .black.opacity(0.05), radius: 8, y: 3)
-                            .clipShape(
-                                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            )
-                    }
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .strokeBorder(.white.opacity(0.08), lineWidth: 0.6)
-                    }
-                    .presentationBackground(.clear)
+
                     .presentationCompactAdaptation(.popover)
                 }
             }
