@@ -146,6 +146,7 @@ enum DocumentType: String, CaseIterable, Codable {
     case drivingLicence
     case passport
     case healthCard
+    case paymentCard
 
     case carRegistration
     case carInsurance
@@ -199,7 +200,7 @@ enum DocumentType: String, CaseIterable, Codable {
                     ) == .orderedAscending
             }
 
-        return sorted + [.other]
+        return [.other] + sorted
     }
 
     var localizedTitle: LocalizedStringResource {
@@ -208,6 +209,7 @@ enum DocumentType: String, CaseIterable, Codable {
         case .drivingLicence: return "Driving Licence"
         case .passport: return "Passport"
         case .healthCard: return "Health Card"
+        case .paymentCard: return "Payment Card"
         case .carRegistration: return "Car Registration"
         case .carInsurance: return "Car Insurance"
         case .carInspection: return "Car Inspection"
@@ -244,38 +246,39 @@ enum DocumentType: String, CaseIterable, Codable {
     var systemImage: String {
         switch self {
         case .idCard: return "person.text.rectangle"
-        case .drivingLicence: return "car.fill"
+        case .drivingLicence: return "car"
         case .passport: return "globe"
-        case .healthCard: return "cross.case.fill"
-        case .carRegistration: return "car.rear.fill"
-        case .carInsurance: return "shield.fill"
-        case .carInspection: return "wrench.and.screwdriver.fill"
-        case .carTax: return "car.circle.fill"
+        case .healthCard: return "cross.case"
+        case .paymentCard: return "creditcard.rewards"
+        case .carRegistration: return "car.rear"
+        case .carInsurance: return "shield"
+        case .carInspection: return "wrench.and.screwdriver"
+        case .carTax: return "car.circle"
         case .motorbikeRegistration, .motorbikeInsurance: return "motorcycle"
-        case .boatLicence: return "sailboat.fill"
-        case .homeInsurance: return "house.fill"
-        case .lifeInsurance: return "heart.text.square.fill"
-        case .voterCard: return "checkmark.seal.fill"
+        case .boatLicence: return "sailboat"
+        case .homeInsurance: return "house"
+        case .lifeInsurance: return "heart.text.square"
+        case .voterCard: return "checkmark.seal"
         case .disabilityCard: return "accessibility"
         case .disabilityPermit: return "figure.roll"
         case .residencePermit: return "person.badge.shield.checkmark"
         case .medicalCertificate: return "stethoscope"
-        case .vaccinationCertificate: return "cross.vial.fill"
-        case .metroPass: return "tram.fill"
-        case .busTramPass: return "bus.fill"
+        case .vaccinationCertificate: return "cross.vial"
+        case .metroPass: return "tram"
+        case .busTramPass: return "bus"
         case .trainPass: return "train.side.front.car"
-        case .parkingPass: return "parkingsign.circle.fill"
+        case .parkingPass: return "parkingsign.circle"
         case .gymCard: return "figure.strengthtraining.traditional"
-        case .libraryCard: return "books.vertical.fill"
-        case .studentCard: return "graduationcap.fill"
-        case .theatreSubscription: return "theatermasks.fill"
-        case .cinemaSubscription: return "film.fill"
-        case .culturalAssociation: return "building.columns.fill"
-        case .sportsAssociation: return "sportscourt.fill"
-        case .privateClub: return "person.3.fill"
-        case .workBadge: return "briefcase.fill"
+        case .libraryCard: return "books.vertical"
+        case .studentCard: return "graduationcap"
+        case .theatreSubscription: return "theatermasks"
+        case .cinemaSubscription: return "film"
+        case .culturalAssociation: return "building.columns"
+        case .sportsAssociation: return "sportscourt"
+        case .privateClub: return "person.3"
+        case .workBadge: return "briefcase"
         case .professionalLicense: return "rosette"
-        case .other: return "doc.text.fill"
+        case .other: return "doc.text"
         }
     }
 }

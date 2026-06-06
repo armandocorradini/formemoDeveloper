@@ -79,9 +79,14 @@ func deleteDocument(
         in: context
     )
 
+    NotificationManager.shared.removeDocumentNotification(
+        documentID: document.id
+    )
+
     context.delete(document)
 
     context.safeSave(
         operation: "DeleteDocument"
     )
+    NotificationManager.shared.refresh()
 }

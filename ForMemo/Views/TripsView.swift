@@ -567,7 +567,7 @@ struct TripChecklistView: View {
                                 } label: {
                                     Image(
                                         systemName: itemBinding.isChecked.wrappedValue
-                                        ? "checkmark.circle.fill"
+                                        ? "checkmark.circle"
                                         : "circle"
                                     )
                                     .foregroundStyle(
@@ -646,7 +646,7 @@ struct TripChecklistView: View {
 
                         } label: {
                             Image(systemName: "ellipsis.circle")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.primary)
                         }
 
                         Button {
@@ -661,11 +661,13 @@ struct TripChecklistView: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(localizedTripText(section.title))
-                                        .font(.headline)
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(.primary)
+                                        .textCase(nil)
                                     if totalItems > 0 {
                                         Text("\(remainingItems) \(String(localized: "remaining"))")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
+                                            .font(.subheadline)
+                                            .foregroundStyle(.primary)
                                     }
                                 }
 
@@ -673,7 +675,7 @@ struct TripChecklistView: View {
 
                                 Image(systemName: section.isCollapsed ? "chevron.right" : "chevron.down")
                                     .font(.caption.weight(.bold))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.primary)
                             }
                             .contentShape(Rectangle())
                         }
@@ -808,20 +810,20 @@ enum TripTemplates {
     
     static let availableIcons: [String] = [
         "airplane",
-        "car.fill",
+        "car",
         "motorcycle",
         "bicycle",
-        "tram.fill",
-        "ferry.fill",
-        "bus.fill",
-        "sailboat.fill",
-        "figure.hiking",
-        "tent.fill",
-        "backpack.fill",
+        "tram",
+        "ferry",
+        "bus",
+        "sailboat",
+        "figure",
+        "tent",
+        "backpack",
         "suitcase.rolling",
-        "camera.fill",
-        "beach.umbrella.fill",
-        "globe.europe.africa.fill"
+        "camera",
+        "beach.umbrella",
+        "globe.europe.africa"
     ]
     
     static let featuredCategories: [TripList] = [
@@ -833,13 +835,13 @@ enum TripTemplates {
         ),
         TripList(
             name: "Car",
-            icon: "car.fill",
+            icon: "car",
             systemTemplate: "car",
             sections: makeCarSections()
         ),
         TripList(
             name: "Boat",
-            icon: "sailboat.fill",
+            icon: "sailboat",
             systemTemplate: "boat",
             sections: makeBoatSections()
         )
@@ -854,7 +856,7 @@ enum TripTemplates {
         ),
         TripList(
             name: "Camper",
-            icon: "bus.fill",
+            icon: "bus",
             systemTemplate: "camper",
             sections: makeCamperSections()
         ),
@@ -872,7 +874,7 @@ enum TripTemplates {
         ),
         TripList(
             name: "Photography",
-            icon: "camera.fill",
+            icon: "camera",
             systemTemplate: "photography",
             sections: makePhotographySections()
         )

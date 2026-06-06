@@ -96,12 +96,12 @@ private let weatherManager = WeatherManager.shared
 
                                 return isNight
                                 ? [
-                                    Color.indigo.opacity(colorScheme == .dark ? 0.75 : 0.55),
-                                    Color.blue.opacity(colorScheme == .dark ? 0.45 : 0.30)
+                                    Color.indigo.opacity(colorScheme == .dark ? 0.75 : 0.60),
+                                    Color.blue.opacity(colorScheme == .dark ? 0.45 : 0.40)
                                   ]
                                 : [
-                                    Color.blue.opacity(colorScheme == .dark ? 0.55 : 0.35),
-                                    Color.cyan.opacity(colorScheme == .dark ? 0.35 : 0.20)
+                                    Color.blue.opacity(colorScheme == .dark ? 0.55 : 0.70),
+                                    Color.indigo.opacity(colorScheme == .dark ? 0.35 : 0.50)
                                   ]
                             }(),
                             startPoint: .top,
@@ -145,7 +145,11 @@ private let weatherManager = WeatherManager.shared
                 cornerRadius: 28,
                 style: .continuous
             )
-            .fill(.ultraThinMaterial)
+            .fill(
+                colorScheme == .dark
+                ? Color(red: 0.08, green: 0.09, blue: 0.12)
+                : Color.white.opacity(0.84)
+            )
             .overlay(
                 RoundedRectangle(
                     cornerRadius: 28,
@@ -154,7 +158,9 @@ private let weatherManager = WeatherManager.shared
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.08),
+                            colorScheme == .dark
+                                ? Color.white.opacity(0.08)
+                                : Color.white.opacity(0.35),
                             Color.clear
                         ],
                         startPoint: .topLeading,
@@ -170,8 +176,8 @@ private let weatherManager = WeatherManager.shared
                 .stroke(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(0.30),
-                            Color.white.opacity(0.06),
+                            colorScheme == .dark ? Color.white.opacity(0.30) : Color.white.opacity(0.65),
+                            colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.20),
                             Color.clear
                         ],
                         startPoint: .topLeading,
@@ -251,7 +257,15 @@ private let weatherManager = WeatherManager.shared
                             .font(.subheadline.weight(.bold))
 
                         Text(
-                            date.formatted(
+                            Calendar.current.isDateInToday(date) ||
+                            Calendar.current.isDateInTomorrow(date)
+                            ? date.formatted(
+                                .dateTime
+                                    .weekday(.abbreviated)
+                                    .day()
+                                    .month(.abbreviated)
+                            )
+                            : date.formatted(
                                 .dateTime
                                     .day()
                                     .month(.abbreviated)
@@ -275,10 +289,25 @@ private let weatherManager = WeatherManager.shared
                                 .fixedSize(horizontal: false, vertical: true)
                                 .frame(width: 110, alignment: .trailing)
 
-                            Image(systemName: weather.symbolName)
-                                .symbolRenderingMode(.multicolor)
-                                .font(.system(size: 23, weight: .medium))
-                                .offset(y: -1)
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color.blue.opacity(colorScheme == .dark ? 0.55 : 0.65),
+                                                Color.indigo.opacity(colorScheme == .dark ? 0.35 : 0.45)
+                                            ],
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                    )
+                                    .frame(width: 44, height: 44)
+
+                                Image(systemName: weather.symbolName)
+                                    .symbolRenderingMode(.multicolor)
+                                    .font(.system(size: 20, weight: .medium))
+                            }
+                            .offset(y: -1)
                         }
                     }
                 }
@@ -411,13 +440,37 @@ private let weatherManager = WeatherManager.shared
                                         )
                                         .foregroundStyle(
                                             highlightHour == item.hour
-                                                ? .blue
-                                                : .secondary
+                                                ? Color.white
+                                                : Color.white.opacity(0.85)
                                         )
                                 }
                                 .frame(maxWidth: .infinity)
                             }
                         }
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(red: 0.03, green: 0.08, blue: 0.22),
+                                            Color(red: 0.06, green: 0.14, blue: 0.34),
+                                            Color(red: 0.10, green: 0.22, blue: 0.50),
+                                            Color(red: 0.14, green: 0.30, blue: 0.64),
+                                            Color(red: 0.18, green: 0.36, blue: 0.75),
+                                            Color(red: 0.24, green: 0.46, blue: 0.88),
+                                            Color(red: 0.18, green: 0.36, blue: 0.75),
+                                            Color(red: 0.14, green: 0.30, blue: 0.64),
+                                            Color(red: 0.10, green: 0.22, blue: 0.50),
+                                            Color(red: 0.06, green: 0.14, blue: 0.34),
+                                            Color(red: 0.03, green: 0.08, blue: 0.22)
+                                        ],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
                         .padding(.top, 2)
                     }
                 }
@@ -439,8 +492,8 @@ private let weatherManager = WeatherManager.shared
             )
             .fill(
                 colorScheme == .dark
-                ? Color(red: 0.07, green: 0.08, blue: 0.13)
-                : Color.white.opacity(0.72)
+                ? Color(red: 0.08, green: 0.09, blue: 0.12)
+                : Color(red: 0.88, green: 0.90, blue: 0.94)
             )
             .overlay(
                 RoundedRectangle(
@@ -450,24 +503,9 @@ private let weatherManager = WeatherManager.shared
                 .fill(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(colorScheme == .dark ? 0.10 : 0.28),
-                            Color.clear
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            )
-            .overlay(
-                RoundedRectangle(
-                    cornerRadius: 28,
-                    style: .continuous
-                )
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.white.opacity(colorScheme == .dark ? 0.14 : 0.22),
-                            Color.white.opacity(colorScheme == .dark ? 0.015 : 0.05),
+                            colorScheme == .dark
+                                ? Color.white.opacity(0.08)
+                                : Color.white.opacity(0.35),
                             Color.clear
                         ],
                         startPoint: .topLeading,
@@ -483,20 +521,20 @@ private let weatherManager = WeatherManager.shared
                 .stroke(
                     LinearGradient(
                         colors: [
-                            Color.white.opacity(colorScheme == .dark ? 0.18 : 0.26),
-                            Color.white.opacity(colorScheme == .dark ? 0.025 : 0.06),
+                            colorScheme == .dark ? Color.white.opacity(0.30) : Color.white.opacity(0.65),
+                            colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.20),
                             Color.clear
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 1.05
+                    lineWidth: 1
                 )
             )
             .shadow(
-                color: .black.opacity(colorScheme == .dark ? 0.52 : 0.12),
-                radius: 22,
-                y: 10
+                color: .black.opacity(0.18),
+                radius: 12,
+                y: 6
             )
         )
     }

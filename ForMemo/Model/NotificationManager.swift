@@ -680,11 +680,16 @@ final class NotificationManager: NSObject {
         documentID: UUID
     ) {
 
+        let identifier = "document.\(documentID.uuidString)"
+
         UNUserNotificationCenter.current()
             .removePendingNotificationRequests(
-                withIdentifiers: [
-                    "document.\(documentID.uuidString)"
-                ]
+                withIdentifiers: [identifier]
+            )
+
+        UNUserNotificationCenter.current()
+            .removeDeliveredNotifications(
+                withIdentifiers: [identifier]
             )
     }
 

@@ -162,64 +162,87 @@ struct NotificationView: View {
 
                                 ForEach(pending) { item in
 
-                                    VStack(alignment: .leading, spacing: 8) {
+                                    NavigationLink {
 
-                                        VStack(alignment: .leading, spacing: 6) {
+                                        if let taskID = item.taskID,
+                                           let task = tasks.first(where: { $0.id == taskID }) {
 
-                                            HStack(alignment: .center) {
+                                            TaskDetailView(task: task)
 
-                                                Text(item.body)
-                                                    .font(.headline.weight(.semibold))
-                                                    .foregroundStyle(.primary)
-                                                    .lineLimit(2)
+                                        } else if item.identifier.lowercased().contains("document"),
+                                                  let document = documents.first(where: {
+                                                      item.identifier == "document.\($0.id.uuidString)"
+                                                  }) {
 
-                                                Spacer(minLength: 12)
+                                            DocumentDetailView(document: document)
 
-                                                Text(item.notificationEmoji)
-                                                    .font(.title3)
-                                            }
+                                        } else {
 
-                                            HStack(spacing: 4) {
+                                            EmptyView()
+                                        }
 
-                                                Text(
-                                                    item.identifier.lowercased().contains("document")
-                                                    ? String(localized: "Document Expiry:")
-                                                    : String(localized:"Deadline:")
-                                                )
-                                                .foregroundStyle(.secondary)
+                                    } label: {
 
-                                                Text(deadlineDateText(for: item.deadlineDate))
-                                                    .foregroundStyle(.primary)
+                                        VStack(alignment: .leading, spacing: 8) {
 
-                                                Spacer(minLength: 0)
-                                            }
-                                            .font(.subheadline)
+                                            VStack(alignment: .leading, spacing: 6) {
 
+                                                HStack(alignment: .center) {
 
-                                            HStack(spacing: 4) {
+                                                    Text(item.body)
+                                                        .font(.headline.weight(.semibold))
+                                                        .foregroundStyle(.primary)
+                                                        .lineLimit(2)
 
-                                                Text(String(localized:"Next notification:"))
+                                                    Spacer(minLength: 12)
+
+                                                    Text(item.notificationEmoji)
+                                                        .font(.title3)
+                                                }
+
+                                                HStack(spacing: 4) {
+
+                                                    Text(
+                                                        item.identifier.lowercased().contains("document")
+                                                        ? String(localized: "Document Expiry:")
+                                                        : String(localized:"Deadline:")
+                                                    )
                                                     .foregroundStyle(.secondary)
 
+                                                    Text(deadlineDateText(for: item.deadlineDate))
+                                                        .foregroundStyle(.primary)
 
-                                                Text(item.notificationType)
-                                                    .foregroundStyle(.blue)
-
-                                                Spacer(minLength: 0)
-                                            }
-                                            .font(.subheadline)
-                                            .padding(.top, 4)
-
-
-
-                                            Text(notificationDateTextWithToday(for: item.triggerDate))
+                                                    Spacer(minLength: 0)
+                                                }
                                                 .font(.subheadline)
-                                                .foregroundStyle(.primary)
+
+
+                                                HStack(spacing: 4) {
+
+                                                    Text(String(localized:"Next notification:"))
+                                                        .foregroundStyle(.secondary)
+
+
+                                                    Text(item.notificationType)
+                                                        .foregroundStyle(.blue)
+
+                                                    Spacer(minLength: 0)
+                                                }
+                                                .font(.subheadline)
+                                                .padding(.top, 4)
+
+
+
+                                                Text(notificationDateTextWithToday(for: item.triggerDate))
+                                                    .font(.subheadline)
+                                                    .foregroundStyle(.primary)
+                                            }
                                         }
                                     }
                                     .padding(.vertical, 8)
                                     .listRowSeparatorTint(.blue.opacity(0.25))
-                                }
+                                    }
+                                    .buttonStyle(.plain)
 
                             }
                         }
@@ -390,7 +413,7 @@ struct NotificationView: View {
 
         let requests = await center.pendingNotificationRequests()
 
-        let mapped = requests.map { request -> PendingNotificationInfo in
+        let mapped = requests.compactMap { request -> PendingNotificationInfo? in
 
             let triggerDate: Date?
 
@@ -423,6 +446,11 @@ struct NotificationView: View {
             let matchingDocument = documents.first {
                 request.identifier ==
                 "document.\($0.id.uuidString)"
+            }
+
+            if request.identifier.lowercased().contains("document"),
+               matchingDocument == nil {
+                return nil
             }
 
             return PendingNotificationInfo(

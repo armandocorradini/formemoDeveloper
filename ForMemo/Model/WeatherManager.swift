@@ -517,6 +517,12 @@ private struct OpenMeteoHourly: Decodable {
            precipitationAmount < 2,
            precipitationChance < 72 {
 
+            if clouds < 25 {
+                return isDay
+                    ? "sun.max.fill"
+                    : "moon.stars.fill"
+            }
+
             return isDay
                 ? "cloud.sun.fill"
                 : "cloud.moon.fill"
@@ -544,6 +550,12 @@ private struct OpenMeteoHourly: Decodable {
            sunshineScore >= 46,
            precipitationAmount < 2.2,
            precipitationChance < 72 {
+
+            if clouds < 25 {
+                return isDay
+                    ? "sun.max.fill"
+                    : "moon.stars.fill"
+            }
 
             return isDay
                 ? "cloud.sun.fill"

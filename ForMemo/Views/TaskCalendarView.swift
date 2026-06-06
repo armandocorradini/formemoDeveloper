@@ -24,7 +24,6 @@ struct TaskCalendarView: View {
     @State private var selectedDate: Date = Calendar.current.startOfDay(for: .now)
     
     @State private var newTaskSelection: NewTaskSelection?
-    @State private var taskToEdit: TodoTask?
     
     @State private var monthDirection: Int = 0
     
@@ -140,8 +139,7 @@ struct TaskCalendarView: View {
                     .background(Color(uiColor: .secondarySystemBackground).opacity(0.4))
                     
                     DayTasksInlineView(
-                        tasks: tasksForDay(selectedDate),
-                        onEditTask: { taskToEdit = $0 }
+                        tasks: tasksForDay(selectedDate)
                     )
                 }
             }
@@ -165,7 +163,7 @@ struct TaskCalendarView: View {
         .sheet(item: $draftTask) { task in
             NewTaskSheetView(draftTask: task)
         }
-        .navigationDestination(item: $taskToEdit) { task in
+        .navigationDestination(for: TodoTask.self) { task in
             TaskDetailView(task: task)
         }
     }
@@ -686,8 +684,7 @@ private extension TaskCalendarView {
                     onSelect: { selectedDate = day },
                     onToggleCompleted: toggleCompleted,
                     onDelete: { taskToDelete in deleteTask(taskToDelete, in: modelContext)},
-                    onAdd: prepareNewTask,
-                    onOpenTask: { taskToEdit = $0 }
+                    onAdd: prepareNewTask
                 )
             }
         }
@@ -723,8 +720,6 @@ private struct DayCell: View {
         cal.firstWeekday = 2
         return cal
     }()
-    
-    let onOpenTask: (TodoTask) -> Void
     
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
@@ -827,9 +822,7 @@ private struct DayCell: View {
                     .sorted { ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture) }
                     .prefix(3)
             ) { task in
-                Button {
-                    onOpenTask(task)
-                } label: {
+                NavigationLink(value: task) {
                     HStack(spacing: 3) {
 
                         Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
@@ -904,7 +897,6 @@ private struct DayTasksInlineView: View {
 
     @State private var taskPendingDeletion: TodoTask?
     let tasks: [TodoTask]
-    var onEditTask: (TodoTask) -> Void
 
     private var uniqueTasks: [TodoTask] {
 
@@ -1021,9 +1013,7 @@ private struct DayTasksInlineView: View {
             List {
                 ForEach(uniqueTasks) { task in
                     
-                    Button {
-                        onEditTask(task)
-                    } label: {
+                NavigationLink(value: task) {
                         HStack(spacing: 0) {
 
                             Rectangle()

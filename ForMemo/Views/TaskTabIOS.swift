@@ -133,7 +133,7 @@ struct TaskTabView: View {
                     .foregroundStyle(
                         [0,2,5,7,8,9].contains(selectedTab)
                         ? Color.accentColor
-                        : Color.secondary
+                        : Color.primary
                     )
                     // Bubble background removed
                 }
@@ -278,7 +278,25 @@ struct TaskTabView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding()
-                    .frame(width: 240)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .background {
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .fill(.clear)
+                            .glassEffect()
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .fill(Color.accentColor.opacity(0.06))
+                            }
+                            .shadow(color: .black.opacity(0.05), radius: 8, y: 3)
+                            .clipShape(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            )
+                    }
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .strokeBorder(.white.opacity(0.08), lineWidth: 0.6)
+                    }
+                    .presentationBackground(.clear)
                     .presentationCompactAdaptation(.popover)
                 }
             }
@@ -287,10 +305,11 @@ struct TaskTabView: View {
             .padding(.horizontal, 12)
             .background {
                 RoundedRectangle(cornerRadius: 30, style: .continuous)
-                    .fill(.ultraThinMaterial)
+                    .fill(.clear)
+                    .glassEffect()
                     .overlay {
                         RoundedRectangle(cornerRadius: 30, style: .continuous)
-                            .fill(.white.opacity(0.003))
+                            .fill(Color.accentColor.opacity(0.06))
                     }
                     .shadow(color: .black.opacity(0.05), radius: 8, y: 3)
                     .clipShape(
@@ -437,10 +456,11 @@ struct TaskTabView: View {
 //                .impactOccurred()
             
             if selectedTab != tag {
-                resetTab(selectedTab)
-//                withAnimation(.easeInOut(duration: 0.12)) {
+                withAnimation(nil) {
                     selectedTab = tag
-//                }
+                }
+                resetTab(selectedTab)
+
             } else {
                 resetTab(tag)
             }
@@ -450,11 +470,7 @@ struct TaskTabView: View {
             VStack(spacing: 2) {
                 
                 Image(systemName: icon)
-                    .font(.system(
-                        size: selectedTab == tag ? 22 : 20,
-                        weight: selectedTab == tag ? .semibold : .regular
-                    ))
-                    .scaleEffect(selectedTab == tag ? 1.10 : 1)
+                    .font(.system(size: 21, weight: .medium))
                     .frame(height: 22)
                 
                 Text(title)
@@ -472,7 +488,7 @@ struct TaskTabView: View {
             .foregroundStyle(
                 selectedTab == tag
                 ? Color.accentColor
-                : Color.secondary
+                : Color.primary
             )
             // Bubble background removed
         }

@@ -59,6 +59,8 @@ struct DocumentsView: View {
                         HStack(spacing: 12) {
 
                             Image(systemName: document.documentType.systemImage)
+                                .symbolRenderingMode(.hierarchical)
+                                .foregroundStyle(iconColor(for: document))
                                 .font(.title3)
                                 .frame(width: 28)
 
@@ -124,7 +126,7 @@ struct DocumentsView: View {
             .contentMargins(.bottom, 70, for: .scrollContent)
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
-            .navigationTitle(String(localized: "Documents"))
+            .navigationTitle(String(localized: "Document Expiry"))
             .navigationBarTitleDisplayMode(.inline)
             .searchable(
                 text: $searchText,
@@ -134,10 +136,7 @@ struct DocumentsView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        let document = DocumentItem(name: "")
-                        modelContext.insert(document)
-                        try? modelContext.save()
-                        newDocument = document
+                        newDocument = DocumentItem(name: "")
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -148,6 +147,36 @@ struct DocumentsView: View {
                     DocumentDetailView(document: document)
                 }
             }
+        }
+    }
+
+    private func iconColor(for document: DocumentItem) -> Color {
+        switch document.documentType {
+
+        case .idCard:
+            return .indigo
+
+        case .passport:
+            return .blue
+
+        case .drivingLicence:
+            return .orange
+
+        case .healthCard:
+            return .red
+
+        case .carInsurance,
+             .motorbikeInsurance,
+             .homeInsurance,
+             .lifeInsurance:
+            return .green
+
+        case .medicalCertificate,
+             .vaccinationCertificate:
+            return .teal
+
+        default:
+            return .accentColor
         }
     }
 

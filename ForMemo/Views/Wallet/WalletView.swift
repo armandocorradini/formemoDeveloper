@@ -19,7 +19,6 @@ struct WalletView: View {
     @State private var showAddCard = false
     @State private var editingCard: LoyaltyCard?
     @State private var searchText = ""
-    @State private var selectedCard: LoyaltyCard?
     @State private var pendingSortMode: String?
     @State private var showCustomSortInfo = false
 
@@ -124,9 +123,7 @@ struct WalletView: View {
                                 relativePath: "\(card.id.uuidString).jpg"
                             )
 
-                            Button {
-                                selectedCard = card
-                            } label: {
+                            NavigationLink(value: card) {
 
                                 HStack(spacing: 14) {
 
@@ -140,7 +137,7 @@ struct WalletView: View {
 
                                         } else {
 
-                                            Image(systemName: "creditcard.fill")
+                                            Image(systemName: "creditcard")
                                                 .resizable()
                                                 .scaledToFit()
                                                 .padding(12)
@@ -184,10 +181,6 @@ struct WalletView: View {
                                     }
 
                                     Spacer(minLength: 0)
-
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(.tertiary)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .contentShape(Rectangle())
@@ -251,7 +244,7 @@ struct WalletView: View {
                     )
                 }
             }
-            .navigationDestination(item: $selectedCard) { card in
+            .navigationDestination(for: LoyaltyCard.self) { card in
                 LoyaltyCardDetailView(card: card)
             }
             .navigationTitle("Wallet")
@@ -332,7 +325,7 @@ struct WalletView: View {
                 }
 
             } message: {
-                Text("You can reorder cards by entering edit mode and dragging a card by holding the reorder handle.")
+                Text("Cards can always be reordered with drag and drop. Selecting A–Z restores alphabetical order.")
             }
         }
     }

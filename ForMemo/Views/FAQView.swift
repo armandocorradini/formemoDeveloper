@@ -281,11 +281,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"What are Trip Lists?"),
-                answer: String(localized:"Trip Lists are travel packing lists that can be organized into sections. Items can include notes, quantities, links, locations, due dates, and completion status.")
+                answer: String(localized:"Trip Lists help you organize everything you need to take with you on your travels. You can create them from scratch or start from a template, organize them into sections, and mark items as completed as you prepare them.")
             ),
             FAQItem(
                 question: String(localized:"Are Trip Lists synchronized and backed up?"),
-                answer: String(localized:"Yes. Trip Lists, sections, items, notes, quantities, links, locations, due dates, and templates are synchronized with iCloud if enabled and included in manual backups.")
+                answer: String(localized:"Yes. Trip Lists, sections, items and templates are synchronized with iCloud if enabled and included in manual backups.")
             )
         ]),
         // MARK: - DATA
@@ -308,7 +308,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Are trip lists included in backups?"),
-                answer: String(localized:"Yes. Trip lists, sections, items, notes, quantities, links, locations, due dates, and templates are included in backups.")
+                answer: String(localized:"Yes. Trip lists, sections, items and templates are included in backups.")
             ),
             FAQItem(
                 question: String(localized:"Are documents included in backups?"),
