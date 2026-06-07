@@ -90,6 +90,7 @@ struct SettingsView: View {
                         Image(systemName: "person.circle").foregroundStyle(.blue)
                             .frame(width: iconWidth)
                         Text("Signed in with Apple ID")
+                            .foregroundStyle(.secondary)
                         Spacer()
                     }
                     Button {

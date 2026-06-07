@@ -367,8 +367,7 @@ struct TravelKitListView: View {
                         "plus.circle.fill")
                             .foregroundStyle(.green)
                             .font(.title2)
-                            .padding(.trailing, 5)
-                            .padding(.leading,-10)
+//                            .padding(.trailing, 1)
                     }
                 }
             }
@@ -993,7 +992,8 @@ struct TripChecklistView: View {
                 Button {
                     showNewSectionAlert = true
                 } label: {
-                    Image(systemName: "rectangle.stack.badge.plus")
+                    Image(systemName: "rectangle.stack.badge.plus.fill")
+                        .foregroundStyle(.green)
                 }
             }
         }

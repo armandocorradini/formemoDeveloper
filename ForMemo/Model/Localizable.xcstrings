@@ -8109,7 +8109,32 @@
       }
     },
     "Duplicate" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplizieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplicar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dupliquer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplica"
+          }
+        }
+      }
     },
     "Edit" : {
       "localizations" : {
@@ -8732,7 +8757,32 @@
       }
     },
     "Export All Checklists" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Checklisten exportieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar todas las listas de verificación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter toutes les listes de contrôle"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta tutte le checklist"
+          }
+        }
+      }
     },
     "Export Anywhere" : {
       "comment" : "Title of a quick guide step.",
@@ -8765,13 +8815,88 @@
       }
     },
     "Export Checklist" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checkliste exportieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar lista de verificación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter la liste de contrôle"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta checklist"
+          }
+        }
+      }
     },
     "Export Checklist with Checks" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checkliste mit Häkchen exportieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar lista de verificación con marcas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter la liste de contrôle avec les coches"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta checklist con spunte"
+          }
+        }
+      }
     },
     "Export Checklists with Checks" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checklisten mit Häkchen exportieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar listas de verificación con marcas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter les listes de contrôle avec les coches"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta checklist con spunte"
+          }
+        }
+      }
     },
     "Export CSV" : {
       "comment" : "A button that exports tasks as a CSV file.",
@@ -8832,10 +8957,60 @@
       }
     },
     "Export Empty Checklist" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leere Checkliste exportieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar lista de verificación vacía"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter une liste de contrôle vide"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta checklist vuota"
+          }
+        }
+      }
     },
     "Export Empty Checklists" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leere Checklisten exportieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar listas de verificación vacías"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter les listes de contrôle vides"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta checklist vuote"
+          }
+        }
+      }
     },
     "Export ICS file" : {
       "comment" : "A label for exporting tasks to an .ics file.",
@@ -10789,7 +10964,32 @@
       }
     },
     "Import Checklist" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checkliste importieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar lista de verificación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer une liste de contrôle"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importa checklist"
+          }
+        }
+      }
     },
     "Import CSV" : {
       "comment" : "A button that imports a CSV file.",
@@ -19281,6 +19481,34 @@
         }
       }
     },
+    "Sorting" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sortierung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordenación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tri"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importa checklist"
+          }
+        }
+      }
+    },
     "Sound" : {
       "localizations" : {
         "de" : {
@@ -21587,32 +21815,30 @@
         }
       }
     },
-    "These are the next notifications currently scheduled on your device. The time shown below each task indicates when the notification will appear. Any additional notifications will be scheduled automatically afterwards." : {
-      "comment" : "A description of the upcoming notifications displayed in the notification view.",
-      "isCommentAutoGenerated" : true,
+    "These are the next notifications currently scheduled on your device. The time shown below each item indicates when the next alert will appear. Additional reminders, deadlines, and document expiration alerts will be scheduled automatically as needed." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dies sind die nächsten Benachrichtigungen, die derzeit auf deinem Gerät geplant sind. Die unter jeder Aufgabe angezeigte Zeit gibt an, wann die Benachrichtigung erscheint. Weitere Benachrichtigungen werden anschließend automatisch geplant."
+            "value" : "Dies sind die nächsten Benachrichtigungen, die derzeit auf Ihrem Gerät geplant sind. Die unter jedem Eintrag angezeigte Uhrzeit gibt an, wann die nächste Benachrichtigung erscheint. Weitere Erinnerungen, Fristen und Hinweise auf ablaufende Dokumente werden bei Bedarf automatisch geplant."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Estas son las próximas notificaciones programadas actualmente en tu dispositivo. El tiempo que aparece debajo de cada tarea indica cuándo se mostrará la notificación. Las notificaciones adicionales se programarán automáticamente después de estas."
+            "value" : "Estas son las próximas notificaciones programadas actualmente en tu dispositivo. La hora que aparece debajo de cada elemento indica cuándo se mostrará la siguiente alerta. Los recordatorios, vencimientos y avisos de caducidad de documentos adicionales se programarán automáticamente cuando sea necesario."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Voici les prochaines notifications actuellement programmées sur votre appareil. Le temps affiché sous chaque tâche indique quand la notification apparaîtra. Les notifications supplémentaires seront programmées automatiquement par la suite."
+            "value" : "Voici les prochaines notifications actuellement programmées sur votre appareil. L’heure affichée sous chaque élément indique quand la prochaine alerte apparaîtra. Des rappels, échéances et alertes d’expiration de documents supplémentaires seront programmés automatiquement si nécessaire."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Queste sono le prossime notifiche attualmente programmate sul tuo dispositivo. Il tempo mostrato sotto ogni task indica quando apparirà la notifica. Eventuali notifiche successive verranno programmate automaticamente dopo queste."
+            "value" : "Queste sono le prossime notifiche attualmente programmate sul tuo dispositivo. L’orario mostrato sotto ogni elemento indica quando verrà visualizzato il prossimo avviso. Ulteriori promemoria, scadenze e avvisi di scadenza dei documenti verranno programmati automaticamente quando necessario."
           }
         }
       }

@@ -142,7 +142,10 @@ struct DocumentsView: View {
                     Button {
                         newDocument = DocumentItem(name: "")
                     } label: {
-                        Image(systemName: "plus")
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.title2)
+                            .padding(.trailing, 5)
                     }
                 }
             }

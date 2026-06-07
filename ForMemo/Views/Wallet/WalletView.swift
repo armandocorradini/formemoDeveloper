@@ -232,8 +232,12 @@ struct WalletView: View {
                                     }
                                 }
                             }
+                            .moveDisabled(walletSortMode != "custom")
                         }
-                        .onMove(perform: moveCards)
+                        .onMove { source, destination in
+                            guard walletSortMode == "custom" else { return }
+                            moveCards(from: source, to: destination)
+                        }
                         .onDelete(perform: deleteCards)
                     }
                     .contentMargins(.bottom, 70, for: .scrollContent)
@@ -287,6 +291,7 @@ struct WalletView: View {
                             }
                         )
                     ) {
+                        Section(String(localized: "Sorting")) { }
                         Label("A-Z", systemImage: "textformat.abc")
                             .tag("alphabetical")
 
@@ -303,7 +308,10 @@ struct WalletView: View {
                     Button {
                         showAddCard = true
                     } label: {
-                        Image(systemName: "plus")
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.title2)
+                            .padding(.trailing, 5)
                     }
                 }
             }

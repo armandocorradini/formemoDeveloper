@@ -150,7 +150,7 @@ struct NotificationView: View {
                                     Text(String(localized:"Upcoming Notifications"))
                                         .font(.subheadline.bold())
 
-                                    Text(String(localized:"These are the next notifications currently scheduled on your device. The time shown below each task indicates when the notification will appear. Any additional notifications will be scheduled automatically afterwards."))
+                                    Text(String(localized:"These are the next notifications currently scheduled on your device. The time shown below each item indicates when the next alert will appear. Additional reminders, deadlines, and document expiration alerts will be scheduled automatically as needed."))
                                         .font(.footnote)
                                         .foregroundStyle(.secondary)
                                         .fixedSize(horizontal: false, vertical: true)
