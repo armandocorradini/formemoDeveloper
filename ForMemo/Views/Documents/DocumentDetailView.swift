@@ -10,7 +10,20 @@ struct DocumentDetailView: View {
 
     var body: some View {
         
-        Form {
+        ZStack {
+
+            LinearGradient(
+                colors: [backColor1, backColor2],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            Form {
             
             Section {
                 
@@ -43,6 +56,7 @@ struct DocumentDetailView: View {
                         .tag(type.rawValue)
                     }
                 }
+                .pickerStyle(.automatic)
                 .onChange(of: document.documentTypeRaw) { oldValue, newValue in
                     
                     guard let newType = DocumentType(rawValue: newValue) else {
@@ -67,7 +81,9 @@ struct DocumentDetailView: View {
             } header: {
                 Text(String(localized: "Information"))
             }
-            
+            .listRowBackground(
+                Color(.systemBackground).opacity(0.3)
+            )
             Section {
                 
                 DatePicker(
@@ -145,7 +161,9 @@ struct DocumentDetailView: View {
             } header: {
                 Text(String(localized: "Dates"))
             }
-            
+            .listRowBackground(
+                Color(.systemBackground).opacity(0.3)
+            )
             
             Section {
                 
@@ -155,97 +173,108 @@ struct DocumentDetailView: View {
             } header: {
                 Text(String(localized: "Notes"))
             }
-        }
-        .scrollDismissesKeyboard(.interactively)
-        .contentMargins(.bottom, 70, for: .scrollContent)
-        .navigationTitle(document.name.isEmpty ? String(localized: "Document") : document.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            
-            ToolbarItem(placement: .topBarLeading) {
-                Button(String(localized: "Cancel")) {
-                    
-                    let isEmptyDocument = document.name
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                        .isEmpty
-                    && document.documentNumber
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                        .isEmpty
-                    && document.notes
-                        .trimmingCharacters(in: .whitespacesAndNewlines)
-                        .isEmpty
-                    
-                    if isEmptyDocument {
-                        modelContext.delete(document)
-                        modelContext.safeSave(operation: "CancelDocument")
-                    }
-                    
-                    dismiss()
-                }
+            .listRowBackground(
+                Color(.systemBackground).opacity(0.3)
+            )
             }
-            
-            ToolbarItem(placement: .topBarTrailing) {
+            .scrollContentBackground(.hidden)
+            .scrollDismissesKeyboard(.interactively)
+            .contentMargins(.bottom, 70, for: .scrollContent)
+            .navigationTitle(document.name.isEmpty ? String(localized: "Document") : document.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
                 
-                let canSave = !document.name
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                    .isEmpty
-                && !document.documentTypeRaw
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                    .isEmpty
-                
-                Button(String(localized: "Save")) {
-                    
-                    if document.modelContext == nil {
-                        modelContext.insert(document)
-                    }
-                    
-                    if document.notificationEnabled,
-                       let expiryDate = document.expiryDate {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(String(localized: "Cancel")) {
                         
-                        NotificationManager.shared
-                            .removeDocumentNotification(
-                                documentID: document.id
-                            )
+                        let isEmptyDocument = document.name
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                            .isEmpty
+                        && document.documentNumber
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                            .isEmpty
+                        && document.notes
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                            .isEmpty
                         
-                        let triggerDate = Calendar.current.date(
-                            byAdding: .day,
-                            value: -document.notificationDaysBefore,
-                            to: expiryDate
-                        )
-                        
-                        if let triggerDate {
-                            Task {
-                                await NotificationManager.shared
-                                    .scheduleDocumentNotification(
-                                        id: document.id,
-                                        title: document.name,
-                                        triggerDate: triggerDate
-                                    )
-                            }
+                        if isEmptyDocument {
+                            modelContext.delete(document)
+                            modelContext.safeSave(operation: "CancelDocument")
                         }
                         
-                    } else {
-                        
-                        NotificationManager.shared
-                            .removeDocumentNotification(
-                                documentID: document.id
-                            )
+                        dismiss()
                     }
-                    document.updatedAt = Date()
-                    modelContext.safeSave(
-                        operation: "SaveDocument"
-                    )
-
-                    modelContext.processPendingChanges()
-
-                    dismiss()
                 }
-                .disabled(!canSave)
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    
+                    let canSave = !document.name
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                        .isEmpty
+                    && !document.documentTypeRaw
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                        .isEmpty
+                    
+                    Button(String(localized: "Save")) {
+                        
+                        if document.modelContext == nil {
+                            modelContext.insert(document)
+                        }
+                        
+                        if document.notificationEnabled,
+                           let expiryDate = document.expiryDate {
+                            
+                            NotificationManager.shared
+                                .removeDocumentNotification(
+                                    documentID: document.id
+                                )
+                            
+                            let triggerDate = Calendar.current.date(
+                                byAdding: .day,
+                                value: -document.notificationDaysBefore,
+                                to: expiryDate
+                            )
+                            
+                            if let triggerDate {
+                                Task {
+                                    await NotificationManager.shared
+                                        .scheduleDocumentNotification(
+                                            id: document.id,
+                                            title: document.name,
+                                            triggerDate: triggerDate
+                                        )
+                                }
+                            }
+                            
+                        } else {
+                            
+                            NotificationManager.shared
+                                .removeDocumentNotification(
+                                    documentID: document.id
+                                )
+                        }
+                        document.updatedAt = Date()
+                        modelContext.safeSave(
+                            operation: "SaveDocument"
+                        )
+
+                        modelContext.processPendingChanges()
+
+                        dismiss()
+                    }
+                    .disabled(!canSave)
+                }
             }
-        }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                isNameFocused = true
+            .onAppear {
+                let isNewDocument = document.name
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                    .isEmpty
+
+                guard isNewDocument else { return }
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    isNameFocused = true
+                }
             }
         }
     }

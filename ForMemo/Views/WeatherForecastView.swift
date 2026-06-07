@@ -438,16 +438,12 @@ private let weatherManager = WeatherManager.shared
                                                     : .medium
                                             )
                                         )
-                                        .foregroundStyle(
-                                            highlightHour == item.hour
-                                                ? Color.white
-                                                : Color.white.opacity(0.85)
-                                        )
+                                        .foregroundStyle(.white)
                                         .overlay(alignment: .bottom) {
                                             if highlightHour == item.hour {
                                                 Capsule()
-                                                    .fill(.primary)
-                                                    .frame(width: 10, height: 3)
+                                                    .fill(.white)
+                                                    .frame(width: 10, height: 2)
                                                     .offset(y: 6)
                                             }
                                         }
@@ -458,27 +454,38 @@ private let weatherManager = WeatherManager.shared
                         .padding(.vertical, 8)
                         .padding(.horizontal, 6)
                         .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [
-                                            Color(red: 0.03, green: 0.08, blue: 0.22),
-                                            Color(red: 0.06, green: 0.14, blue: 0.34),
-                                            Color(red: 0.10, green: 0.22, blue: 0.50),
-                                            Color(red: 0.14, green: 0.30, blue: 0.64),
-                                            Color(red: 0.18, green: 0.36, blue: 0.75),
-                                            Color(red: 0.24, green: 0.46, blue: 0.88),
-                                            Color(red: 0.18, green: 0.36, blue: 0.75),
-                                            Color(red: 0.14, green: 0.30, blue: 0.64),
-                                            Color(red: 0.10, green: 0.22, blue: 0.50),
-                                            Color(red: 0.06, green: 0.14, blue: 0.34),
-                                            Color(red: 0.03, green: 0.08, blue: 0.22)
-                                        ],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
+                            RoundedRectangle(
+                                cornerRadius: 14,
+                                style: .continuous
+                            )
+                            .fill(
+                                colorScheme == .light
+                                ? Color.black.opacity(0.55)
+                                : Color.clear
+                            )
                         )
+//                        .background(
+//                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+//                                .fill(
+//                                    LinearGradient(
+//                                        colors: [
+//                                            Color(red: 0.03, green: 0.08, blue: 0.22),
+//                                            Color(red: 0.06, green: 0.14, blue: 0.34),
+//                                            Color(red: 0.10, green: 0.22, blue: 0.50),
+//                                            Color(red: 0.14, green: 0.30, blue: 0.64),
+//                                            Color(red: 0.18, green: 0.36, blue: 0.75),
+//                                            Color(red: 0.24, green: 0.46, blue: 0.88),
+//                                            Color(red: 0.18, green: 0.36, blue: 0.75),
+//                                            Color(red: 0.14, green: 0.30, blue: 0.64),
+//                                            Color(red: 0.10, green: 0.22, blue: 0.50),
+//                                            Color(red: 0.06, green: 0.14, blue: 0.34),
+//                                            Color(red: 0.03, green: 0.08, blue: 0.22)
+//                                        ],
+//                                        startPoint: .leading,
+//                                        endPoint: .trailing
+//                                    )
+//                                )
+//                        )
                         .padding(.top, 2)
                     }
                 }
@@ -499,50 +506,9 @@ private let weatherManager = WeatherManager.shared
                 style: .continuous
             )
             .fill(
-                colorScheme == .dark
-                ? Color(red: 0.08, green: 0.09, blue: 0.12)
-                : Color(red: 0.88, green: 0.90, blue: 0.94)
-            )
-            .overlay(
-                RoundedRectangle(
-                    cornerRadius: 28,
-                    style: .continuous
+                Color(.systemBackground).opacity(
+                    colorScheme == .dark ? 0.22 : 0.26
                 )
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            colorScheme == .dark
-                                ? Color.white.opacity(0.08)
-                                : Color.white.opacity(0.35),
-                            Color.clear
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            )
-            .overlay(
-                RoundedRectangle(
-                    cornerRadius: 28,
-                    style: .continuous
-                )
-                .stroke(
-                    LinearGradient(
-                        colors: [
-                            colorScheme == .dark ? Color.white.opacity(0.30) : Color.white.opacity(0.65),
-                            colorScheme == .dark ? Color.white.opacity(0.06) : Color.white.opacity(0.20),
-                            Color.clear
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
-            )
-            .shadow(
-                color: .black.opacity(0.18),
-                radius: 12,
-                y: 6
             )
         )
     }

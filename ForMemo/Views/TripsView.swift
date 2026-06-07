@@ -149,6 +149,9 @@ struct TravelKitListView: View {
                             }
                         }
                     }
+                    .listRowBackground(
+                        Color(.systemBackground).opacity(0.3)
+                    )
                 }
 
                 .onDelete { indexSet in
@@ -555,7 +558,20 @@ struct TripChecklistView: View {
     @FocusState private var isEditingTextField: Bool
     
     var body: some View {
-        List {
+        ZStack {
+
+            LinearGradient(
+                colors: [backColor1, backColor2],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+
+            List {
             ForEach($category.sections) { $section in
                 Section {
                     if !section.isCollapsed {
@@ -592,6 +608,9 @@ struct TripChecklistView: View {
                                     : AnyShapeStyle(.primary)
                                 )
                             }
+                            .listRowBackground(
+                                Color(.systemBackground).opacity(0.3)
+                            )
                             .contextMenu {
                                 Button(role: .destructive) {
                                     section.items.remove(at: itemIndex)
@@ -681,6 +700,18 @@ struct TripChecklistView: View {
                         }
                         .buttonStyle(.plain)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        // Removed Divider overlay, will add custom line below
+                    }
+                    // Add 1pt Rectangle separator line below the header
+                    .clipShape(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    )
+                    .overlay(alignment: .bottom) {
+                        Rectangle()
+                            .fill(Color.primary.opacity(0.25))
+                            .frame(height: 1)
+                            .padding(.leading, 44)
+                            .offset(y: 12)
                     }
                 }
             }
@@ -688,10 +719,20 @@ struct TripChecklistView: View {
                 category.sections.move(fromOffsets: source, toOffset: destination)
             }
         }
+        .scrollContentBackground(.hidden)
         .contentMargins(.bottom, 70, for: .scrollContent)
         .navigationTitle(localizedTripText(category.name))
         .scrollDismissesKeyboard(.immediately)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack(spacing: 8) {
+                    Image(systemName: category.icon)
+                        .foregroundStyle(.tint)
+
+                    Text(localizedTripText(category.name))
+                        .font(.headline)
+                }
+            }
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     for sectionIndex in category.sections.indices {
@@ -760,6 +801,7 @@ struct TripChecklistView: View {
                 sectionTitleDraft = ""
             }
         }
+        }
     }
 }
 
@@ -823,6 +865,10 @@ enum TripTemplates {
         "suitcase.rolling",
         "camera",
         "beach.umbrella",
+        "snowflake",
+        "mountain.2",
+        "water.waves",
+        "drop",
         "globe.europe.africa"
     ]
     
@@ -877,6 +923,36 @@ enum TripTemplates {
             icon: "camera",
             systemTemplate: "photography",
             sections: makePhotographySections()
+        ),
+        TripList(
+            name: "Snow",
+            icon: "snowflake",
+            systemTemplate: "snow",
+            sections: makeSnowSections()
+        ),
+        TripList(
+            name: "Mountain",
+            icon: "mountain.2",
+            systemTemplate: "mountain",
+            sections: makeMountainSections()
+        ),
+        TripList(
+            name: "Sea",
+            icon: "beach.umbrella",
+            systemTemplate: "sea",
+            sections: makeSeaSections()
+        ),
+        TripList(
+            name: "River",
+            icon: "water.waves",
+            systemTemplate: "river",
+            sections: makeRiverSections()
+        ),
+        TripList(
+            name: "Lake",
+            icon: "drop",
+            systemTemplate: "lake",
+            sections: makeLakeSections()
         )
     ]
 
@@ -1075,6 +1151,87 @@ enum TripTemplates {
             )
         ]
     }
+    
+    static func makeSnowSections() -> [TripSectionData] {
+        makeBaseSections() + [
+            TripSectionData(
+                title: "Snow Gear",
+                items: [
+                    TripItemData(title: "Ski Goggles"),
+                    TripItemData(title: "Ski Gloves"),
+                    TripItemData(title: "Thermal Clothing"),
+                    TripItemData(title: "Snow Boots"),
+                    TripItemData(title: "Helmet"),
+                    TripItemData(title: "Hand Warmers")
+                ]
+            )
+        ]
+    }
+
+    static func makeMountainSections() -> [TripSectionData] {
+        makeBaseSections() + [
+            TripSectionData(
+                title: "Mountain Gear",
+                items: [
+                    TripItemData(title: "Hiking Boots"),
+                    TripItemData(title: "Trekking Poles"),
+                    TripItemData(title: "Backpack"),
+                    TripItemData(title: "Windproof Jacket"),
+                    TripItemData(title: "Flashlight"),
+                    TripItemData(title: "Water Bottle")
+                ]
+            )
+        ]
+    }
+
+    static func makeSeaSections() -> [TripSectionData] {
+        makeBaseSections() + [
+            TripSectionData(
+                title: "Beach Essentials",
+                items: [
+                    TripItemData(title: "Beach Towel"),
+                    TripItemData(title: "Sunscreen"),
+                    TripItemData(title: "Swimsuit"),
+                    TripItemData(title: "Sunglasses"),
+                    TripItemData(title: "Flip-Flops"),
+                    TripItemData(title: "Beach Bag")
+                ]
+            )
+        ]
+    }
+
+    static func makeRiverSections() -> [TripSectionData] {
+        makeBaseSections() + [
+            TripSectionData(
+                title: "River Essentials",
+                items: [
+                    TripItemData(title: "Water Shoes"),
+                    TripItemData(title: "Dry Bag"),
+                    TripItemData(title: "Life Jacket"),
+                    TripItemData(title: "Waterproof Phone Case"),
+                    TripItemData(title: "Towel"),
+                    TripItemData(title: "Change of Clothes")
+                ]
+            )
+        ]
+    }
+
+    static func makeLakeSections() -> [TripSectionData] {
+        makeBaseSections() + [
+            TripSectionData(
+                title: "Lake Essentials",
+                items: [
+                    TripItemData(title: "Picnic Blanket"),
+                    TripItemData(title: "Folding Chair"),
+                    TripItemData(title: "Fishing Gear"),
+                    TripItemData(title: "Insect Repellent"),
+                    TripItemData(title: "Water Bottle"),
+                    TripItemData(title: "Cooler Bag")
+                ]
+            )
+        ]
+    }
+    
 }
 
 // MARK:helper localization functions

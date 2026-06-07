@@ -154,10 +154,7 @@ struct WalletView: View {
                                             cornerRadius: 16,
                                             style: .continuous
                                         )
-                                        .fill(
-                                            Color(
-                                                hex: card.colorHex ?? "#3B82F6") ?? .blue
-                                        )
+                                        .fill(Color.blue)
                                     )
                                     .clipShape(
                                         RoundedRectangle(
@@ -186,6 +183,13 @@ struct WalletView: View {
                                 .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
+                            .listRowBackground(
+
+                                Color(.systemBackground)
+
+                                    .opacity(colorScheme == .dark ? 0.3 : 0.26)
+
+                            )
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
 
                                 Button {

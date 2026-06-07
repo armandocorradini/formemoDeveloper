@@ -113,6 +113,9 @@ struct DocumentsView: View {
                                 .frame(width: 10, height: 10)
                         }
                     }
+                    .listRowBackground(
+                        Color(.systemBackground).opacity(0.3)
+                    )
                 }
                 .onDelete { indexSet in
                     for index in indexSet {
