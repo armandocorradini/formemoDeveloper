@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import SwiftData
+import UniformTypeIdentifiers
 
 // MARK: - Main View
 
@@ -19,6 +20,13 @@ struct TravelKitListView: View {
     @State private var editingCategory: TripList?
     @State private var isEditingCategory = false
     @State private var searchText = ""
+    @State private var showImportPicker = false
+    @State private var showExportPicker = false
+    @State private var showExportAllPicker = false
+    @State private var categoryToExport: TripList?
+    @State private var pendingExportCategory: TripList?
+    @State private var exportIncludeChecks = true
+    @State private var exportAllDocument: FMTripDocument?
 
     private var visibleCategories: [TripList] {
 
@@ -128,6 +136,44 @@ struct TravelKitListView: View {
                             }
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            Button {
+                                let baseName = category.name
+                                var candidateName = baseName + " 2"
+                                var suffix = 2
+
+                                while categories.contains(where: {
+                                    localizedTripText($0.name) == localizedTripText(candidateName)
+                                }) {
+                                    suffix += 1
+                                    candidateName = baseName + " \(suffix)"
+                                }
+
+                                let duplicated = TripList(
+                                    name: candidateName,
+                                    icon: category.icon,
+                                    systemTemplate: category.systemTemplate,
+                                    sections: category.sections.map { section in
+                                        TripSectionData(
+                                            title: section.title,
+                                            items: section.items.map {
+                                                TripItemData(
+                                                    title: $0.title,
+                                                    isChecked: $0.isChecked
+                                                )
+                                            }
+                                        )
+                                    }
+                                )
+
+                                duplicated.sortOrder = (categories.map(\.sortOrder).max() ?? 0) + 1
+
+                                modelContext.insert(duplicated)
+                                try? modelContext.save()
+                            } label: {
+                                Label(String(localized: "Duplicate"), systemImage: "plus.square.on.square")
+                            }
+                            .tint(.green)
+
                             Button {
                                 editingCategory = category
                                 newCategoryName = localizedTripText(category.name)
@@ -284,9 +330,32 @@ struct TravelKitListView: View {
                 }
             }
             .toolbar {
-                
                 ToolbarItem(placement: .topBarTrailing) {
-                    
+                    Menu {
+                        Button {
+                            showImportPicker = true
+                        } label: {
+                            Label(String(localized: "Import Checklist"), systemImage: "square.and.arrow.down")
+                        }
+
+                        Button {
+                            showExportPicker = true
+                        } label: {
+                            Label(String(localized: "Export Checklist"), systemImage: "square.and.arrow.up")
+                        }
+
+                        Button {
+                            showExportAllPicker = true
+                        } label: {
+                            Label(String(localized: "Export All Checklists"), systemImage: "square.and.arrow.up.on.square")
+                        }
+                    } label: {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .resizable()
+                            .frame(width: 20, height: 20)
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         editingCategory = nil
                         isEditingCategory = false
@@ -294,7 +363,12 @@ struct TravelKitListView: View {
                         selectedIcon = "suitcase.rolling"
                         showNewCategorySheet = true
                     } label: {
-                        Image(systemName: "plus")
+                        Image(systemName:
+                        "plus.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.title2)
+                            .padding(.trailing, 5)
+                            .padding(.leading,-10)
                     }
                 }
             }
@@ -313,11 +387,18 @@ struct TravelKitListView: View {
                             Menu {
                                 
                                 ForEach(TripTemplates.allCategories) { template in
-                                    
                                     Button {
-                                        
+                                        let localizedName = localizedTripText(template.name)
+                                        var finalName = localizedName
+                                        var suffix = 2
+                                        while categories.contains(where: {
+                                            localizedTripText($0.name) == finalName
+                                        }) {
+                                            finalName = "\(localizedName) \(suffix)"
+                                            suffix += 1
+                                        }
                                         let newCategory = TripList(
-                                            name: template.name,
+                                            name: finalName,
                                             icon: template.icon,
                                             systemTemplate: template.systemTemplate,
                                             sections: template.sections.map { section in
@@ -329,13 +410,9 @@ struct TravelKitListView: View {
                                                 )
                                             }
                                         )
-                                        
                                         modelContext.insert(newCategory)
-                                        
                                         try? modelContext.save()
-                                        
                                         showNewCategorySheet = false
-                                        
                                     } label: {
                                         Label(
                                             localizedTripText(template.name),
@@ -472,8 +549,18 @@ struct TravelKitListView: View {
                                         editingCategory.icon = selectedIcon
                                         print("Trip category updated:", trimmedName)
                                     } else {
+                                        // Ensure unique trip type name
+                                        let baseName = trimmedName
+                                        var finalName = baseName
+                                        var suffix = 2
+                                        while categories.contains(where: {
+                                            localizedTripText($0.name) == localizedTripText(finalName)
+                                        }) {
+                                            finalName = "\(baseName) \(suffix)"
+                                            suffix += 1
+                                        }
                                         let category = TripList(
-                                            name: trimmedName,
+                                            name: finalName,
                                             icon: selectedIcon,
                                             sections: TripTemplates.makeBaseSections()
                                         )
@@ -515,7 +602,7 @@ struct TravelKitListView: View {
                                             modelContext.insert(category)
                                         }
 
-                                        print("Trip category created:", trimmedName)
+                                        print("Trip category created:", finalName)
                                     }
                                     
                                     try modelContext.save()
@@ -535,9 +622,167 @@ struct TravelKitListView: View {
                     }
                 }
             }
+            .confirmationDialog(
+                String(localized: "Export Checklist"),
+                isPresented: $showExportPicker,
+                titleVisibility: .visible
+            ) {
+                ForEach(visibleCategories) { category in
+                    Button(localizedTripText(category.name)) {
+                        pendingExportCategory = category
+                    }
+                }
+            }
+            .confirmationDialog(
+                String(localized: "Export Checklist"),
+                isPresented: Binding(
+                    get: { pendingExportCategory != nil },
+                    set: { if !$0 { pendingExportCategory = nil } }
+                )
+            ) {
+                Button(String(localized: "Export Empty Checklist")) {
+                    exportIncludeChecks = false
+                    categoryToExport = pendingExportCategory
+                    pendingExportCategory = nil
+                }
+
+                Button(String(localized: "Export Checklist with Checks")) {
+                    exportIncludeChecks = true
+                    categoryToExport = pendingExportCategory
+                    pendingExportCategory = nil
+                }
+            }
+
+            .confirmationDialog(
+                String(localized: "Export All Checklists"),
+                isPresented: $showExportAllPicker,
+                titleVisibility: .visible
+            ) {
+                Button(String(localized: "Export Empty Checklists")) {
+                    exportAllDocument = makeExportAllDocument(includeChecks: false)
+                }
+                Button(String(localized: "Export Checklists with Checks")) {
+                    exportAllDocument = makeExportAllDocument(includeChecks: true)
+                }
+            }
+
+            .fileImporter(
+                isPresented: $showImportPicker,
+                allowedContentTypes: [.data, .fmtrip]
+            ) { result in
+                if case .success(let url) = result {
+                    importFMTrip(from: url)
+                }
+            }
+            .fileExporter(
+                isPresented: Binding(
+                    get: { categoryToExport != nil },
+                    set: { if !$0 { categoryToExport = nil } }
+                ),
+                document: categoryToExport.map { exportDocument(for: $0, includeChecks: exportIncludeChecks) },
+                contentType: .fmtrip,
+                defaultFilename: categoryToExport.map { localizedTripText($0.name) } ?? "Checklist"
+            ) { _ in
+                categoryToExport = nil
+            }
+            .fileExporter(
+                isPresented: Binding(
+                    get: { exportAllDocument != nil },
+                    set: { if !$0 { exportAllDocument = nil } }
+                ),
+                document: exportAllDocument,
+                contentType: .fmtrip,
+                defaultFilename: "ForMemo-Checklists"
+            ) { _ in
+                exportAllDocument = nil
+            }
             }
         }
     }
+// MARK: - Import/Export Helpers
+
+@MainActor
+private func importFMTrip(from url: URL) {
+    let access = url.startAccessingSecurityScopedResource()
+    defer {
+        if access { url.stopAccessingSecurityScopedResource() }
+    }
+
+    do {
+        let data = try Data(contentsOf: url)
+        let collection = try JSONDecoder().decode(FMTripCollectionPayload.self, from: data)
+
+        for payload in collection.lists {
+            let trip = TripList(
+                name: payload.name,
+                icon: payload.icon,
+                systemTemplate: payload.systemTemplate,
+                sections: payload.sections.map {
+                    TripSectionData(
+                        title: $0.title,
+                        items: $0.items.map {
+                            TripItemData(title: $0.title, isChecked: $0.isChecked)
+                        }
+                    )
+                }
+            )
+
+            modelContext.insert(trip)
+        }
+
+        try? modelContext.save()
+    } catch {
+        print("Import failed:", error)
+    }
+}
+
+private func exportDocument(for category: TripList, includeChecks: Bool) -> FMTripDocument {
+    let payload = FMTripPayload(
+        name: category.name,
+        icon: category.icon,
+        systemTemplate: category.systemTemplate,
+        sections: category.sections.map {
+            FMTripSection(
+                title: $0.title,
+                items: $0.items.map {
+                    FMTripItem(
+                        title: $0.title,
+                        isChecked: includeChecks ? $0.isChecked : false
+                    )
+                }
+            )
+        }
+    )
+
+    return FMTripDocument(
+        payload: FMTripCollectionPayload(lists: [payload])
+    )
+}
+
+private func makeExportAllDocument(includeChecks: Bool) -> FMTripDocument {
+    let payloads = categories.map { category in
+        FMTripPayload(
+            name: category.name,
+            icon: category.icon,
+            systemTemplate: category.systemTemplate,
+            sections: category.sections.map {
+                FMTripSection(
+                    title: $0.title,
+                    items: $0.items.map {
+                        FMTripItem(
+                            title: $0.title,
+                            isChecked: includeChecks ? $0.isChecked : false
+                        )
+                    }
+                )
+            }
+        )
+    }
+
+    return FMTripDocument(
+        payload: FMTripCollectionPayload(lists: payloads)
+    )
+}
 }
 
 // MARK: - Checklist View
@@ -1410,6 +1655,7 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Delete")
     _ = String(localized: "Cancel")
 }
+
 #Preview {
     TravelKitListView()
 }

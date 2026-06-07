@@ -112,6 +112,7 @@ struct DocumentsView: View {
                                 .fill(statusColor(for: document))
                                 .frame(width: 10, height: 10)
                         }
+                        .padding(.vertical, 4)
                     }
                     .listRowBackground(
                         Color(.systemBackground).opacity(0.3)

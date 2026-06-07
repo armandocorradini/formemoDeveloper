@@ -290,7 +290,7 @@ struct WalletView: View {
                         Label("A-Z", systemImage: "textformat.abc")
                             .tag("alphabetical")
 
-                        Label("Custom", systemImage: "arrow.up.arrow.down")
+                        Label("Custom", systemImage: "line.3.horizontal")
                             .tag("custom")
                     }
                     .labelStyle(.iconOnly)

@@ -45,7 +45,7 @@ private let weatherManager = WeatherManager.shared
                     .padding(.bottom, 40)
                 }
             }
-            .navigationTitle("Forecast")
+            .navigationTitle("Weekly Forecast")
             .navigationBarTitleDisplayMode(.inline)
             .contentMargins(.bottom, 70, for: .scrollContent)
             .toolbar {
@@ -82,57 +82,9 @@ private let weatherManager = WeatherManager.shared
     // MARK: - Header
 
     private var forecastHeader: some View {
-
         VStack(spacing: 4) {
-
-            ZStack {
-
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: {
-                                let hour = Calendar.current.component(.hour, from: Date())
-                                let isNight = hour >= 20 || hour < 6
-
-                                return isNight
-                                ? [
-                                    Color.indigo.opacity(colorScheme == .dark ? 0.75 : 0.60),
-                                    Color.blue.opacity(colorScheme == .dark ? 0.45 : 0.40)
-                                  ]
-                                : [
-                                    Color.blue.opacity(colorScheme == .dark ? 0.55 : 0.70),
-                                    Color.indigo.opacity(colorScheme == .dark ? 0.35 : 0.50)
-                                  ]
-                            }(),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        Circle()
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(0.28),
-                                        Color.white.opacity(0.05),
-                                        Color.clear
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
-                    )
-
-                Image(systemName: headerWeatherSymbol)
-                    .symbolRenderingMode(.multicolor)
-                    .font(.system(size: 23, weight: .medium))
-            }
-
-            Text("Weekly Forecast")
-                .font(.headline.weight(.bold))
-
+//            Text("Weekly Forecast")
+//                .font(.headline.weight(.bold))
             Label("Source: Open-Meteo", systemImage: "network")
                 .font(.caption2)
                 .foregroundStyle(.secondary)

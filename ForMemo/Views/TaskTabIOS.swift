@@ -166,29 +166,6 @@ struct TaskTabView: View {
                         Divider()
 
                         Button {
-                            selectedTab = 5
-                            showMorePopover = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "map")
-                                        .frame(width: 22)
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                        .frame(width: 16, height: 3)
-                                        .opacity(selectedTab == 5 ? 1 : 0)
-                                }
-                                Text(String(localized: "map_tab"))
-                            }
-                            .foregroundStyle(selectedTab == 5 ? Color.accentColor : Color.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-
-                        Button {
                             selectedTab = 7
                             showMorePopover = false
                         } label: {
@@ -248,6 +225,28 @@ struct TaskTabView: View {
                                 Text("Forecast")
                             }
                             .foregroundStyle(selectedTab == 9 ? Color.accentColor : Color.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Button {
+                            selectedTab = 5
+                            showMorePopover = false
+                        } label: {
+                            HStack(spacing: 10) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "map")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 5 ? 1 : 0)
+                                }
+                                Text(String(localized: "map_tab"))
+                            }
+                            .foregroundStyle(selectedTab == 5 ? Color.accentColor : Color.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         }
