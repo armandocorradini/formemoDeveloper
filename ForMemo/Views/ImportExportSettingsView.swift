@@ -36,8 +36,11 @@ struct ImportExportSettingsView: View {
         }
     }
     
-    var body: some View {
-            
+var body: some View {
+
+        ZStack {
+            AppGlassBackground()
+
             List {
                 
                 // MARK: - IMPORT
@@ -194,6 +197,8 @@ struct ImportExportSettingsView: View {
                     .padding(.vertical, 4)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
             .navigationTitle("Import & Export")
             .contentMargins(.bottom, 70, for: .scrollContent)
             .navigationBarBackButtonHidden(true)
@@ -204,7 +209,7 @@ struct ImportExportSettingsView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "chevron.backward")
-                            Text("Settings")
+//                            Text("Settings")
                         }
                     }
                 }
@@ -272,7 +277,8 @@ struct ImportExportSettingsView: View {
                     )
                 }
             }
-   
+        }
+
         .overlay(alignment: .top) {
             if let message = toastMessage {
                 ToastView(text: message)

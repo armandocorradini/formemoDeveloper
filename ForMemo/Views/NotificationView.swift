@@ -76,23 +76,11 @@ struct NotificationView: View {
     @Query private var tasks: [TodoTask]
     @Query private var documents: [DocumentItem]
 
-    private let gradient = LinearGradient(
-        colors: [backColor1, backColor2],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
 
     var body: some View {
 
         ZStack {
-
-            gradient
-                .ignoresSafeArea()
-
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
-
+            AppGlassBackground()
             Group {
 
                 if isLoading {

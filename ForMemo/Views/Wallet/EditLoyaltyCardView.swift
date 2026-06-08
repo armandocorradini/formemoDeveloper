@@ -39,7 +39,10 @@ struct EditLoyaltyCardView: View {
 
         NavigationStack {
 
-            Form {
+            ZStack {
+                AppGlassBackground()
+
+                Form {
 
                 Section {
 
@@ -262,7 +265,7 @@ struct EditLoyaltyCardView: View {
                 }
             }
             .onChange(of: capturedImage) { _, newImage in
-
+    
                 guard let newImage else {
                     return
                 }
@@ -286,9 +289,33 @@ struct EditLoyaltyCardView: View {
                     print("Failed to save captured logo: \(error)")
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            }
         }
     }
 
+    // MARK: - Save
+
+    private func saveChanges() {
+
+        card.storeName = card.storeName
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        card.barcodeValue = card.barcodeValue
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        card.barcodeFormat = card.barcodeFormat
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            print("Failed to save loyalty card: \(error)")
+        }
+    }
+}
 
 private struct CameraImagePicker: UIViewControllerRepresentable {
 
@@ -351,27 +378,6 @@ private struct CameraImagePicker: UIViewControllerRepresentable {
     }
 }
 
-    // MARK: - Save
-
-    private func saveChanges() {
-
-        card.storeName = card.storeName
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        card.barcodeValue = card.barcodeValue
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        card.barcodeFormat = card.barcodeFormat
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        do {
-            try modelContext.save()
-            dismiss()
-        } catch {
-            print("Failed to save loyalty card: \(error)")
-        }
-    }
-}
 
 private extension UIImage {
 

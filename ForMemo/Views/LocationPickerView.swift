@@ -48,7 +48,7 @@ struct LocationPickerView: View {
     
     @State private var userLocation: CLLocation?
     @State private var locationDelegate: LocationDelegate?
-
+    
     @State private var locationManager = CLLocationManager()
     
     
@@ -58,64 +58,71 @@ struct LocationPickerView: View {
     var body: some View {
         
         NavigationStack {
-            
-            List(Array(searchCompleter.results.prefix(6)), id: \.self) { item in
-                Button {
-                    resolve(item)
-                } label: {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(item.title)
-                            .foregroundStyle(.primary)
-
-                        if !item.subtitle.isEmpty {
-                            Text(item.subtitle)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        if let userLocation {
-                            DistanceView(completion: item, userLocation: userLocation)
+            ZStack {
+                AppGlassBackground()
+                
+                List(Array(searchCompleter.results.prefix(6)), id: \.self) { item in
+                    Button {
+                        resolve(item)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(item.title)
+                                .foregroundStyle(.primary)
+                            
+                            if !item.subtitle.isEmpty {
+                                Text(item.subtitle)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            if let userLocation {
+                                DistanceView(completion: item, userLocation: userLocation)
+                            }
                         }
                     }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
-            }
-            .navigationTitle("Search location")
-            .searchable(text: $query)
-            .onChange(of: query) { _, newValue in
-                searchCompleter.update(query: newValue)
-            }
-            .onAppear {
-                guard userLocation == nil else { return }
-
-                if locationManager.authorizationStatus == .notDetermined {
-                    locationManager.requestWhenInUseAuthorization()
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .navigationTitle("Search location")
+                .searchable(text: $query)
+                .onChange(of: query) { _, newValue in
+                    searchCompleter.update(query: newValue)
                 }
-
-                let delegate = LocationDelegate { location in
-                    self.userLocation = location
+                .onAppear {
+                    guard userLocation == nil else { return }
+                    
+                    if locationManager.authorizationStatus == .notDetermined {
+                        locationManager.requestWhenInUseAuthorization()
+                    }
+                    
+                    let delegate = LocationDelegate { location in
+                        self.userLocation = location
+                    }
+                    
+                    locationManager.delegate = delegate
+                    self.locationDelegate = delegate
+                    
+                    locationManager.requestLocation()
                 }
-
-                locationManager.delegate = delegate
-                self.locationDelegate = delegate
-
-                locationManager.requestLocation()
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        withAnimation(.snappy) {
-                            dismiss()
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            withAnimation(.snappy) {
+                                dismiss()
+                            }
+                        } label: {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.primary)
+                                .font(.title2)
                         }
-                    } label: {
-                        Image(systemName: "checkmark")
-                            .foregroundStyle(.primary)
-                            .font(.title2)
                     }
                 }
             }
         }
     }
-    
+
+
+
     private func resolve(_ completion: MKLocalSearchCompletion) {
         
         let request = MKLocalSearch.Request(completion: completion)

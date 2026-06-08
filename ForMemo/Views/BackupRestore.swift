@@ -26,16 +26,7 @@ struct BackupRestoreView: View {
 
         ZStack {
 
-            LinearGradient(
-                colors: [backColor1, backColor2],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+            AppGlassBackground()
 
             List {
 
@@ -167,6 +158,7 @@ struct BackupRestoreView: View {
                 }
             }
             .scrollContentBackground(.hidden)
+            .background(Color.clear)
             .contentMargins(.bottom, 70, for: .scrollContent)
         }
         .overlay {

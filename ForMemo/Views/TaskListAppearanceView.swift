@@ -92,17 +92,7 @@ struct TaskListAppearanceView: View {
     var body: some View {
         
         ZStack {
-            // 1. IL GRADIENTE (Sotto a tutto)
-            LinearGradient(colors: [backColor1, backColor2],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
-            .ignoresSafeArea()
-            
-            // 2. IL MATERIAL (Effetto vetro)
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
-            
+            AppGlassBackground()
             
             VStack(spacing: 0) {
                 

@@ -26,7 +26,10 @@ struct RecentlyDeletedView: View {
         }
     }
     
-    var body: some View {
+var body: some View {
+    ZStack {
+        AppGlassBackground()
+
         List {
             
             if items.isEmpty {
@@ -130,10 +133,9 @@ struct RecentlyDeletedView: View {
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.secondarySystemBackground))
+                        Color(.secondarySystemBackground)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
                     .swipeActions (edge: .leading) {
                         
                         Button {
@@ -172,6 +174,9 @@ struct RecentlyDeletedView: View {
                 }
             }
         }
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
         .navigationTitle("Recently Deleted")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -245,7 +250,8 @@ struct RecentlyDeletedView: View {
             }
         }
     }
-    
+    }
+
     // MARK: - Helpers
     
     private func deleteFile(_ item: DeletedItem) {

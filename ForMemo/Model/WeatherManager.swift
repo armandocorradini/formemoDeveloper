@@ -342,7 +342,9 @@ private struct OpenMeteoHourly: Decodable {
 
             let urlString = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=\(latitude)&longitude=\(longitude)&daily=pm10_max&timezone=auto"
 
-            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max,cloud_cover_mean&hourly=weather_code,cloud_cover,precipitation_probability,precipitation,temperature_2m,wind_speed_10m,uv_index,relative_humidity_2m&forecast_days=7&timezone=auto"
+            // Request 8 days because just after midnight the UI can already consume
+            // today's forecast as day 0, causing the last visible future day to be missing.
+            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max,cloud_cover_mean&hourly=weather_code,cloud_cover,precipitation_probability,precipitation,temperature_2m,wind_speed_10m,uv_index,relative_humidity_2m&forecast_days=8&timezone=auto"
 
             guard let url = URL(string: forecastURLString),
                   let airQualityURL = URL(string: urlString) else {
@@ -479,6 +481,12 @@ private struct OpenMeteoHourly: Decodable {
                     fallback: weatherCode,
                     hourlyCodes: daytimeCodes
                 )
+#if DEBUG
+                if Calendar.current.isDateInToday(date) {
+                    print("☀️ hourly codes:", daytimeCodes)
+                    print("☀️ dominant:", dominantWeatherCode)
+                }
+#endif
 
                 let daytimePrecipitationChance = daytimePrecipitationProbability(
                     for: date,
@@ -536,6 +544,13 @@ private struct OpenMeteoHourly: Decodable {
                     isCurrentlyDaytime = true
                 }
 
+                #if DEBUG
+                if Calendar.current.isDateInToday(date) {
+                    print("☁️ cloud cover:", decoded.daily.cloud_cover_mean[index])
+                    print("🌧️ rain chance:", Int(precipitationChance.rounded()))
+                    print("🌧️ rain amount:", precipitationAmount)
+                }
+                #endif
                 updated[key] = DailyWeatherInfo(
                     date: date,
                     symbolName: symbol(
@@ -707,7 +722,10 @@ private struct OpenMeteoHourly: Decodable {
         hourly: OpenMeteoHourly
     ) -> [Int] {
 
-        let formatter = ISO8601DateFormatter()
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .current
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
         let calendar = Calendar.current
 
         let (startHour, endHour) = weatherEvaluationWindow(for: date)
@@ -742,7 +760,10 @@ private struct OpenMeteoHourly: Decodable {
         hourly: OpenMeteoHourly
     ) -> Int {
 
-        let formatter = ISO8601DateFormatter()
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .current
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
         let calendar = Calendar.current
 
         let (startHour, endHour) = weatherEvaluationWindow(for: date)
@@ -785,7 +806,10 @@ private struct OpenMeteoHourly: Decodable {
         hourly: OpenMeteoHourly
     ) -> Double {
 
-        let formatter = ISO8601DateFormatter()
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .current
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
         let calendar = Calendar.current
 
         let (startHour, endHour) = weatherEvaluationWindow(for: date)
@@ -883,9 +907,9 @@ private struct OpenMeteoHourly: Decodable {
             [0, 1, 2].contains($0)
         }.count
 
-        if sunshineHours >= 5 {
+        if sunshineHours >= 4 {
 
-            if sunshineHours >= 7 {
+            if sunshineHours >= 6 {
                 return 0
             }
 

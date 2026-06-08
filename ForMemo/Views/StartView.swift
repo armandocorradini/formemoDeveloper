@@ -6,14 +6,7 @@ struct StartView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(colors: [backColor1, backColor2],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
-            .ignoresSafeArea()
-            
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+            AppGlassBackground()
             
             ScrollView {
                 VStack(spacing: 40) {

@@ -209,6 +209,19 @@ struct SettingsView: View {
                         .pickerStyle(.menu)
                         .opacity(0.7)
                     }
+
+                    NavigationLink {
+                        BackgroundCustomizationView()
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "paintpalette")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+
+                            Text("Background")
+                                .foregroundStyle(.primary)
+                        }
+                    }
                 }
                 .listRowBackground(Color(.systemBackground).opacity(0.3))
 
@@ -727,35 +740,7 @@ Attivazione: \(triggerInfo)
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
             .background {
-                ZStack {
-                    LinearGradient(
-                        colors: [backColor1, backColor2],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .ignoresSafeArea()
-                    
-                    MeshGradient(
-                        width: 3,
-                        height: 3,
-                        points: [
-                            [0, 0], [0.5, 0], [1, 0],
-                            [0, 0.5], [0.5, 0.5], [1, 0.5],
-                            [0, 1], [0.5, 1], [1, 1]
-                        ],
-                        colors: [
-                            .cyan.opacity(0.1), .blue.opacity(0.05), .blue.opacity(0.1),
-                            .clear, .clear, .clear,
-                            .blue.opacity(0.1), .clear, .cyan.opacity(0.1)
-                        ]
-                    )
-                    .opacity(0.3)
-                    .ignoresSafeArea()
-                    
-                    Rectangle()
-                        .fill(.ultraThinMaterial)
-                        .ignoresSafeArea()
-                }
+                AppGlassBackground()
             }
             .scrollContentBackground(.hidden)
             .task {

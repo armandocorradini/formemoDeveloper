@@ -224,16 +224,9 @@ struct AppQuickGuideView: View {
     
     var body: some View {
         ZStack {
-            
-            LinearGradient(colors: [backColor1, backColor2],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
-            .ignoresSafeArea()
-            
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
-            
+
+            AppGlassBackground()
+
             VStack(spacing: 0) {
                 Text("Quick Guide")
                     .font(.title3)

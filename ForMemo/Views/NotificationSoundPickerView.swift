@@ -19,7 +19,10 @@ struct NotificationSoundPickerView: View {
     
     var body: some View {
         NavigationStack {
-            List {
+            ZStack {
+                AppGlassBackground()
+
+                List {
                 // MARK: Sezione Default
                 Section {
                     HStack {
@@ -64,7 +67,6 @@ struct NotificationSoundPickerView: View {
                     }
                 }
             }
-            
             .navigationTitle(context == .task ? "Notification sound" : "Location sound")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -83,6 +85,9 @@ struct NotificationSoundPickerView: View {
             .onAppear {
                 loadSounds()
                 selectedSound = UserDefaults.standard.string(forKey: storageKey) ?? ""
+            }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
             }
         }
     }

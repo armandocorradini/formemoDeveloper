@@ -16,7 +16,10 @@ struct ResetAppView: View {
     
     var body: some View {
         NavigationStack {
-            List {
+            ZStack {
+                AppGlassBackground()
+
+                List {
                 
                 // MARK: - Info
                 Section {
@@ -62,8 +65,10 @@ struct ResetAppView: View {
                     }
                     .disabled(confirmationText != "DELETE" || isDeleting)
                 }
-            }
-            .listStyle(.insetGrouped)
+                }
+                .listStyle(.insetGrouped)
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
             .navigationTitle("Erase Data")
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: confirmationText) { _, newValue in
@@ -81,6 +86,7 @@ struct ResetAppView: View {
                         Image(systemName: "xmark")
                     }
                 }
+            }
             }
         }
     }

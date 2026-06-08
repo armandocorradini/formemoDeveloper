@@ -32,22 +32,6 @@ enum RecurrenceUI: String, CaseIterable, Identifiable {
 
 struct TaskDetailView: View {
     
-    private struct GradientBackground: View {
-        var body: some View {
-            ZStack {
-                LinearGradient(
-                    colors: [backColor1, backColor2],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .ignoresSafeArea()
-            }
-        }
-    }
     
     
     @Bindable var task: TodoTask
@@ -172,7 +156,7 @@ struct TaskDetailView: View {
         
         
         ZStack {
-            GradientBackground()
+            AppGlassBackground()
             
             List {
                 MainInfoSection(

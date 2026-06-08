@@ -126,24 +126,12 @@ struct TaskListView: View {
                 ($1.completedAt ?? .distantPast)
             }
     }
-    private static let backgroundGradient =
-    LinearGradient(
-        colors: [backColor1, backColor2],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
 
 
     var body: some View {
         ZStack {
-                // 1. IL GRADIENTE (Sotto a tutto)
-                Self.backgroundGradient
-                    .ignoresSafeArea()
 
-                // 2. IL MATERIAL (Effetto vetro)
-                Rectangle()
-                .fill(.ultraThinMaterial)
-                    .ignoresSafeArea()
+            AppGlassBackground()
                     
             let isEmptyState =
                 todoQuery.isEmpty &&

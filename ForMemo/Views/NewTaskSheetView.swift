@@ -36,6 +36,8 @@ struct SavedLocationsListView: View {
     }
 
     var body: some View {
+        ZStack {
+            AppGlassBackground()
 
         List {
             ForEach(filteredLocations) { item in
@@ -78,6 +80,10 @@ struct SavedLocationsListView: View {
         .navigationTitle("Saved Locations")
         .navigationBarTitleDisplayMode(.inline)
         .contentMargins(.bottom, 70, for: .scrollContent)
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
+
+    }
         
     }
 }
@@ -178,15 +184,7 @@ struct NewTaskSheetView: View {
         NavigationStack {
             
             ZStack {
-                
-                LinearGradient(colors: [backColor1, backColor2],
-                               startPoint: .topLeading,
-                               endPoint: .bottomTrailing)
-                .ignoresSafeArea()
-                
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .ignoresSafeArea()
+                AppGlassBackground()
                 
                 List {
                     mainInfoSection

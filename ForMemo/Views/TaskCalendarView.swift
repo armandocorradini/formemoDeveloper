@@ -45,17 +45,9 @@ struct TaskCalendarView: View {
     @State private var tasksCache: [Date: [TodoTask]] = [:]
     var body: some View {
         ZStack {
-            
-            // Background
-            LinearGradient(colors: [backColor1, backColor2],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+
+            AppGlassBackground()
+
             VStack(spacing: 0) {
                 header
                     .padding(.horizontal)

@@ -12,16 +12,7 @@ struct DocumentDetailView: View {
         
         ZStack {
 
-            LinearGradient(
-                colors: [backColor1, backColor2],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+            AppGlassBackground()
 
             Form {
             
@@ -146,7 +137,7 @@ struct DocumentDetailView: View {
                         Text(String(localized: "Same Day"))
                             .tag(0)
                         
-                        ForEach(1...90, id: \.self) { day in
+                        ForEach(1...365, id: \.self) { day in
                             
                             Text(
                                 day == 1
@@ -178,6 +169,7 @@ struct DocumentDetailView: View {
             )
             }
             .scrollContentBackground(.hidden)
+            .background(Color.clear)
             .scrollDismissesKeyboard(.interactively)
             .contentMargins(.bottom, 70, for: .scrollContent)
             .navigationTitle(document.name.isEmpty ? String(localized: "Document") : document.name)

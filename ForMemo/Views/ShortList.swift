@@ -7,17 +7,8 @@ struct ShortList: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // 1. IL GRADIENTE (Sotto a tutto)
-                LinearGradient(colors: [backColor1, backColor2],
-                               startPoint: .topLeading,
-                               endPoint: .bottomTrailing)
-                .ignoresSafeArea()
-                
-                // 2. IL MATERIAL (Effetto vetro)
-                Rectangle()
-                    .fill(.ultraThinMaterial)
-                    .ignoresSafeArea()
-                
+                AppGlassBackground()
+
                 List {
                     Section {
                         VStack(alignment: .leading, spacing: 20) {

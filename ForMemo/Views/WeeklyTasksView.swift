@@ -316,16 +316,7 @@ struct WeeklyTasksView: View {
     }
     var body: some View {
         ZStack {
-            // Background gradient
-            LinearGradient(colors: [backColor1, backColor2],
-                           startPoint: .topLeading,
-                           endPoint: .bottomTrailing)
-            .ignoresSafeArea()
-
-            // Glass material overlay
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+            AppGlassBackground()
             Color.clear
                 .onAppear {
                     UITableView.appearance().backgroundColor = .clear

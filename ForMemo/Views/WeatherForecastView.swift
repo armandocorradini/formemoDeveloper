@@ -21,16 +21,7 @@ struct WeatherForecastView: View {
 
         ZStack {
 
-            LinearGradient(
-                colors: [backColor1, backColor2],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+            AppGlassBackground()
 
             ScrollView {
                 VStack(spacing: 10) {
@@ -87,10 +78,21 @@ struct WeatherForecastView: View {
         return VStack(spacing: 4) {
 
             if weatherManager.weather(for: Date()) != nil {
+// #if DEBUG
+// let _ = {
+//     if let weather = weatherManager.weather(for: Date()) {
+//         print("☀️ daily weatherCode:", weather.weatherCode)
+//     }
+//     return 0
+// }()
+// #endif
 
+// #if DEBUG
+// let _ = print("🌤️ currentWeatherSymbol:", currentWeatherSymbol)
+// #endif
                 Image(systemName: currentWeatherSymbol)
                     .symbolRenderingMode(.multicolor)
-                    .font(.system(size: 44))
+                    .font(.system(size: 40))
                     .saturation(colorScheme == .light ? 1.25 : 1.0)
                     .brightness(colorScheme == .light ? 0.2 : 0.0)
 
@@ -109,7 +111,27 @@ struct WeatherForecastView: View {
         .padding(.bottom, 8)
     }
     private var currentWeatherSymbol: String {
-        weatherManager.representativeSymbol(for: Date())
+
+        guard let weather = weatherManager.weather(for: Date()) else {
+            return weatherManager.representativeSymbol(for: Date())
+        }
+
+        switch weather.weatherCode {
+        case 0:
+            return "sun.max.fill"
+        case 1, 2:
+            return "cloud.sun.fill"
+        case 3:
+            return "cloud.fill"
+        case 61, 63, 65, 80, 81, 82:
+            return "cloud.rain.fill"
+        case 71, 73, 75, 77, 85, 86:
+            return "cloud.snow.fill"
+        case 95, 96, 99:
+            return "cloud.bolt.rain.fill"
+        default:
+            return weather.symbolName
+        }
     }
 
     private var forecastContent: some View {
@@ -137,7 +159,7 @@ struct WeatherForecastView: View {
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.75)
 
-                            Text(
+                            let showWeekday =
                                 Calendar.current.isDateInToday(date) ||
                                 Calendar.current.isDateInTomorrow(date) ||
                                 (
@@ -145,6 +167,8 @@ struct WeatherForecastView: View {
                                         .map { Calendar.current.isDate(date, inSameDayAs: $0) }
                                     ?? false
                                 )
+
+                            let dateText = showWeekday
                                 ? date.formatted(
                                     .dateTime
                                         .weekday(.abbreviated)
@@ -156,17 +180,20 @@ struct WeatherForecastView: View {
                                         .day()
                                         .month(.abbreviated)
                                 )
-                            )
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
+
+                            Text(dateText)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
                         }
                         .frame(width: 115, alignment: .leading)
 
                         if let weather {
 
-                            let dayIcon = weatherManager.representativeSymbol(for: date)
+                            let dayIcon = Calendar.current.isDateInToday(date)
+                                ? currentWeatherSymbol
+                                : weather.symbolName
 
                             VStack(spacing: 4) {
                                 HStack(spacing: 4) {
@@ -222,7 +249,7 @@ struct WeatherForecastView: View {
                                 if weatherManager.isLoading {
                                     ProgressView()
                                 } else {
-                                    Image(systemName: "cloud.slash")
+                                    Image(systemName: "icloud.slash")
                                         .foregroundStyle(.secondary)
                                 }
 
@@ -289,6 +316,14 @@ struct WeatherForecastView: View {
 
     private func weatherDescription(for symbolName: String) -> String {
         switch symbolName {
+        case "moon.stars.fill":
+            return String(localized: "Clear Night")
+
+        case "cloud.moon.fill":
+            return String(localized: "Partly Cloudy")
+
+        case "cloud.moon.rain.fill":
+            return String(localized: "Rain")
         case "sun.max.fill":
             return String(localized: "Sunny")
         case "cloud.sun.fill":

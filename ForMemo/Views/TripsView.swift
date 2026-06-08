@@ -44,16 +44,7 @@ struct TravelKitListView: View {
 
         ZStack {
 
-            LinearGradient(
-                colors: [backColor1, backColor2],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+            AppGlassBackground()
 
             NavigationStack {
             
@@ -800,20 +791,13 @@ struct TripChecklistView: View {
     @State private var sectionTitleDraft = ""
     @State private var showRenameSectionAlert = false
     @FocusState private var isEditingTextField: Bool
+    @State private var areAllSectionsCollapsed = false
+    @State private var showResetChecksConfirmation = false
     
     var body: some View {
         ZStack {
 
-            LinearGradient(
-                colors: [backColor1, backColor2],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+            AppGlassBackground()
 
             List {
             ForEach($category.sections) { $section in
@@ -978,14 +962,36 @@ struct TripChecklistView: View {
                 }
             }
             ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    for sectionIndex in category.sections.indices {
-                        for itemIndex in category.sections[sectionIndex].items.indices {
-                            category.sections[sectionIndex].items[itemIndex].isChecked = false
+                Menu {
+
+                    Button {
+                        showResetChecksConfirmation = true
+                    } label: {
+                        Label(String(localized: "Reset Checks"), systemImage: "arrow.counterclockwise")
+                    }
+
+                    Button {
+                        let shouldCollapse = category.sections.contains { !$0.isCollapsed }
+
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            for index in category.sections.indices {
+                                category.sections[index].isCollapsed = shouldCollapse
+                            }
                         }
+
+                        areAllSectionsCollapsed = shouldCollapse
+                    } label: {
+                        Label(
+                            category.sections.contains { !$0.isCollapsed }
+                                ? String(localized: "Collapse All Sections")
+                                : String(localized: "Expand All Sections"),
+                            systemImage: category.sections.contains { !$0.isCollapsed }
+                                ? "arrow.up.left.and.arrow.down.right"
+                                : "arrow.down.right.and.arrow.up.left"
+                        )
                     }
                 } label: {
-                    Label(String(localized: "Reset Checks"), systemImage: "arrow.counterclockwise")
+                    Image(systemName: "ellipsis.circle")
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
@@ -1045,6 +1051,23 @@ struct TripChecklistView: View {
                 self.editingSectionID = nil
                 sectionTitleDraft = ""
             }
+        }
+        .confirmationDialog(
+            String(localized: "Reset Checks"),
+            isPresented: $showResetChecksConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(String(localized: "Reset Checks"), role: .destructive) {
+                for sectionIndex in category.sections.indices {
+                    for itemIndex in category.sections[sectionIndex].items.indices {
+                        category.sections[sectionIndex].items[itemIndex].isChecked = false
+                    }
+                }
+            }
+
+            Button(String(localized: "Cancel"), role: .cancel) { }
+        } message: {
+            Text(String(localized: "Are you sure you want to clear all checkmarks?"))
         }
         }
     }
@@ -1654,6 +1677,8 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "items")
     _ = String(localized: "Delete")
     _ = String(localized: "Cancel")
+    _ = String(localized: "Collapse All Sections")
+    _ = String(localized: "Expand All Sections")
 }
 
 #Preview {

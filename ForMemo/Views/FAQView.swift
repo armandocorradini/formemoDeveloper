@@ -365,40 +365,44 @@ struct FAQView: View {
     // MARK: - UI
 
     var body: some View {
-        List {
-            ForEach(filteredSections) { section in
-                Section(section.title) {
-                    ForEach(section.items) { item in
-                        DisclosureGroup {
-                            Text(item.answer)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .padding(.top, 4)
-                        } label: {
-                            highlight(item.question)
-                                .font(.body)
+        ZStack {
+            AppGlassBackground()
+            List {
+                ForEach(filteredSections) { section in
+                    Section(section.title) {
+                        ForEach(section.items) { item in
+                            DisclosureGroup {
+                                Text(item.answer)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 4)
+                            } label: {
+                                highlight(item.question)
+                                    .font(.body)
+                            }
                         }
                     }
                 }
             }
-        }
-        .searchable(
-            text: $searchText,
-            placement: .navigationBarDrawer(displayMode: .always),
-            prompt: String(localized: "Search FAQ")
-        )
-        .scrollDismissesKeyboard(.immediately)
-        .navigationTitle(String(localized: "Help"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(String(localized: "Done")) {
-                    dismiss()
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .searchable(
+                text: $searchText,
+                placement: .navigationBarDrawer(displayMode: .always),
+                prompt: String(localized: "Search FAQ")
+            )
+            .scrollDismissesKeyboard(.immediately)
+            .navigationTitle(String(localized: "Help"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(String(localized: "Done")) {
+                        dismiss()
+                    }
                 }
             }
         }
     }
-
     // MARK: - DETAIL VIEW
 
     struct FAQDetailView: View {

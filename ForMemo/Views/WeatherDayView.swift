@@ -19,17 +19,7 @@ struct WeatherDayView: View {
         let _ = forceRefresh
 
         ZStack {
-
-            LinearGradient(
-                colors: [backColor1, backColor2],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+            AppGlassBackground()
 
             ScrollView {
 

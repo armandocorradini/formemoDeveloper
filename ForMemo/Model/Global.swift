@@ -1,6 +1,6 @@
 import SwiftUI
 
-let backColor1 = Color(uiColor: UIColor { trait in
+let defaultBackColor1 = Color(uiColor: UIColor { trait in
     if trait.userInterfaceStyle == .dark {
         return UIColor(
             red: 0.42,
@@ -18,7 +18,7 @@ let backColor1 = Color(uiColor: UIColor { trait in
     }
 })
 
-let backColor2 = Color(uiColor: UIColor { trait in
+let defaultBackColor2 = Color(uiColor: UIColor { trait in
     if trait.userInterfaceStyle == .dark {
         return UIColor(
             red: 0.76,
@@ -35,6 +35,80 @@ let backColor2 = Color(uiColor: UIColor { trait in
         )
     }
 })
+
+struct AppBackgroundColors {
+    
+    private static let color1Key = "backgroundColor1Hex"
+    private static let color2Key = "backgroundColor2Hex"
+
+    static var color1: Color {
+        let hex = UserDefaults.standard.string(forKey: color1Key)
+        return Color(hex: hex ?? "") ?? defaultBackColor1
+    }
+
+    static var color2: Color {
+        let hex = UserDefaults.standard.string(forKey: color2Key)
+        return Color(hex: hex ?? "") ?? defaultBackColor2
+    }
+
+    static func setColor1(_ color: Color) {
+        UserDefaults.standard.set(
+            color.toHex(),
+            forKey: color1Key
+        )
+    }
+
+    static func setColor2(_ color: Color) {
+        UserDefaults.standard.set(
+            color.toHex(),
+            forKey: color2Key
+        )
+    }
+
+    static func restoreDefaults() {
+        UserDefaults.standard.set(
+            defaultBackColor1.toHex(),
+            forKey: color1Key
+        )
+
+        UserDefaults.standard.set(
+            defaultBackColor2.toHex(),
+            forKey: color2Key
+        )
+    }
+}
+
+struct AppGlassBackground: View {
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [AppBackgroundColors.color1, AppBackgroundColors.color2],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .ignoresSafeArea()
+        }
+    }
+}
+
+struct AppGlassBackgroundModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        ZStack {
+            AppGlassBackground()
+            content
+        }
+    }
+}
+
+extension View {
+    func appGlassBackground() -> some View {
+        modifier(AppGlassBackgroundModifier())
+    }
+}
 
 // Ricava il display name dell'app
 let appName: String = {

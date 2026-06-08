@@ -28,139 +28,145 @@ struct AddLoyaltyCardView: View {
 
         NavigationStack {
 
-            Form {
+            ZStack {
+                AppGlassBackground()
 
-                Section {
+                Form {
 
-                    HStack(spacing: 16) {
+                    Section {
 
-                        Group {
-                            if let logoData,
-                               let uiImage = UIImage(data: logoData) {
+                        HStack(spacing: 16) {
 
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 72, height: 72)
-                                    .clipped()
+                            Group {
+                                if let logoData,
+                                   let uiImage = UIImage(data: logoData) {
 
-                            } else {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 72, height: 72)
+                                        .clipped()
 
-                                Image(systemName: "photo")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .padding(18)
-                                    .foregroundStyle(.secondary)
+                                } else {
+
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .padding(18)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
-                        }
-                        .frame(width: 72, height: 72)
-                        .background(.ultraThinMaterial)
-                        .clipShape(
-                            RoundedRectangle(
-                                cornerRadius: 18,
-                                style: .continuous
+                            .frame(width: 72, height: 72)
+                            .background(.ultraThinMaterial)
+                            .clipShape(
+                                RoundedRectangle(
+                                    cornerRadius: 18,
+                                    style: .continuous
+                                )
                             )
-                        )
 
-                        VStack(alignment: .leading, spacing: 10) {
+                            VStack(alignment: .leading, spacing: 10) {
 
-                            PhotosPicker(
-                                selection: $selectedLogoItem,
-                                matching: .images
-                            ) {
-                                HStack {
-                                    Label(
-                                        "Choose Logo",
-                                        systemImage: "photo.badge.plus"
-                                    )
+                                PhotosPicker(
+                                    selection: $selectedLogoItem,
+                                    matching: .images
+                                ) {
+                                    HStack {
+                                        Label(
+                                            "Choose Logo",
+                                            systemImage: "photo.badge.plus"
+                                        )
 
-                                    Spacer(minLength: 0)
+                                        Spacer(minLength: 0)
+                                    }
+                                    .contentShape(Rectangle())
                                 }
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
+                                .buttonStyle(.plain)
 
-                            Button {
-                                showCamera = true
-                            } label: {
-                                HStack {
-                                    Label(
-                                        "Take Photo",
-                                        systemImage: "camera.fill"
-                                    )
+                                Button {
+                                    showCamera = true
+                                } label: {
+                                    HStack {
+                                        Label(
+                                            "Take Photo",
+                                            systemImage: "camera.fill"
+                                        )
 
-                                    Spacer(minLength: 0)
+                                        Spacer(minLength: 0)
+                                    }
+                                    .contentShape(Rectangle())
                                 }
-                                .contentShape(Rectangle())
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
-                }
 
-                Section {
+                    Section {
 
-                    ColorPicker(
-                        "Card Color",
-                        selection: $selectedColor,
-                        supportsOpacity: false
-                    )
-                }
-
-                Section {
-
-                    TextField("Store Name", text: $storeName)
-                        .textInputAutocapitalization(.words)
-
-                    TextField("Card Holder", text: $cardHolder)
-                        .textInputAutocapitalization(.words)
-                }
-
-                Section("Barcode") {
-
-                    TextField("Barcode Value", text: $barcodeValue)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                        .font(.body.monospaced())
-
-                    LabeledContent("Format") {
-                        Text(barcodeFormat)
-                            .foregroundStyle(.secondary)
+                        ColorPicker(
+                            "Card Color",
+                            selection: $selectedColor,
+                            supportsOpacity: false
+                        )
                     }
 
-                    Button {
-                        showScanner = true
-                    } label: {
-                        Label("Scan Barcode", systemImage: "barcode.viewfinder")
+                    Section {
+
+                        TextField("Store Name", text: $storeName)
+                            .textInputAutocapitalization(.words)
+
+                        TextField("Card Holder", text: $cardHolder)
+                            .textInputAutocapitalization(.words)
+                    }
+
+                    Section("Barcode") {
+
+                        TextField("Barcode Value", text: $barcodeValue)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                            .font(.body.monospaced())
+
+                        LabeledContent("Format") {
+                            Text(barcodeFormat)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Button {
+                            showScanner = true
+                        } label: {
+                            Label("Scan Barcode", systemImage: "barcode.viewfinder")
+                        }
+                    }
+
+                    Section("Notes") {
+
+                        TextField("Optional Notes", text: $notes, axis: .vertical)
+                            .lineLimit(3...6)
                     }
                 }
+                .navigationTitle("Add Card")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
 
-                Section("Notes") {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                    }
 
-                    TextField("Optional Notes", text: $notes, axis: .vertical)
-                        .lineLimit(3...6)
-                }
-            }
-            .navigationTitle("Add Card")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            saveCard()
+                        }
+                        .disabled(
+                            storeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            || barcodeValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            || isLoadingLogo
+                        )
                     }
                 }
-
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        saveCard()
-                    }
-                    .disabled(
-                        storeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                        || barcodeValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                        || isLoadingLogo
-                    )
-                }
+                .scrollContentBackground(.hidden)
+                .background(Color.clear)
             }
         }
         .sheet(isPresented: $showScanner) {
