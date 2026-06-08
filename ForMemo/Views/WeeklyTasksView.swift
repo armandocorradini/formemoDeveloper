@@ -19,7 +19,12 @@ struct WeeklyTasksView: View {
     
     @State private var taskPendingDeletion: TodoTask?
     @State private var draftTask: TodoTask?
-    @State private var showWeatherForecast = false
+    private struct SelectedWeatherDay: Identifiable {
+        let date: Date
+        var id: Date { date }
+    }
+
+    @State private var selectedWeatherDay: SelectedWeatherDay?
 
     private static let activeTasksPredicate =
         #Predicate<TodoTask> { !$0.isCompleted }
@@ -204,7 +209,7 @@ struct WeeklyTasksView: View {
                    let weather = weatherManager.weather(for: group.date) {
 
                     Button {
-                        showWeatherForecast = true
+                        selectedWeatherDay = SelectedWeatherDay(date: group.date)
                     } label: {
 
                         HStack(spacing: 7) {
@@ -215,7 +220,12 @@ struct WeeklyTasksView: View {
 
                             Text("\(weather.minTemperature)°")
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(.primary.opacity(0.55))
+                                .foregroundStyle(
+                                    weather.minTemperature >= 35 ? .red :
+                                    weather.minTemperature >= 30 ? .orange :
+                                    weather.minTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
+                                    .primary.opacity(0.55)
+                                )
                                 .monospacedDigit()
 
                             Text("/")
@@ -224,7 +234,12 @@ struct WeeklyTasksView: View {
 
                             Text("\(weather.maxTemperature)°")
                                 .font(.caption.weight(.semibold))
-                                .foregroundStyle(.primary.opacity(0.90))
+                                .foregroundStyle(
+                                    weather.maxTemperature >= 35 ? .red :
+                                    weather.maxTemperature >= 30 ? .orange :
+                                    weather.maxTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
+                                    .primary.opacity(0.90)
+                                )
                                 .monospacedDigit()
                         }
                     }
@@ -479,9 +494,15 @@ struct WeeklyTasksView: View {
             .sheet(item: $draftTask) { task in
                 NewTaskSheetView(draftTask: task)
             }
-            .fullScreenCover(isPresented: $showWeatherForecast) {
+            .sheet(item: $selectedWeatherDay) { selectedDay in
                 NavigationStack {
-                    WeatherForecastView(showsCloseButton: true)
+                    WeatherDayView(
+                        date: selectedDay.date,
+                        showsCloseButton: true,
+                        closeAction: {
+                            selectedWeatherDay = nil
+                        }
+                    )
                 }
             }
             .scrollContentBackground(.hidden)

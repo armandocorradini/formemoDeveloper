@@ -23,11 +23,22 @@ struct SavedLocationsListView: View {
     let onDelete: (SavedLocationItem) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @State private var searchText = ""
+
+    private var filteredLocations: [SavedLocationItem] {
+        guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return locations
+        }
+
+        return locations.filter {
+            $0.name.localizedCaseInsensitiveContains(searchText)
+        }
+    }
 
     var body: some View {
 
         List {
-            ForEach(locations) { item in
+            ForEach(filteredLocations) { item in
 
                 Button {
                     onSelect(item)
@@ -59,8 +70,15 @@ struct SavedLocationsListView: View {
                 }
             }
         }
+        .searchable(
+            text: $searchText,
+            placement: .navigationBarDrawer(displayMode: .automatic),
+            prompt: String(localized: "Search locations")
+        )
         .navigationTitle("Saved Locations")
         .navigationBarTitleDisplayMode(.inline)
+        .contentMargins(.bottom, 70, for: .scrollContent)
+        
     }
 }
 

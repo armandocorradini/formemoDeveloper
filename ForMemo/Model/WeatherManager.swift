@@ -33,7 +33,16 @@ struct HourlyWeatherInfo {
 
     let date: Date
     let hour: Int
+
     let symbolName: String
+    let weatherCode: Int
+
+    let temperature: Int
+    let precipitationChance: Int
+    let windSpeed: Int
+    let uvIndex: Int
+    let humidity: Int
+    let cloudCover: Int
 }
 
 
@@ -88,6 +97,10 @@ private struct OpenMeteoHourly: Decodable {
     let cloud_cover: [Int]
     let precipitation_probability: [Int]
     let precipitation: [Double]
+    let temperature_2m: [Double]
+    let wind_speed_10m: [Double]
+    let uv_index: [Double]
+    let relative_humidity_2m: [Int]
 }
 
     private(set) var weatherByDay: [Date: DailyWeatherInfo] = [:]
@@ -95,6 +108,8 @@ private struct OpenMeteoHourly: Decodable {
     
     
     private(set) var isAvailable: Bool = false
+    private(set) var isLoading: Bool = false
+    private(set) var lastLoadFailed: Bool = false
     private(set) var refreshID = UUID()
 
     private var lastRefresh: Date = .distantPast
@@ -182,8 +197,77 @@ private struct OpenMeteoHourly: Decodable {
 
         return hourlyWeatherByDay[key] ?? []
     }
+
+    func representativeSymbol(for date: Date) -> String {
+
+        if Calendar.current.isDateInToday(date) {
+
+            let now = Date()
+
+            let hourly = hourlyWeather(for: now)
+
+            if let nearest = hourly.min(by: {
+                abs($0.date.timeIntervalSince(now))
+                < abs($1.date.timeIntervalSince(now))
+            }) {
+                return nearest.symbolName
+            }
+
+            return weather(for: now)?.symbolName
+                ?? "cloud.sun.fill"
+        }
+
+        return weather(for: date)?.symbolName
+            ?? "cloud.sun.fill"
+    }
     
-    
+    func weatherDescription(
+        weatherCode: Int,
+        isDay: Bool
+    ) -> String {
+
+        switch weatherCode {
+
+        case 0:
+            return isDay
+                ? String(localized: "Clear Sky")
+                : String(localized: "Clear Night")
+
+        case 1:
+            return String(localized: "Mainly Clear")
+
+        case 2:
+            return isDay
+                ? String(localized: "Partly Cloudy")
+                : String(localized: "Partly Cloudy Night")
+
+        case 3:
+            return String(localized: "Overcast")
+
+        case 45, 48:
+            return String(localized: "Fog")
+
+        case 51, 53, 55:
+            return String(localized: "Drizzle")
+
+        case 61, 63, 65:
+            return String(localized: "Rain")
+
+        case 80, 81, 82:
+            return isDay
+                ? String(localized: "Scattered Showers")
+                : String(localized: "Night Showers")
+
+        case 71, 73, 75, 77, 85, 86:
+            return String(localized: "Snow")
+
+        case 95, 96, 99:
+            return String(localized: "Thunderstorm")
+
+        default:
+            return String(localized: "Variable")
+        }
+    }
 
     func refreshIfNeeded() async {
 #if DEBUG
@@ -193,6 +277,8 @@ private struct OpenMeteoHourly: Decodable {
             weatherByDay = [:]
             refreshID = UUID()
             isAvailable = false
+            isLoading = false
+            lastLoadFailed = false
             return
         }
         guard Date().timeIntervalSince(lastRefresh) > refreshInterval else {
@@ -206,11 +292,16 @@ private struct OpenMeteoHourly: Decodable {
 #if DEBUG
         print("🌦️ refresh() entered")
 #endif
+        isLoading = true
+        lastLoadFailed = false
 
         guard let location = LocationReminderManager.shared.currentLocation else {
 
             guard retryCount < 3 else {
                 isAvailable = false
+                isLoading = false
+                lastLoadFailed = true
+                refreshID = UUID()
                 return
             }
 
@@ -226,6 +317,7 @@ private struct OpenMeteoHourly: Decodable {
             LocationReminderManager.shared.requestCurrentLocation()
 
             isAvailable = false
+            isLoading = false
 
             // Retry automatically after CoreLocation has time
             // to deliver a fresh location update.
@@ -250,11 +342,14 @@ private struct OpenMeteoHourly: Decodable {
 
             let urlString = "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=\(latitude)&longitude=\(longitude)&daily=pm10_max&timezone=auto"
 
-            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max,cloud_cover_mean&hourly=weather_code,cloud_cover,precipitation_probability,precipitation&forecast_days=7&timezone=auto"
+            let forecastURLString = "https://api.open-meteo.com/v1/forecast?latitude=\(latitude)&longitude=\(longitude)&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset,uv_index_max,cloud_cover_mean&hourly=weather_code,cloud_cover,precipitation_probability,precipitation,temperature_2m,wind_speed_10m,uv_index,relative_humidity_2m&forecast_days=7&timezone=auto"
 
             guard let url = URL(string: forecastURLString),
                   let airQualityURL = URL(string: urlString) else {
                 isAvailable = false
+                isLoading = false
+                lastLoadFailed = true
+                refreshID = UUID()
                 return
             }
 
@@ -298,9 +393,8 @@ private struct OpenMeteoHourly: Decodable {
                 let key = Calendar.current.startOfDay(for: parsedDate)
                 let hour = Calendar.current.component(.hour, from: parsedDate)
 
-                guard hour % 2 == 0,
-                      hour >= 0,
-                      hour <= 22 else {
+                guard hour >= 0,
+                      hour <= 23 else {
                     continue
                 }
 
@@ -312,6 +406,21 @@ private struct OpenMeteoHourly: Decodable {
 
                 let precipitationAmount =
                     decoded.hourly.precipitation[safe: index] ?? 0
+
+                let temperature = Int(
+                    (decoded.hourly.temperature_2m[safe: index] ?? 0).rounded()
+                )
+
+                let windSpeed = Int(
+                    (decoded.hourly.wind_speed_10m[safe: index] ?? 0).rounded()
+                )
+
+                let uvIndex = Int(
+                    (decoded.hourly.uv_index[safe: index] ?? 0).rounded()
+                )
+
+                let humidity =
+                    decoded.hourly.relative_humidity_2m[safe: index] ?? 0
 
                 let symbolName: String
 
@@ -339,7 +448,14 @@ private struct OpenMeteoHourly: Decodable {
                     HourlyWeatherInfo(
                         date: parsedDate,
                         hour: hour,
-                        symbolName: symbolName
+                        symbolName: symbolName,
+                        weatherCode: weatherCode,
+                        temperature: temperature,
+                        precipitationChance: precipitationChance,
+                        windSpeed: windSpeed,
+                        uvIndex: uvIndex,
+                        humidity: humidity,
+                        cloudCover: cloudCover ?? 0
                     )
                 )
             }
@@ -453,6 +569,8 @@ private struct OpenMeteoHourly: Decodable {
 #endif
 
             isAvailable = !updated.isEmpty
+            isLoading = false
+            lastLoadFailed = false
             lastRefresh = Date()
 
         } catch {
@@ -463,6 +581,8 @@ private struct OpenMeteoHourly: Decodable {
 
             refreshID = UUID()
             isAvailable = false
+            isLoading = false
+            lastLoadFailed = true
         }
     }
 

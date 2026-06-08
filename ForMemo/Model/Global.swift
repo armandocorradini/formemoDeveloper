@@ -1,24 +1,40 @@
 import SwiftUI
 
-let backColor1 = Color(
+let backColor1 = Color(uiColor: UIColor { trait in
+    if trait.userInterfaceStyle == .dark {
+        return UIColor(
+            red: 0.42,
+            green: 0.64,
+            blue: 1.0,
+            alpha: 0.52
+        )
+    } else {
+        return UIColor(
+            red: 0.16,
+            green: 0.48,
+            blue: 1.00,
+            alpha: 0.38
+        )
+    }
+})
 
-    red: 0.42,
-
-    green: 0.64,
-
-    blue: 1.0
-
-).opacity(0.52)
-
-let backColor2 = Color(
-
-    red: 0.76,
-
-    green: 0.58,
-
-    blue: 1.0
-
-).opacity(0.42)
+let backColor2 = Color(uiColor: UIColor { trait in
+    if trait.userInterfaceStyle == .dark {
+        return UIColor(
+            red: 0.76,
+            green: 0.58,
+            blue: 1.0,
+            alpha: 0.42
+        )
+    } else {
+        return UIColor(
+            red: 0.82,
+            green: 0.38,
+            blue: 1.00,
+            alpha: 0.30
+        )
+    }
+})
 
 // Ricava il display name dell'app
 let appName: String = {

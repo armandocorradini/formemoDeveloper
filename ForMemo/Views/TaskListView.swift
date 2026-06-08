@@ -25,12 +25,17 @@ struct TaskListView: View {
 
     @State private var draftTask: TodoTask?
 
+    private struct SelectedWeatherDay: Identifiable {
+        let date: Date
+        var id: Date { date }
+    }
+
     @State private var searchText = ""
     @State private var showCompleted = false
     @State private var showNewTask = false
     @State private var showQuickGuide = false
     @State private var showWeatherForecast = false
-
+    @State private var selectedWeatherDay: SelectedWeatherDay?
 
     @State private var selectedTagFilter: TaskMainTag? = nil
     @State private var selectedPriorityFilter: TaskPriority? = nil
@@ -157,13 +162,13 @@ struct TaskListView: View {
                         if !todoTasks.isEmpty {
                             TodoSectionView(
                                 taskPendingDeletion: $taskPendingDeletion,
-                                openWeatherForecast: {
-                                    showWeatherForecast = true
+                                openWeatherForecast: { date in
+                                    selectedWeatherDay = SelectedWeatherDay(date: date)
                                 },
                                 tasks: todoTasks,
                                 modelContext: modelContext
                             )
-                                                     }
+                        }
 
                         if showCompleted && !completedTasks.isEmpty {
                             CompletedSectionView( taskPendingDeletion: $taskPendingDeletion,
@@ -230,9 +235,17 @@ struct TaskListView: View {
             
                 .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
                 .navigationBarTitleDisplayMode(.inline)
-                .fullScreenCover(isPresented: $showWeatherForecast) {
+                .sheet(item: $selectedWeatherDay) { selectedDay in
+
                     NavigationStack {
-                        WeatherForecastView(showsCloseButton: true)
+
+                        WeatherDayView(
+                            date: selectedDay.date,
+                            showsCloseButton: true,
+                            closeAction: {
+                                selectedWeatherDay = nil
+                            }
+                        )
                     }
                 }
                 .sheet(item: $draftTask) { task in
@@ -848,7 +861,12 @@ struct TodoSectionView: View {
 
             Text("\(weather.minTemperature)°")
                 .font(.caption.weight(.medium))
-                .foregroundStyle(.primary.opacity(0.55))
+                .foregroundStyle(
+                    weather.minTemperature >= 35 ? .red :
+                    weather.minTemperature >= 30 ? .orange :
+                    weather.minTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
+                    .primary.opacity(0.55)
+                )
                 .monospacedDigit()
 
             Text("/")
@@ -857,7 +875,12 @@ struct TodoSectionView: View {
 
             Text("\(weather.maxTemperature)°")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(.primary.opacity(0.90))
+                .foregroundStyle(
+                    weather.maxTemperature >= 35 ? .red :
+                    weather.maxTemperature >= 30 ? .orange :
+                    weather.maxTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
+                    .primary.opacity(0.90)
+                )
                 .monospacedDigit()
         }
     }
@@ -897,7 +920,7 @@ struct TodoSectionView: View {
                    let weather = weatherManager.weather(for: group.date) {
 
                     Button {
-                        openWeatherForecast()
+                        openWeatherForecast(group.date)
                     } label: {
                         weatherCapsuleView(
                             weather: weather,
@@ -1005,7 +1028,7 @@ struct TodoSectionView: View {
     @AppStorage("confirmTaskDeletion")
     private var confirmTaskDeletion = true
     @Binding var taskPendingDeletion: TodoTask?
-    let openWeatherForecast: () -> Void
+    let openWeatherForecast: (Date) -> Void
     
     let tasks: [TodoTask]
     let modelContext: ModelContext
