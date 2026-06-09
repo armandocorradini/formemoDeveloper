@@ -66,6 +66,13 @@ struct SettingsView: View {
     private var showWeatherForecast: Bool = true
     @AppStorage("locationRadius")
     private var locationRadius: Int = 150
+    @AppStorage("backgroundColor1Hex")
+    private var backgroundColor1Hex: String = ""
+
+    @AppStorage("backgroundColor2Hex")
+    private var backgroundColor2Hex: String = ""
+    
+    
     @State private var showLocationPermissionAlert = false
     @State private var showImportReminders = false
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
@@ -80,414 +87,418 @@ struct SettingsView: View {
         }
     }
     var body: some View {
+        let _ = backgroundColor1Hex
+        let _ = backgroundColor2Hex
         let iconWidth: CGFloat = 28
         NavigationStack {
-            List {
-                
-                // MARK: - Account
-                Section("Account and info") {
-                    HStack(spacing: 12){
-                        Image(systemName: "person.circle").foregroundStyle(.blue)
-                            .frame(width: iconWidth)
-                        Text("Signed in with Apple ID")
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                    }
-                    Button {
-                        showDisclaimer = true
-                    } label: {
-                        Label {
-                            Text("Disclaimer")
-                                .tint(.primary)
-                        } icon: {
-                            Image(systemName: "exclamationmark.shield")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                        }
-                    }
-                    .sheet(isPresented: $showDisclaimer) {
-                        DisclaimerView()
-                    }
+            ZStack {
+                AppGlassBackground()
+                List {
                     
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-                
-                Section("Help") {
-                    Button {
-                        showQuickGuide = true
-                    } label: {
-                        Label {
-                            Text("Quick Guide")
-                                .tint(.primary)
-                        } icon: {
-                            Image(systemName: "questionmark.circle")
-                                .foregroundStyle(.blue)
+                    // MARK: - Account
+                    Section("Account and info") {
+                        HStack(spacing: 12){
+                            Image(systemName: "person.circle").foregroundStyle(.blue)
                                 .frame(width: iconWidth)
-                        }
-                    }
-                    Button {
-                        showFAQ = true
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "text.book.closed")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                            Text("FAQ")
-                                .tint(.primary)
-                        }
-                    }
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-                
-                // MARK: - General
-                Section("General") {
-                    Button {
-                        showOtherSettings = true
-                    } label: {
-                        Label {
-                            Text("General")
-                                .tint(.primary)
-                        } icon: {
-                            Image(systemName: "gear")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                        }
-                    }
-
-                    Button {
-                        if let url = URL(string: UIApplication.openSettingsURLString) {
-                            UIApplication.shared.open(url)
-                        }
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "lock.shield")
-                                .font(.system(size: 21, weight: .semibold))
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-
-                            Text("Permissions")
-                                .tint(.primary)
-                        }
-                    }
-                    
-                    Button {
-                        openLanguageSettings()
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "globe")
-                                .frame(width: iconWidth)
-                            Text("Language")
-                                .tint(.primary)
-                            Spacer()
-                            Text(Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? "")
-                                .foregroundStyle(.blue).opacity(0.7)
-                        }
-                    }
-
-                    
-                    HStack(spacing: 12){
-                        Image(systemName: "paintbrush")
-                            .foregroundStyle(.blue)
-                            .frame(width: iconWidth)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Theme")
-
-                            Text("Optimized for Dark Mode")
-                                .font(.caption)
+                            Text("Signed in with Apple ID")
                                 .foregroundStyle(.secondary)
+                            Spacer()
                         }
-
-                        Spacer()
-
-                        Picker("", selection: $selectedTheme) {
-                            ForEach(AppTheme.allCases) { theme in
-                                Text(theme.description).tag(theme)
-                            }
-                        }
-                        .foregroundStyle(.blue)
-                        .pickerStyle(.menu)
-                        .opacity(0.7)
-                    }
-
-                    NavigationLink {
-                        BackgroundCustomizationView()
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "paintpalette")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-
-                            Text("Background")
-                                .foregroundStyle(.primary)
-                        }
-                    }
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-
-                // MARK: - Tasks & Appearance
-                Section("Tasks & Appearance") {
-                    
-                    Button {
-                        showCustomizationView = true
-                    } label: {
-                        Label {
-                            Text("Customize")
-                                .tint(.primary)
-                        } icon: {
-                            Image(systemName: "list.bullet.circle")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                        }
-                    }
-                    
-                    LabeledContent {
-                        Picker("", selection: $navigationAppRaw) {
-                            ForEach(NavigationApp.allCases) { app in
-                                Text(app.title).tag(app.rawValue)
-                            }
-                        }
-                        .pickerStyle(.menu)
-                        .labelsHidden()
-                        .opacity(0.7)
-                    } label: {
-                        Label("Navigation app", systemImage: "iphone.badge.location")
-                    }
-
-                    if locationAuthorizationStatus == .authorizedAlways
-                        || locationAuthorizationStatus == .authorizedWhenInUse {
-
-                        Toggle(isOn: $showWeatherForecast) {
+                        Button {
+                            showDisclaimer = true
+                        } label: {
                             Label {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Weather Forecast")
-
-                                    Text("Weather data provided by Open-Meteo")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
+                                Text("Disclaimer")
+                                    .tint(.primary)
                             } icon: {
-                                Image(systemName: "cloud.sun")
+                                Image(systemName: "exclamationmark.shield")
                                     .foregroundStyle(.blue)
                                     .frame(width: iconWidth)
                             }
                         }
+                        .sheet(isPresented: $showDisclaimer) {
+                            DisclaimerView()
+                        }
+                        
                     }
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-
-                // MARK: - Notifications
-                Section {
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
-                    Button {
-                        openNotificationSettings()
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: isNotificationEnabled ? "bell.badge" : "bell.badge.slash")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                            Text("Notifications")
-                                .tint(.primary)
+                    Section("Help") {
+                        Button {
+                            showQuickGuide = true
+                        } label: {
+                            Label {
+                                Text("Quick Guide")
+                                    .tint(.primary)
+                            } icon: {
+                                Image(systemName: "questionmark.circle")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+                        Button {
+                            showFAQ = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "text.book.closed")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                Text("FAQ")
+                                    .tint(.primary)
+                            }
                         }
                     }
-
-                    NavigationLink {
-                        NotificationView()
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "clock.badge")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-
-                            Text("Scheduled Notifications")
-                                .tint(.primary)
-                        }
-                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
-                    Button {
-                        soundPickerContext = .task
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "music.note")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                            
-                            Text("Sound")
-                                .foregroundStyle(.primary)
-                            
-                            Spacer()
-                            
-                            Text(notificationSoundName.isEmpty ? "Default" : notificationSoundName)
-                                .foregroundStyle(.secondary)
+                    // MARK: - General
+                    Section("General") {
+                        Button {
+                            showOtherSettings = true
+                        } label: {
+                            Label {
+                                Text("General")
+                                    .tint(.primary)
+                            } icon: {
+                                Image(systemName: "gear")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
                         }
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!isNotificationEnabled)
-
-
-                    Group {
-                        Toggle("Location Reminders", isOn: Binding(
-                            get: { locationRemindersEnabled },
-                            set: { newValue in
-                                if newValue {
-
-                                    let status = CLLocationManager().authorizationStatus
-
-                                    switch status {
-
-                                    case .authorizedAlways:
-                                        locationRemindersEnabled = true
-
-                                    case .notDetermined:
-                                        LocationReminderManager.shared.requestPermissionIfNeeded()
-                                        locationRemindersEnabled = false
-
-                                    case .authorizedWhenInUse:
-
-                                        showLocationPermissionAlert = true
-                                        locationRemindersEnabled = false
-
-                                    case .denied, .restricted:
-                                        showLocationPermissionAlert = true
-                                        locationRemindersEnabled = false
-
-                                    @unknown default:
-                                        locationRemindersEnabled = false
-                                    }
-
-                                } else {
-                                    locationRemindersEnabled = false
-                                }
-                            }
-                        ))
-
-                        if locationRemindersEnabled {
-                            VStack(alignment: .leading, spacing: 8) {
-                                
-                                HStack(spacing: 12) {
-                                    Image(systemName: "location.circle")
-                                        .foregroundStyle(.blue)
-                                        .frame(width: iconWidth)
-                                    
-                                    Text("Trigger Distance")
-                                        .foregroundStyle(.primary)
-                                }
-                                HStack{
-                                    Spacer()
-                                    Text(String(localized:"\(locationRadius)     meters"))
-                                    Stepper(
-                                        "",
-                                        value: $locationRadius,
-                                        in: 100...500,
-                                        step: 50
-                                    )
-                                    .labelsHidden()
-                                }
-                            }
-                            Button {
-                                soundPickerContext = .location
-                            } label: {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "sensor.tag.radiowaves.forward")
-                                        .foregroundStyle(.blue)
-                                        .frame(width: iconWidth)
-
-                                    Text("Location sound")
-                                        .foregroundStyle(.primary)
-
-                                    Spacer()
-
-                                    Text(locationNotificationSoundName.isEmpty ? "Default" : locationNotificationSoundName)
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                            .disabled(!isNotificationEnabled)
-                        }
-                    }
-                    .alert("Enable Location Access", isPresented: $showLocationPermissionAlert) {
-                        Button("Open Settings") {
+                        
+                        Button {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
                             }
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "lock.shield")
+                                    .font(.system(size: 21, weight: .semibold))
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                
+                                Text("Permissions")
+                                    .tint(.primary)
+                            }
                         }
-                        Button("Cancel", role: .cancel) { }
-                    } message: {
-                        Text("Location reminders require \"Always Allow\" location access. Please enable it in Settings.")
-                    }
-
-                    #if DEBUG
-                    Button {
-                        Task {
-                            let center = UNUserNotificationCenter.current()
-                            let requests: [UNNotificationRequest] =
-                                await center.pendingNotificationRequests()
-
-                            print("🔔 DEBUG NOTIFICATIONS START ------------------")
-
-                            var seenDates: [Date: [String]] = [:]
-
-                            for req in requests {
-
-                                let id = req.identifier
-                                let title = req.content.title
-                                let body = req.content.body
+                        
+                        Button {
+                            openLanguageSettings()
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "globe")
+                                    .frame(width: iconWidth)
+                                Text("Language")
+                                    .tint(.primary)
+                                Spacer()
+                                Text(Locale.current.localizedString(forIdentifier: Locale.current.identifier) ?? "")
+                                    .foregroundStyle(.blue).opacity(0.7)
+                            }
+                        }
+                        
+                        
+                        HStack(spacing: 12){
+                            Image(systemName: "paintbrush")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Theme")
                                 
-                                var pipelineInfo: [String] = []
-
-                                if id.contains(".global") {
-                                    pipelineInfo.append("Prossimo: GLOBAL")
-                                    pipelineInfo.append("Poi: REMINDER → DEADLINE")
-                                } else if id.contains(".reminder") {
-                                    pipelineInfo.append("Prossimo: REMINDER")
-                                    pipelineInfo.append("Poi: DEADLINE")
-                                } else if id.contains(".deadline") {
-                                    pipelineInfo.append("Prossimo: DEADLINE")
-                                    pipelineInfo.append("GLOBAL non valida o passata")
-                                } else if id.contains(".snooze") {
-                                    pipelineInfo.append("Prossimo: SNOOZE")
+                                Text("Optimized for Dark Mode")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                            
+                            Picker("", selection: $selectedTheme) {
+                                ForEach(AppTheme.allCases) { theme in
+                                    Text(theme.description).tag(theme)
                                 }
+                            }
+                            .foregroundStyle(.blue)
+                            .pickerStyle(.menu)
+                            .opacity(0.7)
+                        }
+                        
+                        NavigationLink {
+                            BackgroundCustomizationView()
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "paintpalette")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
                                 
-
-                                var triggerInfo = "unknown"
-
-                                if let t = req.trigger as? UNCalendarNotificationTrigger,
-                                   let next = t.nextTriggerDate() {
-                                    let formatter = DateFormatter()
-                                    formatter.dateStyle = .medium
-                                    formatter.timeStyle = .short
-                                    triggerInfo = "📅 \(formatter.string(from: next))"
-                                    seenDates[next, default: []].append(id)
-                                } else if let t = req.trigger as? UNTimeIntervalNotificationTrigger {
-                                    triggerInfo = "⏱ in \(Int(t.timeInterval))s"
-                                } else if let t = req.trigger as? UNLocationNotificationTrigger {
-                                    let region = t.region
-                                    if let circular = region as? CLCircularRegion {
-                                        let name = region.identifier.isEmpty ? "unknown" : region.identifier
-                                        triggerInfo = "📍 \(name) | lat: \(circular.center.latitude), lon: \(circular.center.longitude), radius: \(Int(circular.radius))m"
+                                Text("Background")
+                                    .foregroundStyle(.primary)
+                            }
+                        }
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+                    
+                    // MARK: - Tasks & Appearance
+                    Section("Tasks & Appearance") {
+                        
+                        Button {
+                            showCustomizationView = true
+                        } label: {
+                            Label {
+                                Text("Customize")
+                                    .tint(.primary)
+                            } icon: {
+                                Image(systemName: "list.bullet.circle")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+                        
+                        LabeledContent {
+                            Picker("", selection: $navigationAppRaw) {
+                                ForEach(NavigationApp.allCases) { app in
+                                    Text(app.title).tag(app.rawValue)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .labelsHidden()
+                            .opacity(0.7)
+                        } label: {
+                            Label("Navigation app", systemImage: "iphone.badge.location")
+                        }
+                        
+                        if locationAuthorizationStatus == .authorizedAlways
+                            || locationAuthorizationStatus == .authorizedWhenInUse {
+                            
+                            Toggle(isOn: $showWeatherForecast) {
+                                Label {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("Weather Forecast")
+                                        
+                                        Text("Weather data provided by Open-Meteo")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                } icon: {
+                                    Image(systemName: "cloud.sun")
+                                        .foregroundStyle(.blue)
+                                        .frame(width: iconWidth)
+                                }
+                            }
+                        }
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+                    
+                    // MARK: - Notifications
+                    Section {
+                        
+                        Button {
+                            openNotificationSettings()
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: isNotificationEnabled ? "bell.badge" : "bell.badge.slash")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                Text("Notifications")
+                                    .tint(.primary)
+                            }
+                        }
+                        
+                        NavigationLink {
+                            NotificationView()
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "clock.badge")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                
+                                Text("Scheduled Notifications")
+                                    .tint(.primary)
+                            }
+                        }
+                        
+                        Button {
+                            soundPickerContext = .task
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "music.note")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                
+                                Text("Sound")
+                                    .foregroundStyle(.primary)
+                                
+                                Spacer()
+                                
+                                Text(notificationSoundName.isEmpty ? "Default" : notificationSoundName)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!isNotificationEnabled)
+                        
+                        
+                        Group {
+                            Toggle("Location Reminders", isOn: Binding(
+                                get: { locationRemindersEnabled },
+                                set: { newValue in
+                                    if newValue {
+                                        
+                                        let status = CLLocationManager().authorizationStatus
+                                        
+                                        switch status {
+                                            
+                                        case .authorizedAlways:
+                                            locationRemindersEnabled = true
+                                            
+                                        case .notDetermined:
+                                            LocationReminderManager.shared.requestPermissionIfNeeded()
+                                            locationRemindersEnabled = false
+                                            
+                                        case .authorizedWhenInUse:
+                                            
+                                            showLocationPermissionAlert = true
+                                            locationRemindersEnabled = false
+                                            
+                                        case .denied, .restricted:
+                                            showLocationPermissionAlert = true
+                                            locationRemindersEnabled = false
+                                            
+                                        @unknown default:
+                                            locationRemindersEnabled = false
+                                        }
+                                        
                                     } else {
-                                        let name = region.identifier.isEmpty ? "unknown" : region.identifier
-                                        triggerInfo = "📍 \(name) | location trigger"
+                                        locationRemindersEnabled = false
                                     }
                                 }
-
-                                var type = "❓ UNKNOWN"
-
-                                if id.contains(".deadline") {
-                                    type = "⏰ DEADLINE"
-                                } else if id.contains(".global") {
-                                    type = "⏱️ GLOBAL"
-                                } else if id.contains(".reminder") {
-                                    type = "🔔 REMINDER"
-                                } else if id.contains(".snooze") {
-                                    type = "⏲️ SNOOZE"
-                                } else if title.contains("Manca") || title.contains("days") {
-                                    type = "⏱️ GLOBAL"
+                            ))
+                            
+                            if locationRemindersEnabled {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "location.circle")
+                                            .foregroundStyle(.blue)
+                                            .frame(width: iconWidth)
+                                        
+                                        Text("Trigger Distance")
+                                            .foregroundStyle(.primary)
+                                    }
+                                    HStack{
+                                        Spacer()
+                                        Text(String(localized:"\(locationRadius)     meters"))
+                                        Stepper(
+                                            "",
+                                            value: $locationRadius,
+                                            in: 100...500,
+                                            step: 50
+                                        )
+                                        .labelsHidden()
+                                    }
                                 }
-
-                                print("🔎 RAW ID:", id)
-
-                                print("""
+                                Button {
+                                    soundPickerContext = .location
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "sensor.tag.radiowaves.forward")
+                                            .foregroundStyle(.blue)
+                                            .frame(width: iconWidth)
+                                        
+                                        Text("Location sound")
+                                            .foregroundStyle(.primary)
+                                        
+                                        Spacer()
+                                        
+                                        Text(locationNotificationSoundName.isEmpty ? "Default" : locationNotificationSoundName)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(!isNotificationEnabled)
+                            }
+                        }
+                        .alert("Enable Location Access", isPresented: $showLocationPermissionAlert) {
+                            Button("Open Settings") {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                            Button("Cancel", role: .cancel) { }
+                        } message: {
+                            Text("Location reminders require \"Always Allow\" location access. Please enable it in Settings.")
+                        }
+                        
+#if DEBUG
+                        Button {
+                            Task {
+                                let center = UNUserNotificationCenter.current()
+                                let requests: [UNNotificationRequest] =
+                                await center.pendingNotificationRequests()
+                                
+                                print("🔔 DEBUG NOTIFICATIONS START ------------------")
+                                
+                                var seenDates: [Date: [String]] = [:]
+                                
+                                for req in requests {
+                                    
+                                    let id = req.identifier
+                                    let title = req.content.title
+                                    let body = req.content.body
+                                    
+                                    var pipelineInfo: [String] = []
+                                    
+                                    if id.contains(".global") {
+                                        pipelineInfo.append("Prossimo: GLOBAL")
+                                        pipelineInfo.append("Poi: REMINDER → DEADLINE")
+                                    } else if id.contains(".reminder") {
+                                        pipelineInfo.append("Prossimo: REMINDER")
+                                        pipelineInfo.append("Poi: DEADLINE")
+                                    } else if id.contains(".deadline") {
+                                        pipelineInfo.append("Prossimo: DEADLINE")
+                                        pipelineInfo.append("GLOBAL non valida o passata")
+                                    } else if id.contains(".snooze") {
+                                        pipelineInfo.append("Prossimo: SNOOZE")
+                                    }
+                                    
+                                    
+                                    var triggerInfo = "unknown"
+                                    
+                                    if let t = req.trigger as? UNCalendarNotificationTrigger,
+                                       let next = t.nextTriggerDate() {
+                                        let formatter = DateFormatter()
+                                        formatter.dateStyle = .medium
+                                        formatter.timeStyle = .short
+                                        triggerInfo = "📅 \(formatter.string(from: next))"
+                                        seenDates[next, default: []].append(id)
+                                    } else if let t = req.trigger as? UNTimeIntervalNotificationTrigger {
+                                        triggerInfo = "⏱ in \(Int(t.timeInterval))s"
+                                    } else if let t = req.trigger as? UNLocationNotificationTrigger {
+                                        let region = t.region
+                                        if let circular = region as? CLCircularRegion {
+                                            let name = region.identifier.isEmpty ? "unknown" : region.identifier
+                                            triggerInfo = "📍 \(name) | lat: \(circular.center.latitude), lon: \(circular.center.longitude), radius: \(Int(circular.radius))m"
+                                        } else {
+                                            let name = region.identifier.isEmpty ? "unknown" : region.identifier
+                                            triggerInfo = "📍 \(name) | location trigger"
+                                        }
+                                    }
+                                    
+                                    var type = "❓ UNKNOWN"
+                                    
+                                    if id.contains(".deadline") {
+                                        type = "⏰ DEADLINE"
+                                    } else if id.contains(".global") {
+                                        type = "⏱️ GLOBAL"
+                                    } else if id.contains(".reminder") {
+                                        type = "🔔 REMINDER"
+                                    } else if id.contains(".snooze") {
+                                        type = "⏲️ SNOOZE"
+                                    } else if title.contains("Manca") || title.contains("days") {
+                                        type = "⏱️ GLOBAL"
+                                    }
+                                    
+                                    print("🔎 RAW ID:", id)
+                                    
+                                    print("""
 ID: \(id)
 Tipo: \(type)
 Titolo: \(title)
@@ -498,250 +509,250 @@ Attivazione: \(triggerInfo)
 \(pipelineInfo.joined(separator: "\n"))
 ------------------
 """)
-                                print("ℹ️ Sistema: 1 notifica per task (le altre verranno schedulate dopo)")
+                                    print("ℹ️ Sistema: 1 notifica per task (le altre verranno schedulate dopo)")
+                                }
+                                
+                                print("🔍 COLLISIONS ------------------")
+                                for (date, ids) in seenDates where ids.count > 1 {
+                                    print("⚠️ Same trigger date:", date)
+                                    ids.forEach { print("   -> \($0)") }
+                                }
+                                print("🔍 END COLLISIONS --------------")
+                                
+                                print("🔔 DEBUG NOTIFICATIONS END --------------------")
                             }
-
-                            print("🔍 COLLISIONS ------------------")
-                            for (date, ids) in seenDates where ids.count > 1 {
-                                print("⚠️ Same trigger date:", date)
-                                ids.forEach { print("   -> \($0)") }
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "waveform.path.ecg.magnifyingglass")
+                                    .foregroundStyle(.red)
+                                    .frame(width: iconWidth)
+                                
+                                Text("Debug Notifications")
+                                    .foregroundStyle(.red)
                             }
-                            print("🔍 END COLLISIONS --------------")
-
-                            print("🔔 DEBUG NOTIFICATIONS END --------------------")
                         }
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "waveform.path.ecg.magnifyingglass")
-                                .foregroundStyle(.red)
-                                .frame(width: iconWidth)
-
-                            Text("Debug Notifications")
-                                .foregroundStyle(.red)
-                        }
+#endif
                     }
-                    #endif
-                }
-                header: {
-                    Text("Notifications")
-                } footer: {
-                    Text("Notifications must be enabled in system settings to receive alerts and sounds.")
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-
-                Section {
-                    
-                    Button {
-                        showSiri = true
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "waveform.circle")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                            Text("Use with Siri")
-                                .foregroundStyle(.primary)
-                            Spacer()
-                        }
-                        .contentShape(Rectangle())
+                    header: {
+                        Text("Notifications")
+                    } footer: {
+                        Text("Notifications must be enabled in system settings to receive alerts and sounds.")
                     }
-                    .buttonStyle(.plain)
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
-                    Toggle(
-                        "Add reminders automatically",
-                        isOn: $siriAutoReminderEnabled
-                    )
-                    
-                    Toggle(isOn: $siriShortConfirmation) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Short confirmation")
-                            Text("Siri replies briefly after creating a task.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    
-                }
-                header: {
-                    Text("Siri & Shortcuts")
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-                
-                Section {
-                    Toggle(
-                        "Auto-delete attachments",
-                        isOn: $autoDeleteCompletedAttachments
-                    )
-                    
-                    Stepper(
-                        "Delete after \(attachmentRetentionDays) days",
-                        value: $attachmentRetentionDays,
-                        in: 1...90,
-                        step: 1
-                    )
-                    .disabled(!autoDeleteCompletedAttachments)
-                    .foregroundStyle(autoDeleteCompletedAttachments ? .primary : .secondary)
-
-                    Button(role: .destructive) {
-                        showDeleteAllAlert = true
-                    } label: {
-                        Text("Delete all attachments now")
-                    }
-                    .alert(
-                        "Are you sure? This cannot be undone.",
-                        isPresented: $showDeleteAllAlert
-                    ) {
-                        Button("Cancel", role: .cancel) { }
+                    Section {
                         
-                        Button("Delete", role: .destructive) {
-                            Task {
-                                let context = modelContext
-                                try? AttachmentMaintenanceManager.shared
-                                    .deleteAllCompletedTaskAttachments(context: context)
+                        Button {
+                            showSiri = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "waveform.circle")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                Text("Use with Siri")
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        
+                        Toggle(
+                            "Add reminders automatically",
+                            isOn: $siriAutoReminderEnabled
+                        )
+                        
+                        Toggle(isOn: $siriShortConfirmation) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Short confirmation")
+                                Text("Siri replies briefly after creating a task.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
                             }
                         }
-                    } message: {
-                        Text("This permanently removes all attachments. This action cannot be undone.")
+                        
                     }
-                }
-                header: {
-                    Text("Completed Tasks")
-                } footer: {
-                    Text("Attachments of completed tasks are automatically removed after the selected period. To-do tasks are not affected.")
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-                Section {
+                    header: {
+                        Text("Siri & Shortcuts")
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
-                    NavigationLink {
-                        ImportExportSettingsView()
-                    } label: {
-                        Label {
-                            Text("Import & Export")
-                                .tint(.primary)
-                        } icon: {
-                            Image(systemName: "arrow.left.arrow.right")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
+                    Section {
+                        Toggle(
+                            "Auto-delete attachments",
+                            isOn: $autoDeleteCompletedAttachments
+                        )
+                        
+                        Stepper(
+                            "Delete after \(attachmentRetentionDays) days",
+                            value: $attachmentRetentionDays,
+                            in: 1...90,
+                            step: 1
+                        )
+                        .disabled(!autoDeleteCompletedAttachments)
+                        .foregroundStyle(autoDeleteCompletedAttachments ? .primary : .secondary)
+                        
+                        Button(role: .destructive) {
+                            showDeleteAllAlert = true
+                        } label: {
+                            Text("Delete all attachments now")
                         }
-                    }
-                    NavigationLink {
-                        BackupRestoreView()
-                    } label: {
-                        Label {
-                            Text("Backup & Restore")
-                                .tint(.primary)
-                        } icon: {
-                            Image(systemName: "externaldrive.badge.icloud")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                        }
-                    }
-                    Button {
-                        showRecentlyDeleted = true
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "clock.arrow.circlepath")
-                                .foregroundStyle(.blue)
-                                .frame(width: iconWidth)
-                            Text("Recently Deleted")
-                                .tint(.primary)
-                        }
-                    }
-                    Stepper(
-                        "Delete after \(recentlyDeletedRetentionDays) days",
-                        value: $recentlyDeletedRetentionDays,
-                        in: 1...90,
-                        step: 1
-                    )
-                    .foregroundStyle(.secondary)
-                } header: {
-                    Text("Data Management")
-                }
-                footer: {
-                    Text("Items in Recently Deleted are permanently removed after the selected period. You can restore them before that.")
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-
-                Section("Support") {
-                    NavigationLink {
-                        ExportDiagnosticsView()
-                    } label: {
-                        Label {
-                            Text("Diagnostics")
-                                .foregroundStyle(.primary)
-                        } icon: {
-                            Image(systemName: "waveform.path.ecg.magnifyingglass")
-                                .foregroundStyle(.orange)
-                                .frame(width: iconWidth)
-                        }
-                    }
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-                Section {
-                    Button(role: .destructive) {
-                        showDataManagement = true
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "trash.circle")
-                                .foregroundStyle(.red)
-                                .frame(width: iconWidth)
+                        .alert(
+                            "Are you sure? This cannot be undone.",
+                            isPresented: $showDeleteAllAlert
+                        ) {
+                            Button("Cancel", role: .cancel) { }
                             
-                            Text("Erase all Data")
-                                .foregroundStyle(.red)
+                            Button("Delete", role: .destructive) {
+                                Task {
+                                    let context = modelContext
+                                    try? AttachmentMaintenanceManager.shared
+                                        .deleteAllCompletedTaskAttachments(context: context)
+                                }
+                            }
+                        } message: {
+                            Text("This permanently removes all attachments. This action cannot be undone.")
                         }
                     }
-                } footer: {
-                    Text("This permanently deletes all tasks, attachments, and data from this device. This action cannot be undone.")
-                }
-
-#if DEBUG
-                Section("Debug") {
-                    Button {
-                        withAnimation(.none) {
-                            if !hasTestData {
-                                DebugTools.generateTasks(context: modelContext)
-                            } else if !areTestTasksCompleted {
-                                DebugTools.completeTasks(context: modelContext)
-                            } else {
-                                DebugTools.deleteTasks(context: modelContext)
+                    header: {
+                        Text("Completed Tasks")
+                    } footer: {
+                        Text("Attachments of completed tasks are automatically removed after the selected period. To-do tasks are not affected.")
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+                    Section {
+                        
+                        NavigationLink {
+                            ImportExportSettingsView()
+                        } label: {
+                            Label {
+                                Text("Import & Export")
+                                    .tint(.primary)
+                            } icon: {
+                                Image(systemName: "arrow.left.arrow.right")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
                             }
                         }
+                        NavigationLink {
+                            BackupRestoreView()
+                        } label: {
+                            Label {
+                                Text("Backup & Restore")
+                                    .tint(.primary)
+                            } icon: {
+                                Image(systemName: "externaldrive.badge.icloud")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+                        Button {
+                            showRecentlyDeleted = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "clock.arrow.circlepath")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                Text("Recently Deleted")
+                                    .tint(.primary)
+                            }
+                        }
+                        Stepper(
+                            "Delete after \(recentlyDeletedRetentionDays) days",
+                            value: $recentlyDeletedRetentionDays,
+                            in: 1...90,
+                            step: 1
+                        )
+                        .foregroundStyle(.secondary)
+                    } header: {
+                        Text("Data Management")
+                    }
+                    footer: {
+                        Text("Items in Recently Deleted are permanently removed after the selected period. You can restore them before that.")
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+                    
+                    Section("Support") {
+                        NavigationLink {
+                            ExportDiagnosticsView()
+                        } label: {
+                            Label {
+                                Text("Diagnostics")
+                                    .foregroundStyle(.primary)
+                            } icon: {
+                                Image(systemName: "waveform.path.ecg.magnifyingglass")
+                                    .foregroundStyle(.orange)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+                    Section {
+                        Button(role: .destructive) {
+                            showDataManagement = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "trash.circle")
+                                    .foregroundStyle(.red)
+                                    .frame(width: iconWidth)
+                                
+                                Text("Erase all Data")
+                                    .foregroundStyle(.red)
+                            }
+                        }
+                    } footer: {
+                        Text("This permanently deletes all tasks, attachments, and data from this device. This action cannot be undone.")
+                    }
+                    
+#if DEBUG
+                    Section("Debug") {
+                        Button {
+                            withAnimation(.none) {
+                                if !hasTestData {
+                                    DebugTools.generateTasks(context: modelContext)
+                                } else if !areTestTasksCompleted {
+                                    DebugTools.completeTasks(context: modelContext)
+                                } else {
+                                    DebugTools.deleteTasks(context: modelContext)
+                                }
+                            }
+                            hasTestData = DebugTools.hasTestTasks(context: modelContext)
+                            areTestTasksCompleted = DebugTools.areTestTasksCompleted(context: modelContext)
+                        } label: {
+                            if !hasTestData {
+                                Text("Genera")
+                            } else if !areTestTasksCompleted {
+                                Text("Completa")
+                            } else {
+                                Text("Elimina")
+                            }
+                        }
+                        Button(role: .destructive) {
+                            DebugTools.resetPreferences()
+                            
+                            print("🧹 Preferences reset")
+                            
+                            UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                exit(0)
+                            }
+                        } label: {
+                            Text("Reset Preferences")
+                                .foregroundStyle(.red)
+                        }
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+                    .onAppear {
                         hasTestData = DebugTools.hasTestTasks(context: modelContext)
                         areTestTasksCompleted = DebugTools.areTestTasksCompleted(context: modelContext)
-                    } label: {
-                        if !hasTestData {
-                            Text("Genera")
-                        } else if !areTestTasksCompleted {
-                            Text("Completa")
-                        } else {
-                            Text("Elimina")
-                        }
                     }
-                    Button(role: .destructive) {
-                        DebugTools.resetPreferences()
-
-                        print("🧹 Preferences reset")
-
-                        UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
-
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            exit(0)
-                        }
-                    } label: {
-                        Text("Reset Preferences")
-                            .foregroundStyle(.red)
-                    }
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-                .onAppear {
-                    hasTestData = DebugTools.hasTestTasks(context: modelContext)
-                    areTestTasksCompleted = DebugTools.areTestTasksCompleted(context: modelContext)
-                }
 #endif
+                }
             }
+
             .contentMargins(.bottom, 70, for: .scrollContent)
-            .background {
-                AppGlassBackground()
-            }
+
             .scrollContentBackground(.hidden)
             .task {
                 cleanupRecentlyDeleted()
@@ -802,7 +813,9 @@ Attivazione: \(triggerInfo)
                     RecentlyDeletedView()
                 }
             }
+            .id(backgroundColor1Hex + backgroundColor2Hex)
         }
+        
     }
     // MARK: - Helpers
     private func syncLocationPermission() {

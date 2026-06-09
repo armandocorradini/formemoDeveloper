@@ -335,6 +335,8 @@ struct TravelKitListView: View {
                         Image(systemName: "arrow.up.arrow.down")
                             .resizable()
                             .frame(width: 20, height: 20)
+                            .padding(10)
+                            .contentShape(Rectangle())
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {

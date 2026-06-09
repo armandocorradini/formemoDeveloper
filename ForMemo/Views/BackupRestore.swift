@@ -21,6 +21,11 @@ struct BackupRestoreView: View {
     @State private var showImporter = false
     @State private var restoreError: String?
     @State private var backupError: String?
+    @State private var restoreArchive: BackupArchive?
+    @State private var restoreTasks = false
+    @State private var restoreWalletCards = false
+    @State private var restoreTripLists = false
+    @State private var restoreDocuments = false
 
     var body: some View {
 
@@ -225,29 +230,108 @@ struct BackupRestoreView: View {
 
                 Task {
                     do {
-                        isRestoringBackup = true
-
                         defer {
                             if didAccess {
                                 url.stopAccessingSecurityScopedResource()
                             }
                         }
 
-                        try await BackupManager.restoreBackup(
-                            from: url,
-                            modelContext: modelContext
-                        )
+                        let archive = try await BackupManager.loadBackupArchive(from: url)
 
-                        isRestoringBackup = false
+                        await MainActor.run {
+                            restoreArchive = archive
+                        }
 
                     } catch {
-                        restoreError = error.localizedDescription
-                        isRestoringBackup = false
+                        await MainActor.run {
+                            restoreError = error.localizedDescription
+                        }
                     }
                 }
 
             case .failure(let error):
                 restoreError = error.localizedDescription
+            }
+        }
+        .sheet(item: Binding(
+            get: { restoreArchive.map { RestoreArchiveSheetWrapper(archive: $0) } },
+            set: { newValue in
+                restoreArchive = newValue?.archive
+            }
+        )) { wrapper in
+
+            let archive = wrapper.archive
+            let hasSelection = restoreTasks || restoreWalletCards || restoreTripLists || restoreDocuments
+
+            NavigationStack {
+                ZStack {
+                    AppGlassBackground()
+                    List {
+                        Section("Backup Contents") {
+                            Text("Tasks: \(archive.tasks.count)")
+                            Text("Wallet Cards: \(archive.loyaltyCards.count)")
+                            Text("Trip Checklists: \(archive.tripLists.count)")
+                            Text("Documents: \(archive.documents.count)")
+                        }
+
+                        Section("Restore") {
+                            Toggle("Tasks", isOn: $restoreTasks)
+                            Toggle("Wallet Cards", isOn: $restoreWalletCards)
+                            Toggle("Trip Checklists", isOn: $restoreTripLists)
+                            Toggle("Documents", isOn: $restoreDocuments)
+                        }
+                    }
+                    .navigationTitle("Restore Backup")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button("Cancel") {
+                                restoreTasks = false
+                                restoreWalletCards = false
+                                restoreTripLists = false
+                                restoreDocuments = false
+                                restoreArchive = nil
+                            }
+                        }
+
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Restore") {
+                                let selectedTasks = restoreTasks
+                                let selectedWalletCards = restoreWalletCards
+                                let selectedTripLists = restoreTripLists
+                                let selectedDocuments = restoreDocuments
+                                restoreTasks = false
+                                restoreWalletCards = false
+                                restoreTripLists = false
+                                restoreDocuments = false
+                                restoreArchive = nil
+
+                                Task {
+                                    do {
+                                        isRestoringBackup = true
+
+                                        try await BackupManager.restoreArchive(
+                                            archive,
+                                            modelContext: modelContext,
+                                            restoreTasks: selectedTasks,
+                                            restoreWalletCards: selectedWalletCards,
+                                            restoreTripLists: selectedTripLists,
+                                            restoreDocuments: selectedDocuments
+                                        )
+
+                                        isRestoringBackup = false
+                                    } catch {
+                                        restoreError = error.localizedDescription
+                                        isRestoringBackup = false
+                                    }
+                                }
+                            }
+                            .disabled(!hasSelection)
+                        }
+                    }
+                    .background(Color.clear)
+                    .scrollContentBackground(.hidden)
+                }
             }
         }
         .alert(
@@ -279,6 +363,18 @@ struct BackupRestoreView: View {
         .navigationTitle("Backup & Restore")
         .navigationBarTitleDisplayMode(.inline)
     }
+}
+
+private struct RestoreArchiveSheetWrapper: Identifiable {
+
+    let archive: BackupArchive
+
+    var id: Date {
+
+        archive.createdAt
+
+    }
+
 }
 
 private struct BackupArchive: Codable {
@@ -567,20 +663,22 @@ private enum BackupManager {
     }
 
     @MainActor
-    static func restoreBackup(
-        from url: URL,
-        modelContext: ModelContext
-    ) async throws {
-
+    static func loadBackupArchive(from url: URL) async throws -> BackupArchive {
         let data = try Data(contentsOf: url)
-
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(BackupArchive.self, from: data)
+    }
 
-        let archive = try decoder.decode(
-            BackupArchive.self,
-            from: data
-        )
+    @MainActor
+    static func restoreArchive(
+        _ archive: BackupArchive,
+        modelContext: ModelContext,
+        restoreTasks: Bool,
+        restoreWalletCards: Bool,
+        restoreTripLists: Bool,
+        restoreDocuments: Bool
+    ) async throws {
 
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
 
@@ -645,117 +743,125 @@ private enum BackupManager {
             }
         }
 
-        for dto in archive.documents {
+        if restoreDocuments {
+            for dto in archive.documents {
 
-            let descriptor = FetchDescriptor<DocumentItem>(
-                predicate: #Predicate { $0.id == dto.id }
-            )
+                let descriptor = FetchDescriptor<DocumentItem>(
+                    predicate: #Predicate { $0.id == dto.id }
+                )
 
-            let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
+                let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
 
-            guard !alreadyExists else {
-                continue
-            }
-
-            let document = DocumentItem(name: dto.name)
-
-            document.id = dto.id
-            document.documentTypeRaw = dto.documentTypeRaw
-            document.documentNumber = dto.documentNumber
-            document.issueDate = dto.issueDate
-            document.expiryDate = dto.expiryDate
-            document.notes = dto.notes
-            document.notificationEnabled = dto.notificationEnabled
-            document.notificationDaysBefore = dto.notificationDaysBefore
-            document.createdAt = dto.createdAt
-
-            modelContext.insert(document)
-        }
-
-        for tripDTO in archive.tripLists {
-
-            let descriptor = FetchDescriptor<TripList>(
-                predicate: #Predicate { $0.id == tripDTO.id }
-            )
-
-            let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
-
-            guard !alreadyExists else {
-                continue
-            }
-
-            let trip = TripList(
-                name: tripDTO.name,
-                icon: tripDTO.icon,
-                colorHex: tripDTO.colorHex,
-                notes: tripDTO.notes,
-                systemTemplate: tripDTO.systemTemplate,
-                sortOrder: tripDTO.sortOrder,
-                sections: tripDTO.sections
-            )
-
-            trip.id = tripDTO.id
-            trip.createdAt = tripDTO.createdAt
-            trip.updatedAt = tripDTO.updatedAt
-
-            modelContext.insert(trip)
-        }
-
-        for cardDTO in archive.loyaltyCards {
-
-            let descriptor = FetchDescriptor<LoyaltyCard>(
-                predicate: #Predicate { $0.id == cardDTO.id }
-            )
-
-            let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
-
-            guard !alreadyExists else {
-                continue
-            }
-
-            let card = LoyaltyCard(
-                id: cardDTO.id,
-                storeName: cardDTO.storeName,
-                cardHolder: cardDTO.cardHolder,
-                barcodeValue: cardDTO.barcodeValue,
-                barcodeFormat: cardDTO.barcodeFormat,
-                notes: cardDTO.notes,
-                colorHex: cardDTO.colorHex,
-                createdAt: cardDTO.createdAt
-            )
-
-            modelContext.insert(card)
-        }
-
-        for dto in archive.tasks {
-
-            let descriptor = FetchDescriptor<TodoTask>(
-                predicate: #Predicate { $0.id == dto.id }
-            )
-
-            let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
-
-            guard !alreadyExists else {
-                continue
-            }
-
-            let todo = TodoTask(from: dto)
-
-            // Insert task FIRST so SwiftData creates a stable object graph
-            modelContext.insert(todo)
-
-            // Rebuild attachment relationships explicitly
-            if let restoredAttachments = todo.attachments {
-
-                let validAttachments = restoredAttachments.filter {
-                    !$0.relativePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                guard !alreadyExists else {
+                    continue
                 }
 
-                todo.attachments = validAttachments
+                let document = DocumentItem(name: dto.name)
 
-                for attachment in validAttachments {
-                    attachment.task = todo
-                    modelContext.insert(attachment)
+                document.id = dto.id
+                document.documentTypeRaw = dto.documentTypeRaw
+                document.documentNumber = dto.documentNumber
+                document.issueDate = dto.issueDate
+                document.expiryDate = dto.expiryDate
+                document.notes = dto.notes
+                document.notificationEnabled = dto.notificationEnabled
+                document.notificationDaysBefore = dto.notificationDaysBefore
+                document.createdAt = dto.createdAt
+
+                modelContext.insert(document)
+            }
+        }
+
+        if restoreTripLists {
+            for tripDTO in archive.tripLists {
+
+                let descriptor = FetchDescriptor<TripList>(
+                    predicate: #Predicate { $0.id == tripDTO.id }
+                )
+
+                let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
+
+                guard !alreadyExists else {
+                    continue
+                }
+
+                let trip = TripList(
+                    name: tripDTO.name,
+                    icon: tripDTO.icon,
+                    colorHex: tripDTO.colorHex,
+                    notes: tripDTO.notes,
+                    systemTemplate: tripDTO.systemTemplate,
+                    sortOrder: tripDTO.sortOrder,
+                    sections: tripDTO.sections
+                )
+
+                trip.id = tripDTO.id
+                trip.createdAt = tripDTO.createdAt
+                trip.updatedAt = tripDTO.updatedAt
+
+                modelContext.insert(trip)
+            }
+        }
+
+        if restoreWalletCards {
+            for cardDTO in archive.loyaltyCards {
+
+                let descriptor = FetchDescriptor<LoyaltyCard>(
+                    predicate: #Predicate { $0.id == cardDTO.id }
+                )
+
+                let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
+
+                guard !alreadyExists else {
+                    continue
+                }
+
+                let card = LoyaltyCard(
+                    id: cardDTO.id,
+                    storeName: cardDTO.storeName,
+                    cardHolder: cardDTO.cardHolder,
+                    barcodeValue: cardDTO.barcodeValue,
+                    barcodeFormat: cardDTO.barcodeFormat,
+                    notes: cardDTO.notes,
+                    colorHex: cardDTO.colorHex,
+                    createdAt: cardDTO.createdAt
+                )
+
+                modelContext.insert(card)
+            }
+        }
+
+        if restoreTasks {
+            for dto in archive.tasks {
+
+                let descriptor = FetchDescriptor<TodoTask>(
+                    predicate: #Predicate { $0.id == dto.id }
+                )
+
+                let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
+
+                guard !alreadyExists else {
+                    continue
+                }
+
+                let todo = TodoTask(from: dto)
+
+                // Insert task FIRST so SwiftData creates a stable object graph
+                modelContext.insert(todo)
+
+                // Rebuild attachment relationships explicitly
+                if let restoredAttachments = todo.attachments {
+
+                    let validAttachments = restoredAttachments.filter {
+                        !$0.relativePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    }
+
+                    todo.attachments = validAttachments
+
+                    for attachment in validAttachments {
+                        attachment.task = todo
+                        modelContext.insert(attachment)
+                    }
                 }
             }
         }
