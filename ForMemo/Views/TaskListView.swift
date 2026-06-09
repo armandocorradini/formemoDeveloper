@@ -879,13 +879,7 @@ struct TodoSectionView: View {
         if let title = relativeHeaderTitle(for: group.date) {
             let _ = weatherManager.refreshID
             let isTodayGroup = Calendar.current.isDateInToday(group.date)
-            let headerFillColor: Color = isTodayGroup
-                ? Color.blue.opacity(colorScheme == .dark ? 0.14 : 0.06)
-                : Color.white.opacity(colorScheme == .dark ? 0.035 : 0.045)
-            let headerStrokeColor: Color = Color.white.opacity(0.12)
-            let badgeFillColor: Color = isTodayGroup
-                ? Color.blue.opacity(colorScheme == .dark ? 0.18 : 0.10)
-                : Color.white.opacity(colorScheme == .dark ? 0.06 : 0.08)
+
             HStack(spacing: 10) {
 
                 Text(title)
@@ -894,13 +888,14 @@ struct TodoSectionView: View {
 
                 Text("\(group.tasks.count)")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(.primary.opacity(0.82))
+                    .foregroundStyle(.primary.opacity(0.95))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(
+                    .background {
                         Capsule(style: .continuous)
-                            .fill(badgeFillColor)
-                    )
+                            .fill(.clear)
+                            .glassEffect(.clear)
+                    }
 
                 Spacer(minLength: 0)
 
@@ -923,64 +918,29 @@ struct TodoSectionView: View {
             .padding(.horizontal, 14)
             .padding(.vertical, isTodayGroup ? 12 : 9)
             .fixedSize(horizontal: true, vertical: false)
-            .background(
+            .background {
                 Capsule(style: .continuous)
-                    .fill(.ultraThinMaterial)
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .fill(headerFillColor)
-                    )
-                    .overlay(
+                    .fill(.clear)
+                    .glassEffect(.clear)
+                    .overlay {
                         Capsule(style: .continuous)
                             .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.16 : 0.24),
-                                        Color.white.opacity(colorScheme == .dark ? 0.03 : 0.05),
-                                        Color.clear
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    )
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .stroke(
                                 isTodayGroup
-                                ? LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(colorScheme == .dark ? 0.42 : 0.70),
-                                        Color.white.opacity(colorScheme == .dark ? 0.10 : 0.18),
-                                        Color.clear
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                                : LinearGradient(
-                                    colors: [
-                                        headerStrokeColor,
-                                        headerStrokeColor
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: isTodayGroup ? 1.15 : 1
+                                ? Color.accentColor.opacity(0.06)
+                                : Color.white.opacity(0.015)
                             )
+                    }
+                    .clipShape(
+                        Capsule(style: .continuous)
                     )
-                    .shadow(
-                        color: isTodayGroup
-                            ? Color.blue.opacity(colorScheme == .dark ? 0.18 : 0.06)
-                            : Color.white.opacity(colorScheme == .dark ? 0.05 : 0.03),
-                        radius: isTodayGroup ? 18 : 12,
-                        y: 6
+            }
+            .overlay {
+                Capsule(style: .continuous)
+                    .strokeBorder(
+                        .white.opacity(0.12),
+                        lineWidth: 0.8
                     )
-                    .shadow(
-                        color: .black.opacity(colorScheme == .dark ? 0.20 : 0.06),
-                        radius: 12,
-                        y: 6
-                    )
-            )
+            }
             .padding(.horizontal, TaskRowMetrics.groupedLeadingPadding+4)
             .padding(.top, group.date == groupedTasksByDay.first?.date ? 4 : 8)
             .padding(.bottom, TaskRowMetrics.weeklyVerticalPadding - 4) //questo alza o abbssa l'intestazione capsula (oggi, domani, ....) rispetto alla row sottostante
@@ -1208,44 +1168,34 @@ struct TodoSectionView: View {
                             .foregroundStyle(.primary.opacity(0.82))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(
+                            .background {
                                 Capsule(style: .continuous)
-                                    .fill(
-                                        Color.white.opacity(
-                                            colorScheme == .dark ? 0.06 : 0.08
-                                        )
-                                    )
-                            )
+                                    .fill(.clear)
+                                    .glassEffect(.clear)
+                            }
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 9)
                     .fixedSize(horizontal: true, vertical: false)
-                    .background(
+                    .background {
                         Capsule(style: .continuous)
-                            .fill(.ultraThinMaterial)
-                            .overlay(
+                            .fill(.clear)
+                            .glassEffect(.clear)
+                            .overlay {
                                 Capsule(style: .continuous)
-                                    .fill(
-                                        Color.white.opacity(
-                                            colorScheme == .dark ? 0.035 : 0.045
-                                        )
-                                    )
-                            )
-                            .overlay(
+                                    .fill(Color.white.opacity(0.015))
+                            }
+                            .clipShape(
                                 Capsule(style: .continuous)
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [
-                                                Color.white.opacity(colorScheme == .dark ? 0.12 : 0.22),
-                                                Color.white.opacity(colorScheme == .dark ? 0.05 : 0.08)
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1
-                                    )
                             )
-                    )
+                    }
+                    .overlay {
+                        Capsule(style: .continuous)
+                            .strokeBorder(
+                                .white.opacity(0.12),
+                                lineWidth: 0.8
+                            )
+                    }
                     .padding(.leading, TaskRowMetrics.groupedLeadingPadding - 7)
                     .padding(.top, group.date == groupedTasksByDay.first?.date ? 4 : 8)
                     .padding(.bottom, TaskRowMetrics.weeklyVerticalPadding - 10)
