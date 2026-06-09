@@ -8980,6 +8980,34 @@
         }
       }
     },
+    "Export All" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Checklisten exportieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar todas las listas de comprobación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter toutes les check-lists"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta tutte le checklist"
+          }
+        }
+      }
+    },
     "Export All Checklists" : {
       "localizations" : {
         "de" : {
@@ -9039,6 +9067,7 @@
       }
     },
     "Export Checklist" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9067,6 +9096,7 @@
       }
     },
     "Export Checklist with Checks" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9095,6 +9125,7 @@
       }
     },
     "Export Checklists with Checks" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9181,6 +9212,7 @@
       }
     },
     "Export Empty Checklist" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9209,6 +9241,7 @@
       }
     },
     "Export Empty Checklists" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9262,6 +9295,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esporta file ICS"
+          }
+        }
+      }
+    },
+    "Export Single Checklist" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einzelne Checkliste exportieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar una sola lista de comprobación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exporter une seule check-list"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta singola checklist"
           }
         }
       }
@@ -11188,6 +11249,7 @@
       }
     },
     "Import Checklist" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11481,6 +11543,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Importate %lld foto. %lld non possono essere caricate da Foto/iCloud. Apri Foto, scaricale localmente e riprova."
+          }
+        }
+      }
+    },
+    "Include Checks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Häkchen einschließen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incluir marcas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inclure les coches"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Includi spunte"
           }
         }
       }
@@ -14862,6 +14952,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Note opzionali"
+          }
+        }
+      }
+    },
+    "Options" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opzioni"
           }
         }
       }

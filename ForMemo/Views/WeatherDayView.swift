@@ -112,21 +112,11 @@ struct WeatherDayView: View {
     }
 
     private var navigationWeatherSymbol: String {
-
         if Calendar.current.isDateInToday(date) {
-
-            let currentHour = Calendar.current.component(.hour, from: Date())
-
-            if let current = weatherManager.hourlyWeather(for: date)
-                .min(by: {
-                    abs($0.hour - currentHour) < abs($1.hour - currentHour)
-                }) {
-                return current.symbolName
-            }
+            return weatherManager.representativeSymbol(for: date)
         }
-
         return weatherManager.weather(for: date)?.symbolName
-            ?? "cloud.fill"
+            ?? "cloud.sun.fill"
     }
 
     private var heroCard: some View {
@@ -221,7 +211,7 @@ struct WeatherDayView: View {
 
                     ContentUnavailableView(
                         String(localized: "Weather Unavailable"),
-                        systemImage: "cloud.slash"
+                        systemImage: "icloud.slash"
                     )
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 20)

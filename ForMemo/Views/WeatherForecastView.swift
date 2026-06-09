@@ -77,7 +77,7 @@ struct WeatherForecastView: View {
     private var weatherHeroHeader: some View {
         return VStack(spacing: 4) {
 
-            if weatherManager.weather(for: Date()) != nil {
+            if let weather = weatherManager.weather(for: Date()) {
 // #if DEBUG
 // let _ = {
 //     if let weather = weatherManager.weather(for: Date()) {
@@ -90,15 +90,19 @@ struct WeatherForecastView: View {
 // #if DEBUG
 // let _ = print("🌤️ currentWeatherSymbol:", currentWeatherSymbol)
 // #endif
-                Image(systemName: currentWeatherSymbol)
+                Image(systemName: weatherManager.representativeSymbol(for: weather.date))
                     .symbolRenderingMode(.multicolor)
                     .font(.system(size: 40))
                     .saturation(colorScheme == .light ? 1.25 : 1.0)
                     .brightness(colorScheme == .light ? 0.2 : 0.0)
 
-                Text(weatherDescription(for: currentWeatherSymbol))
-                    .font(.headline.weight(.regular))
-                    .foregroundStyle(.primary)
+                Text(
+                    weatherDescription(
+                        for: weatherManager.representativeSymbol(for: weather.date)
+                    )
+                )
+                .font(.headline.weight(.regular))
+                .foregroundStyle(.primary)
 
                 Text("Source: Open-Meteo")
                     .font(.caption2)
@@ -109,29 +113,6 @@ struct WeatherForecastView: View {
         .frame(maxWidth: .infinity)
         .padding(.top, -20)
         .padding(.bottom, 8)
-    }
-    private var currentWeatherSymbol: String {
-
-        guard let weather = weatherManager.weather(for: Date()) else {
-            return weatherManager.representativeSymbol(for: Date())
-        }
-
-        switch weather.weatherCode {
-        case 0:
-            return "sun.max.fill"
-        case 1, 2:
-            return "cloud.sun.fill"
-        case 3:
-            return "cloud.fill"
-        case 61, 63, 65, 80, 81, 82:
-            return "cloud.rain.fill"
-        case 71, 73, 75, 77, 85, 86:
-            return "cloud.snow.fill"
-        case 95, 96, 99:
-            return "cloud.bolt.rain.fill"
-        default:
-            return weather.symbolName
-        }
     }
 
     private var forecastContent: some View {
@@ -192,7 +173,7 @@ struct WeatherForecastView: View {
                         if let weather {
 
                             let dayIcon = Calendar.current.isDateInToday(date)
-                                ? currentWeatherSymbol
+                                ? weatherManager.representativeSymbol(for: date)
                                 : weather.symbolName
 
                             VStack(spacing: 4) {

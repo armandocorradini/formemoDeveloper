@@ -29,7 +29,7 @@ nonisolated struct FMTripItem: Codable, Sendable {
     var isChecked: Bool
 }
 
-struct FMTripDocument: FileDocument, Sendable {
+struct FMTripDocument: FileDocument, Sendable{
 
     static var readableContentTypes: [UTType] { [.fmtrip] }
     static var writableContentTypes: [UTType] { [.fmtrip] }

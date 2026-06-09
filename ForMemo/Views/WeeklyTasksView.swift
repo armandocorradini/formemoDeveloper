@@ -214,9 +214,14 @@ struct WeeklyTasksView: View {
 
                         HStack(spacing: 7) {
 
-                            Image(systemName: weather.symbolName)
-                                .symbolRenderingMode(.multicolor)
-                                .font(.subheadline.weight(.medium))
+                            Image(
+                                systemName:
+                                    isTodayGroup
+                                    ? weatherManager.representativeSymbol(for: group.date)
+                                    : weather.symbolName
+                            )
+                            .symbolRenderingMode(.multicolor)
+                            .font(.subheadline.weight(.medium))
 
                             Text("\(weather.minTemperature)°")
                                 .font(.caption.weight(.medium))

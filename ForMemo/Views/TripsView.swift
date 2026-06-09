@@ -21,12 +21,10 @@ struct TravelKitListView: View {
     @State private var isEditingCategory = false
     @State private var searchText = ""
     @State private var showImportPicker = false
-    @State private var showExportPicker = false
-    @State private var showExportAllPicker = false
-    @State private var categoryToExport: TripList?
-    @State private var pendingExportCategory: TripList?
+    @State private var showExportSheet = false
     @State private var exportIncludeChecks = true
-    @State private var exportAllDocument: FMTripDocument?
+    @State private var exportDocument: FMTripDocument?
+    @State private var categoryToExport: TripList?
 
     private var visibleCategories: [TripList] {
 
@@ -326,19 +324,12 @@ struct TravelKitListView: View {
                         Button {
                             showImportPicker = true
                         } label: {
-                            Label(String(localized: "Import Checklist"), systemImage: "square.and.arrow.down")
+                            Label(String(localized: "Import"), systemImage: "square.and.arrow.down")
                         }
-
                         Button {
-                            showExportPicker = true
+                            showExportSheet = true
                         } label: {
-                            Label(String(localized: "Export Checklist"), systemImage: "square.and.arrow.up")
-                        }
-
-                        Button {
-                            showExportAllPicker = true
-                        } label: {
-                            Label(String(localized: "Export All Checklists"), systemImage: "square.and.arrow.up.on.square")
+                            Label(String(localized: "Export"), systemImage: "square.and.arrow.up")
                         }
                     } label: {
                         Image(systemName: "arrow.up.arrow.down")
@@ -612,50 +603,77 @@ struct TravelKitListView: View {
                     }
                 }
             }
-            .confirmationDialog(
-                String(localized: "Export Checklist"),
-                isPresented: $showExportPicker,
-                titleVisibility: .visible
-            ) {
-                ForEach(visibleCategories) { category in
-                    Button(localizedTripText(category.name)) {
-                        pendingExportCategory = category
+            // Removed confirmationDialogs for export pickers and all checklists.
+
+            .sheet(isPresented: $showExportSheet) {
+                NavigationStack {
+                    List {
+                        Section(String(localized: "Options")) {
+                            Toggle(
+                                String(localized: "Include Checks"),
+                                isOn: $exportIncludeChecks
+                            )
+                        }
+                        Section(String(localized: "Export All")) {
+                            Button {
+                                exportDocument = makeExportAllDocument(
+                                    includeChecks: exportIncludeChecks
+                                )
+                                showExportSheet = false
+                            } label: {
+                                Label(
+                                    String(localized: "Export All Checklists"),
+                                    systemImage: "square.stack.3d.up"
+                                )
+                            }
+                        }
+                        Section(String(localized: "Export Single Checklist")) {
+                            ForEach(visibleCategories) { category in
+                                Button {
+                                    categoryToExport = category
+
+                                    let payload = FMTripPayload(
+                                        name: category.name,
+                                        icon: category.icon,
+                                        systemTemplate: category.systemTemplate,
+                                        sections: category.sections.map {
+                                            FMTripSection(
+                                                title: $0.title,
+                                                items: $0.items.map {
+                                                    FMTripItem(
+                                                        title: $0.title,
+                                                        isChecked: exportIncludeChecks ? $0.isChecked : false
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    )
+
+                                    exportDocument = FMTripDocument(
+                                        payload: FMTripCollectionPayload(lists: [payload])
+                                    )
+
+                                    showExportSheet = false
+                                } label: {
+                                    HStack {
+                                        Image(systemName: category.icon)
+                                        Text(localizedTripText(category.name))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle(String(localized: "Export"))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button(String(localized: "Done")) {
+                                showExportSheet = false
+                            }
+                        }
                     }
                 }
             }
-            .confirmationDialog(
-                String(localized: "Export Checklist"),
-                isPresented: Binding(
-                    get: { pendingExportCategory != nil },
-                    set: { if !$0 { pendingExportCategory = nil } }
-                )
-            ) {
-                Button(String(localized: "Export Empty Checklist")) {
-                    exportIncludeChecks = false
-                    categoryToExport = pendingExportCategory
-                    pendingExportCategory = nil
-                }
-
-                Button(String(localized: "Export Checklist with Checks")) {
-                    exportIncludeChecks = true
-                    categoryToExport = pendingExportCategory
-                    pendingExportCategory = nil
-                }
-            }
-
-            .confirmationDialog(
-                String(localized: "Export All Checklists"),
-                isPresented: $showExportAllPicker,
-                titleVisibility: .visible
-            ) {
-                Button(String(localized: "Export Empty Checklists")) {
-                    exportAllDocument = makeExportAllDocument(includeChecks: false)
-                }
-                Button(String(localized: "Export Checklists with Checks")) {
-                    exportAllDocument = makeExportAllDocument(includeChecks: true)
-                }
-            }
-
             .fileImporter(
                 isPresented: $showImportPicker,
                 allowedContentTypes: [.data, .fmtrip]
@@ -664,28 +682,20 @@ struct TravelKitListView: View {
                     importFMTrip(from: url)
                 }
             }
+            }
+            // Move the following modifiers outside NavigationStack but inside ZStack:
             .fileExporter(
                 isPresented: Binding(
-                    get: { categoryToExport != nil },
-                    set: { if !$0 { categoryToExport = nil } }
+                    get: { exportDocument != nil },
+                    set: { if !$0 { exportDocument = nil } }
                 ),
-                document: categoryToExport.map { exportDocument(for: $0, includeChecks: exportIncludeChecks) },
+                document: exportDocument,
                 contentType: .fmtrip,
-                defaultFilename: categoryToExport.map { localizedTripText($0.name) } ?? "Checklist"
+                defaultFilename: categoryToExport.map { localizedTripText($0.name) } ?? "ForMemo-Checklists"
             ) { _ in
+                print("📦 export completed")
+                exportDocument = nil
                 categoryToExport = nil
-            }
-            .fileExporter(
-                isPresented: Binding(
-                    get: { exportAllDocument != nil },
-                    set: { if !$0 { exportAllDocument = nil } }
-                ),
-                document: exportAllDocument,
-                contentType: .fmtrip,
-                defaultFilename: "ForMemo-Checklists"
-            ) { _ in
-                exportAllDocument = nil
-            }
             }
         }
     }
@@ -726,28 +736,6 @@ private func importFMTrip(from url: URL) {
     }
 }
 
-private func exportDocument(for category: TripList, includeChecks: Bool) -> FMTripDocument {
-    let payload = FMTripPayload(
-        name: category.name,
-        icon: category.icon,
-        systemTemplate: category.systemTemplate,
-        sections: category.sections.map {
-            FMTripSection(
-                title: $0.title,
-                items: $0.items.map {
-                    FMTripItem(
-                        title: $0.title,
-                        isChecked: includeChecks ? $0.isChecked : false
-                    )
-                }
-            )
-        }
-    )
-
-    return FMTripDocument(
-        payload: FMTripCollectionPayload(lists: [payload])
-    )
-}
 
 private func makeExportAllDocument(includeChecks: Bool) -> FMTripDocument {
     let payloads = categories.map { category in

@@ -130,64 +130,7 @@ private struct OpenMeteoHourly: Decodable {
 
         let key = Calendar.current.startOfDay(for: date)
 
-        let snapshot = weatherByDay
-
-        guard var weather = snapshot[key] else {
-            return nil
-        }
-
-        if Calendar.current.isDateInToday(date),
-           let sunrise = weather.sunrise,
-           let sunset = weather.sunset {
-
-            let now = Date()
-
-            let calendar = Calendar.current
-
-            let currentHour = calendar.component(.hour, from: now)
-            let sunriseHour = calendar.component(.hour, from: sunrise)
-            let sunsetHour = calendar.component(.hour, from: sunset)
-
-            let isDay = currentHour >= sunriseHour
-                && currentHour < sunsetHour
-
-            weather = DailyWeatherInfo(
-                date: weather.date,
-                symbolName: {
-
-                    let generated = symbol(
-                        for: weather.weatherCode,
-                        cloudCover: weather.cloudCover,
-                        precipitationChance: weather.precipitationChance,
-                        precipitationAmount: weather.precipitationAmount,
-                        windSpeed: weather.windSpeed,
-                        isDay: isDay
-                    )
-
-                    guard !isDay else {
-                        return generated
-                    }
-
-                    return generated
-                        .replacingOccurrences(of: "sun.max", with: "moon.stars")
-                        .replacingOccurrences(of: "cloud.sun", with: "cloud.moon")
-                        .replacingOccurrences(of: "sun.haze", with: "moon.haze")
-                }(),
-                weatherCode: weather.weatherCode,
-                minTemperature: weather.minTemperature,
-                maxTemperature: weather.maxTemperature,
-                precipitationChance: weather.precipitationChance,
-                precipitationAmount: weather.precipitationAmount,
-                windSpeed: weather.windSpeed,
-                sunrise: weather.sunrise,
-                sunset: weather.sunset,
-                uvIndex: weather.uvIndex,
-                airQualityIndex: weather.airQualityIndex,
-                cloudCover: weather.cloudCover
-            )
-        }
-
-        return weather
+        return weatherByDay[key]
     }
     
     

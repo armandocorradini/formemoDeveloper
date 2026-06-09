@@ -842,8 +842,9 @@ struct TodoSectionView: View {
         isTodayGroup: Bool
     ) -> some View {
         HStack(spacing: 7) {
-
-            Image(systemName: weather.symbolName)
+            Image(systemName: isTodayGroup
+                  ? weatherManager.representativeSymbol(for: weather.date)
+                  : weather.symbolName)
                 .symbolRenderingMode(.multicolor)
                 .font(.subheadline.weight(.medium))
 
@@ -910,6 +911,7 @@ struct TodoSectionView: View {
                     Button {
                         openWeatherForecast(group.date)
                     } label: {
+                        // Patch: use representative symbol for today, else weather.symbolName
                         weatherCapsuleView(
                             weather: weather,
                             isTodayGroup: isTodayGroup
