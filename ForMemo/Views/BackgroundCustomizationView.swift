@@ -126,7 +126,7 @@ struct BackgroundCustomizationView: View {
                                     .frame(width: 34, height: 64)
 
                                     Text(localizedName)
-                                        .font(.system(size: 10))
+                                        .font(.system(size: 12))
                                         .foregroundStyle(.primary)
                                         .lineLimit(1)
                                 }

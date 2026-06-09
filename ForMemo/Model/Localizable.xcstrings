@@ -6130,30 +6130,30 @@
         }
       }
     },
-    "Create and manage travel packing lists organized into sections. Items can include notes, quantities, links, locations and due dates." : {
+    "Create and manage travel packing lists organized into sections." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstellen und verwalten Sie Reise-Packlisten, die in Abschnitte unterteilt sind. Elemente können Notizen, Mengen, Links, Orte und Fälligkeitsdaten enthalten"
+            "value" : "Erstellen und verwalten Sie Reise-Packlisten, die in Abschnitte unterteilt sind. "
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea y gestiona listas de viaje organizadas en secciones. Los elementos pueden incluir notas, cantidades, enlaces, ubicaciones y fechas de vencimiento."
+            "value" : "Crea y gestiona listas de viaje organizadas en secciones."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez et gérez des listes de voyage organisées en sections. Les éléments peuvent inclure des notes, des quantités, des liens, des lieux et des échéances."
+            "value" : "Créez et gérez des listes de voyage organisées en sections. "
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea e gestisci liste di viaggio organizzate in sezioni. Gli elementi possono includere note, quantità, link, posizioni e date di scadenza."
+            "value" : "Crea e gestisci liste di viaggio organizzate in sezioni. "
           }
         }
       }
@@ -6186,30 +6186,30 @@
         }
       }
     },
-    "Create complete backups of tasks, reminders, attachments, loyalty cards and logos, trip lists, document records and app settings. Restore everything safely on the same or another device." : {
+    "Create complete backups of tasks, reminders, attachments, loyalty cards and logos, trip lists and document records. Restore everything safely on the same or another device." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstellen Sie vollständige Backups von Aufgaben, Erinnerungen, Anhängen, Kundenkarten und deren Logos, Reiselisten, Dokumenten und App-Einstellungen. Stellen Sie alles sicher auf demselben oder einem anderen Gerät wieder her."
+            "value" : "Erstellen Sie vollständige Backups von Aufgaben, Erinnerungen, Anhängen, Kundenkarten und deren Logos, Reiselisten und Dokumenten. Stellen Sie alles sicher auf demselben oder einem anderen Gerät wieder her."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea copias de seguridad completas de tareas, recordatorios, archivos adjuntos, tarjetas de fidelización y sus logotipos, listas de viaje, documentos y configuraciones de la aplicación. Restaura todo de forma segura en el mismo dispositivo o en otro."
+            "value" : "Crea copias de seguridad completas de tareas, recordatorios, archivos adjuntos, tarjetas de fidelización y sus logotipos, listas de viaje y documentos. Restaura todo de forma segura en el mismo dispositivo o en otro."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez des sauvegardes complètes des tâches, rappels, pièces jointes, cartes de fidélité et de leurs logos, listes de voyage, documents et paramètres de l’application. Restaurez tout en toute sécurité sur le même appareil ou sur un autre."
+            "value" : "Créez des sauvegardes complètes des tâches, rappels, pièces jointes, cartes de fidélité et de leurs logos, listes de voyage et documents. Restaurez tout en toute sécurité sur le même appareil ou sur un autre."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea backup completi di attività, promemoria, allegati, carte fedeltà e relativi loghi, liste viaggio, documenti e impostazioni dell’app. Ripristina tutto in sicurezza sullo stesso dispositivo o su un altro."
+            "value" : "Crea backup completi di attività, promemoria, allegati, carte fedeltà e relativi loghi, liste viaggio e documenti . Ripristina tutto in sicurezza sullo stesso dispositivo o su un altro."
           }
         }
       }
@@ -16109,7 +16109,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Perla"
+            "value" : "Temi predefiniti"
           }
         }
       }
@@ -18072,7 +18072,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Perla"
+            "value" : "Rosa"
           }
         }
       }

@@ -109,7 +109,7 @@ struct AppQuickGuideView: View {
 
         .init(
             title: String(localized:"Trip Lists"),
-            description: String(localized:"Create and manage travel packing lists organized into sections. Items can include notes, quantities, links, locations and due dates."),
+            description: String(localized:"Create and manage travel packing lists organized into sections."),
             icon: "suitcase.rolling",
             tint: .mint
         ),
@@ -212,7 +212,7 @@ struct AppQuickGuideView: View {
 
             .init(
                 title: String(localized:"Backup & Restore"),
-                description: String(localized:"Create complete backups of tasks, reminders, attachments, loyalty cards and logos, trip lists, document records and app settings. Restore everything safely on the same or another device."),
+                description: String(localized:"Create complete backups of tasks, reminders, attachments, loyalty cards and logos, trip lists and document records. Restore everything safely on the same or another device."),
                 icon: "externaldrive.badge.timemachine",
                 tint: .indigo
             )
