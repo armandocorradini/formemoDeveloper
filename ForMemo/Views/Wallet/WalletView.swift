@@ -147,13 +147,30 @@ struct WalletView: View {
                                         )
                                         .fill(Color.blue)
                                     )
+                                    .overlay {
+                                        RoundedRectangle(
+                                            cornerRadius: 16,
+                                            style: .continuous
+                                        )
+                                        .stroke(.white.opacity(0.15), lineWidth: 0.8)
+                                    }
+                                    .shadow(
+                                        color: .black.opacity(colorScheme == .dark ? 0.25 : 0.12),
+                                        radius: 8,
+                                        y: 3
+                                    )
                                     .clipShape(
                                         RoundedRectangle(
                                             cornerRadius: 16,
                                             style: .continuous
                                         )
                                     )
-
+                                    .overlay(alignment: .top) {
+                                        Capsule()
+                                            .fill(.white.opacity(0.08))
+                                            .frame(width: 32, height: 1)
+                                            .padding(.top, 2)
+                                    }
                                     VStack(alignment: .leading, spacing: 4) {
 
                                         Text(card.storeName)

@@ -194,8 +194,18 @@ struct SettingsView: View {
                                     .foregroundStyle(.blue).opacity(0.7)
                             }
                         }
-                        
-                        
+                        NavigationLink {
+                            BackgroundCustomizationView()
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "paintpalette")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                
+                                Text("Background")
+                                    .foregroundStyle(.primary)
+                            }
+                        }
                         HStack(spacing: 12){
                             Image(systemName: "paintbrush")
                                 .foregroundStyle(.blue)
@@ -219,19 +229,6 @@ struct SettingsView: View {
                             .foregroundStyle(.blue)
                             .pickerStyle(.menu)
                             .opacity(0.7)
-                        }
-                        
-                        NavigationLink {
-                            BackgroundCustomizationView()
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "paintpalette")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                                
-                                Text("Background")
-                                    .foregroundStyle(.primary)
-                            }
                         }
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))

@@ -66,9 +66,24 @@ struct LoyaltyCardDetailView: View {
                                             style: .continuous
                                         )
                                     )
+                                    .overlay {
+                                        RoundedRectangle(
+                                            cornerRadius: 14,
+                                            style: .continuous
+                                        )
+                                        .stroke(
+                                            .white.opacity(0.15),
+                                            lineWidth: 0.8
+                                        )
+                                    }
+                                    .shadow(
+                                        color: .black.opacity(0.12),
+                                        radius: 6,
+                                        y: 2
+                                    )
 
                             } else {
-
+                                
                                 Image(systemName: "creditcard.fill")
                                     .font(.system(size: 26, weight: .semibold))
                                     .foregroundStyle(
@@ -88,8 +103,22 @@ struct LoyaltyCardDetailView: View {
                                             style: .continuous
                                         )
                                     )
+                                    .overlay {
+                                        RoundedRectangle(
+                                            cornerRadius: 14,
+                                            style: .continuous
+                                        )
+                                        .stroke(
+                                            .white.opacity(0.15),
+                                            lineWidth: 0.8
+                                        )
+                                    }
+                                    .shadow(
+                                        color: .black.opacity(0.12),
+                                        radius: 6,
+                                        y: 2
+                                    )
                             }
-
                             VStack(alignment: .leading, spacing: 4) {
 
                                 Text(card.storeName)
