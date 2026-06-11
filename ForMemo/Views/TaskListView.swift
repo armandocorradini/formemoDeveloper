@@ -66,29 +66,44 @@ struct TaskListView: View {
     }
 
     @State private var taskPendingDeletion: TodoTask?
+    @State private var cachedTodoTasks: [TodoTask] = []
+    @State private var cachedCompletedTasks: [TodoTask] = []
 
-    private var todoTasks: [TodoTask] {
+    private var refreshKey: String {
+
+        let tag = selectedTagFilter?.rawValue ?? "nil"
+        let priority = String(describing: selectedPriorityFilter)
+        let period = selectedPeriodFilter?.rawValue ?? "nil"
+
+        return "\(searchText)|\(showCompleted)|\(tag)|\(priority)|\(period)|\(todoQuery.count)|\(completedQuery.count)"
+    }
+
+    private func refreshVisibleTasks() {
+        rebuildVisibleTasks()
+    }
+
+    private func rebuildVisibleTasks() {
 
         let now = Date()
 
-        return todoQuery
+        cachedTodoTasks = todoQuery
             .filter { task in
 
                 let matchesSearch =
-                searchText.isEmpty ||
-                task.title.localizedCaseInsensitiveContains(searchText)
+                    searchText.isEmpty ||
+                    task.title.localizedCaseInsensitiveContains(searchText)
 
                 let matchesTag =
-                selectedTagFilter == nil ||
-                task.mainTag == selectedTagFilter
+                    selectedTagFilter == nil ||
+                    task.mainTag == selectedTagFilter
 
                 let matchesPriority =
-                selectedPriorityFilter == nil ||
-                task.priority == selectedPriorityFilter
+                    selectedPriorityFilter == nil ||
+                    task.priority == selectedPriorityFilter
 
                 let matchesPeriod =
-                selectedPeriodFilter == nil ||
-                selectedPeriodFilter?.matches(task.deadLine) == true
+                    selectedPeriodFilter == nil ||
+                    selectedPeriodFilter?.matches(task.deadLine) == true
 
                 return matchesSearch && matchesTag && matchesPriority && matchesPeriod
             }
@@ -109,44 +124,43 @@ struct TaskListView: View {
 
                 return $0.id.uuidString < $1.id.uuidString
             }
-    }
 
-    private var completedTasks: [TodoTask] {
+        if showCompleted {
+            cachedCompletedTasks = completedQuery
+                .filter { task in
 
-        guard showCompleted else {
-            return []
+                    let matchesSearch =
+                        searchText.isEmpty ||
+                        task.title.localizedCaseInsensitiveContains(searchText)
+
+                    let matchesTag =
+                        selectedTagFilter == nil ||
+                        task.mainTag == selectedTagFilter
+
+                    let matchesPriority =
+                        selectedPriorityFilter == nil ||
+                        task.priority == selectedPriorityFilter
+
+                    let matchesPeriod =
+                        selectedPeriodFilter == nil ||
+                        selectedPeriodFilter?.matches(task.deadLine) == true
+
+                    return matchesSearch && matchesTag && matchesPriority && matchesPeriod
+                }
+                .sorted {
+                    ($0.completedAt ?? .distantPast) >
+                    ($1.completedAt ?? .distantPast)
+                }
+        } else {
+            cachedCompletedTasks = []
         }
-
-        return completedQuery
-            .filter { task in
-
-                let matchesSearch =
-                searchText.isEmpty ||
-                task.title.localizedCaseInsensitiveContains(searchText)
-
-                let matchesTag =
-                selectedTagFilter == nil ||
-                task.mainTag == selectedTagFilter
-
-                let matchesPriority =
-                selectedPriorityFilter == nil ||
-                task.priority == selectedPriorityFilter
-
-                let matchesPeriod =
-                selectedPeriodFilter == nil ||
-                selectedPeriodFilter?.matches(task.deadLine) == true
-
-                return matchesSearch && matchesTag && matchesPriority && matchesPeriod
-            }
-            .sorted {
-                ($0.completedAt ?? .distantPast) >
-                ($1.completedAt ?? .distantPast)
-            }
     }
 
 
     var body: some View {
         ZStack {
+            let todoTasks = cachedTodoTasks
+            let completedTasks = cachedCompletedTasks
 
             AppGlassBackground()
                     
@@ -229,6 +243,10 @@ struct TaskListView: View {
                     TaskDetailView(task: task)
                 }
                 .scrollDismissesKeyboard(.immediately)
+                .onAppear(perform: refreshVisibleTasks)
+                .onChange(of: refreshKey) { _, _ in
+                    refreshVisibleTasks()
+                }
 
                 .searchableIf(
                     !(todoQuery.isEmpty && completedQuery.isEmpty),
@@ -834,7 +852,7 @@ extension View {
     }
 }
 struct TodoSectionView: View {
-    @Environment(\.colorScheme) private var colorScheme
+
     @Environment(AppSettings.self) private var settings
     @State private var weatherManager = WeatherManager.shared
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
@@ -878,8 +896,10 @@ struct TodoSectionView: View {
     }
     
     @ViewBuilder
-    private func groupedHeaderView(for group: (date: Date, tasks: [TodoTask])) -> some View {
-        if let title = relativeHeaderTitle(for: group.date) {
+    private func groupedHeaderView(
+        for group: GroupedSection
+    ) -> some View {
+        if let title = group.relativeTitle {
             let _ = weatherManager.refreshID
             let isTodayGroup = Calendar.current.isDateInToday(group.date)
 
@@ -985,11 +1005,23 @@ struct TodoSectionView: View {
     }
     @Binding var taskPendingDeletion: TodoTask?
     let openWeatherForecast: (Date) -> Void
-    
+
     let tasks: [TodoTask]
     let modelContext: ModelContext
 
-    private var groupedTasksByDay: [(date: Date, tasks: [TodoTask])] {
+    private struct GroupedSection: Identifiable {
+        let date: Date
+        let tasks: [TodoTask]
+        let relativeTitle: LocalizedStringKey?
+        let isUpcomingBoundary: Bool
+        let upcomingTasksCount: Int
+
+        var id: Date { date }
+    }
+
+    @State private var groupedTasksCache: [GroupedSection] = []
+
+    private func rebuildGroups() {
 
         let calendar = Calendar.current
 
@@ -997,7 +1029,7 @@ struct TodoSectionView: View {
             calendar.startOfDay(for: task.deadLine ?? .distantFuture)
         }
 
-        return grouped
+        let sortedGroups = grouped
             .map { key, value in
                 (
                     date: key,
@@ -1014,6 +1046,58 @@ struct TodoSectionView: View {
                 )
             }
             .sorted { $0.date < $1.date }
+
+        var result: [GroupedSection] = []
+
+        for index in sortedGroups.indices {
+
+            let group = sortedGroups[index]
+
+            let relativeTitle = relativeHeaderTitle(for: group.date)
+
+            let isUpcomingBoundary: Bool = {
+
+                guard index > 0 else {
+                    return false
+                }
+
+                let previousRelativeTitle =
+                    relativeHeaderTitle(
+                        for: sortedGroups[index - 1].date
+                    )
+
+                return previousRelativeTitle != nil &&
+                       relativeTitle == nil
+
+            }()
+
+            let upcomingTasksCount: Int = {
+
+                guard isUpcomingBoundary else {
+                    return 0
+                }
+
+                return sortedGroups[index...]
+                    .reduce(0) { $0 + $1.tasks.count }
+
+            }()
+
+            result.append(
+                GroupedSection(
+                    date: group.date,
+                    tasks: group.tasks,
+                    relativeTitle: relativeTitle,
+                    isUpcomingBoundary: isUpcomingBoundary,
+                    upcomingTasksCount: upcomingTasksCount
+                )
+            )
+        }
+
+        groupedTasksCache = result
+    }
+
+    private var groupedTasksByDay: [GroupedSection] {
+        groupedTasksCache
     }
 
 
@@ -1035,7 +1119,7 @@ struct TodoSectionView: View {
     }
 
     struct RowCardStyle: ViewModifier {
-        @Environment(\.colorScheme) private var colorScheme
+
         @Environment(AppSettings.self) private var settings
         let task: TodoTask
         let style: TaskListStyle
@@ -1156,25 +1240,10 @@ struct TodoSectionView: View {
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
 
-            ForEach(Array(groupedTasksByDay.enumerated()), id: \.element.date) { groupIndex, group in
+                ForEach(Array(groupedTasksByDay.enumerated()), id: \.element.date) { groupIndex, group in
 
-                let shouldShowUpcomingCapsule = {
-
-                    guard groupIndex > 0 else {
-                        return false
-                    }
-
-                    let previousDate = groupedTasksByDay[groupIndex - 1].date
-
-                    return relativeHeaderTitle(for: previousDate) != nil
-                        && relativeHeaderTitle(for: group.date) == nil
-                }()
-
-                if shouldShowUpcomingCapsule {
-                    let upcomingTasksCount = groupedTasksByDay[groupIndex...]
-                        .reduce(0) { partialResult, group in
-                            partialResult + group.tasks.count
-                        }
+                    if group.isUpcomingBoundary {
+                        let upcomingTasksCount = group.upcomingTasksCount
 
                     HStack(spacing: 10) {
 
@@ -1224,7 +1293,9 @@ struct TodoSectionView: View {
                 }
 
                 Section {
-                    ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, t in
+                    ForEach(group.tasks.indices, id: \.self) { index in
+
+                        let t = group.tasks[index]
 
                         taskRow(
                             for: t,
@@ -1244,22 +1315,28 @@ struct TodoSectionView: View {
                 .listSectionSpacing(TaskRowMetrics.weeklyVerticalPadding / 2)  //anche questo per lo spazio tra le row
             }
             .environment(\.defaultMinListRowHeight, 1)
-            .animation(
-                .snappy(duration: 0.22),
-                value: groupedTasksByDay.count
-            )
+//            .animation(
+//                .snappy(duration: 0.22),
+//                value: groupedTasksByDay.count
+//            )
 
         } else {
 
             Section(String(localized:"To do (\(tasks.count))")) {
 
-                ForEach(Array(tasks.enumerated()), id: \.element.id) { index, t in
+                ForEach(tasks.indices, id: \.self) { index in
+
+                    let t = tasks[index]
 
                     let previousTaskDate = index > 0
-                        ? Calendar.current.startOfDay(for: tasks[index - 1].deadLine ?? .distantFuture)
+                        ? Calendar.current.startOfDay(
+                            for: tasks[index - 1].deadLine ?? .distantFuture
+                        )
                         : nil
 
-                    let currentTaskDate = Calendar.current.startOfDay(for: t.deadLine ?? .distantFuture)
+                    let currentTaskDate = Calendar.current.startOfDay(
+                        for: t.deadLine ?? .distantFuture
+                    )
 
                     let startsNewDayGroup = previousTaskDate != currentTaskDate
 
@@ -1272,8 +1349,18 @@ struct TodoSectionView: View {
         }
         }
         .task {
+            rebuildGroups()
             await weatherManager.refreshIfNeeded()
-            print("🌧️ Weather task fired")
+        }
+        .onChange(of: tasks.count) { _, _ in
+            rebuildGroups()
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: .taskDidChange
+            )
+        ) { _ in
+            rebuildGroups()
         }
         .onReceive(
             NotificationCenter.default.publisher(
@@ -1565,7 +1652,9 @@ struct CompletedSectionView: View {
     var body: some View {
         Section(String(localized:"Completed (\(tasks.count))")) {
 
-            ForEach(Array(tasks.enumerated()), id: \.element.id) { index, t in
+            ForEach(tasks.indices, id: \.self) { index in
+
+                let t = tasks[index]
                 TaskRow(
                     task: t,
                     showDateColumn: true,
