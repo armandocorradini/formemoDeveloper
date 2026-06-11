@@ -562,6 +562,7 @@ struct TaskRowAppearance {
     let showTodayExpiredLabel: Bool
 
     let selectedRowStyle: Int
+    let dueIconEffect: DueIconEffect
 }
 
 @MainActor
@@ -654,8 +655,10 @@ struct TaskRow: View {
             rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
             showDateColumn: showDateColumn,
             highlightCriticalOverdue: appearance.highlightEnabled,
-            showTodayExpiredLabel: appearance.showTodayExpiredLabel
+            showTodayExpiredLabel: appearance.showTodayExpiredLabel,
+            dueIconEffect: appearance.dueIconEffect
         )
+        .equatable()
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(
             .trailing,
@@ -1127,7 +1130,8 @@ struct TodoSectionView: View {
             showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
             highlightEnabled: settings.highlightEnabled,
             showTodayExpiredLabel: settings.showTodayExpiredLabel,
-            selectedRowStyle: settings.selectedTaskRowStyle
+            selectedRowStyle: settings.selectedTaskRowStyle,
+            dueIconEffect: settings.dueIconEffect
         )
     }
 
@@ -1479,7 +1483,8 @@ struct CompletedSectionView: View {
             showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
             highlightEnabled: settings.highlightEnabled,
             showTodayExpiredLabel: settings.showTodayExpiredLabel,
-            selectedRowStyle: settings.selectedTaskRowStyle
+            selectedRowStyle: settings.selectedTaskRowStyle,
+            dueIconEffect: settings.dueIconEffect
         )
     }
 

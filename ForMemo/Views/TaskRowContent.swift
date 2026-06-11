@@ -18,7 +18,7 @@ enum TaskRowStyle: Int {
 
 // MARK: - MAIN ROW
 
-struct TaskRowContent: View, TaskRowBaseLogic {
+struct TaskRowContent: View, Equatable, TaskRowBaseLogic {
     
     let model: TaskRowDisplayModel
     let iconStyle: TaskIconStyle
@@ -31,13 +31,11 @@ struct TaskRowContent: View, TaskRowBaseLogic {
     
     let rowStyle: TaskRowStyle
     let showDateColumn: Bool
-    @Environment(AppSettings.self) private var appSettings
+
     let highlightCriticalOverdue: Bool
     let showTodayExpiredLabel: Bool
+    let dueIconEffect: DueIconEffect
     
-    private var selectedEffect: DueIconEffect {
-        appSettings.dueIconEffect
-    }
 
     private var isToday: Bool {
         guard let d = model.deadLine else { return false }
@@ -75,6 +73,29 @@ struct TaskRowContent: View, TaskRowBaseLogic {
                 alignment: .leading
             )
             .contentShape(Rectangle())
+    }
+}
+
+
+extension TaskRowContent {
+
+    static func == (
+        lhs: TaskRowContent,
+        rhs: TaskRowContent
+    ) -> Bool {
+
+        lhs.model == rhs.model &&
+        lhs.iconStyle == rhs.iconStyle &&
+        lhs.showBadge == rhs.showBadge &&
+        lhs.showAttachments == rhs.showAttachments &&
+        lhs.showLocation == rhs.showLocation &&
+        lhs.showPriority == rhs.showPriority &&
+        lhs.showBadgeOnlyWithPriority == rhs.showBadgeOnlyWithPriority &&
+        lhs.rowStyle == rhs.rowStyle &&
+        lhs.showDateColumn == rhs.showDateColumn &&
+        lhs.highlightCriticalOverdue == rhs.highlightCriticalOverdue &&
+        lhs.showTodayExpiredLabel == rhs.showTodayExpiredLabel &&
+        lhs.dueIconEffect == rhs.dueIconEffect
     }
 }
 
@@ -984,7 +1005,7 @@ extension TaskRowContent {
                         .opacity(0.9)
                         .dueIconEffect(
                             deadline: model.deadLine,
-                            effect: selectedEffect
+                            effect: dueIconEffect
                         )
 
                     HStack(spacing: 6) {

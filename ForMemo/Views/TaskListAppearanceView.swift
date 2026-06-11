@@ -165,7 +165,8 @@ struct TaskListAppearanceView: View {
                     showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
                     highlightEnabled: settings.highlightEnabled,
                     showTodayExpiredLabel: settings.showTodayExpiredLabel,
-                    selectedRowStyle: settings.selectedRowStyle
+                    selectedRowStyle: selectedRowStyle,
+                    dueIconEffect: settings.dueIconEffect
                 )
             )
                 .modifier(

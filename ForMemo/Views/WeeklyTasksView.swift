@@ -610,7 +610,8 @@ private struct WeeklyTaskRow: View {
                 showBadgeOnlyWithPriority: true,
                 highlightEnabled: highlightEnabled,
                 showTodayExpiredLabel: showTodayExpiredLabel,
-                selectedRowStyle: selectedRowStyle
+                selectedRowStyle: selectedRowStyle,
+                dueIconEffect: settings.dueIconEffect
             )
         )
         .padding(.leading, 10)
