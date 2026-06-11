@@ -17,6 +17,7 @@ struct TaskListView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(AppSettings.self) private var settings
+    @Environment(\.scenePhase) private var scenePhase
 
     @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
     private var todoQuery: [TodoTask]
@@ -70,20 +71,135 @@ struct TaskListView: View {
     @State private var cachedCompletedTasks: [TodoTask] = []
 
     private var refreshKey: String {
-
+        
         let tag = selectedTagFilter?.rawValue ?? "nil"
         let priority = String(describing: selectedPriorityFilter)
         let period = selectedPeriodFilter?.rawValue ?? "nil"
 
-        return "\(searchText)|\(showCompleted)|\(tag)|\(priority)|\(period)|\(todoQuery.count)|\(completedQuery.count)"
+        let key = "\(searchText)|\(showCompleted)|\(tag)|\(priority)|\(period)|\(todoQuery.count)|\(completedQuery.count)"
+
+
+
+        return key
     }
 
-    private func refreshVisibleTasks() {
-        rebuildVisibleTasks()
-    }
+    @State private var rebuildTask: Task<Void, Never>?
+    @State private var initialLoadCompleted = false
+    @State private var lastRefreshKey = ""
+    @State private var isRebuildScheduled = false
+    @State private var lastActiveRefresh = Date.distantPast
+    @State private var suspendRefreshUntil = Date.distantPast
+    @State private var ignoreRefreshUntil = Date.distantPast
+    
+//    private func refreshVisibleTasks() {
+//        guard Date() >= ignoreRefreshUntil else {
+//            return
+//        }
+//        guard Date() >= suspendRefreshUntil else {
+//            return
+//        }
+//        rebuildTask?.cancel()
+//        isRebuildScheduled = true
+//
+//        let todo = todoQuery
+//        let completed = completedQuery
+//
+//        let search = searchText
+//        let tag = selectedTagFilter
+//        let priority = selectedPriorityFilter
+//        let period = selectedPeriodFilter
+//        let showCompletedValue = showCompleted
+//
+//        rebuildTask = Task { @MainActor in
+//
+//            let now = Date()
+//
+//            let filteredTodo = todo
+//                .filter { task in
+//
+//                    let matchesSearch =
+//                        search.isEmpty ||
+//                        task.title.localizedCaseInsensitiveContains(search)
+//
+//                    let matchesTag =
+//                        tag == nil ||
+//                        task.mainTag == tag
+//
+//                    let matchesPriority =
+//                        priority == nil ||
+//                        task.priority == priority
+//
+//                    let matchesPeriod =
+//                        period == nil ||
+//                        period?.matches(task.deadLine) == true
+//
+//                    return matchesSearch && matchesTag && matchesPriority && matchesPeriod
+//                }
+//                .sorted {
+//                    let lhs = $0.deadLine ?? .distantFuture
+//                    let rhs = $1.deadLine ?? .distantFuture
+//
+//                    let lhsOverdue = lhs < now
+//                    let rhsOverdue = rhs < now
+//
+//                    if lhsOverdue != rhsOverdue {
+//                        return lhsOverdue
+//                    }
+//
+//                    if lhs != rhs {
+//                        return lhs < rhs
+//                    }
+//
+//                    return $0.id.uuidString < $1.id.uuidString
+//                }
+//
+//            let filteredCompleted =
+//                showCompletedValue
+//                ? completed
+//                    .filter { task in
+//
+//                        let matchesSearch =
+//                            search.isEmpty ||
+//                            task.title.localizedCaseInsensitiveContains(search)
+//
+//                        let matchesTag =
+//                            tag == nil ||
+//                            task.mainTag == tag
+//
+//                        let matchesPriority =
+//                            priority == nil ||
+//                            task.priority == priority
+//
+//                        let matchesPeriod =
+//                            period == nil ||
+//                            period?.matches(task.deadLine) == true
+//
+//                        return matchesSearch && matchesTag && matchesPriority && matchesPeriod
+//                    }
+//                    .sorted {
+//                        ($0.completedAt ?? .distantPast) >
+//                        ($1.completedAt ?? .distantPast)
+//                    }
+//                : []
+//
+//            try? await Task.sleep(
+//                for: .milliseconds(250)
+//            )
+//
+//            cachedTodoTasks = filteredTodo
+//            cachedCompletedTasks = filteredCompleted
+//
+//            isRebuildScheduled = false
+//        }
+//    }
 
     private func rebuildVisibleTasks() {
-
+        guard !todoQuery.isEmpty || !completedQuery.isEmpty else {
+            cachedTodoTasks = []
+            cachedCompletedTasks = []
+            return
+        }
+//        print("🔥 rebuildVisibleTasks")
         let now = Date()
 
         cachedTodoTasks = todoQuery
@@ -243,9 +359,61 @@ struct TaskListView: View {
                     TaskDetailView(task: task)
                 }
                 .scrollDismissesKeyboard(.immediately)
-                .onAppear(perform: refreshVisibleTasks)
-                .onChange(of: refreshKey) { _, _ in
-                    refreshVisibleTasks()
+                .onAppear {
+
+                    guard !initialLoadCompleted else { return }
+
+                    initialLoadCompleted = true
+
+                    lastRefreshKey = refreshKey
+
+                    ignoreRefreshUntil = Date().addingTimeInterval(10)
+                    suspendRefreshUntil = Date().addingTimeInterval(10)
+
+                    rebuildVisibleTasks()
+                }
+//                .onChange(of: refreshKey) { oldValue, newValue in
+//
+//                    print("🔄 refreshKey changed")
+//
+//                    print("OLD:", oldValue)
+//
+//                    print("NEW:", newValue)
+//
+//                    guard newValue != lastRefreshKey else {
+//                        return
+//                    }
+//
+//                    lastRefreshKey = newValue
+//
+//                    guard !isRebuildScheduled else {
+//                        return
+//                    }
+//
+//                    guard Date() >= ignoreRefreshUntil else {
+//                        return
+//                    }
+//
+//                    guard scenePhase == .active || scenePhase == .inactive else {
+//                        return
+//                    }
+//
+////                    refreshVisibleTasks()
+//                }
+                .onChange(of: scenePhase) { _, newPhase in
+
+                    if newPhase == .background {
+
+                        showCompleted = false
+                    }
+
+                    if newPhase == .active {
+
+                        ignoreRefreshUntil = Date().addingTimeInterval(10)
+                        suspendRefreshUntil = Date().addingTimeInterval(10)
+
+                        return
+                    }
                 }
 
                 .searchableIf(
@@ -1008,8 +1176,10 @@ struct TodoSectionView: View {
 
     let tasks: [TodoTask]
     let modelContext: ModelContext
-
-    private struct GroupedSection: Identifiable {
+    @State private var visibleCompletedCount = 100
+    
+    @State private var completedVisibleLimit = 100
+    private struct GroupedSection: Identifiable, Equatable {
         let date: Date
         let tasks: [TodoTask]
         let relativeTitle: LocalizedStringKey?
@@ -1020,9 +1190,46 @@ struct TodoSectionView: View {
     }
 
     @State private var groupedTasksCache: [GroupedSection] = []
+    
+    @State private var visibleLimit = 100
 
+    private var visibleGroups: [GroupedSection] {
+
+        guard visibleLimit > 0 else { return [] }
+
+        var renderedRows = 0
+        var result: [GroupedSection] = []
+
+        for group in groupedTasksCache {
+
+            if renderedRows >= visibleLimit {
+                break
+            }
+
+            let remaining = visibleLimit - renderedRows
+            let visibleTasks = Array(group.tasks.prefix(remaining))
+
+            guard !visibleTasks.isEmpty else { continue }
+
+            result.append(
+                GroupedSection(
+                    date: group.date,
+                    tasks: visibleTasks,
+                    relativeTitle: group.relativeTitle,
+                    isUpcomingBoundary: group.isUpcomingBoundary,
+                    upcomingTasksCount: group.upcomingTasksCount
+                )
+            )
+
+            renderedRows += visibleTasks.count
+        }
+
+        return result
+    }
+    
+    
     private func rebuildGroups() {
-
+//        print("📦 rebuildGroups start: \(tasks.count)")
         let calendar = Calendar.current
 
         let grouped = Dictionary(grouping: tasks) { task in
@@ -1092,12 +1299,17 @@ struct TodoSectionView: View {
                 )
             )
         }
-
         groupedTasksCache = result
+//        print("📦 rebuildGroups end")
     }
 
     private var groupedTasksByDay: [GroupedSection] {
-        groupedTasksCache
+
+        if tasks.count <= visibleLimit {
+            return groupedTasksCache
+        }
+
+        return visibleGroups
     }
 
 
@@ -1294,8 +1506,10 @@ struct TodoSectionView: View {
 
                 Section {
                     ForEach(group.tasks.indices, id: \.self) { index in
-
                         let t = group.tasks[index]
+                        let isLastVisibleRow =
+                            group.date == groupedTasksByDay.last?.date &&
+                            index == group.tasks.indices.last
 
                         taskRow(
                             for: t,
@@ -1304,6 +1518,15 @@ struct TodoSectionView: View {
                                 total: group.tasks.count
                             )
                         )
+                        .onAppear {
+                            guard isLastVisibleRow else { return }
+                            guard visibleLimit < tasks.count else { return }
+
+                            visibleLimit = min(
+                                visibleLimit + 100,
+                                tasks.count
+                            )
+                        }
                     }
 
                 } header: {
@@ -1349,18 +1572,34 @@ struct TodoSectionView: View {
         }
         }
         .task {
+
             rebuildGroups()
-            await weatherManager.refreshIfNeeded()
+
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + 15
+            ) {
+
+                Task {
+                    await weatherManager.refreshIfNeeded()
+                }
+            }
         }
         .onChange(of: tasks.count) { _, _ in
+
             rebuildGroups()
+
+            if tasks.count < visibleLimit {
+                visibleLimit = max(100, tasks.count)
+            }
         }
         .onReceive(
             NotificationCenter.default.publisher(
                 for: .taskDidChange
             )
         ) { _ in
-            rebuildGroups()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                rebuildGroups()
+            }
         }
         .onReceive(
             NotificationCenter.default.publisher(
@@ -1578,7 +1817,12 @@ struct CompletedSectionView: View {
     @Binding var taskPendingDeletion: TodoTask?
     let tasks: [TodoTask]
     let modelContext: ModelContext
+    @State private var visibleCompletedCount = 100
+    private var visibleTasks: [TodoTask] {
 
+        Array(tasks.prefix(visibleCompletedCount))
+
+    }
     struct RowCardStyle: ViewModifier {
         let task: TodoTask
         let style: TaskListStyle
@@ -1652,9 +1896,9 @@ struct CompletedSectionView: View {
     var body: some View {
         Section(String(localized:"Completed (\(tasks.count))")) {
 
-            ForEach(tasks.indices, id: \.self) { index in
+            ForEach(visibleTasks.indices, id: \.self) { index in
 
-                let t = tasks[index]
+                let t = visibleTasks[index]
                 TaskRow(
                     task: t,
                     showDateColumn: true,
@@ -1667,7 +1911,7 @@ struct CompletedSectionView: View {
                             style: listStyleChoice,
                             position: completedRowPosition(
                                 index: index,
-                                total: tasks.count
+                                total: visibleTasks.count
                             )
                         )
                     )
@@ -1710,6 +1954,31 @@ struct CompletedSectionView: View {
                             toggleCompleted(t)
                         } label: {
                             Label("To do" , systemImage: "arrow.uturn.left"
+                            )
+                        }
+                    }
+                    .onAppear {
+
+                        guard index == visibleTasks.count - 1 else {
+                            return
+                        }
+
+                        guard visibleCompletedCount < tasks.count else {
+                            return
+                        }
+
+                        visibleCompletedCount = min(
+                            visibleCompletedCount + 100,
+                            tasks.count
+                        )
+                    }
+                    .onChange(of: tasks.count) { _, _ in
+
+                        if visibleCompletedCount > tasks.count {
+
+                            visibleCompletedCount = max(
+                                100,
+                                tasks.count
                             )
                         }
                     }

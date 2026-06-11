@@ -21,7 +21,8 @@ final class NotificationManager: NSObject {
 
     private var requiresUpgradeNotificationRebuild = false
 
-    
+    private var cloudKitRefreshTask: Task<Void, Never>?
+    private var lastCloudKitRefresh = Date.distantPast
     private override init() {
         super.init()
     }
@@ -224,23 +225,29 @@ final class NotificationManager: NSObject {
     
     // MARK: - CloudKit Optimized Refresh (coalescing)
 
-    func refreshFromCloudKit() {
+func refreshFromCloudKit() {
+    let now = Date()
+    guard Date().timeIntervalSince(lastCloudKitRefresh) > 2 else {
 
-        // 🔥 Local database is already updated.
-        // We only refresh notifications and UI state.
+        return
 
+    }
+    lastCloudKitRefresh = now
+    
         guard !isAppLaunching else { return }
 
-        rebuildTask?.cancel()
+        cloudKitRefreshTask?.cancel()
 
-        rebuildTask = Task { [weak self] in
+        cloudKitRefreshTask = Task { [weak self] in
+
             guard let self else { return }
 
-            try? await Task.sleep(for: .seconds(1.0))
+            try? await Task.sleep(for: .seconds(30))
 
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
+                self.lastCloudKitRefresh = Date()
                 self.refresh(force: true)
 
                 Task {

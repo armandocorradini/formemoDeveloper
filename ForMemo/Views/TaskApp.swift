@@ -57,8 +57,13 @@ struct ForMemoApp: App {
     
     
     // MARK: - Persistence
-    
+
     private let container: ModelContainer
+
+    
+    // MARK: - CloudKit Debounce
+    
+    private static var lastRemoteChange = Date.distantPast
 
     
     
@@ -195,6 +200,13 @@ struct ForMemoApp: App {
                 
             case .active:
                 Task { @MainActor in
+                    let activationStart = CFAbsoluteTimeGetCurrent()
+
+                    @MainActor
+                    func logStep(_ name: String) {
+                        let elapsed = CFAbsoluteTimeGetCurrent() - activationStart
+                        DebugLog.write("⏱️ ACTIVE \(name): \(String(format: "%.3f", elapsed))s")
+                    }
 
                     AppLogger.notifications.info("🟢 App became active")
                     DebugLog.write("🟢 APP ACTIVE")
@@ -221,13 +233,15 @@ struct ForMemoApp: App {
                     
                     // 1️⃣ Applica azioni notifiche
                     NotificationActionProcessor.shared.processAll(using: context)
+                    logStep("processAll")
 
                     // 🔥 Attachment integrity verification
-                    try? await Task.sleep(for: .milliseconds(300))
+//                    try? await Task.sleep(for: .milliseconds(300))
 
-                    AttachmentMigration.runIfNeeded(context: context)
-                    
-                    
+//                    AttachmentMigration.runIfNeeded(context: context)
+//                    logStep("attachmentMigration")
+//                    
+//                    
                     DebugLog.writeAttachmentEvent("Attachment self-healing completed")
                     
                     // 2️⃣ 🔥 CLEANUP ALLEGATI (QUI è il punto giusto)
@@ -237,9 +251,11 @@ struct ForMemoApp: App {
                             retentionDays: attachmentRetentionDays
                         )
                     }
+                    logStep("attachmentCleanup")
 
                     // 3️⃣ 🔥 CLEANUP RECENTLY DELETED (task + attachments)
                     cleanupRecentlyDeleted(context: context)
+                    logStep("recentlyDeleted")
                     
                     // 3️⃣ UI refresh
                     NotificationCenter.default.post(
@@ -248,8 +264,10 @@ struct ForMemoApp: App {
                     )
                     
                     // 4️⃣ refresh notifiche (con piccolo delay SAFE)
-                    try? await Task.sleep(for: .milliseconds(300))
+//                    try? await Task.sleep(for: .milliseconds(300))
                     NotificationManager.shared.refresh(force: true)
+                    logStep("notificationRefresh")
+                    logStep("ACTIVE COMPLETE")
 
                 }
             case .inactive:
@@ -274,6 +292,15 @@ struct ForMemoApp: App {
             queue: .main
         ) { _ in
             Task { @MainActor in
+                let remoteStart = CFAbsoluteTimeGetCurrent()
+
+                let now = Date()
+
+                guard now.timeIntervalSince(Self.lastRemoteChange) > 2 else {
+                    return
+                }
+
+                Self.lastRemoteChange = now
                 // 🔥 CloudKit remote change
 #if DEBUG
                 AppLogger.notifications.debug("📡 CloudKit push ricevuto")
@@ -288,14 +315,13 @@ struct ForMemoApp: App {
                     using: context
                 )
 
-                _ = try? context.fetch(
-                    FetchDescriptor<TodoTask>()
-                )
-
                 // ✅ trigger UI
                 NotificationCenter.default.post(
                     name: .attachmentsShouldRefresh,
                     object: nil
+                )
+                DebugLog.writeCloudKitEvent(
+                    "⏱️ Remote change total: \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - remoteStart))s"
                 )
             }
         }
