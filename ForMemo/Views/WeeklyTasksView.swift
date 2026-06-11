@@ -6,8 +6,12 @@ import CoreLocation
 
 struct WeeklyTasksView: View {
 
-    @AppStorage("TaskWeekDays")
-    private var taskWeekDays: Int = 3
+    @Environment(AppSettings.self)
+    private var settings
+
+    private var taskWeekDays: Int {
+        settings.taskWeekDays
+    }
     
     @Environment(\.locale) private var appLocale
     @Environment(\.modelContext) private var modelContext
@@ -514,9 +518,16 @@ struct WeeklyTasksView: View {
 
             HStack {
                 Spacer()
-                Stepper("", value: $taskWeekDays, in: 1...7)
-                    .labelsHidden()
-                    .fixedSize()
+                Stepper(
+                    "",
+                    value: Binding(
+                        get: { settings.taskWeekDays },
+                        set: { settings.taskWeekDays = $0 }
+                    ),
+                    in: 1...7
+                )
+                .labelsHidden()
+                .fixedSize()
                 Text("Next \(taskWeekDays) Days")
                     .foregroundStyle(Color(UIColor.label))
 
@@ -533,26 +544,32 @@ struct WeeklyTasksView: View {
 
 private struct WeeklyTaskRow: View {
     
-    @AppStorage("tasklist.highlightEnabled")
-    private var highlightEnabled: Bool = true
+    @Environment(AppSettings.self)
+    private var settings
 
-    @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = Color.red.toHex() ?? ""
+    private var confirmTaskDeletion: Bool {
+        settings.confirmTaskDeletion
+    }
+
+    private var showTodayExpiredLabel: Bool {
+        settings.showTodayExpiredLabel
+    }
+
+    private var selectedRowStyle: Int {
+        settings.selectedRowStyle
+    }
+
+    private var showDateEveryRow: Bool {
+        settings.showDateEveryRow
+    }
+
+    private var highlightEnabled: Bool {
+        settings.highlightEnabled
+    }
 
     private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .red
+        Color(hex: settings.highlightColorHex) ?? .red
     }
-    
-    @AppStorage("confirmTaskDeletion")
-    private var confirmTaskDeletion = true
-    
-    @AppStorage("tasklist.showTodayExpiredLabel")
-    private var showTodayExpiredLabel: Bool = true
-    @AppStorage("selectedTaskRowStyle")
-    private var selectedRowStyle: Int = 0
-
-    @AppStorage("TaskListShowDateEveryRow")
-    private var showDateEveryRow = false
     
     @Binding var taskPendingDeletion: TodoTask?
     
@@ -583,7 +600,18 @@ private struct WeeklyTaskRow: View {
             showDateColumn:
                 showDateEveryRow
                 ? true
-                : (position == .first || position == .single)
+                : (position == .first || position == .single),
+            appearance: TaskRowAppearance(
+                iconStyle: .polychrome,
+                showBadge: true,
+                showAttachments: true,
+                showLocation: true,
+                showPriority: true,
+                showBadgeOnlyWithPriority: true,
+                highlightEnabled: highlightEnabled,
+                showTodayExpiredLabel: showTodayExpiredLabel,
+                selectedRowStyle: selectedRowStyle
+            )
         )
         .padding(.leading, 10)
         .frame(

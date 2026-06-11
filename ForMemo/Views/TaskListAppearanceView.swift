@@ -25,28 +25,20 @@ enum TaskListAppearanceKeys {
 //    }
 //}
 struct TaskListAppearanceView: View {
-    
     @AppStorage("selectedTaskListStyle")
     private var listStyleRawValue: String = TaskListStyle.grouped.rawValue
 
     private var listStyleChoice: TaskListStyle {
         TaskListStyle(rawValue: listStyleRawValue) ?? .grouped
     }
-    @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
-    private var showBadgeOnlyWithPriority = true
-    
+
     @AppStorage("tasklist.highlightEnabled")
     private var highlightEnabled: Bool = true
 
-
-    @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = Color.red.toHex() ?? ""
-
-    @AppStorage(TaskListAppearanceKeys.showTodayExpiredLabel)
-    private var showTodayExpiredLabel = true
-
-    
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppSettings.self) private var settings
+
+    // (showTodayExpiredLabel and dismiss duplicate removed)
     
     @AppStorage(TaskListAppearanceKeys.iconStyle)
     private var iconStyle: TaskIconStyle = .polychrome
@@ -135,7 +127,7 @@ struct TaskListAppearanceView: View {
             .onChange(of: dueIconEffectRaw) { _, _ in
                 refreshID = UUID()
             }
-            .onChange(of: showTodayExpiredLabel) { _, _ in
+            .onChange(of: settings.showTodayExpiredLabel) { _, _ in
                 refreshID = UUID()
             }
         }
@@ -163,7 +155,18 @@ struct TaskListAppearanceView: View {
         List {
             TaskRow(
                 task: previewTask,
-                showDateColumn: true
+                showDateColumn: true,
+                appearance: TaskRowAppearance(
+                    iconStyle: settings.iconStyle,
+                    showBadge: settings.showBadge,
+                    showAttachments: settings.showAttachments,
+                    showLocation: settings.showLocation,
+                    showPriority: settings.showPriority,
+                    showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
+                    highlightEnabled: settings.highlightEnabled,
+                    showTodayExpiredLabel: settings.showTodayExpiredLabel,
+                    selectedRowStyle: settings.selectedRowStyle
+                )
             )
                 .modifier(
                     TodoSectionView.RowCardStyle(
@@ -192,12 +195,12 @@ struct TaskListAppearanceView: View {
         
         Section("Appearance") {
             
-            Picker("Main icon style", selection: $iconStyle) {
+            Picker("Main icon style", selection: Bindable(settings).iconStyle) {
                 Text("Polychrome").tag(TaskIconStyle.polychrome)
                 Text("Monochrome").tag(TaskIconStyle.monochrome)
             }
             
-            Picker("Row Style", selection: $selectedRowStyle) {
+            Picker("Row Style", selection: Bindable(settings).selectedRowStyle) {
                 ForEach(0..<rowOptions.count, id: \.self) { index in
                     Text(rowOptions[index]).tag(index)
                 }
@@ -226,7 +229,7 @@ struct TaskListAppearanceView: View {
 
                     Spacer()
 
-                    Toggle("", isOn: $highlightEnabled)
+                    Toggle("", isOn: Bindable(settings).highlightEnabled)
                         .labelsHidden()
                 }
 
@@ -239,7 +242,7 @@ struct TaskListAppearanceView: View {
                     HStack(spacing: 8) {
                         ForEach(palette, id: \.self) { color in
                             let hex = color.toHex() ?? ""
-                            let isSelected = highlightColorHex == hex
+                            let isSelected = settings.highlightColorHex == hex
 
                             Circle()
                                 .fill(color)
@@ -252,7 +255,7 @@ struct TaskListAppearanceView: View {
                                 .shadow(color: isSelected ? .black.opacity(0.2) : .clear, radius: 3)
                                 .scaleEffect(isSelected ? 1.15 : 1.0)
                                 .onTapGesture {
-                                    highlightColorHex = hex
+                                    settings.highlightColorHex = hex
                                 }
                                 .animation(.spring(response: 0.25, dampingFraction: 0.6), value: isSelected)
                         }
@@ -263,18 +266,18 @@ struct TaskListAppearanceView: View {
                 .frame(minHeight: 36)
                 .padding(.top, 4)
                 .padding(.bottom, 2)
-                .disabled(!highlightEnabled)
-                .opacity(!highlightEnabled ? 0.4 : 1)
+                .disabled(!settings.highlightEnabled)
+                .opacity(!settings.highlightEnabled ? 0.4 : 1)
             }
             Toggle(
                 "Underline overdue tasks",
-                isOn: $showTodayExpiredLabel
+                isOn: Bindable(settings).showTodayExpiredLabel
             )
-            Toggle("Show days badge", isOn: $showBadge)
-            Toggle("Show badge only when priority is set", isOn: $showBadgeOnlyWithPriority)
-            Toggle("Show attachments icon", isOn: $showAttachments)
-            Toggle("Show location icon", isOn: $showLocation)
-            Toggle("Show priority icon", isOn: $showPriority)
+            Toggle("Show days badge", isOn: Bindable(settings).showBadge)
+            Toggle("Show badge only when priority is set", isOn: Bindable(settings).showBadgeOnlyWithPriority)
+            Toggle("Show attachments icon", isOn: Bindable(settings).showAttachments)
+            Toggle("Show location icon", isOn: Bindable(settings).showLocation)
+            Toggle("Show priority icon", isOn: Bindable(settings).showPriority)
 
         }
     }
@@ -282,17 +285,17 @@ struct TaskListAppearanceView: View {
     
     private func reset() {
         
-        iconStyle = .polychrome
+        settings.iconStyle = .polychrome
+        settings.showBadge = true
+        settings.showAttachments = true
+        settings.showLocation = true
+        settings.showPriority = true
+        settings.showBadgeOnlyWithPriority = true
+        settings.highlightEnabled = true
+        settings.highlightColorHex = Color.red.toHex() ?? ""
+        settings.showTodayExpiredLabel = true
+        settings.selectedRowStyle = 0
         dueIconEffectRaw = DueIconEffect.blink.rawValue
-        showBadge = true
-        showAttachments = true
-        showLocation = true
-        showPriority = true
-        showBadgeOnlyWithPriority = true
-        highlightEnabled = true
-        highlightColorHex = Color.red.toHex() ?? ""
-        showTodayExpiredLabel = true
-        selectedRowStyle = 0
     }
 }
 

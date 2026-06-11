@@ -131,3 +131,6 @@ enum AppSettingsOpener {
         UIApplication.shared.open(url)
     }
 }
+
+
+

@@ -46,6 +46,9 @@ struct ForMemoApp: App {
     @Environment(\.scenePhase)
     private var scenePhase
     
+    @State
+    private var appSettings = AppSettings.shared
+    
     
     // MARK: - App Delegate
     
@@ -181,6 +184,7 @@ struct ForMemoApp: App {
                     NotificationManager.shared.refresh(force: true)
                 }
 #endif
+                .environment(appSettings)
                 .preferredColorScheme(selectedTheme.colorScheme)
         }
         

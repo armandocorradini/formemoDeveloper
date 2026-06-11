@@ -8,11 +8,11 @@ struct TaskIconContent: View {
     let showLocation: Bool
 
     
-    @AppStorage("dueIconEffect")
-    private var dueIconEffectRaw: String = DueIconEffect.blink.rawValue
+    @Environment(AppSettings.self)
+    private var settings
     
     private var selectedEffect: DueIconEffect {
-        DueIconEffect(rawValue: dueIconEffectRaw) ?? .blink
+        settings.dueIconEffect
     }
     
     private var shouldShowBadge: Bool {

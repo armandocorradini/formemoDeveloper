@@ -713,14 +713,10 @@ private struct DayCell: View {
         return cal
     }()
     
-    @AppStorage(TaskListAppearanceKeys.iconStyle)
-    private var iconStyle: TaskIconStyle = .polychrome
-
-    @AppStorage("tasklist.showTodayExpiredLabel")
-    private var showTodayExpiredLabel: Bool = true
+    @Environment(AppSettings.self) private var settings
 
     private func iconColor(for task: TodoTask) -> Color {
-        if iconStyle == .monochrome {
+        if settings.iconStyle == .monochrome {
             return .primary
         } else {
             return task.mainTag?.color ?? task.status.color
@@ -819,7 +815,7 @@ private struct DayCell: View {
 
                         Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
                             .font(.system(size: 5, weight: .medium))
-                            .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
+                            .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
                             .foregroundStyle(iconColor(for: task), .primary)
 
                         HStack(spacing: 3) {
@@ -828,7 +824,7 @@ private struct DayCell: View {
                                 .lineLimit(1)
                                 .foregroundStyle(task.isCompleted ? .secondary : .primary)
                                 .overlay(alignment: .bottomLeading) {
-                                    if showTodayExpiredLabel && isOverdue(task) {
+                                    if settings.showTodayExpiredLabel && isOverdue(task) {
                                         Rectangle()
                                             .fill(Color.red.opacity(0.75))
                                             .frame(height: 0.8)
@@ -871,21 +867,7 @@ private struct DayTasksInlineView: View {
     
     @Environment(\.modelContext) private var modelContext
     @Query private var allTasks: [TodoTask]
-
-    @AppStorage("confirmTaskDeletion") private var confirmTaskDeletion = true
-
-    @AppStorage(TaskListAppearanceKeys.iconStyle)
-    private var iconStyle: TaskIconStyle = .polychrome
-
-    @AppStorage("tasklist.showTodayExpiredLabel")
-    private var showTodayExpiredLabel: Bool = true
-
-    // New AppStorage properties for highlight
-    @AppStorage("tasklist.highlightEnabled")
-    private var highlightEnabled: Bool = true
-
-    @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = Color.red.toHex() ?? ""
+    @Environment(AppSettings.self) private var settings
 
     @State private var taskPendingDeletion: TodoTask?
     let tasks: [TodoTask]
@@ -911,7 +893,7 @@ private struct DayTasksInlineView: View {
     }
 
     private func iconColor(for task: TodoTask) -> Color {
-        if iconStyle == .monochrome {
+        if settings.iconStyle == .monochrome {
             return .primary
         } else {
             return task.mainTag?.color ?? task.status.color
@@ -920,7 +902,7 @@ private struct DayTasksInlineView: View {
 
     // Helper methods for highlight
     private func shouldShowHighlight(for task: TodoTask) -> Bool {
-        guard highlightEnabled else { return false }
+        guard settings.highlightEnabled else { return false }
 
         let isCritical = task.priority.systemImage == "flame"
 
@@ -931,7 +913,7 @@ private struct DayTasksInlineView: View {
     }
 
     private func highlightColor(for task: TodoTask) -> Color {
-        Color(hex: highlightColorHex) ?? .red
+        Color(hex: settings.highlightColorHex) ?? .red
     }
 
     @MainActor
@@ -1037,14 +1019,14 @@ private struct DayTasksInlineView: View {
                                     Text(task.title)
                                         .font(.callout)
                                         .foregroundStyle(task.isCompleted ? .secondary : .primary)
-                                        .overlay(alignment: .bottomLeading) {
-                                            if showTodayExpiredLabel && isOverdue(task) {
-                                                Rectangle()
-                                                    .fill(Color.red.opacity(0.75))
-                                                    .frame(height: 1)
-                                                    .offset(y: 2)
-                                            }
-                                        }
+                                .overlay(alignment: .bottomLeading) {
+                                    if settings.showTodayExpiredLabel && isOverdue(task) {
+                                        Rectangle()
+                                            .fill(Color.red.opacity(0.75))
+                                            .frame(height: 1)
+                                            .offset(y: 2)
+                                    }
+                                }
                                         .strikethrough(task.isCompleted)
 
                                     if task.recurrenceRule != nil {
@@ -1065,7 +1047,7 @@ private struct DayTasksInlineView: View {
                                     }
 
                                     Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                                        .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
+                                        .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
                                         .foregroundStyle(iconColor(for: task), .primary)
                                         .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
                                         .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
@@ -1114,7 +1096,7 @@ private struct DayTasksInlineView: View {
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
-                            if confirmTaskDeletion {
+                            if settings.confirmTaskDeletion {
                                 taskPendingDeletion = task // <--- Questo attiva l'alert
                             } else {
                                 withAnimation {
@@ -1157,7 +1139,7 @@ private struct DayTasksInlineView: View {
 
                         // Azione di eliminazione (quella che avevi nel trailing swipe)
                         Button(role: .destructive) {
-                            if confirmTaskDeletion {
+                            if settings.confirmTaskDeletion {
                                 taskPendingDeletion = task
                             } else {
                                 withAnimation {

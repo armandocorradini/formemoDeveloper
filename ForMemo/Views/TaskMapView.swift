@@ -292,18 +292,10 @@ struct TaskAnnotationView: View {
     let onSelectTask: (UUID) -> Void
     
     @State private var blink = false
-    
-    @AppStorage(TaskListAppearanceKeys.iconStyle)
-    private var iconStyle: TaskIconStyle = .polychrome
-
-    @AppStorage("tasklist.highlightEnabled")
-    private var highlightEnabled: Bool = true
-
-    @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = Color.red.toHex() ?? ""
+    @Environment(AppSettings.self) private var settings
 
     private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .red
+        Color(hex: settings.highlightColorHex) ?? .red
     }
     
     // Helper computed properties for color logic
@@ -324,7 +316,7 @@ struct TaskAnnotationView: View {
     }
     
     private func iconColor(for item: TaskMapAnnotationModel.Item) -> Color {
-        if iconStyle == .monochrome {
+        if settings.iconStyle == .monochrome {
             return .primary
         } else {
             return item.tagColor ?? .primary
@@ -402,7 +394,7 @@ extension TaskAnnotationView {
                             if let icon = it.tagIcon {
                                 Image(systemName: icon)
                                     .font(.caption)
-                                    .symbolRenderingMode(iconStyle == .monochrome ? .monochrome : .palette)
+                                    .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
                                     .foregroundStyle(
                                         iconColor(for: it),
                                         .primary
@@ -460,7 +452,7 @@ extension TaskAnnotationView {
     }
     
     private func shouldShowHighlight(for item: TaskMapAnnotationModel.Item) -> Bool {
-        guard highlightEnabled else {
+        guard settings.highlightEnabled else {
             return false
         }
         guard item.prioritySystemImage == "flame" else {

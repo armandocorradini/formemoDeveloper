@@ -16,6 +16,7 @@ extension Notification.Name {
 struct TaskListView: View {
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppSettings.self) private var settings
 
     @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
     private var todoQuery: [TodoTask]
@@ -42,11 +43,27 @@ struct TaskListView: View {
     @State private var selectedPeriodFilter: TaskPeriodFilter? = nil
 
 
-    @AppStorage("TaskListStyle")
-    private var listStyleChoice: TaskListStyle = .plain
-    
-    @AppStorage("TaskListShowDateEveryRow")
-    private var showDateEveryRow = false
+    private var listStyleChoice: TaskListStyle {
+        settings.taskListStyle
+    }
+
+    private var listStyleBinding: Binding<TaskListStyle> {
+        Binding(
+            get: { settings.taskListStyle },
+            set: { settings.taskListStyle = $0 }
+        )
+    }
+
+    private var showDateEveryRow: Bool {
+        settings.showDateEveryRow
+    }
+
+    private var showDateEveryRowBinding: Binding<Bool> {
+        Binding(
+            get: { settings.showDateEveryRow },
+            set: { settings.showDateEveryRow = $0 }
+        )
+    }
 
     @State private var taskPendingDeletion: TodoTask?
 
@@ -385,7 +402,7 @@ struct TaskListView: View {
 
                             Section("Appearance") {
 
-                                Picker("Style", selection: $listStyleChoice) {
+                                Picker("Style", selection: listStyleBinding) {
 
                                     Label("Plain", systemImage: "list.bullet")
                                         .tag(TaskListStyle.plain)
@@ -397,7 +414,7 @@ struct TaskListView: View {
 
                             Section() {
 
-                                Toggle(isOn: $showDateEveryRow) {
+                                Toggle(isOn: showDateEveryRowBinding) {
 
                                     Label(
                                         "Show Date On Every Row",
@@ -531,46 +548,28 @@ struct EmptySectionView: View {
 
 
 // MARK: - TaskRow
+
+struct TaskRowAppearance {
+    let iconStyle: TaskIconStyle
+
+    let showBadge: Bool
+    let showAttachments: Bool
+    let showLocation: Bool
+    let showPriority: Bool
+    let showBadgeOnlyWithPriority: Bool
+
+    let highlightEnabled: Bool
+    let showTodayExpiredLabel: Bool
+
+    let selectedRowStyle: Int
+}
+
 @MainActor
 struct TaskRow: View {
     // Riceviamo il task direttamente. SwiftData gestisce la relazione in modo efficiente.
     let task: TodoTask
     let showDateColumn: Bool
-    
-    @AppStorage(TaskListAppearanceKeys.iconStyle)
-    private var iconStyle: TaskIconStyle = .polychrome
-
-
-    @AppStorage(TaskListAppearanceKeys.showBadge)
-    private var showBadge = true
-
-    @AppStorage(TaskListAppearanceKeys.showAttachments)
-    private var showAttachments = true
-
-    @AppStorage(TaskListAppearanceKeys.showLocation)
-    private var showLocation = true
-
-    @AppStorage(TaskListAppearanceKeys.showPriority)
-    private var showPriority = true
-
-    @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
-    private var showBadgeOnlyWithPriority = true
-
-    @AppStorage("tasklist.highlightEnabled")
-    private var highlightEnabled: Bool = true
-
-    @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = Color.red.toHex() ?? ""
-
-    private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .red
-    }
-
-    @AppStorage("tasklist.showTodayExpiredLabel")
-    private var showTodayExpiredLabel: Bool = true
-
-
-    @AppStorage("selectedTaskRowStyle") private var selectedRowStyle: Int = 0
+    let appearance: TaskRowAppearance
     private let now = Date()
 
     private var isToday: Bool {
@@ -593,12 +592,12 @@ struct TaskRow: View {
     }
 
     var rowStyleToUse: Int {
-        return selectedRowStyle
+        appearance.selectedRowStyle
     }
 
     private var model: TaskRowDisplayModel {
         let shouldDisplayBadge =
-            showBadge && (!showBadgeOnlyWithPriority || task.priority != .none)
+            appearance.showBadge && (!appearance.showBadgeOnlyWithPriority || task.priority != .none)
 
         let attachments = task.attachments ?? []
 
@@ -646,16 +645,16 @@ struct TaskRow: View {
     private var content: some View {
         TaskRowContent(
             model: model,
-            iconStyle: iconStyle,
+            iconStyle: appearance.iconStyle,
             showBadge: model.shouldShowBadge,
-            showAttachments: showAttachments,
-            showLocation: showLocation,
-            showPriority: showPriority,
-            showBadgeOnlyWithPriority: showBadgeOnlyWithPriority,
+            showAttachments: appearance.showAttachments,
+            showLocation: appearance.showLocation,
+            showPriority: appearance.showPriority,
+            showBadgeOnlyWithPriority: appearance.showBadgeOnlyWithPriority,
             rowStyle: TaskRowStyle(rawValue: rowStyleToUse) ?? .style0,
             showDateColumn: showDateColumn,
-            highlightCriticalOverdue: highlightEnabled,
-            showTodayExpiredLabel: showTodayExpiredLabel
+            highlightCriticalOverdue: appearance.highlightEnabled,
+            showTodayExpiredLabel: appearance.showTodayExpiredLabel
         )
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(
@@ -833,6 +832,7 @@ extension View {
 }
 struct TodoSectionView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(AppSettings.self) private var settings
     @State private var weatherManager = WeatherManager.shared
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
 
@@ -974,9 +974,12 @@ struct TodoSectionView: View {
             return nil
         }
     }
-    @AppStorage("TaskListStyle") private var listStyleChoice: TaskListStyle = .plain
-    @AppStorage("confirmTaskDeletion")
-    private var confirmTaskDeletion = true
+    private var listStyleChoice: TaskListStyle {
+        settings.taskListStyle
+    }
+    private var confirmTaskDeletion: Bool {
+        settings.confirmTaskDeletion
+    }
     @Binding var taskPendingDeletion: TodoTask?
     let openWeatherForecast: (Date) -> Void
     
@@ -1030,17 +1033,14 @@ struct TodoSectionView: View {
 
     struct RowCardStyle: ViewModifier {
         @Environment(\.colorScheme) private var colorScheme
+        @Environment(AppSettings.self) private var settings
         let task: TodoTask
         let style: TaskListStyle
         let position: TaskRowPosition
         let showBottomSeparator: Bool
 
-        @AppStorage("tasklist.showTodayExpiredLabel") private var showTodayExpiredLabel: Bool = true
-        @AppStorage("tasklist.highlightEnabled") private var highlightEnabled: Bool = true
-        @AppStorage("tasklist.highlightColor")  private var highlightColorHex: String = Color.red.toHex() ?? ""
-
         private var highlightColor: Color {
-            Color(hex: highlightColorHex) ?? .red
+            Color(hex: settings.highlightColorHex) ?? .red
         }
 
         func body(content: Content) -> some View {
@@ -1070,7 +1070,7 @@ struct TodoSectionView: View {
             let isCritical = task.priority.systemImage == "flame"
 
             let highlightOverlay: Color? = {
-                guard highlightEnabled, isCritical, (isOverdue || isToday) else {
+                guard settings.highlightEnabled, isCritical, (isOverdue || isToday) else {
                     return nil
                 }
                 return highlightColor
@@ -1113,8 +1113,23 @@ struct TodoSectionView: View {
         }
     }
     
-    @AppStorage("TaskListShowDateEveryRow")
-    private var showDateEveryRow = false
+    private var showDateEveryRow: Bool {
+        settings.showDateEveryRow
+    }
+
+    private var taskRowAppearance: TaskRowAppearance {
+        .init(
+            iconStyle: settings.iconStyle,
+            showBadge: settings.showBadge,
+            showAttachments: settings.showAttachments,
+            showLocation: settings.showLocation,
+            showPriority: settings.showPriority,
+            showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
+            highlightEnabled: settings.highlightEnabled,
+            showTodayExpiredLabel: settings.showTodayExpiredLabel,
+            selectedRowStyle: settings.selectedTaskRowStyle
+        )
+    }
 
     var body: some View {
 
@@ -1272,7 +1287,8 @@ struct TodoSectionView: View {
             showDateColumn:
                 showDateEveryRow
                 ? true
-                : (position == .first || position == .single)
+                : (position == .first || position == .single),
+            appearance: taskRowAppearance
         )
 
         .modifier(
@@ -1445,10 +1461,27 @@ struct TodoSectionView: View {
 }
 
 struct CompletedSectionView: View {
-    @AppStorage("TaskListStyle") private var listStyleChoice: TaskListStyle = .plain
-    @AppStorage("confirmTaskDeletion")
-    private var confirmTaskDeletion = true
+    @Environment(AppSettings.self) private var settings
+    private var listStyleChoice: TaskListStyle {
+        settings.taskListStyle
+    }
+    private var confirmTaskDeletion: Bool {
+        settings.confirmTaskDeletion
+    }
 
+    private var taskRowAppearance: TaskRowAppearance {
+        .init(
+            iconStyle: settings.iconStyle,
+            showBadge: settings.showBadge,
+            showAttachments: settings.showAttachments,
+            showLocation: settings.showLocation,
+            showPriority: settings.showPriority,
+            showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
+            highlightEnabled: settings.highlightEnabled,
+            showTodayExpiredLabel: settings.showTodayExpiredLabel,
+            selectedRowStyle: settings.selectedTaskRowStyle
+        )
+    }
 
     @Binding var taskPendingDeletion: TodoTask?
     let tasks: [TodoTask]
@@ -1530,7 +1563,8 @@ struct CompletedSectionView: View {
             ForEach(Array(tasks.enumerated()), id: \.element.id) { index, t in
                 TaskRow(
                     task: t,
-                    showDateColumn: true
+                    showDateColumn: true,
+                    appearance: taskRowAppearance
                 )
                 .frame(minHeight: TaskRowMetrics.rowHeight)
                     .modifier(

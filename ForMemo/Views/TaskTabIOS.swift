@@ -4,6 +4,7 @@ import SwiftData
 struct TaskTabView: View {
     
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(AppSettings.self) private var settings
     
     @State private var selectedTab: Int = 0
     @State private var showSnoozeAlert = false
@@ -20,11 +21,6 @@ struct TaskTabView: View {
     @State private var weatherPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
     
-    @AppStorage("TaskWeekDays")
-    private var taskWeekDays: Int = 3
-    
-    @AppStorage("startupTab")
-    private var startupTab: Int = 1
     
     var body: some View {
         rootLayout
@@ -46,7 +42,7 @@ struct TaskTabView: View {
                     }
                     
                     withAnimation(.easeInOut(duration: 0.18)) {
-                        selectedTab = startupTab
+                        selectedTab = settings.startupTab
                     }
                 }
             }
@@ -92,9 +88,9 @@ struct TaskTabView: View {
                 
                 tabItem(
                     "calendar.day.timeline.right",
-                    taskWeekDays == 1
+                    settings.taskWeekDays == 1
                     ? String(localized: "today_tab")
-                    : String(localized: "\(taskWeekDays) days_tab"),
+                    : String(localized: "\(settings.taskWeekDays) days_tab"),
                     4
                 )
                 
@@ -383,9 +379,9 @@ struct TaskTabView: View {
                 sidebarRow(String(localized: "list_tab"), "checklist", 1)
                 
                 sidebarRow(
-                    taskWeekDays == 1
+                    settings.taskWeekDays == 1
                     ? String(localized: "today_tab")
-                    : String(localized: "days_tab \(taskWeekDays)"),
+                    : String(localized: "days_tab \(settings.taskWeekDays)"),
                     "calendar.day.timeline.right",
                     4
                 )

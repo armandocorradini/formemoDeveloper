@@ -37,19 +37,11 @@ struct TaskDetailView: View {
     @Bindable var task: TodoTask
     
     @Environment(\.modelContext) private var modelContext
-    
-    @AppStorage("notificationLeadTimeDays")
-    private var notificationLeadTimeDays: Int = 1
+    @Environment(AppSettings.self) private var settings
     
     @Environment(\.dismiss) private var dismiss
     var isSheet: Bool = false
     
-    @AppStorage("navigationApp")
-    private var navigationAppRaw = NavigationApp.appleMaps.rawValue
-    
-    private var navigationApp: NavigationApp {
-        NavigationApp(rawValue: navigationAppRaw) ?? .appleMaps
-    }
     @Query(sort: \TaskAttachment.createdAt)
     private var attachments: [TaskAttachment]
     
@@ -102,15 +94,6 @@ struct TaskDetailView: View {
     @State private var selectedLocationName: String?
     @State private var selectedCoordinate: CLLocationCoordinate2D?
     
-    @AppStorage(TaskListAppearanceKeys.iconStyle)
-    private var iconStyle: TaskIconStyle = .polychrome
-    
-    
-    @AppStorage(TaskListAppearanceKeys.showBadge)
-    private var showBadge = true
-    
-    @AppStorage(TaskListAppearanceKeys.showBadgeOnlyWithPriority)
-    private var showBadgeOnlyWithPriority = true
     
     
     @State private var cloudKitDebounceTask: Task<Void, Never>?
@@ -120,7 +103,7 @@ struct TaskDetailView: View {
     
     private var rowModel: TaskRowDisplayModel {
         let icon = task.mainTag?.mainIcon ?? task.status.icon
-        let color: Color = iconStyle == .monochrome
+        let color: Color = settings.iconStyle == .monochrome
         ? (task.mainTag?.color ?? task.status.color)
         : task.status.color
         
@@ -137,8 +120,8 @@ struct TaskDetailView: View {
             deadLine: task.deadLine,
             reminderOffsetMinutes: task.reminderOffsetMinutes,
             shouldShowBadge: task.shouldShowDaysBadge(
-                showBadge: showBadge,
-                showBadgeOnlyWithPriority: showBadgeOnlyWithPriority
+                showBadge: settings.showBadge,
+                showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority
             ),
             isCompleted: task.isCompleted,
             recurrenceRule: task.recurrenceRule,
@@ -162,7 +145,7 @@ struct TaskDetailView: View {
                 MainInfoSection(
                     task: task,
                     rowModel: rowModel,
-                    iconStyle: iconStyle,
+                    iconStyle: settings.iconStyle,
                     saveTask: { saveTask() },
                     dismiss: dismiss,
                     modelContext: modelContext
@@ -171,7 +154,7 @@ struct TaskDetailView: View {
                 ScheduleSection(
                     task: task,
                     selectedRecurrence: $selectedRecurrence,
-                    notificationLeadTimeDays: notificationLeadTimeDays,
+                    notificationLeadTimeDays: settings.notificationLeadTimeDays,
                     validationMessage: validationMessage,
                     showingDeleteDeadlineAlert: $showingDeleteDeadlineAlert,
                     saveTask: { saveTask() },
@@ -180,7 +163,7 @@ struct TaskDetailView: View {
                 
                 ContextSection(
                     task: task,
-                    navigationApp: navigationApp,
+                    navigationApp: settings.navigationApp,
                     showingDeleteConfirmation: $showingDeleteConfirmation,
                     showingLocationPicker: $showingLocationPicker,
                     saveTask: { saveTask() },
@@ -369,7 +352,7 @@ struct TaskDetailView: View {
         .onChange(of: task.title) { _, _ in
             scheduleDebouncedSave()
         }
-        .onChange(of: notificationLeadTimeDays) { _, _ in
+        .onChange(of: settings.notificationLeadTimeDays) { _, _ in
             NotificationManager.shared.refresh()
         }
         .onChange(of: task.taskDescription) { _, _ in
@@ -641,7 +624,7 @@ struct TaskDetailView: View {
         let lat = coordinate.latitude
         let lon = coordinate.longitude
         
-        switch navigationApp {
+        switch settings.navigationApp {
             
         case .appleMaps:
             
@@ -912,7 +895,7 @@ struct TaskDetailView: View {
         
         let reminderDate = currentDeadline.addingTimeInterval(-Double(offsetMinutes) * 60)
         
-        let autoNotificationMinutes = notificationLeadTimeDays * 24 * 60
+        let autoNotificationMinutes = settings.notificationLeadTimeDays * 24 * 60
         
         if reminderDate < .now {
             validationMessage = String(localized: "⚠️ This reminder is set in the past.")

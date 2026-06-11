@@ -31,14 +31,12 @@ struct TaskRowContent: View, TaskRowBaseLogic {
     
     let rowStyle: TaskRowStyle
     let showDateColumn: Bool
-    
-    @AppStorage("dueIconEffect") private var selectedEffectRaw: String = DueIconEffect.none.rawValue
-
+    @Environment(AppSettings.self) private var appSettings
     let highlightCriticalOverdue: Bool
     let showTodayExpiredLabel: Bool
     
     private var selectedEffect: DueIconEffect {
-        DueIconEffect(rawValue: selectedEffectRaw) ?? .none
+        appSettings.dueIconEffect
     }
 
     private var isToday: Bool {
