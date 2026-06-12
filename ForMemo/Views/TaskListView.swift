@@ -372,6 +372,28 @@ struct TaskListView: View {
 
                     rebuildVisibleTasks()
                 }
+            
+                .onChange(of: searchText) { _, _ in
+                    rebuildVisibleTasks()
+                }
+                .onChange(of: selectedTagFilter) { _, _ in
+                    rebuildVisibleTasks()
+                }
+                .onChange(of: selectedPriorityFilter) { _, _ in
+                    rebuildVisibleTasks()
+                }
+                .onChange(of: selectedPeriodFilter) { _, _ in
+                    rebuildVisibleTasks()
+                }
+                .onChange(of: todoQuery.count) { _, _ in
+                    rebuildVisibleTasks()
+                }
+                .onChange(of: completedQuery.count) { _, _ in
+                    rebuildVisibleTasks()
+                }
+//                .onChange(of: showCompleted) { _, _ in
+//                    rebuildVisibleTasks()
+//                }
 //                .onChange(of: refreshKey) { oldValue, newValue in
 //
 //                    print("🔄 refreshKey changed")
@@ -402,7 +424,9 @@ struct TaskListView: View {
 //                }
                 .onChange(of: scenePhase) { _, newPhase in
 
-                    if newPhase == .background {
+                    if newPhase == .background &&
+                       showCompleted &&
+                       completedQuery.count > 2000 {
 
                         showCompleted = false
                     }
@@ -454,6 +478,7 @@ struct TaskListView: View {
                         Button {
                             withAnimation(.snappy) {
                                 showCompleted.toggle()
+                                rebuildVisibleTasks()
                             }
                         } label: {
                             Image(systemName: showCompleted ? "eye.slash" : "eye")
@@ -1176,9 +1201,9 @@ struct TodoSectionView: View {
 
     let tasks: [TodoTask]
     let modelContext: ModelContext
-    @State private var visibleCompletedCount = 100
+    @State private var visibleCompletedCount = 200
     
-    @State private var completedVisibleLimit = 100
+    @State private var completedVisibleLimit = 200
     private struct GroupedSection: Identifiable, Equatable {
         let date: Date
         let tasks: [TodoTask]
@@ -1191,7 +1216,7 @@ struct TodoSectionView: View {
 
     @State private var groupedTasksCache: [GroupedSection] = []
     
-    @State private var visibleLimit = 100
+    @State private var visibleLimit = 200
 
     private var visibleGroups: [GroupedSection] {
 
@@ -1523,7 +1548,7 @@ struct TodoSectionView: View {
                             guard visibleLimit < tasks.count else { return }
 
                             visibleLimit = min(
-                                visibleLimit + 100,
+                                visibleLimit + 200,
                                 tasks.count
                             )
                         }
@@ -1589,7 +1614,7 @@ struct TodoSectionView: View {
             rebuildGroups()
 
             if tasks.count < visibleLimit {
-                visibleLimit = max(100, tasks.count)
+                visibleLimit = max(200, tasks.count)
             }
         }
         .onReceive(
@@ -1817,7 +1842,7 @@ struct CompletedSectionView: View {
     @Binding var taskPendingDeletion: TodoTask?
     let tasks: [TodoTask]
     let modelContext: ModelContext
-    @State private var visibleCompletedCount = 100
+    @State private var visibleCompletedCount = 200
     private var visibleTasks: [TodoTask] {
 
         Array(tasks.prefix(visibleCompletedCount))
@@ -1968,7 +1993,7 @@ struct CompletedSectionView: View {
                         }
 
                         visibleCompletedCount = min(
-                            visibleCompletedCount + 100,
+                            visibleCompletedCount + 200,
                             tasks.count
                         )
                     }
@@ -1977,7 +2002,7 @@ struct CompletedSectionView: View {
                         if visibleCompletedCount > tasks.count {
 
                             visibleCompletedCount = max(
-                                100,
+                                200,
                                 tasks.count
                             )
                         }

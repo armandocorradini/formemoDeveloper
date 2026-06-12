@@ -27,6 +27,7 @@ struct SettingsView: View {
 #if DEBUG
     @State private var hasTestData: Bool = false
     @State private var areTestTasksCompleted: Bool = false
+    @State private var debugKeepGenerateMode: Bool = false
 #endif
     @AppStorage("navigationApp")
     private var navigationAppRaw: String = NavigationApp.appleMaps.rawValue
@@ -701,11 +702,15 @@ Attivazione: \(triggerInfo)
                         Text("This permanently deletes all tasks, attachments, and data from this device. This action cannot be undone.")
                     }
                     
+                    
 #if DEBUG
                     Section("Debug") {
+                        Toggle("Always Generate", isOn: $debugKeepGenerateMode)
                         Button {
                             withAnimation(.none) {
-                                if !hasTestData {
+                                if debugKeepGenerateMode {
+                                    DebugTools.generateTasks(context: modelContext)
+                                } else if !hasTestData {
                                     DebugTools.generateTasks(context: modelContext)
                                 } else if !areTestTasksCompleted {
                                     DebugTools.completeTasks(context: modelContext)
@@ -716,7 +721,9 @@ Attivazione: \(triggerInfo)
                             hasTestData = DebugTools.hasTestTasks(context: modelContext)
                             areTestTasksCompleted = DebugTools.areTestTasksCompleted(context: modelContext)
                         } label: {
-                            if !hasTestData {
+                            if debugKeepGenerateMode {
+                                Text("Genera")
+                            } else if !hasTestData {
                                 Text("Genera")
                             } else if !areTestTasksCompleted {
                                 Text("Completa")
