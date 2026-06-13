@@ -22,8 +22,6 @@ struct TaskListView: View {
     @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
     private var todoQuery: [TodoTask]
 
-    @Query(filter: #Predicate<TodoTask> { $0.isCompleted })
-    private var completedQuery: [TodoTask]
 
     @State private var draftTask: TodoTask?
 
@@ -34,6 +32,7 @@ struct TaskListView: View {
 
     @State private var searchText = ""
     @State private var showCompleted = false
+
     @State private var showNewTask = false
     @State private var showQuickGuide = false
     @State private var showWeatherForecast = false
@@ -67,142 +66,19 @@ struct TaskListView: View {
     }
 
     @State private var taskPendingDeletion: TodoTask?
-    @State private var cachedTodoTasks: [TodoTask] = []
-    @State private var cachedCompletedTasks: [TodoTask] = []
-
-    private var refreshKey: String {
-        
-        let tag = selectedTagFilter?.rawValue ?? "nil"
-        let priority = String(describing: selectedPriorityFilter)
-        let period = selectedPeriodFilter?.rawValue ?? "nil"
-
-        let key = "\(searchText)|\(showCompleted)|\(tag)|\(priority)|\(period)|\(todoQuery.count)|\(completedQuery.count)"
 
 
+    
 
-        return key
-    }
-
-    @State private var rebuildTask: Task<Void, Never>?
-    @State private var initialLoadCompleted = false
-    @State private var lastRefreshKey = ""
-    @State private var isRebuildScheduled = false
     @State private var lastActiveRefresh = Date.distantPast
     @State private var suspendRefreshUntil = Date.distantPast
     @State private var ignoreRefreshUntil = Date.distantPast
-    
-//    private func refreshVisibleTasks() {
-//        guard Date() >= ignoreRefreshUntil else {
-//            return
-//        }
-//        guard Date() >= suspendRefreshUntil else {
-//            return
-//        }
-//        rebuildTask?.cancel()
-//        isRebuildScheduled = true
-//
-//        let todo = todoQuery
-//        let completed = completedQuery
-//
-//        let search = searchText
-//        let tag = selectedTagFilter
-//        let priority = selectedPriorityFilter
-//        let period = selectedPeriodFilter
-//        let showCompletedValue = showCompleted
-//
-//        rebuildTask = Task { @MainActor in
-//
-//            let now = Date()
-//
-//            let filteredTodo = todo
-//                .filter { task in
-//
-//                    let matchesSearch =
-//                        search.isEmpty ||
-//                        task.title.localizedCaseInsensitiveContains(search)
-//
-//                    let matchesTag =
-//                        tag == nil ||
-//                        task.mainTag == tag
-//
-//                    let matchesPriority =
-//                        priority == nil ||
-//                        task.priority == priority
-//
-//                    let matchesPeriod =
-//                        period == nil ||
-//                        period?.matches(task.deadLine) == true
-//
-//                    return matchesSearch && matchesTag && matchesPriority && matchesPeriod
-//                }
-//                .sorted {
-//                    let lhs = $0.deadLine ?? .distantFuture
-//                    let rhs = $1.deadLine ?? .distantFuture
-//
-//                    let lhsOverdue = lhs < now
-//                    let rhsOverdue = rhs < now
-//
-//                    if lhsOverdue != rhsOverdue {
-//                        return lhsOverdue
-//                    }
-//
-//                    if lhs != rhs {
-//                        return lhs < rhs
-//                    }
-//
-//                    return $0.id.uuidString < $1.id.uuidString
-//                }
-//
-//            let filteredCompleted =
-//                showCompletedValue
-//                ? completed
-//                    .filter { task in
-//
-//                        let matchesSearch =
-//                            search.isEmpty ||
-//                            task.title.localizedCaseInsensitiveContains(search)
-//
-//                        let matchesTag =
-//                            tag == nil ||
-//                            task.mainTag == tag
-//
-//                        let matchesPriority =
-//                            priority == nil ||
-//                            task.priority == priority
-//
-//                        let matchesPeriod =
-//                            period == nil ||
-//                            period?.matches(task.deadLine) == true
-//
-//                        return matchesSearch && matchesTag && matchesPriority && matchesPeriod
-//                    }
-//                    .sorted {
-//                        ($0.completedAt ?? .distantPast) >
-//                        ($1.completedAt ?? .distantPast)
-//                    }
-//                : []
-//
-//            try? await Task.sleep(
-//                for: .milliseconds(250)
-//            )
-//
-//            cachedTodoTasks = filteredTodo
-//            cachedCompletedTasks = filteredCompleted
-//
-//            isRebuildScheduled = false
-//        }
-//    }
 
-    private func rebuildVisibleTasks() {
-        guard !todoQuery.isEmpty || !completedQuery.isEmpty else {
-            cachedTodoTasks = []
-            cachedCompletedTasks = []
-            return
-        }
-//        print("🔥 rebuildVisibleTasks")
+    private var filteredTodoTasks: [TodoTask] {
+
         let now = Date()
 
-        cachedTodoTasks = todoQuery
+        return todoQuery
             .filter { task in
 
                 let matchesSearch =
@@ -221,9 +97,13 @@ struct TaskListView: View {
                     selectedPeriodFilter == nil ||
                     selectedPeriodFilter?.matches(task.deadLine) == true
 
-                return matchesSearch && matchesTag && matchesPriority && matchesPeriod
+                return matchesSearch &&
+                       matchesTag &&
+                       matchesPriority &&
+                       matchesPeriod
             }
             .sorted {
+
                 let lhs = $0.deadLine ?? .distantFuture
                 let rhs = $1.deadLine ?? .distantFuture
 
@@ -240,49 +120,18 @@ struct TaskListView: View {
 
                 return $0.id.uuidString < $1.id.uuidString
             }
-
-        if showCompleted {
-            cachedCompletedTasks = completedQuery
-                .filter { task in
-
-                    let matchesSearch =
-                        searchText.isEmpty ||
-                        task.title.localizedCaseInsensitiveContains(searchText)
-
-                    let matchesTag =
-                        selectedTagFilter == nil ||
-                        task.mainTag == selectedTagFilter
-
-                    let matchesPriority =
-                        selectedPriorityFilter == nil ||
-                        task.priority == selectedPriorityFilter
-
-                    let matchesPeriod =
-                        selectedPeriodFilter == nil ||
-                        selectedPeriodFilter?.matches(task.deadLine) == true
-
-                    return matchesSearch && matchesTag && matchesPriority && matchesPeriod
-                }
-                .sorted {
-                    ($0.completedAt ?? .distantPast) >
-                    ($1.completedAt ?? .distantPast)
-                }
-        } else {
-            cachedCompletedTasks = []
-        }
     }
 
 
     var body: some View {
         ZStack {
-            let todoTasks = cachedTodoTasks
-            let completedTasks = cachedCompletedTasks
+            let todoTasks = filteredTodoTasks
 
             AppGlassBackground()
                     
             let isEmptyState =
                 todoQuery.isEmpty &&
-                completedQuery.isEmpty &&
+                !showCompleted &&
                 !showNewTask
             
                 listWithStyle {
@@ -305,13 +154,17 @@ struct TaskListView: View {
                             )
                         }
 
-                        if showCompleted && !completedTasks.isEmpty {
-                            CompletedSectionView( taskPendingDeletion: $taskPendingDeletion,
-                                                  tasks: completedTasks,
-                                                  modelContext: modelContext
+                        if showCompleted {
+                            CompletedTasksContainerView(
+                                taskPendingDeletion: $taskPendingDeletion,
+                                modelContext: modelContext,
+                                searchText: searchText,
+                                selectedTagFilter: selectedTagFilter,
+                                selectedPriorityFilter: selectedPriorityFilter,
+                                selectedPeriodFilter: selectedPeriodFilter
                             )
-
                         }
+                        
                     }
                     .safeAreaInset(edge: .bottom) {
                         Color.clear.frame(height: 80)
@@ -329,11 +182,21 @@ struct TaskListView: View {
 
 
                         Button("Delete", role: .destructive) {
-                            guard let task = taskPendingDeletion else { return }
+
+                            print("🗑️ ALERT DELETE PRESSED")
+
+                            guard let task = taskPendingDeletion else {
+                                print("🗑️ taskPendingDeletion NIL")
+                                taskPendingDeletion = nil
+                                return
+                            }
+
+                            print("🗑️ deleting \(task.title)")
 
                             withAnimation {
                                 deleteTask(task, in: modelContext)
                             }
+
                             taskPendingDeletion = nil
                         }
                         Button("Cancel", role: .cancel) {
@@ -360,95 +223,37 @@ struct TaskListView: View {
                 }
                 .scrollDismissesKeyboard(.immediately)
                 .onAppear {
-
-                    guard !initialLoadCompleted else { return }
-
-                    initialLoadCompleted = true
-
-                    lastRefreshKey = refreshKey
-
                     ignoreRefreshUntil = Date().addingTimeInterval(10)
                     suspendRefreshUntil = Date().addingTimeInterval(10)
-
-                    rebuildVisibleTasks()
                 }
-            
-                .onChange(of: searchText) { _, _ in
-                    rebuildVisibleTasks()
-                }
-                .onChange(of: selectedTagFilter) { _, _ in
-                    rebuildVisibleTasks()
-                }
-                .onChange(of: selectedPriorityFilter) { _, _ in
-                    rebuildVisibleTasks()
-                }
-                .onChange(of: selectedPeriodFilter) { _, _ in
-                    rebuildVisibleTasks()
-                }
-                .onChange(of: todoQuery.count) { _, _ in
-                    rebuildVisibleTasks()
-                }
-                .onChange(of: completedQuery.count) { _, _ in
-                    rebuildVisibleTasks()
-                }
-//                .onChange(of: showCompleted) { _, _ in
-//                    rebuildVisibleTasks()
-//                }
-//                .onChange(of: refreshKey) { oldValue, newValue in
-//
-//                    print("🔄 refreshKey changed")
-//
-//                    print("OLD:", oldValue)
-//
-//                    print("NEW:", newValue)
-//
-//                    guard newValue != lastRefreshKey else {
-//                        return
-//                    }
-//
-//                    lastRefreshKey = newValue
-//
-//                    guard !isRebuildScheduled else {
-//                        return
-//                    }
-//
-//                    guard Date() >= ignoreRefreshUntil else {
-//                        return
-//                    }
-//
-//                    guard scenePhase == .active || scenePhase == .inactive else {
-//                        return
-//                    }
-//
-////                    refreshVisibleTasks()
-//                }
-                .onChange(of: scenePhase) { _, newPhase in
-
-                    if newPhase == .background &&
-                       showCompleted &&
-                       completedQuery.count > 2000 {
-
-                        showCompleted = false
-                    }
-
-                    if newPhase == .active {
-
-                        ignoreRefreshUntil = Date().addingTimeInterval(10)
-                        suspendRefreshUntil = Date().addingTimeInterval(10)
-
-                        return
-                    }
                 }
 
+        .onChange(of: scenePhase) { _, newPhase in
+
+            if newPhase == .inactive {
+
+                if showCompleted {
+                    showCompleted = false
+                }
+                return
+            }
+
+            if newPhase == .active {
+
+                ignoreRefreshUntil = Date().addingTimeInterval(10)
+                suspendRefreshUntil = Date().addingTimeInterval(10)
+                return
+            }
+        }
                 .searchableIf(
-                    !(todoQuery.isEmpty && completedQuery.isEmpty),
+                    !todoQuery.isEmpty || showCompleted,
                     text: $searchText,
                     placement: .navigationBarDrawer(displayMode: .automatic),
                     prompt: "Search task"
                 )
                         .toolbarBackground(.hidden, for: .navigationBar)
             
-                .navigationTitle((todoQuery.isEmpty && completedQuery.isEmpty) ? "" : String(localized:"My Tasks"))
+                        .navigationTitle(todoQuery.isEmpty && !showCompleted ? "" : String(localized:"My Tasks"))
                 .navigationBarTitleDisplayMode(.inline)
                 .sheet(item: $selectedWeatherDay) { selectedDay in
 
@@ -466,23 +271,17 @@ struct TaskListView: View {
                 .sheet(item: $draftTask) { task in
                     NewTaskSheetView(draftTask: task)
                 }
-                //            .animation(.snappy, value: showCompleted)
-                //            .animation(.snappy, value: searchText)
-
 
                 .toolbar {
 
                     ToolbarItem(placement: .topBarTrailing) {
-
-
                         Button {
                             withAnimation(.snappy) {
                                 showCompleted.toggle()
-                                rebuildVisibleTasks()
                             }
                         } label: {
                             Image(systemName: showCompleted ? "eye.slash" : "eye")
-                                .foregroundStyle(showCompleted ? .gray.opacity(0.7) : .blue.opacity(0.7))
+                                .foregroundStyle(.blue.opacity(0.7))
                         }
                     }
 
@@ -497,7 +296,7 @@ struct TaskListView: View {
                                 .font(.title2)
                         }
                     }
-                    if !(todoQuery.isEmpty && completedQuery.isEmpty) {
+                    if !(todoQuery.isEmpty && !showCompleted) {
                         ToolbarItem(placement: .topBarLeading) {
                             Menu {
                                 // Sezione per rimuovere tutti i filtri
@@ -641,7 +440,7 @@ struct TaskListView: View {
                     }
                 }
         }
-    }
+    
 
     @ViewBuilder
     private func listWithStyle<Content: View>(
@@ -693,7 +492,6 @@ struct EmptySectionView: View {
                         .padding(.top, 20)
                         .padding(.bottom, 4)
                         .foregroundStyle(.blue)
-                    //                                .multilineTextAlignment(.leading)
                         .lineLimit(2)
                     //                                .minimumScaleFactor(0.5) // Permette di ridursi fino al 50% della dimensione originale
                 }
@@ -1254,7 +1052,6 @@ struct TodoSectionView: View {
     
     
     private func rebuildGroups() {
-//        print("📦 rebuildGroups start: \(tasks.count)")
         let calendar = Calendar.current
 
         let grouped = Dictionary(grouping: tasks) { task in
@@ -1563,10 +1360,7 @@ struct TodoSectionView: View {
                 .listSectionSpacing(TaskRowMetrics.weeklyVerticalPadding / 2)  //anche questo per lo spazio tra le row
             }
             .environment(\.defaultMinListRowHeight, 1)
-//            .animation(
-//                .snappy(duration: 0.22),
-//                value: groupedTasksByDay.count
-//            )
+
 
         } else {
 
@@ -1622,9 +1416,8 @@ struct TodoSectionView: View {
                 for: .taskDidChange
             )
         ) { _ in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                rebuildGroups()
-            }
+
+            rebuildGroups()
         }
         .onReceive(
             NotificationCenter.default.publisher(
@@ -1673,6 +1466,7 @@ struct TodoSectionView: View {
                 } else {
                     withAnimation(.easeOut(duration: 0.12)) {
                         deleteTask(t, in: modelContext)
+                        
                     }
 
                 }
@@ -1684,10 +1478,16 @@ struct TodoSectionView: View {
         .contextMenu {
             Button(role: .destructive) {
                 if confirmTaskDeletion {
-                    taskPendingDeletion = t
+                    DispatchQueue.main.async {
+                        taskPendingDeletion = t
+                    }
                 } else {
                     withAnimation {
                         deleteTask(t, in: modelContext)
+                        NotificationCenter.default.post(
+                            name: .taskDidChange,
+                            object: nil
+                        )
                     }
                 }
             } label: {
@@ -1747,6 +1547,17 @@ struct TodoSectionView: View {
     }
 
     @MainActor
+    private func persistChanges() {
+        do {
+            try modelContext.save()
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        } catch {
+            AppLogger.persistence.fault("Failed to save context: \(error)")
+        }
+    }
+
+    @MainActor
     private func postpone(_ task: TodoTask, byHours hours: Int) {
 
         let baseDate = task.deadLine ?? Date()
@@ -1769,13 +1580,7 @@ struct TodoSectionView: View {
 
         task.deadLine = newDate
 
-        do {
-            try modelContext.save()
-            modelContext.processPendingChanges()
-            NotificationCenter.default.post(name: .taskDidChange, object: nil)
-        } catch {
-            AppLogger.persistence.fault("Failed to postpone task: \(error)")
-        }
+        persistChanges()
 
         NotificationManager.shared.refresh(force: false)
     }
@@ -1789,9 +1594,7 @@ struct TodoSectionView: View {
             // 🔁 Ricorrenza: completa e rischedula
             task.completeRecurringTask(in: modelContext)
 
-
             modelContext.processPendingChanges()
-            NotificationCenter.default.post(name: .taskDidChange, object: nil)
 
         } else {
 
@@ -1807,14 +1610,63 @@ struct TodoSectionView: View {
             }
         }
 
-        try? modelContext.save()
-        modelContext.processPendingChanges()
-        NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        persistChanges()
 
         NotificationManager.shared.refresh(force: false)
     }
 }
 
+
+struct CompletedTasksContainerView: View {
+
+    @Binding var taskPendingDeletion: TodoTask?
+    let modelContext: ModelContext
+    let searchText: String
+    let selectedTagFilter: TaskMainTag?
+    let selectedPriorityFilter: TaskPriority?
+    let selectedPeriodFilter: TaskPeriodFilter?
+    
+    private var filteredCompleted: [TodoTask] {
+
+        completedQuery.filter { task in
+
+            let matchesSearch =
+                searchText.isEmpty ||
+                task.title.localizedCaseInsensitiveContains(searchText)
+
+            let matchesTag =
+                selectedTagFilter == nil ||
+                task.mainTag == selectedTagFilter
+
+            let matchesPriority =
+                selectedPriorityFilter == nil ||
+                task.priority == selectedPriorityFilter
+
+            let matchesPeriod =
+                selectedPeriodFilter == nil ||
+                selectedPeriodFilter?.matches(task.deadLine) == true
+
+            return matchesSearch &&
+                   matchesTag &&
+                   matchesPriority &&
+                   matchesPeriod
+        }
+    }
+    @Query(
+        filter: #Predicate<TodoTask> { $0.isCompleted },
+        sort: \TodoTask.completedAt,
+        order: .reverse
+    )
+    private var completedQuery: [TodoTask]
+
+    var body: some View {
+        CompletedSectionView(
+            taskPendingDeletion: $taskPendingDeletion,
+            tasks: filteredCompleted,
+            modelContext: modelContext
+        )
+    }
+}
 struct CompletedSectionView: View {
     @Environment(AppSettings.self) private var settings
     private var listStyleChoice: TaskListStyle {
@@ -1894,7 +1746,6 @@ struct CompletedSectionView: View {
                 showSeparator: position != .last && position != .single
             )
             .opacity(style == .grouped ? 0.72 : 0.52)
-//            .drawingGroup(opaque: false)
         }
  
     }
@@ -1997,21 +1848,32 @@ struct CompletedSectionView: View {
                             tasks.count
                         )
                     }
-                    .onChange(of: tasks.count) { _, _ in
+            }
+        }
+        .onChange(of: tasks.count) { _, _ in
 
-                        if visibleCompletedCount > tasks.count {
+            if visibleCompletedCount > tasks.count {
 
-                            visibleCompletedCount = max(
-                                200,
-                                tasks.count
-                            )
-                        }
-                    }
+                visibleCompletedCount = max(
+                    200,
+                    tasks.count
+                )
             }
         }
     }
 
     
+    @MainActor
+    private func persistChanges() {
+        do {
+            try modelContext.save()
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        } catch {
+            AppLogger.persistence.fault("Failed to save context: \(error)")
+        }
+    }
+
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {
 
@@ -2021,15 +1883,13 @@ struct CompletedSectionView: View {
             // 🔁 Ricorrenza: completa e rischedula
             task.completeRecurringTask(in: modelContext)
 
-
             modelContext.processPendingChanges()
-            NotificationCenter.default.post(name: .taskDidChange, object: nil)
 
         } else {
 
             let newValue = !task.isCompleted
             task.isCompleted = newValue
-
+      
             if newValue {
                 task.completedAt = .now
                 task.snoozeUntil = nil
@@ -2039,15 +1899,10 @@ struct CompletedSectionView: View {
             }
         }
 
-        do {
-            try modelContext.save()
-            modelContext.processPendingChanges()
-            NotificationCenter.default.post(name: .taskDidChange, object: nil)
-        } catch {
-            AppLogger.persistence.fault("Failed to save context: \(error)")
-        }
+        persistChanges()
 
         NotificationManager.shared.refresh(force: false)
     }
 }
+
 

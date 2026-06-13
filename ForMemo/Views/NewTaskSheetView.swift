@@ -93,12 +93,13 @@ struct NewTaskSheetView: View {
     
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppSettings.self)
+    private var settings
+    
     
     @Bindable var draftTask: TodoTask
     @FocusState private var isTitleFocused: Bool
     
-    @AppStorage("notificationLeadTimeDays")
-    private var notificationLeadTimeDays: Int = 1
     
     @Query private var allAttachments: [TaskAttachment]
     @Query private var allTasks: [TodoTask]
@@ -270,9 +271,7 @@ struct NewTaskSheetView: View {
                 } message: {
                     Text(photoImportMessage ?? "")
                 }
-                .onChange(of: notificationLeadTimeDays) { _, _ in
-                    NotificationManager.shared.refresh(force: true)
-                }
+
                 
                 .onChange(of: capturedImage) {
                     if let image = capturedImage {
@@ -353,7 +352,7 @@ struct NewTaskSheetView: View {
                     
                     ReminderScrubberControl(
                         reminderOffsetMinutes: $draftTask.reminderOffsetMinutes,
-                        notificationLeadTimeDays: notificationLeadTimeDays
+                        notificationLeadTimeDays: settings.notificationLeadTimeDays
                     )
                     
                     if let msg = validationMessage {
@@ -795,7 +794,7 @@ struct NewTaskSheetView: View {
         }
         
         let reminderDate = currentDeadline.addingTimeInterval(-Double(offsetMinutes) * 60)
-        let autoNotificationMinutes = notificationLeadTimeDays * 24 * 60
+        let autoNotificationMinutes = settings.notificationLeadTimeDays * 24 * 60
         
         if reminderDate < .now {
             validationMessage = String(localized:"⚠️ This reminder is set in the past.")

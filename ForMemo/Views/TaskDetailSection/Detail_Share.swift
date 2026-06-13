@@ -18,10 +18,8 @@ struct ShareSheet: View {
     
     @State private var selectedAttachments: Set<UUID> = []
     
-    @AppStorage("navigationApp") private var navigationAppRaw = NavigationApp.appleMaps.rawValue
-    private var navigationApp: NavigationApp {
-        NavigationApp(rawValue: navigationAppRaw) ?? .appleMaps
-    }
+    @Environment(AppSettings.self)
+    private var settings
     
     private var uniqueAttachments: [TaskAttachment] {
         Array(
@@ -151,7 +149,7 @@ struct ShareSheet: View {
             items.append(locationText)
             
             let url: URL?
-            switch navigationApp {
+            switch settings.navigationApp {
             case .appleMaps:
                 url = URL(string: "http://maps.apple.com/?daddr=\(coordinate.latitude),\(coordinate.longitude)")
             case .googleMaps:

@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum NavigationApp: String, CaseIterable, Identifiable {
+enum NavigationApp: String, CaseIterable, Identifiable, Hashable {
     case appleMaps
     case googleMaps
     

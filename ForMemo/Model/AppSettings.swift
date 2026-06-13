@@ -4,11 +4,11 @@ import Observation
 @Observable
 @MainActor
 final class AppSettings {
-
+    
     static let shared = AppSettings()
-
+    
     // MARK: - Task List Appearance
-
+    
     var iconStyle: TaskIconStyle {
         didSet {
             UserDefaults.standard.set(
@@ -17,7 +17,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var showBadge: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -26,7 +26,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var showAttachments: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -35,7 +35,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var showLocation: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -44,7 +44,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var showPriority: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -53,7 +53,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var showBadgeOnlyWithPriority: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -62,7 +62,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var highlightEnabled: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -71,7 +71,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var highlightColorHex: String {
         didSet {
             UserDefaults.standard.set(
@@ -80,7 +80,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var showTodayExpiredLabel: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -89,7 +89,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var selectedTaskRowStyle: Int {
         didSet {
             UserDefaults.standard.set(
@@ -98,12 +98,12 @@ final class AppSettings {
             )
         }
     }
-
+    
     var selectedRowStyle: Int {
         get { selectedTaskRowStyle }
         set { selectedTaskRowStyle = newValue }
     }
-
+    
     var dueIconEffectRaw: String {
         didSet {
             UserDefaults.standard.set(
@@ -120,7 +120,7 @@ final class AppSettings {
             dueIconEffectRaw = newValue.rawValue
         }
     }
-
+    
     var taskListStyle: TaskListStyle {
         didSet {
             UserDefaults.standard.set(
@@ -129,7 +129,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var showDateEveryRow: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -138,7 +138,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var confirmTaskDeletion: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -147,7 +147,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var taskWeekDays: Int {
         didSet {
             UserDefaults.standard.set(
@@ -156,7 +156,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var startupTab: Int {
         didSet {
             UserDefaults.standard.set(
@@ -165,7 +165,9 @@ final class AppSettings {
             )
         }
     }
-
+    
+    
+    //migrato
     var notificationLeadTimeDays: Int {
         didSet {
             UserDefaults.standard.set(
@@ -174,7 +176,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var showWeatherForecast: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -183,7 +185,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var siriAutoReminderEnabled: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -192,7 +194,7 @@ final class AppSettings {
             )
         }
     }
-
+    
     var navigationAppRaw: String {
         didSet {
             UserDefaults.standard.set(
@@ -209,7 +211,98 @@ final class AppSettings {
             navigationAppRaw = newValue.rawValue
         }
     }
+    
+    var backgroundColor1Hex: String {
+        didSet {
+            UserDefaults.standard.set(
+                backgroundColor1Hex,
+                forKey: "backgroundColor1Hex"
+            )
+        }
+    }
+    
+    var backgroundColor2Hex: String {
+        didSet {
+            UserDefaults.standard.set(
+                backgroundColor2Hex,
+                forKey: "backgroundColor2Hex"
+            )
+        }
+    }
+    
+    var badgeMode: Int {
+        didSet {
+            UserDefaults.standard.set(
+                badgeMode,
+                forKey: "badgeMode"
+            )
+        }
+    }
+    
+    var showAppBadge: Bool {
+        didSet {
+            UserDefaults.standard.set(
+                showAppBadge,
+                forKey: "showAppBadge"
+            )
+        }
+    }
+    
+    var selectedTheme: AppTheme {
+        didSet {
+            UserDefaults.standard.set(
+                selectedTheme.rawValue,
+                forKey: "selectedTheme"
+            )
+        }
+    }
+    
+    var autoDeleteCompletedAttachments: Bool {
+        didSet {
+            UserDefaults.standard.set(
+                autoDeleteCompletedAttachments,
+                forKey: "autoDeleteCompletedAttachments"
+            )
+        }
+    }
+    
+    var attachmentRetentionDays: Int {
+        didSet {
+            UserDefaults.standard.set(
+                attachmentRetentionDays,
+                forKey: "attachmentRetentionDays"
+            )
+        }
+    }
 
+    var recentlyDeletedRetentionDays: Int {
+        didSet {
+            UserDefaults.standard.set(
+                recentlyDeletedRetentionDays,
+                forKey: "recentlyDeletedRetentionDays"
+            )
+        }
+    }
+    
+    var locationRemindersEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(
+                locationRemindersEnabled,
+                forKey: "locationRemindersEnabled"
+            )
+        }
+    }
+    
+    var locationRadius: Int {
+        didSet {
+            UserDefaults.standard.set(
+                locationRadius,
+                forKey: "locationRadius"
+            )
+        }
+    }
+
+    
     private init() {
 
         let defaults = UserDefaults.standard
@@ -317,5 +410,57 @@ final class AppSettings {
             defaults.string(
                 forKey: "navigationApp"
             ) ?? "appleMaps"
+        
+        backgroundColor1Hex =
+            defaults.string(
+                forKey: "backgroundColor1Hex"
+            ) ?? (defaultBackColor1.toHex() ?? "")
+
+        backgroundColor2Hex =
+            defaults.string(
+                forKey: "backgroundColor2Hex"
+            ) ?? (defaultBackColor2.toHex() ?? "")
+        
+        badgeMode =
+            defaults.object(
+                forKey: "badgeMode"
+            ) as? Int ?? 1
+
+        showAppBadge =
+            defaults.object(
+                forKey: "showAppBadge"
+            ) as? Bool ?? true
+
+        selectedTheme =
+            AppTheme(rawValue:
+                defaults.integer(
+                    forKey: "selectedTheme"
+                )
+            ) ?? .system
+
+        autoDeleteCompletedAttachments =
+            defaults.object(
+                forKey: "autoDeleteCompletedAttachments"
+            ) as? Bool ?? true
+
+        attachmentRetentionDays =
+            defaults.object(
+                forKey: "attachmentRetentionDays"
+            ) as? Int ?? 30
+
+        recentlyDeletedRetentionDays =
+            defaults.object(
+                forKey: "recentlyDeletedRetentionDays"
+            ) as? Int ?? 30
+        
+        locationRemindersEnabled =
+            defaults.object(
+                forKey: "locationRemindersEnabled"
+            ) as? Bool ?? false
+
+        locationRadius =
+            defaults.object(
+                forKey: "locationRadius"
+            ) as? Int ?? 150
     }
 }

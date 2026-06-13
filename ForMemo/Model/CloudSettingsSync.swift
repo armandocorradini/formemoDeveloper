@@ -89,7 +89,13 @@ final class CloudSettingsSync {
             let localLeadTime = defaults.integer(forKey: Keys.notificationLeadTimeDays)
             
             if localLeadTime != Int(remoteLeadTime) {
-                defaults.set(Int(remoteLeadTime), forKey: Keys.notificationLeadTimeDays)
+                defaults.set(
+                    Int(remoteLeadTime),
+                    forKey: Keys.notificationLeadTimeDays
+                )
+
+                AppSettings.shared.notificationLeadTimeDays = Int(remoteLeadTime)
+
                 didChange = true
             }
         }

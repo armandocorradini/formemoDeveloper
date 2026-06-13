@@ -275,7 +275,7 @@ struct WeeklyTasksView: View {
 //posizione capsula giorno (oggi, domani, ieri, ....
             .padding(.top, -8)
             .padding(.leading, TaskRowMetrics.groupedLeadingPadding - 24)
-//            .padding(.trailing, 16)
+
             .padding(.bottom, -(TaskRowMetrics.weeklyVerticalPadding / 7))
         }
     }
@@ -602,12 +602,12 @@ private struct WeeklyTaskRow: View {
                 ? true
                 : (position == .first || position == .single),
             appearance: TaskRowAppearance(
-                iconStyle: .polychrome,
-                showBadge: true,
-                showAttachments: true,
-                showLocation: true,
-                showPriority: true,
-                showBadgeOnlyWithPriority: true,
+                iconStyle: settings.iconStyle,
+                showBadge: settings.showBadge,
+                showAttachments: settings.showAttachments,
+                showLocation: settings.showLocation,
+                showPriority: settings.showPriority,
+                showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
                 highlightEnabled: highlightEnabled,
                 showTodayExpiredLabel: showTodayExpiredLabel,
                 selectedRowStyle: selectedRowStyle,

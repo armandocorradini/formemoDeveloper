@@ -4,9 +4,6 @@ enum TaskIconStyle: String, CaseIterable, Codable {
     case polychrome
     case monochrome
 }
-
-
-
 enum TaskListAppearanceKeys {
     static let iconStyle = "tasklist.iconStyle"
     static let badgeColor = "tasklist.badgeColor"
@@ -19,50 +16,14 @@ enum TaskListAppearanceKeys {
     static let showTodayExpiredLabel = "tasklist.showTodayExpiredLabel"
 }
 
-//struct EmptyModifier: ViewModifier {
-//    func body(content: Content) -> some View {
-//        content
-//    }
-//}
 struct TaskListAppearanceView: View {
-    @AppStorage("selectedTaskListStyle")
-    private var listStyleRawValue: String = TaskListStyle.grouped.rawValue
-
-    private var listStyleChoice: TaskListStyle {
-        TaskListStyle(rawValue: listStyleRawValue) ?? .grouped
-    }
-
-    @AppStorage("tasklist.highlightEnabled")
-    private var highlightEnabled: Bool = true
 
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSettings.self) private var settings
-
-    // (showTodayExpiredLabel and dismiss duplicate removed)
     
-    @AppStorage(TaskListAppearanceKeys.iconStyle)
-    private var iconStyle: TaskIconStyle = .polychrome
-    
-    
-    @AppStorage(TaskListAppearanceKeys.showBadge)
-    private var showBadge = true
-    
-    @AppStorage(TaskListAppearanceKeys.showAttachments)
-    private var showAttachments = true
-    
-    @AppStorage(TaskListAppearanceKeys.showLocation)
-    private var showLocation = true
-    
-    @AppStorage(TaskListAppearanceKeys.showPriority)
-    private var showPriority = true
-    
-    @AppStorage("dueIconEffect")
-    private var dueIconEffectRaw: String = DueIconEffect.blink.rawValue
-    private var selectedDueEffect: DueIconEffect {
-        DueIconEffect(rawValue: dueIconEffectRaw) ?? .blink
+    private var listStyleChoice: TaskListStyle {
+        settings.taskListStyle
     }
-    
-    @AppStorage("selectedTaskRowStyle") private var selectedRowStyle: Int = 0
     
     // Etichette dei vari stili disponibili
     private let rowOptions = [
@@ -124,7 +85,7 @@ struct TaskListAppearanceView: View {
                     }
                 }
             }
-            .onChange(of: dueIconEffectRaw) { _, _ in
+            .onChange(of: settings.dueIconEffect) { _, _ in
                 refreshID = UUID()
             }
             .onChange(of: settings.showTodayExpiredLabel) { _, _ in
@@ -165,7 +126,7 @@ struct TaskListAppearanceView: View {
                     showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
                     highlightEnabled: settings.highlightEnabled,
                     showTodayExpiredLabel: settings.showTodayExpiredLabel,
-                    selectedRowStyle: selectedRowStyle,
+                    selectedRowStyle: settings.selectedRowStyle,
                     dueIconEffect: settings.dueIconEffect
                 )
             )
@@ -208,10 +169,10 @@ struct TaskListAppearanceView: View {
             }
             .pickerStyle(.menu)
             .tint(.secondary)
-            Picker("Animation", selection: $dueIconEffectRaw) {
+            Picker("Animation", selection: Bindable(settings).dueIconEffect) {
                 ForEach(DueIconEffect.allCases) { effect in
                     Text(effect.title)
-                        .tag(effect.rawValue)
+                        .tag(effect as DueIconEffect)
                 }
             }
             .pickerStyle(.menu)
@@ -296,7 +257,7 @@ struct TaskListAppearanceView: View {
         settings.highlightColorHex = Color.red.toHex() ?? ""
         settings.showTodayExpiredLabel = true
         settings.selectedRowStyle = 0
-        dueIconEffectRaw = DueIconEffect.blink.rawValue
+        settings.dueIconEffect = .blink
     }
 }
 

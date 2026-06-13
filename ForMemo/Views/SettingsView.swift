@@ -22,6 +22,8 @@ enum SoundPickerContext: Identifiable {
 struct SettingsView: View {
     
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppSettings.self)
+    private var settings
 
     
 #if DEBUG
@@ -29,8 +31,6 @@ struct SettingsView: View {
     @State private var areTestTasksCompleted: Bool = false
     @State private var debugKeepGenerateMode: Bool = false
 #endif
-    @AppStorage("navigationApp")
-    private var navigationAppRaw: String = NavigationApp.appleMaps.rawValue
     @State private var showQuickGuide = false
     @State private var showFAQ = false
     @State private var showCustomizationView = false
@@ -39,20 +39,26 @@ struct SettingsView: View {
     @State private var showSiri = false
     @State private var showRecentlyDeleted = false
     @State private var showDeleteAllAlert = false
-    private var navigationApp: NavigationApp {
-        NavigationApp(rawValue: navigationAppRaw) ?? .appleMaps
-    }
-    @AppStorage("selectedTheme") private var selectedTheme: AppTheme = .system
-    @AppStorage("autoDeleteCompletedAttachments")
-    private var autoDeleteCompletedAttachments: Bool = false
+
     @AppStorage("siriShortConfirmation")
     private var siriShortConfirmation: Bool = false
-    @AppStorage("siriAutoReminderEnabled")
-    private var siriAutoReminderEnabled: Bool = true
-    @AppStorage("attachmentRetentionDays")
-    private var attachmentRetentionDays: Int = 30
-    @AppStorage("recentlyDeletedRetentionDays")
-    private var recentlyDeletedRetentionDays: Int = 30
+
+    
+    private var autoDeleteCompletedAttachments: Bool {
+        get { settings.autoDeleteCompletedAttachments }
+        set { settings.autoDeleteCompletedAttachments = newValue }
+    }
+
+    private var attachmentRetentionDays: Int {
+        get { settings.attachmentRetentionDays }
+        set { settings.attachmentRetentionDays = newValue }
+    }
+
+    private var recentlyDeletedRetentionDays: Int {
+        get { settings.recentlyDeletedRetentionDays }
+        set { settings.recentlyDeletedRetentionDays = newValue }
+    }
+    
     @State private var isNotificationEnabled: Bool = false
     @Environment(\.scenePhase) private var scenePhase
     @State private var soundPickerContext: SoundPickerContext?
@@ -61,18 +67,22 @@ struct SettingsView: View {
     private var notificationSoundName: String = ""
     @AppStorage("locationNotificationSoundName")
     private var locationNotificationSoundName: String = ""
-    @AppStorage("locationRemindersEnabled")
-    private var locationRemindersEnabled: Bool = false
-    @AppStorage("showWeatherForecast")
-    private var showWeatherForecast: Bool = true
-    @AppStorage("locationRadius")
-    private var locationRadius: Int = 150
-    @AppStorage("backgroundColor1Hex")
-    private var backgroundColor1Hex: String = ""
 
-    @AppStorage("backgroundColor2Hex")
-    private var backgroundColor2Hex: String = ""
+
+
+    private var locationRadius: Int {
+        get { settings.locationRadius }
+        set { settings.locationRadius = newValue }
+    }
     
+    
+    private var backgroundColor1Hex: String {
+        settings.backgroundColor1Hex
+    }
+
+    private var backgroundColor2Hex: String {
+        settings.backgroundColor2Hex
+    }
     
     @State private var showLocationPermissionAlert = false
     @State private var showImportReminders = false
@@ -222,7 +232,13 @@ struct SettingsView: View {
                             
                             Spacer()
                             
-                            Picker("", selection: $selectedTheme) {
+                            Picker(
+                                "",
+                                selection: Binding(
+                                    get: { settings.selectedTheme },
+                                    set: { settings.selectedTheme = $0 }
+                                )
+                            ) {
                                 ForEach(AppTheme.allCases) { theme in
                                     Text(theme.description).tag(theme)
                                 }
@@ -251,9 +267,15 @@ struct SettingsView: View {
                         }
                         
                         LabeledContent {
-                            Picker("", selection: $navigationAppRaw) {
+                            Picker(
+                                "",
+                                selection: Binding(
+                                    get: { settings.navigationApp },
+                                    set: { settings.navigationApp = $0 }
+                                )
+                            ) {
                                 ForEach(NavigationApp.allCases) { app in
-                                    Text(app.title).tag(app.rawValue)
+                                    Text(app.title).tag(app)
                                 }
                             }
                             .pickerStyle(.menu)
@@ -266,7 +288,12 @@ struct SettingsView: View {
                         if locationAuthorizationStatus == .authorizedAlways
                             || locationAuthorizationStatus == .authorizedWhenInUse {
                             
-                            Toggle(isOn: $showWeatherForecast) {
+                            Toggle(
+                                isOn: Binding(
+                                    get: { settings.showWeatherForecast },
+                                    set: { settings.showWeatherForecast = $0 }
+                                )
+                            ) {
                                 Label {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("Weather Forecast")
@@ -335,42 +362,16 @@ struct SettingsView: View {
                         
                         
                         Group {
-                            Toggle("Location Reminders", isOn: Binding(
-                                get: { locationRemindersEnabled },
-                                set: { newValue in
-                                    if newValue {
-                                        
-                                        let status = CLLocationManager().authorizationStatus
-                                        
-                                        switch status {
-                                            
-                                        case .authorizedAlways:
-                                            locationRemindersEnabled = true
-                                            
-                                        case .notDetermined:
-                                            LocationReminderManager.shared.requestPermissionIfNeeded()
-                                            locationRemindersEnabled = false
-                                            
-                                        case .authorizedWhenInUse:
-                                            
-                                            showLocationPermissionAlert = true
-                                            locationRemindersEnabled = false
-                                            
-                                        case .denied, .restricted:
-                                            showLocationPermissionAlert = true
-                                            locationRemindersEnabled = false
-                                            
-                                        @unknown default:
-                                            locationRemindersEnabled = false
-                                        }
-                                        
-                                    } else {
-                                        locationRemindersEnabled = false
-                                    }
-                                }
-                            ))
+                            Toggle(
+                                "Location Reminders",
+                                isOn: Binding(
+                                    get: { settings.locationRemindersEnabled },
+                                    set: handleLocationReminderToggle
+                                )
+                            )
                             
-                            if locationRemindersEnabled {
+                            
+                            if settings.locationRemindersEnabled {
                                 VStack(alignment: .leading, spacing: 8) {
                                     
                                     HStack(spacing: 12) {
@@ -386,7 +387,10 @@ struct SettingsView: View {
                                         Text(String(localized:"\(locationRadius)     meters"))
                                         Stepper(
                                             "",
-                                            value: $locationRadius,
+                                            value: Binding(
+                                                get: { settings.locationRadius },
+                                                set: { settings.locationRadius = $0 }
+                                            ),
                                             in: 100...500,
                                             step: 50
                                         )
@@ -557,7 +561,10 @@ Attivazione: \(triggerInfo)
                         
                         Toggle(
                             "Add reminders automatically",
-                            isOn: $siriAutoReminderEnabled
+                            isOn: Binding(
+                                get: { settings.siriAutoReminderEnabled },
+                                set: { settings.siriAutoReminderEnabled = $0 }
+                            )
                         )
                         
                         Toggle(isOn: $siriShortConfirmation) {
@@ -578,12 +585,18 @@ Attivazione: \(triggerInfo)
                     Section {
                         Toggle(
                             "Auto-delete attachments",
-                            isOn: $autoDeleteCompletedAttachments
+                            isOn: Binding(
+                                get: { settings.autoDeleteCompletedAttachments },
+                                set: { settings.autoDeleteCompletedAttachments = $0 }
+                            )
                         )
                         
                         Stepper(
                             "Delete after \(attachmentRetentionDays) days",
-                            value: $attachmentRetentionDays,
+                            value: Binding(
+                                get: { settings.attachmentRetentionDays },
+                                set: { settings.attachmentRetentionDays = $0 }
+                            ),
                             in: 1...90,
                             step: 1
                         )
@@ -657,7 +670,10 @@ Attivazione: \(triggerInfo)
                         }
                         Stepper(
                             "Delete after \(recentlyDeletedRetentionDays) days",
-                            value: $recentlyDeletedRetentionDays,
+                            value: Binding(
+                                get: { settings.recentlyDeletedRetentionDays },
+                                set: { settings.recentlyDeletedRetentionDays = $0 }
+                            ),
                             in: 1...90,
                             step: 1
                         )
@@ -829,8 +845,41 @@ Attivazione: \(triggerInfo)
 
         let hasPermission =
             status == .authorizedAlways
-        locationRemindersEnabled = hasPermission
+        settings.locationRemindersEnabled = hasPermission
     }
+    
+    private func handleLocationReminderToggle(_ newValue: Bool) {
+
+        if !newValue {
+            settings.locationRemindersEnabled = false
+            return
+        }
+
+        let status = CLLocationManager().authorizationStatus
+
+        switch status {
+
+        case .authorizedAlways:
+            settings.locationRemindersEnabled = true
+
+        case .notDetermined:
+            LocationReminderManager.shared.requestPermissionIfNeeded()
+            settings.locationRemindersEnabled = false
+
+        case .authorizedWhenInUse:
+            showLocationPermissionAlert = true
+            settings.locationRemindersEnabled = false
+
+        case .denied, .restricted:
+            showLocationPermissionAlert = true
+            settings.locationRemindersEnabled = false
+
+        @unknown default:
+            settings.locationRemindersEnabled = false
+        }
+    }
+    
+    
     private func openNotificationSettings() {
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
@@ -887,70 +936,4 @@ extension AppTheme {
     }
 }
 
-//@MainActor
-//func createTestReminder() async {
-//    do {
-//        let access = RemindersAccess()
-//        try await access.requestAccess()
-//        let store = access.getStore()
-//        let reminder = EKReminder(eventStore: store)
-//        reminder.title = "Test \(appName)"
-//        reminder.calendar = getOrCreateForMemoCalendar(store: store)
-//        try store.save(reminder, commit: true)
-//        print("✅ Reminder created in \(appName) list")
-//    } catch {
-//        print("❌ Error:", error.localizedDescription)
-//    }
-//}
-//
-//func getOrCreateForMemoCalendar(store: EKEventStore) -> EKCalendar {
-//    let calendars = store.calendars(for: .reminder)
-//    if let existing = calendars.first(where: { $0.title == "\(appName)" }) {
-//        UserDefaults.standard.set(existing.calendarIdentifier, forKey: "ForMemoCalendarID")
-//        return existing
-//    }
-//    let calendar = EKCalendar(for: .reminder, eventStore: store)
-//    calendar.title = "\(appName)"
-//    calendar.source = store.defaultCalendarForNewReminders()?.source
-//    try? store.saveCalendar(calendar, commit: true)
-//    UserDefaults.standard.set(calendar.calendarIdentifier, forKey: "ForMemoCalendarID")
-//    return calendar
-//}
-//
-//struct CalendarPickerLoaderView: View {
-//    @Binding var calendars: [EKCalendar]
-//    let onSelect: (EKCalendar) -> Void
-//    @State private var isLoading = true
-//    var body: some View {
-//        NavigationStack {
-//            Group {
-//                if isLoading {
-//                    ProgressView("Loading calendars...")
-//                } else {
-//                    CalendarPickerView(
-//                        calendars: calendars,
-//                        onSelect: onSelect
-//                    )
-//                }
-//            }
-//            .task {
-//                await load()
-//            }
-//        }
-//    }
-//    private func load() async {
-//        let engine = CalendarExportEngine()
-//        do {
-//            try await engine.requestAccess()
-//            let all = engine.availableCalendars()
-//            await MainActor.run {
-//                calendars = all
-//                isLoading = false
-//            }
-//        } catch {
-//            await MainActor.run {
-//                isLoading = false
-//            }
-//        }
-//    }
-//}
+

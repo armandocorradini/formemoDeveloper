@@ -11,7 +11,7 @@ enum DebugTools {
     
     // MARK: - Generate
     
-    static func generateTasks(context: ModelContext, count: Int = 500) {
+    static func generateTasks(context: ModelContext, count: Int = 100) {
         let start = Date()
         let calendar = Calendar.current
         let now = Date()

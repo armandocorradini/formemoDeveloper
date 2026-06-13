@@ -22,23 +22,11 @@ struct ForMemoApp: App {
     @AppStorage("snoozeTaskFromNotification")
     private var snoozeTaskFromNotification: Data?
     
-    @AppStorage("showAppBadge")
-    private var showAppBadge: Bool = true
-    
     @AppStorage("badgeIncludeExpired")
     private var badgeIncludeExpired: Bool = true
     
-    @AppStorage("autoDeleteCompletedAttachments")
-    private var autoDeleteCompletedAttachments: Bool = false
-
-    @AppStorage("attachmentRetentionDays")
-    private var attachmentRetentionDays: Int = 30
-
-    @AppStorage("recentlyDeletedRetentionDays")
-    private var recentlyDeletedRetentionDays: Int = 30
+    let settings = AppSettings.shared
     
-    @AppStorage("selectedTheme")
-    private var selectedTheme: AppTheme = .system
     
     
     // MARK: - Environment
@@ -190,7 +178,7 @@ struct ForMemoApp: App {
                 }
 #endif
                 .environment(appSettings)
-                .preferredColorScheme(selectedTheme.colorScheme)
+                .preferredColorScheme(appSettings.selectedTheme.colorScheme)
         }
         
         .modelContainer(container)
@@ -235,20 +223,13 @@ struct ForMemoApp: App {
                     NotificationActionProcessor.shared.processAll(using: context)
                     logStep("processAll")
 
-                    // 🔥 Attachment integrity verification
-//                    try? await Task.sleep(for: .milliseconds(300))
-
-//                    AttachmentMigration.runIfNeeded(context: context)
-//                    logStep("attachmentMigration")
-//                    
-//                    
                     DebugLog.writeAttachmentEvent("Attachment self-healing completed")
                     
                     // 2️⃣ 🔥 CLEANUP ALLEGATI (QUI è il punto giusto)
-                    if autoDeleteCompletedAttachments {
+                    if settings.autoDeleteCompletedAttachments {
                         try? AttachmentMaintenanceManager.shared.performAutomaticCleanup(
                             context: context,
-                            retentionDays: attachmentRetentionDays
+                            retentionDays: settings.attachmentRetentionDays
                         )
                     }
                     logStep("attachmentCleanup")
@@ -264,7 +245,6 @@ struct ForMemoApp: App {
                     )
                     
                     // 4️⃣ refresh notifiche (con piccolo delay SAFE)
-//                    try? await Task.sleep(for: .milliseconds(300))
                     NotificationManager.shared.refresh(force: true)
                     logStep("notificationRefresh")
                     logStep("ACTIVE COMPLETE")
@@ -336,10 +316,10 @@ struct ForMemoApp: App {
         
         let context = container.mainContext
         
-        if autoDeleteCompletedAttachments {
+        if settings.autoDeleteCompletedAttachments {
             try? AttachmentMaintenanceManager.shared.performAutomaticCleanup(
                 context: context,
-                retentionDays: attachmentRetentionDays
+                retentionDays: settings.attachmentRetentionDays
             )
         }
         
@@ -359,7 +339,7 @@ struct ForMemoApp: App {
         
         let center = UNUserNotificationCenter.current()
         
-        guard showAppBadge else {
+        guard appSettings.showAppBadge else {
             center.setBadgeCount(0)
             return
         }
@@ -386,7 +366,7 @@ struct ForMemoApp: App {
         
         let cutoff = Calendar.current.date(
             byAdding: .day,
-            value: -recentlyDeletedRetentionDays,
+            value: -settings.recentlyDeletedRetentionDays,
             to: .now
         )!
         

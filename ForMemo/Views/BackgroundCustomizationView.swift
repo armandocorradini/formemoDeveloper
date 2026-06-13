@@ -2,19 +2,17 @@ import SwiftUI
 
 struct BackgroundCustomizationView: View {
 
-    @AppStorage("backgroundColor1Hex")
-    private var color1Hex: String = defaultBackColor1.toHex() ?? ""
-
-    @AppStorage("backgroundColor2Hex")
-    private var color2Hex: String = defaultBackColor2.toHex() ?? ""
+    @Environment(AppSettings.self)
+    private var settings
 
     private var color1: Binding<Color> {
         Binding(
             get: {
-                Color(hex: color1Hex) ?? defaultBackColor1
+                Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1
             },
             set: {
-                color1Hex = $0.toHex() ?? color1Hex
+                settings.backgroundColor1Hex =
+                    $0.toHex() ?? settings.backgroundColor1Hex
             }
         )
     }
@@ -22,10 +20,11 @@ struct BackgroundCustomizationView: View {
     private var color2: Binding<Color> {
         Binding(
             get: {
-                Color(hex: color2Hex) ?? defaultBackColor2
+                Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
             },
             set: {
-                color2Hex = $0.toHex() ?? color2Hex
+                settings.backgroundColor2Hex =
+                    $0.toHex() ?? settings.backgroundColor2Hex
             }
         )
     }
@@ -110,6 +109,8 @@ struct BackgroundCustomizationView: View {
     ]
 
     var body: some View {
+        let color1Hex = settings.backgroundColor1Hex
+        let color2Hex = settings.backgroundColor2Hex
         ZStack {
 
             LinearGradient(
@@ -172,10 +173,11 @@ struct BackgroundCustomizationView: View {
                                 }()
 
                                 Button {
+                                    settings.backgroundColor1Hex =
+                                        preset.1.toHex() ?? settings.backgroundColor1Hex
 
-                                    color1Hex = preset.1.toHex() ?? color1Hex
-                                    color2Hex = preset.2.toHex() ?? color2Hex
-
+                                    settings.backgroundColor2Hex =
+                                        preset.2.toHex() ?? settings.backgroundColor2Hex
                                 } label: {
 
                                     VStack(spacing: 6) {

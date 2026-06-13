@@ -4,22 +4,12 @@ import SwiftData
 struct OtherSettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("startupTab")
-    private var startupTab: Int = 1
     
-    @AppStorage("confirmTaskDeletion")
-    private var confirmTaskDeletion = true
-    @AppStorage("notificationLeadTimeDays")
-    private var notificationLeadTimeDays: Int = 1
+    @Environment(AppSettings.self)
+    private var settings
 
-    @AppStorage("badgeMode")
-    private var badgeMode: Int = 1
-    
     @AppStorage("badgeIncludeExpired") private var badgeIncludeExpired: Bool = true
     @AppStorage("badgeIncludeExpiredMigrated") private var badgeIncludeExpiredMigrated: Bool = false
-    @AppStorage("showAppBadge") private var showAppBadge: Bool = true
-    @AppStorage("TaskWeekDays")
-    private var taskWeekDays: Int = 3
     
     @State private var path = NavigationPath()
     
@@ -36,7 +26,10 @@ struct OtherSettingsView: View {
                     
                     Picker(
                         String(localized: "View"),
-                        selection: $startupTab
+                        selection: Binding(
+                            get: { settings.startupTab },
+                            set: { settings.startupTab = $0 }
+                        )
                     ) {
                         Text(String(localized: "Start"))
                             .tag(0)
@@ -44,7 +37,7 @@ struct OtherSettingsView: View {
                         Text(String(localized: "List"))
                             .tag(1)
                         
-                        Text(String(localized: "\(taskWeekDays) days"))
+                        Text(String(localized: "\(settings.taskWeekDays) days"))
                             .tag(4)
                         
                         Text(String(localized: "Calendar"))
@@ -59,7 +52,7 @@ struct OtherSettingsView: View {
                             .tag(7)
                     }
                     .pickerStyle(.navigationLink)
-                    //                .labelsHidden()
+                  
                 }
                 
                 
@@ -67,17 +60,22 @@ struct OtherSettingsView: View {
                 Section(
                     header: Text(String(localized: "Notification and badge time"))
                 ) {
-                    Picker("Notify global", selection: Binding(
-                        get: { notificationLeadTimeDays },
-                        set: { newValue in
-                            notificationLeadTimeDays = newValue
-                            if newValue == -1 {
-                                badgeMode = 0
+                    Picker(
+                        "Notify global",
+                        selection: Binding(
+                            get: { settings.notificationLeadTimeDays },
+                            set: { newValue in
+
+                                settings.notificationLeadTimeDays = newValue
+
+                                if newValue == -1 {
+                                    settings.badgeMode = 0
+                                }
+
+                                NotificationManager.shared.refresh(force: true)
                             }
-                            // Aggiorna badge
-                            NotificationManager.shared.refresh(force: true)
-                        }
-                    )) {
+                        )
+                    ) {
                         ForEach(NotificationLeadTime.allCases) { value in
                             Text(value.title).tag(value.rawValue)
                         }
@@ -85,14 +83,20 @@ struct OtherSettingsView: View {
                     .pickerStyle(.menu)
                     
                   Text(
-                        notificationLeadTimeDays == -1
+                    settings.notificationLeadTimeDays == -1
                         ? String(localized: "You’ll receive a notification only at the exact time of the task. Since global notifications are disabled, the app badge updates only when tasks become overdue.")
-                        : String(localized: "You’ll receive a notification \(notificationLeadTimeDays) day(s) before the deadline and another at the time it’s due. You can choose below whether the app badge updates at the deadline or already with the global notification.")
+                        : String(localized: "You’ll receive a notification \(settings.notificationLeadTimeDays) day(s) before the deadline and another at the time it’s due. You can choose below whether the app badge updates at the deadline or already with the global notification.")
                     )
                     .foregroundStyle(.secondary)
                     .font(.footnote)
 
-                    Picker("Badge updates", selection: $badgeMode) {
+                    Picker(
+                        "Badge updates",
+                        selection: Binding(
+                            get: { settings.badgeMode },
+                            set: { settings.badgeMode = $0 }
+                        )
+                    ) {
 
                         Text("At deadline")
                             .tag(0)
@@ -101,15 +105,26 @@ struct OtherSettingsView: View {
                             .tag(1)
                     }
                     .pickerStyle(.menu)
-                    .disabled(notificationLeadTimeDays == -1)
+                    .disabled(settings.notificationLeadTimeDays == -1)
                     
-                    Toggle("Show app badge", isOn: $showAppBadge)
-//
-//                    Toggle("Include expired tasks in badge", isOn: $badgeIncludeExpired)
+                    Toggle(
+                        "Show app badge",
+                        isOn: Binding(
+                            get: { settings.showAppBadge },
+                            set: { settings.showAppBadge = $0 }
+                        )
+                    )
+
                 }
                 Section("Deletion") {
                     
-                    Toggle("Confirm task deletion", isOn: $confirmTaskDeletion)
+                    Toggle(
+                        "Confirm task deletion",
+                        isOn: Binding(
+                            get: { settings.confirmTaskDeletion },
+                            set: { settings.confirmTaskDeletion = $0 }
+                        )
+                    )
                 }
                 
             }
@@ -117,17 +132,17 @@ struct OtherSettingsView: View {
                 // Questa logica viene eseguita non appena il valore cambia
                 NotificationManager.shared.refresh(force: true)
             }
-            .onChange(of: showAppBadge) { _, _ in
+            .onChange(of: settings.showAppBadge) { _, _ in
                 NotificationManager.shared.refresh(force: true)
             }
-            .onChange(of: notificationLeadTimeDays) { _, newValue in
+            .onChange(of: settings.notificationLeadTimeDays) { _, newValue in
 
                 CloudSettingsSync.shared
                     .syncNotificationLeadTimeDays(newValue)
 
                 NotificationManager.shared.refresh(force: true)
             }
-            .onChange(of: badgeMode) { _, newValue in
+            .onChange(of: settings.badgeMode) { _, newValue in
 
                 CloudSettingsSync.shared
                     .syncBadgeMode(newValue)
@@ -166,4 +181,3 @@ struct OtherSettingsView: View {
         }
     }
 }
-

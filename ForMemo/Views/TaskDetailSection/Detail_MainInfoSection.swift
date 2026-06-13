@@ -11,8 +11,11 @@ import SwiftData
     let dismiss: DismissAction
     let modelContext: ModelContext
 
+    @Environment(AppSettings.self)
+    private var settings
+
     private var shouldShowHighlight: Bool {
-        guard highlightEnabled else {
+        guard settings.highlightEnabled else {
             return false
         }
 
@@ -29,14 +32,8 @@ import SwiftData
         return deadline < .now || Calendar.current.isDateInToday(deadline)
     }
 
-    @AppStorage("tasklist.highlightEnabled")
-    private var highlightEnabled: Bool = true
-
-    @AppStorage("tasklist.highlightColor")
-    private var highlightColorHex: String = Color.red.toHex() ?? ""
-
     private var highlightColor: Color {
-        Color(hex: highlightColorHex) ?? .red
+        Color(hex: settings.highlightColorHex) ?? .red
     }
 
     var body: some View {
