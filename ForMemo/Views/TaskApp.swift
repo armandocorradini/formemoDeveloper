@@ -103,6 +103,8 @@ struct ForMemoApp: App {
 
         self.container = sharedContainer
 
+        let appSettings = AppSettings.shared
+
         DebugLog.write(
             "☁️ CLOUDKIT: App started with SINGLE LOCAL-FIRST container"
         )
@@ -126,6 +128,12 @@ struct ForMemoApp: App {
             AttachmentMigration.runIfNeeded(
                 context: context
             )
+            if appSettings.autoDeleteCompletedAttachments {
+                try? AttachmentMaintenanceManager.shared.performAutomaticCleanup(
+                    context: context,
+                    retentionDays: appSettings.attachmentRetentionDays
+                )
+            }
         }
 
         Task { @MainActor in
@@ -223,18 +231,13 @@ struct ForMemoApp: App {
                     NotificationActionProcessor.shared.processAll(using: context)
                     logStep("processAll")
 
-                    DebugLog.writeAttachmentEvent("Attachment self-healing completed")
-                    
-                    // 2️⃣ 🔥 CLEANUP ALLEGATI (QUI è il punto giusto)
-                    if settings.autoDeleteCompletedAttachments {
-                        try? AttachmentMaintenanceManager.shared.performAutomaticCleanup(
-                            context: context,
-                            retentionDays: settings.attachmentRetentionDays
-                        )
-                    }
-                    logStep("attachmentCleanup")
+                    DebugLog.writeAttachmentEvent(
 
-                    // 3️⃣ 🔥 CLEANUP RECENTLY DELETED (task + attachments)
+                        "Attachment self-healing skipped on app active"
+
+                    )
+                    
+                    // 2️⃣ 🔥 CLEANUP RECENTLY DELETED (task + attachments)
                     cleanupRecentlyDeleted(context: context)
                     logStep("recentlyDeleted")
                     
@@ -309,29 +312,6 @@ struct ForMemoApp: App {
     
     
     
-    // MARK: - Scene Activation
-    
-    @MainActor
-    private func handleSceneActivation() async {
-        
-        let context = container.mainContext
-        
-        if settings.autoDeleteCompletedAttachments {
-            try? AttachmentMaintenanceManager.shared.performAutomaticCleanup(
-                context: context,
-                retentionDays: settings.attachmentRetentionDays
-            )
-        }
-        
-        // 🔥 trigger leggero sync
-        _ = try? context.fetch(FetchDescriptor<TodoTask>())
-        
-        NotificationManager.shared.refresh()
-        
-        
-    }
-
-   
     // MARK: - Badge
     
     @MainActor
@@ -372,6 +352,8 @@ struct ForMemoApp: App {
         
         let descriptor = FetchDescriptor<DeletedItem>()
         
+        var deletedSomething = false
+        
         guard let items = try? context.fetch(descriptor) else { return }
         
         for item in items {
@@ -389,10 +371,13 @@ struct ForMemoApp: App {
                 }
                 
                 context.delete(item)
+                deletedSomething = true
             }
         }
         
-        try? context.save()
+        if deletedSomething {
+            try? context.save()
+        }
     }
 }
 

@@ -335,6 +335,20 @@ enum DebugLog {
     }
     static func writeDatabaseSnapshot(context: ModelContext) {
 
+        let openTasks = (try? context.fetchCount(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate { !$0.isCompleted }
+            )
+        )) ?? 0
+
+        let completedTasks = (try? context.fetchCount(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate { $0.isCompleted }
+            )
+        )) ?? 0
+
+        write("📊 Open Tasks: \(openTasks)")
+        write("📊 Completed Tasks: \(completedTasks)")
         let taskCount = (try? context.fetchCount(
             FetchDescriptor<TodoTask>()
         )) ?? 0
@@ -354,11 +368,14 @@ enum DebugLog {
         let deletedCount = (try? context.fetchCount(
             FetchDescriptor<DeletedItem>()
         )) ?? 0
-
+        let attachmentRecordCount = (try? context.fetchCount(
+            FetchDescriptor<TaskAttachment>()
+        )) ?? 0
         write("📊 Tasks: \(taskCount)")
         write("📊 Documents: \(documentCount)")
         write("📊 Trips: \(tripCount)")
         write("📊 Loyalty Cards: \(cardCount)")
+        write("📊 Attachment Records: \(attachmentRecordCount)")
         write("📊 Deleted Items: \(deletedCount)")
 
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,

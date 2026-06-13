@@ -47,9 +47,28 @@ enum Persistence {
                     : .none
             )
 
+            let start = CFAbsoluteTimeGetCurrent()
+
             let container = try ModelContainer(
+
                 for: schema,
+
                 configurations: [configuration]
+
+            )
+
+            let elapsed = CFAbsoluteTimeGetCurrent() - start
+
+            DebugLog.write(
+
+                String(
+
+                    format: "⏱️ ModelContainer creation: %.3fs",
+
+                    elapsed
+
+                )
+
             )
 
             DebugLog.write(
