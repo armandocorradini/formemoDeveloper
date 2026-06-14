@@ -146,36 +146,19 @@ private extension RemindersImportView {
         
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
             
-            if #available(iOS 17.0, *) {
-                store.requestFullAccessToReminders { granted, error in
-                    
-                    if let error {
-                        cont.resume(throwing: error)
-                        return
-                    }
-                    
-                    guard granted else {
-                        cont.resume(throwing: AppError.remindersAccessDenied)
-                        return
-                    }
-                    
-                    cont.resume()
+            store.requestFullAccessToReminders { granted, error in
+
+                if let error {
+                    cont.resume(throwing: error)
+                    return
                 }
-            } else {
-                store.requestAccess(to: .reminder) { granted, error in
-                    
-                    if let error {
-                        cont.resume(throwing: error)
-                        return
-                    }
-                    
-                    guard granted else {
-                        cont.resume(throwing: AppError.remindersAccessDenied)
-                        return
-                    }
-                    
-                    cont.resume()
+
+                guard granted else {
+                    cont.resume(throwing: AppError.remindersAccessDenied)
+                    return
                 }
+
+                cont.resume()
             }
         }
     }

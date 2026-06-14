@@ -20629,6 +20629,34 @@
         }
       }
     },
+    "Some apps (e.g. WhatsApp) may not correctly import multiple audio files shared at the same time." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige Apps (z. B. WhatsApp) können mehrere gleichzeitig freigegebene Audiodateien möglicherweise nicht korrekt importieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algunas aplicaciones (por ejemplo, WhatsApp) pueden no importar correctamente varios archivos de audio compartidos al mismo tiempo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certaines applications (par exemple WhatsApp) peuvent ne pas importer correctement plusieurs fichiers audio partagés simultanément."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alcune app (ad esempio WhatsApp) potrebbero non importare correttamente più file audio condivisi contemporaneamente."
+          }
+        }
+      }
+    },
     "Sorting" : {
       "localizations" : {
         "de" : {

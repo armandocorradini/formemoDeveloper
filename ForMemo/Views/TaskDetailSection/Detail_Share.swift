@@ -71,6 +71,15 @@ struct ShareSheet: View {
                             .foregroundStyle(.blue)
                         }
                         
+                        if selectedAudioCount > 1 {
+                            Label(
+                                "Some apps (e.g. WhatsApp) may not correctly import multiple audio files shared at the same time.",
+                                systemImage: "exclamationmark.triangle.fill"
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                        }
+                        
                         // Lista allegati: riga cliccabile per selezione/deselezione
                         ForEach(uniqueAttachments, id: \.id) { att in
                             HStack(spacing: 12) {
@@ -124,6 +133,18 @@ struct ShareSheet: View {
         }
     }
     
+    private var selectedAudioCount: Int {
+        uniqueAttachments
+            .filter { selectedAttachments.contains($0.id) }
+            .filter {
+                guard let type = UTType(mimeType: $0.contentType) ?? UTType($0.contentType) else {
+                    return false
+                }
+                return type.conforms(to: .audio)
+            }
+            .count
+    }
+
     private var canShare: Bool {
         includeText || includeDescription || includeDeadline || includeLocation || !selectedAttachments.isEmpty
     }
