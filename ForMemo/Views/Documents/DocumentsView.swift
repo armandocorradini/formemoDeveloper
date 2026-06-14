@@ -49,8 +49,11 @@ struct DocumentsView: View {
                         HStack(spacing: 12) {
 
                             Image(systemName: document.documentType.systemImage)
-                                .symbolRenderingMode(.hierarchical)
-                                .foregroundStyle(iconColor(for: document))
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(
+                                    iconPrimaryColor(for: document),
+                                    iconSecondaryColor(for: document)
+                                )
                                 .font(.title3)
                                 .frame(width: 28)
 
@@ -148,33 +151,57 @@ struct DocumentsView: View {
         }
     }
 
-    private func iconColor(for document: DocumentItem) -> Color {
+    private func iconPrimaryColor(for document: DocumentItem) -> Color {
         switch document.documentType {
-
         case .idCard:
             return .indigo
-
         case .passport:
             return .blue
-
         case .drivingLicence:
             return .orange
-
         case .healthCard:
             return .red
-
-        case .carInsurance,
-             .motorbikeInsurance,
-             .homeInsurance,
-             .lifeInsurance:
+        case .carInsurance:
             return .green
-
-        case .medicalCertificate,
-             .vaccinationCertificate:
+        case .motorbikeInsurance:
+            return .mint
+        case .homeInsurance:
             return .teal
-
+        case .lifeInsurance:
+            return .pink
+        case .medicalCertificate:
+            return .cyan
+        case .vaccinationCertificate:
+            return .green
         default:
             return .accentColor
+        }
+    }
+
+    private func iconSecondaryColor(for document: DocumentItem) -> Color {
+        switch document.documentType {
+        case .idCard:
+            return .blue
+        case .passport:
+            return .cyan
+        case .drivingLicence:
+            return .yellow
+        case .healthCard:
+            return .pink
+        case .carInsurance:
+            return .mint
+        case .motorbikeInsurance:
+            return .blue
+        case .homeInsurance:
+            return .green
+        case .lifeInsurance:
+            return .red
+        case .medicalCertificate:
+            return .teal
+        case .vaccinationCertificate:
+            return .mint
+        default:
+            return .secondary
         }
     }
 

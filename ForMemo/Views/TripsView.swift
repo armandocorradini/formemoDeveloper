@@ -74,9 +74,13 @@ struct TravelKitListView: View {
                         HStack(spacing: 14) {
                             
                             Image(systemName: category.icon)
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(
+                                    tripIconColors(for: category.icon).0,
+                                    tripIconColors(for: category.icon).1
+                                )
                                 .font(.title2)
                                 .frame(width: 34)
-                                .foregroundStyle(.tint)
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 
@@ -450,6 +454,11 @@ struct TravelKitListView: View {
                                         } label: {
                                             
                                             Image(systemName: icon)
+                                                .symbolRenderingMode(.palette)
+                                                .foregroundStyle(
+                                                    tripIconColors(for: icon).0,
+                                                    tripIconColors(for: icon).1
+                                                )
                                                 .font(.title2)
                                                 .frame(width: 54, height: 54)
                                                 .background(
@@ -1490,6 +1499,33 @@ enum TripTemplates {
         ]
     }
     
+}
+
+// MARK:helper localization functions
+
+private func tripIconColors(for icon: String) -> (Color, Color) {
+    switch icon {
+    case "airplane": return (.blue, .cyan)
+    case "car": return (.mint, .blue)
+    case "motorcycle": return (.orange, .red)
+    case "bicycle": return (.green, .mint)
+    case "tram": return (.indigo, .blue)
+    case "ferry": return (.cyan, .blue)
+    case "bus": return (.purple, .pink)
+    case "sailboat": return (.teal, .cyan)
+    case "figure", "figure.hiking": return (.green, .orange)
+    case "tent": return (.brown, .green)
+    case "backpack": return (.green, .brown)
+    case "suitcase.rolling": return (.blue, .cyan)
+    case "camera": return (.purple, .pink)
+    case "beach.umbrella": return (.yellow, .orange)
+    case "snowflake": return (.cyan, .white)
+    case "mountain.2": return (.brown, .green)
+    case "water.waves": return (.blue, .cyan)
+    case "drop": return (.teal, .blue)
+    case "globe.europe.africa": return (.green, .blue)
+    default: return (.blue, .cyan)
+    }
 }
 
 // MARK:helper localization functions
