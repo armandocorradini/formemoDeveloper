@@ -12,6 +12,24 @@ extension Notification.Name {
     static let taskDidChange = Notification.Name("taskDidChange")
 }
 
+// MARK: - TaskTagFilter
+enum TaskTagFilter: Hashable, Identifiable {
+    case all
+    case none
+    case tag(TaskMainTag)
+
+    var id: String {
+        switch self {
+        case .all:
+            return "all"
+        case .none:
+            return "none"
+        case .tag(let tag):
+            return tag.rawValue
+        }
+    }
+}
+
 // MARK: - TaskListView
 struct TaskListView: View {
 
@@ -39,7 +57,7 @@ struct TaskListView: View {
     @State private var showWeatherForecast = false
     @State private var selectedWeatherDay: SelectedWeatherDay?
 
-    @State private var selectedTagFilter: TaskMainTag? = nil
+    @State private var selectedTagFilter: TaskTagFilter = .all
     @State private var selectedPriorityFilter: TaskPriority? = nil
     @State private var selectedPeriodFilter: TaskPeriodFilter? = nil
 
@@ -81,9 +99,16 @@ struct TaskListView: View {
                     debouncedSearchText.isEmpty ||
                     task.title.localizedCaseInsensitiveContains(debouncedSearchText)
 
-                let matchesTag =
-                    selectedTagFilter == nil ||
-                    task.mainTag == selectedTagFilter
+                let matchesTag: Bool = {
+                    switch selectedTagFilter {
+                    case .all:
+                        return true
+                    case .none:
+                        return task.mainTag == nil
+                    case .tag(let tag):
+                        return task.mainTag == tag
+                    }
+                }()
 
                 let matchesPriority =
                     selectedPriorityFilter == nil ||
@@ -315,9 +340,9 @@ struct TaskListView: View {
                         ToolbarItem(placement: .topBarLeading) {
                             Menu {
                                 // Sezione per rimuovere tutti i filtri
-                                if selectedTagFilter != nil || selectedPriorityFilter != nil || selectedPeriodFilter != nil {
+                                if selectedTagFilter != .all || selectedPriorityFilter != nil || selectedPeriodFilter != nil {
                                     Button(role: .destructive) {
-                                        selectedTagFilter = nil
+                                        selectedTagFilter = .all
                                         selectedPriorityFilter = nil
                                         selectedPeriodFilter = nil
                                     } label: {
@@ -334,13 +359,16 @@ struct TaskListView: View {
                                 // Usiamo un Picker per gestire la selezione "esclusiva" in modo nativo
                                 Menu {
                                     Picker("Tags", selection: $selectedTagFilter) {
-                                        // Opzione per deselezionare (All)
-                                        // Usiamo Optional(nil) per far combaciare il tipo con selectedTagFilter
-                                        Text("All").tag(nil as TaskMainTag?)
+
+                                        Text("All")
+                                            .tag(TaskTagFilter.all)
+
+                                        Label("None", systemImage: "tag.slash")
+                                            .tag(TaskTagFilter.none)
 
                                         ForEach(TaskMainTag.localizedSortedCases) { tag in
                                             Label(tag.localizedTitle, systemImage: tag.mainIcon)
-                                                .tag(tag as TaskMainTag?)
+                                                .tag(TaskTagFilter.tag(tag))
                                         }
                                     }
                                 } label: {
@@ -408,7 +436,7 @@ struct TaskListView: View {
                                 // Diventa blu se almeno un filtro è attivo
                                 Image(systemName: "line.3.horizontal.decrease.circle")
                                     .foregroundStyle(
-                                        selectedTagFilter != nil ||
+                                        selectedTagFilter != .all ||
                                         selectedPriorityFilter != nil ||
                                         selectedPeriodFilter != nil
                                         ? .red
@@ -697,6 +725,7 @@ struct TaskRow: View {
 
 enum TaskPeriodFilter: String, CaseIterable, Identifiable {
 
+    case noDeadline
     case today
     case tomorrow
     case dayAfterTomorrow
@@ -710,6 +739,8 @@ enum TaskPeriodFilter: String, CaseIterable, Identifiable {
 
     var localizedTitle: LocalizedStringKey {
         switch self {
+        case .noDeadline:
+            return "No Deadline"
         case .today:
             return "Today"
         case .tomorrow:
@@ -731,6 +762,8 @@ enum TaskPeriodFilter: String, CaseIterable, Identifiable {
 
     var systemImage: String {
         switch self {
+        case .noDeadline:
+            return "clock.badge.questionmark"
         case .today:
             return "sun.max"
         case .tomorrow:
@@ -751,6 +784,10 @@ enum TaskPeriodFilter: String, CaseIterable, Identifiable {
     }
 
     func matches(_ date: Date?) -> Bool {
+
+        if self == .noDeadline {
+            return date == nil
+        }
 
         guard let date else { return false }
 
@@ -812,6 +849,8 @@ enum TaskPeriodFilter: String, CaseIterable, Identifiable {
         case .thisMonth:
 
             return calendar.isDate(date, equalTo: now, toGranularity: .month)
+        case .noDeadline:
+            return false // already handled above, but required for completeness
         }
     }
 }
@@ -1632,7 +1671,7 @@ struct CompletedTasksContainerView: View {
     @Binding var taskPendingDeletion: TodoTask?
     let modelContext: ModelContext
     let searchText: String
-    let selectedTagFilter: TaskMainTag?
+    let selectedTagFilter: TaskTagFilter
     let selectedPriorityFilter: TaskPriority?
     let selectedPeriodFilter: TaskPeriodFilter?
     
@@ -1644,9 +1683,16 @@ struct CompletedTasksContainerView: View {
                 searchText.isEmpty ||
                 task.title.localizedCaseInsensitiveContains(searchText)
 
-            let matchesTag =
-                selectedTagFilter == nil ||
-                task.mainTag == selectedTagFilter
+            let matchesTag: Bool = {
+                switch selectedTagFilter {
+                case .all:
+                    return true
+                case .none:
+                    return task.mainTag == nil
+                case .tag(let tag):
+                    return task.mainTag == tag
+                }
+            }()
 
             let matchesPriority =
                 selectedPriorityFilter == nil ||
