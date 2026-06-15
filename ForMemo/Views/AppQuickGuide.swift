@@ -52,12 +52,19 @@ struct AppQuickGuideView: View {
             tint: .red
         ),
         
-            .init(
-                title: String(localized:"Smart Badges"),
-                description: String(localized:"The app icon badge can show the number of overdue tasks or the number of tasks that reached the global notification time, depending on the selected badge mode in Settings > General. Inside the app, each task shows how many days are left."),
-                icon: "app.badge",
-                tint: .orange
-            ),
+        .init(
+            title: String(localized:"Smart Badges"),
+            description: String(localized:"Choose what the app icon badge displays: overdue tasks or tasks that reached the global notification time. Inside the app, each task shows how many days are left."),
+            icon: "app.badge",
+            tint: .orange
+        ),
+
+        .init(
+            title: String(localized:"Powerful Filters"),
+            description: String(localized:"Instantly filter tasks by category, priority, due date period, overdue status or tasks without a deadline. Combine filters to focus only on what matters."),
+            icon: "line.3.horizontal.decrease.circle",
+            tint: .orange
+        ),
 
             .init(
                 title: String(localized:"Rich Attachments"),
@@ -161,12 +168,12 @@ struct AppQuickGuideView: View {
             tint: .teal
         ),
         
-            .init(
-                title: String(localized: "Smart Notifications"),
-                description: String(localized: "Stay on track with intelligent reminders. Every task includes a notification at the due time. You can add custom reminders, enable an automatic early notification (1–7 days before), and quickly snooze notifications when needed."),
-                icon: "deskclock",
-                tint: .orange
-            ),
+        .init(
+            title: String(localized: "Smart Notifications"),
+            description: String(localized: "Every task automatically generates a notification when it becomes overdue. Add additional reminders, location alerts and early notifications up to 7 days in advance."),
+            icon: "deskclock",
+            tint: .orange
+        ),
         .init(
             title: String(localized:"Recurring Tasks"),
             description: String(localized:"Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the next one is created automatically based on the selected frequency."),
@@ -210,12 +217,12 @@ struct AppQuickGuideView: View {
                 tint: .purple
             ),
 
-            .init(
-                title: String(localized:"Backup & Restore"),
-                description: String(localized:"Create complete backups of tasks, reminders, attachments, loyalty cards and logos, trip lists and document records. Restore everything safely on the same or another device."),
-                icon: "externaldrive.badge.timemachine",
-                tint: .indigo
-            )
+        .init(
+            title: String(localized:"Backup & Restore"),
+            description: String(localized:"Create complete backups including tasks, attachments, loyalty cards, travel lists, documents and app data. Restore everything on the same or another device."),
+            icon: "externaldrive.badge.timemachine",
+            tint: .indigo
+        )
     ]
     
     private var steps: [AppQuickGuide] { Self.stepsData }

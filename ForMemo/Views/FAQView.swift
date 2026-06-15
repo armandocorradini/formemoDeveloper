@@ -84,6 +84,14 @@ struct FAQView: View {
                 answer: String(localized:"The app schedules a notification at the task’s due time. In Settings, you can enable an automatic early notification (from 1 to 7 days before), applied to every task. You can also add a custom reminder for each task. You can also associate a location with a task and receive a notification when you arrive at that place. Only one notification is active at a time, and when it fires, the system automatically schedules the next one. Recurring tasks follow the same logic for each occurrence.")
             ),
             FAQItem(
+                question: String(localized:"Does every task generate a notification when it becomes overdue?"),
+                answer: String(localized:"Yes. Every task with a due date automatically generates a notification when it reaches its deadline. You can also add custom reminders, location reminders, and advance notifications.")
+            ),
+            FAQItem(
+                question: String(localized:"What is the difference between a due date notification and a reminder?"),
+                answer: String(localized:"The due date notification is automatically generated when a task reaches its deadline. Reminders are optional notifications that can occur before the deadline at a time you choose.")
+            ),
+            FAQItem(
                 question: String(localized:"Why am I not receiving notifications?"),
                 answer: String(localized:"Check system permissions, Focus modes, and app settings. Notifications are only scheduled when valid and allowed.")
             ),
@@ -139,6 +147,18 @@ struct FAQView: View {
                 question: String(localized:"What do badges in task rows mean?"),
                 answer: String(localized:"They indicate the task status, for example if it is approaching its deadline, but only if a priority is set.")
             ),
+            FAQItem(
+                question: String(localized:"Can I filter tasks without a deadline?"),
+                answer: String(localized:"Yes. Open the Filters menu and select No Deadline to display only tasks that do not have a due date assigned.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I combine multiple filters?"),
+                answer: String(localized:"Yes. You can combine category, priority, due date period, and other filters to quickly focus on the tasks that matter most.")
+            ),
+            FAQItem(
+                question: String(localized:"What are Powerful Filters?"),
+                answer: String(localized:"Powerful Filters help you quickly find tasks by category, priority, due date period, overdue status, or tasks without a deadline. Multiple filters can be combined at the same time.")
+            ),
             // --- ADDED FAQItems ---
             FAQItem(
                 question: String(localized:"Why is the badge not updating?"),
@@ -147,6 +167,10 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"What is the difference between badge modes?"),
                 answer: String(localized:"At deadline updates the badge only when tasks become overdue. With global notification, the badge instead updates at the exact same moment the advance global notification is triggered. You can change this behavior anytime in Settings > General.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I choose how the app badge works?"),
+                answer: String(localized:"Yes. In Settings > General, you can choose whether the badge counts overdue tasks or tasks that reached the global notification time.")
             ),
             FAQItem(
                 question: String(localized:"Why is the badge different from what I expect?"),
@@ -300,7 +324,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Does the app support backup and restore?"),
-                answer: String(localized:"Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, loyalty cards and logos, trip lists, documents, and app settings. You can restore them later or transfer everything to another device.")
+                answer: String(localized:"Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, loyalty cards and logos, trip lists, documents, and related data. You can restore them later or transfer everything to another device.")
+            ),
+            FAQItem(
+                question: String(localized:"What is included in a backup?"),
+                answer: String(localized:"Backups can include tasks, attachments, loyalty cards, trip lists, documents, reminders, and related data.")
             ),
             FAQItem(
                 question: String(localized:"Are attachments included in backups?"),
@@ -317,6 +345,10 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"Can I restore backups on another device?"),
                 answer: String(localized:"Yes. You can import a backup file on another compatible device to restore your tasks, loyalty cards, attachments, trips, documents, and related data.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I restore only specific data from a backup?"),
+                answer: String(localized:"Yes. During restore, you can choose to restore all data or only selected sections, such as tasks, loyalty cards, trip lists, documents, or other supported data. This allows you to recover only what you need without replacing everything.")
             ),
             FAQItem(
                 question: String(localized:"Can I transfer my data to another device?"),
