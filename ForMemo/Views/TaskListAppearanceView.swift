@@ -317,18 +317,26 @@ extension Color {
     }
     
     func toHex() -> String? {
+
         let uiColor = UIColor(self)
-        guard let components = uiColor.cgColor.components else { return nil }
+
+        guard
+            let components = uiColor.cgColor.components,
+            components.count >= 3
+        else {
+            return nil
+        }
 
         let r = Float(components[0])
         let g = Float(components[1])
         let b = Float(components[2])
         let a = components.count >= 4 ? Float(components[3]) : 1.0
 
-        return String(format: "#%02lX%02lX%02lX%02lX",
-                      Int(a * 255),
-                      Int(r * 255),
-                      Int(g * 255),
-                      Int(b * 255))
-    }
-}
+        return String(
+            format: "#%02lX%02lX%02lX%02lX",
+            Int(a * 255),
+            Int(r * 255),
+            Int(g * 255),
+            Int(b * 255)
+        )
+    }}

@@ -92,15 +92,32 @@ enum Persistence {
                 "SwiftData ModelContainer error: \(error.localizedDescription)"
             )
 
-            return try! ModelContainer(
-                for: schema,
-                configurations: [
-                    ModelConfiguration(
-                        schema: schema,
-                        isStoredInMemoryOnly: true
-                    )
-                ]
-            )
+            do {
+
+                return try ModelContainer(
+                    for: schema,
+                    configurations: [
+                        ModelConfiguration(
+                            schema: schema,
+                            isStoredInMemoryOnly: true
+                        )
+                    ]
+                )
+
+            } catch {
+
+                DebugLog.write(
+                    "❌ In-memory SwiftData container initialization FAILED: \(error.localizedDescription)"
+                )
+
+                AppLogger.persistence.fault(
+                    "In-memory SwiftData ModelContainer error: \(error.localizedDescription)"
+                )
+
+                fatalError(
+                    "Unable to create any SwiftData ModelContainer: \(error.localizedDescription)"
+                )
+            }
         }
     }
 }

@@ -379,18 +379,27 @@ struct WalletView: View {
     
     private func isLightCardColor(_ hex: String?) -> Bool {
 
-        guard
-            let hex,
-            let uiColor = UIColor(
-                Color(hex: hex) ?? .blue
-            ).cgColor.components
-        else {
+        guard let hex else {
             return false
         }
 
-        let red = uiColor[0]
-        let green = uiColor[1]
-        let blue = uiColor[2]
+        let uiColor = UIColor(
+            Color(hex: hex) ?? .blue
+        )
+
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+
+        guard uiColor.getRed(
+            &red,
+            green: &green,
+            blue: &blue,
+            alpha: &alpha
+        ) else {
+            return false
+        }
 
         let brightness =
             ((red * 299) +
