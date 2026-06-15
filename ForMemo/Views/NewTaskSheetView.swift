@@ -758,7 +758,7 @@ struct NewTaskSheetView: View {
     @MainActor
     private func saveAttachment(from url: URL) async {
         
-        try? AttachmentImporter.addAttachment(
+        try? await AttachmentImporter.addAttachment(
             from: url,
             to: draftTask,
             in: modelContext

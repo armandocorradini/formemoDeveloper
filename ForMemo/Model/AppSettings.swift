@@ -368,7 +368,7 @@ final class AppSettings {
             TaskListStyle(
                 rawValue: defaults.string(
                     forKey: "TaskListStyle"
-                ) ?? "plain"
+                ) ?? "grouped"
             ) ?? .plain
 
         showDateEveryRow =
@@ -389,7 +389,7 @@ final class AppSettings {
         startupTab =
             defaults.object(
                 forKey: "startupTab"
-            ) as? Int ?? 0
+            ) as? Int ?? 1
 
         notificationLeadTimeDays =
             defaults.object(

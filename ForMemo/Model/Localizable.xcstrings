@@ -1775,6 +1775,7 @@
       }
     },
     "Add attachment" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11806,6 +11807,7 @@
       }
     },
     "Import file" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

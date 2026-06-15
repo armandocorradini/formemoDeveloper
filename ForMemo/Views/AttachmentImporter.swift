@@ -9,14 +9,14 @@ final class AttachmentImporter {
         from originalURL: URL,
         to task: TodoTask,
         in context: ModelContext
-    ) throws {
+    ) async throws {
         
         let access = originalURL.startAccessingSecurityScopedResource()
         defer {
             if access { originalURL.stopAccessingSecurityScopedResource() }
         }
         
-        let destinationURL = try copyToAttachmentsFolder(originalURL: originalURL)
+        let destinationURL = try await copyToAttachmentsFolder(originalURL: originalURL)
         
         let fileName = destinationURL.lastPathComponent
         let ext = destinationURL.pathExtension.lowercased()
@@ -74,7 +74,7 @@ final class AttachmentImporter {
         )
     }
     
-    private static func copyToAttachmentsFolder(originalURL: URL) throws -> URL {
+    private static func copyToAttachmentsFolder(originalURL: URL) async throws -> URL{
         
         let fm = FileManager.default
         
@@ -116,7 +116,8 @@ final class AttachmentImporter {
                     break
                 }
             }
-            Thread.sleep(forTimeInterval: 0.08)
+            try Task.checkCancellation()
+            try await Task.sleep(for: .milliseconds(80))
         }
 
         guard materialized, readable else {

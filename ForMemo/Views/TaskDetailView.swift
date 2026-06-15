@@ -761,7 +761,7 @@ struct TaskDetailView: View {
         }
         
         do {
-            try  AttachmentImporter.addAttachment(
+            try await AttachmentImporter.addAttachment(
                 from: url,
                 to: task,
                 in: modelContext
