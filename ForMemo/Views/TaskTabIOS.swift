@@ -390,9 +390,9 @@ struct TaskTabView: View {
                 sidebarRow(String(localized: "map_tab"), "map", 5)
                 sidebarRow(String(localized: "Start_tab"), "house", 0)
                 sidebarRow(String(localized: "wallet_tab"), "wallet.bifold", 6)
-                sidebarRow("Trips", "suitcase.rolling", 7)
+                sidebarRow(String(localized: "Trips"), "suitcase.rolling", 7)
                 sidebarRow(String(localized: "Documents"), "doc.text", 8)
-                sidebarRow("Forecast", "cloud.sun", 9)
+                sidebarRow(String(localized: "Forecast"), "cloud.sun", 9)
                 sidebarRow(String(localized: "settings_tab"), "gear", 2)
             }
             .listStyle(.sidebar)

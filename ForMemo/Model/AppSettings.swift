@@ -194,21 +194,22 @@ final class AppSettings {
             )
         }
     }
-    
-    var navigationAppRaw: String {
+
+    var navigationAppID: String {
         didSet {
             UserDefaults.standard.set(
-                navigationAppRaw,
+                navigationAppID,
                 forKey: "navigationApp"
             )
         }
     }
+
     var navigationApp: NavigationApp {
         get {
-            NavigationApp(rawValue: navigationAppRaw) ?? .appleMaps
+            NavigationApp.app(for: navigationAppID)
         }
         set {
-            navigationAppRaw = newValue.rawValue
+            navigationAppID = newValue.id
         }
     }
     
@@ -406,10 +407,10 @@ final class AppSettings {
                 forKey: "siriAutoReminderEnabled"
             ) as? Bool ?? true
 
-        navigationAppRaw =
+        navigationAppID =
             defaults.string(
                 forKey: "navigationApp"
-            ) ?? "appleMaps"
+            ) ?? "apple"
         
         backgroundColor1Hex =
             defaults.string(
@@ -464,3 +465,5 @@ final class AppSettings {
             ) as? Int ?? 150
     }
 }
+
+

@@ -170,13 +170,25 @@ struct ShareSheet: View {
             items.append(locationText)
             
             let url: URL?
-            switch settings.navigationApp {
-            case .appleMaps:
-                url = URL(string: "http://maps.apple.com/?daddr=\(coordinate.latitude),\(coordinate.longitude)")
-            case .googleMaps:
-                url = URL(string: "https://www.google.com/maps/dir/?api=1&destination=\(coordinate.latitude),\(coordinate.longitude)")
+
+            switch settings.navigationApp.id {
+            case "google":
+                url = URL(
+                    string: "https://www.google.com/maps/dir/?api=1&destination=\(coordinate.latitude),\(coordinate.longitude)"
+                )
+            case "waze":
+                url = URL(
+                    string: "waze://?ll=\(coordinate.latitude),\(coordinate.longitude)&navigate=yes"
+                )
+            case "chooser":
+                url = URL(
+                    string: "http://maps.apple.com/?daddr=\(coordinate.latitude),\(coordinate.longitude)"
+                )
+            default:
+                url = URL(
+                    string: "http://maps.apple.com/?daddr=\(coordinate.latitude),\(coordinate.longitude)"
+                )
             }
-            //                }
             if let url { items.append(url) } // link cliccabile
         }
         

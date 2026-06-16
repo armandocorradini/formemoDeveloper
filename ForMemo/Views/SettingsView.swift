@@ -274,7 +274,7 @@ struct SettingsView: View {
                                     set: { settings.navigationApp = $0 }
                                 )
                             ) {
-                                ForEach(NavigationApp.allCases) { app in
+                                ForEach(NavigationApp.availableApps){ app in
                                     Text(app.title).tag(app)
                                 }
                             }

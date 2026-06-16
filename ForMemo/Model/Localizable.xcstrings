@@ -14239,6 +14239,9 @@
         }
       }
     },
+    "Navigate with" : {
+
+    },
     "Navigation app" : {
       "localizations" : {
         "de" : {
@@ -19612,6 +19615,7 @@
       }
     },
     "Select your preferred navigation app in Settings to open task locations using Apple Maps or Google Maps." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19638,6 +19642,9 @@
           }
         }
       }
+    },
+    "Select your preferred navigation app in Settings. Open task locations with your favorite navigation app or choose which app to use each time." : {
+
     },
     "Selective Sharing" : {
       "localizations" : {

@@ -620,36 +620,105 @@ struct TaskDetailView: View {
         to coordinate: CLLocationCoordinate2D,
         name: String
     ) {
-        
         let lat = coordinate.latitude
         let lon = coordinate.longitude
-        
-        switch settings.navigationApp {
-            
-        case .appleMaps:
-            
-            let url = URL(string: "http://maps.apple.com/?daddr=\(lat),\(lon)")!
-            UIApplication.shared.open(url)
-            
-            
-        case .googleMaps:
-            
+
+        switch settings.navigationApp.id {
+
+        case "google":
+
             let googleURL = URL(
                 string: "comgooglemaps://?daddr=\(lat),\(lon)&directionsmode=driving"
             )!
-            
+
             if UIApplication.shared.canOpenURL(googleURL) {
-                
                 UIApplication.shared.open(googleURL)
-                
             } else {
-                
                 let fallbackURL = URL(
                     string: "https://www.google.com/maps/dir/?api=1&destination=\(lat),\(lon)"
                 )!
-                
                 UIApplication.shared.open(fallbackURL)
             }
+
+        case "waze":
+
+            if let url = URL(
+                string: "waze://?ll=\(lat),\(lon)&navigate=yes"
+            ) {
+                UIApplication.shared.open(url)
+            }
+
+
+
+        case "chooser":
+
+            let alert = UIAlertController(
+                title: String(localized: "Navigate with"),
+                message: nil,
+                preferredStyle: .actionSheet
+            )
+
+            alert.addAction(
+                UIAlertAction(
+                    title: "Apple Maps",
+                    style: .default
+                ) { _ in
+                    let url = URL(
+                        string: "http://maps.apple.com/?daddr=\(lat),\(lon)"
+                    )!
+                    UIApplication.shared.open(url)
+                }
+            )
+
+            if UIApplication.shared.canOpenURL(URL(string: "comgooglemaps://")!) {
+                alert.addAction(
+                    UIAlertAction(
+                        title: "Google Maps",
+                        style: .default
+                    ) { _ in
+                        let googleURL = URL(
+                            string: "comgooglemaps://?daddr=\(lat),\(lon)&directionsmode=driving"
+                        )!
+                        UIApplication.shared.open(googleURL)
+                    }
+                )
+            }
+
+            if UIApplication.shared.canOpenURL(URL(string: "waze://")!) {
+                alert.addAction(
+                    UIAlertAction(
+                        title: "Waze",
+                        style: .default
+                    ) { _ in
+                        let wazeURL = URL(
+                            string: "waze://?ll=\(lat),\(lon)&navigate=yes"
+                        )!
+                        UIApplication.shared.open(wazeURL)
+                    }
+                )
+            }
+
+            alert.addAction(
+                UIAlertAction(
+                    title: String(localized: "Cancel"),
+                    style: .cancel
+                )
+            )
+
+            guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let rootVC = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
+                return
+            }
+
+            rootVC.present(alert, animated: true)
+
+        default:
+
+            let url = URL(
+                string: "http://maps.apple.com/?daddr=\(lat),\(lon)"
+            )!
+
+            UIApplication.shared.open(url)
         }
     }
     
