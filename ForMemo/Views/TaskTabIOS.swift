@@ -400,6 +400,8 @@ struct TaskTabView: View {
             
         } detail: {
             currentTabView
+                .safeAreaPadding(.leading, 8)
+                
         }
     }
     
