@@ -291,7 +291,16 @@ struct SettingsView: View {
                             Toggle(
                                 isOn: Binding(
                                     get: { settings.showWeatherForecast },
-                                    set: { settings.showWeatherForecast = $0 }
+                                    set: { newValue in
+
+                                        settings.showWeatherForecast = newValue
+
+                                        if newValue {
+                                            Task {
+                                                await WeatherManager.shared.refresh()
+                                            }
+                                        }
+                                    }
                                 )
                             ) {
                                 Label {

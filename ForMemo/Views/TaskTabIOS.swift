@@ -49,6 +49,11 @@ struct TaskTabView: View {
             .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
                 showSnoozeAlert = true
             }
+            .onChange(of: settings.showWeatherForecast) { _, enabled in
+                if !enabled && selectedTab == 9 {
+                    selectedTab = 0
+                }
+            }
             .alert(
                 "Snooze not scheduled",
                 isPresented: $showSnoozeAlert
@@ -205,27 +210,29 @@ struct TaskTabView: View {
                         .buttonStyle(.plain)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Button {
-                            selectedTab = 9
-                            showMorePopover = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "cloud.sun")
-                                        .frame(width: 22)
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                        .frame(width: 16, height: 3)
-                                        .opacity(selectedTab == 9 ? 1 : 0)
+                        if settings.showWeatherForecast {
+                            Button {
+                                selectedTab = 9
+                                showMorePopover = false
+                            } label: {
+                                HStack(spacing: 10) {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "cloud.sun")
+                                            .frame(width: 22)
+                                        Capsule()
+                                            .fill(Color.accentColor)
+                                            .frame(width: 16, height: 3)
+                                            .opacity(selectedTab == 9 ? 1 : 0)
+                                    }
+                                    Text("Forecast")
                                 }
-                                Text("Forecast")
+                                .foregroundStyle(selectedTab == 9 ? Color.accentColor : Color.primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
                             }
-                            .foregroundStyle(selectedTab == 9 ? Color.accentColor : Color.primary)
+                            .buttonStyle(.plain)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
                         }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
 
                         Button {
                             selectedTab = 5
@@ -392,7 +399,9 @@ struct TaskTabView: View {
                 sidebarRow(String(localized: "wallet_tab"), "wallet.bifold", 6)
                 sidebarRow(String(localized: "Trips"), "suitcase.rolling", 7)
                 sidebarRow(String(localized: "Documents"), "doc.text", 8)
-                sidebarRow(String(localized: "Forecast"), "cloud.sun", 9)
+                if settings.showWeatherForecast {
+                    sidebarRow(String(localized: "Forecast"), "cloud.sun", 9)
+                }
                 sidebarRow(String(localized: "settings_tab"), "gear", 2)
             }
             .listStyle(.sidebar)
