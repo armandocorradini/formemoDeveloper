@@ -218,8 +218,15 @@ struct AppQuickGuideView: View {
             ),
 
         .init(
+            title: String(localized:"Settings Backup"),
+            description: String(localized:"Your appearance preferences, navigation settings, weather options, badge settings and other supported preferences can be included in backups and restored independently from your data."),
+            icon: "gearshape.2",
+            tint: .gray
+        ),
+
+        .init(
             title: String(localized:"Backup & Restore"),
-            description: String(localized:"Create complete backups including tasks, attachments, loyalty cards, travel lists, documents and app data. Restore everything on the same or another device."),
+            description: String(localized:"Create complete backups including tasks, reminders, recurrence rules, tags, priorities, locations, attachments, loyalty cards, trip lists, documents and app settings. Restore everything or only selected sections on the same or another device."),
             icon: "externaldrive.badge.timemachine",
             tint: .indigo
         )

@@ -324,11 +324,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Does the app support backup and restore?"),
-                answer: String(localized:"Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, loyalty cards and logos, trip lists, documents, and related data. You can restore them later or transfer everything to another device.")
+                answer: String(localized:"Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, loyalty cards and logos, trip lists, documents, app settings, and related data. You can restore them later or transfer everything to another device.")
             ),
             FAQItem(
                 question: String(localized:"What is included in a backup?"),
-                answer: String(localized:"Backups can include tasks, attachments, loyalty cards, trip lists, documents, reminders, and related data.")
+                answer: String(localized:"Backups include tasks, reminders, recurrence rules, tags, priorities, locations, attachments, loyalty cards and logos, trip lists, documents, and app settings. Backups are independent from iCloud sync and can be used to transfer data to another device.")
             ),
             FAQItem(
                 question: String(localized:"Are attachments included in backups?"),
@@ -348,7 +348,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Can I restore only specific data from a backup?"),
-                answer: String(localized:"Yes. During restore, you can choose to restore all data or only selected sections, such as tasks, loyalty cards, trip lists, documents, or other supported data. This allows you to recover only what you need without replacing everything.")
+                answer: String(localized:"Yes. During restore, you can choose which sections to restore, such as tasks, loyalty cards, trip lists, documents, and app settings. This allows you to recover only the data you need without restoring everything.")
             ),
             FAQItem(
                 question: String(localized:"Can I transfer my data to another device?"),
@@ -361,6 +361,10 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"Does iCloud replace backups?"),
                 answer: String(localized:"No. iCloud synchronization and manual backups are separate features. Backups are still recommended for additional safety and portability.")
+            ),
+            FAQItem(
+                question: String(localized:"Are app settings included in backups?"),
+                answer: String(localized:"Yes. Backups can include app settings such as appearance preferences, navigation preferences, weather settings, badge options, attachment management settings, and other supported preferences. During restore, app settings can be restored separately from your data.")
             )
         ])
     ]

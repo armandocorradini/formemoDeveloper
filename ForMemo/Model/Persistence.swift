@@ -33,6 +33,11 @@ enum Persistence {
         )
 
         do {
+            CrashDetector.setLastEvent(
+                cloudKitEnabled
+                ? "SwiftData container initialization (CloudKit)"
+                : "SwiftData container initialization (Local)"
+            )
 
             // 🔥 SINGLE PERSISTENT STORE
             // Local database is ALWAYS the source of truth.
@@ -55,6 +60,11 @@ enum Persistence {
 
                 configurations: [configuration]
 
+            )
+            CrashDetector.setLastEvent(
+                cloudKitEnabled
+                ? "SwiftData container initialized (CloudKit)"
+                : "SwiftData container initialized (Local)"
             )
 
             let elapsed = CFAbsoluteTimeGetCurrent() - start
@@ -80,7 +90,9 @@ enum Persistence {
             return container
 
         } catch {
-
+            CrashDetector.setLastEvent(
+                "SwiftData container initialization failed"
+            )
             print("❌ SWIFTDATA ERROR:")
             print(error)
 

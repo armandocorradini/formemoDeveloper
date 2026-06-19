@@ -23,49 +23,10 @@ struct StartView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 180, height: 180)
-                        .rotationEffect(.degrees(isAnimating ? 360 : 0))
-                        .animation(
-                            .linear(duration: 2),
-                            value: isAnimating
-                        )
-                        .foregroundStyle(
-                            LinearGradient(
-                                stops: [
-                                    .init(color: .purple,    location: 0.00),
-
-                                    .init(color: .red,    location: 0.12),
-                                    
-                                    .init(color: .red,    location: 0.25),
-                                    
-                                    .init(color: .orange, location: 0.35),
-
-                                    .init(color: .yellow, location: 0.40),
-
-                                    .init(color: .green,  location: 0.45),
-
-                                    .init(color: .cyan,   location: 0.50),
-
-                                    .init(color: .blue,   location: 0.60),
-
-                                    .init(color: .purple, location: 0.70),
-
-                                    .init(color: .red, location: 1.00)
-                                ],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .fontWeight(.bold)
-                        .symbolEffect(
-                            .pulse,
-                            options: .repeat(nil).speed(0.35),
-                            value: isAnimating
-                        )
-//                        .symbolEffect(
-//                            .bounce,
-//                            options: .repeat(nil).speed(0.20),
-//                            value: isAnimating
-//                        )
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.cyan, .blue)
+                        .symbolEffect(.rotate.clockwise, options: .repeat(1).speed(2), value: isAnimating)
+                        .symbolEffect(.pulse, options: .repeat(nil).speed(0.3), value: isAnimating)
                         .onAppear {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                                 isAnimating = true

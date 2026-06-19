@@ -417,12 +417,30 @@ enum DebugLog {
 enum CrashDetector {
 
     private static let activeKey = "appWasRunning"
+    private static let lastEventKey = "lastAppEvent"
+
+    static func setLastEvent(_ event: String) {
+        UserDefaults.standard.set(
+            event,
+            forKey: lastEventKey
+        )
+    }
+
+    static func lastEvent() -> String {
+        UserDefaults.standard.string(
+            forKey: lastEventKey
+        ) ?? "Unknown"
+    }
 
     static func markLaunchStarted() {
 
         if detectPreviousCrash() {
             DebugLog.write(
                 "⚠️ Previous session terminated unexpectedly"
+            )
+
+            DebugLog.write(
+                "💥 Last event: \(lastEvent())"
             )
         }
 
