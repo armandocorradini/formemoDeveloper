@@ -79,10 +79,16 @@ struct AppBackgroundColors {
 }
 
 struct AppGlassBackground: View {
+
+    @Bindable var settings = AppSettings.shared
+
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: [AppBackgroundColors.color1, AppBackgroundColors.color2],
+                colors: [
+                    Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
+                    Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
+                ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

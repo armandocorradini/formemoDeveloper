@@ -26,6 +26,7 @@ struct BackupRestoreView: View {
     @State private var restoreWalletCards = false
     @State private var restoreTripLists = false
     @State private var restoreDocuments = false
+    @State private var restoreSettings = false
 
     var body: some View {
 
@@ -89,7 +90,7 @@ struct BackupRestoreView: View {
                                     .foregroundStyle(.blue)
 
                                 Text(
-                                    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards, documents and attachments."
+                                    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards, documents, attachments and app settings."
                                 )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -261,7 +262,7 @@ struct BackupRestoreView: View {
         )) { wrapper in
 
             let archive = wrapper.archive
-            let hasSelection = restoreTasks || restoreWalletCards || restoreTripLists || restoreDocuments
+            let hasSelection = restoreTasks || restoreWalletCards || restoreTripLists || restoreDocuments || restoreSettings
 
             NavigationStack {
                 ZStack {
@@ -272,6 +273,7 @@ struct BackupRestoreView: View {
                             Text("Wallet Cards: \(archive.loyaltyCards.count)")
                             Text("Trip Checklists: \(archive.tripLists.count)")
                             Text("Documents: \(archive.documents.count)")
+                            Text("Settings: Included")
                         }
 
                         Section("Restore") {
@@ -279,6 +281,7 @@ struct BackupRestoreView: View {
                             Toggle("Wallet Cards", isOn: $restoreWalletCards)
                             Toggle("Trip Checklists", isOn: $restoreTripLists)
                             Toggle("Documents", isOn: $restoreDocuments)
+                            Toggle("Settings", isOn: $restoreSettings)
                         }
                     }
                     .navigationTitle("Restore Backup")
@@ -290,6 +293,7 @@ struct BackupRestoreView: View {
                                 restoreWalletCards = false
                                 restoreTripLists = false
                                 restoreDocuments = false
+                                restoreSettings = false
                                 restoreArchive = nil
                             }
                         }
@@ -300,10 +304,12 @@ struct BackupRestoreView: View {
                                 let selectedWalletCards = restoreWalletCards
                                 let selectedTripLists = restoreTripLists
                                 let selectedDocuments = restoreDocuments
+                                let selectedSettings = restoreSettings
                                 restoreTasks = false
                                 restoreWalletCards = false
                                 restoreTripLists = false
                                 restoreDocuments = false
+                                restoreSettings = false
                                 restoreArchive = nil
 
                                 Task {
@@ -316,7 +322,8 @@ struct BackupRestoreView: View {
                                             restoreTasks: selectedTasks,
                                             restoreWalletCards: selectedWalletCards,
                                             restoreTripLists: selectedTripLists,
-                                            restoreDocuments: selectedDocuments
+                                            restoreDocuments: selectedDocuments,
+                                            restoreSettings: selectedSettings
                                         )
 
                                         isRestoringBackup = false
@@ -388,6 +395,7 @@ private struct BackupArchive: Codable {
         case documents
         case attachmentFiles
         case loyaltyCardLogoFiles
+        case settings
     }
 
     let version: Int
@@ -398,6 +406,7 @@ private struct BackupArchive: Codable {
     let documents: [DocumentTransferObject]
     let attachmentFiles: [String: Data]
     let loyaltyCardLogoFiles: [String: Data]
+    let settings: [String: Data]
 
     init(
         version: Int,
@@ -407,7 +416,8 @@ private struct BackupArchive: Codable {
         tripLists: [TripListTransferObject],
         documents: [DocumentTransferObject],
         attachmentFiles: [String: Data],
-        loyaltyCardLogoFiles: [String: Data]
+        loyaltyCardLogoFiles: [String: Data],
+        settings: [String: Data]
     ) {
         self.version = version
         self.createdAt = createdAt
@@ -417,6 +427,7 @@ private struct BackupArchive: Codable {
         self.documents = documents
         self.attachmentFiles = attachmentFiles
         self.loyaltyCardLogoFiles = loyaltyCardLogoFiles
+        self.settings = settings
     }
 
     init(from decoder: Decoder) throws {
@@ -453,6 +464,10 @@ private struct BackupArchive: Codable {
             [String: Data].self,
             forKey: .loyaltyCardLogoFiles
         )
+        settings = try container.decodeIfPresent(
+            [String: Data].self,
+            forKey: .settings
+        ) ?? [:]
     }
 
     func encode(to encoder: Encoder) throws {
@@ -489,10 +504,15 @@ private struct BackupArchive: Codable {
             loyaltyCardLogoFiles,
             forKey: .loyaltyCardLogoFiles
         )
+        try container.encode(
+            settings,
+            forKey: .settings
+        )
     }
 }
 
 private struct LoyaltyCardTransferObject: Codable {
+
     let id: UUID
     let storeName: String
     let cardHolder: String?
@@ -500,7 +520,20 @@ private struct LoyaltyCardTransferObject: Codable {
     let barcodeFormat: String
     let notes: String?
     let colorHex: String?
+    let sortOrder: Int
     let createdAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case storeName
+        case cardHolder
+        case barcodeValue
+        case barcodeFormat
+        case notes
+        case colorHex
+        case sortOrder
+        case createdAt
+    }
 
     init(card: LoyaltyCard) {
         self.id = card.id
@@ -510,7 +543,30 @@ private struct LoyaltyCardTransferObject: Codable {
         self.barcodeFormat = card.barcodeFormat
         self.notes = card.notes
         self.colorHex = card.colorHex
+        self.sortOrder = card.sortOrder
         self.createdAt = card.createdAt
+    }
+
+    init(from decoder: Decoder) throws {
+
+        let container = try decoder.container(
+            keyedBy: CodingKeys.self
+        )
+
+        id = try container.decode(UUID.self, forKey: .id)
+        storeName = try container.decode(String.self, forKey: .storeName)
+        cardHolder = try container.decodeIfPresent(String.self, forKey: .cardHolder)
+        barcodeValue = try container.decode(String.self, forKey: .barcodeValue)
+        barcodeFormat = try container.decode(String.self, forKey: .barcodeFormat)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+        colorHex = try container.decodeIfPresent(String.self, forKey: .colorHex)
+
+        sortOrder = try container.decodeIfPresent(
+            Int.self,
+            forKey: .sortOrder
+        ) ?? 0
+
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
     }
 }
 
@@ -577,6 +633,18 @@ private enum BackupManager {
 
         var attachmentPayload: [String: Data] = [:]
         var loyaltyLogoPayload: [String: Data] = [:]
+        var settingsPayload: [String: Data] = [:]
+
+        let exportedSettings = await MainActor.run {
+            AppSettings.shared.exportSettings()
+        }
+
+        for (key, value) in exportedSettings {
+            if JSONSerialization.isValidJSONObject(["value": value]),
+               let data = try? JSONSerialization.data(withJSONObject: ["value": value]) {
+                settingsPayload[key] = data
+            }
+        }
 
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
 
@@ -628,7 +696,7 @@ private enum BackupManager {
         }
 
         let archive = BackupArchive(
-            version: 1,
+            version: 2,
             createdAt: .now,
             tasks: tasks.map {
                 TaskTransferObject(task: $0)
@@ -643,7 +711,8 @@ private enum BackupManager {
                 DocumentTransferObject(document: $0)
             },
             attachmentFiles: attachmentPayload,
-            loyaltyCardLogoFiles: loyaltyLogoPayload
+            loyaltyCardLogoFiles: loyaltyLogoPayload,
+            settings: settingsPayload
         )
 
         let encoder = JSONEncoder()
@@ -664,10 +733,27 @@ private enum BackupManager {
 
     @MainActor
     static func loadBackupArchive(from url: URL) async throws -> BackupArchive {
+
         let data = try Data(contentsOf: url)
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(BackupArchive.self, from: data)
+
+        do {
+
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+
+            return try decoder.decode(
+                BackupArchive.self,
+                from: data
+            )
+
+        } catch {
+
+    #if DEBUG
+            print("❌ BACKUP DECODE ERROR:", error)
+    #endif
+
+            throw error
+        }
     }
 
     @MainActor
@@ -677,7 +763,8 @@ private enum BackupManager {
         restoreTasks: Bool,
         restoreWalletCards: Bool,
         restoreTripLists: Bool,
-        restoreDocuments: Bool
+        restoreDocuments: Bool,
+        restoreSettings: Bool
     ) async throws {
 
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
@@ -826,6 +913,7 @@ private enum BackupManager {
                     colorHex: cardDTO.colorHex,
                     createdAt: cardDTO.createdAt
                 )
+                card.sortOrder = cardDTO.sortOrder
 
                 modelContext.insert(card)
             }
@@ -874,6 +962,28 @@ private enum BackupManager {
         modelContext.processPendingChanges()
 
         try modelContext.save()
+
+        if restoreSettings {
+
+            var restoredSettings: [String: Any] = [:]
+
+            for (key, data) in archive.settings {
+
+                guard
+                    let object = try? JSONSerialization.jsonObject(with: data),
+                    let dictionary = object as? [String: Any],
+                    let value = dictionary["value"]
+                else {
+                    continue
+                }
+
+                restoredSettings[key] = value
+            }
+
+            await MainActor.run {
+                AppSettings.shared.importSettings(from: restoredSettings)
+            }
+        }
 
         // Force attachment refresh after restore
         NotificationCenter.default.post(

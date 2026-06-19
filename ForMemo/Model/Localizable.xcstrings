@@ -1774,35 +1774,6 @@
         }
       }
     },
-    "Add attachment" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anhang hinzufügen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir adjunto"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouter une pièce jointe"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aggiungi allegato"
-          }
-        }
-      }
-    },
     "Add Card" : {
       "localizations" : {
         "de" : {
@@ -6268,30 +6239,30 @@
         }
       }
     },
-    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards, documents and attachments." : {
+    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards, documents, attachments and app settings." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstellt eine vollständige Sicherung von Aufgaben, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Standorten, Wallet-Karten, Dokumenten und Anhängen."
+            "value" : "Erstellen Sie eine vollständige Sicherung Ihrer Aufgaben, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Standorte, Kundenkarten, Dokumente, Anhänge und App-Einstellungen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea una copia de seguridad completa de tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, tarjetas Wallet, documentos y archivos adjuntos."
+            "value" : "Crea una copia de seguridad completa de tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, tarjetas de fidelización, documentos, archivos adjuntos y ajustes de la aplicación."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crée une sauvegarde complète des tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, emplacements, cartes Wallet, documents et pièces jointes."
+            "value" : "Créez une sauvegarde complète des tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, emplacements, cartes de fidélité, documents, pièces jointes et paramètres de l’application."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea un backup completo di attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, posizioni, carte Wallet, documenti e allegati."
+            "value" : "Crea un backup completo di attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, posizioni, carte fedeltà, documenti, allegati e impostazioni dell’app."
           }
         }
       }
@@ -11806,35 +11777,6 @@
         }
       }
     },
-    "Import file" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datei importieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importar archivo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importer un fichier"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importa file"
-          }
-        }
-      }
-    },
     "Import from Calendar" : {
       "localizations" : {
         "de" : {
@@ -14240,7 +14182,32 @@
       }
     },
     "Navigate with" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navigieren mit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Navegar con"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naviguer avec"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naviga con"
+          }
+        }
+      }
     },
     "Navigation app" : {
       "localizations" : {
@@ -19614,37 +19581,33 @@
         }
       }
     },
-    "Select your preferred navigation app in Settings to open task locations using Apple Maps or Google Maps." : {
-      "extractionState" : "stale",
+    "Select your preferred navigation app in Settings. Open task locations with your favorite navigation app or choose which app to use each time." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wählen Sie in den Einstellungen Ihre bevorzugte Navigations-App aus, um Aufgabenstandorte mit Apple Maps oder Google Maps zu öffnen."
+            "value" : "Wählen Sie in den Einstellungen Ihre bevorzugte Navigations-App aus. Öffnen Sie Aufgabenstandorte mit Ihrer bevorzugten Navigations-App oder entscheiden Sie jedes Mal, welche App verwendet werden soll."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selecciona tu aplicación de navegación preferida en Configuración para abrir las ubicaciones de las tareas con Apple Maps o Google Maps."
+            "value" : "Selecciona tu aplicación de navegación preferida en Ajustes. Abre las ubicaciones de las tareas con tu aplicación de navegación favorita o elige qué aplicación utilizar cada vez."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sélectionnez votre application de navigation préférée dans les paramètres pour ouvrir les emplacements des tâches avec Apple Maps ou Google Maps.\n"
+            "value" : "Sélectionnez votre application de navigation préférée dans les Réglages. Ouvrez les emplacements des tâches avec votre application de navigation favorite ou choisissez l’application à utiliser à chaque fois."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seleziona l’app di navigazione preferita nelle Impostazioni per aprire le posizioni delle attività con Apple Maps o Google Maps."
+            "value" : "Seleziona la tua app di navigazione preferita nelle Impostazioni. Apri le posizioni delle attività con la tua app di navigazione preferita oppure scegli ogni volta quale app utilizzare."
           }
         }
       }
-    },
-    "Select your preferred navigation app in Settings. Open task locations with your favorite navigation app or choose which app to use each time." : {
-
     },
     "Selective Sharing" : {
       "localizations" : {
@@ -19790,6 +19753,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Settings"
+          }
+        }
+      }
+    },
+    "Settings: Included" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen: Enthalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes: Incluidos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paramètres : Inclus"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni: Incluse"
           }
         }
       }
