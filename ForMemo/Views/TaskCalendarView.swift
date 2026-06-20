@@ -430,11 +430,14 @@ enum HolidayProvider {
         
         let region = Locale.current.region?.identifier ?? "EU"
         
-        let start = calendar.date(
-            from: calendar.dateComponents([.year,.month], from: month)
-        )!
-        
-        let range = calendar.range(of: .day, in: .month, for: start)!
+        guard let start = calendar.date(
+            from: calendar.dateComponents([.year, .month], from: month)
+        ),
+        let range = calendar.range(of: .day, in: .month, for: start)
+        else {
+            AppLogger.persistence.error("Unable to calculate holiday calendar range")
+            return []
+        }
         
         var result: Set<Date> = []
         

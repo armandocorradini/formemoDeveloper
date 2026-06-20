@@ -119,7 +119,13 @@ struct GetTasksIntent: AppIntent {
             referenceDate = Date()
 
             let start = calendar.startOfDay(for: referenceDate)
-            let end = calendar.date(byAdding: .day, value: 1, to: start)!
+            guard let end = calendar.date(byAdding: .day, value: 1, to: start) else {
+                return .result(
+                    dialog: IntentDialog(
+                        stringLiteral: String(localized: "I couldn't calculate the requested date.")
+                    )
+                )
+            }
 
             dateInterval = DateInterval(start: start, end: end)
 
@@ -148,7 +154,13 @@ struct GetTasksIntent: AppIntent {
             referenceDate = calendar.date(byAdding: .day, value: 2, to: Date()) ?? Date()
 
             let start = calendar.startOfDay(for: referenceDate)
-            let end = calendar.date(byAdding: .day, value: 1, to: start)!
+            guard let end = calendar.date(byAdding: .day, value: 1, to: start) else {
+                return .result(
+                    dialog: IntentDialog(
+                        stringLiteral: String(localized: "I couldn't calculate the requested date.")
+                    )
+                )
+            }
 
             dateInterval = DateInterval(start: start, end: end)
 
@@ -177,7 +189,13 @@ struct GetTasksIntent: AppIntent {
             referenceDate = calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date()
 
             let start = calendar.startOfDay(for: referenceDate)
-            let end = calendar.date(byAdding: .day, value: 1, to: start)!
+            guard let end = calendar.date(byAdding: .day, value: 1, to: start) else {
+                return .result(
+                    dialog: IntentDialog(
+                        stringLiteral: String(localized: "I couldn't calculate the requested date.")
+                    )
+                )
+            }
 
             dateInterval = DateInterval(start: start, end: end)
 
@@ -207,7 +225,18 @@ struct GetTasksIntent: AppIntent {
             let next = calendar.nextWeekend(startingAfter: Date())?.end ?? Date()
             referenceDate = calendar.nextWeekend(startingAfter: next)?.start ?? Date()
 
-            dateInterval = calendar.dateIntervalOfWeekend(containing: referenceDate) ?? DateInterval(start: referenceDate, end: calendar.date(byAdding: .day, value: 2, to: referenceDate)!)
+            if let weekendInterval = calendar.dateIntervalOfWeekend(containing: referenceDate) {
+                dateInterval = weekendInterval
+            } else {
+                guard let end = calendar.date(byAdding: .day, value: 2, to: referenceDate) else {
+                    return .result(
+                        dialog: IntentDialog(
+                            stringLiteral: String(localized: "I couldn't calculate the requested date.")
+                        )
+                    )
+                }
+                dateInterval = DateInterval(start: referenceDate, end: end)
+            }
 
         } else if [
             // EN
@@ -234,7 +263,18 @@ struct GetTasksIntent: AppIntent {
 
             referenceDate = calendar.nextWeekend(startingAfter: Date())?.start ?? Date()
 
-            dateInterval = calendar.dateIntervalOfWeekend(containing: referenceDate) ?? DateInterval(start: referenceDate, end: calendar.date(byAdding: .day, value: 2, to: referenceDate)!)
+            if let weekendInterval = calendar.dateIntervalOfWeekend(containing: referenceDate) {
+                dateInterval = weekendInterval
+            } else {
+                guard let end = calendar.date(byAdding: .day, value: 2, to: referenceDate) else {
+                    return .result(
+                        dialog: IntentDialog(
+                            stringLiteral: String(localized: "I couldn't calculate the requested date.")
+                        )
+                    )
+                }
+                dateInterval = DateInterval(start: referenceDate, end: end)
+            }
 
         } else if [
             // EN
@@ -261,7 +301,15 @@ struct GetTasksIntent: AppIntent {
 
             referenceDate = calendar.date(byAdding: .weekOfYear, value: 1, to: Date()) ?? Date()
 
-            dateInterval = calendar.dateInterval(of: .weekOfYear, for: referenceDate)!
+            guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: referenceDate) else {
+                return .result(
+                    dialog: IntentDialog(
+                        stringLiteral: String(localized: "I couldn't calculate the requested date.")
+                    )
+                )
+            }
+
+            dateInterval = weekInterval
 
         } else if [
             // EN
@@ -288,7 +336,15 @@ struct GetTasksIntent: AppIntent {
 
             referenceDate = Date()
 
-            dateInterval = calendar.dateInterval(of: .weekOfYear, for: referenceDate)!
+            guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: referenceDate) else {
+                return .result(
+                    dialog: IntentDialog(
+                        stringLiteral: String(localized: "I couldn't calculate the requested date.")
+                    )
+                )
+            }
+
+            dateInterval = weekInterval
 
         } else {
 
@@ -308,7 +364,13 @@ struct GetTasksIntent: AppIntent {
             referenceDate = detectedDate
 
             let start = calendar.startOfDay(for: referenceDate)
-            let end = calendar.date(byAdding: .day, value: 1, to: start)!
+            guard let end = calendar.date(byAdding: .day, value: 1, to: start) else {
+                return .result(
+                    dialog: IntentDialog(
+                        stringLiteral: String(localized: "I couldn't calculate the requested date.")
+                    )
+                )
+            }
 
             dateInterval = DateInterval(start: start, end: end)
         }

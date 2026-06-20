@@ -901,11 +901,13 @@ Attivazione: \(triggerInfo)
     }
     @MainActor
     private func cleanupRecentlyDeleted() {
-        let cutoff = Calendar.current.date(
+        guard let cutoff = Calendar.current.date(
             byAdding: .day,
             value: -recentlyDeletedRetentionDays,
             to: .now
-        )!
+        ) else {
+            return
+        }
         let descriptor = FetchDescriptor<DeletedItem>(
             predicate: #Predicate { $0.deletedAt <= cutoff }
         )

@@ -712,38 +712,49 @@ struct TravelKitListView: View {
     }
 // MARK: - Import/Export Helpers
 
-@MainActor
 private func importFMTrip(from url: URL) {
-    let access = url.startAccessingSecurityScopedResource()
-    defer {
-        if access { url.stopAccessingSecurityScopedResource() }
-    }
-
-    do {
-        let data = try Data(contentsOf: url)
-        let collection = try JSONDecoder().decode(FMTripCollectionPayload.self, from: data)
-
-        for payload in collection.lists {
-            let trip = TripList(
-                name: payload.name,
-                icon: payload.icon,
-                systemTemplate: payload.systemTemplate,
-                sections: payload.sections.map {
-                    TripSectionData(
-                        title: $0.title,
-                        items: $0.items.map {
-                            TripItemData(title: $0.title, isChecked: $0.isChecked)
-                        }
-                    )
-                }
-            )
-
-            modelContext.insert(trip)
+    Task {
+        let access = url.startAccessingSecurityScopedResource()
+        defer {
+            if access { url.stopAccessingSecurityScopedResource() }
         }
 
-        try? modelContext.save()
-    } catch {
-        print("Import failed:", error)
+        do {
+            let collection = try await Task.detached(priority: .userInitiated) {
+                let data = try Data(contentsOf: url, options: .mappedIfSafe)
+                return try JSONDecoder().decode(
+                    FMTripCollectionPayload.self,
+                    from: data
+                )
+            }.value
+
+            await MainActor.run {
+                for payload in collection.lists {
+                    let trip = TripList(
+                        name: payload.name,
+                        icon: payload.icon,
+                        systemTemplate: payload.systemTemplate,
+                        sections: payload.sections.map {
+                            TripSectionData(
+                                title: $0.title,
+                                items: $0.items.map {
+                                    TripItemData(
+                                        title: $0.title,
+                                        isChecked: $0.isChecked
+                                    )
+                                }
+                            )
+                        }
+                    )
+
+                    modelContext.insert(trip)
+                }
+
+                try? modelContext.save()
+            }
+        } catch {
+            print("Import failed:", error)
+        }
     }
 }
 

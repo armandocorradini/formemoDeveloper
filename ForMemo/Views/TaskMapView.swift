@@ -182,8 +182,12 @@ extension TaskMapView {
             grouped[key, default: []].append((coordinate, item))
         }
 
-        return grouped.map { _, pairs in
-            let coordinate = pairs.first!.0
+        return grouped.compactMap { _, pairs in
+            guard let firstPair = pairs.first else {
+                return nil
+            }
+
+            let coordinate = firstPair.0
             var items = pairs.map { $0.1 }
 
             items.sort { a, b in

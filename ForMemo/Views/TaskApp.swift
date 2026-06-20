@@ -344,11 +344,14 @@ struct ForMemoApp: App {
     @MainActor
     private func cleanupRecentlyDeleted(context: ModelContext) {
         
-        let cutoff = Calendar.current.date(
+        guard let cutoff = Calendar.current.date(
             byAdding: .day,
             value: -settings.recentlyDeletedRetentionDays,
             to: .now
-        )!
+        ) else {
+            AppLogger.persistence.error("Unable to calculate Recently Deleted cutoff date")
+            return
+        }
         
         let descriptor = FetchDescriptor<DeletedItem>()
         

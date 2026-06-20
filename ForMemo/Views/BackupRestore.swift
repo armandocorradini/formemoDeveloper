@@ -211,9 +211,9 @@ struct BackupRestoreView: View {
         }
         .fileExporter(
             isPresented: $showExporter,
-            document: exportURL != nil
-            ? BackupFileDocument(fileURL: exportURL!)
-            : nil,
+            document: exportURL.map {
+                BackupFileDocument(fileURL: $0)
+            },
             contentType: .json,
             defaultFilename: "ForMemoBackup"
         ) { _ in
@@ -731,13 +731,13 @@ private enum BackupManager {
         return url
     }
 
-    @MainActor
     static func loadBackupArchive(from url: URL) async throws -> BackupArchive {
 
-        let data = try Data(contentsOf: url)
+        let data = try await Task.detached(priority: .userInitiated) {
+            try Data(contentsOf: url, options: .mappedIfSafe)
+        }.value
 
         do {
-
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
 
@@ -745,13 +745,10 @@ private enum BackupManager {
                 BackupArchive.self,
                 from: data
             )
-
         } catch {
-
-    #if DEBUG
+#if DEBUG
             print("❌ BACKUP DECODE ERROR:", error)
-    #endif
-
+#endif
             throw error
         }
     }
