@@ -213,13 +213,13 @@ struct WalletView: View {
                                         if let holder = card.cardHolder,
                                            !holder.isEmpty {
 
-                                            Text(
-                                                card.itemType == "ticket"
-                                                ? String(localized: "Ticket Holder")
-                                                : String(localized: "Card Holder")
-                                            )
-                                            .font(.caption2)
-                                            .foregroundStyle(.secondary)
+//                                            Text(
+//                                                card.itemType == "ticket"
+//                                                ? String(localized: "Ticket Holder")
+//                                                : String(localized: "Card Holder")
+//                                            )
+//                                            .font(.caption2)
+//                                            .foregroundStyle(.secondary)
 
                                             Text(holder)
                                                 .font(.subheadline)
@@ -331,7 +331,7 @@ struct WalletView: View {
                 ToolbarItem(placement: .topBarLeading) {
 
                     Picker("Filter", selection: $walletFilter) {
-                        Label("All", systemImage: "square.grid.2x2")
+                        Label("All", systemImage: "square.on.square")
                             .tag("all")
 
                         Label("Cards", systemImage: "creditcard")

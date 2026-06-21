@@ -166,7 +166,7 @@ struct AddLoyaltyCardView: View {
                         Button {
                             showScanner = true
                         } label: {
-                            Label("Scan Barcode or QR Code", systemImage: "qrcode.viewfinder")
+                            Label("Scan Barcode, QR Code or Ticket", systemImage: "qrcode.viewfinder")
                         }
 
                         if itemType == "ticket" {

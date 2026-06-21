@@ -414,19 +414,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld tarjetas • %2$lld entradas"
+            "value" : "%1$lld tarjetas • %2$lld tickets"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld cartes • %2$lld billets"
+            "value" : "%1$lld cartes • %2$lld tickets"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld carte • %2$lld biglietti"
+            "value" : "%1$lld carte • %2$lld tickets"
           }
         }
       }
@@ -1995,19 +1995,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir entrada"
+            "value" : "Añadir tickets"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter un billet"
+            "value" : "Ajouter un ticket"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi biglietto"
+            "value" : "Aggiungi ticket"
           }
         }
       }
@@ -2445,19 +2445,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Las tarjetas y las entradas están incluidas en las copias de seguridad?"
+            "value" : "¿Las tarjetas y las tickets están incluidas en las copias de seguridad?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les cartes et les billets sont-ils inclus dans les sauvegardes ?"
+            "value" : "Les cartes et les tickets sont-ils inclus dans les sauvegardes ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le carte e i biglietti sono inclusi nei backup?"
+            "value" : "Le carte e i tickets sono inclusi nei backup?"
           }
         }
       }
@@ -3268,19 +3268,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las copias de seguridad incluyen tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, archivos adjuntos, tarjetas, entradas y logotipos, listas de viaje, documentos y ajustes de la aplicación. Las copias de seguridad son independientes de la sincronización en la nube y pueden utilizarse para transferir datos a otro dispositivo."
+            "value" : "Las copias de seguridad incluyen tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, archivos adjuntos, tarjetas, tickets y logotipos, listas de viaje, documentos y ajustes de la aplicación. Las copias de seguridad son independientes de la sincronización en la nube y pueden utilizarse para transferir datos a otro dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les sauvegardes incluent les tâches, les rappels, les règles de récurrence, les étiquettes, les priorités, les emplacements, les pièces jointes, les cartes, les billets et leurs logos, les listes de voyage, les documents et les paramètres de l’application. Les sauvegardes sont indépendantes de la synchronisation Cloud et peuvent être utilisées pour transférer des données vers un autre appareil."
+            "value" : "Les sauvegardes incluent les tâches, les rappels, les règles de récurrence, les étiquettes, les priorités, les emplacements, les pièces jointes, les cartes, les tickets et leurs logos, les listes de voyage, les documents et les paramètres de l’application. Les sauvegardes sont indépendantes de la synchronisation Cloud et peuvent être utilisées pour transférer des données vers un autre appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I backup includono attività, promemoria, regole di ricorrenza, tag, priorità, posizioni, allegati, carte, biglietti e loghi, liste di viaggio, documenti e impostazioni dell’app. I backup sono indipendenti dalla sincronizzazione Cloud e possono essere utilizzati per trasferire i dati su un altro dispositivo."
+            "value" : "I backup includono attività, promemoria, regole di ricorrenza, tag, priorità, posizioni, allegati, carte, tickets e loghi, liste di viaggio, documenti e impostazioni dell’app. I backup sono indipendenti dalla sincronizzazione Cloud e possono essere utilizzati per trasferire i dati su un altro dispositivo."
           }
         }
       }
@@ -4484,19 +4484,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Puedo guardar varias tarjetas o entradas del mismo proveedor?"
+            "value" : "¿Puedo guardar varias tarjetas o tickets del mismo proveedor?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Puis-je enregistrer plusieurs cartes ou billets du même fournisseur ?"
+            "value" : "Puis-je enregistrer plusieurs cartes ou tickets du même fournisseur ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Posso salvare più carte o biglietti dello stesso fornitore?"
+            "value" : "Posso salvare più carte o tickets dello stesso fornitore?"
           }
         }
       }
@@ -4512,19 +4512,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Puedo escanear tarjetas y entradas con la cámara?"
+            "value" : "¿Puedo escanear tarjetas y tickets con la cámara?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Puis-je scanner des cartes et des billets avec l’appareil photo ?"
+            "value" : "Puis-je scanner des cartes et des tickets avec l’appareil photo ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Posso scansionare carte e biglietti con la fotocamera?"
+            "value" : "Posso scansionare carte e tickets con la fotocamera?"
           }
         }
       }
@@ -5184,19 +5184,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tarjetas y entradas"
+            "value" : "Tarjetas y tickets"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cartes et billets"
+            "value" : "Cartes et tickets"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Carte e biglietti"
+            "value" : "Carte e tickets"
           }
         }
       }
@@ -5212,19 +5212,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tarjetas y entradas: %lld"
+            "value" : "Tarjetas y tickets: %lld"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cartes et billets : %lld"
+            "value" : "Cartes et tickets : %lld"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Carte e biglietti: %lld"
+            "value" : "Carte e tickets: %lld"
           }
         }
       }
@@ -6348,19 +6348,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea una copia de seguridad completa de tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, tarjetas y entradas, documentos, archivos adjuntos y ajustes de la aplicación"
+            "value" : "Crea una copia de seguridad completa de tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, tarjetas y tickets, documentos, archivos adjuntos y ajustes de la aplicación"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez une sauvegarde complète des tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, emplacements, cartes et billets, documents, pièces jointes et paramètres de l’application."
+            "value" : "Créez une sauvegarde complète des tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, emplacements, cartes et tickets, documents, pièces jointes et paramètres de l’application."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea un backup completo di attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, posizioni, carte e biglietti, documenti, allegati e impostazioni dell’app."
+            "value" : "Crea un backup completo di attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, posizioni, carte e tickets, documenti, allegati e impostazioni dell’app."
           }
         }
       }
@@ -6491,19 +6491,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea copias de seguridad completas que incluyan tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, archivos adjuntos, tarjetas, entradas, listas de viaje, documentos y ajustes de la aplicación. Restaura todo o solo las secciones seleccionadas en el mismo dispositivo o en otro dispositivo."
+            "value" : "Crea copias de seguridad completas que incluyan tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, archivos adjuntos, tarjetas, tickets, listas de viaje, documentos y ajustes de la aplicación. Restaura todo o solo las secciones seleccionadas en el mismo dispositivo o en otro dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez des sauvegardes complètes incluant les tâches, rappels, règles de récurrence, étiquettes, priorités, emplacements, pièces jointes, cartes, billets, listes de voyage, documents et paramètres de l’application. Restaurez tout ou uniquement les sections sélectionnées sur le même appareil ou sur un autre appareil."
+            "value" : "Créez des sauvegardes complètes incluant les tâches, rappels, règles de récurrence, étiquettes, priorités, emplacements, pièces jointes, cartes, tickets, listes de voyage, documents et paramètres de l’application. Restaurez tout ou uniquement les sections sélectionnées sur le même appareil ou sur un autre appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea backup completi che includono attività, promemoria, regole di ricorrenza, tag, priorità, posizioni, allegati, carte, biglietti, liste di viaggio, documenti e impostazioni dell’app. Ripristina tutto oppure solo le sezioni selezionate sullo stesso dispositivo o su un altro dispositivo."
+            "value" : "Crea backup completi che includono attività, promemoria, regole di ricorrenza, tag, priorità, posizioni, allegati, carte, tickets, liste di viaggio, documenti e impostazioni dell’app. Ripristina tutto oppure solo le sezioni selezionate sullo stesso dispositivo o su un altro dispositivo."
           }
         }
       }
@@ -7721,19 +7721,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada eliminada"
+            "value" : "Ticket eliminado"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Billet supprimé"
+            "value" : "ticket supprimé"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Biglietto eliminato"
+            "value" : "Ticket eliminato"
           }
         }
       }
@@ -8091,19 +8091,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Descargo de Responsabilidad y Términos de Uso\n\nLa aplicación %1$@ («Aplicación») está diseñada para la gestión personal de tareas, la organización y la productividad.\n\nAl utilizar la Aplicación, usted reconoce y acepta lo siguiente:\n\n1. Finalidad de la Aplicación:\nLa Aplicación está destinada exclusivamente a la organización personal. Toda la información, sugerencias, previsiones y funcionalidades se proporcionan únicamente con fines informativos y no constituyen ninguna garantía de ejecución, exactitud o resultado.\n\n2. Responsabilidad del usuario:\nLa Aplicación se proporciona «tal cual», sin garantías de ningún tipo, ya sean expresas o implícitas. Usted es el único responsable de sus decisiones, acciones, actividades y del uso de la información proporcionada por la Aplicación.\n\n3. Notificaciones, insignias y recordatorios:\nLas notificaciones, insignias del icono de la aplicación, recordatorios y funciones de posposición se proporcionan únicamente con fines informativos. Aunque la Aplicación está diseñada para programar las notificaciones en el momento adecuado, su entrega y exactitud dependen de servicios del sistema, configuraciones del dispositivo, conectividad y factores externos. La Aplicación no garantiza su entrega puntual, exactitud o correcto funcionamiento. No debe confiar exclusivamente en estas funciones para tareas críticas o sensibles al tiempo.\n\n4. Recordatorios basados en la ubicación:\nLos recordatorios basados en la ubicación dependen de los permisos del sistema, las condiciones del dispositivo, la disponibilidad del GPS y factores externos, y pueden no activarse siempre según lo previsto.\n\n5. Asistente de voz (Siri):\nLos comandos de voz y las integraciones con Siri dependen de los servicios de Apple y pueden no interpretar siempre las instrucciones del usuario de forma precisa o coherente.\n\n6. Funciones de mapas y ubicación:\nLa visualización de mapas y las funciones basadas en la ubicación dependen de los servicios de localización del dispositivo, la precisión del GPS, la conectividad de red y las condiciones del sistema. La Aplicación no garantiza la exactitud, precisión, disponibilidad ni fiabilidad en tiempo real de los datos de ubicación o de las interacciones basadas en mapas.\n\n7. Información meteorológica:\nLas previsiones meteorológicas y la información relacionada con el tiempo se proporcionan únicamente con fines informativos y pueden depender de servicios de terceros, la ubicación del dispositivo, la conectividad de red y proveedores externos de datos. Las previsiones horarias, previsiones diarias y condiciones meteorológicas pueden diferir de otros servicios meteorológicos. La Aplicación no garantiza la exactitud, integridad, disponibilidad o fiabilidad de la información meteorológica, y dicha información no debe utilizarse para decisiones profesionales o relacionadas con la seguridad.\n\n8. Tarjetas de fidelización, logotipos y códigos de barras:\nLas tarjetas de fidelización, entradas, información de códigos de barras, información de códigos QR, logotipos de tarjetas, imágenes de entradas y datos relacionados se almacenan únicamente para comodidad del usuario. La Aplicación no garantiza la compatibilidad con escáneres externos, sistemas comerciales, establecimientos o servicios de terceros. Los usuarios son responsables de verificar la validez y utilidad de la información de códigos de barras almacenada.\n\n9. Datos y almacenamiento:\nLos datos pueden almacenarse localmente en su dispositivo o sincronizarse mediante iCloud. Usted es responsable de gestionar y realizar copias de seguridad de sus datos. Los desarrolladores no son responsables de ninguna pérdida de datos, corrupción, acceso no autorizado, problemas de sincronización, retrasos o fallos relacionados con el almacenamiento local o los servicios en la nube.\n\n10. Copias de seguridad y sincronización:\nLas funciones de copia de seguridad, restauración y sincronización dependen de las condiciones del dispositivo, la disponibilidad de almacenamiento, los servicios de iCloud y factores externos. Las copias de seguridad pueden incluir tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, archivos adjuntos, tarjetas de fidelización, entradas, logotipos, listas de viaje, documentos, configuraciones de la aplicación y datos relacionados. Las operaciones de restauración pueden permitir la restauración selectiva de categorías de datos y configuraciones compatibles. La Aplicación no garantiza que las copias de seguridad o los datos sincronizados estén siempre disponibles, completos, sean exactos o recuperables.\n\n11. Servicios de terceros:\nLa Aplicación puede depender de servicios de terceros (como iCloud, servicios de mapas, proveedores meteorológicos o Siri) para determinadas funcionalidades. Los desarrolladores no son responsables de la disponibilidad, rendimiento, compatibilidad, fiabilidad o prácticas de privacidad de dichos servicios.\n\n12. Disponibilidad de las funciones:\nEl funcionamiento de la Aplicación puede depender de las condiciones del dispositivo, la configuración del sistema, los permisos concedidos, las versiones de software y la conectividad de red. No se garantiza la disponibilidad continua ni el funcionamiento correcto de todas las funciones.\n\n13. Funciones de importación y exportación:\nLas funciones de importación y exportación se proporcionan por comodidad. La Aplicación no garantiza la fidelidad completa de los datos, su integridad, compatibilidad o conservación de toda la información al interactuar con formatos o servicios de terceros. La disponibilidad de los datos durante las operaciones de importación y exportación depende del formato seleccionado y de las funciones compatibles.\n\n14. No apta para usos críticos:\nLa Aplicación no está destinada a fines de emergencia, médicos, legales, críticos para la seguridad o críticos para una misión. Los usuarios no deben confiar en la Aplicación en situaciones donde retrasos, inexactitudes, fallos o información ausente puedan causar daños, lesiones, perjuicios o pérdidas significativas.\n\n15. Actualizaciones y cambios:\nLa Aplicación y este Descargo de Responsabilidad pueden actualizarse, modificarse, suspenderse o cambiarse con el tiempo sin previo aviso. El uso continuado de la Aplicación constituye la aceptación de dichos cambios.\n\n16. Limitación de responsabilidad:\nEn la máxima medida permitida por la legislación aplicable, los desarrolladores no serán responsables de ningún daño derivado del uso, la imposibilidad de uso o la confianza depositada en la Aplicación o en cualquier información proporcionada por ella.\n\nAl utilizar %2$@, usted confirma que ha leído, comprendido y aceptado plenamente este Descargo de Responsabilidad."
+            "value" : "Descargo de Responsabilidad y Términos de Uso\n\nLa aplicación %1$@ («Aplicación») está diseñada para la gestión personal de tareas, la organización y la productividad.\n\nAl utilizar la Aplicación, usted reconoce y acepta lo siguiente:\n\n1. Finalidad de la Aplicación:\nLa Aplicación está destinada exclusivamente a la organización personal. Toda la información, sugerencias, previsiones y funcionalidades se proporcionan únicamente con fines informativos y no constituyen ninguna garantía de ejecución, exactitud o resultado.\n\n2. Responsabilidad del usuario:\nLa Aplicación se proporciona «tal cual», sin garantías de ningún tipo, ya sean expresas o implícitas. Usted es el único responsable de sus decisiones, acciones, actividades y del uso de la información proporcionada por la Aplicación.\n\n3. Notificaciones, insignias y recordatorios:\nLas notificaciones, insignias del icono de la aplicación, recordatorios y funciones de posposición se proporcionan únicamente con fines informativos. Aunque la Aplicación está diseñada para programar las notificaciones en el momento adecuado, su entrega y exactitud dependen de servicios del sistema, configuraciones del dispositivo, conectividad y factores externos. La Aplicación no garantiza su entrega puntual, exactitud o correcto funcionamiento. No debe confiar exclusivamente en estas funciones para tareas críticas o sensibles al tiempo.\n\n4. Recordatorios basados en la ubicación:\nLos recordatorios basados en la ubicación dependen de los permisos del sistema, las condiciones del dispositivo, la disponibilidad del GPS y factores externos, y pueden no activarse siempre según lo previsto.\n\n5. Asistente de voz (Siri):\nLos comandos de voz y las integraciones con Siri dependen de los servicios de Apple y pueden no interpretar siempre las instrucciones del usuario de forma precisa o coherente.\n\n6. Funciones de mapas y ubicación:\nLa visualización de mapas y las funciones basadas en la ubicación dependen de los servicios de localización del dispositivo, la precisión del GPS, la conectividad de red y las condiciones del sistema. La Aplicación no garantiza la exactitud, precisión, disponibilidad ni fiabilidad en tiempo real de los datos de ubicación o de las interacciones basadas en mapas.\n\n7. Información meteorológica:\nLas previsiones meteorológicas y la información relacionada con el tiempo se proporcionan únicamente con fines informativos y pueden depender de servicios de terceros, la ubicación del dispositivo, la conectividad de red y proveedores externos de datos. Las previsiones horarias, previsiones diarias y condiciones meteorológicas pueden diferir de otros servicios meteorológicos. La Aplicación no garantiza la exactitud, integridad, disponibilidad o fiabilidad de la información meteorológica, y dicha información no debe utilizarse para decisiones profesionales o relacionadas con la seguridad.\n\n8. Tarjetas de fidelización, logotipos y códigos de barras:\nLas tarjetas de fidelización, tickets, información de códigos de barras, información de códigos QR, logotipos de tarjetas, imágenes de tickets y datos relacionados se almacenan únicamente para comodidad del usuario. La Aplicación no garantiza la compatibilidad con escáneres externos, sistemas comerciales, establecimientos o servicios de terceros. Los usuarios son responsables de verificar la validez y utilidad de la información de códigos de barras almacenada.\n\n9. Datos y almacenamiento:\nLos datos pueden almacenarse localmente en su dispositivo o sincronizarse mediante iCloud. Usted es responsable de gestionar y realizar copias de seguridad de sus datos. Los desarrolladores no son responsables de ninguna pérdida de datos, corrupción, acceso no autorizado, problemas de sincronización, retrasos o fallos relacionados con el almacenamiento local o los servicios en la nube.\n\n10. Copias de seguridad y sincronización:\nLas funciones de copia de seguridad, restauración y sincronización dependen de las condiciones del dispositivo, la disponibilidad de almacenamiento, los servicios de iCloud y factores externos. Las copias de seguridad pueden incluir tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, archivos adjuntos, tarjetas de fidelización, tickets, logotipos, listas de viaje, documentos, configuraciones de la aplicación y datos relacionados. Las operaciones de restauración pueden permitir la restauración selectiva de categorías de datos y configuraciones compatibles. La Aplicación no garantiza que las copias de seguridad o los datos sincronizados estén siempre disponibles, completos, sean exactos o recuperables.\n\n11. Servicios de terceros:\nLa Aplicación puede depender de servicios de terceros (como iCloud, servicios de mapas, proveedores meteorológicos o Siri) para determinadas funcionalidades. Los desarrolladores no son responsables de la disponibilidad, rendimiento, compatibilidad, fiabilidad o prácticas de privacidad de dichos servicios.\n\n12. Disponibilidad de las funciones:\nEl funcionamiento de la Aplicación puede depender de las condiciones del dispositivo, la configuración del sistema, los permisos concedidos, las versiones de software y la conectividad de red. No se garantiza la disponibilidad continua ni el funcionamiento correcto de todas las funciones.\n\n13. Funciones de importación y exportación:\nLas funciones de importación y exportación se proporcionan por comodidad. La Aplicación no garantiza la fidelidad completa de los datos, su integridad, compatibilidad o conservación de toda la información al interactuar con formatos o servicios de terceros. La disponibilidad de los datos durante las operaciones de importación y exportación depende del formato seleccionado y de las funciones compatibles.\n\n14. No apta para usos críticos:\nLa Aplicación no está destinada a fines de emergencia, médicos, legales, críticos para la seguridad o críticos para una misión. Los usuarios no deben confiar en la Aplicación en situaciones donde retrasos, inexactitudes, fallos o información ausente puedan causar daños, lesiones, perjuicios o pérdidas significativas.\n\n15. Actualizaciones y cambios:\nLa Aplicación y este Descargo de Responsabilidad pueden actualizarse, modificarse, suspenderse o cambiarse con el tiempo sin previo aviso. El uso continuado de la Aplicación constituye la aceptación de dichos cambios.\n\n16. Limitación de responsabilidad:\nEn la máxima medida permitida por la legislación aplicable, los desarrolladores no serán responsables de ningún daño derivado del uso, la imposibilidad de uso o la confianza depositada en la Aplicación o en cualquier información proporcionada por ella.\n\nAl utilizar %2$@, usted confirma que ha leído, comprendido y aceptado plenamente este Descargo de Responsabilidad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avis de non-responsabilité et Conditions d’utilisation\n\nL’application %1$@ (« Application ») est conçue pour la gestion personnelle des tâches, l’organisation et la productivité.\n\nEn utilisant l’Application, vous reconnaissez et acceptez ce qui suit :\n\n1. Objet de l’Application :\nL’Application est destinée exclusivement à l’organisation personnelle. Toutes les informations, suggestions, prévisions et fonctionnalités sont fournies uniquement à titre informatif et ne constituent aucune garantie d’exécution, d’exactitude ou de résultat.\n\n2. Responsabilité de l’utilisateur :\nL’Application est fournie « en l’état », sans garantie d’aucune sorte, expresse ou implicite. Vous êtes seul responsable de vos décisions, actions, activités et de l’utilisation des informations fournies par l’Application.\n\n3. Notifications, badges et rappels :\nLes notifications, badges de l’icône de l’application, rappels et fonctions de report sont fournis uniquement à titre informatif. Bien que l’Application soit conçue pour programmer les notifications au moment approprié, leur distribution et leur exactitude dépendent des services système, des paramètres de l’appareil, de la connectivité et de facteurs externes. L’Application ne garantit ni leur distribution en temps voulu, ni leur exactitude, ni leur bon fonctionnement. Vous ne devez pas vous fier exclusivement à ces fonctionnalités pour des tâches critiques ou sensibles au facteur temps.\n\n4. Rappels basés sur la localisation :\nLes rappels basés sur la localisation dépendent des autorisations système, de l’état de l’appareil, de la disponibilité du GPS et de facteurs externes, et peuvent ne pas toujours se déclencher comme prévu.\n\n5. Assistant vocal (Siri) :\nLes commandes vocales et les intégrations Siri reposent sur les services Apple et peuvent ne pas toujours interpréter les commandes de l’utilisateur de manière exacte ou cohérente.\n\n6. Cartes et fonctionnalités de localisation :\nL’affichage des cartes et les fonctionnalités basées sur la localisation dépendent des services de localisation de l’appareil, de la précision du GPS, de la connectivité réseau et des conditions du système. L’Application ne garantit pas l’exactitude, la précision, la disponibilité ni la fiabilité en temps réel des données de localisation ou des interactions basées sur les cartes.\n\n7. Informations météorologiques :\nLes prévisions météorologiques et les informations liées à la météo sont fournies uniquement à titre informatif et peuvent dépendre de services tiers, de la localisation de l’appareil, de la connectivité réseau et de fournisseurs de données externes. Les prévisions horaires, quotidiennes et les conditions météorologiques peuvent différer d’autres services météorologiques. L’Application ne garantit pas l’exactitude, l’exhaustivité, la disponibilité ou la fiabilité des informations météorologiques et celles-ci ne doivent pas être utilisées pour des décisions professionnelles ou liées à la sécurité.\n\n8. Cartes de fidélité, logos et codes-barres :\nLes cartes de fidélité, billets, informations de codes-barres, informations de codes QR, logos de cartes, images de billets et données associées sont stockés uniquement pour la commodité de l’utilisateur. L’Application ne garantit pas la compatibilité avec les scanners externes, les systèmes de vente, les magasins ou les services tiers. Les utilisateurs sont responsables de vérifier la validité et l’utilisabilité des informations de codes-barres enregistrées.\n\n9. Données et stockage :\nLes données peuvent être stockées localement sur votre appareil ou synchronisées via iCloud. Vous êtes responsable de la gestion et de la sauvegarde de vos données. Les développeurs ne sont pas responsables des pertes de données, corruptions, accès non autorisés, problèmes de synchronisation, retards ou défaillances liés au stockage local ou aux services cloud.\n\n10. Sauvegardes et synchronisation :\nLes fonctionnalités de sauvegarde, restauration et synchronisation dépendent des conditions de l’appareil, de la disponibilité du stockage, des services iCloud et de facteurs externes. Les sauvegardes peuvent inclure les tâches, rappels, règles de récurrence, étiquettes, priorités, emplacements, pièces jointes, cartes de fidélité, billets, logos, listes de voyage, documents, paramètres de l’application et données associées. Les opérations de restauration peuvent permettre la restauration sélective des catégories de données et paramètres pris en charge. L’Application ne garantit pas que les sauvegardes ou les données synchronisées seront toujours disponibles, complètes, exactes ou récupérables.\n\n11. Services tiers :\nL’Application peut s’appuyer sur des services tiers (tels qu’iCloud, les services cartographiques, les fournisseurs météo ou Siri) pour certaines fonctionnalités. Les développeurs ne sont pas responsables de la disponibilité, des performances, de la compatibilité, de la fiabilité ou des pratiques de confidentialité de ces services.\n\n12. Disponibilité des fonctionnalités :\nLe fonctionnement de l’Application peut dépendre des conditions de l’appareil, des paramètres système, des autorisations accordées, des versions logicielles et de la connectivité réseau. La disponibilité continue ou le bon fonctionnement de toutes les fonctionnalités ne sont pas garantis.\n\n13. Fonctions d’importation et d’exportation :\nLes fonctionnalités d’importation et d’exportation sont fournies pour des raisons de commodité. L’Application ne garantit pas la fidélité complète des données, leur exhaustivité, leur compatibilité ou la préservation de toutes les informations lors de l’interaction avec des formats ou services tiers. La disponibilité des données pendant les opérations d’importation et d’exportation dépend du format sélectionné et des fonctionnalités prises en charge.\n\n14. Aucune utilisation critique :\nL’Application n’est pas destinée à des usages d’urgence, médicaux, juridiques, critiques pour la sécurité ou essentiels à une mission. Les utilisateurs ne doivent pas s’appuyer sur l’Application dans des situations où des retards, des inexactitudes, des défaillances ou des informations manquantes pourraient entraîner des dommages, blessures, préjudices ou pertes importantes.\n\n15. Mises à jour et modifications :\nL’Application et le présent Avis de non-responsabilité peuvent être mis à jour, modifiés, suspendus ou changés au fil du temps sans préavis. L’utilisation continue de l’Application constitue une acceptation de ces modifications.\n\n16. Limitation de responsabilité :\nDans la mesure maximale permise par la loi applicable, les développeurs ne pourront être tenus responsables des dommages résultant de l’utilisation, de l’impossibilité d’utiliser ou de la confiance accordée à l’Application ou à toute information qu’elle contient.\n\nEn utilisant %2$@, vous confirmez avoir lu, compris et pleinement accepté le présent Avis de non-responsabilité."
+            "value" : "Avis de non-responsabilité et Conditions d’utilisation\n\nL’application %1$@ (« Application ») est conçue pour la gestion personnelle des tâches, l’organisation et la productivité.\n\nEn utilisant l’Application, vous reconnaissez et acceptez ce qui suit :\n\n1. Objet de l’Application :\nL’Application est destinée exclusivement à l’organisation personnelle. Toutes les informations, suggestions, prévisions et fonctionnalités sont fournies uniquement à titre informatif et ne constituent aucune garantie d’exécution, d’exactitude ou de résultat.\n\n2. Responsabilité de l’utilisateur :\nL’Application est fournie « en l’état », sans garantie d’aucune sorte, expresse ou implicite. Vous êtes seul responsable de vos décisions, actions, activités et de l’utilisation des informations fournies par l’Application.\n\n3. Notifications, badges et rappels :\nLes notifications, badges de l’icône de l’application, rappels et fonctions de report sont fournis uniquement à titre informatif. Bien que l’Application soit conçue pour programmer les notifications au moment approprié, leur distribution et leur exactitude dépendent des services système, des paramètres de l’appareil, de la connectivité et de facteurs externes. L’Application ne garantit ni leur distribution en temps voulu, ni leur exactitude, ni leur bon fonctionnement. Vous ne devez pas vous fier exclusivement à ces fonctionnalités pour des tâches critiques ou sensibles au facteur temps.\n\n4. Rappels basés sur la localisation :\nLes rappels basés sur la localisation dépendent des autorisations système, de l’état de l’appareil, de la disponibilité du GPS et de facteurs externes, et peuvent ne pas toujours se déclencher comme prévu.\n\n5. Assistant vocal (Siri) :\nLes commandes vocales et les intégrations Siri reposent sur les services Apple et peuvent ne pas toujours interpréter les commandes de l’utilisateur de manière exacte ou cohérente.\n\n6. Cartes et fonctionnalités de localisation :\nL’affichage des cartes et les fonctionnalités basées sur la localisation dépendent des services de localisation de l’appareil, de la précision du GPS, de la connectivité réseau et des conditions du système. L’Application ne garantit pas l’exactitude, la précision, la disponibilité ni la fiabilité en temps réel des données de localisation ou des interactions basées sur les cartes.\n\n7. Informations météorologiques :\nLes prévisions météorologiques et les informations liées à la météo sont fournies uniquement à titre informatif et peuvent dépendre de services tiers, de la localisation de l’appareil, de la connectivité réseau et de fournisseurs de données externes. Les prévisions horaires, quotidiennes et les conditions météorologiques peuvent différer d’autres services météorologiques. L’Application ne garantit pas l’exactitude, l’exhaustivité, la disponibilité ou la fiabilité des informations météorologiques et celles-ci ne doivent pas être utilisées pour des décisions professionnelles ou liées à la sécurité.\n\n8. Cartes de fidélité, logos et codes-barres :\nLes cartes de fidélité, tickets, informations de codes-barres, informations de codes QR, logos de cartes, images de tickets et données associées sont stockés uniquement pour la commodité de l’utilisateur. L’Application ne garantit pas la compatibilité avec les scanners externes, les systèmes de vente, les magasins ou les services tiers. Les utilisateurs sont responsables de vérifier la validité et l’utilisabilité des informations de codes-barres enregistrées.\n\n9. Données et stockage :\nLes données peuvent être stockées localement sur votre appareil ou synchronisées via iCloud. Vous êtes responsable de la gestion et de la sauvegarde de vos données. Les développeurs ne sont pas responsables des pertes de données, corruptions, accès non autorisés, problèmes de synchronisation, retards ou défaillances liés au stockage local ou aux services cloud.\n\n10. Sauvegardes et synchronisation :\nLes fonctionnalités de sauvegarde, restauration et synchronisation dépendent des conditions de l’appareil, de la disponibilité du stockage, des services iCloud et de facteurs externes. Les sauvegardes peuvent inclure les tâches, rappels, règles de récurrence, étiquettes, priorités, emplacements, pièces jointes, cartes de fidélité, tickets, logos, listes de voyage, documents, paramètres de l’application et données associées. Les opérations de restauration peuvent permettre la restauration sélective des catégories de données et paramètres pris en charge. L’Application ne garantit pas que les sauvegardes ou les données synchronisées seront toujours disponibles, complètes, exactes ou récupérables.\n\n11. Services tiers :\nL’Application peut s’appuyer sur des services tiers (tels qu’iCloud, les services cartographiques, les fournisseurs météo ou Siri) pour certaines fonctionnalités. Les développeurs ne sont pas responsables de la disponibilité, des performances, de la compatibilité, de la fiabilité ou des pratiques de confidentialité de ces services.\n\n12. Disponibilité des fonctionnalités :\nLe fonctionnement de l’Application peut dépendre des conditions de l’appareil, des paramètres système, des autorisations accordées, des versions logicielles et de la connectivité réseau. La disponibilité continue ou le bon fonctionnement de toutes les fonctionnalités ne sont pas garantis.\n\n13. Fonctions d’importation et d’exportation :\nLes fonctionnalités d’importation et d’exportation sont fournies pour des raisons de commodité. L’Application ne garantit pas la fidélité complète des données, leur exhaustivité, leur compatibilité ou la préservation de toutes les informations lors de l’interaction avec des formats ou services tiers. La disponibilité des données pendant les opérations d’importation et d’exportation dépend du format sélectionné et des fonctionnalités prises en charge.\n\n14. Aucune utilisation critique :\nL’Application n’est pas destinée à des usages d’urgence, médicaux, juridiques, critiques pour la sécurité ou essentiels à une mission. Les utilisateurs ne doivent pas s’appuyer sur l’Application dans des situations où des retards, des inexactitudes, des défaillances ou des informations manquantes pourraient entraîner des dommages, blessures, préjudices ou pertes importantes.\n\n15. Mises à jour et modifications :\nL’Application et le présent Avis de non-responsabilité peuvent être mis à jour, modifiés, suspendus ou changés au fil du temps sans préavis. L’utilisation continue de l’Application constitue une acceptation de ces modifications.\n\n16. Limitation de responsabilité :\nDans la mesure maximale permise par la loi applicable, les développeurs ne pourront être tenus responsables des dommages résultant de l’utilisation, de l’impossibilité d’utiliser ou de la confiance accordée à l’Application ou à toute information qu’elle contient.\n\nEn utilisant %2$@, vous confirmez avoir lu, compris et pleinement accepté le présent Avis de non-responsabilité."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esclusione di Responsabilità e Termini di Utilizzo\n\nL’App %1$@ (“App”) è progettata per la gestione personale delle attività, l’organizzazione e la produttività.\n\nUtilizzando l’App, riconosci e accetti quanto segue:\n\n1. Scopo dell’App: \nl’App è destinata esclusivamente all’organizzazione personale. Tutte le informazioni, i suggerimenti, le previsioni e le funzionalità sono forniti esclusivamente a scopo informativo e non costituiscono alcuna garanzia di esecuzione, accuratezza o risultato.\n\n2. Responsabilità dell’Utente: \nl’App è fornita “così com’è”, senza garanzie di alcun tipo, espresse o implicite. Sei l’unico responsabile delle tue decisioni, azioni, attività e dell’utilizzo delle informazioni fornite dall’App.\n\n3. Notifiche, Badge e Promemoria: \nnotifiche, badge dell’icona dell’app, promemoria e funzioni di posticipo sono forniti esclusivamente a scopo informativo. Sebbene l’App sia progettata per programmare le notifiche al momento opportuno, la loro consegna e accuratezza dipendono da servizi di sistema, impostazioni del dispositivo, connettività e fattori esterni. L’App non garantisce la consegna puntuale, l’accuratezza o il corretto funzionamento di tali funzionalità. Non dovresti fare affidamento esclusivamente su queste funzionalità per attività critiche o sensibili al fattore tempo.\n\n4. Promemoria Basati sulla Posizione: \ni promemoria basati sulla posizione dipendono dalle autorizzazioni di sistema, dalle condizioni del dispositivo, dalla disponibilità del GPS e da fattori esterni e potrebbero non attivarsi sempre come previsto.\n\n5. Assistente Vocale (Siri): \ni comandi vocali e le integrazioni con Siri dipendono dai servizi Apple e potrebbero non interpretare sempre l’input dell’utente in modo accurato o coerente.\n\n6. Mappe e Funzionalità di Posizione: \nla visualizzazione delle mappe e le funzionalità basate sulla posizione dipendono dai servizi di localizzazione del dispositivo, dalla precisione del GPS, dalla connettività di rete e dalle condizioni del sistema. L’App non garantisce l’accuratezza, la precisione, la disponibilità o l’affidabilità in tempo reale dei dati di posizione o delle interazioni basate sulle mappe.\n\n7. Informazioni Meteo: \nle previsioni meteorologiche e le informazioni correlate al meteo sono fornite esclusivamente a scopo informativo e possono dipendere da servizi di terze parti, dalla posizione del dispositivo, dalla connettività di rete e da fornitori di dati esterni. Le previsioni orarie, giornaliere e le condizioni meteorologiche possono differire da quelle di altri servizi meteo. L’App non garantisce l’accuratezza, la completezza, la disponibilità o l’affidabilità delle informazioni meteorologiche e tali informazioni non devono essere utilizzate per decisioni professionali o critiche per la sicurezza.\n\n8. Carte Fedeltà, Loghi e Codici a Barre: \ncarte fedeltà, biglietti, informazioni sui codici a barre, informazioni sui codici QR, loghi delle carte, immagini dei biglietti e dati correlati sono memorizzati esclusivamente per comodità dell’utente. L’App non garantisce la compatibilità con scanner esterni, sistemi di vendita, negozi o servizi di terze parti. Gli utenti sono responsabili della verifica della validità e dell’utilizzabilità delle informazioni sui codici memorizzati.\n\n9. Dati e Archiviazione: \ni dati possono essere archiviati localmente sul dispositivo o sincronizzati tramite iCloud. Sei responsabile della gestione e del backup dei tuoi dati. Gli sviluppatori non sono responsabili per eventuali perdite di dati, corruzioni, accessi non autorizzati, problemi di sincronizzazione, ritardi o malfunzionamenti relativi all’archiviazione locale o ai servizi cloud.\n\n10. Backup e Sincronizzazione: \nle funzionalità di backup, ripristino e sincronizzazione dipendono dalle condizioni del dispositivo, dalla disponibilità di spazio di archiviazione, dai servizi iCloud e da fattori esterni. I backup possono includere attività, promemoria, regole di ricorrenza, tag, priorità, posizioni, allegati, carte fedeltà, biglietti, loghi, liste viaggio, documenti, impostazioni dell’app e dati correlati. Le operazioni di ripristino possono consentire il ripristino selettivo delle categorie di dati e delle impostazioni supportate. L’App non garantisce che i backup o i dati sincronizzati siano sempre disponibili, completi, accurati o recuperabili.\n\n11. Servizi di Terze Parti: \nl’App può fare affidamento su servizi di terze parti (come iCloud, servizi di mappe, fornitori meteo o Siri) per alcune funzionalità. Gli sviluppatori non sono responsabili della disponibilità, delle prestazioni, della compatibilità, dell’affidabilità o delle pratiche sulla privacy di tali servizi.\n\n12. Disponibilità delle Funzionalità: \nil funzionamento dell’App può dipendere dalle condizioni del dispositivo, dalle impostazioni di sistema, dalle autorizzazioni concesse, dalle versioni software e dalla connettività di rete. Non è garantita la disponibilità continua o il corretto funzionamento di tutte le funzionalità.\n\n13. Funzionalità di Importazione ed Esportazione: \nle funzionalità di importazione ed esportazione sono fornite per comodità. L’App non garantisce la completa fedeltà dei dati, la completezza, la compatibilità o la conservazione di tutte le informazioni durante l’interazione con formati o servizi di terze parti. La disponibilità dei dati durante le operazioni di importazione ed esportazione dipende dal formato selezionato e dalle funzionalità supportate.\n\n14. Nessun Utilizzo Critico: \nl’App non è destinata a scopi di emergenza, medici, legali, critici per la sicurezza o mission-critical. Gli utenti non devono fare affidamento sull’App in situazioni in cui ritardi, imprecisioni, malfunzionamenti o informazioni mancanti potrebbero causare danni, lesioni, perdite o conseguenze significative.\n\n15. Aggiornamenti e Modifiche: \nl’App e il presente Disclaimer possono essere aggiornati, modificati, sospesi o cambiati nel tempo senza preavviso. L’uso continuato dell’App costituisce accettazione di tali modifiche.\n\n16. Limitazione di Responsabilità: \nnella misura massima consentita dalla legge applicabile, gli sviluppatori non saranno responsabili per eventuali danni derivanti dall’utilizzo, dall’impossibilità di utilizzo o dall’affidamento all’App o a qualsiasi informazione fornita al suo interno.\n\nUtilizzando %2$@, confermi di aver letto, compreso e accettato integralmente il presente Disclaimer."
+            "value" : "Esclusione di Responsabilità e Termini di Utilizzo\n\nL’App %1$@ (“App”) è progettata per la gestione personale delle attività, l’organizzazione e la produttività.\n\nUtilizzando l’App, riconosci e accetti quanto segue:\n\n1. Scopo dell’App: \nl’App è destinata esclusivamente all’organizzazione personale. Tutte le informazioni, i suggerimenti, le previsioni e le funzionalità sono forniti esclusivamente a scopo informativo e non costituiscono alcuna garanzia di esecuzione, accuratezza o risultato.\n\n2. Responsabilità dell’Utente: \nl’App è fornita “così com’è”, senza garanzie di alcun tipo, espresse o implicite. Sei l’unico responsabile delle tue decisioni, azioni, attività e dell’utilizzo delle informazioni fornite dall’App.\n\n3. Notifiche, Badge e Promemoria: \nnotifiche, badge dell’icona dell’app, promemoria e funzioni di posticipo sono forniti esclusivamente a scopo informativo. Sebbene l’App sia progettata per programmare le notifiche al momento opportuno, la loro consegna e accuratezza dipendono da servizi di sistema, impostazioni del dispositivo, connettività e fattori esterni. L’App non garantisce la consegna puntuale, l’accuratezza o il corretto funzionamento di tali funzionalità. Non dovresti fare affidamento esclusivamente su queste funzionalità per attività critiche o sensibili al fattore tempo.\n\n4. Promemoria Basati sulla Posizione: \ni promemoria basati sulla posizione dipendono dalle autorizzazioni di sistema, dalle condizioni del dispositivo, dalla disponibilità del GPS e da fattori esterni e potrebbero non attivarsi sempre come previsto.\n\n5. Assistente Vocale (Siri): \ni comandi vocali e le integrazioni con Siri dipendono dai servizi Apple e potrebbero non interpretare sempre l’input dell’utente in modo accurato o coerente.\n\n6. Mappe e Funzionalità di Posizione: \nla visualizzazione delle mappe e le funzionalità basate sulla posizione dipendono dai servizi di localizzazione del dispositivo, dalla precisione del GPS, dalla connettività di rete e dalle condizioni del sistema. L’App non garantisce l’accuratezza, la precisione, la disponibilità o l’affidabilità in tempo reale dei dati di posizione o delle interazioni basate sulle mappe.\n\n7. Informazioni Meteo: \nle previsioni meteorologiche e le informazioni correlate al meteo sono fornite esclusivamente a scopo informativo e possono dipendere da servizi di terze parti, dalla posizione del dispositivo, dalla connettività di rete e da fornitori di dati esterni. Le previsioni orarie, giornaliere e le condizioni meteorologiche possono differire da quelle di altri servizi meteo. L’App non garantisce l’accuratezza, la completezza, la disponibilità o l’affidabilità delle informazioni meteorologiche e tali informazioni non devono essere utilizzate per decisioni professionali o critiche per la sicurezza.\n\n8. Carte Fedeltà, Loghi e Codici a Barre: \ncarte fedeltà, tickets, informazioni sui codici a barre, informazioni sui codici QR, loghi delle carte, immagini dei tickets e dati correlati sono memorizzati esclusivamente per comodità dell’utente. L’App non garantisce la compatibilità con scanner esterni, sistemi di vendita, negozi o servizi di terze parti. Gli utenti sono responsabili della verifica della validità e dell’utilizzabilità delle informazioni sui codici memorizzati.\n\n9. Dati e Archiviazione: \ni dati possono essere archiviati localmente sul dispositivo o sincronizzati tramite iCloud. Sei responsabile della gestione e del backup dei tuoi dati. Gli sviluppatori non sono responsabili per eventuali perdite di dati, corruzioni, accessi non autorizzati, problemi di sincronizzazione, ritardi o malfunzionamenti relativi all’archiviazione locale o ai servizi cloud.\n\n10. Backup e Sincronizzazione: \nle funzionalità di backup, ripristino e sincronizzazione dipendono dalle condizioni del dispositivo, dalla disponibilità di spazio di archiviazione, dai servizi iCloud e da fattori esterni. I backup possono includere attività, promemoria, regole di ricorrenza, tag, priorità, posizioni, allegati, carte fedeltà, tickets, loghi, liste viaggio, documenti, impostazioni dell’app e dati correlati. Le operazioni di ripristino possono consentire il ripristino selettivo delle categorie di dati e delle impostazioni supportate. L’App non garantisce che i backup o i dati sincronizzati siano sempre disponibili, completi, accurati o recuperabili.\n\n11. Servizi di Terze Parti: \nl’App può fare affidamento su servizi di terze parti (come iCloud, servizi di mappe, fornitori meteo o Siri) per alcune funzionalità. Gli sviluppatori non sono responsabili della disponibilità, delle prestazioni, della compatibilità, dell’affidabilità o delle pratiche sulla privacy di tali servizi.\n\n12. Disponibilità delle Funzionalità: \nil funzionamento dell’App può dipendere dalle condizioni del dispositivo, dalle impostazioni di sistema, dalle autorizzazioni concesse, dalle versioni software e dalla connettività di rete. Non è garantita la disponibilità continua o il corretto funzionamento di tutte le funzionalità.\n\n13. Funzionalità di Importazione ed Esportazione: \nle funzionalità di importazione ed esportazione sono fornite per comodità. L’App non garantisce la completa fedeltà dei dati, la completezza, la compatibilità o la conservazione di tutte le informazioni durante l’interazione con formati o servizi di terze parti. La disponibilità dei dati durante le operazioni di importazione ed esportazione dipende dal formato selezionato e dalle funzionalità supportate.\n\n14. Nessun Utilizzo Critico: \nl’App non è destinata a scopi di emergenza, medici, legali, critici per la sicurezza o mission-critical. Gli utenti non devono fare affidamento sull’App in situazioni in cui ritardi, imprecisioni, malfunzionamenti o informazioni mancanti potrebbero causare danni, lesioni, perdite o conseguenze significative.\n\n15. Aggiornamenti e Modifiche: \nl’App e il presente Disclaimer possono essere aggiornati, modificati, sospesi o cambiati nel tempo senza preavviso. L’uso continuato dell’App costituisce accettazione di tali modifiche.\n\n16. Limitazione di Responsabilità: \nnella misura massima consentita dalla legge applicabile, gli sviluppatori non saranno responsabili per eventuali danni derivanti dall’utilizzo, dall’impossibilità di utilizzo o dall’affidamento all’App o a qualsiasi informazione fornita al suo interno.\n\nUtilizzando %2$@, confermi di aver letto, compreso e accettato integralmente il presente Disclaimer."
           }
         }
       }
@@ -8511,19 +8511,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿La aplicación incluye una Wallet para tarjetas y entradas?"
+            "value" : "¿La aplicación incluye una Wallet para tarjetas y tickets?"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’application inclut-elle un Wallet pour les cartes et les billets ?"
+            "value" : "L’application inclut-elle un Wallet pour les cartes et les tickets ?"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’app include un Wallet per carte e biglietti?"
+            "value" : "L’app include un Wallet per carte e tickets?"
           }
         }
       }
@@ -9001,19 +9001,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Editar entrada"
+            "value" : "Editar ticket"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modifier le billet"
+            "value" : "Modifier le ticket"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modifica biglietto"
+            "value" : "Modifica ticket"
           }
         }
       }
@@ -10413,19 +10413,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo te permite crear, organizar y gestionar tareas de forma sencilla e intuitiva.\n\nPuedes crear tareas rápidamente, incluso con Siri. Los archivos adjuntos (fotos, documentos y archivos de audio) pueden añadirse directamente dentro de la aplicación.\n\nCuando estableces una fecha de vencimiento, la aplicación programa automáticamente una notificación: en la hora prevista o con antelación (de 1 a 7 días antes), según tu configuración. También puedes añadir un recordatorio personalizado y una notificación basada en la ubicación.\n\nCon los recordatorios, puedes elegir cuándo recibir una notificación o, utilizando Siri, dejar que se configure automáticamente.\n\nPuedes asociar una ubicación a una tarea y recibir una notificación cuando llegues, con la posibilidad de abrir aplicaciones de navegación para llegar al destino.\n\nLa aplicación ofrece opciones de personalización, modo claro y oscuro, y diferentes diseños de visualización.\n\nPuedes importar tareas desde Calendario, Apple Recordatorios o archivos CSV, y exportarlas a Calendario, CSV o formato ICS.\n\nLa aplicación también incluye una sección Wallet para tarjetas de fidelización y entradas, con escaneo de códigos de barras y códigos QR, además de acceso rápido a los elementos guardados.\n\nPuedes crear y gestionar listas de viaje (listas de equipaje) para tus desplazamientos y realizar el seguimiento de documentos importantes y sus fechas de caducidad en la sección Documentos. Puedes adjuntar directamente a las tareas fotos, documentos, archivos PDF, grabaciones de audio y páginas escaneadas.\n\nLas previsiones meteorológicas están integradas, incluyendo vistas detalladas semanales y por horas para ayudarte a planificar tus actividades.\n\nEstá disponible una función completa de copia de seguridad y restauración, que incluye tareas, recordatorios, archivos adjuntos, tarjetas, entradas, viajes, documentos y configuraciones de la aplicación.\n\nDisponible en inglés, italiano, francés, alemán y español.\n\nTus datos permanecen en tu dispositivo (o en iCloud, si está activado). No se requiere ninguna cuenta y no se realiza ningún seguimiento de la actividad."
+            "value" : "ForMemo te permite crear, organizar y gestionar tareas de forma sencilla e intuitiva.\n\nPuedes crear tareas rápidamente, incluso con Siri. Los archivos adjuntos (fotos, documentos y archivos de audio) pueden añadirse directamente dentro de la aplicación.\n\nCuando estableces una fecha de vencimiento, la aplicación programa automáticamente una notificación: en la hora prevista o con antelación (de 1 a 7 días antes), según tu configuración. También puedes añadir un recordatorio personalizado y una notificación basada en la ubicación.\n\nCon los recordatorios, puedes elegir cuándo recibir una notificación o, utilizando Siri, dejar que se configure automáticamente.\n\nPuedes asociar una ubicación a una tarea y recibir una notificación cuando llegues, con la posibilidad de abrir aplicaciones de navegación para llegar al destino.\n\nLa aplicación ofrece opciones de personalización, modo claro y oscuro, y diferentes diseños de visualización.\n\nPuedes importar tareas desde Calendario, Apple Recordatorios o archivos CSV, y exportarlas a Calendario, CSV o formato ICS.\n\nLa aplicación también incluye una sección Wallet para tarjetas de fidelización y tickets, con escaneo de códigos de barras y códigos QR, además de acceso rápido a los elementos guardados.\n\nPuedes crear y gestionar listas de viaje (listas de equipaje) para tus desplazamientos y realizar el seguimiento de documentos importantes y sus fechas de caducidad en la sección Documentos. Puedes adjuntar directamente a las tareas fotos, documentos, archivos PDF, grabaciones de audio y páginas escaneadas.\n\nLas previsiones meteorológicas están integradas, incluyendo vistas detalladas semanales y por horas para ayudarte a planificar tus actividades.\n\nEstá disponible una función completa de copia de seguridad y restauración, que incluye tareas, recordatorios, archivos adjuntos, tarjetas, tickets, viajes, documentos y configuraciones de la aplicación.\n\nDisponible en inglés, italiano, francés, alemán y español.\n\nTus datos permanecen en tu dispositivo (o en iCloud, si está activado). No se requiere ninguna cuenta y no se realiza ningún seguimiento de la actividad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo vous permet de créer, organiser et gérer vos tâches de manière simple et intuitive.\n\nVous pouvez créer rapidement des tâches, y compris avec Siri. Des pièces jointes (photos, documents et fichiers audio) peuvent être ajoutées directement dans l’application.\n\nLorsque vous définissez une date d’échéance, l’application programme automatiquement une notification : à l’heure prévue ou à l’avance (de 1 à 7 jours), selon vos paramètres. Vous pouvez également ajouter un rappel personnalisé ainsi qu’une notification basée sur la localisation.\n\nAvec les rappels, vous pouvez choisir quand être notifié ou, en utilisant Siri, laisser le rappel être configuré automatiquement.\n\nVous pouvez associer un lieu à une tâche et recevoir une notification à votre arrivée, avec la possibilité d’ouvrir des applications de navigation pour vous y rendre.\n\nL’application propose des options de personnalisation, un mode clair et sombre, ainsi que différentes dispositions d’affichage.\n\nVous pouvez importer des tâches depuis Calendrier, Apple Rappels ou des fichiers CSV, et les exporter vers Calendrier, CSV ou au format ICS.\n\nL’application comprend également une section Wallet pour les cartes de fidélité et les billets, avec la numérisation de codes-barres et de codes QR ainsi qu’un accès rapide à vos éléments enregistrés.\n\nVous pouvez créer et gérer des listes de voyage (listes de préparation des bagages) pour vos déplacements, et suivre les documents importants ainsi que leurs dates d’expiration dans la section Documents. Vous pouvez joindre directement aux tâches des photos, des documents, des PDF, des enregistrements audio et des pages numérisées.\n\nLes prévisions météorologiques sont intégrées, avec des vues détaillées hebdomadaires et horaires pour vous aider à planifier vos activités.\n\nUne fonction complète de sauvegarde et de restauration est disponible, incluant les tâches, rappels, pièces jointes, cartes, billets, voyages, documents et paramètres de l’application.\n\nDisponible en anglais, italien, français, allemand et espagnol.\n\nVos données restent sur votre appareil (ou sur iCloud, si activé). Aucun compte requis et aucun suivi."
+            "value" : "ForMemo vous permet de créer, organiser et gérer vos tâches de manière simple et intuitive.\n\nVous pouvez créer rapidement des tâches, y compris avec Siri. Des pièces jointes (photos, documents et fichiers audio) peuvent être ajoutées directement dans l’application.\n\nLorsque vous définissez une date d’échéance, l’application programme automatiquement une notification : à l’heure prévue ou à l’avance (de 1 à 7 jours), selon vos paramètres. Vous pouvez également ajouter un rappel personnalisé ainsi qu’une notification basée sur la localisation.\n\nAvec les rappels, vous pouvez choisir quand être notifié ou, en utilisant Siri, laisser le rappel être configuré automatiquement.\n\nVous pouvez associer un lieu à une tâche et recevoir une notification à votre arrivée, avec la possibilité d’ouvrir des applications de navigation pour vous y rendre.\n\nL’application propose des options de personnalisation, un mode clair et sombre, ainsi que différentes dispositions d’affichage.\n\nVous pouvez importer des tâches depuis Calendrier, Apple Rappels ou des fichiers CSV, et les exporter vers Calendrier, CSV ou au format ICS.\n\nL’application comprend également une section Wallet pour les cartes de fidélité et les tickets, avec la numérisation de codes-barres et de codes QR ainsi qu’un accès rapide à vos éléments enregistrés.\n\nVous pouvez créer et gérer des listes de voyage (listes de préparation des bagages) pour vos déplacements, et suivre les documents importants ainsi que leurs dates d’expiration dans la section Documents. Vous pouvez joindre directement aux tâches des photos, des documents, des PDF, des enregistrements audio et des pages numérisées.\n\nLes prévisions météorologiques sont intégrées, avec des vues détaillées hebdomadaires et horaires pour vous aider à planifier vos activités.\n\nUne fonction complète de sauvegarde et de restauration est disponible, incluant les tâches, rappels, pièces jointes, cartes, tickets, voyages, documents et paramètres de l’application.\n\nDisponible en anglais, italien, français, allemand et espagnol.\n\nVos données restent sur votre appareil (ou sur iCloud, si activé). Aucun compte requis et aucun suivi."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo ti consente di creare, organizzare e gestire attività in modo semplice e intuitivo.\n\nPuoi creare rapidamente attività, anche con Siri. È possibile aggiungere allegati (foto, documenti e audio) direttamente all’interno dell’app.\n\nQuando imposti una data di scadenza, l’app programma automaticamente una notifica: all’orario previsto oppure in anticipo (da 1 a 7 giorni), in base alle tue impostazioni. Puoi inoltre aggiungere un promemoria personalizzato e una notifica basata sulla posizione.\n\nCon i promemoria puoi scegliere quando ricevere una notifica oppure, utilizzando Siri, lasciare che venga impostata automaticamente.\n\nPuoi associare una posizione a un’attività e ricevere una notifica al tuo arrivo, con la possibilità di aprire le app di navigazione per raggiungerla.\n\nL’app offre opzioni di personalizzazione, modalità chiara e scura e diversi layout di visualizzazione.\n\nPuoi importare attività da Calendario, Promemoria Apple o file CSV ed esportarle in Calendario, CSV o formato ICS.\n\nL’app include anche una sezione Wallet per carte fedeltà e biglietti, con scansione di codici a barre e codici QR e accesso rapido agli elementi salvati.\n\nPuoi creare e gestire Liste di Viaggio (liste per la preparazione dei bagagli) e tenere sotto controllo documenti importanti e relative date di scadenza nella sezione Documenti. Puoi allegare direttamente alle attività foto, documenti, PDF, registrazioni audio e pagine scansionate.\n\nLe previsioni meteo sono integrate e includono viste dettagliate settimanali e orarie per aiutarti a pianificare le tue attività.\n\nSono disponibili funzioni complete di backup e ripristino, inclusi attività, promemoria, allegati, carte, biglietti, viaggi, documenti e impostazioni dell’app.\n\nDisponibile in inglese, italiano, francese, tedesco e spagnolo.\n\nI tuoi dati rimangono sul tuo dispositivo (o su iCloud, se abilitato). Nessun account richiesto e nessun tracciamento."
+            "value" : "ForMemo ti consente di creare, organizzare e gestire attività in modo semplice e intuitivo.\n\nPuoi creare rapidamente attività, anche con Siri. È possibile aggiungere allegati (foto, documenti e audio) direttamente all’interno dell’app.\n\nQuando imposti una data di scadenza, l’app programma automaticamente una notifica: all’orario previsto oppure in anticipo (da 1 a 7 giorni), in base alle tue impostazioni. Puoi inoltre aggiungere un promemoria personalizzato e una notifica basata sulla posizione.\n\nCon i promemoria puoi scegliere quando ricevere una notifica oppure, utilizzando Siri, lasciare che venga impostata automaticamente.\n\nPuoi associare una posizione a un’attività e ricevere una notifica al tuo arrivo, con la possibilità di aprire le app di navigazione per raggiungerla.\n\nL’app offre opzioni di personalizzazione, modalità chiara e scura e diversi layout di visualizzazione.\n\nPuoi importare attività da Calendario, Promemoria Apple o file CSV ed esportarle in Calendario, CSV o formato ICS.\n\nL’app include anche una sezione Wallet per carte fedeltà e tickets, con scansione di codici a barre e codici QR e accesso rapido agli elementi salvati.\n\nPuoi creare e gestire Liste di Viaggio (liste per la preparazione dei bagagli) e tenere sotto controllo documenti importanti e relative date di scadenza nella sezione Documenti. Puoi allegare direttamente alle attività foto, documenti, PDF, registrazioni audio e pagine scansionate.\n\nLe previsioni meteo sono integrate e includono viste dettagliate settimanali e orarie per aiutarti a pianificare le tue attività.\n\nSono disponibili funzioni complete di backup e ripristino, inclusi attività, promemoria, allegati, carte, tickets, viaggi, documenti e impostazioni dell’app.\n\nDisponibile in inglese, italiano, francese, tedesco e spagnolo.\n\nI tuoi dati rimangono sul tuo dispositivo (o su iCloud, se abilitato). Nessun account richiesto e nessun tracciamento."
           }
         }
       }
@@ -12230,19 +12230,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importar entrada desde una foto"
+            "value" : "Importar ticket desde una foto"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importer un billet depuis une photo"
+            "value" : "Importer un ticket depuis une photo"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importa biglietto da foto"
+            "value" : "Importa ticket da foto"
           }
         }
       }
@@ -13644,34 +13644,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Carta fedeltà"
-          }
-        }
-      }
-    },
-    "Loyalty Cards" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kundenkarten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tarjetas de fidelización"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cartes de fidélité"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Carte fedeltà"
           }
         }
       }
@@ -17459,19 +17431,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escanea rápidamente tarjetas de fidelización y entradas utilizando la cámara del dispositivo o importa imágenes de entradas para guardar automáticamente la información de códigos de barras y códigos QR en tu Wallet."
+            "value" : "Escanea rápidamente tarjetas de fidelización y tickets utilizando la cámara del dispositivo o importa imágenes de tickets para guardar automáticamente la información de códigos de barras y códigos QR en tu Wallet."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scannez rapidement des cartes de fidélité et des billets à l’aide de l’appareil photo de l’appareil ou importez des images de billets afin d’enregistrer automatiquement les informations de codes-barres et de codes QR dans votre Wallet."
+            "value" : "Scannez rapidement des cartes de fidélité et des tickets à l’aide de l’appareil photo de l’appareil ou importez des images de tickets afin d’enregistrer automatiquement les informations de codes-barres et de codes QR dans votre Wallet."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scansiona rapidamente carte fedeltà e biglietti utilizzando la fotocamera del dispositivo oppure importa immagini di biglietti per salvare automaticamente nel Wallet le informazioni di codici a barre e codici QR."
+            "value" : "Scansiona rapidamente carte fedeltà e tickets utilizzando la fotocamera del dispositivo oppure importa immagini di tickets per salvare automaticamente nel Wallet le informazioni di codici a barre e codici QR."
           }
         }
       }
@@ -19536,19 +19508,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscar tarjetas y entradas"
+            "value" : "Buscar tarjetas y tickets"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rechercher des cartes et des billets"
+            "value" : "Rechercher des cartes et des tickets"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cerca carte e biglietti"
+            "value" : "Cerca carte e tickets"
           }
         }
       }
@@ -21662,19 +21634,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarda y organiza tarjetas de fidelización y entradas con códigos de barras o códigos QR, información del titular, notas, colores personalizados y logotipos opcionales siempre disponibles dentro de la aplicación."
+            "value" : "Guarda y organiza tarjetas de fidelización y tickets con códigos de barras o códigos QR, información del titular, notas, colores personalizados y logotipos opcionales siempre disponibles dentro de la aplicación."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stockez et organisez vos cartes de fidélité et billets avec codes-barres ou codes QR, informations du titulaire, notes, couleurs personnalisées et logos optionnels toujours disponibles dans l’application."
+            "value" : "Stockez et organisez vos cartes de fidélité et tickets avec codes-barres ou codes QR, informations du titulaire, notes, couleurs personnalisées et logos optionnels toujours disponibles dans l’application."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Archivia e organizza carte fedeltà e biglietti con codici a barre o codici QR, informazioni del titolare, note, colori personalizzati e loghi opzionali sempre disponibili all’interno dell’app."
+            "value" : "Archivia e organizza carte fedeltà e tickets con codici a barre o codici QR, informazioni del titolare, note, colori personalizzati e loghi opzionali sempre disponibili all’interno dell’app."
           }
         }
       }
@@ -21690,19 +21662,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarda tarjetas de fidelización y entradas para acceder rápidamente a códigos QR y códigos de barras."
+            "value" : "Guarda tarjetas de fidelización y tickets para acceder rápidamente a códigos QR y códigos de barras."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conservez vos cartes de fidélité et billets pour un accès rapide aux codes QR et aux codes-barres."
+            "value" : "Conservez vos cartes de fidélité et tickets pour un accès rapide aux codes QR et aux codes-barres."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conserva carte fedeltà e biglietti per accedere rapidamente a codici QR e codici a barre."
+            "value" : "Conserva carte fedeltà e tickets per accedere rapidamente a codici QR e codici a barre."
           }
         }
       }
@@ -23052,19 +23024,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, estado de aplazamiento, ubicaciones, tarjetas y entradas, documentos y archivos adjuntos están incluidos en el archivo de copia de seguridad."
+            "value" : "Las tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, estado de aplazamiento, ubicaciones, tarjetas y tickets, documentos y archivos adjuntos están incluidos en el archivo de copia de seguridad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, état de report, emplacements, cartes et billets, documents et pièces jointes sont inclus dans l’archive de sauvegarde."
+            "value" : "Les tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, état de report, emplacements, cartes et tickets, documents et pièces jointes sont inclus dans l’archive de sauvegarde."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, stato di posticipo, posizioni, carte e biglietti, documenti e allegati sono inclusi nell’archivio di backup."
+            "value" : "Attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, stato di posticipo, posizioni, carte e tickets, documenti e allegati sono inclusi nell’archivio di backup."
           }
         }
       }
@@ -24196,19 +24168,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esto eliminará permanentemente todas tus tareas, archivos adjuntos, listas de viaje, tarjetas, entradas y datos de este dispositivo. Esta acción no se puede deshacer."
+            "value" : "Esto eliminará permanentemente todas tus tareas, archivos adjuntos, listas de viaje, tarjetas, tickets y datos de este dispositivo. Esta acción no se puede deshacer."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette action supprimera définitivement toutes vos tâches, pièces jointes, listes de voyage, cartes, billets et données de cet appareil. Cette action est irréversible."
+            "value" : "Cette action supprimera définitivement toutes vos tâches, pièces jointes, listes de voyage, cartes, tickets et données de cet appareil. Cette action est irréversible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa operazione eliminerà definitivamente tutte le tue attività, gli allegati, le checklist di viaggio, le carte, i biglietti e i dati da questo dispositivo. Questa azione non può essere annullata."
+            "value" : "Questa operazione eliminerà definitivamente tutte le tue attività, gli allegati, le checklist di viaggio, le carte, i tickets e i dati da questo dispositivo. Questa azione non può essere annullata."
           }
         }
       }
@@ -24252,19 +24224,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada"
+            "value" : "Ticket"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Billet"
+            "value" : "ticket"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Biglietto"
+            "value" : "Ticket"
           }
         }
       }
@@ -24280,19 +24252,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Código de la entrada"
+            "value" : "Ticket Code"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Code du billet"
+            "value" : "Code du ticket"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Codice biglietto"
+            "value" : "Codice ticket"
           }
         }
       }
@@ -24308,19 +24280,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Color de la entrada"
+            "value" : "Color del Ticket"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Couleur du billet"
+            "value" : "Couleur du ticket"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Colore biglietto"
+            "value" : "Colore ticket"
           }
         }
       }
@@ -24336,19 +24308,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Titular de la entrada"
+            "value" : "Titular del Ticket"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Titulaire du billet"
+            "value" : "Titulaire du ticket"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Titolare biglietto"
+            "value" : "Titolare ticket"
           }
         }
       }
@@ -24364,19 +24336,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notas de la entrada"
+            "value" : "Notas del ticket"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Titulaire du billet"
+            "value" : "Titulaire du ticket"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Note biglietto"
+            "value" : "Note ticket"
           }
         }
       }
@@ -24398,13 +24370,13 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Billets"
+            "value" : "Tickets"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Biglietti"
+            "value" : "Tickets"
           }
         }
       }
@@ -26242,19 +26214,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wallet para tarjetas y entradas"
+            "value" : "Wallet para tarjetas y tickets"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wallet pour cartes et billets"
+            "value" : "Wallet pour cartes et tickets"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wallet per carte e biglietti"
+            "value" : "Wallet per carte e tickets"
           }
         }
       }
@@ -27872,19 +27844,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Las tarjetas, entradas, códigos de barras, códigos QR, notas, colores personalizados y logotipos están incluidos en las copias de seguridad y pueden restaurarse en dispositivos compatibles."
+            "value" : "Sí. Las tarjetas, tickets, códigos de barras, códigos QR, notas, colores personalizados y logotipos están incluidos en las copias de seguridad y pueden restaurarse en dispositivos compatibles."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Les cartes, billets, codes-barres, codes QR, notes, couleurs personnalisées et logos sont inclus dans les sauvegardes et peuvent être restaurés sur des appareils compatibles."
+            "value" : "Oui. Les cartes, tickets, codes-barres, codes QR, notes, couleurs personnalisées et logos sont inclus dans les sauvegardes et peuvent être restaurés sur des appareils compatibles."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Carte, biglietti, codici a barre, codici QR, note, colori personalizzati e loghi sono inclusi nei backup e possono essere ripristinati su dispositivi compatibili."
+            "value" : "Sì. Carte, tickets, codici a barre, codici QR, note, colori personalizzati e loghi sono inclusi nei backup e possono essere ripristinati su dispositivi compatibili."
           }
         }
       }
@@ -27956,19 +27928,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Durante la restauración puedes elegir qué secciones restaurar, como tareas, tarjetas, entradas, listas de viaje, documentos y ajustes de la aplicación. Esto te permite recuperar únicamente los datos que necesitas sin restaurarlo todo."
+            "value" : "Sí. Durante la restauración puedes elegir qué secciones restaurar, como tareas, tarjetas, tickets, listas de viaje, documentos y ajustes de la aplicación. Esto te permite recuperar únicamente los datos que necesitas sin restaurarlo todo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Lors de la restauration, vous pouvez choisir les sections à restaurer, telles que les tâches, les cartes, les billets, les listes de voyage, les documents et les paramètres de l’application. Cela vous permet de récupérer uniquement les données dont vous avez besoin sans tout restaurer."
+            "value" : "Oui. Lors de la restauration, vous pouvez choisir les sections à restaurer, telles que les tâches, les cartes, les tickets, les listes de voyage, les documents et les paramètres de l’application. Cela vous permet de récupérer uniquement les données dont vous avez besoin sans tout restaurer."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Durante il ripristino puoi scegliere quali sezioni ripristinare, ad esempio attività, carte, biglietti, liste di viaggio, documenti e impostazioni dell’app. Questo ti consente di recuperare solo i dati necessari senza ripristinare tutto."
+            "value" : "Sì. Durante il ripristino puoi scegliere quali sezioni ripristinare, ad esempio attività, carte, tickets, liste di viaggio, documenti e impostazioni dell’app. Questo ti consente di recuperare solo i dati necessari senza ripristinare tutto."
           }
         }
       }
@@ -28012,19 +27984,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. ForMemo permite crear copias de seguridad completas que incluyen tareas, recordatorios, archivos adjuntos, tarjetas, entradas y logotipos, listas de viaje, documentos, ajustes de la aplicación y datos relacionados. Podrás restaurarlas más adelante o transferirlo todo a otro dispositivo."
+            "value" : "Sí. ForMemo permite crear copias de seguridad completas que incluyen tareas, recordatorios, archivos adjuntos, tarjetas, tickets y logotipos, listas de viaje, documentos, ajustes de la aplicación y datos relacionados. Podrás restaurarlas más adelante o transferirlo todo a otro dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. ForMemo vous permet de créer des sauvegardes complètes incluant les tâches, rappels, pièces jointes, cartes, billets et logos, listes de voyage, documents, paramètres de l’application et données associées. Vous pourrez les restaurer ultérieurement ou tout transférer vers un autre appareil."
+            "value" : "Oui. ForMemo vous permet de créer des sauvegardes complètes incluant les tâches, rappels, pièces jointes, cartes, tickets et logos, listes de voyage, documents, paramètres de l’application et données associées. Vous pourrez les restaurer ultérieurement ou tout transférer vers un autre appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. ForMemo consente di creare backup completi che includono attività, promemoria, allegati, carte, biglietti e loghi, liste di viaggio, documenti, impostazioni dell’app e dati correlati. Potrai ripristinarli in seguito oppure trasferire tutto su un altro dispositivo."
+            "value" : "Sì. ForMemo consente di creare backup completi che includono attività, promemoria, allegati, carte, tickets e loghi, liste di viaggio, documenti, impostazioni dell’app e dati correlati. Potrai ripristinarli in seguito oppure trasferire tutto su un altro dispositivo."
           }
         }
       }
@@ -28068,19 +28040,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. ForMemo incluye una sección Wallet donde puedes guardar y organizar tarjetas de fidelización y entradas, códigos de barras, códigos QR, información del titular, notas, colores personalizados y logotipos opcionales."
+            "value" : "Sí. ForMemo incluye una sección Wallet donde puedes guardar y organizar tarjetas de fidelización y tickets, códigos de barras, códigos QR, información del titular, notas, colores personalizados y logotipos opcionales."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. ForMemo comprend une section Wallet dans laquelle vous pouvez enregistrer et organiser des cartes de fidélité et des billets, des codes-barres, des codes QR, les informations du titulaire, des notes, des couleurs personnalisées et des logos optionnels."
+            "value" : "Oui. ForMemo comprend une section Wallet dans laquelle vous pouvez enregistrer et organiser des cartes de fidélité et des tickets, des codes-barres, des codes QR, les informations du titulaire, des notes, des couleurs personnalisées et des logos optionnels."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. ForMemo include una sezione Wallet nella quale puoi salvare e organizzare carte fedeltà e biglietti, codici a barre, codici QR, informazioni del titolare, note, colori personalizzati e loghi opzionali."
+            "value" : "Sì. ForMemo include una sezione Wallet nella quale puoi salvare e organizzare carte fedeltà e tickets, codici a barre, codici QR, informazioni del titolare, note, colori personalizzati e loghi opzionali."
           }
         }
       }
@@ -28634,19 +28606,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes importar un archivo de copia de seguridad en otro dispositivo compatible para restaurar tus tareas, tarjetas, entradas, archivos adjuntos, viajes, documentos y datos relacionados."
+            "value" : "Sí. Puedes importar un archivo de copia de seguridad en otro dispositivo compatible para restaurar tus tareas, tarjetas, tickets, archivos adjuntos, viajes, documentos y datos relacionados."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Vous pouvez importer un fichier de sauvegarde sur un autre appareil compatible afin de restaurer vos tâches, cartes, billets, pièces jointes, voyages, documents et données associées."
+            "value" : "Oui. Vous pouvez importer un fichier de sauvegarde sur un autre appareil compatible afin de restaurer vos tâches, cartes, tickets, pièces jointes, voyages, documents et données associées."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare attività, carte, biglietti, allegati, viaggi, documenti e dati correlati."
+            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare attività, carte, tickets, allegati, viaggi, documenti e dati correlati."
           }
         }
       }
@@ -28690,19 +28662,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes escanear rápidamente códigos de barras y códigos QR utilizando la cámara del dispositivo y guardar tarjetas y entradas directamente en la Wallet. Las entradas también pueden importarse desde imágenes que contengan códigos compatibles."
+            "value" : "Sí. Puedes escanear rápidamente códigos de barras y códigos QR utilizando la cámara del dispositivo y guardar tarjetas y tickets directamente en la Wallet. Los tickets también pueden importarse desde imágenes que contengan códigos compatibles."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Vous pouvez scanner rapidement des codes-barres et des codes QR à l’aide de l’appareil photo de l’appareil et enregistrer directement les cartes et les billets dans le Wallet. Les billets peuvent également être importés à partir d’images contenant des codes pris en charge."
+            "value" : "Oui. Vous pouvez scanner rapidement des codes-barres et des codes QR à l’aide de l’appareil photo de l’appareil et enregistrer directement les cartes et les tickets dans le Wallet. Les tickets peuvent également être importés à partir d’images contenant des codes pris en charge."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare attività, carte, biglietti, allegati, viaggi, documenti e dati correlati."
+            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare attività, carte, tickets, allegati, viaggi, documenti e dati correlati."
           }
         }
       }
@@ -28746,19 +28718,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes guardar varias tarjetas o entradas de la misma tienda, evento o proveedor y diferenciarlas utilizando el campo del titular o notas personalizadas."
+            "value" : "Sí. Puedes guardar varias tarjetas o tickets de la misma tienda, evento o proveedor y diferenciarlas utilizando el campo del titular o notas personalizadas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Vous pouvez enregistrer plusieurs cartes ou billets provenant du même magasin, événement ou fournisseur et les distinguer grâce au champ du titulaire ou à des notes personnalisées."
+            "value" : "Oui. Vous pouvez enregistrer plusieurs cartes ou tickets provenant du même magasin, événement ou fournisseur et les distinguer grâce au champ du titulaire ou à des notes personnalisées."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Puoi salvare più carte o biglietti dello stesso negozio, evento o fornitore e distinguerli utilizzando il campo titolare oppure note personalizzate."
+            "value" : "Sì. Puoi salvare più carte o tickets dello stesso negozio, evento o fornitore e distinguerli utilizzando il campo titolare oppure note personalizzate."
           }
         }
       }
