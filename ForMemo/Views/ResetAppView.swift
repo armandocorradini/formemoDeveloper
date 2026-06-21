@@ -31,7 +31,7 @@ struct ResetAppView: View {
                             .foregroundStyle(.red)
                     }
                     
-                    Text("This will permanently delete all your tasks, attachments, trip checklists, Wallet cards, and data from this device. This action cannot be undone.")
+                    Text("This will permanently delete all your tasks, attachments, trip checklists, cards, tickets, and data from this device. This action cannot be undone.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -140,10 +140,15 @@ struct ResetAppView: View {
                 modelContext.delete(task)
             }
             
-            // 🔴 Loyalty Cards
+            // 🔴 Loyalty Cards & Tickets
             let loyaltyCards = try modelContext.fetch(FetchDescriptor<LoyaltyCard>())
 
             for card in loyaltyCards {
+
+                LoyaltyCardLogoStore.delete(
+                    relativePath: "\(card.id.uuidString).jpg"
+                )
+
                 modelContext.delete(card)
             }
 

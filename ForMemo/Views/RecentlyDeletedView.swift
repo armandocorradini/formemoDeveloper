@@ -71,9 +71,18 @@ var body: some View {
                                         .symbolRenderingMode(.hierarchical)
                                         .foregroundStyle(.orange)
                                 } else if item.type == "loyaltycard" {
-                                    Image(systemName: "creditcard")
-                                        .symbolRenderingMode(.hierarchical)
-                                        .foregroundStyle(.blue)
+
+                                    Image(
+                                        systemName: item.loyaltyItemType == "ticket"
+                                        ? "ticket.fill"
+                                        : "creditcard"
+                                    )
+                                    .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(
+                                        item.loyaltyItemType == "ticket"
+                                        ? .orange
+                                        : .blue
+                                    )
                                 } else if item.type == "document" {
                                     let icon = DocumentType(rawValue: item.documentTypeRaw ?? "")?.systemImage ?? "doc.text"
 
@@ -104,6 +113,20 @@ var body: some View {
                             
                             Text(title(for: item))
                                 .lineLimit(1)
+                            
+                            if item.type == "loyaltycard" {
+                                Text(
+                                    item.loyaltyItemType == "ticket"
+                                    ? "Deleted Ticket"
+                                    : "Deleted Loyalty Card"
+                                )
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+
+                                Text("Deleted: \(item.deletedAt.formatted(date: .abbreviated, time: .shortened))")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
                             
                             if item.type == "task" {
                                 
@@ -277,7 +300,15 @@ var body: some View {
             return item.fileName ?? "Attachment"
 
         case "loyaltycard":
-            return item.storeName ?? "Loyalty Card"
+
+            if let name = item.storeName,
+               !name.isEmpty {
+                return name
+            }
+
+            return item.loyaltyItemType == "ticket"
+                ? "Untitled Ticket"
+                : "Unnamed Loyalty Card"
 
         case "trip":
             return item.tripName ?? "Trip"

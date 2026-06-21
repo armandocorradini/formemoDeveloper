@@ -499,6 +499,8 @@ final class DeletedItem {
 
     var barcodeValue: String?
     var barcodeFormat: String?
+    var loyaltyItemType: String?
+    // "loyaltyCard" or "ticket"
 
     var loyaltyNotes: String?
     var loyaltyColorHex: String?
@@ -589,6 +591,17 @@ extension TodoTask {
 }
 
 // MARK: - Restore Logic
+
+extension DeletedItem {
+
+    var isTicket: Bool {
+        loyaltyItemType == "ticket"
+    }
+
+    var restoredItemType: String {
+        loyaltyItemType ?? "loyaltyCard"
+    }
+}
 
 extension DeletedItem {
     
@@ -722,6 +735,7 @@ extension DeletedItem {
                 cardHolder: cardHolder,
                 barcodeValue: barcodeValue ?? "",
                 barcodeFormat: barcodeFormat ?? "code128",
+                itemType: restoredItemType,
                 notes: loyaltyNotes,
                 colorHex: loyaltyColorHex,
                 sortOrder: loyaltySortOrder ?? 0

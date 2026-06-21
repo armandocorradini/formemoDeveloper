@@ -94,8 +94,8 @@ struct AppQuickGuideView: View {
         ),
 
         .init(
-            title: String(localized:"Wallet for Loyalty Cards"),
-            description: String(localized:"Store and organize loyalty cards with barcodes, card holder information, notes, custom colors and optional logos always available inside the app."),
+            title: String(localized:"Wallet for Cards and Tickets"),
+            description: String(localized:"Store and organize loyalty cards and tickets with barcodes or QR codes, holder information, notes, custom colors and optional logos always available inside the app."),
             icon: "creditcard",
             tint: .mint
         ),
@@ -109,7 +109,7 @@ struct AppQuickGuideView: View {
 
         .init(
             title: String(localized:"Barcode Scanner"),
-            description: String(localized:"Quickly scan loyalty cards using the device camera and automatically save barcode information into your Wallet."),
+            description: String(localized:"Quickly scan loyalty cards and tickets using the device camera or import ticket images to automatically save barcode and QR code information into your Wallet."),
             icon: "barcode.viewfinder",
             tint: .orange
         ),
@@ -226,7 +226,7 @@ struct AppQuickGuideView: View {
 
         .init(
             title: String(localized:"Backup & Restore"),
-            description: String(localized:"Create complete backups including tasks, reminders, recurrence rules, tags, priorities, locations, attachments, loyalty cards, trip lists, documents and app settings. Restore everything or only selected sections on the same or another device."),
+            description: String(localized:"Create complete backups including tasks, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets, trip lists, documents and app settings. Restore everything or only selected sections on the same or another device."),
             icon: "externaldrive.badge.timemachine",
             tint: .indigo
         )

@@ -21,9 +21,18 @@ struct WalletView: View {
     @State private var searchText = ""
     @State private var pendingSortMode: String?
     @State private var showCustomSortInfo = false
+    @State private var walletFilter = "all"
 
     @AppStorage("walletSortMode")
     private var walletSortMode: String = "alphabetical"
+
+    private var ticketCount: Int {
+        cards.filter { $0.itemType == "ticket" }.count
+    }
+
+    private var loyaltyCardCount: Int {
+        cards.filter { $0.itemType != "ticket" }.count
+    }
 
     private var filteredCards: [LoyaltyCard] {
 
@@ -43,13 +52,26 @@ struct WalletView: View {
             }
         }
 
+        let filteredByType: [LoyaltyCard]
+
+        switch walletFilter {
+        case "tickets":
+            filteredByType = source.filter { $0.itemType == "ticket" }
+
+        case "cards":
+            filteredByType = source.filter { $0.itemType != "ticket" }
+
+        default:
+            filteredByType = source
+        }
+
         let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard !trimmed.isEmpty else {
-            return source
+            return filteredByType
         }
 
-        return source.filter {
+        return filteredByType.filter {
             $0.storeName.localizedCaseInsensitiveContains(trimmed)
             || ($0.cardHolder?.localizedCaseInsensitiveContains(trimmed) ?? false)
         }
@@ -97,9 +119,9 @@ struct WalletView: View {
                     ContentUnavailableView {
                         Label("Wallet Empty", systemImage: "creditcard")
                     } description: {
-                        Text("Add your loyalty cards to quickly access barcodes.")
+                        Text("Store loyalty cards and tickets for quick access to QR codes and barcodes.")
                     } actions: {
-                        Button("Add Card") {
+                        Button("Add Item") {
                             showAddCard = true
                         }
                         .buttonStyle(.borderedProminent)
@@ -128,15 +150,19 @@ struct WalletView: View {
 
                                         } else {
 
-                                            Image(systemName: "creditcard")
-                                                .resizable()
-                                                .scaledToFit()
-                                                .padding(12)
-                                                .foregroundStyle(
-                                                    isLightCardColor(card.colorHex)
-                                                    ? Color.black.opacity(0.82)
-                                                    : Color.white.opacity(0.92)
-                                                )
+                                            Image(
+                                                systemName: card.itemType == "ticket"
+                                                ? "ticket.fill"
+                                                : "creditcard"
+                                            )
+                                            .resizable()
+                                            .scaledToFit()
+                                            .padding(12)
+                                            .foregroundStyle(
+                                                isLightCardColor(card.colorHex)
+                                                ? Color.black.opacity(0.82)
+                                                : Color.white.opacity(0.92)
+                                            )
                                         }
                                     }
                                     .frame(width: 56, height: 56)
@@ -176,8 +202,24 @@ struct WalletView: View {
                                         Text(card.storeName)
                                             .font(.headline)
 
+                                        Text(
+                                            card.itemType == "ticket"
+                                            ? "Ticket"
+                                            : "Loyalty Card"
+                                        )
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+
                                         if let holder = card.cardHolder,
                                            !holder.isEmpty {
+
+                                            Text(
+                                                card.itemType == "ticket"
+                                                ? String(localized: "Ticket Holder")
+                                                : String(localized: "Card Holder")
+                                            )
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
 
                                             Text(holder)
                                                 .font(.subheadline)
@@ -240,7 +282,11 @@ struct WalletView: View {
                                     }
                                 }
                             }
-                            .moveDisabled(walletSortMode != "custom")
+                            .moveDisabled(
+                                walletSortMode != "custom"
+                                || walletFilter != "all"
+                                || !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            )
                         }
                         .onMove { source, destination in
                             guard walletSortMode == "custom" else { return }
@@ -256,7 +302,7 @@ struct WalletView: View {
                     .searchable(
                         text: $searchText,
                         placement: .navigationBarDrawer(displayMode: .automatic),
-                        prompt: Text("Search cards")
+                        prompt: Text("Search cards and tickets")
                     )
                 }
             }
@@ -274,10 +320,27 @@ struct WalletView: View {
                         Text("Wallet")
                             .font(.headline)
 
-                        Text("\(cards.count) cards")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                        Text(
+                            "\(loyaltyCardCount) cards • \(ticketCount) tickets"
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
                     }
+                }
+
+                ToolbarItem(placement: .topBarLeading) {
+
+                    Picker("Filter", selection: $walletFilter) {
+                        Label("All", systemImage: "square.grid.2x2")
+                            .tag("all")
+
+                        Label("Cards", systemImage: "creditcard")
+                            .tag("cards")
+
+                        Label("Tickets", systemImage: "ticket")
+                            .tag("tickets")
+                    }
+                    .pickerStyle(.menu)
                 }
 
                 ToolbarItem(placement: .topBarLeading) {
@@ -355,8 +418,19 @@ struct WalletView: View {
 
         guard walletSortMode == "custom" else { return }
 
-        var reordered = filteredCards
-        reordered.move(fromOffsets: source, toOffset: destination)
+        guard walletFilter == "all",
+              searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
+
+        var reordered = cards.sorted {
+            $0.sortOrder < $1.sortOrder
+        }
+
+        reordered.move(
+            fromOffsets: source,
+            toOffset: destination
+        )
 
         for (index, card) in reordered.enumerated() {
             card.sortOrder = index + 1
@@ -370,8 +444,13 @@ struct WalletView: View {
     private func deleteCards(at offsets: IndexSet) {
 
         for index in offsets {
+
+            guard filteredCards.indices.contains(index) else {
+                continue
+            }
+
             deleteLoyaltyCard(
-                cards[index],
+                filteredCards[index],
                 in: modelContext
             )
         }

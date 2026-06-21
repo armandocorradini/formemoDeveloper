@@ -138,31 +138,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diese App verwendet die Kamera, um Kundenkarten und Dokumente zu scannen sowie Fotos an Ihre Aufgaben anzuhängen."
+            "value" : "Diese App verwendet die Kamera, um Kundenkarten, Tickets, Barcodes, QR-Codes und Dokumente zu scannen sowie Fotos an Ihre Aufgaben anzuhängen."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This app uses the camera to scan loyalty cards, documents, and attach photos to your tasks."
+            "value" : "This app uses the camera to scan loyalty cards, tickets, barcodes, QR codes, documents, and to attach photos to your tasks."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta aplicación utiliza la cámara para escanear tarjetas de fidelidad, documentos y adjuntar fotos a tus tareas."
+            "value" : "Esta aplicación utiliza la cámara para escanear tarjetas de fidelización, entradas, códigos de barras, códigos QR, documentos y para adjuntar fotos a tus tareas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette application utilise l’appareil photo pour scanner des cartes de fidélité, des documents et joindre des photos à vos tâches."
+            "value" : "Cette application utilise l’appareil photo pour scanner des cartes de fidélité, des billets, des codes-barres, des codes QR, des documents et pour joindre des photos à vos tâches."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa app utilizza la fotocamera per scansionare carte fedeltà, documenti e allegare foto alle tue attività."
+            "value" : "Questa app utilizza la fotocamera per scansionare carte fedeltà, biglietti, codici a barre, codici QR, documenti e per allegare foto alle tue attività."
           }
         }
       }

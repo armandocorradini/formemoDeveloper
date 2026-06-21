@@ -15,7 +15,7 @@ struct TravelKitListView: View {
     
     @State private var showNewCategoryAlert = false
     @State private var newCategoryName = ""
-    @State private var selectedIcon = "suitcase.rolling"
+    @State private var selectedIcon = "suitcase.rolling.and.suitcase"
     @State private var showNewCategorySheet = false
     @State private var editingCategory: TripList?
     @State private var isEditingCategory = false
@@ -53,7 +53,7 @@ struct TravelKitListView: View {
                     ContentUnavailableView {
                         Label(
                             String(localized: "No Trip Types"),
-                            systemImage: "suitcase.rolling"
+                            systemImage: "suitcase.rolling.and.suitcase"
                         )
                     } description: {
                         Text(
@@ -348,7 +348,7 @@ struct TravelKitListView: View {
                         editingCategory = nil
                         isEditingCategory = false
                         newCategoryName = ""
-                        selectedIcon = "suitcase.rolling"
+                        selectedIcon = "suitcase.rolling.and.suitcase"
                         showNewCategorySheet = true
                     } label: {
                         Image(systemName:
@@ -492,7 +492,7 @@ struct TravelKitListView: View {
                             
                             Button(String(localized: "Cancel")) {
                                 newCategoryName = ""
-                                selectedIcon = "suitcase.rolling"
+                                selectedIcon = "suitcase.rolling.and.suitcase"
                                 editingCategory = nil
                                 isEditingCategory = false
                                 showNewCategorySheet = false
@@ -603,7 +603,7 @@ struct TravelKitListView: View {
                                 }
                                 
                                 newCategoryName = ""
-                                selectedIcon = "suitcase.rolling"
+                                selectedIcon = "suitcase.rolling.and.suitcase"
                                 editingCategory = nil
                                 isEditingCategory = false
                                 showNewCategorySheet = false
@@ -1129,8 +1129,8 @@ enum TripTemplates {
     }
     
     static let availableIcons: [String] = [
-        "airplane",
-        "car",
+        "airplane.path.dotted",
+        "car.2",
         "motorcycle",
         "bicycle",
         "tram",
@@ -1138,9 +1138,9 @@ enum TripTemplates {
         "bus",
         "sailboat",
         "figure",
-        "tent",
+        "tent.2",
         "backpack",
-        "suitcase.rolling",
+        "suitcase.rolling.and.suitcase",
         "camera",
         "beach.umbrella",
         "snowflake",
@@ -1153,13 +1153,13 @@ enum TripTemplates {
     static let featuredCategories: [TripList] = [
         TripList(
             name: "Travel",
-            icon: "airplane",
+            icon: "airplane.path.dotted",
             systemTemplate: "travel",
             sections: makeTravelSections()
         ),
         TripList(
             name: "Car",
-            icon: "car",
+            icon: "car.2",
             systemTemplate: "car",
             sections: makeCarSections()
         ),
@@ -1516,8 +1516,8 @@ enum TripTemplates {
 
 private func tripIconColors(for icon: String) -> (Color, Color) {
     switch icon {
-    case "airplane": return (.blue, .cyan)
-    case "car": return (.mint, .blue)
+    case "airplane.path.dotted": return (.blue, .primary)
+    case "car.2": return (.mint, .blue)
     case "motorcycle": return (.orange, .red)
     case "bicycle": return (.green, .mint)
     case "tram": return (.indigo, .blue)
@@ -1525,14 +1525,14 @@ private func tripIconColors(for icon: String) -> (Color, Color) {
     case "bus": return (.purple, .pink)
     case "sailboat": return (.teal, .cyan)
     case "figure", "figure.hiking": return (.green, .orange)
-    case "tent": return (.brown, .green)
+    case "tent.2": return (.brown, .green)
     case "backpack": return (.green, .brown)
-    case "suitcase.rolling": return (.blue, .cyan)
+    case "suitcase.rolling.and.suitcase": return (.blue, .cyan)
     case "camera": return (.purple, .pink)
     case "beach.umbrella": return (.yellow, .orange)
     case "snowflake": return (.cyan, .white)
     case "mountain.2": return (.brown, .green)
-    case "water.waves": return (.blue, .cyan)
+    case "water.waves": return (.blue, .primary)
     case "drop": return (.teal, .blue)
     case "globe.europe.africa": return (.green, .blue)
     default: return (.blue, .cyan)

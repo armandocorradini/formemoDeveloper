@@ -25,7 +25,7 @@ struct FAQView: View {
         FAQSection(title: String(localized: "General"), items: [
             FAQItem(
                 question: String(localized:"What features does this app offer?"),
-                answer: String(localized:"ForMemo lets you create, organize, and manage tasks in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards, with barcode scanning and quick access to your saved cards.\n\nYou can create and manage Trip Lists (packing lists) for your travels, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, loyalty cards, trips, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking.")
+                answer: String(localized:"ForMemo lets you create, organize, and manage tasks in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards and tickets, with barcode and QR code scanning and quick access to your saved items.\n\nYou can create and manage Trip Lists (packing lists) for your travels, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, cards, tickets, trips, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking.")
             ),
             FAQItem(
                 question: String(localized:"How does task creation work?"),
@@ -68,12 +68,12 @@ struct FAQView: View {
                 answer: String(localized:"Yes. Weather forecasts depend on your device location. If location access is disabled, weather information may not be available.")
             ),
             FAQItem(
-                question: String(localized:"Does the app include a Wallet for loyalty cards?"),
-                answer: String(localized:"Yes. ForMemo includes a Wallet section where you can save and organize loyalty cards, barcodes, card holder information, notes, custom colors, and optional logos.")
+                question: String(localized:"Does the app include a Wallet for cards and tickets?"),
+                answer: String(localized:"Yes. ForMemo includes a Wallet section where you can save and organize loyalty cards and tickets, barcodes, QR codes, holder information, notes, custom colors, and optional logos.")
             ),
             FAQItem(
-                question: String(localized:"Can I scan loyalty cards with the camera?"),
-                answer: String(localized:"Yes. You can quickly scan barcodes using the device camera and save loyalty cards directly inside the Wallet.")
+                question: String(localized:"Can I scan cards and tickets with the camera?"),
+                answer: String(localized:"Yes. You can quickly scan barcodes and QR codes using the device camera and save cards and tickets directly inside the Wallet. Tickets can also be imported from images containing supported codes.")
             )
         ]),
 
@@ -288,8 +288,8 @@ struct FAQView: View {
                 answer: String(localized:"Yes. You can manually delete all attachments of completed tasks from settings.")
             ),
             FAQItem(
-                question: String(localized:"Can I save multiple loyalty cards from the same store?"),
-                answer: String(localized:"Yes. You can save multiple cards from the same store and distinguish them using the card holder field or custom notes.")
+                question: String(localized:"Can I save multiple cards or tickets from the same provider?"),
+                answer: String(localized:"Yes. You can save multiple cards or tickets from the same store, event, or provider and distinguish them using the holder field or custom notes.")
             )
         ]),
 
@@ -324,11 +324,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Does the app support backup and restore?"),
-                answer: String(localized:"Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, loyalty cards and logos, trip lists, documents, app settings, and related data. You can restore them later or transfer everything to another device.")
+                answer: String(localized:"Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, cards, tickets and logos, trip lists, documents, app settings, and related data. You can restore them later or transfer everything to another device.")
             ),
             FAQItem(
                 question: String(localized:"What is included in a backup?"),
-                answer: String(localized:"Backups include tasks, reminders, recurrence rules, tags, priorities, locations, attachments, loyalty cards and logos, trip lists, documents, and app settings. Backups are independent from iCloud sync and can be used to transfer data to another device.")
+                answer: String(localized:"Backups include tasks, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets and logos, trip lists, documents, and app settings. Backups are independent from iCloud sync and can be used to transfer data to another device.")
             ),
             FAQItem(
                 question: String(localized:"Are attachments included in backups?"),
@@ -344,19 +344,19 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Can I restore backups on another device?"),
-                answer: String(localized:"Yes. You can import a backup file on another compatible device to restore your tasks, loyalty cards, attachments, trips, documents, and related data.")
+                answer: String(localized:"Yes. You can import a backup file on another compatible device to restore your tasks, cards, tickets, attachments, trips, documents, and related data.")
             ),
             FAQItem(
                 question: String(localized:"Can I restore only specific data from a backup?"),
-                answer: String(localized:"Yes. During restore, you can choose which sections to restore, such as tasks, loyalty cards, trip lists, documents, and app settings. This allows you to recover only the data you need without restoring everything.")
+                answer: String(localized:"Yes. During restore, you can choose which sections to restore, such as tasks, cards, tickets, trip lists, documents, and app settings. This allows you to recover only the data you need without restoring everything.")
             ),
             FAQItem(
                 question: String(localized:"Can I transfer my data to another device?"),
                 answer: String(localized:"Yes. You can restore a backup on another compatible device and continue using your data.")
             ),
             FAQItem(
-                question: String(localized:"Are loyalty cards included in backups?"),
-                answer: String(localized:"Yes. Loyalty cards, barcodes, notes, custom colors, and loyalty card logos are included in backups and can be restored on compatible devices.")
+                question: String(localized:"Are cards and tickets included in backups?"),
+                answer: String(localized:"Yes. Cards, tickets, barcodes, QR codes, notes, custom colors, and logos are included in backups and can be restored on compatible devices.")
             ),
             FAQItem(
                 question: String(localized:"Does iCloud replace backups?"),

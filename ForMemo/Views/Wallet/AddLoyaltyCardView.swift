@@ -15,14 +15,17 @@ struct AddLoyaltyCardView: View {
     @State private var cardHolder = ""
     @State private var barcodeValue = ""
     @State private var barcodeFormat = "code128"
+    @State private var itemType = "loyaltyCard"
     @State private var notes = ""
     @State private var showScanner = false
     @State private var showCamera = false
     @State private var selectedLogoItem: PhotosPickerItem?
+    @State private var selectedTicketImageItem: PhotosPickerItem?
     @State private var logoData: Data?
     @State private var selectedColor: Color = .blue
     @State private var isLoadingLogo = false
     @State private var capturedImage: UIImage?
+    @State private var showNoCodeFoundAlert = false
 
     var body: some View {
 
@@ -104,7 +107,9 @@ struct AddLoyaltyCardView: View {
                     Section {
 
                         ColorPicker(
-                            "Card Color",
+                            itemType == "ticket"
+                            ? String(localized: "Ticket Color")
+                            : String(localized: "Card Color"),
                             selection: $selectedColor,
                             supportsOpacity: false
                         )
@@ -112,21 +117,48 @@ struct AddLoyaltyCardView: View {
 
                     Section {
 
-                        TextField("Store Name", text: $storeName)
-                            .textInputAutocapitalization(.words)
+                        Picker("Type", selection: $itemType) {
+                            Text("Loyalty Card")
+                                .tag("loyaltyCard")
 
-                        TextField("Card Holder", text: $cardHolder)
-                            .textInputAutocapitalization(.words)
+                            Text("Ticket")
+                                .tag("ticket")
+                        }
+
+                        TextField(
+                            itemType == "ticket"
+                            ? String(localized: "Event Name")
+                            : String(localized: "Store Name"),
+                            text: $storeName
+                        )
+                        .textInputAutocapitalization(.words)
+
+                        TextField(
+                            itemType == "ticket"
+                            ? String(localized: "Ticket Holder")
+                            : String(localized: "Card Holder"),
+                            text: $cardHolder
+                        )
+                        .textInputAutocapitalization(.words)
                     }
 
-                    Section("Barcode") {
+                    Section("Code") {
 
-                        TextField("Barcode Value", text: $barcodeValue)
-                            .textInputAutocapitalization(.never)
-                            .autocorrectionDisabled()
-                            .font(.body.monospaced())
+                        TextField(
+                            itemType == "ticket"
+                            ? String(localized: "Ticket Code")
+                            : String(localized: "Barcode Value"),
+                            text: $barcodeValue
+                        )
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                        .font(.body.monospaced())
 
-                        LabeledContent("Format") {
+                        LabeledContent(
+                            itemType == "ticket"
+                            ? String(localized: "Code Format")
+                            : String(localized: "Format")
+                        ) {
                             Text(barcodeFormat)
                                 .foregroundStyle(.secondary)
                         }
@@ -134,17 +166,43 @@ struct AddLoyaltyCardView: View {
                         Button {
                             showScanner = true
                         } label: {
-                            Label("Scan Barcode", systemImage: "barcode.viewfinder")
+                            Label("Scan Barcode or QR Code", systemImage: "qrcode.viewfinder")
+                        }
+
+                        if itemType == "ticket" {
+
+                            PhotosPicker(
+                                selection: $selectedTicketImageItem,
+                                matching: .images
+                            ) {
+                                Label(
+                                    "Import Ticket from Photo",
+                                    systemImage: "photo.badge.magnifyingglass"
+                                )
+                            }
                         }
                     }
 
-                    Section("Notes") {
-
-                        TextField("Optional Notes", text: $notes, axis: .vertical)
-                            .lineLimit(3...6)
+                    Section(
+                        itemType == "ticket"
+                        ? String(localized: "Ticket Notes")
+                        : String(localized: "Notes")
+                    ) {
+                        TextField(
+                            itemType == "ticket"
+                            ? String(localized: "Ticket Notes")
+                            : String(localized: "Optional Notes"),
+                            text: $notes,
+                            axis: .vertical
+                        )
+                        .lineLimit(3...6)
                     }
                 }
-                .navigationTitle("Add Card")
+                .navigationTitle(
+                    itemType == "ticket"
+                    ? String(localized: "Add Ticket")
+                    : String(localized: "Add Card")
+                )
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
 
@@ -205,6 +263,100 @@ struct AddLoyaltyCardView: View {
                 }
             }
         }
+        .onChange(of: selectedTicketImageItem) { _, newItem in
+
+            guard let newItem else {
+                return
+            }
+
+            Task {
+
+                guard let data = try? await newItem.loadTransferable(type: Data.self),
+                      let uiImage = UIImage(data: data) else {
+                    return
+                }
+
+                let request = VNDetectBarcodesRequest()
+                request.revision = VNDetectBarcodesRequestRevision3
+                request.symbologies = [
+                    .qr,
+                    .ean13,
+                    .code128,
+                    .pdf417,
+                    .aztec
+                ]
+                request.preferBackgroundProcessing = true
+
+                guard let cgImage = uiImage.cgImage else {
+                    print("❌ Unable to create CGImage")
+                    return
+                }
+
+                let handler = VNImageRequestHandler(
+                    cgImage: cgImage,
+                    orientation: CGImagePropertyOrientation(uiImage.imageOrientation),
+                    options: [:]
+                )
+
+                do {
+                    try handler.perform([request])
+                } catch {
+
+                    print("📷 Ticket scan error:", error)
+
+                    let detector = CIDetector(
+                        ofType: CIDetectorTypeQRCode,
+                        context: nil,
+                        options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+                    )
+
+                    if let ciImage = CIImage(image: uiImage),
+                       let features = detector?.features(in: ciImage) as? [CIQRCodeFeature],
+                       let message = features.first?.messageString {
+
+                        await MainActor.run {
+                            barcodeValue = message
+                            barcodeFormat = "qr"
+                        }
+                    }
+
+                    return
+                }
+
+                guard let observation = request.results?.first else {
+
+                    print("❌ No barcode detected")
+
+                    await MainActor.run {
+                        selectedTicketImageItem = nil
+                    }
+
+                    try? await Task.sleep(for: .milliseconds(700))
+
+                    await MainActor.run {
+                        showNoCodeFoundAlert = true
+                    }
+
+                    return
+                }
+
+                print("✅ Found:", observation.symbology.rawValue)
+                print("✅ Payload:", observation.payloadStringValue ?? "nil")
+
+                guard let payload = observation.payloadStringValue,
+                      !payload.isEmpty else {
+
+                    print("❌ Barcode detected but payload is empty")
+
+                    return
+                }
+
+                await MainActor.run {
+                    barcodeValue = payload
+                    barcodeFormat = observation.symbology.rawValue
+                }
+            }
+        }
         .onChange(of: capturedImage) { _, newImage in
 
             guard let newImage else {
@@ -215,6 +367,16 @@ struct AddLoyaltyCardView: View {
             let compressed = resized.jpegData(compressionQuality: 0.65)
 
             logoData = compressed
+        }
+        .alert(
+            "No Code Found",
+            isPresented: $showNoCodeFoundAlert
+        ) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(
+                "The selected image does not contain a readable barcode or QR code."
+            )
         }
     }
 
@@ -234,6 +396,7 @@ struct AddLoyaltyCardView: View {
             cardHolder: cleanedHolder.isEmpty ? nil : cleanedHolder,
             barcodeValue: cleanedBarcode,
             barcodeFormat: barcodeFormat,
+            itemType: itemType,
             notes: cleanedNotes.isEmpty ? nil : cleanedNotes,
             colorHex: colorHex
         )
@@ -339,7 +502,10 @@ private struct BarcodeScannerSheet: UIViewControllerRepresentable {
             DispatchQueue.main.async {
 
                 self.parent.barcodeValue = payload
-
+                
+                print(barcode.observation.symbology.rawValue)
+                
+                
                 self.parent.barcodeFormat = barcode.observation.symbology.rawValue
 
                 self.parent.dismiss()
@@ -429,6 +595,24 @@ private extension UIImage {
 
         return renderer.image { _ in
             draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
+}
+
+private extension CGImagePropertyOrientation {
+
+    init(_ orientation: UIImage.Orientation) {
+
+        switch orientation {
+        case .up: self = .up
+        case .down: self = .down
+        case .left: self = .left
+        case .right: self = .right
+        case .upMirrored: self = .upMirrored
+        case .downMirrored: self = .downMirrored
+        case .leftMirrored: self = .leftMirrored
+        case .rightMirrored: self = .rightMirrored
+        @unknown default: self = .up
         }
     }
 }

@@ -32,6 +32,14 @@ struct LoyaltyCardDetailView: View {
             ? .white.opacity(0.18)
             : .black.opacity(0.45)
     }
+    
+    private var isQRCode: Bool {
+        card.barcodeFormat.lowercased().contains("qr")
+    }
+    
+    private var isTicket: Bool {
+        card.itemType == "ticket"
+    }
 
     var body: some View {
 
@@ -84,7 +92,11 @@ struct LoyaltyCardDetailView: View {
 
                             } else {
                                 
-                                Image(systemName: "creditcard.fill")
+                                Image(
+                                    systemName: isTicket
+                                    ? "ticket.fill"
+                                    : "creditcard.fill"
+                                )
                                     .font(.system(size: 26, weight: .semibold))
                                     .foregroundStyle(
                                         prefersDarkText
@@ -121,6 +133,12 @@ struct LoyaltyCardDetailView: View {
                             }
                             VStack(alignment: .leading, spacing: 4) {
 
+                                if isTicket {
+                                    Text("Event")
+                                        .font(.caption2.weight(.semibold))
+                                        .foregroundStyle(secondaryTextColor)
+                                }
+
                                 Text(card.storeName)
                                     .font(.system(size: 22, weight: .bold))
                                     .foregroundStyle(primaryTextColor)
@@ -129,6 +147,14 @@ struct LoyaltyCardDetailView: View {
 
                                 if let holder = card.cardHolder,
                                    !holder.isEmpty {
+
+                                    Text(
+                                        isTicket
+                                        ? String(localized: "Ticket Holder")
+                                        : String(localized: "Card Holder")
+                                    )
+                                    .font(.caption2.weight(.semibold))
+                                    .foregroundStyle(secondaryTextColor)
 
                                     Text(holder)
                                         .font(.subheadline.weight(.medium))
@@ -160,9 +186,18 @@ struct LoyaltyCardDetailView: View {
                                 value: card.barcodeValue,
                                 format: card.barcodeFormat
                             )
-                            .frame(maxWidth: 320)
-                            .frame(height: 92)
-                            .scaleEffect(x: 1, y: 1.22, anchor: .center)
+                            .frame(
+                                maxWidth: isQRCode ? 220 : 320
+                            )
+                            .frame(
+                                width: isQRCode ? 220 : nil,
+                                height: isQRCode ? 220 : 92
+                            )
+                            .scaleEffect(
+                                x: 1,
+                                y: isQRCode ? 1 : 1.22,
+                                anchor: .center
+                            )
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)
                             .background(.white)
@@ -180,7 +215,7 @@ struct LoyaltyCardDetailView: View {
                     }
                     .padding(20)
                     .frame(maxWidth: 410)
-                    .frame(height: 318)
+                    .frame(height: isQRCode ? 450 : 318)
                     .background(
                         RoundedRectangle(
                             cornerRadius: 30,
@@ -195,6 +230,14 @@ struct LoyaltyCardDetailView: View {
                     )
                     .padding(.horizontal, 10)
 
+                    Text(
+                        isTicket
+                        ? String(localized: "Ticket Code")
+                        : String(localized: "Barcode Value")
+                    )
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
                     Text(card.barcodeValue)
                         .font(.system(.body, design: .monospaced))
                         .foregroundStyle(.secondary)
@@ -208,8 +251,12 @@ struct LoyaltyCardDetailView: View {
 
                     VStack(alignment: .leading, spacing: 10) {
 
-                        Text("Notes")
-                            .font(.headline)
+                        Text(
+                            isTicket
+                            ? String(localized: "Ticket Notes")
+                            : String(localized: "Notes")
+                        )
+                        .font(.headline)
 
                         Text(notes)
                             .foregroundStyle(.secondary)
@@ -254,7 +301,11 @@ struct LoyaltyCardDetailView: View {
             .padding(.bottom, 40)
         }
         }
-        .navigationTitle("Card")
+        .navigationTitle(
+            isTicket
+            ? String(localized: "Ticket")
+            : String(localized: "Card")
+        )
         .navigationBarTitleDisplayMode(.inline)
         .scrollContentBackground(.hidden)
         .containerBackground(.clear, for: .navigation)

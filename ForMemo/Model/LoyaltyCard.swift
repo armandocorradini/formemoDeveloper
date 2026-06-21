@@ -11,6 +11,7 @@ final class LoyaltyCard {
 
     var barcodeValue: String = ""
     var barcodeFormat: String = "code128"
+    var itemType: String = "loyaltyCard"
 
     var notes: String?
 
@@ -25,6 +26,7 @@ final class LoyaltyCard {
         cardHolder: String? = nil,
         barcodeValue: String,
         barcodeFormat: String,
+        itemType: String = "loyaltyCard",
         notes: String? = nil,
         colorHex: String? = nil,
         sortOrder: Int = 0,
@@ -36,6 +38,7 @@ final class LoyaltyCard {
         self.cardHolder = cardHolder
         self.barcodeValue = barcodeValue
         self.barcodeFormat = barcodeFormat
+        self.itemType = itemType
         self.notes = notes
         self.colorHex = colorHex
         self.sortOrder = sortOrder
@@ -60,7 +63,9 @@ extension LoyaltyCard {
 
         item.barcodeValue = card.barcodeValue
         item.barcodeFormat = card.barcodeFormat
-
+        
+        item.loyaltyItemType = card.itemType
+        
         item.loyaltyNotes = card.notes
         item.loyaltyColorHex = card.colorHex
 

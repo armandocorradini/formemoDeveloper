@@ -13,22 +13,40 @@ struct BarcodeGenerator {
 
         let data = Data(value.utf8)
 
+        let normalizedFormat = format.lowercased()
+
         let image: CIImage?
+        let scale: CGFloat
 
-        switch format {
+        if normalizedFormat == "qr" ||
+            normalizedFormat.contains("qr") {
 
-        case "EAN13":
-
-            let filter = CIFilter.code128BarcodeGenerator()
+            let filter = CIFilter.qrCodeGenerator()
             filter.message = data
             image = filter.outputImage
+            scale = 12
 
-        default:
+        } else if normalizedFormat.contains("pdf417") {
+
+            let filter = CIFilter.pdf417BarcodeGenerator()
+            filter.message = data
+            image = filter.outputImage
+            scale = 3
+
+        } else if normalizedFormat.contains("aztec") {
+
+            let filter = CIFilter.aztecCodeGenerator()
+            filter.message = data
+            image = filter.outputImage
+            scale = 8
+
+        } else {
 
             let filter = CIFilter.code128BarcodeGenerator()
             filter.message = data
             filter.quietSpace = 7
             image = filter.outputImage
+            scale = 4
         }
 
         guard let image else {
@@ -36,7 +54,7 @@ struct BarcodeGenerator {
         }
 
         let transformed = image.transformed(
-            by: CGAffineTransform(scaleX: 4, y: 4)
+            by: CGAffineTransform(scaleX: scale, y: scale)
         )
 
         guard let cgImage = context.createCGImage(

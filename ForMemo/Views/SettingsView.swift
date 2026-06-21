@@ -40,6 +40,16 @@ struct SettingsView: View {
     @State private var showRecentlyDeleted = false
     @State private var showDeleteAllAlert = false
 
+    @Query private var loyaltyCards: [LoyaltyCard]
+
+    private var ticketCount: Int {
+        loyaltyCards.filter { $0.itemType == "ticket" }.count
+    }
+
+    private var loyaltyCardCount: Int {
+        loyaltyCards.filter { $0.itemType != "ticket" }.count
+    }
+
     @AppStorage("siriShortConfirmation")
     private var siriShortConfirmation: Bool = false
 
@@ -695,6 +705,20 @@ Attivazione: \(triggerInfo)
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
+                    Section("Wallet") {
+
+                        LabeledContent("Loyalty Cards") {
+                            Text("\(loyaltyCardCount)")
+                                .foregroundStyle(.secondary)
+                        }
+
+                        LabeledContent("Tickets") {
+                            Text("\(ticketCount)")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+
                     Section("Support") {
                         NavigationLink {
                             ExportDiagnosticsView()

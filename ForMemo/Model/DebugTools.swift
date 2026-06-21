@@ -374,7 +374,7 @@ enum DebugLog {
         write("📊 Tasks: \(taskCount)")
         write("📊 Documents: \(documentCount)")
         write("📊 Trips: \(tripCount)")
-        write("📊 Loyalty Cards: \(cardCount)")
+        write("📊 Cards & Tickets: \(cardCount)")
         write("📊 Attachment Records: \(attachmentRecordCount)")
         write("📊 Deleted Items: \(deletedCount)")
 

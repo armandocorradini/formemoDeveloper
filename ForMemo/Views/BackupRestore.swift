@@ -90,7 +90,7 @@ struct BackupRestoreView: View {
                                     .foregroundStyle(.blue)
 
                                 Text(
-                                    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, Wallet cards, documents, attachments and app settings."
+                                    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, cards and tickets, documents, attachments and app settings."
                                 )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -136,7 +136,7 @@ struct BackupRestoreView: View {
                             Text("Backup includes")
 
                             Text(
-                                "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, Wallet cards, documents and attachments are included in the backup archive."
+                                "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, cards and tickets, documents and attachments are included in the backup archive."
                             )
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -270,7 +270,7 @@ struct BackupRestoreView: View {
                     List {
                         Section("Backup Contents") {
                             Text("Tasks: \(archive.tasks.count)")
-                            Text("Wallet Cards: \(archive.loyaltyCards.count)")
+                            Text("Cards & Tickets: \(archive.loyaltyCards.count)")
                             Text("Trip Checklists: \(archive.tripLists.count)")
                             Text("Documents: \(archive.documents.count)")
                             Text("Settings: Included")
@@ -278,7 +278,7 @@ struct BackupRestoreView: View {
 
                         Section("Restore") {
                             Toggle("Tasks", isOn: $restoreTasks)
-                            Toggle("Wallet Cards", isOn: $restoreWalletCards)
+                            Toggle("Cards & Tickets", isOn: $restoreWalletCards)
                             Toggle("Trip Checklists", isOn: $restoreTripLists)
                             Toggle("Documents", isOn: $restoreDocuments)
                             Toggle("Settings", isOn: $restoreSettings)
@@ -518,6 +518,7 @@ private struct LoyaltyCardTransferObject: Codable {
     let cardHolder: String?
     let barcodeValue: String
     let barcodeFormat: String
+    let itemType: String
     let notes: String?
     let colorHex: String?
     let sortOrder: Int
@@ -529,6 +530,7 @@ private struct LoyaltyCardTransferObject: Codable {
         case cardHolder
         case barcodeValue
         case barcodeFormat
+        case itemType
         case notes
         case colorHex
         case sortOrder
@@ -541,6 +543,7 @@ private struct LoyaltyCardTransferObject: Codable {
         self.cardHolder = card.cardHolder
         self.barcodeValue = card.barcodeValue
         self.barcodeFormat = card.barcodeFormat
+        self.itemType = card.itemType
         self.notes = card.notes
         self.colorHex = card.colorHex
         self.sortOrder = card.sortOrder
@@ -558,6 +561,10 @@ private struct LoyaltyCardTransferObject: Codable {
         cardHolder = try container.decodeIfPresent(String.self, forKey: .cardHolder)
         barcodeValue = try container.decode(String.self, forKey: .barcodeValue)
         barcodeFormat = try container.decode(String.self, forKey: .barcodeFormat)
+        itemType = try container.decodeIfPresent(
+            String.self,
+            forKey: .itemType
+        ) ?? "loyaltyCard"
         notes = try container.decodeIfPresent(String.self, forKey: .notes)
         colorHex = try container.decodeIfPresent(String.self, forKey: .colorHex)
 
@@ -696,7 +703,7 @@ private enum BackupManager {
         }
 
         let archive = BackupArchive(
-            version: 2,
+            version: 3,
             createdAt: .now,
             tasks: tasks.map {
                 TaskTransferObject(task: $0)
@@ -906,6 +913,7 @@ private enum BackupManager {
                     cardHolder: cardDTO.cardHolder,
                     barcodeValue: cardDTO.barcodeValue,
                     barcodeFormat: cardDTO.barcodeFormat,
+                    itemType: cardDTO.itemType,
                     notes: cardDTO.notes,
                     colorHex: cardDTO.colorHex,
                     createdAt: cardDTO.createdAt

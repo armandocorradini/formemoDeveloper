@@ -35,6 +35,10 @@ struct EditLoyaltyCardView: View {
         )
     }
 
+    private var isTicket: Bool {
+        card.itemType == "ticket"
+    }
+
     var body: some View {
 
         NavigationStack {
@@ -108,6 +112,9 @@ struct EditLoyaltyCardView: View {
                             .buttonStyle(.plain)
 
                             Button {
+                                guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+                                    return
+                                }
                                 activePicker = .camera
                             } label: {
                                 HStack {
@@ -144,7 +151,9 @@ struct EditLoyaltyCardView: View {
                 Section {
 
                     ColorPicker(
-                        "Card Color",
+                        isTicket
+                        ? String(localized: "Ticket Color")
+                        : String(localized: "Card Color"),
                         selection: $selectedColor,
                         supportsOpacity: false
                     )
@@ -152,13 +161,28 @@ struct EditLoyaltyCardView: View {
 
                 Section {
 
+                    Picker(
+                        "Type",
+                        selection: $card.itemType
+                    ) {
+                        Text("Loyalty Card")
+                            .tag("loyaltyCard")
+
+                        Text("Ticket")
+                            .tag("ticket")
+                    }
+
                     TextField(
-                        "Store Name",
+                        isTicket
+                        ? String(localized: "Event Name")
+                        : String(localized: "Store Name"),
                         text: $card.storeName
                     )
 
                     TextField(
-                        "Card Holder",
+                        isTicket
+                        ? String(localized: "Ticket Holder")
+                        : String(localized: "Card Holder"),
                         text: Binding(
                             get: { card.cardHolder ?? "" },
                             set: { card.cardHolder = $0.isEmpty ? nil : $0 }
@@ -166,14 +190,18 @@ struct EditLoyaltyCardView: View {
                     )
 
                     TextField(
-                        "Barcode Value",
+                        isTicket
+                        ? String(localized: "Ticket Code")
+                        : String(localized: "Barcode Value"),
                         text: $card.barcodeValue
                     )
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
 
                     TextField(
-                        "Format",
+                        isTicket
+                        ? String(localized: "Code Format")
+                        : String(localized: "Format"),
                         text: $card.barcodeFormat
                     )
                     .textInputAutocapitalization(.never)
@@ -183,7 +211,9 @@ struct EditLoyaltyCardView: View {
                 Section {
 
                     TextField(
-                        "Optional Notes",
+                        isTicket
+                        ? String(localized: "Ticket Notes")
+                        : String(localized: "Optional Notes"),
                         text: Binding(
                             get: { card.notes ?? "" },
                             set: { card.notes = $0.isEmpty ? nil : $0 }
@@ -193,7 +223,11 @@ struct EditLoyaltyCardView: View {
                     .lineLimit(3...8)
                 }
             }
-            .navigationTitle("Edit Card")
+            .navigationTitle(
+                isTicket
+                ? String(localized: "Edit Ticket")
+                : String(localized: "Edit Card")
+            )
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
 
