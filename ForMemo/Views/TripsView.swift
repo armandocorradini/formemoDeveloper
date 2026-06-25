@@ -51,6 +51,19 @@ struct TravelKitListView: View {
         }
     }
     
+    private func moveCategories(from source: IndexSet, to destination: Int) {
+
+        var reordered = categories
+
+        reordered.move(fromOffsets: source, toOffset: destination)
+
+        for (index, category) in reordered.enumerated() {
+            category.sortOrder = index
+        }
+
+        try? modelContext.save()
+    }
+    
     var body: some View {
 
         ZStack {
@@ -215,19 +228,8 @@ struct TravelKitListView: View {
                         )
                     }
                 }
-                .onMove { source, destination in
-                    
-                    var reordered = categories
-                    reordered.move(fromOffsets: source, toOffset: destination)
-                    
-                    withAnimation(.none) {
-                        for (index, category) in reordered.enumerated() {
-                            category.sortOrder = index
-                        }
-                    }
-                    
-                    try? modelContext.save()
-                }
+                .onMove(perform: moveCategories)
+                
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
             .listStyle(.insetGrouped)
