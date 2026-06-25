@@ -46,6 +46,13 @@ struct AppQuickGuideView: View {
         ),
         
         .init(
+            title: String(localized:"Dashboard"),
+            description: String(localized:"The Dashboard automatically highlights what needs your attention first. View overdue tasks, tasks due today, upcoming activities, weather forecasts and recently opened items from Wallet, Documents and Trip Lists in one place."),
+            icon: "house",
+            tint: .blue
+        ),
+        
+        .init(
             title: String(localized:"Smart Priorities"),
             description: String(localized:"Tasks with critical priority that are due today or overdue are highlighted automatically. You can customize highlight color in Settings."),
             icon: "exclamationmark.circle",

@@ -29,6 +29,8 @@ final class DocumentItem {
 
     var updatedAt: Date = Date()
 
+    var lastOpenedAt: Date?
+
     init(
         name: String,
         documentType: DocumentType = .other,

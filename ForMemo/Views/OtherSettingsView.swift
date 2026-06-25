@@ -31,25 +31,29 @@ struct OtherSettingsView: View {
                             set: { settings.startupTab = $0 }
                         )
                     ) {
-                        Text(String(localized: "Start"))
-                            .tag(0)
-                        
+                        Text("Automatic")
+                            .tag(-1)
+
+                        Text("Dashboard")
+                            .tag(10)
+
                         Text(String(localized: "List"))
                             .tag(1)
-                        
+
                         Text(String(localized: "\(settings.taskWeekDays) days"))
                             .tag(4)
-                        
+
                         Text(String(localized: "Calendar"))
                             .tag(3)
-                        Text(String(localized: "Map"))
-                            .tag(5)
-                        
+
                         Text(String(localized: "Wallet"))
                             .tag(6)
-                        
+
                         Text("Trips")
                             .tag(7)
+
+                        Text(String(localized: "Documents"))
+                            .tag(8)
                     }
                     .pickerStyle(.navigationLink)
                   

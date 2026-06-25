@@ -258,6 +258,8 @@ struct DocumentDetailView: View {
                 }
             }
             .onAppear {
+                document.lastOpenedAt = .now
+                modelContext.safeSave(operation: "UpdateDocumentLastOpened")
                 let isNewDocument = document.name
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                     .isEmpty

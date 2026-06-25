@@ -308,6 +308,10 @@ struct WalletView: View {
             }
             .navigationDestination(for: LoyaltyCard.self) { card in
                 LoyaltyCardDetailView(card: card)
+                    .onAppear {
+                        card.lastOpenedAt = Date()
+                        try? modelContext.save()
+                    }
             }
             .navigationTitle("Wallet")
             .navigationBarTitleDisplayMode(.inline)

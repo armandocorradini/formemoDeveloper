@@ -37,6 +37,7 @@ struct TaskListView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(\.scenePhase) private var scenePhase
 
+    
     @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
     private var todoQuery: [TodoTask]
 
@@ -900,6 +901,7 @@ extension View {
 struct TodoSectionView: View {
 
     @Environment(AppSettings.self) private var settings
+    @Environment(\.colorScheme) private var colorScheme
     @State private var weatherManager = WeatherManager.shared
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
 
@@ -913,6 +915,8 @@ struct TodoSectionView: View {
                   ? weatherManager.representativeSymbol(for: weather.date)
                   : weather.symbolName)
                 .symbolRenderingMode(.multicolor)
+                .saturation(colorScheme == .light ? 1.25 : 1.0)
+                .brightness(colorScheme == .light ? -0.2 : 0.0)
                 .font(.subheadline.weight(.medium))
 
             Text("\(weather.minTemperature)°")
@@ -956,8 +960,8 @@ struct TodoSectionView: View {
                     .foregroundStyle(Color.primary.opacity(0.82))
 
                 Text("\(group.tasks.count)")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(.primary.opacity(0.95))
+                    .font(.footnote.weight(.heavy))
+                    .foregroundStyle(.primary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background {

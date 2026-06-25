@@ -187,8 +187,8 @@ struct WeeklyTasksView: View {
                     .foregroundStyle(Color.primary.opacity(0.82))
 
                 Text("\(group.tasks.count)")
-                    .font(.caption2.weight(.bold))
-                    .foregroundStyle(.primary.opacity(0.95))
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(.primary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background {
@@ -216,6 +216,8 @@ struct WeeklyTasksView: View {
                                     : weather.symbolName
                             )
                             .symbolRenderingMode(.multicolor)
+                            .saturation(colorScheme == .light ? 1.25 : 1.0)
+                            .brightness(colorScheme == .light ? -0.2 : 0.0)
                             .font(.subheadline.weight(.medium))
 
                             Text("\(weather.minTemperature)°")

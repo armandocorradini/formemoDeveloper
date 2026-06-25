@@ -20,6 +20,7 @@ final class TripList {
     
     var createdAt: Date = Date()
     var updatedAt: Date = Date()
+    var lastOpenedAt: Date?
     
     // Raw persisted JSON payload.
     @Attribute(.externalStorage)

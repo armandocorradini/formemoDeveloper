@@ -19,6 +19,7 @@ final class LoyaltyCard {
     var colorHex: String?
     var sortOrder: Int = 0
     var createdAt: Date = Date()
+    var lastOpenedAt: Date?
 
     init(
         id: UUID = UUID(),

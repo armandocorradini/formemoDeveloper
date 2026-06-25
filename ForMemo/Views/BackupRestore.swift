@@ -435,7 +435,7 @@ private struct BackupArchive: Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         version = try container.decode(Int.self, forKey: .version)
-        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        createdAt = try container.decodeIfPresent(Date.self, forKey: .createdAt) ?? .now
 
         let taskData = try container.decode([Data].self, forKey: .tasks)
 
@@ -444,22 +444,22 @@ private struct BackupArchive: Codable {
         tasks = try taskData.map {
             try decoder.decode(TaskTransferObject.self, from: $0)
         }
-        loyaltyCards = try container.decode(
+        loyaltyCards = try container.decodeIfPresent(
             [LoyaltyCardTransferObject].self,
             forKey: .loyaltyCards
-        )
-        tripLists = try container.decode(
+        ) ?? []
+        tripLists = try container.decodeIfPresent(
             [TripListTransferObject].self,
             forKey: .tripLists
-        )
-        documents = try container.decode(
+        ) ?? []
+        documents = try container.decodeIfPresent(
             [DocumentTransferObject].self,
             forKey: .documents
-        )
-        attachmentFiles = try container.decode(
+        ) ?? []
+        attachmentFiles = try container.decodeIfPresent(
             [String: Data].self,
             forKey: .attachmentFiles
-        )
+        ) ?? [:]
         loyaltyCardLogoFiles = try container.decode(
             [String: Data].self,
             forKey: .loyaltyCardLogoFiles

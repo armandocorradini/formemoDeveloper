@@ -5,12 +5,18 @@ struct TaskTabView: View {
     
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(AppSettings.self) private var settings
+
+    @Query private var tasks: [TodoTask]
+    @Query private var documents: [DocumentItem]
+    @Query private var cards: [LoyaltyCard]
+    @Query private var trips: [TripList]
     
     @State private var selectedTab: Int = 0
     @State private var showSnoozeAlert = false
     @State private var showMorePopover = false
     
     @State private var StartPath = NavigationPath()
+    @State private var dashboardPath = NavigationPath()
     @State private var listPath = NavigationPath()
     @State private var weeklyPath = NavigationPath()
     @State private var calendarPath = NavigationPath()
@@ -25,29 +31,50 @@ struct TaskTabView: View {
     var body: some View {
         rootLayout
             .onAppear {
-                
+
                 selectedTab = 0
-                
+
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     NotificationCenter.default.post(
                         name: Notification.Name("StartStartIconRotationFast"),
                         object: nil
                     )
                 }
-                
+
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {
-                    
+
                     guard selectedTab == 0 else {
                         return
                     }
-                    
+
                     withAnimation(.easeInOut(duration: 0.18)) {
-                        selectedTab = settings.startupTab
+                        if settings.startupTab == -1 {
+                            let hasContent =
+                                !tasks.isEmpty ||
+                                !documents.isEmpty ||
+                                !cards.isEmpty ||
+                                !trips.isEmpty
+                            selectedTab = hasContent ? 10 : 1
+                        } else {
+                            selectedTab = settings.startupTab
+                        }
                     }
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
                 showSnoozeAlert = true
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: Notification.Name("DashboardOpenList")
+                )
+            ) { _ in
+
+                dashboardPath = NavigationPath()
+
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    selectedTab = 1
+                }
             }
             .onChange(of: settings.showWeatherForecast) { _, enabled in
                 if !enabled && selectedTab == 9 {
@@ -86,25 +113,23 @@ struct TaskTabView: View {
             HStack(spacing: 10) {
                 
                 tabItem(
+                    "house",
+                    "Dashboard",
+                    10
+                )
+
+                tabItem(
                     "checklist",
                     String(localized: "list_tab"),
                     1
                 )
-                
-                tabItem(
-                    "calendar.day.timeline.right",
-                    settings.taskWeekDays == 1
-                    ? String(localized: "today_tab")
-                    : String(localized: "\(settings.taskWeekDays) days_tab"),
-                    4
-                )
-                
+
                 tabItem(
                     "calendar",
                     String(localized: "calendar_tab"),
                     3
                 )
-                
+
                 tabItem(
                     "wallet.bifold",
                     String(localized: "wallet_tab"),
@@ -114,41 +139,35 @@ struct TaskTabView: View {
                 Button {
                     showMorePopover.toggle()
                 } label: {
-                    
                     VStack(spacing: 4) {
-
                         Image(systemName: "square.grid.2x2")
                             .font(.system(size: 21, weight: .regular))
                             .frame(height: 22)
-
                         Text("More")
                             .font(.system(size: 9, weight: .medium))
-
                         Capsule()
                             .fill(Color.accentColor)
                             .frame(width: 16, height: 3)
-                            .opacity([0,2,5,7,8,9].contains(selectedTab) ? 1 : 0)
+                            .opacity([0,2,4,5,7,8,9].contains(selectedTab) ? 1 : 0)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 49)
                     .contentShape(Rectangle())
                     .foregroundStyle(
-                        [0,2,5,7,8,9].contains(selectedTab)
+                        [0,2,4,5,7,8,9].contains(selectedTab)
                         ? Color.accentColor
                         : Color.primary
                     )
-                    // Bubble background removed
                 }
                 .popover(isPresented: $showMorePopover, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                     VStack(alignment: .leading, spacing: 10) {
-
                         Button {
                             selectedTab = 0
                             showMorePopover = false
                         } label: {
                             HStack(spacing: 10) {
                                 VStack(spacing: 4) {
-                                    Image(systemName: "house")
+                                    Image(systemName: "info")
                                         .frame(width: 22)
                                     Capsule()
                                         .fill(Color.accentColor)
@@ -204,6 +223,33 @@ struct TaskTabView: View {
                                 Text(String(localized: "Documents"))
                             }
                             .foregroundStyle(selectedTab == 8 ? Color.accentColor : Color.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        // Today button inserted here
+                        Button {
+                            selectedTab = 4
+                            showMorePopover = false
+                        } label: {
+                            HStack(spacing: 10) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "calendar.day.timeline.right")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 4 ? 1 : 0)
+                                }
+                                Text(
+                                    settings.taskWeekDays == 1
+                                    ? String(localized: "today_tab")
+                                    : String(localized: "\(settings.taskWeekDays) days_tab")
+                                )
+                            }
+                            .foregroundStyle(selectedTab == 4 ? Color.accentColor : Color.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .contentShape(Rectangle())
                         }
@@ -284,7 +330,6 @@ struct TaskTabView: View {
                     .padding(.trailing, 36)
                     .padding(.leading, 20)
                     .fixedSize(horizontal: true, vertical: false)
-
                     .presentationCompactAdaptation(.popover)
                 }
             }
@@ -319,6 +364,11 @@ struct TaskTabView: View {
     private var currentTabView: some View {
         
         switch selectedTab {
+            
+        case 10:
+            NavigationStack(path: $dashboardPath) {
+                Dashboard()
+            }
             
         case 0:
             NavigationStack(path: $StartPath) {
@@ -383,6 +433,7 @@ struct TaskTabView: View {
         NavigationSplitView {
             
             List {
+                sidebarRow("Dashboard", "house", 10)
                 sidebarRow(String(localized: "list_tab"), "checklist", 1)
                 
                 sidebarRow(
@@ -488,6 +539,14 @@ struct TaskTabView: View {
     private func resetTab(_ tab: Int) {
         
         switch tab {
+            
+        case 10:
+            dashboardPath = NavigationPath()
+
+            NotificationCenter.default.post(
+                name: Notification.Name("DashboardReset"),
+                object: nil
+            )
             
         case 0:
             if !StartPath.isEmpty {

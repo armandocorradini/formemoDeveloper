@@ -3,6 +3,19 @@ import UIKit
 import SwiftData
 import UniformTypeIdentifiers
 
+import Observation
+
+@Observable
+final class TripClipboard {
+
+    static let shared = TripClipboard()
+
+    var copiedSection: TripSectionData?
+}
+
+
+
+
 // MARK: - Main View
 
 struct TravelKitListView: View {
@@ -891,7 +904,24 @@ struct TripChecklistView: View {
                             } label: {
                                 Label(String(localized: "Edit"), systemImage: "pencil")
                             }
+                            Button {
 
+                                TripClipboard.shared.copiedSection = TripSectionData(
+                                    title: section.title,
+                                    items: section.items.map {
+                                        TripItemData(
+                                            title: $0.title,
+                                            isChecked: false
+                                        )
+                                    }
+                                )
+
+                            } label: {
+                                Label(
+                                    String(localized: "Copy Section"),
+                                    systemImage: "doc.on.doc"
+                                )
+                            }
                             Button(role: .destructive) {
                                 if let index = category.sections.firstIndex(where: { $0.id == section.id }) {
                                     category.sections.remove(at: index)
@@ -959,6 +989,10 @@ struct TripChecklistView: View {
         }
         .scrollContentBackground(.hidden)
         .contentMargins(.bottom, 70, for: .scrollContent)
+        .onAppear {
+            category.lastOpenedAt = Date()
+            try? modelContext.save()
+        }
         .navigationTitle(localizedTripText(category.name))
         .scrollDismissesKeyboard(.immediately)
         .toolbar {
@@ -973,7 +1007,48 @@ struct TripChecklistView: View {
             }
             ToolbarItem(placement: .topBarLeading) {
                 Menu {
+                    if TripClipboard.shared.copiedSection != nil {
 
+                        Button {
+
+                            guard let copied = TripClipboard.shared.copiedSection
+                            else { return }
+
+                            var newTitle = copied.title
+                            var suffix = 2
+
+                            while category.sections.contains(where: {
+                                localizedTripText($0.title) ==
+                                localizedTripText(newTitle)
+                            }) {
+
+                                newTitle = "\(copied.title) \(suffix)"
+                                suffix += 1
+                            }
+
+                            category.sections.append(
+                                TripSectionData(
+                                    title: newTitle,
+                                    items: copied.items.map {
+                                        TripItemData(
+                                            title: $0.title,
+                                            isChecked: false
+                                        )
+                                    }
+                                )
+                            )
+
+                            try? modelContext.save()
+
+                        } label: {
+                            Label(
+                                String(localized: "Paste Section"),
+                                systemImage: "doc.on.clipboard"
+                            )
+                        }
+
+                        Divider()
+                    }
                     Button {
                         showResetChecksConfirmation = true
                     } label: {

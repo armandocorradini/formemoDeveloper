@@ -867,6 +867,82 @@
         }
       }
     },
+    "%lld overdue from previous days" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld überfällige Aufgabe aus vorherigen Tagen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld überfällige Aufgaben aus vorherigen Tagen"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld atrasada de días anteriores"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld atrasadas de días anteriores"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld en retard du jour précédent"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld en retard des jours précédents"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld scaduta nei giorni precedenti"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld scadute nei giorni precedenti"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld°" : {
       "shouldTranslate" : false
     },
@@ -894,6 +970,194 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "• Cambia lo stile dell’icona principale delle attività\n• Scegli il colore del badge dei giorni\n• Mostra o nascondi le icone di allegati, posizione e priorità\n• Visualizza un’anteprima delle modifiche prima di applicarle"
+          }
+        }
+      }
+    },
+    "^[%lld tasks scheduled](inflect: true)" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld geplante Aufgabe"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld geplante Aufgaben"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld task scheduled"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tasks scheduled"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tarea programada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tareas programadas"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tâche planifiée"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tâches planifiées"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attività pianificata"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attività pianificate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "^[%lld tasks to complete](inflect: true)" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld zu erledigende Aufgabe"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld zu erledigende Aufgaben"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld task to complete"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tasks to complete"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tarea por completar"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tareas por completar"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tâche à accomplir"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tâches à accomplir"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attività da completare"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld attività da completare"
+                }
+              }
+            }
           }
         }
       }
@@ -2973,6 +3237,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elimina automaticamente gli allegati"
+          }
+        }
+      }
+    },
+    "Automatic" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatico"
           }
         }
       }
@@ -6281,6 +6573,34 @@
         }
       }
     },
+    "Copy Section" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abschnitt kopieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiar sección"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copier la section"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia sezione"
+          }
+        }
+      }
+    },
     "Coral" : {
       "localizations" : {
         "de" : {
@@ -6868,6 +7188,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scuro"
+          }
+        }
+      }
+    },
+    "Dashboard" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard"
           }
         }
       }
@@ -13761,36 +14109,6 @@
         }
       }
     },
-    "Map" : {
-      "comment" : "A label displayed in the settings.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Karte"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mapa"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Carte"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mappa"
-          }
-        }
-      }
-    },
     "Map View" : {
       "comment" : "View that shows tasks on a map.",
       "isCommentAutoGenerated" : true,
@@ -14974,25 +15292,25 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nächtliche Schauer"
+            "value" : "Schauer"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chubascos Nocturnos"
+            "value" : "Chubascos"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Averses Nocturnes"
+            "value" : "Averses"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rovesci Notturni"
+            "value" : "Rovesci"
           }
         }
       }
@@ -16409,25 +16727,25 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Teilweise Bewölkte Nacht"
+            "value" : "Teilweise Bewölkte"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Noche Parcialmente Nublada"
+            "value" : "Parcialmente Nublada"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nuit Partiellement Nuageus"
+            "value" : "Partiellement Nuageus"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notte Parzialmente Nuvolosa"
+            "value" : "Parzialmente Nuvolos0"
           }
         }
       }
@@ -16456,6 +16774,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Passaporto"
+          }
+        }
+      }
+    },
+    "Paste Section" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abschnitt einfügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pegar sección"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coller la section"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incolla sezione"
           }
         }
       }
@@ -19213,30 +19559,30 @@
         }
       }
     },
-    "Scan Barcode or QR Code" : {
+    "Scan Barcode, QR Code or Ticket" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Barcode oder QR-Code scannen"
+            "value" : "Barcode oder QR-Code scannen oder Ticket"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escanear código de barras o código QR"
+            "value" : "Escanear código de barras o código QR o ticket"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scanner un code-barres ou un code QR"
+            "value" : "Scanner un code-barres ou un code QR ou un ticket"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scansiona codice a barre o codice QR"
+            "value" : "Scansiona codice a barre o codice QR o  ticket"
           }
         }
       }
@@ -21511,34 +21857,6 @@
         }
       }
     },
-    "Start" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
-          }
-        }
-      }
-    },
     "Start with a template or create your own trip type" : {
       "localizations" : {
         "de" : {
@@ -21572,25 +21890,25 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start"
+            "value" : "Info"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start"
+            "value" : "Info"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start"
+            "value" : "Infos"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Start"
+            "value" : "Info"
           }
         }
       }
@@ -23485,6 +23803,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il badge si aggiorna automaticamente in base alle modifiche delle attività e al tempo. Se sembra errato, prova a riaprire l’app o controllare le impostazioni delle notifiche."
+          }
+        }
+      }
+    },
+    "The Dashboard automatically highlights what needs your attention first. View overdue tasks, tasks due today, upcoming activities, weather forecasts and recently opened items from Wallet, Documents and Trip Lists in one place." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Dashboard hebt automatisch hervor, was Ihre Aufmerksamkeit zuerst benötigt. Sehen Sie überfällige Aufgaben, heute fällige Aufgaben, bevorstehende Aktivitäten, Wettervorhersagen sowie zuletzt geöffnete Elemente aus Wallet, Dokumenten und Reiselisten an einem Ort."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El Dashboard destaca automáticamente lo que requiere tu atención en primer lugar. Consulta en un único lugar las tareas atrasadas, las tareas previstas para hoy, las próximas actividades, las previsiones meteorológicas y los elementos abiertos recientemente de Wallet, Documentos y Listas de Viaje."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Dashboard met automatiquement en évidence ce qui nécessite votre attention en priorité. Consultez en un seul endroit les tâches en retard, les tâches prévues aujourd’hui, les activités à venir, les prévisions météo et les éléments récemment ouverts depuis Portefeuille, Documents et Listes de voyage."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La Dashboard evidenzia automaticamente ciò che richiede la tua attenzione per primo. Visualizza in un unico posto le attività in ritardo, le attività in scadenza oggi, le attività imminenti, le previsioni meteo e gli elementi aperti di recente da Wallet, Documenti e Liste di Viaggio."
+          }
+        }
+      }
+    },
+    "The Dashboard gives you a quick overview of what needs your attention. It highlights overdue tasks, tasks due today, upcoming activities, weather forecasts, and recently opened items from Wallet, Documents, and Trip Lists, helping you access important information from a single screen." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Dashboard bietet Ihnen einen schnellen Überblick über alles, was Ihre Aufmerksamkeit erfordert. Es hebt überfällige Aufgaben, heute fällige Aufgaben, bevorstehende Aktivitäten, Wettervorhersagen sowie zuletzt geöffnete Elemente aus Wallet, Dokumenten und Reiselisten hervor und hilft Ihnen, wichtige Informationen schnell auf einem einzigen Bildschirm zu erreichen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El Dashboard te ofrece una visión general rápida de lo que requiere tu atención. Destaca las tareas atrasadas, las tareas previstas para hoy, las próximas actividades, las previsiones meteorológicas y los elementos abiertos recientemente de Wallet, Documentos y Listas de Viaje, ayudándote a acceder rápidamente a la información importante desde una única pantalla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Dashboard vous offre un aperçu rapide de ce qui nécessite votre attention. Il met en évidence les tâches en retard, les tâches prévues aujourd’hui, les activités à venir, les prévisions météo et les éléments récemment ouverts depuis Portefeuille, Documents et Listes de voyage, afin de vous permettre d’accéder rapidement aux informations importantes depuis un seul écran."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La Dashboard ti offre una panoramica rapida di ciò che richiede la tua attenzione. Evidenzia le attività in ritardo, le attività in scadenza oggi, le attività imminenti, le previsioni meteo e gli elementi aperti di recente da Wallet, Documenti e Liste di Viaggio, aiutandoti ad accedere rapidamente alle informazioni più importanti da un’unica schermata."
           }
         }
       }
@@ -26871,6 +27245,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Che cos’è “Posticipa” e in cosa è diverso da “Snooze”?"
+          }
+        }
+      }
+    },
+    "What is the Dashboard?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was ist das Dashboard?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué es el Dashboard?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qu’est-ce que le Dashboard ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Che cos’è la Dashboard?"
           }
         }
       }

@@ -44,6 +44,10 @@ struct DocumentsView: View {
 
                     NavigationLink {
                         DocumentDetailView(document: document)
+                            .onAppear {
+                                document.lastOpenedAt = Date()
+                                try? modelContext.save()
+                            }
                     } label: {
 
                         HStack(spacing: 12) {

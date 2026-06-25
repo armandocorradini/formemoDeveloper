@@ -1,7 +1,10 @@
 import SwiftUI
 import UIKit
+import SwiftData
 
 struct LoyaltyCardDetailView: View {
+
+    @Environment(\.modelContext) private var modelContext
 
     let card: LoyaltyCard
     @State private var zoomScale: CGFloat = 1
@@ -300,6 +303,14 @@ struct LoyaltyCardDetailView: View {
             }
             .padding(.bottom, 40)
         }
+        }
+        .onAppear {
+            card.lastOpenedAt = .now
+            do {
+                try modelContext.save()
+            } catch {
+                print("Failed to update lastOpenedAt: \(error)")
+            }
         }
         .navigationTitle(
             isTicket
