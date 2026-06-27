@@ -128,7 +128,7 @@ let appName: String = {
 
 
 
-import UIKit
+
 
 enum AppSettingsOpener {
     

@@ -234,7 +234,9 @@ struct AddLoyaltyCardView: View {
                 )
             }
         .sheet(isPresented: $showCamera) {
-            CameraImagePicker(image: $capturedImage)
+            CameraPicker(allowsEditing: true) { image in
+                capturedImage = image
+            }
         }
         .onChange(of: selectedLogoItem) { _, newItem in
 
@@ -514,65 +516,6 @@ private struct BarcodeScannerSheet: UIViewControllerRepresentable {
     }
 }
 
-private struct CameraImagePicker: UIViewControllerRepresentable {
-
-    @Environment(\.dismiss)
-    private var dismiss
-
-    @Binding var image: UIImage?
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    func makeUIViewController(context: Context) -> UIImagePickerController {
-
-        let picker = UIImagePickerController()
-        picker.sourceType = .camera
-        picker.delegate = context.coordinator
-        picker.allowsEditing = true
-
-        return picker
-    }
-
-    func updateUIViewController(
-        _ uiViewController: UIImagePickerController,
-        context: Context
-    ) {
-
-    }
-
-    final class Coordinator:
-        NSObject,
-        UINavigationControllerDelegate,
-        UIImagePickerControllerDelegate {
-
-        let parent: CameraImagePicker
-
-        init(_ parent: CameraImagePicker) {
-            self.parent = parent
-        }
-
-        func imagePickerController(
-            _ picker: UIImagePickerController,
-            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]
-        ) {
-
-            let edited = info[.editedImage] as? UIImage
-            let original = info[.originalImage] as? UIImage
-
-            parent.image = edited ?? original
-
-            parent.dismiss()
-        }
-
-        func imagePickerControllerDidCancel(
-            _ picker: UIImagePickerController
-        ) {
-            parent.dismiss()
-        }
-    }
-}
 
 private extension UIImage {
 

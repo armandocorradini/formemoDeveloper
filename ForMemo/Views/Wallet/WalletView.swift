@@ -1,6 +1,6 @@
 import SwiftUI
 import SwiftData
-import UIKit
+
 
 struct WalletView: View {
 
@@ -85,11 +85,6 @@ struct WalletView: View {
 
             Color.clear
                 .onAppear {
-                    UITableView.appearance().backgroundColor = .clear
-                    UITableViewCell.appearance().backgroundColor = .clear
-                    UITableViewHeaderFooterView.appearance().tintColor = .clear
-                    UITableViewHeaderFooterView.appearance().backgroundView = UIView(frame: .zero)
-
                     if cards.allSatisfy({ $0.sortOrder == 0 }) && !cards.isEmpty {
 
                         let alphabetical = cards.sorted {
@@ -253,9 +248,7 @@ struct WalletView: View {
 
                                 Button(role: .destructive) {
 
-                                    if let index = cards.firstIndex(where: { $0.id == card.id }) {
-                                        deleteCards(at: IndexSet(integer: index))
-                                    }
+                                    deleteCard(card)
 
                                 } label: {
                                     Label("Delete", systemImage: "trash")
@@ -273,9 +266,7 @@ struct WalletView: View {
 
                                     Button(role: .destructive) {
 
-                                        if let index = cards.firstIndex(where: { $0.id == card.id }) {
-                                            deleteCards(at: IndexSet(integer: index))
-                                        }
+                                        deleteCard(card)
 
                                     } label: {
                                         Label("Delete", systemImage: "trash")
@@ -442,6 +433,16 @@ struct WalletView: View {
 
         try? modelContext.save()
     }
+    
+    
+    private func deleteCard(_ card: LoyaltyCard) {
+
+        deleteLoyaltyCard(
+            card,
+            in: modelContext
+        )
+    }
+    
 
     // MARK: - Delete
 
@@ -493,8 +494,4 @@ struct WalletView: View {
     }
     
     
-}
-
-#Preview {
-    WalletView()
 }

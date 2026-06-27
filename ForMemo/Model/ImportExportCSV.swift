@@ -3,7 +3,7 @@
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
-import UIKit
+
 
 // MARK: - EXPORT
 

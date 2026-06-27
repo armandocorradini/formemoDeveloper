@@ -248,7 +248,7 @@ struct TaskDetailView: View {
             }
         }
         .sheet(isPresented: $showCameraPicker) {
-            CameraPicker { image in
+            CameraPicker(allowsEditing: true) { image in
                 Task { @MainActor in
                     await importCameraImage(image)
                 }

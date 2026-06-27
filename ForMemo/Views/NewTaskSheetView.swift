@@ -4,7 +4,7 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 import UniformTypeIdentifiers
-import UIKit
+
 import CoreLocation
 import os
 
@@ -250,8 +250,10 @@ struct NewTaskSheetView: View {
                 }
                 
                 .sheet(isPresented: $showingCamera) {
-                    CameraPicker { image in
-                        Task { @MainActor in await importCameraImage(image) }
+                    CameraPicker(allowsEditing: true) { image in
+                        Task { @MainActor in
+                            await importCameraImage(image)
+                        }
                     }
                 }
                 

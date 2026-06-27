@@ -1,8 +1,10 @@
 import SwiftUI
-import UIKit
+import os
+
 
 struct CameraPicker: UIViewControllerRepresentable {
     
+    var allowsEditing = false
     var onImage: (UIImage) -> Void
     
     func makeCoordinator() -> Coordinator {
@@ -14,12 +16,14 @@ struct CameraPicker: UIViewControllerRepresentable {
         let picker = UIImagePickerController()
         
         guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
-            return picker
+            assertionFailure("Camera source is not available.")
+            AppLogger.ui.error("Camera source is not available.")
+            return UIImagePickerController()
         }
         
         picker.sourceType = .camera
         picker.cameraCaptureMode = .photo
-        picker.allowsEditing = false
+        picker.allowsEditing = allowsEditing
         picker.mediaTypes = ["public.image"]
         picker.delegate = context.coordinator
         

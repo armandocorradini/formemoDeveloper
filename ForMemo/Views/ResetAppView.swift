@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 import UserNotifications
-import UIKit
+
 import os
 
 struct ResetAppView: View {

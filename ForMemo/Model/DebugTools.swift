@@ -1,6 +1,6 @@
 import Foundation
 import SwiftData
-import UIKit
+
 import UserNotifications
 import CloudKit
 import SwiftUI

@@ -285,13 +285,6 @@ struct WeeklyTasksView: View {
         ZStack {
             AppGlassBackground()
             Color.clear
-                .onAppear {
-                    UITableView.appearance().backgroundColor = .clear
-                    UITableViewCell.appearance().backgroundColor = .clear
-                    UITableViewHeaderFooterView.appearance().tintColor = .clear
-                    UITableViewHeaderFooterView.appearance().backgroundView = UIView(frame: .zero)
-                }
-
             List {
                 if weeklyTasks.isEmpty {
                     ContentUnavailableView {

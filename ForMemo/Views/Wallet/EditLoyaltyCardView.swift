@@ -1,23 +1,18 @@
 import SwiftUI
 import SwiftData
 import PhotosUI
-import UIKit
+
 import CoreGraphics
 import AVFoundation
 
 struct EditLoyaltyCardView: View {
-    private enum ActivePicker: Identifiable {
-        case camera
-
-        var id: Int { 0 }
-    }
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
     @Bindable var card: LoyaltyCard
 
-    @State private var activePicker: ActivePicker?
+    @State private var showCamera = false
     @State private var selectedColor: Color = .blue
     @State private var isLoadingLogo = false
     @State private var previewLogoData: Data?
@@ -112,10 +107,7 @@ struct EditLoyaltyCardView: View {
                             .buttonStyle(.plain)
 
                             Button {
-                                guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
-                                    return
-                                }
-                                activePicker = .camera
+                                showCamera = true
                             } label: {
                                 HStack {
                                     Label(
@@ -258,8 +250,10 @@ struct EditLoyaltyCardView: View {
             .onChange(of: selectedColor) { _, newValue in
                 card.colorHex = newValue.toHex()
             }
-            .sheet(item: $activePicker) { _ in
-                CameraImagePicker(image: $capturedImage)
+            .sheet(isPresented: $showCamera) {
+                CameraPicker(allowsEditing: true) { image in
+                    capturedImage = image
+                }
             }
             .onChange(of: selectedPhotoItem) { _, newItem in
 
@@ -350,68 +344,6 @@ struct EditLoyaltyCardView: View {
         }
     }
 }
-
-private struct CameraImagePicker: UIViewControllerRepresentable {
-
-    @Environment(\.dismiss)
-    private var dismiss
-
-    @Binding var image: UIImage?
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    func makeUIViewController(context: Context) -> UIImagePickerController {
-
-        let picker = UIImagePickerController()
-        picker.sourceType = .camera
-        picker.cameraCaptureMode = .photo
-        picker.delegate = context.coordinator
-        picker.allowsEditing = true
-
-        return picker
-    }
-
-    func updateUIViewController(
-        _ uiViewController: UIImagePickerController,
-        context: Context
-    ) {
-
-    }
-
-    final class Coordinator:
-        NSObject,
-        UINavigationControllerDelegate,
-        UIImagePickerControllerDelegate {
-
-        let parent: CameraImagePicker
-
-        init(_ parent: CameraImagePicker) {
-            self.parent = parent
-        }
-
-        func imagePickerController(
-            _ picker: UIImagePickerController,
-            didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]
-        ) {
-
-            let edited = info[.editedImage] as? UIImage
-            let original = info[.originalImage] as? UIImage
-
-            parent.image = edited ?? original
-
-            parent.dismiss()
-        }
-
-        func imagePickerControllerDidCancel(
-            _ picker: UIImagePickerController
-        ) {
-            parent.dismiss()
-        }
-    }
-}
-
 
 private extension UIImage {
 
