@@ -258,6 +258,7 @@ struct Dashboard: View {
                                                     .opacity(0.9)
                                                     .frame(width: 18)
 
+
                                                 if let deadline = task.deadLine {
                                                     Text(
                                                         deadline.formatted(
@@ -281,6 +282,12 @@ struct Dashboard: View {
                                                                 .offset(y: 2)
                                                         }
                                                     }
+
+                                                if task.recurrenceRule != nil {
+                                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                                        .font(.caption)
+                                                        .foregroundStyle(.blue)
+                                                }
                                             }
                                             .font(.subheadline)
                                         }
@@ -444,6 +451,12 @@ struct Dashboard: View {
                                                     Text(task.title)
                                                         .lineLimit(1)
                                                         .foregroundStyle(.secondary)
+
+                                                    if task.recurrenceRule != nil {
+                                                        Image(systemName: "arrow.triangle.2.circlepath")
+                                                            .font(.caption)
+                                                            .foregroundStyle(.blue)
+                                                    }
                                                 }
                                                 .font(.subheadline)
                                             }

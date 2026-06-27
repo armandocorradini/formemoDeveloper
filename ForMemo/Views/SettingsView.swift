@@ -258,7 +258,7 @@ struct SettingsView: View {
                             showCustomizationView = true
                         } label: {
                             Label {
-                                Text("Customize")
+                                Text("Customize List")
                                     .tint(.primary)
                             } icon: {
                                 Image(systemName: "list.bullet.circle")

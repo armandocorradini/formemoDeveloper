@@ -7035,7 +7035,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Personalizar"
+            "value" : "Personaliza"
           }
         },
         "fr" : {
@@ -7063,7 +7063,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Farben anpassen"
+            "value" : "Personaliza tu color"
           }
         },
         "fr" : {
@@ -7076,6 +7076,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Colori personalizzati"
+          }
+        }
+      }
+    },
+    "Customize List" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liste anpassen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personaliza lista"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personnaliser la liste"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizza Lista"
           }
         }
       }
