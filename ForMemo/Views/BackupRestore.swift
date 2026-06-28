@@ -384,6 +384,28 @@ private struct RestoreArchiveSheetWrapper: Identifiable {
 
 }
 
+private enum BackupFormat {
+    static let currentVersion = 3
+}
+
+private extension JSONEncoder {
+        static let backup: JSONEncoder = {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.sortedKeys]
+            encoder.dateEncodingStrategy = .iso8601
+            return encoder
+        }()
+    }
+
+private extension JSONDecoder {
+
+    static let backup: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
+}
+
 private struct BackupArchive: Codable {
 
     enum CodingKeys: String, CodingKey {
@@ -439,10 +461,11 @@ private struct BackupArchive: Codable {
 
         let taskData = try container.decode([Data].self, forKey: .tasks)
 
-        let decoder = JSONDecoder()
-
         tasks = try taskData.map {
-            try decoder.decode(TaskTransferObject.self, from: $0)
+            try JSONDecoder.backup.decode(
+                TaskTransferObject.self,
+                from: $0
+            )
         }
         loyaltyCards = try container.decodeIfPresent(
             [LoyaltyCardTransferObject].self,
@@ -477,10 +500,8 @@ private struct BackupArchive: Codable {
         try container.encode(version, forKey: .version)
         try container.encode(createdAt, forKey: .createdAt)
 
-        let encoder = JSONEncoder()
-
         let encodedTasks = try tasks.map {
-            try encoder.encode($0)
+            try JSONEncoder.backup.encode($0)
         }
 
         try container.encode(encodedTasks, forKey: .tasks)
@@ -682,7 +703,9 @@ private enum BackupManager {
                         attachmentPayload[relativePath] = data
                     } catch {
 #if DEBUG
-                        print("⚠️ Backup attachment read failed:", error.localizedDescription)
+                        DebugLog.writeAttachmentEvent(
+                            "⚠️ Backup attachment read failed: \(error.localizedDescription)"
+                        )
 #endif
                     }
                 }
@@ -703,7 +726,7 @@ private enum BackupManager {
         }
 
         let archive = BackupArchive(
-            version: 3,
+            version: BackupFormat.currentVersion,
             createdAt: .now,
             tasks: tasks.map {
                 TaskTransferObject(task: $0)
@@ -722,18 +745,17 @@ private enum BackupManager {
             settings: settingsPayload
         )
 
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        encoder.dateEncodingStrategy = .iso8601
-
-        let data = try encoder.encode(archive)
+        let data = try JSONEncoder.backup.encode(archive)
 
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent(
                 "ForMemoBackup-\(UUID().uuidString).json"
             )
 
-        try data.write(to: url)
+        try data.write(
+            to: url,
+            options: .atomic
+        )
 
         return url
     }
@@ -745,16 +767,20 @@ private enum BackupManager {
         }.value
 
         do {
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-
-            return try decoder.decode(
+            let archive = try JSONDecoder.backup.decode(
                 BackupArchive.self,
                 from: data
             )
+
+            guard archive.version <= BackupFormat.currentVersion else {
+                throw CocoaError(.coderReadCorrupt)
+            }
+            return archive
         } catch {
 #if DEBUG
-            print("❌ BACKUP DECODE ERROR:", error)
+            DebugLog.write(
+                "❌ Backup decode error: \(error.localizedDescription)"
+            )
 #endif
             throw error
         }
@@ -960,8 +986,13 @@ private enum BackupManager {
         }
 
 #if DEBUG
-        print("✅ Restored tasks:", archive.tasks.count)
-        print("✅ Restored attachment files:", archive.attachmentFiles.count)
+        DebugLog.write(
+            "Restore completed - Tasks: \(archive.tasks.count)"
+        )
+
+        DebugLog.write(
+            "Restore completed - Attachment files: \(archive.attachmentFiles.count)"
+        )
 #endif
 
         modelContext.processPendingChanges()

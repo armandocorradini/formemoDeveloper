@@ -31,7 +31,7 @@ final class TaskExportService {
             
         case .calendar:
 #if DEBUG
-           print("calendar")
+            DebugLog.write("📅 Calendar export requested")
 #endif
         case .ics:
             exportICS(dtos)
@@ -45,24 +45,35 @@ private extension TaskExportService {
     func exportCSV(_ items: [TaskTransferObject]) {
         guard let url = CSVExporter.export(items: items) else {
 #if DEBUG
-            print("CSV export failed")
+            DebugLog.write("❌ CSV export failed")
 #endif
             return
         }
         
-        DispatchQueue.main.async {
-            let controller = UIActivityViewController(
-                activityItems: [url],
-                applicationActivities: nil
-            )
-            
-            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let root = scene.windows.first?.rootViewController {
-                
-                root.present(controller, animated: true)
-            }
+        Task { @MainActor in
+            presentShareSheet(for: url)
         }
     }
+    @MainActor
+    func presentShareSheet(for url: URL) {
+
+        let controller = UIActivityViewController(
+            activityItems: [url],
+            applicationActivities: nil
+        )
+
+        guard
+            let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+            let root = scene.windows.first?.rootViewController
+        else {
+            return
+        }
+
+        root.present(controller, animated: true)
+    }
+    
+    
+    
 }
 
 
@@ -74,23 +85,14 @@ extension TaskExportService {
         
         guard let url = ICSExporter.export(items: items) else {
 #if DEBUG
-            print("ICS export failed")
+            DebugLog.write("❌ ICS export failed")
 #endif
             
             return
         }
         
-        DispatchQueue.main.async {
-            let controller = UIActivityViewController(
-                activityItems: [url],
-                applicationActivities: nil
-            )
-            
-            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let root = scene.windows.first?.rootViewController {
-                
-                root.present(controller, animated: true)
-            }
+        Task { @MainActor in
+            presentShareSheet(for: url)
         }
     }
     
@@ -109,15 +111,15 @@ extension TaskExportService {
                 
                 let count = try engine.export(items: items, to: calendar)
                 
-                DispatchQueue.main.async {
+                await MainActor.run {
                     onComplete(count)
                 }
                 
             } catch {
 #if DEBUG
-                print("Calendar export error:", error.localizedDescription)
+                DebugLog.write("❌ Calendar export error: \(error.localizedDescription)")
 #endif
-                DispatchQueue.main.async {
+                await MainActor.run {
                     onComplete(0)
                 }
             }

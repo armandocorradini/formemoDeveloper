@@ -35,135 +35,49 @@ final class AppSettings {
     }
 
     @MainActor
-    func reloadFromUserDefaults() {
-
-        let defaults = UserDefaults.standard
-
+    private func loadFromUserDefaults(_ defaults: UserDefaults) {
         iconStyle = TaskIconStyle(
-            rawValue: defaults.string(
-                forKey: TaskListAppearanceKeys.iconStyle
-            ) ?? ""
+            rawValue: defaults.string(forKey: TaskListAppearanceKeys.iconStyle) ?? ""
         ) ?? .polychrome
 
-        showBadge = defaults.object(
-            forKey: TaskListAppearanceKeys.showBadge
-        ) as? Bool ?? true
+        showBadge = defaults.object(forKey: TaskListAppearanceKeys.showBadge) as? Bool ?? true
+        showAttachments = defaults.object(forKey: TaskListAppearanceKeys.showAttachments) as? Bool ?? true
+        showLocation = defaults.object(forKey: TaskListAppearanceKeys.showLocation) as? Bool ?? true
+        showPriority = defaults.object(forKey: TaskListAppearanceKeys.showPriority) as? Bool ?? true
+        showBadgeOnlyWithPriority = defaults.object(forKey: TaskListAppearanceKeys.showBadgeOnlyWithPriority) as? Bool ?? true
+        highlightEnabled = defaults.object(forKey: "tasklist.highlightEnabled") as? Bool ?? true
+        highlightColorHex = defaults.string(forKey: "tasklist.highlightColor") ?? (Color.red.toHex() ?? "")
+        showTodayExpiredLabel = defaults.object(forKey: TaskListAppearanceKeys.showTodayExpiredLabel) as? Bool ?? true
+        selectedTaskRowStyle = defaults.object(forKey: "selectedTaskRowStyle") as? Int ?? 0
+        dueIconEffectRaw = defaults.string(forKey: "dueIconEffect") ?? DueIconEffect.blink.rawValue
+        
+        let rawValue = defaults.string(forKey: "TaskListStyle")
+        taskListStyle = TaskListStyle(rawValue: rawValue ?? TaskListStyle.grouped.rawValue) ?? .plain
+        
+        showDateEveryRow = defaults.object(forKey: "TaskListShowDateEveryRow") as? Bool ?? false
+        confirmTaskDeletion = defaults.object(forKey: "confirmTaskDeletion") as? Bool ?? true
+        taskWeekDays = defaults.object(forKey: "TaskWeekDays") as? Int ?? 3
+        startupTab = defaults.object(forKey: "startupTab") as? Int ?? 1
+        notificationLeadTimeDays = defaults.object(forKey: "notificationLeadTimeDays") as? Int ?? 1
+        showWeatherForecast = defaults.object(forKey: "showWeatherForecast") as? Bool ?? true
+        siriAutoReminderEnabled = defaults.object(forKey: "siriAutoReminderEnabled") as? Bool ?? true
+        navigationAppID = defaults.string(forKey: "navigationApp") ?? "apple"
+        backgroundColor1Hex = defaults.string(forKey: "backgroundColor1Hex") ?? (defaultBackColor1.toHex() ?? "")
+        backgroundColor2Hex = defaults.string(forKey: "backgroundColor2Hex") ?? (defaultBackColor2.toHex() ?? "")
+        badgeMode = defaults.object(forKey: "badgeMode") as? Int ?? 1
+        showAppBadge = defaults.object(forKey: "showAppBadge") as? Bool ?? true
+        selectedTheme = AppTheme(rawValue: defaults.integer(forKey: "selectedTheme")) ?? .system
+        autoDeleteCompletedAttachments = defaults.object(forKey: "autoDeleteCompletedAttachments") as? Bool ?? true
+        attachmentRetentionDays = defaults.object(forKey: "attachmentRetentionDays") as? Int ?? 30
+        recentlyDeletedRetentionDays = defaults.object(forKey: "recentlyDeletedRetentionDays") as? Int ?? 30
+        locationRemindersEnabled = defaults.object(forKey: "locationRemindersEnabled") as? Bool ?? false
+        locationRadius = defaults.object(forKey: "locationRadius") as? Int ?? 150
+    }
 
-        showAttachments = defaults.object(
-            forKey: TaskListAppearanceKeys.showAttachments
-        ) as? Bool ?? true
-
-        showLocation = defaults.object(
-            forKey: TaskListAppearanceKeys.showLocation
-        ) as? Bool ?? true
-
-        showPriority = defaults.object(
-            forKey: TaskListAppearanceKeys.showPriority
-        ) as? Bool ?? true
-
-        showBadgeOnlyWithPriority = defaults.object(
-            forKey: TaskListAppearanceKeys.showBadgeOnlyWithPriority
-        ) as? Bool ?? true
-
-        highlightEnabled = defaults.object(
-            forKey: "tasklist.highlightEnabled"
-        ) as? Bool ?? true
-
-        highlightColorHex = defaults.string(
-            forKey: "tasklist.highlightColor"
-        ) ?? (Color.red.toHex() ?? "")
-
-        showTodayExpiredLabel = defaults.object(
-            forKey: TaskListAppearanceKeys.showTodayExpiredLabel
-        ) as? Bool ?? true
-
-        selectedTaskRowStyle = defaults.object(
-            forKey: "selectedTaskRowStyle"
-        ) as? Int ?? 0
-
-        dueIconEffectRaw = defaults.string(
-            forKey: "dueIconEffect"
-        ) ?? DueIconEffect.blink.rawValue
-
-        taskListStyle = TaskListStyle(
-            rawValue: defaults.string(
-                forKey: "TaskListStyle"
-            ) ?? "grouped"
-        ) ?? .plain
-
-        showDateEveryRow = defaults.object(
-            forKey: "TaskListShowDateEveryRow"
-        ) as? Bool ?? false
-
-        confirmTaskDeletion = defaults.object(
-            forKey: "confirmTaskDeletion"
-        ) as? Bool ?? true
-
-        taskWeekDays = defaults.object(
-            forKey: "TaskWeekDays"
-        ) as? Int ?? 3
-
-        startupTab = defaults.object(
-            forKey: "startupTab"
-        ) as? Int ?? 1
-
-        notificationLeadTimeDays = defaults.object(
-            forKey: "notificationLeadTimeDays"
-        ) as? Int ?? 1
-
-        showWeatherForecast = defaults.object(
-            forKey: "showWeatherForecast"
-        ) as? Bool ?? true
-
-        siriAutoReminderEnabled = defaults.object(
-            forKey: "siriAutoReminderEnabled"
-        ) as? Bool ?? true
-
-        navigationAppID = defaults.string(
-            forKey: "navigationApp"
-        ) ?? "apple"
-
-        backgroundColor1Hex = defaults.string(
-            forKey: "backgroundColor1Hex"
-        ) ?? (defaultBackColor1.toHex() ?? "")
-
-        backgroundColor2Hex = defaults.string(
-            forKey: "backgroundColor2Hex"
-        ) ?? (defaultBackColor2.toHex() ?? "")
-
-        badgeMode = defaults.object(
-            forKey: "badgeMode"
-        ) as? Int ?? 1
-
-        showAppBadge = defaults.object(
-            forKey: "showAppBadge"
-        ) as? Bool ?? true
-
-        selectedTheme = AppTheme(
-            rawValue: defaults.integer(
-                forKey: "selectedTheme"
-            )
-        ) ?? .system
-
-        autoDeleteCompletedAttachments = defaults.object(
-            forKey: "autoDeleteCompletedAttachments"
-        ) as? Bool ?? true
-
-        attachmentRetentionDays = defaults.object(
-            forKey: "attachmentRetentionDays"
-        ) as? Int ?? 30
-
-        recentlyDeletedRetentionDays = defaults.object(
-            forKey: "recentlyDeletedRetentionDays"
-        ) as? Int ?? 30
-
-        locationRemindersEnabled = defaults.object(
-            forKey: "locationRemindersEnabled"
-        ) as? Bool ?? false
-
-        locationRadius = defaults.object(
-            forKey: "locationRadius"
-        ) as? Int ?? 150
+    @MainActor
+    func reloadFromUserDefaults() {
+        let defaults = UserDefaults.standard
+        loadFromUserDefaults(defaults)
     }
     
     // MARK: - Task List Appearance
@@ -464,163 +378,37 @@ final class AppSettings {
     
     
     private init() {
-        
-        let defaults = UserDefaults.standard
-        
-        iconStyle =
-        TaskIconStyle(
-            rawValue: defaults.string(
-                forKey: TaskListAppearanceKeys.iconStyle
-            ) ?? ""
-        ) ?? .polychrome
-        
-        showBadge =
-        defaults.object(
-            forKey: TaskListAppearanceKeys.showBadge
-        ) as? Bool ?? true
-        
-        showAttachments =
-        defaults.object(
-            forKey: TaskListAppearanceKeys.showAttachments
-        ) as? Bool ?? true
-        
-        showLocation =
-        defaults.object(
-            forKey: TaskListAppearanceKeys.showLocation
-        ) as? Bool ?? true
-        
-        showPriority =
-        defaults.object(
-            forKey: TaskListAppearanceKeys.showPriority
-        ) as? Bool ?? true
-        
-        showBadgeOnlyWithPriority =
-        defaults.object(
-            forKey: TaskListAppearanceKeys.showBadgeOnlyWithPriority
-        ) as? Bool ?? true
-        
-        highlightEnabled =
-        defaults.object(
-            forKey: "tasklist.highlightEnabled"
-        ) as? Bool ?? true
-        
-        highlightColorHex =
-        defaults.string(
-            forKey: "tasklist.highlightColor"
-        ) ?? (Color.red.toHex() ?? "")
-        
-        showTodayExpiredLabel =
-        defaults.object(
-            forKey: TaskListAppearanceKeys.showTodayExpiredLabel
-        ) as? Bool ?? true
-        
-        selectedTaskRowStyle =
-        defaults.object(
-            forKey: "selectedTaskRowStyle"
-        ) as? Int ?? 0
-        
-        dueIconEffectRaw =
-        defaults.string(
-            forKey: "dueIconEffect"
-        ) ?? DueIconEffect.blink.rawValue
-        
-        taskListStyle =
-        TaskListStyle(
-            rawValue: defaults.string(
-                forKey: "TaskListStyle"
-            ) ?? "grouped"
-        ) ?? .plain
-        
-        showDateEveryRow =
-        defaults.object(
-            forKey: "TaskListShowDateEveryRow"
-        ) as? Bool ?? false
-        
-        confirmTaskDeletion =
-        defaults.object(
-            forKey: "confirmTaskDeletion"
-        ) as? Bool ?? true
-        
-        taskWeekDays =
-        defaults.object(
-            forKey: "TaskWeekDays"
-        ) as? Int ?? 3
-        
-        startupTab =
-        defaults.object(
-            forKey: "startupTab"
-        ) as? Int ?? 1
-        
-        notificationLeadTimeDays =
-        defaults.object(
-            forKey: "notificationLeadTimeDays"
-        ) as? Int ?? 1
-        
-        showWeatherForecast =
-        defaults.object(
-            forKey: "showWeatherForecast"
-        ) as? Bool ?? true
-        
-        siriAutoReminderEnabled =
-        defaults.object(
-            forKey: "siriAutoReminderEnabled"
-        ) as? Bool ?? true
-        
-        navigationAppID =
-        defaults.string(
-            forKey: "navigationApp"
-        ) ?? "apple"
-        
-        backgroundColor1Hex =
-        defaults.string(
-            forKey: "backgroundColor1Hex"
-        ) ?? (defaultBackColor1.toHex() ?? "")
-        
-        backgroundColor2Hex =
-        defaults.string(
-            forKey: "backgroundColor2Hex"
-        ) ?? (defaultBackColor2.toHex() ?? "")
-        
-        badgeMode =
-        defaults.object(
-            forKey: "badgeMode"
-        ) as? Int ?? 1
-        
-        showAppBadge =
-        defaults.object(
-            forKey: "showAppBadge"
-        ) as? Bool ?? true
-        
-        selectedTheme =
-        AppTheme(rawValue:
-                    defaults.integer(
-                        forKey: "selectedTheme"
-                    )
-        ) ?? .system
-        
-        autoDeleteCompletedAttachments =
-        defaults.object(
-            forKey: "autoDeleteCompletedAttachments"
-        ) as? Bool ?? true
-        
-        attachmentRetentionDays =
-        defaults.object(
-            forKey: "attachmentRetentionDays"
-        ) as? Int ?? 30
-        
-        recentlyDeletedRetentionDays =
-        defaults.object(
-            forKey: "recentlyDeletedRetentionDays"
-        ) as? Int ?? 30
-        
-        locationRemindersEnabled =
-        defaults.object(
-            forKey: "locationRemindersEnabled"
-        ) as? Bool ?? false
-        
-        locationRadius =
-        defaults.object(
-            forKey: "locationRadius"
-        ) as? Int ?? 150
+        iconStyle = .polychrome
+        showBadge = true
+        showAttachments = true
+        showLocation = true
+        showPriority = true
+        showBadgeOnlyWithPriority = true
+        highlightEnabled = true
+        highlightColorHex = Color.red.toHex() ?? ""
+        showTodayExpiredLabel = true
+        selectedTaskRowStyle = 0
+        dueIconEffectRaw = DueIconEffect.blink.rawValue
+        taskListStyle = .plain
+        showDateEveryRow = false
+        confirmTaskDeletion = true
+        taskWeekDays = 3
+        startupTab = 1
+        notificationLeadTimeDays = 1
+        showWeatherForecast = true
+        siriAutoReminderEnabled = true
+        navigationAppID = "apple"
+        backgroundColor1Hex = defaultBackColor1.toHex() ?? ""
+        backgroundColor2Hex = defaultBackColor2.toHex() ?? ""
+        badgeMode = 1
+        showAppBadge = true
+        selectedTheme = .system
+        autoDeleteCompletedAttachments = true
+        attachmentRetentionDays = 30
+        recentlyDeletedRetentionDays = 30
+        locationRemindersEnabled = false
+        locationRadius = 150
+
+        loadFromUserDefaults(.standard)
     }
 }
