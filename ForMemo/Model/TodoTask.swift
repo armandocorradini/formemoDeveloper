@@ -21,6 +21,8 @@ final class TodoTask {
     var priorityRaw: Int = 0
     var mainTagRaw: String? = nil
     var snoozeUntil: Date? = nil
+    // MARK: - Manual Snooze (independent from notification-action snooze)
+    var manualSnoozeUntil: Date? = nil
 
     // MARK: - Recurrence
     var recurrenceRule: String? = nil // "hourly", "daily", "weekly", "monthly", "yearly"
@@ -110,6 +112,7 @@ final class TodoTask {
         self.isCompleted = false
         self.completedAt = nil
         self.snoozeUntil = nil
+        self.manualSnoozeUntil = nil
     }
 }
 
@@ -336,6 +339,7 @@ extension TodoTask {
         self.isCompleted = false
         self.completedAt = nil
         self.snoozeUntil = nil
+        self.manualSnoozeUntil = nil
     }
     
     private func moveToNextOccurrence() {

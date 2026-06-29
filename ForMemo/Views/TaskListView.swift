@@ -1597,6 +1597,63 @@ struct TodoSectionView: View {
             } label: {
                 Label("Reschedule", systemImage: "clock")
             }
+            if let deadline = t.deadLine,
+
+                deadline < Date() {
+                Menu {
+                    Button {
+                        NotificationActionProcessor.shared.applyManualSnooze(
+                            to: t,
+                            interval: 5 * 60,
+                            using: modelContext
+                        )
+                    } label: {
+                        Label("5 minutes", systemImage: "5.arrow.trianglehead.clockwise")
+                    }
+                    
+                    Button {
+                        NotificationActionProcessor.shared.applyManualSnooze(
+                            to: t,
+                            interval: 15 * 60,
+                            using: modelContext
+                        )
+                    } label: {
+                        Label("15 minutes", systemImage: "15.arrow.trianglehead.clockwise")
+                    }
+                    
+                    Button {
+                        NotificationActionProcessor.shared.applyManualSnooze(
+                            to: t,
+                            interval: 30 * 60,
+                            using: modelContext
+                        )
+                    } label: {
+                        Label("30 minutes", systemImage: "30.arrow.trianglehead.clockwise")
+                    }
+                    
+                    Button {
+                        NotificationActionProcessor.shared.applyManualSnooze(
+                            to: t,
+                            interval: 60 * 60,
+                            using: modelContext
+                        )
+                    } label: {
+                        Label("1 hour", systemImage: "60.arrow.trianglehead.clockwise")
+                    }
+                    
+                    Button {
+                        NotificationActionProcessor.shared.applyManualSnooze(
+                            to: t,
+                            interval: 3 * 60 * 60,
+                            using: modelContext
+                        )
+                    } label: {
+                        Label("3 hours", systemImage: "plus.arrow.trianglehead.clockwise")
+                    }
+                } label: {
+                    Label("Snooze", systemImage: "timer")
+                }
+            }
         }
     }
 

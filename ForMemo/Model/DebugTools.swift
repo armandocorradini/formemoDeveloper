@@ -331,7 +331,7 @@ enum DebugLog {
         )
     }
     static func writeAttachmentEvent(_ message: String) {
-        write("📎 ATTACHMENTS: \(message)")
+        write("📎 [ATTACHMENTS] \(message)")
     }
     static func writeDatabaseSnapshot(context: ModelContext) {
 
@@ -377,7 +377,315 @@ enum DebugLog {
         write("📊 Cards & Tickets: \(cardCount)")
         write("📊 Attachment Records: \(attachmentRecordCount)")
         write("📊 Deleted Items: \(deletedCount)")
+        
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
 
+        write("")
+        write("════════════════════════════════════════════")
+        write("🔬 ATTACHMENT FORENSIC SNAPSHOT")
+        write("📅 Snapshot: \(ISO8601DateFormatter().string(from: Date()))")
+        write("📱 Version: \(version)")
+        write("🔨 Build: \(build)")
+        write("════════════════════════════════════════════")
+        write("════════════════════════════════════════════")
+
+        let fm = FileManager.default
+
+        let homeDirectory = URL(fileURLWithPath: NSHomeDirectory())
+        let documentsDirectory = fm.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first
+
+        let cloudContainer = fm.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        )
+
+        let cloudAttachments = cloudContainer?
+            .appendingPathComponent("Documents", isDirectory: true)
+            .appendingPathComponent("TaskAttachments", isDirectory: true)
+
+        let cloudTrash = cloudContainer?
+            .appendingPathComponent("Documents", isDirectory: true)
+            .appendingPathComponent("TaskAttachments_Trash", isDirectory: true)
+
+        let legacyAttachments = documentsDirectory?
+            .appendingPathComponent("TaskAttachments", isDirectory: true)
+
+        let legacyTrash = documentsDirectory?
+            .appendingPathComponent("TaskAttachments_Trash", isDirectory: true)
+
+        write("🏠 HOME: \(homeDirectory.path)")
+
+        write("📁 DOCUMENTS: \(documentsDirectory?.path ?? "nil")")
+        write("☁️ iCloud Available: \(cloudContainer == nil ? "NO" : "YES")")
+
+        write("☁️ iCloud Container: \(cloudContainer?.path ?? "nil")")
+        write("☁️ Cloud Attachments: \(cloudAttachments?.path ?? "nil")")
+        write("☁️ Cloud Trash: \(cloudTrash?.path ?? "nil")")
+
+        write("📂 Legacy Attachments: \(legacyAttachments?.path ?? "nil")")
+        write("🗑 Legacy Trash: \(legacyTrash?.path ?? "nil")")
+
+        write("📎 TaskAttachment.attachmentsDirectory: \(TaskAttachment.attachmentsDirectory?.path ?? "nil")")
+        write("🗑 TaskAttachment.trashDirectory: \(TaskAttachment.trashDirectory?.path ?? "nil")")
+
+        write("📦 Bundle Identifier: \(Bundle.main.bundleIdentifier ?? "nil")")
+        write("📱 Process Name: \(ProcessInfo.processInfo.processName)")
+
+        write("🟣 attachmentMigrationVersion: \(UserDefaults.standard.integer(forKey: "attachmentMigrationVersion"))")
+
+        write("════════════════════════════════════════════")
+        
+        func dumpDirectory(_ title: String, url: URL?) {
+
+            write("")
+            write("📂 \(title)")
+
+            guard let url else {
+                write("   Path: nil")
+                return
+            }
+
+            write("   Path: \(url.path)")
+
+            let exists = fm.fileExists(atPath: url.path)
+
+            write("   Exists: \(exists ? "YES" : "NO")")
+
+            guard exists else {
+                return
+            }
+
+            guard let files = try? fm.contentsOfDirectory(
+                at: url,
+                includingPropertiesForKeys: [
+                    .fileSizeKey,
+                    .contentModificationDateKey,
+                    .isUbiquitousItemKey,
+                    .ubiquitousItemDownloadingStatusKey
+                ]
+            ) else {
+
+                write("   Unable to enumerate directory")
+                return
+            }
+
+            write("   Files: \(files.count)")
+
+            if files.isEmpty {
+                return
+            }
+
+            for file in files.sorted(by: {
+                $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending
+            }) {
+
+                let values = try? file.resourceValues(forKeys: [
+                    .fileSizeKey,
+                    .contentModificationDateKey,
+                    .isUbiquitousItemKey,
+                    .ubiquitousItemDownloadingStatusKey
+                ])
+
+                let size = values?.fileSize ?? 0
+                let ubiquitous = values?.isUbiquitousItem ?? false
+
+                let downloadStatus: String
+
+                switch values?.ubiquitousItemDownloadingStatus {
+
+                case .current:
+                    downloadStatus = "current"
+
+                case .downloaded:
+                    downloadStatus = "downloaded"
+
+                case .notDownloaded:
+                    downloadStatus = "notDownloaded"
+
+                default:
+                    downloadStatus = "n/a"
+                }
+
+                let modified: String
+
+                if let date = values?.contentModificationDate {
+                    modified = ISO8601DateFormatter().string(from: date)
+                } else {
+                    modified = "-"
+                }
+
+                write("      • \(file.lastPathComponent)")
+                write("        Size: \(size)")
+                write("        Modified: \(modified)")
+                write("        iCloud: \(ubiquitous)")
+                write("        Download: \(downloadStatus)")
+            }
+        }
+        
+        
+        dumpDirectory("Cloud Attachments", url: cloudAttachments)
+        dumpDirectory("Legacy Attachments", url: legacyAttachments)
+        dumpDirectory("Cloud Trash", url: cloudTrash)
+        dumpDirectory("Legacy Trash", url: legacyTrash)
+      
+        write("")
+        write("════════════════════════════════════════════")
+        write("📊 ATTACHMENT DATABASE ANALYSIS")
+        write("════════════════════════════════════════════")
+
+        let attachmentDescriptor = FetchDescriptor<TaskAttachment>()
+        let attachments = (try? context.fetch(attachmentDescriptor)) ?? []
+
+        write("Database records: \(attachments.count)")
+
+        var resolvedCount = 0
+        var availableCount = 0
+        var cloudCount = 0
+        var legacyCount = 0
+        var trashCount = 0
+        var missingCount = 0
+        var nilURLCount = 0
+
+        for attachment in attachments.sorted(by: {
+            $0.originalName.localizedCaseInsensitiveCompare($1.originalName) == .orderedAscending
+        }) {
+
+            write("")
+            write("────────────────────────────────────────────")
+
+            write("Task: \(attachment.task?.title ?? "<nil>")")
+            write("Attachment ID: \(attachment.id.uuidString)")
+            write("Original Name: \(attachment.originalName)")
+            write("Relative Path: \(attachment.relativePath)")
+            write("Content Type: \(attachment.contentType)")
+
+            let fileURL = attachment.fileURL
+
+            write("Resolved URL: \(fileURL?.path ?? "nil")")
+            if let fileURL {
+
+                write("Resolved Exists: \(fm.fileExists(atPath: fileURL.path))")
+
+            } else {
+
+                write("Resolved Exists: NO")
+            }
+            write("File Status: \(attachment.fileStatus)")
+            write("Actually Available: \(attachment.isActuallyAvailable)")
+
+            if attachment.isActuallyAvailable {
+                availableCount += 1
+            }
+
+            if let url = fileURL {
+
+                resolvedCount += 1
+
+                let exists = fm.fileExists(atPath: url.path)
+
+                write("Exists: \(exists)")
+
+                let size = (try? fm.attributesOfItem(
+                    atPath: url.path
+                )[.size] as? Int64) ?? 0
+
+                write("Size: \(size)")
+
+                if let values = try? url.resourceValues(forKeys: [
+                    .isUbiquitousItemKey,
+                    .ubiquitousItemDownloadingStatusKey
+                ]) {
+
+                    write("isUbiquitous: \(values.isUbiquitousItem ?? false)")
+                    write("Download Status: \(String(describing: values.ubiquitousItemDownloadingStatus))")
+                }
+
+                if let cloudAttachments,
+                   url.path.hasPrefix(cloudAttachments.path) {
+
+                    cloudCount += 1
+                }
+
+                if let legacyAttachments,
+                   url.path.hasPrefix(legacyAttachments.path) {
+
+                    legacyCount += 1
+                }
+
+                if let cloudTrash,
+                   url.path.hasPrefix(cloudTrash.path) {
+
+                    trashCount += 1
+                }
+
+                if let legacyTrash,
+                   url.path.hasPrefix(legacyTrash.path) {
+
+                    trashCount += 1
+                }
+
+            } else {
+
+                missingCount += 1
+                nilURLCount += 1
+                write("⚠️ fileURL = nil")
+
+                if let cloudAttachments {
+
+                    let candidate = cloudAttachments.appendingPathComponent(
+                        attachment.relativePath
+                    )
+
+                    write("Cloud Exists: \(fm.fileExists(atPath: candidate.path))")
+                }
+
+                if let legacyAttachments {
+
+                    let candidate = legacyAttachments.appendingPathComponent(
+                        attachment.relativePath
+                    )
+
+                    write("Legacy Exists: \(fm.fileExists(atPath: candidate.path))")
+                }
+
+                if let cloudTrash {
+
+                    let candidate = cloudTrash.appendingPathComponent(
+                        attachment.relativePath
+                    )
+
+                    write("Cloud Trash Exists: \(fm.fileExists(atPath: candidate.path))")
+                }
+
+                if let legacyTrash {
+
+                    let candidate = legacyTrash.appendingPathComponent(
+                        attachment.relativePath
+                    )
+
+                    write("Legacy Trash Exists: \(fm.fileExists(atPath: candidate.path))")
+                }
+            }
+        }
+
+        write("")
+        write("════════════════════════════════════════════")
+        write("📈 ATTACHMENT SUMMARY")
+        write("════════════════════════════════════════════")
+
+        write("Records: \(attachments.count)")
+        write("Resolved URLs: \(resolvedCount)")
+        write("Available: \(availableCount)")
+        write("Cloud: \(cloudCount)")
+        write("Legacy: \(legacyCount)")
+        write("Trash: \(trashCount)")
+        write("Missing: \(missingCount)")
+        write("Nil URLs: \(nilURLCount)")
+        write("════════════════════════════════════════════")
+        
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
            let files = try? FileManager.default.contentsOfDirectory(
                 at: attachmentsDirectory,
@@ -466,10 +774,14 @@ enum CrashDetector {
     }
 }
 struct ExportDiagnosticsView: View {
+    @Environment(\.modelContext)
+    private var modelContext
+    
     @State private var logExists = false
     @State private var logContent = ""
     @State private var refreshID = UUID()
 
+    
     private func refreshDiagnostics() {
         logExists = FileManager.default.fileExists(
             atPath: DebugLog.logURL.path
@@ -604,6 +916,8 @@ struct ExportDiagnosticsView: View {
         .onAppear {
             DebugLog.ensureLogFileExists()
 
+            DebugLog.writeDatabaseSnapshot(context: modelContext)
+
             DispatchQueue.main.asyncAfter(
                 deadline: .now() + 0.3
             ) {
@@ -615,6 +929,9 @@ struct ExportDiagnosticsView: View {
                 for: UIApplication.didBecomeActiveNotification
             )
         ) { _ in
+
+            DebugLog.writeDatabaseSnapshot(context: modelContext)
+
             refreshDiagnostics()
         }
     }

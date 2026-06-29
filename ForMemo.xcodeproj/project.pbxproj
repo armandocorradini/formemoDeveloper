@@ -184,7 +184,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.1.1;
 				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = corradini.armando.NewTask;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -239,7 +239,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.1.1;
 				NEW_SETTING = "";
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = corradini.armando.NewTask;

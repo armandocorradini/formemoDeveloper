@@ -277,7 +277,16 @@ func refreshFromCloudKit() {
             // 🔴 Skip debug stress-test tasks (no notifications)
             if task.isDebugTask { continue }
             // (Snooze cleanup block removed)
-
+            
+            // 🔵 Cleanup expired manual snooze
+            if let manual = task.manualSnoozeUntil,
+               manual <= Date() {
+                task.manualSnoozeUntil = nil
+                needsSave = true
+            }
+            
+            
+            
             if task.reminderOffsetMinutes == 0 {
                 task.reminderOffsetMinutes = nil
                 needsSave = true
@@ -300,7 +309,7 @@ func refreshFromCloudKit() {
         let body = tasks
             .sorted { $0.id.uuidString < $1.id.uuidString }
             .map {
-                "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)"
+                "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)-\($0.manualSnoozeUntil?.timeIntervalSince1970 ?? 0)"
             }
             .joined(separator: "|")
         
@@ -319,7 +328,17 @@ func refreshFromCloudKit() {
         static func nextEvent(for task: TodoTask, now: Date, lead: NotificationLeadTime) -> Event? {
             guard let deadline = task.deadLine else { return nil }
 
-            // 🔥 1. Snooze has priority EVEN after deadline (only if valid)
+            // 🔵 Manual Snooze (independent from notification-action snooze)
+            if let manual = task.manualSnoozeUntil,
+               manual > now {
+                return Event(
+                    id: "task.\(task.id.uuidString).manualSnooze",
+                    date: manual,
+                    type: "manualSnooze"
+                )
+            }
+
+            // 🔥 Existing notification snooze
             if let snooze = task.snoozeUntil,
                snooze > now {
                 return Event(
@@ -329,7 +348,7 @@ func refreshFromCloudKit() {
                 )
             }
 
-            // 🔥 2. If deadline is in the past and no snooze → nothing to schedule
+            // 🔥 Existing logic
             if deadline <= now {
                 return nil
             }
@@ -475,6 +494,13 @@ func refreshFromCloudKit() {
             let content: UNMutableNotificationContent
             
             switch next.type {
+                
+            case "manualSnooze":
+                content = baseContent(
+                    task,
+                    title: String(localized: "⏲️ Snoozed")
+                )
+                
             case "snooze":
                 content = baseContent(task, title: String(localized: "⏲️ Snoozed"))
 
@@ -801,34 +827,40 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
 
                         let type = response.notification.request.content.userInfo["type"] as? String
 
-                        if let deadline = task.deadLine {
+                        // 🔵 Manual Snooze: completely independent from notification snooze.
+                        // Never enforce the task deadline.
+                        if type == "manualSnooze" {
+
+                            task.manualSnoozeUntil = rawDate
+                            task.snoozeUntil = nil
+                        } else if let deadline = task.deadLine {
+
                             if type == "deadline" {
+
                                 // ✅ Snooze from deadline is ALWAYS allowed
                                 task.snoozeUntil = rawDate
+
                             } else {
-                                // ❌ Snooze from global/reminder/snooze must NOT exceed deadline
+
+                                // ❌ Existing notification snooze must not exceed the deadline
                                 if rawDate >= deadline {
-                                    // 🔴 Show internal message ONLY if app was already active (avoid showing on launch/resume)
+
                                     let state = UIApplication.shared.applicationState
 
-                                    // Show message also when coming from notification tap (.inactive), but not when launching
                                     if !self.isAppLaunching && state != .background {
-                                        NotificationCenter.default.post(name: .snoozeRejectedDueToDeadline, object: nil)
+                                        NotificationCenter.default.post(
+                                            name: .snoozeRejectedDueToDeadline,
+                                            object: nil
+                                        )
                                     }
 
-                                    // 🔴 Always schedule local notification (will be suppressed if app is active)
                                     let content = UNMutableNotificationContent()
-                                    let title = String(localized: "Snooze not scheduled")
-                                    let body = String(localized: "Snooze exceeds the deadline. No snooze notification will be scheduled. The deadline notification will still occur.")
-                                    content.title = title
-                                    content.body = body
+                                    content.title = String(localized: "Snooze not scheduled")
+                                    content.body = String(localized: "Snooze exceeds the deadline. No snooze notification will be scheduled. The deadline notification will still occur.")
                                     content.sound = .default
 
-                                    // 🔒 Ensure reliable delivery also when app is terminated
-                                    let triggerInterval: TimeInterval = 5
-
                                     let trigger = UNTimeIntervalNotificationTrigger(
-                                        timeInterval: triggerInterval,
+                                        timeInterval: 5,
                                         repeats: false
                                     )
 
@@ -839,12 +871,18 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                                     )
 
                                     try? await UNUserNotificationCenter.current().add(request)
+
                                 } else {
+
                                     task.snoozeUntil = rawDate
+
                                 }
                             }
+
                         } else {
+
                             task.snoozeUntil = rawDate
+
                         }
 
                         try? context.save()

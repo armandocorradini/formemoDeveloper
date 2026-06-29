@@ -162,11 +162,52 @@ struct AttachmentRowView: View {
             Spacer()
 
             Button {
-                guard let url = attachment.fileURL,
-                      FileManager.default.fileExists(atPath: url.path) else {
+
+                DebugLog.writeAttachmentEvent("")
+                DebugLog.writeAttachmentEvent("═══════════════════════════════")
+                DebugLog.writeAttachmentEvent("👆 ATTACHMENT TAP")
+                DebugLog.writeAttachmentEvent("Task: \(attachment.task?.title ?? "<nil>")")
+                DebugLog.writeAttachmentEvent("Original: \(attachment.originalName)")
+                DebugLog.writeAttachmentEvent("Relative: \(attachment.relativePath)")
+                DebugLog.writeAttachmentEvent("ContentType: \(attachment.contentType)")
+
+                guard let url = attachment.fileURL else {
+
+                    DebugLog.writeAttachmentEvent("❌ fileURL = nil")
+                    DebugLog.writeAttachmentEvent("═══════════════════════════════")
+
                     return
                 }
+
+                DebugLog.writeAttachmentEvent("Resolved URL:")
+                DebugLog.writeAttachmentEvent(url.path)
+
+                let exists = FileManager.default.fileExists(atPath: url.path)
+
+                DebugLog.writeAttachmentEvent("Exists: \(exists)")
+
+                let size = (try? FileManager.default.attributesOfItem(
+                    atPath: url.path
+                )[.size] as? Int64) ?? 0
+
+                DebugLog.writeAttachmentEvent("Size: \(size)")
+
+                DebugLog.writeAttachmentEvent("Status: \(attachment.fileStatus)")
+                DebugLog.writeAttachmentEvent("Available: \(attachment.isActuallyAvailable)")
+
+                guard exists else {
+
+                    DebugLog.writeAttachmentEvent("❌ File missing")
+                    DebugLog.writeAttachmentEvent("═══════════════════════════════")
+
+                    return
+                }
+
+                DebugLog.writeAttachmentEvent("✅ CALL onPreview")
+                DebugLog.writeAttachmentEvent("═══════════════════════════════")
+
                 onPreview(url)
+
             } label: {
                 Image(systemName: "eye")
             }
