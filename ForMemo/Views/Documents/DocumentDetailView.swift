@@ -69,12 +69,25 @@ struct DocumentDetailView: View {
                     String(localized: "Document Number"),
                     text: $document.documentNumber
                 )
+                
+                LabeledContent(String(localized: "Stored in: ")) {
+                    TextField(
+                        "",
+                        text: $document.storageLocation,
+                        prompt: Text(String(localized: "storage location"))
+                        
+
+                    )
+                    .multilineTextAlignment(.trailing)
+                    .textInputAutocapitalization(.words)
+                }
             } header: {
                 Text(String(localized: "Information"))
             }
             .listRowBackground(
                 Color(.systemBackground).opacity(0.3)
             )
+
             Section {
                 
                 DatePicker(
@@ -186,6 +199,9 @@ struct DocumentDetailView: View {
                             .trimmingCharacters(in: .whitespacesAndNewlines)
                             .isEmpty
                         && document.notes
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                            .isEmpty
+                        && document.storageLocation
                             .trimmingCharacters(in: .whitespacesAndNewlines)
                             .isEmpty
                         

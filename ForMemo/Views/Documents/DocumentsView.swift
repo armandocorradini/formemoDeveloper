@@ -19,6 +19,8 @@ struct DocumentsView: View {
 
         return documents.filter {
             $0.name.localizedCaseInsensitiveContains(searchText)
+            || $0.storageLocation.localizedCaseInsensitiveContains(searchText)
+            || $0.documentNumber.localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -65,6 +67,12 @@ struct DocumentsView: View {
 
                                 Text(document.name)
                                     .font(.headline)
+
+//                                if !document.storageLocation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+//                                    Label(document.storageLocation, systemImage: "archivebox")
+//                                        .font(.caption)
+//                                        .foregroundStyle(.secondary)
+//                                }
 
                                 if let expiryDate = document.expiryDate {
 

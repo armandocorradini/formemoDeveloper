@@ -21969,6 +21969,34 @@
         }
       }
     },
+    "storage location" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "aufbewahrungsort"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "lugar de conservación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "lieu de conservation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "luogo conservazione"
+          }
+        }
+      }
+    },
     "Store and organize loyalty cards and tickets with barcodes or QR codes, holder information, notes, custom colors and optional logos always available inside the app." : {
       "localizations" : {
         "de" : {
@@ -22049,6 +22077,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nome negozio"
+          }
+        }
+      }
+    },
+    "Stored in: " : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufbewahrt in: "
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado en: "
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardado en: "
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conservato in: "
           }
         }
       }

@@ -607,6 +607,7 @@ private struct DocumentTransferObject: Codable {
     let issueDate: Date?
     let expiryDate: Date?
     let notes: String
+    let storageLocation: String
     let notificationEnabled: Bool
     let notificationDaysBefore: Int
     let createdAt: Date
@@ -619,6 +620,7 @@ private struct DocumentTransferObject: Codable {
         self.issueDate = document.issueDate
         self.expiryDate = document.expiryDate
         self.notes = document.notes
+        self.storageLocation = document.storageLocation
         self.notificationEnabled = document.notificationEnabled
         self.notificationDaysBefore = document.notificationDaysBefore
         self.createdAt = document.createdAt
@@ -881,6 +883,7 @@ private enum BackupManager {
                 document.issueDate = dto.issueDate
                 document.expiryDate = dto.expiryDate
                 document.notes = dto.notes
+                document.storageLocation = dto.storageLocation
                 document.notificationEnabled = dto.notificationEnabled
                 document.notificationDaysBefore = dto.notificationDaysBefore
                 document.createdAt = dto.createdAt

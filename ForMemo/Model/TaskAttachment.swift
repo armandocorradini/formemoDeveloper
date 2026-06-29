@@ -532,6 +532,7 @@ final class DeletedItem {
     var documentExpiryDate: Date?
 
     var documentNotes: String?
+    var documentStorageLocation: String?
 
     var documentNotificationEnabled: Bool?
     var documentNotificationDaysBefore: Int?
@@ -800,6 +801,7 @@ extension DeletedItem {
             document.issueDate = documentIssueDate
             document.expiryDate = documentExpiryDate
             document.notes = documentNotes ?? ""
+            document.storageLocation = documentStorageLocation ?? ""
             document.notificationEnabled = documentNotificationEnabled ?? false
             document.notificationDaysBefore = documentNotificationDaysBefore ?? 30
             document.createdAt = documentCreatedAt ?? Date()

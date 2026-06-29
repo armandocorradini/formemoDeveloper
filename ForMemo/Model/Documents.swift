@@ -17,6 +17,7 @@ final class DocumentItem {
     var expiryDate: Date?
 
     var notes: String = ""
+    var storageLocation: String = ""
 
     var notificationEnabled: Bool = false
 
@@ -38,6 +39,7 @@ final class DocumentItem {
         issueDate: Date? = nil,
         expiryDate: Date? = nil,
         notes: String = "",
+        storageLocation: String = "",
         notificationEnabled: Bool = false,
         notificationDaysBefore: Int = 30,
         sortOrder: Int = 0
@@ -48,6 +50,7 @@ final class DocumentItem {
         self.issueDate = issueDate
         self.expiryDate = expiryDate
         self.notes = notes
+        self.storageLocation = storageLocation
         self.notificationEnabled = notificationEnabled
         self.notificationDaysBefore = notificationDaysBefore
         self.sortOrder = sortOrder
@@ -125,6 +128,7 @@ extension DocumentItem {
         item.documentExpiryDate = document.expiryDate
 
         item.documentNotes = document.notes
+        item.documentStorageLocation = document.storageLocation
 
         item.documentNotificationEnabled = document.notificationEnabled
         item.documentNotificationDaysBefore = document.notificationDaysBefore
