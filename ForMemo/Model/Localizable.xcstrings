@@ -303,6 +303,40 @@
         }
       }
     },
+    "%lld • %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld •%2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld • %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld •%2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld •%2$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld •%2$@"
+          }
+        }
+      }
+    },
     "%lld attachment" : {
       "localizations" : {
         "de" : {
@@ -1767,13 +1801,88 @@
       }
     },
     "1 hour" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 Stunde"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 hora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 heure"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 ora"
+          }
+        }
+      }
     },
     "3 hours" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 Stunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 horas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 heures"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3 ore"
+          }
+        }
+      }
     },
     "5 minutes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 Minuten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 minutos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 minutes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "5 minuti"
+          }
+        }
+      }
     },
     "7 Days" : {
       "localizations" : {
@@ -1804,10 +1913,60 @@
       }
     },
     "15 minutes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 Minuten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 minutos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 minutes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 minuti"
+          }
+        }
+      }
     },
     "30 minutes" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "15 Minuten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 minutos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 minutes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 minuti"
+          }
+        }
+      }
     },
     "A-Z" : {
       "shouldTranslate" : false
@@ -1836,6 +1995,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Account e informazioni"
+          }
+        }
+      }
+    },
+    "Active" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiv"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actifs"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attive"
           }
         }
       }
@@ -6293,7 +6480,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completata"
+            "value" : "Completate"
           }
         }
       }
@@ -6378,6 +6565,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attività completate e allegati"
+          }
+        }
+      }
+    },
+    "Completed with attachments" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abgeschlossen mit Anhängen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completados con archivos adjuntos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminés avec pièces jointes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completate con allegati"
           }
         }
       }
@@ -10055,6 +10270,34 @@
         }
       }
     },
+    "Expiring in 30 days" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Läuft innerhalb von 30 Tagen ab"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caducan en los próximos 30 días"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expirant dans les 30 prochains jours"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In scadenza entro 30 giorni"
+          }
+        }
+      }
+    },
     "Expiry Date" : {
       "localizations" : {
         "de" : {
@@ -10764,6 +11007,9 @@
           }
         }
       }
+    },
+    "ForMemo" : {
+      "shouldTranslate" : false
     },
     "ForMemo Diagnostics" : {
       "localizations" : {
@@ -12702,6 +12948,34 @@
         }
       }
     },
+    "In progress" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Bearbeitung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En curso"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cours"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In corso"
+          }
+        }
+      }
+    },
     "Include Checks" : {
       "localizations" : {
         "de" : {
@@ -13719,6 +13993,34 @@
         }
       }
     },
+    "Lists" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liste"
+          }
+        }
+      }
+    },
     "Loading calendars..." : {
       "localizations" : {
         "de" : {
@@ -14035,6 +14337,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Carta fedeltà"
+          }
+        }
+      }
+    },
+    "Loyalty Cards" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kundenkarten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjetas de fidelización"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cartes de fidélité"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carte fedeltà"
           }
         }
       }
@@ -15844,6 +16175,34 @@
         }
       }
     },
+    "Not started" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht begonnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin iniciar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non commencées"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non iniziate"
+          }
+        }
+      }
+    },
     "Notes" : {
       "localizations" : {
         "de" : {
@@ -16557,6 +16916,34 @@
         }
       }
     },
+    "Overdue" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Überfällig"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vencidos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En retard"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scadute"
+          }
+        }
+      }
+    },
     "Overdue in previous days: %lld" : {
       "comment" : "A label that shows the number of overdue tasks in the previous days.",
       "isCommentAutoGenerated" : true,
@@ -16649,6 +17036,34 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Overview" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Übersicht"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resumen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aperçu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riepilogo"
           }
         }
       }
@@ -18577,6 +18992,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ogni anno"
+          }
+        }
+      }
+    },
+    "Recurring" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederkehrend"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recurrentes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récurrents"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricorrenti"
           }
         }
       }
@@ -21980,6 +22423,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Stop"
+          }
+        }
+      }
+    },
+    "Storage" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speicher"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Almacenamiento"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stockage"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spazio utilizzato"
           }
         }
       }
@@ -28164,6 +28635,34 @@
         }
       }
     },
+    "With attachments" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Anhängen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con archivos adjuntos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avec pièces jointes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con allegati"
+          }
+        }
+      }
+    },
     "With global notification" : {
       "comment" : "A label displayed in the settings view.",
       "isCommentAutoGenerated" : true,
@@ -28190,6 +28689,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Con notifica globale"
+          }
+        }
+      }
+    },
+    "With location" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Standort"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con ubicación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avec localisation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con posizione"
           }
         }
       }

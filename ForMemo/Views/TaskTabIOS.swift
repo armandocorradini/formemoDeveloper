@@ -148,7 +148,7 @@ struct TaskTabView: View {
                         Capsule()
                             .fill(Color.accentColor)
                             .frame(width: 16, height: 3)
-                            .opacity([0,2,4,5,7,8,9].contains(selectedTab) ? 1 : 0)
+                            .opacity([0,2,4,5,7,8,9,11].contains(selectedTab) ? 1 : 0)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 49)
@@ -185,6 +185,32 @@ struct TaskTabView: View {
 
                         Divider()
 
+                        Button {
+                            selectedTab = 11
+                            showMorePopover = false
+                        } label: {
+                            HStack(spacing: 10) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "text.viewfinder")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 11 ? 1 : 0)
+                                }
+                                Text(String(localized: "Overview"))
+                            }
+                            .foregroundStyle(
+                                selectedTab == 11
+                                ? Color.accentColor
+                                : Color.primary
+                            )
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
                         Button {
                             selectedTab = 7
                             showMorePopover = false
@@ -370,6 +396,11 @@ struct TaskTabView: View {
                 Dashboard()
             }
             
+        case 11:
+            NavigationStack {
+                OverviewView()
+            }
+            
         case 0:
             NavigationStack(path: $StartPath) {
                 StartView()
@@ -447,6 +478,8 @@ struct TaskTabView: View {
                 sidebarRow(String(localized: "calendar_tab"), "calendar", 3)
                 sidebarRow(String(localized: "map_tab"), "map", 5)
                 sidebarRow(String(localized: "Start_tab"), "house", 0)
+                sidebarRow(String(localized: "Overview"),
+                    "text.viewfinder",11)
                 sidebarRow(String(localized: "wallet_tab"), "wallet.bifold", 6)
                 sidebarRow(String(localized: "Trips"), "suitcase.rolling", 7)
                 sidebarRow(String(localized: "Documents"), "doc.text", 8)
