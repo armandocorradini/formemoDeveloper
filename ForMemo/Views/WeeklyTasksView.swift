@@ -156,23 +156,6 @@ struct WeeklyTasksView: View {
         }
     }
 
-    private func rowPosition(index: Int, total: Int) -> TaskRowPosition {
-
-        if total == 1 {
-            return .single
-        }
-
-        if index == 0 {
-            return .first
-        }
-
-        if index == total - 1 {
-            return .last
-        }
-
-        return .middle
-    }
-
     @ViewBuilder
     private func groupedHeaderView(for group: GroupedDay) -> some View {
         if let title = relativeHeaderTitle(for: group.date) {
@@ -473,7 +456,7 @@ struct WeeklyTasksView: View {
                     taskPendingDeletion: $taskPendingDeletion,
                     taskWeekDays: taskWeekDays,
                     task: task,
-                    position: rowPosition(
+                    position:     TaskRowPosition.position(
                         index: index,
                         total: group.tasks.count
                     )
@@ -550,21 +533,11 @@ private struct WeeklyTaskRow: View {
         settings.showTodayExpiredLabel
     }
 
-    private var selectedRowStyle: Int {
-        settings.selectedRowStyle
-    }
 
     private var showDateEveryRow: Bool {
         settings.showDateEveryRow
     }
 
-    private var highlightEnabled: Bool {
-        settings.highlightEnabled
-    }
-
-    private var highlightColor: Color {
-        Color(hex: settings.highlightColorHex) ?? .red
-    }
     
     @Binding var taskPendingDeletion: TodoTask?
     
@@ -596,34 +569,23 @@ private struct WeeklyTaskRow: View {
                 showDateEveryRow
                 ? true
                 : (position == .first || position == .single),
-            appearance: TaskRowAppearance(
-                iconStyle: settings.iconStyle,
-                showBadge: settings.showBadge,
-                showAttachments: settings.showAttachments,
-                showLocation: settings.showLocation,
-                showPriority: settings.showPriority,
-                showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
-                highlightEnabled: highlightEnabled,
-                showTodayExpiredLabel: showTodayExpiredLabel,
-                selectedRowStyle: selectedRowStyle,
-                dueIconEffect: settings.dueIconEffect
-            )
+            appearance: .current(from: settings)
         )
-        .padding(.leading, 10)
+        
         .frame(
             minHeight: TaskRowMetrics.rowHeight,
             alignment: .leading
         )
-        .listRowBackground(
-            cardBackground
-        )
-        .contentShape(Rectangle())
-        .listRowInsets(
-            TaskRowMetrics.insets(
-                for: .grouped,
-                position: position
+        .modifier(
+            RowCardStyle(
+                task: task,
+                style: .grouped,
+                position: position,
+                opacity: 1
             )
         )
+        .contentShape(Rectangle())
+
         .animation(nil, value: task.deadLine)
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             completeAction
@@ -828,34 +790,6 @@ private struct WeeklyTaskRow: View {
             AppLogger.persistence.fault("Failed to save completion: \(error)")
         }
     }
-    
-    // MARK: - Background
-    private var cardBackground: some View {
-        let deadline = task.deadLine ?? .distantFuture
-
-        let isCritical = priorityIconName == "flame"
-        let isToday = Calendar.current.isDateInToday(deadline)
-        let isOverdue = deadline < Date()
-
-        let shouldHighlight =
-            highlightEnabled &&
-            isCritical &&
-            !task.isCompleted &&
-            (isToday || isOverdue)
-
-        return TaskRowSurface(
-            shape: AnyInsettableShape(
-                TaskRowShape(position: position)
-            ),
-            isToday: isToday,
-            isGrouped: true,
-            isHighlighted: shouldHighlight,
-            highlightColor: highlightColor,
-            showSeparator: position != .last && position != .single
-        )
-    }
-
-
     
 }
 

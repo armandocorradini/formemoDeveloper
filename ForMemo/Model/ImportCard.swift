@@ -14,12 +14,12 @@ struct ImportCard<Content: View>: View {
         content
             .padding(14)
             .background(
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 22)
                     .fill(.background)
                     .shadow(color: .black.opacity(isSelected ? 0.15 : 0.05), radius: 6, y: 2)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 18)
+                RoundedRectangle(cornerRadius: 22)
                     .stroke(isSelected ? .blue : .clear, lineWidth: 2)
             )
             .scaleEffect(isSelected ? 1.02 : 1.0)

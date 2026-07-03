@@ -185,7 +185,7 @@ struct BackgroundCustomizationView: View {
                                         ZStack {
 
                                             RoundedRectangle(
-                                                cornerRadius: 18,
+                                                cornerRadius: 22,
                                                 style: .continuous
                                             )
                                             .fill(
@@ -210,7 +210,7 @@ struct BackgroundCustomizationView: View {
                                         }
                                         .frame(width: 52, height: 100)
                                         .overlay {
-                                            RoundedRectangle(cornerRadius: 18)
+                                            RoundedRectangle(cornerRadius: 22)
                                                 .stroke(
                                                     isSelected ? Color.accentColor : Color.clear,
                                                     lineWidth: 3

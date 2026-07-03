@@ -49,6 +49,15 @@ final class AppSettings {
         highlightColorHex = defaults.string(forKey: "tasklist.highlightColor") ?? (Color.red.toHex() ?? "")
         showTodayExpiredLabel = defaults.object(forKey: TaskListAppearanceKeys.showTodayExpiredLabel) as? Bool ?? true
         selectedTaskRowStyle = defaults.object(forKey: "selectedTaskRowStyle") as? Int ?? 0
+        surfaceCornerRadius = defaults.object(forKey: "surfaceCornerRadius") as? Double ?? 4
+
+        surfaceBorder = SurfaceBorderStyle(
+            rawValue: defaults.integer(forKey: "surfaceBorder")
+        ) ?? .hairline
+
+        surfaceMaterial = SurfaceMaterialStyle(
+            rawValue: defaults.integer(forKey: "surfaceMaterial")
+        ) ?? .strong
         dueIconEffectRaw = defaults.string(forKey: "dueIconEffect") ?? DueIconEffect.blink.rawValue
         
         let rawValue = defaults.string(forKey: "TaskListStyle")
@@ -172,11 +181,32 @@ final class AppSettings {
         }
     }
     
-    var selectedRowStyle: Int {
-        get { selectedTaskRowStyle }
-        set { selectedTaskRowStyle = newValue }
+    var surfaceCornerRadius: Double {
+        didSet {
+            UserDefaults.standard.set(
+                surfaceCornerRadius,
+                forKey: "surfaceCornerRadius"
+            )
+        }
     }
-    
+
+    var surfaceBorder: SurfaceBorderStyle {
+        didSet {
+            UserDefaults.standard.set(
+                surfaceBorder.rawValue,
+                forKey: "surfaceBorder"
+            )
+        }
+    }
+
+    var surfaceMaterial: SurfaceMaterialStyle {
+        didSet {
+            UserDefaults.standard.set(
+                surfaceMaterial.rawValue,
+                forKey: "surfaceMaterial"
+            )
+        }
+    }
     var dueIconEffectRaw: String {
         didSet {
             UserDefaults.standard.set(
@@ -388,6 +418,9 @@ final class AppSettings {
         highlightColorHex = Color.red.toHex() ?? ""
         showTodayExpiredLabel = true
         selectedTaskRowStyle = 0
+        surfaceCornerRadius = 22
+        surfaceBorder = .hairline
+        surfaceMaterial = .strong
         dueIconEffectRaw = DueIconEffect.blink.rawValue
         taskListStyle = .plain
         showDateEveryRow = false
@@ -410,5 +443,6 @@ final class AppSettings {
         locationRadius = 150
 
         loadFromUserDefaults(.standard)
+        
     }
 }

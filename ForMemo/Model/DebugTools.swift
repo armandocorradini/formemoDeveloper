@@ -402,6 +402,11 @@ enum DebugLog {
             forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
         )
 
+        let defaultContainer = fm.url(
+            forUbiquityContainerIdentifier: nil
+        )
+        
+        
         let cloudAttachments = cloudContainer?
             .appendingPathComponent("Documents", isDirectory: true)
             .appendingPathComponent("TaskAttachments", isDirectory: true)
@@ -422,6 +427,11 @@ enum DebugLog {
         write("☁️ iCloud Available: \(cloudContainer == nil ? "NO" : "YES")")
 
         write("☁️ iCloud Container: \(cloudContainer?.path ?? "nil")")
+        
+        write("☁️ Default Container: \(defaultContainer?.path ?? "nil")")
+
+        write("☁️ Explicit == Default: \(cloudContainer?.path == defaultContainer?.path)")
+        
         write("☁️ Cloud Attachments: \(cloudAttachments?.path ?? "nil")")
         write("☁️ Cloud Trash: \(cloudTrash?.path ?? "nil")")
 
@@ -522,6 +532,7 @@ enum DebugLog {
                 write("        Modified: \(modified)")
                 write("        iCloud: \(ubiquitous)")
                 write("        Download: \(downloadStatus)")
+                write("        Readable: \(fm.isReadableFile(atPath: file.path))")
             }
         }
         
@@ -685,6 +696,74 @@ enum DebugLog {
         write("Missing: \(missingCount)")
         write("Nil URLs: \(nilURLCount)")
         write("════════════════════════════════════════════")
+        
+        write("")
+        write("════════════════════════════════════════════")
+        write("📂 DATABASE ↔ FILESYSTEM CHECK")
+        write("════════════════════════════════════════════")
+
+        var databaseFiles = Set<String>()
+
+        for attachment in attachments {
+            
+            write("")
+            write("────────────────────────────────────")
+            write("ATTACHMENT")
+            write("────────────────────────────────────")
+
+            write("ID: \(attachment.id)")
+            write("Task ID: \(attachment.task?.id.uuidString ?? "nil")")
+            write("Original Name: \(attachment.originalName)")
+            write("Relative Path: \(attachment.relativePath)")
+            write("Content Type: \(attachment.contentType)")
+            write("Created: \(attachment.createdAt)")
+            
+            databaseFiles.insert(attachment.relativePath)
+        }
+
+
+        
+        var filesystemFiles = Set<String>()
+
+        if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+           let files = try? fm.contentsOfDirectory(
+                at: attachmentsDirectory,
+                includingPropertiesForKeys: nil
+           ) {
+
+            for file in files {
+                filesystemFiles.insert(file.lastPathComponent)
+            }
+        }
+
+        let missingFiles = databaseFiles.subtracting(filesystemFiles)
+        let orphanFiles = filesystemFiles.subtracting(databaseFiles)
+
+        write("Database files: \(databaseFiles.count)")
+        write("Filesystem files: \(filesystemFiles.count)")
+        write("Missing files: \(missingFiles.count)")
+        write("Orphan files: \(orphanFiles.count)")
+
+        if !missingFiles.isEmpty {
+
+            write("")
+            write("❌ FILE PRESENTI NEL DATABASE MA NON SUL DISCO")
+
+            for file in missingFiles.sorted() {
+                write("   \(file)")
+            }
+        }
+
+        if !orphanFiles.isEmpty {
+
+            write("")
+            write("⚠️ FILE PRESENTI SUL DISCO MA NON NEL DATABASE")
+
+            for file in orphanFiles.sorted() {
+                write("   \(file)")
+            }
+        }
+        
         
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
            let files = try? FileManager.default.contentsOfDirectory(

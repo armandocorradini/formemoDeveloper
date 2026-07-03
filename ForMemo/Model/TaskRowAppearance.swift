@@ -9,6 +9,29 @@ enum TaskRowPosition {
     case last
 }
 
+extension TaskRowPosition {
+
+    static func position(
+        index: Int,
+        total: Int
+    ) -> Self {
+
+        if total == 1 {
+            return .single
+        }
+
+        if index == 0 {
+            return .first
+        }
+
+        if index == total - 1 {
+            return .last
+        }
+
+        return .middle
+    }
+}
+
 // MARK: - Metriche condivise
 
 enum TaskRowMetrics {
@@ -48,12 +71,6 @@ enum TaskRowMetrics {
     // Spessore dei separator personalizzati.
     // Valori piccoli riducono il rumore visivo.
     static let separatorHeight: CGFloat = 0.35
-
-    // Raggio blur utilizzato dalle ombre delle row.
-    // Valori più alti creano ombre più morbide.
-    static let shadowRadius: CGFloat = 8
-    // Offset verticale delle ombre.
-    static let shadowYOffset: CGFloat = 3
 
     // Larghezza della barra verticale di highlight/priorità.
     static let highlightBarWidth: CGFloat = 1.5
@@ -160,13 +177,6 @@ enum TaskRowTheme {
     // Opacità dei separator in light mode.
     static let separatorOpacityLight: Double = 0.26
 
-    // Intensità ombre in dark mode.
-    // Valori alti aumentano la percezione di profondità.
-    static let shadowOpacityDark: Double = 0.16
-
-    // Intensità ombre in light mode.
-    static let shadowOpacityLight: Double = 0.08
-
     // Intensità background delle task Today in dark mode.
     static let todayBackgroundOpacityDark: Double = 0.50
 
@@ -224,34 +234,6 @@ enum TaskRowTheme {
         : Color.black.opacity(separatorOpacityLight)
     }
 
-    // Builder condiviso per il colore delle ombre.
-    static func shadow(
-        colorScheme: ColorScheme
-    ) -> Color {
-
-        Color.black.opacity(
-            colorScheme == .dark
-            ? shadowOpacityDark
-            : shadowOpacityLight
-        )
-    }
-}
-
-// MARK: - Rendering metrics condivise
-
-enum TaskRowRendering {
-
-    // Intensità shadow layer dark mode.
-    static let shadowOpacityDark: CGFloat = 0.72
-
-    // Intensità shadow layer light mode.
-    static let shadowOpacityLight: CGFloat = 0.42
-
-    // Moltiplicatore blur della shadow.
-    static let shadowBlurFactor: CGFloat = 0.45
-
-    // Offset verticale shadow layer.
-    static let shadowLayerYOffset: CGFloat = 1
 }
 
 
@@ -262,10 +244,11 @@ enum TaskRowRendering {
 struct TaskRowShape: InsettableShape {
 
     let position: TaskRowPosition
+    let cornerRadius: CGFloat
     var insetAmount: CGFloat = 0
 
     private var radius: CGFloat {
-        TaskRowMetrics.groupedCornerRadius
+        cornerRadius
     }
 
     private var middleRadius: CGFloat {
@@ -333,6 +316,24 @@ struct TaskRowShape: InsettableShape {
         copy.insetAmount += amount
         return copy
     }
+    
+    init(
+
+        position: TaskRowPosition,
+
+        cornerRadius: CGFloat = TaskRowMetrics.groupedCornerRadius,
+
+        insetAmount: CGFloat = 0
+
+    ) {
+
+        self.position = position
+
+        self.cornerRadius = cornerRadius
+
+        self.insetAmount = insetAmount
+
+    }
 }
 
 // MARK: - Helper condivisi
@@ -377,4 +378,24 @@ enum TaskRowLayout {
 
     // Offset compensazione icone
     static let iconCompensationOffset: CGFloat = 0
+}
+
+
+
+extension TaskRowAppearance {
+
+    static func current(from settings: AppSettings) -> Self {
+        .init(
+            iconStyle: settings.iconStyle,
+            showBadge: settings.showBadge,
+            showAttachments: settings.showAttachments,
+            showLocation: settings.showLocation,
+            showPriority: settings.showPriority,
+            showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
+            highlightEnabled: settings.highlightEnabled,
+            showTodayExpiredLabel: settings.showTodayExpiredLabel,
+            selectedRowStyle: settings.selectedTaskRowStyle,
+            dueIconEffect: settings.dueIconEffect
+        )
+    }
 }

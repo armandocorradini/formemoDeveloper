@@ -206,7 +206,7 @@ struct LoyaltyCardDetailView: View {
                             .background(.white)
                             .clipShape(
                                 RoundedRectangle(
-                                    cornerRadius: 18,
+                                    cornerRadius: 22,
                                     style: .continuous
                                 )
                             )
@@ -227,7 +227,7 @@ struct LoyaltyCardDetailView: View {
                         .fill(cardBackgroundColor)
                         .shadow(
                             color: .black.opacity(0.14),
-                            radius: 18,
+                            radius: 22,
                             y: 8
                         )
                     )

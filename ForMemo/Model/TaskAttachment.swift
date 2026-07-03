@@ -52,7 +52,8 @@ extension TaskAttachment {
                     withIntermediateDirectories: true
                 )
             }
-
+            DebugLog.writeAttachmentEvent("ATTACHMENTS DIRECTORY")
+            DebugLog.writeAttachmentEvent(directory.path)
             return directory
         }
 
@@ -71,7 +72,8 @@ extension TaskAttachment {
                     withIntermediateDirectories: true
                 )
             }
-
+            DebugLog.writeAttachmentEvent("ATTACHMENTS DIRECTORY")
+            DebugLog.writeAttachmentEvent(directory.path)
             return directory
         }
 
@@ -123,17 +125,20 @@ extension TaskAttachment {
 
     private static func cloudAttachmentsDirectory() -> URL? {
 
-        let fm = FileManager.default
-
-        guard let containerURL = fm.url(
-            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
-        ) else {
+        guard let directory = attachmentsDirectory else {
             return nil
         }
 
-        return containerURL
-            .appendingPathComponent("Documents", isDirectory: true)
-            .appendingPathComponent("TaskAttachments", isDirectory: true)
+        // Restituisce la cartella condivisa degli allegati solo se è quella iCloud.
+        // Se attachmentsDirectory è in fallback locale, il resolver continuerà
+        // automaticamente a usare legacyAttachmentsDirectory().
+        let path = directory.path
+
+        guard path.contains("/Mobile Documents/") else {
+            return nil
+        }
+
+        return directory
     }
 
     private static func resolvedExistingURL(
@@ -142,17 +147,51 @@ extension TaskAttachment {
 
         let fm = FileManager.default
 
+        DebugLog.writeAttachmentEvent("attachmentsDirectory: \(Self.attachmentsDirectory?.path ?? "nil")")
+        DebugLog.writeAttachmentEvent("trashDirectory: \(Self.trashDirectory?.path ?? "nil")")
+
+        if let explicit = fm.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) {
+            DebugLog.writeAttachmentEvent("Explicit container: \(explicit.path)")
+        } else {
+            DebugLog.writeAttachmentEvent("Explicit container: NIL")
+        }
+
+        if let `default` = fm.url(
+            forUbiquityContainerIdentifier: nil
+        ) {
+            DebugLog.writeAttachmentEvent("Default container: \(`default`.path)")
+        } else {
+            DebugLog.writeAttachmentEvent("Default container: NIL")
+        }
+  
+        
         DebugLog.writeAttachmentEvent("")
         DebugLog.writeAttachmentEvent("═══════════════════════════════")
         DebugLog.writeAttachmentEvent("RESOLVE START")
         DebugLog.writeAttachmentEvent("relativePath: \(relativePath)")
-        
+        DebugLog.writeAttachmentEvent("attachmentsDirectory:")
+        DebugLog.writeAttachmentEvent(Self.attachmentsDirectory?.path ?? "nil")
+
+        DebugLog.writeAttachmentEvent("trashDirectory:")
+        DebugLog.writeAttachmentEvent(Self.trashDirectory?.path ?? "nil")
+
+        DebugLog.writeAttachmentEvent("legacyDirectory:")
+        DebugLog.writeAttachmentEvent(Self.legacyAttachmentsDirectory()?.path ?? "nil")
         
         // 1️⃣ iCloud path
         if let cloud = cloudAttachmentsDirectory()?
             .appendingPathComponent(relativePath),
            fm.fileExists(atPath: cloud.path) {
 
+            DebugLog.writeAttachmentEvent("CLOUD PATH:")
+            DebugLog.writeAttachmentEvent(cloud.path)
+
+            let reachable = (try? cloud.checkResourceIsReachable()) ?? false
+            DebugLog.writeAttachmentEvent("Reachable: \(reachable)")
+            
+            
             DebugLog.writeAttachmentEvent("CLOUD candidate: \(cloud.path)")
             
             try? fm.startDownloadingUbiquitousItem(at: cloud)
@@ -165,15 +204,30 @@ extension TaskAttachment {
             let status = values?.ubiquitousItemDownloadingStatus
             let size = values?.fileSize ?? 0
 
+            let ubiquitous = (try? cloud.resourceValues(
+                forKeys: [.isUbiquitousItemKey]
+            ))?.isUbiquitousItem ?? false
+
+            DebugLog.writeAttachmentEvent("CLOUD ubiquitous: \(ubiquitous)")
+            DebugLog.writeAttachmentEvent("CLOUD readable: \(fm.isReadableFile(atPath: cloud.path))")
+            
+            
             DebugLog.writeAttachmentEvent("CLOUD exists: YES")
             DebugLog.writeAttachmentEvent("CLOUD size: \(size)")
             DebugLog.writeAttachmentEvent("CLOUD status: \(String(describing: status))")
+            
+            let attrs = try? fm.attributesOfItem(atPath: cloud.path)
+
+            DebugLog.writeAttachmentEvent("Creation Date: \(String(describing: attrs?[.creationDate]))")
+            DebugLog.writeAttachmentEvent("Modification Date: \(String(describing: attrs?[.modificationDate]))")
+            
             
             // 🔥 Return iCloud file only if really materialized
             if status == .current || status == .downloaded {
 
                 if size > 0 {
-                    DebugLog.writeAttachmentEvent("✅ RETURN CLOUD")
+                    DebugLog.writeAttachmentEvent("RETURN CLOUD")
+                    DebugLog.writeAttachmentEvent(cloud.path)
                     return cloud
                 }
             }
@@ -192,6 +246,15 @@ extension TaskAttachment {
             .appendingPathComponent(relativePath),
            fm.fileExists(atPath: legacy.path) {
             DebugLog.writeAttachmentEvent("LEGACY candidate: \(legacy.path)")
+            let legacySize = (try? fm.attributesOfItem(
+                atPath: legacy.path
+            )[.size] as? Int64) ?? 0
+
+            DebugLog.writeAttachmentEvent("LEGACY exists: true")
+            DebugLog.writeAttachmentEvent("LEGACY readable: \(fm.isReadableFile(atPath: legacy.path))")
+            DebugLog.writeAttachmentEvent("LEGACY size: \(legacySize)")
+            
+            
             // 🔥 SELF-HEALING:
             // if iCloud file is missing but legacy exists,
             // silently restore it into iCloud container.
@@ -270,6 +333,39 @@ extension TaskAttachment {
 
         DebugLog.writeAttachmentEvent("❌ RESULT = NIL")
         DebugLog.writeAttachmentEvent("═══════════════════════════════")
+        DebugLog.writeAttachmentEvent("FILE NON TROVATO")
+
+        if let cloud = cloudAttachmentsDirectory() {
+            let url = cloud.appendingPathComponent(relativePath)
+
+            DebugLog.writeAttachmentEvent("Cloud path:")
+            DebugLog.writeAttachmentEvent(url.path)
+            DebugLog.writeAttachmentEvent(
+                "Cloud exists: \(fm.fileExists(atPath: url.path))"
+            )
+        }
+
+        if let legacy = legacyAttachmentsDirectory() {
+            let url = legacy.appendingPathComponent(relativePath)
+
+            DebugLog.writeAttachmentEvent("Legacy path:")
+            DebugLog.writeAttachmentEvent(url.path)
+            DebugLog.writeAttachmentEvent(
+                "Legacy exists: \(fm.fileExists(atPath: url.path))"
+            )
+        }
+
+        if let trash = trashDirectory {
+            let url = trash.appendingPathComponent(relativePath)
+
+            DebugLog.writeAttachmentEvent("Trash path:")
+            DebugLog.writeAttachmentEvent(url.path)
+            DebugLog.writeAttachmentEvent(
+                "Trash exists: \(fm.fileExists(atPath: url.path))"
+            )
+        }
+
+        DebugLog.writeAttachmentEvent("═══════════════════════════════")
 
         return nil
     }
@@ -339,7 +435,25 @@ extension TaskAttachment {
         guard let sourceURL = fileURL else { return nil }
 
         let fm = FileManager.default
-
+        DebugLog.writeAttachmentEvent("")
+        DebugLog.writeAttachmentEvent("════════════════════════════════════")
+        DebugLog.writeAttachmentEvent("DELETE REQUEST")
+        DebugLog.writeAttachmentEvent("Attachment ID: \(id.uuidString)")
+        DebugLog.writeAttachmentEvent("Task ID: \(task?.id.uuidString ?? "nil")")
+        DebugLog.writeAttachmentEvent("Relative Path: \(relativePath)")
+        DebugLog.writeAttachmentEvent("Original Name: \(originalName)")
+        DebugLog.writeAttachmentEvent("CALL STACK:")
+        Thread.callStackSymbols.forEach {
+            DebugLog.writeAttachmentEvent($0)
+        }
+        DebugLog.writeAttachmentEvent("════════════════════════════════════")
+        DebugLog.writeAttachmentEvent("")
+        DebugLog.writeAttachmentEvent("═══════════════════════════════")
+        DebugLog.writeAttachmentEvent("DELETE START")
+        DebugLog.writeAttachmentEvent("Source: \(sourceURL.path)")
+        DebugLog.writeAttachmentEvent("Exists: \(fm.fileExists(atPath: sourceURL.path))")
+        
+        
         // Se il file non esiste già → nessuna azione
         guard fm.fileExists(atPath: sourceURL.path) else {
             return nil
@@ -389,7 +503,18 @@ extension TaskAttachment {
         ) { readURL, writeURL in
             do {
                 try fm.moveItem(at: readURL, to: writeURL)
+                
+                DebugLog.writeAttachmentEvent("MOVE TO TRASH")
+                DebugLog.writeAttachmentEvent("From: \(readURL.path)")
+                DebugLog.writeAttachmentEvent("To: \(writeURL.path)")
 
+                let movedSize = (try? fm.attributesOfItem(
+                    atPath: writeURL.path
+                )[.size] as? Int64) ?? 0
+
+                DebugLog.writeAttachmentEvent("Trash size: \(movedSize)")
+                
+                
                 // 🔥 verifica reale
                 let size = (try? fm.attributesOfItem(atPath: writeURL.path)[.size] as? Int64) ?? 0
                 if size == 0 {
@@ -410,6 +535,10 @@ extension TaskAttachment {
             AppLogger.persistence.fault("File coordination failed: \(coordError.localizedDescription)")
         }
 
+        DebugLog.writeAttachmentEvent("DELETE END")
+        DebugLog.writeAttachmentEvent("═══════════════════════════════")
+        
+        
         return result
     }
 }
@@ -715,11 +844,49 @@ extension DeletedItem {
                     // 🔒 ensure no collision
                     if fm.fileExists(atPath: destinationURL.path) {
                         try? fm.removeItem(at: destinationURL)
+                        
+                        
+
+                        
+                        
                     }
                     
                     // 🔥 Move back to attachments folder
                     do {
                         try fm.moveItem(at: fileURL, to: destinationURL)
+                        DebugLog.writeAttachmentEvent("")
+                        DebugLog.writeAttachmentEvent("═══════════════════════════════")
+                        DebugLog.writeAttachmentEvent("RESTORE")
+                        DebugLog.writeAttachmentEvent("From: \(fileURL.path)")
+                        DebugLog.writeAttachmentEvent("To: \(destinationURL.path)")
+
+                        let restoredSize = (try? fm.attributesOfItem(
+                            atPath: destinationURL.path
+                        )[.size] as? Int64) ?? 0
+
+                        DebugLog.writeAttachmentEvent("Restored size: \(restoredSize)")
+                        DebugLog.writeAttachmentEvent("Exists: \(fm.fileExists(atPath: destinationURL.path))")
+                        DebugLog.writeAttachmentEvent("Readable: \(fm.isReadableFile(atPath: destinationURL.path))")
+
+                        if let values = try? destinationURL.resourceValues(forKeys: [
+                            .isUbiquitousItemKey,
+                            .ubiquitousItemDownloadingStatusKey
+                        ]) {
+
+                            DebugLog.writeAttachmentEvent(
+                                "isUbiquitous: \(values.isUbiquitousItem ?? false)"
+                            )
+
+                            DebugLog.writeAttachmentEvent(
+                                "Download Status: \(String(describing: values.ubiquitousItemDownloadingStatus))"
+                            )
+                        }
+
+                        DebugLog.writeAttachmentEvent("RESTORE END")
+                        DebugLog.writeAttachmentEvent("═══════════════════════════════")
+                        DebugLog.writeAttachmentEvent("═══════════════════════════════")
+                        
+                        
                     } catch {
                         AppLogger.persistence.error("Restore move failed: \(error.localizedDescription)")
                     }

@@ -218,6 +218,7 @@ struct SettingsView: View {
                                     .foregroundStyle(.primary)
                             }
                         }
+
                         HStack(spacing: 12){
                             Image(systemName: "paintbrush")
                                 .foregroundStyle(.blue)
@@ -656,6 +657,18 @@ Attivazione: \(triggerInfo)
                             }
                         }
                         NavigationLink {
+                            OverviewView()
+                        } label: {
+                            Label {
+                                Text("Overview")
+                                    .tint(.primary)
+                            } icon: {
+                                Image(systemName: "line.3.horizontal.button.angledtop.vertical.right")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+                        NavigationLink {
                             BackupRestoreView()
                         } label: {
                             Label {
@@ -667,6 +680,7 @@ Attivazione: \(triggerInfo)
                                     .frame(width: iconWidth)
                             }
                         }
+
                         Button {
                             showRecentlyDeleted = true
                         } label: {
@@ -903,6 +917,14 @@ Attivazione: \(triggerInfo)
     }
     @MainActor
     private func cleanupRecentlyDeleted() {
+        DebugLog.writeAttachmentEvent("")
+        DebugLog.writeAttachmentEvent("════════════════════════════════════")
+        DebugLog.writeAttachmentEvent("SETTINGS CLEANUP START")
+        Thread.callStackSymbols.forEach {
+            DebugLog.writeAttachmentEvent($0)
+        }
+        
+        
         guard let cutoff = Calendar.current.date(
             byAdding: .day,
             value: -recentlyDeletedRetentionDays,
@@ -910,14 +932,30 @@ Attivazione: \(triggerInfo)
         ) else {
             return
         }
+        
+        DebugLog.writeAttachmentEvent("Retention: \(recentlyDeletedRetentionDays)")
+        DebugLog.writeAttachmentEvent("Cutoff: \(cutoff)")
+        
         let descriptor = FetchDescriptor<DeletedItem>(
             predicate: #Predicate { $0.deletedAt <= cutoff }
         )
         guard let items = try? modelContext.fetch(descriptor) else { return }
+        
+        DebugLog.writeAttachmentEvent("Deleted items found: \(items.count)")
+        
         for item in items {
             if let trashName = item.trashFileName,
                let trashDir = TaskAttachment.trashDirectory {
                 let url = trashDir.appendingPathComponent(trashName)
+                
+                let fm = FileManager.default
+
+                DebugLog.writeAttachmentEvent("DELETE TRASH FILE")
+                DebugLog.writeAttachmentEvent("Trash name: \(trashName)")
+                DebugLog.writeAttachmentEvent("Path: \(url.path)")
+                DebugLog.writeAttachmentEvent("Exists: \(fm.fileExists(atPath: url.path))")
+                
+                
                 try? FileManager.default.removeItem(at: url)
             }
             modelContext.delete(item)

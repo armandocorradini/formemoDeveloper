@@ -344,6 +344,15 @@ struct ForMemoApp: App {
     @MainActor
     private func cleanupRecentlyDeleted(context: ModelContext) {
         
+        DebugLog.writeAttachmentEvent("")
+        DebugLog.writeAttachmentEvent("════════════════════════════════════")
+        DebugLog.writeAttachmentEvent("TASKAPP CLEANUP START")
+        DebugLog.writeAttachmentEvent("Retention: \(settings.recentlyDeletedRetentionDays)")
+        Thread.callStackSymbols.forEach {
+            DebugLog.writeAttachmentEvent($0)
+        }
+        
+        
         guard let cutoff = Calendar.current.date(
             byAdding: .day,
             value: -settings.recentlyDeletedRetentionDays,
@@ -359,6 +368,9 @@ struct ForMemoApp: App {
         
         guard let items = try? context.fetch(descriptor) else { return }
         
+        DebugLog.writeAttachmentEvent("Deleted items found: \(items.count)")
+        
+        
         for item in items {
             
             let deletedAt = item.deletedAt
@@ -370,7 +382,17 @@ struct ForMemoApp: App {
                    let trashDir = TaskAttachment.trashDirectory {
                     
                     let url = trashDir.appendingPathComponent(trashName)
-                    try? FileManager.default.removeItem(at: url)
+                    let fm = FileManager.default
+
+                    DebugLog.writeAttachmentEvent("")
+                    DebugLog.writeAttachmentEvent("TRASH DELETE")
+                    DebugLog.writeAttachmentEvent("Trash file: \(trashName)")
+                    DebugLog.writeAttachmentEvent("Path: \(url.path)")
+                    DebugLog.writeAttachmentEvent("Exists BEFORE: \(fm.fileExists(atPath: url.path))")
+                    
+                    try? fm.removeItem(at: url)
+
+                    DebugLog.writeAttachmentEvent("Exists AFTER: \(fm.fileExists(atPath: url.path))")
                 }
                 
                 context.delete(item)

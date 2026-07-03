@@ -21,9 +21,9 @@ struct TaskListAppearanceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppSettings.self) private var settings
     
-    private var listStyleChoice: TaskListStyle {
-        settings.taskListStyle
-    }
+//    private var listStyleChoice: TaskListStyle {
+//        settings.taskListStyle
+//    }
     
     // Etichette dei vari stili disponibili
     private let rowOptions = [
@@ -53,8 +53,9 @@ struct TaskListAppearanceView: View {
                     .padding(.top, -20)
                 
                 Form {
-                    
+
                     appearanceSection
+                    surfaceSection
                     visibleElementsSection
                 }
                 .padding(.top, 10)
@@ -117,40 +118,38 @@ struct TaskListAppearanceView: View {
             TaskRow(
                 task: previewTask,
                 showDateColumn: true,
-                appearance: TaskRowAppearance(
-                    iconStyle: settings.iconStyle,
-                    showBadge: settings.showBadge,
-                    showAttachments: settings.showAttachments,
-                    showLocation: settings.showLocation,
-                    showPriority: settings.showPriority,
-                    showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
-                    highlightEnabled: settings.highlightEnabled,
-                    showTodayExpiredLabel: settings.showTodayExpiredLabel,
-                    selectedRowStyle: settings.selectedRowStyle,
-                    dueIconEffect: settings.dueIconEffect
+                appearance: .current(from: settings)
+            )
+            .modifier(
+                RowCardStyle(
+                    task: previewTask,
+                    style: .grouped,
+                    position: .single,
+                    opacity: 1
+
+                )
+                
+            )
+            .clipShape(
+                TaskRowShape(
+                    position: .single,
+                    cornerRadius: CGFloat(settings.surfaceCornerRadius)
                 )
             )
-                .modifier(
-                    TodoSectionView.RowCardStyle(
-                        task: previewTask,
-                        style: listStyleChoice,
-                        position: .single,
-                        showBottomSeparator: false
-                    )
-                )
-                .padding(.horizontal, listStyleChoice == .plain ? 12 : 0)
-                .listRowInsets(
-                    listStyleChoice == .grouped
-                    ? EdgeInsets(top: 20, leading: 8, bottom: 20, trailing: 8)
-                    : EdgeInsets(top: 20, leading: 0, bottom: 20, trailing: 0)
-                )
-                .listRowSeparator(.hidden)
+//                .padding(.horizontal, listStyleChoice == .plain ? 12 : 0)
+//                .listRowInsets(
+//                    listStyleChoice == .grouped
+//                    ? EdgeInsets(top: 24, leading: 16, bottom: 24, trailing: 16)
+//                    : EdgeInsets(top: 20, leading: 0, bottom: 20, trailing: 0)
+//                )
+//                .listRowSeparator(.hidden)
         }
         .scrollDisabled(true)
         .contentMargins(.top, 18, for: .scrollContent)
         .contentMargins(.horizontal, 8, for: .scrollContent)
         .frame(height: 120)
-        .modifier(ListStyleModifier(style: listStyleChoice))
+//        .modifier(ListStyleModifier(style: listStyleChoice))
+        .listStyle(.plain)
     }
     
     private var appearanceSection: some View {
@@ -162,7 +161,7 @@ struct TaskListAppearanceView: View {
                 Text("Monochrome").tag(TaskIconStyle.monochrome)
             }
             
-            Picker("Row Style", selection: Bindable(settings).selectedRowStyle) {
+            Picker("Row Style", selection: Bindable(settings).selectedTaskRowStyle) {
                 ForEach(0..<rowOptions.count, id: \.self) { index in
                     Text(rowOptions[index]).tag(index)
                 }
@@ -180,6 +179,72 @@ struct TaskListAppearanceView: View {
             
         }
     }
+    
+    private var surfaceSection: some View {
+
+        Section("Rows & Groups") {
+
+            VStack(alignment: .leading, spacing: 12) {
+
+                Text("Corners")
+                    .font(.headline)
+
+                Slider(
+                    value: Binding(
+                        get: { settings.surfaceCornerRadius },
+                        set: { settings.surfaceCornerRadius = $0 }
+                    ),
+                    in: 0...40,
+                    step: 1
+                )
+
+                Text(
+                    settings.surfaceCornerRadius == 22
+                    ? "Default: 22 pt"
+                    : "\(Int(settings.surfaceCornerRadius)) pt"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+            }
+
+            Picker(
+                "Border",
+                selection: Binding(
+                    get: { settings.surfaceBorder },
+                    set: { settings.surfaceBorder = $0 }
+                )
+            ) {
+                ForEach(SurfaceBorderStyle.allCases) { style in
+                    Text(style.localizedTitle)
+                        .tag(style)
+                }
+            }
+
+            Picker(
+                "Material",
+                selection: Binding(
+                    get: { settings.surfaceMaterial },
+                    set: { settings.surfaceMaterial = $0 }
+                )
+            ) {
+                ForEach(SurfaceMaterialStyle.allCases) { style in
+                    Text(style.localizedTitle)
+                        .tag(style)
+                }
+            }
+
+//            Button("Restore Defaults") {
+//                settings.surfaceCornerRadius = 18
+//                settings.surfaceBorder = .hairline
+//                settings.surfaceMaterial = .strong
+//            }
+//            .frame(maxWidth: .infinity)
+//            .buttonStyle(.bordered)
+//            .padding(.top, 8)
+        }
+    }
+    
     
     private var visibleElementsSection: some View {
         
@@ -256,8 +321,14 @@ struct TaskListAppearanceView: View {
         settings.highlightEnabled = true
         settings.highlightColorHex = Color.red.toHex() ?? ""
         settings.showTodayExpiredLabel = true
-        settings.selectedRowStyle = 0
+        settings.selectedTaskRowStyle = 0
         settings.dueIconEffect = .blink
+        settings.surfaceCornerRadius = 22
+        settings.surfaceBorder = .hairline
+        settings.surfaceMaterial = .strong
+        
+        refreshID = UUID()
+        
     }
 }
 

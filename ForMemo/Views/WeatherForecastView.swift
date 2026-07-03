@@ -242,10 +242,10 @@ struct WeatherForecastView: View {
                     .padding(.vertical, 10)
                     .frame(maxWidth: .infinity)
                     .background(
-                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .fill(Color.white.opacity(colorScheme == .dark ? 0.015 : 0.02))
                             .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                RoundedRectangle(cornerRadius: 22, style: .continuous)
                                     .stroke(
                                         LinearGradient(
                                             colors: [
@@ -260,7 +260,7 @@ struct WeatherForecastView: View {
                                     )
                             )
                             .overlay(
-                                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                RoundedRectangle(cornerRadius: 22, style: .continuous)
                                     .fill(
                                         LinearGradient(
                                             colors: [

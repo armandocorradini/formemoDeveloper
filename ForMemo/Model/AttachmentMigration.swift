@@ -98,6 +98,8 @@ enum AttachmentMigration {
                 continue
             }
             let newURL = iCloudDir.appendingPathComponent(fileName)
+            log("Legacy path: \(fileURL.path)")
+            log("iCloud path: \(newURL.path)")
             log("➡️ Migrating file: \(fileName)")
             let newExists = fm.fileExists(atPath: newURL.path)
 
@@ -110,7 +112,18 @@ enum AttachmentMigration {
                     at: iCloudDir,
                     withIntermediateDirectories: true
                 )
+                let legacySize = (try? fm.attributesOfItem(
+                    atPath: fileURL.path
+                )[.size] as? Int64) ?? 0
+
+                log("Legacy size: \(legacySize)")
+                
+                
                 try fm.copyItem(at: fileURL, to: newURL)
+                
+                log("Copy completed")
+                log("Exists after copy: \(fm.fileExists(atPath: newURL.path))")
+                
                 var uploadReady = false
                 for _ in 0..<20 {
                     if fm.fileExists(atPath: newURL.path) {
@@ -127,9 +140,18 @@ enum AttachmentMigration {
                     )
                 }
                 guard uploadReady else {
-                    try? fm.removeItem(at: newURL)
                     allFilesMigrated = false
                     log("❌ Copied file not materialized")
+                    log("⚠️ File lasciato sul disco per analisi: \(newURL.path)")
+                    
+                    let values = try? newURL.resourceValues(forKeys: [
+                        .isUbiquitousItemKey,
+                        .ubiquitousItemDownloadingStatusKey
+                    ])
+
+                    log("iCloud: \(values?.isUbiquitousItem ?? false)")
+                    log("Download: \(String(describing: values?.ubiquitousItemDownloadingStatus))")
+                    
                     continue
                 }
                 let originalSize = (try? fm.attributesOfItem(
@@ -140,15 +162,31 @@ enum AttachmentMigration {
                 )[.size] as? Int64) ?? 0
                 guard originalSize > 0,
                       copiedSize == originalSize else {
-                    try? fm.removeItem(at: newURL)
+
                     allFilesMigrated = false
+
                     log("❌ Integrity verification failed")
+                    log("Original size: \(originalSize)")
+                    log("Copied size: \(copiedSize)")
+                    log("⚠️ File lasciato sul disco per analisi: \(newURL.path)")
+
                     continue
                 }
+                
                 if attachmentsByRelativePath[fileName] != nil {
                     log("📎 Attachment metadata found")
                 }
                 log("✅ Copied OK")
+                
+                let values = try? newURL.resourceValues(forKeys: [
+                    .isUbiquitousItemKey,
+                    .ubiquitousItemDownloadingStatusKey
+                ])
+
+                log("Final iCloud: \(values?.isUbiquitousItem ?? false)")
+                log("Final Download: \(String(describing: values?.ubiquitousItemDownloadingStatus))")
+                
+                
             } catch {
                 allFilesMigrated = false
                 log("❌ Copy error: \(error.localizedDescription)")

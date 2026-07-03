@@ -189,7 +189,7 @@ struct WeatherDayView: View {
                     )
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
                         .stroke(Color.white.opacity(0.35), lineWidth: 1)
                 )
         )
@@ -327,10 +327,10 @@ struct WeatherDayView: View {
 
     private var cardBackground: some View {
 
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
+        RoundedRectangle(cornerRadius: 22, style: .continuous)
             .fill(Color.white.opacity(colorScheme == .dark ? 0.015 : 0.02))
             .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .stroke(
                         LinearGradient(
                             colors: [

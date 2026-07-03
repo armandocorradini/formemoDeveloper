@@ -1191,124 +1191,10 @@ struct TodoSectionView: View {
         return visibleGroups
     }
 
-
-    private func rowPosition(index: Int, total: Int) -> TaskRowPosition {
-
-        if total == 1 {
-            return .single
-        }
-
-        if index == 0 {
-            return .first
-        }
-
-        if index == total - 1 {
-            return .last
-        }
-
-        return .middle
-    }
-
-    struct RowCardStyle: ViewModifier {
-
-        @Environment(AppSettings.self) private var settings
-        let task: TodoTask
-        let style: TaskListStyle
-        let position: TaskRowPosition
-        let showBottomSeparator: Bool
-
-        private var highlightColor: Color {
-            Color(hex: settings.highlightColorHex) ?? .red
-        }
-
-        func body(content: Content) -> some View {
-            content
-                .padding(
-                    .leading,
-                    TaskRowMetrics.leadingPadding(for: style)
-                )
-                .padding(
-                    .trailing,
-                    TaskRowMetrics.trailingPadding(for: style)
-                )
-                .listRowInsets(
-                    TaskRowMetrics.insets(
-                        for: style,
-                        position: position
-                    )
-                )
-                .listRowBackground(cardBackground(for: task))
-                .listRowSeparator(.hidden)
-        }
-
-        @ViewBuilder
-        private func cardBackground(for task: TodoTask) -> some View {
-            let isToday = isTaskToday(task.deadLine)
-            let isOverdue = isTaskOverdue(task.deadLine)
-            let isCritical = task.priority.systemImage == "flame"
-
-            let highlightOverlay: Color? = {
-                guard settings.highlightEnabled, isCritical, (isOverdue || isToday) else {
-                    return nil
-                }
-                return highlightColor
-            }()
-
-            TaskRowSurface(
-                shape: style == .plain
-                    ? AnyInsettableShape(
-                        RoundedRectangle(
-                            cornerRadius: 0,
-                            style: .continuous
-                        )
-                    )
-                    : AnyInsettableShape(shape),
-                isToday: isToday,
-                isGrouped: style == .grouped,
-                isHighlighted: highlightOverlay != nil,
-                highlightColor: highlightOverlay ?? .clear,
-                showSeparator: style == .plain
-                    ? true
-                    : (position != .last && position != .single)
-            )
-            
-//            .drawingGroup(opaque: false)
- 
-        }
-
-        private var shape: TaskRowShape {
-            TaskRowShape(position: position)
-        }
-
-        private func isTaskToday(_ date: Date?) -> Bool {
-            guard let date else { return false }
-            return Calendar.current.isDateInToday(date)
-        }
-
-        private func isTaskOverdue(_ date: Date?) -> Bool {
-            guard let date else { return false }
-            return date < Date()
-        }
-    }
-    
     private var showDateEveryRow: Bool {
         settings.showDateEveryRow
     }
 
-    private var taskRowAppearance: TaskRowAppearance {
-        .init(
-            iconStyle: settings.iconStyle,
-            showBadge: settings.showBadge,
-            showAttachments: settings.showAttachments,
-            showLocation: settings.showLocation,
-            showPriority: settings.showPriority,
-            showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
-            highlightEnabled: settings.highlightEnabled,
-            showTodayExpiredLabel: settings.showTodayExpiredLabel,
-            selectedRowStyle: settings.selectedTaskRowStyle,
-            dueIconEffect: settings.dueIconEffect
-        )
-    }
 
     var body: some View {
 
@@ -1391,7 +1277,7 @@ struct TodoSectionView: View {
 
                         taskRow(
                             for: t,
-                            position: rowPosition(
+                            position: TaskRowPosition.position(
                                 index: index,
                                 total: group.tasks.count
                             )
@@ -1490,7 +1376,7 @@ struct TodoSectionView: View {
                 showDateEveryRow
                 ? true
                 : (position == .first || position == .single),
-            appearance: taskRowAppearance
+            appearance: .current(from: settings)
         )
 
         .modifier(
@@ -1498,7 +1384,7 @@ struct TodoSectionView: View {
                 task: t,
                 style: listStyleChoice,
                 position: position,
-                showBottomSeparator: true
+                opacity: 1
             )
         )
 
@@ -1794,20 +1680,6 @@ struct CompletedSectionView: View {
         settings.confirmTaskDeletion
     }
 
-    private var taskRowAppearance: TaskRowAppearance {
-        .init(
-            iconStyle: settings.iconStyle,
-            showBadge: settings.showBadge,
-            showAttachments: settings.showAttachments,
-            showLocation: settings.showLocation,
-            showPriority: settings.showPriority,
-            showBadgeOnlyWithPriority: settings.showBadgeOnlyWithPriority,
-            highlightEnabled: settings.highlightEnabled,
-            showTodayExpiredLabel: settings.showTodayExpiredLabel,
-            selectedRowStyle: settings.selectedTaskRowStyle,
-            dueIconEffect: settings.dueIconEffect
-        )
-    }
 
     @Binding var taskPendingDeletion: TodoTask?
     let tasks: [TodoTask]
@@ -1818,75 +1690,8 @@ struct CompletedSectionView: View {
         Array(tasks.prefix(visibleCompletedCount))
 
     }
-    struct RowCardStyle: ViewModifier {
-        let task: TodoTask
-        let style: TaskListStyle
-        let position: TaskRowPosition
-        private var shape: TaskRowShape {
-            TaskRowShape(position: position)
-        }
-
-        func body(content: Content) -> some View {
-            content
-                .padding(
-                    .leading,
-                    TaskRowMetrics.leadingPadding(for: style)
-                )
-                .padding(
-                    .trailing,
-                    TaskRowMetrics.trailingPadding(for: style)
-                )
-                .listRowInsets(
-                    TaskRowMetrics.insets(
-                        for: style,
-                        position: position
-                    )
-                )
-                .listRowBackground(cardBackground())
-                .listRowSeparator(.hidden)
-        }
-
-        @ViewBuilder
-        private func cardBackground() -> some View {
-            TaskRowSurface(
-                shape: style == .grouped
-                    ? AnyInsettableShape(shape)
-                    : AnyInsettableShape(
-                        RoundedRectangle(
-                            cornerRadius: 0,
-                            style: .continuous
-                        )
-                    ),
-                isToday: false,
-                isGrouped: style == .grouped,
-                isHighlighted: false,
-                highlightColor: .clear,
-                showSeparator: position != .last && position != .single
-            )
-            .opacity(style == .grouped ? 0.72 : 0.52)
-        }
- 
-    }
     
-    private func completedRowPosition(
-        index: Int,
-        total: Int
-    ) -> TaskRowPosition {
 
-        if total == 1 {
-            return .single
-        }
-
-        if index == 0 {
-            return .first
-        }
-
-        if index == total - 1 {
-            return .last
-        }
-
-        return .middle
-    }
     var body: some View {
         Section(String(localized:"Completed (\(tasks.count))")) {
 
@@ -1895,19 +1700,20 @@ struct CompletedSectionView: View {
                 TaskRow(
                     task: t,
                     showDateColumn: true,
-                    appearance: taskRowAppearance
+                    appearance: .current(from: settings)
                 )
                 .frame(minHeight: TaskRowMetrics.rowHeight)
-                    .modifier(
-                        RowCardStyle(
-                            task: t,
-                            style: listStyleChoice,
-                            position: completedRowPosition(
-                                index: index,
-                                total: visibleTasks.count
-                            )
-                        )
+                .modifier(
+                    RowCardStyle(
+                        task: t,
+                        style: listStyleChoice,
+                        position: TaskRowPosition.position(
+                            index: index,
+                            total: visibleTasks.count
+                        ),
+                        opacity: listStyleChoice == .grouped ? 0.72 : 0.52
                     )
+                )
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
                             withAnimation(.snappy(duration: 0.22)) {

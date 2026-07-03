@@ -63,7 +63,7 @@ struct AddLoyaltyCardView: View {
                             .background(.ultraThinMaterial)
                             .clipShape(
                                 RoundedRectangle(
-                                    cornerRadius: 18,
+                                    cornerRadius: 22,
                                     style: .continuous
                                 )
                             )

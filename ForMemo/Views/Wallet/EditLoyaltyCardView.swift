@@ -58,7 +58,7 @@ struct EditLoyaltyCardView: View {
                                     .frame(width: 72, height: 72)
                                     .clipShape(
                                         RoundedRectangle(
-                                            cornerRadius: 18,
+                                            cornerRadius: 22,
                                             style: .continuous
                                         )
                                     )
@@ -76,7 +76,7 @@ struct EditLoyaltyCardView: View {
                         .frame(width: 72, height: 72)
                         .background(
                             RoundedRectangle(
-                                cornerRadius: 18,
+                                cornerRadius: 22,
                                 style: .continuous
                             )
                             .fill(selectedColor)

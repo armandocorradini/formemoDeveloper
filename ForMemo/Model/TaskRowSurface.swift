@@ -11,20 +11,45 @@ struct TaskRowSurface<S: InsettableShape>: View {
     let isHighlighted: Bool
     let highlightColor: Color
     let showSeparator: Bool
-
-    private var shadowColor: Color {
-        TaskRowTheme.shadow(colorScheme: colorScheme)
-    }
-
+    let materialStyle: SurfaceMaterialStyle
+    
     private var separatorColor: Color {
         TaskRowTheme.separator(colorScheme: colorScheme)
     }
+    private var materialLayer: some View {
 
+        Group {
+
+            switch materialStyle {
+
+            case .none:
+
+                EmptyView()
+
+            case .soft:
+
+                shape.fill(.ultraThinMaterial)
+
+            case .medium:
+
+                shape.fill(.thinMaterial)
+
+            case .strong:
+
+                shape.fill(.regularMaterial)
+
+            case .extraStrong:
+
+                shape.fill(.thickMaterial)
+            }
+        }
+    }
+    
     var body: some View {
 
         ZStack {
 
-            shadowLayer
+            materialLayer
 
             if isGrouped && !isToday {
                 groupedBackgroundLayer
@@ -60,26 +85,14 @@ struct TaskRowSurface<S: InsettableShape>: View {
                     .padding(.trailing, TaskRowMetrics.separatorTrailingInset)
             }
         }
-        .shadow(
-            color: shadowColor,
-            radius: TaskRowMetrics.shadowRadius,
-            x: 0,
-            y: TaskRowMetrics.shadowYOffset
-        )
+//        .shadow(
+//            color: Color.primary.opacity(shadowStyle.opacity),
+//            radius: shadowStyle.radius,
+//            x: 0,
+//            y: shadowStyle.yOffset
+//        )
     }
 
-    private var shadowLayer: some View {
-        shape
-            .fill(shadowColor.opacity(
-                colorScheme == .dark
-                ? TaskRowRendering.shadowOpacityDark
-                : TaskRowRendering.shadowOpacityLight
-            ))
-            .blur(
-                radius: TaskRowMetrics.shadowRadius * TaskRowRendering.shadowBlurFactor
-            )
-            .offset(x: 0, y: TaskRowRendering.shadowLayerYOffset)
-    }
 
     private var groupedBackgroundLayer: some View {
         shape
@@ -91,6 +104,21 @@ struct TaskRowSurface<S: InsettableShape>: View {
             .compositingGroup()
     }
 
+    private var baseFillOpacity: Double {
+        switch materialStyle {
+        case .none:
+            return 1.0
+        case .soft:
+            return 0.70
+        case .medium:
+            return 0.55
+        case .strong:
+            return 0.40
+        case .extraStrong:
+            return 0.25
+        }
+    }
+
     private var baseFillLayer: some View {
         shape
             .fill(
@@ -99,6 +127,7 @@ struct TaskRowSurface<S: InsettableShape>: View {
                     colorScheme: colorScheme
                 )
             )
+            .opacity(baseFillOpacity)
     }
 }
 
@@ -128,3 +157,7 @@ struct AnyInsettableShape: InsettableShape, @unchecked Sendable {
         insetBuilder(amount)
     }
 }
+
+
+
+

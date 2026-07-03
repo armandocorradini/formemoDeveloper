@@ -186,7 +186,7 @@ struct BackupRestoreView: View {
                     }
                     .padding(24)
                     .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                 }
             }
         }
