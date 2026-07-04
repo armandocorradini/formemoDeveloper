@@ -293,6 +293,17 @@ struct TaskListView: View {
                 .onChange(of: selectedPeriodFilter) { _, _ in
                     filteredTodoTasksCache = filteredTodoTasks
                 }
+                .onReceive(
+
+                    NotificationCenter.default.publisher(for: .taskDidChange)
+
+                ) { _ in
+
+                    filteredTodoTasksCache = filteredTodoTasks
+
+                }
+        
+        
                         .toolbarBackground(.hidden, for: .navigationBar)
             
                         .navigationTitle(todoQuery.isEmpty && !showCompleted ? "" : String(localized:"My Tasks"))
@@ -1366,6 +1377,7 @@ struct TodoSectionView: View {
         ) { _ in
             locationAuthorizationStatus = CLLocationManager().authorizationStatus
         }
+       
     }
     @ViewBuilder
     private func taskRow(for t: TodoTask, position: TaskRowPosition) -> some View {

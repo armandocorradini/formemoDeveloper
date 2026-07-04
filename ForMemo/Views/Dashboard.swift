@@ -4,6 +4,7 @@ import SwiftData
 struct Dashboard: View {
     @Environment(AppSettings.self) private var settings
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.modelContext) private var modelContext
     @State private var selectedTask: TodoTask?
     @State private var selectedTrip: TripList?
     @State private var selectedDocument: DocumentItem?
@@ -143,12 +144,25 @@ struct Dashboard: View {
             return deadline < startOfToday
         }.count
     }
+    private func hide(_ item: ContinueItem) {
+        switch item.destination {
+        case .trip(let trip):
+            trip.lastOpenedAt = nil
+        case .document(let document):
+            document.lastOpenedAt = nil
+        case .loyaltyCard(let card):
+            card.lastOpenedAt = nil
+        }
+
+        try? modelContext.save()
+    }
+
     var body: some View {
         ZStack {
-                AppGlassBackground()
+            AppGlassBackground()
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
                     // Section 1: Oggi
                     Button {
                         NotificationCenter.default.post(
@@ -328,7 +342,8 @@ struct Dashboard: View {
                     }
                     .buttonStyle(.plain)
 
-                    if tomorrowTasksCount > 0 {
+                    // Show Tomorrow section only if enabled and there are tomorrow tasks
+                    if settings.showDashboardTomorrow && tomorrowTasksCount > 0 {
                         Button {
                             NotificationCenter.default.post(
                                 name: Notification.Name("DashboardOpenList"),
@@ -485,7 +500,8 @@ struct Dashboard: View {
                         .buttonStyle(.plain)
                     }
 
-                    if !continueItems.isEmpty {
+                    // Show Continue section only if enabled and there are items
+                    if settings.showDashboardContinue && !continueItems.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Label("Continue", systemImage: "clock.arrow.trianglehead.clockwise.rotate.90.path.dotted")
                                 .font(.headline)
@@ -493,9 +509,7 @@ struct Dashboard: View {
 
                             VStack(spacing: 8) {
                                 ForEach(continueItems) { item in
-
                                     switch item.destination {
-
                                     case .trip(let trip):
                                         Button {
                                             selectedTrip = trip
@@ -507,7 +521,21 @@ struct Dashboard: View {
                                             )
                                         }
                                         .buttonStyle(.plain)
-
+                                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label("Hide", systemImage: "eye.slash")
+                                            }
+                                            .tint(.gray)
+                                        }
+                                        .contextMenu {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label("Hide", systemImage: "eye.slash")
+                                            }
+                                        }
                                     case .document(let document):
                                         Button {
                                             selectedDocument = document
@@ -519,7 +547,21 @@ struct Dashboard: View {
                                             )
                                         }
                                         .buttonStyle(.plain)
-
+                                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label("Hide", systemImage: "eye.slash")
+                                            }
+                                            .tint(.gray)
+                                        }
+                                        .contextMenu {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label("Hide", systemImage: "eye.slash")
+                                            }
+                                        }
                                     case .loyaltyCard(let card):
                                         Button {
                                             selectedLoyaltyCard = card
@@ -531,6 +573,21 @@ struct Dashboard: View {
                                             )
                                         }
                                         .buttonStyle(.plain)
+                                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label("Hide", systemImage: "eye.slash")
+                                            }
+                                            .tint(.gray)
+                                        }
+                                        .contextMenu {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label("Hide", systemImage: "eye.slash")
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -538,48 +595,59 @@ struct Dashboard: View {
                     }
 
 
-                    }
-                    .padding()
                 }
-                .scrollContentBackground(.hidden)
-                .background(Color.clear)
+                .padding()
             }
-            .containerBackground(.clear, for: .navigation)
-            .navigationTitle("Dashboard")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(item: $selectedTask) { task in
-                TaskDetailView(task: task)
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+        }
+        .contentMargins(.bottom, 70, for: .scrollContent)
+        .containerBackground(.clear, for: .navigation)
+        .navigationTitle("Dashboard")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Menu {
+                    Toggle("Show Tomorrow", isOn: Bindable(settings).showDashboardTomorrow)
+                    Toggle("Show Continue", isOn: Bindable(settings).showDashboardContinue)
+                } label: {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                }
             }
-            .navigationDestination(item: $selectedTrip) { trip in
-                TripChecklistView(category: trip)
-            }
-            .navigationDestination(item: $selectedDocument) { document in
-                DocumentDetailView(document: document)
-            }
-            .navigationDestination(item: $selectedLoyaltyCard) { card in
-                LoyaltyCardDetailView(card: card)
-            }
-            .navigationDestination(item: $selectedWeatherDate) { date in
-                WeatherDayView(
-                    date: date,
-                    showsCloseButton: false,
-                    cameFromForecast: false
-                )
-            }
-            .task {
-                await weatherManager.refreshIfNeeded()
-            }
-            .onReceive(
-                NotificationCenter.default.publisher(
-                    for: Notification.Name("DashboardReset")
-                )
-            ) { _ in
-                selectedTask = nil
-                selectedTrip = nil
-                selectedDocument = nil
-                selectedLoyaltyCard = nil
-                selectedWeatherDate = nil
-            }
+        }
+        .navigationDestination(item: $selectedTask) { task in
+            TaskDetailView(task: task)
+        }
+        .navigationDestination(item: $selectedTrip) { trip in
+            TripChecklistView(category: trip)
+        }
+        .navigationDestination(item: $selectedDocument) { document in
+            DocumentDetailView(document: document)
+        }
+        .navigationDestination(item: $selectedLoyaltyCard) { card in
+            LoyaltyCardDetailView(card: card)
+        }
+        .navigationDestination(item: $selectedWeatherDate) { date in
+            WeatherDayView(
+                date: date,
+                showsCloseButton: false,
+                cameFromForecast: false
+            )
+        }
+        .task {
+            await weatherManager.refreshIfNeeded()
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: Notification.Name("DashboardReset")
+            )
+        ) { _ in
+            selectedTask = nil
+            selectedTrip = nil
+            selectedDocument = nil
+            selectedLoyaltyCard = nil
+            selectedWeatherDate = nil
+        }
     }
 
     @ViewBuilder

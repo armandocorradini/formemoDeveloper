@@ -645,18 +645,6 @@ Attivazione: \(triggerInfo)
                     Section {
                         
                         NavigationLink {
-                            ImportExportSettingsView()
-                        } label: {
-                            Label {
-                                Text("Import & Export")
-                                    .tint(.primary)
-                            } icon: {
-                                Image(systemName: "arrow.left.arrow.right")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
-                        }
-                        NavigationLink {
                             OverviewView()
                         } label: {
                             Label {
@@ -668,6 +656,20 @@ Attivazione: \(triggerInfo)
                                     .frame(width: iconWidth)
                             }
                         }
+                        
+                        NavigationLink {
+                            ImportExportSettingsView()
+                        } label: {
+                            Label {
+                                Text("Import & Export")
+                                    .tint(.primary)
+                            } icon: {
+                                Image(systemName: "arrow.left.arrow.right")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+
                         NavigationLink {
                             BackupRestoreView()
                         } label: {

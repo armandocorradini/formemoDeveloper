@@ -59,6 +59,13 @@ struct OverviewView: View {
         )
     }
     
+    var activeAttachmentsCount: Int {
+        activeTasks.reduce(0) { $0 + ($1.attachments?.count ?? 0) }
+    }
+
+    var completedAttachmentsCount: Int {
+        completedTasks.reduce(0) { $0 + ($1.attachments?.count ?? 0) }
+    }
     
     
     var body: some View {
@@ -190,13 +197,27 @@ private extension OverviewView {
                 LabeledContent("Active") { Text("\(activeTasks.count)") }
                 LabeledContent("Overdue") { Text("\(overdueTasksCount)") }
                 LabeledContent("Recurring") { Text("\(recurringTasksCount)") }
-                LabeledContent("With attachments") {
-                    Text("\(activeWithAttachmentsCount) • \(activeAttachmentsSize)")
-                }
                 LabeledContent("With location") { Text("\(activeWithLocationCount)") }
+                
+                LabeledContent("Tasks with attachments") {
+                    Text("\(activeWithAttachmentsCount)")
+                }
+                LabeledContent("Attachments") {
+                    Text("\(activeAttachmentsCount)")
+                }
+                LabeledContent("Attachment storage") {
+                    Text(activeAttachmentsSize)
+                }
+
                 LabeledContent("Completed") { Text("\(completedTasks.count)") }
-                LabeledContent("Completed with attachments") {
-                    Text("\(completedWithAttachmentsCount) • \(completedAttachmentsSize)")
+                LabeledContent("Completed tasks with attachments") {
+                    Text("\(completedWithAttachmentsCount)")
+                }
+                LabeledContent("Completed attachments") {
+                    Text("\(completedAttachmentsCount)")
+                }
+                LabeledContent("Completed attachment storage") {
+                    Text(completedAttachmentsSize)
                 }
             }
         }

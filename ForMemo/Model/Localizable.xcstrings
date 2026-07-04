@@ -303,40 +303,6 @@
         }
       }
     },
-    "%lld • %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld •%2$@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld • %2$@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld •%2$@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld •%2$@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$lld •%2$@"
-          }
-        }
-      }
-    },
     "%lld attachment" : {
       "localizations" : {
         "de" : {
@@ -3297,6 +3263,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Allega foto, documenti e pagine scansionate. Tutti i file rimangono collegati alla relativa attività."
+          }
+        }
+      }
+    },
+    "Attachment storage" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speicher für Anhänge"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espacio archivos adjuntos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stockage des pièces jointes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spazio allegati"
           }
         }
       }
@@ -6569,6 +6563,62 @@
         }
       }
     },
+    "Completed attachment storage" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speicher der Anhänge abgeschlossener Aufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Espacio archivos adjuntos de tareas completadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stockage des pièces jointes des tâches terminées"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spazio allegati attività completate"
+          }
+        }
+      }
+    },
+    "Completed attachments" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhänge abgeschlossener Aufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivos adjuntos de las tareas completadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pièces jointes des tâches terminées"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allegati attività completate"
+          }
+        }
+      }
+    },
     "Completed Tasks" : {
       "localizations" : {
         "de" : {
@@ -6625,30 +6675,30 @@
         }
       }
     },
-    "Completed with attachments" : {
+    "Completed tasks with attachments" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abgeschlossen mit Anhängen"
+            "value" : "Abgeschlossene Aufgaben mit Anhängen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completados con archivos adjuntos"
+            "value" : "Tareas completadas con archivos adjuntos"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminés avec pièces jointes"
+            "value" : "Tâches terminées avec pièces jointes"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Completate con allegati"
+            "value" : "Attività completate con allegati"
           }
         }
       }
@@ -8154,37 +8204,33 @@
         }
       }
     },
-    "Default: 18 pt" : {
-      "extractionState" : "stale",
+    "Default: 22 pt" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Standard: 18 pt"
+            "value" : "Standard: 22 pt"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Predeterminado: 18 pt"
+            "value" : "Predeterminado: 22 pt"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Par défaut : 18 pt"
+            "value" : "Par défaut : 22 pt"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Predefinito: 18 pt"
+            "value" : "Predefinito: 22 pt"
           }
         }
       }
-    },
-    "Default: 22 pt" : {
-
     },
     "Delete" : {
       "localizations" : {
@@ -12070,6 +12116,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ecco cosa è previsto per %1$@:"
+          }
+        }
+      }
+    },
+    "Hide" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ausblenden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nascondi"
           }
         }
       }
@@ -19822,35 +19896,6 @@
         }
       }
     },
-    "Restore Defaults" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standard wiederherstellen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Valores predeterminados"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Restaurer défaut"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ripristina predefiniti"
-          }
-        }
-      }
-    },
     "Restore Error" : {
       "localizations" : {
         "de" : {
@@ -21559,6 +21604,34 @@
         }
       }
     },
+    "Show Continue" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "„Fortsetzen“ anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar Continuar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher Continuer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra Continua"
+          }
+        }
+      }
+    },
     "Show Date On Every Row" : {
       "localizations" : {
         "de" : {
@@ -21695,6 +21768,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra icona priorità"
+          }
+        }
+      }
+    },
+    "Show Tomorrow" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morgen anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar mañana"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher demain"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra domani"
           }
         }
       }
@@ -23467,35 +23568,6 @@
         }
       }
     },
-    "Surface" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oberfläche"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Superficie"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Surface"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Superficie"
-          }
-        }
-      }
-    },
     "Swimsuit" : {
       "localizations" : {
         "de" : {
@@ -24208,6 +24280,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attività e aspetto"
+          }
+        }
+      }
+    },
+    "Tasks with attachments" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgaben mit Anhängen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas con archivos adjuntos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches avec pièces jointes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività con allegati"
           }
         }
       }
@@ -29028,34 +29128,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Giacca antivento"
-          }
-        }
-      }
-    },
-    "With attachments" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mit Anhängen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Con archivos adjuntos"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avec pièces jointes"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Con allegati"
           }
         }
       }

@@ -260,6 +260,7 @@ struct BackupRestoreView: View {
                 restoreArchive = newValue?.archive
             }
         )) { wrapper in
+            
 
             let archive = wrapper.archive
             let hasSelection = restoreTasks || restoreWalletCards || restoreTripLists || restoreDocuments || restoreSettings
@@ -269,19 +270,52 @@ struct BackupRestoreView: View {
                     AppGlassBackground()
                     List {
                         Section("Backup Contents") {
+
                             Text("Tasks: \(archive.tasks.count)")
                             Text("Cards & Tickets: \(archive.loyaltyCards.count)")
-                            Text("Trip Checklists: \(archive.tripLists.count)")
-                            Text("Documents: \(archive.documents.count)")
-                            Text("Settings: Included")
+
+                            if !archive.tripLists.isEmpty {
+                                Text("Trip Checklists: \(archive.tripLists.count)")
+                            }
+
+                            if !archive.documents.isEmpty {
+                                Text("Documents: \(archive.documents.count)")
+                            }
+
+                            if !archive.settings.isEmpty {
+                                Text("Settings: Included")
+                            }
                         }
 
                         Section("Restore") {
+
                             Toggle("Tasks", isOn: $restoreTasks)
-                            Toggle("Cards & Tickets", isOn: $restoreWalletCards)
-                            Toggle("Trip Checklists", isOn: $restoreTripLists)
-                            Toggle("Documents", isOn: $restoreDocuments)
-                            Toggle("Settings", isOn: $restoreSettings)
+
+                            Toggle(
+                                "Cards & Tickets",
+                                isOn: $restoreWalletCards
+                            )
+
+                            if !archive.tripLists.isEmpty {
+                                Toggle(
+                                    "Trip Checklists",
+                                    isOn: $restoreTripLists
+                                )
+                            }
+
+                            if !archive.documents.isEmpty {
+                                Toggle(
+                                    "Documents",
+                                    isOn: $restoreDocuments
+                                )
+                            }
+
+                            if !archive.settings.isEmpty {
+                                Toggle(
+                                    "Settings",
+                                    isOn: $restoreSettings
+                                )
+                            }
                         }
                     }
                     .navigationTitle("Restore Backup")
@@ -483,10 +517,10 @@ private struct BackupArchive: Codable {
             [String: Data].self,
             forKey: .attachmentFiles
         ) ?? [:]
-        loyaltyCardLogoFiles = try container.decode(
+        loyaltyCardLogoFiles = try container.decodeIfPresent(
             [String: Data].self,
             forKey: .loyaltyCardLogoFiles
-        )
+        ) ?? [:]
         settings = try container.decodeIfPresent(
             [String: Data].self,
             forKey: .settings
@@ -611,7 +645,21 @@ private struct DocumentTransferObject: Codable {
     let notificationEnabled: Bool
     let notificationDaysBefore: Int
     let createdAt: Date
-
+    
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case documentTypeRaw
+        case documentNumber
+        case issueDate
+        case expiryDate
+        case notes
+        case storageLocation
+        case notificationEnabled
+        case notificationDaysBefore
+        case createdAt
+    }
+    
     init(document: DocumentItem) {
         self.id = document.id
         self.name = document.name
@@ -625,6 +673,42 @@ private struct DocumentTransferObject: Codable {
         self.notificationDaysBefore = document.notificationDaysBefore
         self.createdAt = document.createdAt
     }
+    init(from decoder: Decoder) throws {
+
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        documentTypeRaw = try container.decode(String.self, forKey: .documentTypeRaw)
+        documentNumber = try container.decode(String.self, forKey: .documentNumber)
+
+        issueDate = try container.decodeIfPresent(Date.self, forKey: .issueDate)
+        expiryDate = try container.decodeIfPresent(Date.self, forKey: .expiryDate)
+
+        notes = try container.decodeIfPresent(
+            String.self,
+            forKey: .notes
+        ) ?? ""
+
+        storageLocation = try container.decodeIfPresent(
+            String.self,
+            forKey: .storageLocation
+        ) ?? ""
+
+        notificationEnabled = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .notificationEnabled
+        ) ?? false
+
+        notificationDaysBefore = try container.decodeIfPresent(
+            Int.self,
+            forKey: .notificationDaysBefore
+        ) ?? 30
+
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+    }
+    
+    
 }
 private struct TripListTransferObject: Codable {
     let id: UUID
@@ -778,15 +862,53 @@ private enum BackupManager {
                 throw CocoaError(.coderReadCorrupt)
             }
             return archive
+        } catch let DecodingError.dataCorrupted(context) {
+
+        #if DEBUG
+            DebugLog.write("❌ Backup decode error - Data corrupted")
+            DebugLog.write("Description: \(context.debugDescription)")
+            DebugLog.write("CodingPath: \(context.codingPath.map(\.stringValue).joined(separator: "."))")
+        #endif
+
+            throw DecodingError.dataCorrupted(context)
+
+        } catch let DecodingError.keyNotFound(key, context) {
+
+        #if DEBUG
+            DebugLog.write("❌ Backup decode error - Missing key: \(key.stringValue)")
+            DebugLog.write("CodingPath: \(context.codingPath.map(\.stringValue).joined(separator: "."))")
+        #endif
+
+            throw DecodingError.keyNotFound(key, context)
+
+        } catch let DecodingError.typeMismatch(type, context) {
+
+        #if DEBUG
+            DebugLog.write("❌ Backup decode error - Type mismatch: \(type)")
+            DebugLog.write("Description: \(context.debugDescription)")
+            DebugLog.write("CodingPath: \(context.codingPath.map(\.stringValue).joined(separator: "."))")
+        #endif
+
+            throw DecodingError.typeMismatch(type, context)
+
+        } catch let DecodingError.valueNotFound(type, context) {
+
+        #if DEBUG
+            DebugLog.write("❌ Backup decode error - Value not found: \(type)")
+            DebugLog.write("Description: \(context.debugDescription)")
+            DebugLog.write("CodingPath: \(context.codingPath.map(\.stringValue).joined(separator: "."))")
+        #endif
+
+            throw DecodingError.valueNotFound(type, context)
+
         } catch {
-#if DEBUG
-            DebugLog.write(
-                "❌ Backup decode error: \(error.localizedDescription)"
-            )
-#endif
+
+        #if DEBUG
+            DebugLog.write("❌ Backup decode error: \(error)")
+        #endif
+
             throw error
-        }
-    }
+        }    }
 
     @MainActor
     static func restoreArchive(
@@ -862,7 +984,7 @@ private enum BackupManager {
             }
         }
 
-        if restoreDocuments {
+        if restoreDocuments && !archive.documents.isEmpty {
             for dto in archive.documents {
 
                 let descriptor = FetchDescriptor<DocumentItem>(
@@ -892,7 +1014,7 @@ private enum BackupManager {
             }
         }
 
-        if restoreTripLists {
+        if restoreTripLists && !archive.tripLists.isEmpty {
             for tripDTO in archive.tripLists {
 
                 let descriptor = FetchDescriptor<TripList>(
@@ -1002,7 +1124,7 @@ private enum BackupManager {
 
         try modelContext.save()
 
-        if restoreSettings {
+        if restoreSettings && !archive.settings.isEmpty {
 
             var restoredSettings: [String: Any] = [:]
 

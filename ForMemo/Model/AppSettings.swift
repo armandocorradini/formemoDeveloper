@@ -69,6 +69,8 @@ final class AppSettings {
         startupTab = defaults.object(forKey: "startupTab") as? Int ?? 1
         notificationLeadTimeDays = defaults.object(forKey: "notificationLeadTimeDays") as? Int ?? 1
         showWeatherForecast = defaults.object(forKey: "showWeatherForecast") as? Bool ?? true
+        showDashboardTomorrow = defaults.object(forKey: "showDashboardTomorrow") as? Bool ?? true
+        showDashboardContinue = defaults.object(forKey: "showDashboardContinue") as? Bool ?? true
         siriAutoReminderEnabled = defaults.object(forKey: "siriAutoReminderEnabled") as? Bool ?? true
         navigationAppID = defaults.string(forKey: "navigationApp") ?? "apple"
         backgroundColor1Hex = defaults.string(forKey: "backgroundColor1Hex") ?? (defaultBackColor1.toHex() ?? "")
@@ -288,6 +290,24 @@ final class AppSettings {
             )
         }
     }
+
+    var showDashboardTomorrow: Bool {
+        didSet {
+            UserDefaults.standard.set(
+                showDashboardTomorrow,
+                forKey: "showDashboardTomorrow"
+            )
+        }
+    }
+
+    var showDashboardContinue: Bool {
+        didSet {
+            UserDefaults.standard.set(
+                showDashboardContinue,
+                forKey: "showDashboardContinue"
+            )
+        }
+    }
     
     var siriAutoReminderEnabled: Bool {
         didSet {
@@ -429,6 +449,8 @@ final class AppSettings {
         startupTab = 1
         notificationLeadTimeDays = 1
         showWeatherForecast = true
+        showDashboardTomorrow = true
+        showDashboardContinue = true
         siriAutoReminderEnabled = true
         navigationAppID = "apple"
         backgroundColor1Hex = defaultBackColor1.toHex() ?? ""

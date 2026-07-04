@@ -10,6 +10,28 @@ struct AttachmentTransferObject: Hashable, Codable {
 
 struct TaskTransferObject: Identifiable, Hashable, Codable {
     
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case description
+        case deadline
+        case reminderOffsetMinutes
+        case tag
+        case attachments
+        case latitude
+        case longitude
+        case locationName
+        case recurrenceRule
+        case recurrenceInterval
+        case locationReminderEnabled
+        case isCompleted
+        case createdAt
+        case completedAt
+        case snoozeUntil
+        case priority
+    }
+
+    
     let id: UUID
     
     let title: String
@@ -37,6 +59,122 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
     let snoozeUntil: Date?
     
     let priority: Int
+    
+    private static func decodeLegacyDate(
+        _ key: CodingKeys,
+        from container: KeyedDecodingContainer<CodingKeys>
+    ) throws -> Date? {
+
+        if let date = try? container.decodeIfPresent(Date.self, forKey: key) {
+            return date
+        }
+
+        if let seconds = try? container.decodeIfPresent(Double.self, forKey: key) {
+            return Date(timeIntervalSince1970: seconds)
+        }
+
+        if let seconds = try? container.decodeIfPresent(Int.self, forKey: key) {
+            return Date(timeIntervalSince1970: TimeInterval(seconds))
+        }
+
+        return nil
+    }
+    
+    init(from decoder: Decoder) throws {
+
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(UUID.self, forKey: .id)
+
+        title = try container.decode(String.self, forKey: .title)
+        description = try container.decode(String.self, forKey: .description)
+
+        deadline = try Self.decodeLegacyDate(.deadline, from: container)
+
+        reminderOffsetMinutes =
+            try container.decodeIfPresent(
+                Int.self,
+                forKey: .reminderOffsetMinutes
+            )
+
+        tag =
+            try container.decodeIfPresent(
+                String.self,
+                forKey: .tag
+            )
+
+        attachments =
+            try container.decodeIfPresent(
+                [AttachmentTransferObject].self,
+                forKey: .attachments
+            )
+
+        latitude =
+            try container.decodeIfPresent(
+                Double.self,
+                forKey: .latitude
+            )
+
+        longitude =
+            try container.decodeIfPresent(
+                Double.self,
+                forKey: .longitude
+            )
+
+        locationName =
+            try container.decodeIfPresent(
+                String.self,
+                forKey: .locationName
+            )
+
+        recurrenceRule =
+            try container.decodeIfPresent(
+                String.self,
+                forKey: .recurrenceRule
+            )
+
+        recurrenceInterval =
+            try container.decodeIfPresent(
+                Int.self,
+                forKey: .recurrenceInterval
+            )
+
+        locationReminderEnabled =
+            try container.decodeIfPresent(
+                Bool.self,
+                forKey: .locationReminderEnabled
+            )
+
+        isCompleted =
+            try container.decodeIfPresent(
+                Bool.self,
+                forKey: .isCompleted
+            )
+
+        createdAt =
+            try Self.decodeLegacyDate(
+                .createdAt,
+                from: container
+            )
+
+        completedAt =
+            try Self.decodeLegacyDate(
+                .completedAt,
+                from: container
+            )
+
+        snoozeUntil =
+            try Self.decodeLegacyDate(
+                .snoozeUntil,
+                from: container
+            )
+
+        priority =
+            try container.decode(
+                Int.self,
+                forKey: .priority
+            )
+    }
     
     init(
         id: UUID = UUID(),

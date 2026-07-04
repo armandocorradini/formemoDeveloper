@@ -57,20 +57,15 @@ struct RowBackground: View {
             )
             
             
-            TaskRowBorder(
-                shape: style == .plain
-                    ? AnyInsettableShape(
-                        RoundedRectangle(
-                            cornerRadius: 0,
-                            style: .continuous
-                        )
-                    )
-                    : AnyInsettableShape(shape),
-                position: position,
-                lineWidth: settings.surfaceBorder.lineWidth,
-                cornerRadius: CGFloat(settings.surfaceCornerRadius),
-                color: TaskRowTheme.separator(colorScheme: colorScheme)
-            )
+            if style != .plain {
+                TaskRowBorder(
+                    shape: AnyInsettableShape(shape),
+                    position: position,
+                    lineWidth: settings.surfaceBorder.lineWidth,
+                    cornerRadius: CGFloat(settings.surfaceCornerRadius),
+                    color: TaskRowTheme.separator(colorScheme: colorScheme)
+                )
+            }
         }
         .opacity(opacity)
     }
