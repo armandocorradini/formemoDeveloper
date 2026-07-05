@@ -325,7 +325,7 @@ struct TaskListAppearanceView: View {
         settings.dueIconEffect = .blink
         settings.surfaceCornerRadius = 22
         settings.surfaceBorder = .hairline
-        settings.surfaceMaterial = .strong
+        settings.surfaceMaterial = .none
         
         refreshID = UUID()
         

@@ -69,14 +69,13 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
             return date
         }
 
-        if let seconds = try? container.decodeIfPresent(Double.self, forKey: key) {
-            return Date(timeIntervalSince1970: seconds)
+        if let value = try container.decodeIfPresent(Double.self, forKey: key) {
+            return Date(timeIntervalSinceReferenceDate: value)
         }
 
-        if let seconds = try? container.decodeIfPresent(Int.self, forKey: key) {
-            return Date(timeIntervalSince1970: TimeInterval(seconds))
+        if let value = try container.decodeIfPresent(Int.self, forKey: key) {
+            return Date(timeIntervalSinceReferenceDate: TimeInterval(value))
         }
-
         return nil
     }
     

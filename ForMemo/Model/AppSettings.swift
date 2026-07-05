@@ -440,7 +440,7 @@ final class AppSettings {
         selectedTaskRowStyle = 0
         surfaceCornerRadius = 22
         surfaceBorder = .hairline
-        surfaceMaterial = .strong
+        surfaceMaterial = .none
         dueIconEffectRaw = DueIconEffect.blink.rawValue
         taskListStyle = .plain
         showDateEveryRow = false

@@ -303,7 +303,11 @@ struct TaskListView: View {
 
                 }
         
-        
+                .onReceive(
+                    NotificationCenter.default.publisher(for: .taskDidChange)
+                ) { _ in
+                    filteredTodoTasksCache = filteredTodoTasks
+                }
                         .toolbarBackground(.hidden, for: .navigationBar)
             
                         .navigationTitle(todoQuery.isEmpty && !showCompleted ? "" : String(localized:"My Tasks"))
