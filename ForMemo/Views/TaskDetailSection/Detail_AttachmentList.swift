@@ -91,9 +91,9 @@ private enum AttachmentThumbnailLoader {
             return nil
         }
 
-        guard let data = try? Data(contentsOf: url), !data.isEmpty else {
-            return nil
-        }
+//        guard let data = try? Data(contentsOf: url), !data.isEmpty else {
+//            return nil
+//        }
 
         return await Task.detached(priority: .utility) {
             guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else {
@@ -212,15 +212,15 @@ struct AttachmentRowView: View {
                 Image(systemName: "eye")
             }
         }
-        .task(id: attachment.id) {
-            guard isImage,
-                  image == nil,
-                  !loadFailed else {
-                return
-            }
-
-            await load()
-        }
+//        .task(id: attachment.id) {
+//            guard isImage,
+//                  image == nil,
+//                  !loadFailed else {
+//                return
+//            }
+//
+//            await load()
+//        }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             Button(role: .destructive) {
                 onDelete(attachment)
@@ -248,16 +248,16 @@ struct AttachmentRowView: View {
         return "doc"
     }
 
-    private func load() async {
-        guard let thumbnail = await AttachmentThumbnailLoader.loadThumbnail(for: attachment) else {
-            await MainActor.run {
-                loadFailed = true
-            }
-            return
-        }
-
-        await MainActor.run {
-            onImageLoaded(thumbnail)
-        }
-    }
+//    private func load() async {
+//        guard let thumbnail = await AttachmentThumbnailLoader.loadThumbnail(for: attachment) else {
+//            await MainActor.run {
+//                loadFailed = true
+//            }
+//            return
+//        }
+//
+//        await MainActor.run {
+//            onImageLoaded(thumbnail)
+//        }
+//    }
 }

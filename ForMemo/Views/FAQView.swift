@@ -32,6 +32,10 @@ struct FAQView: View {
                 answer: String(localized:"The Dashboard gives you a quick overview of what needs your attention. It highlights overdue tasks, tasks due today, upcoming activities, weather forecasts, and recently opened items from Wallet, Documents, and Trip Lists, helping you access important information from a single screen.")
             ),
             FAQItem(
+                question: String(localized:"What is the Overview?"),
+                answer: String(localized:"Overview gives you a quick summary of the information that matters most. It provides an at-a-glance view of your tasks, documents, Wallet items, trip lists, and other useful information, helping you quickly understand the current status of your data.")
+            ),
+            FAQItem(
                 question: String(localized:"How does task creation work?"),
                 answer: String(localized:"You can create tasks manually or with Siri. When using Siri, you are guided step by step: first what to add, then when, and finally which reminder to set. The app saves the task using the information you provide.")
             ),
@@ -124,6 +128,10 @@ struct FAQView: View {
                 answer: String(localized:"Snooze delays a notification. The current alert is removed and a new one is scheduled for the selected time.")
             ),
             FAQItem(
+                question: String(localized:"Can I snooze an overdue task?"),
+                answer: String(localized:"Yes. If a task is already overdue, you can manually snooze its notification by choosing one of the available time intervals. Unlike Reschedule, Snooze does not change the task deadline—it only postpones the notification.")
+            ),
+            FAQItem(
                 question: String(localized:"What is reschedule and how is it different from snooze?"),
                 answer: String(localized:"Reschedule changes the task deadline itself by moving it to a new date or time. Snooze only delays the current notification without changing the original deadline. Reschedule is useful when plans change, while snooze is meant for temporary delays.")
             ),
@@ -200,7 +208,11 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"Can I customize task highlighting?"),
                 answer: String(localized:"Yes. You can choose both color and opacity for highlighting critical tasks in Settings.")
-            )
+            ),
+            FAQItem(
+                question: String(localized:"Can I customize the appearance of task rows?"),
+                answer: String(localized:"Yes. You can personalize task rows by choosing different styles, rounded corners, borders, and materials to match your preferred appearance.")
+            ),
             // --- END NEW FAQItems ---
         ]),
 
@@ -302,6 +314,10 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"What is the Documents section?"),
                 answer: String(localized:"The Documents section helps you keep track of important documents and their expiration dates. You can store document details, issue dates, expiry dates, notes, and receive reminders before a document expires.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I save where a document is physically stored?"),
+                answer: String(localized:"Yes. For each document you can record its physical storage location, such as a drawer, cabinet, folder, or safe. This helps you quickly find the original document whenever you need it.")
             ),
             FAQItem(
                 question: String(localized:"Can I receive reminders before a document expires?"),

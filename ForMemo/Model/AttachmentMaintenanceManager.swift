@@ -99,8 +99,12 @@ final class AttachmentMaintenanceManager {
                 
                 
                 let trashName = attachment.deleteFileIfNeeded()
+                guard let trashName else {
+                    AppLogger.persistence.error("Attachment cleanup aborted: failed to move attachment to Trash: \(attachment.originalName)")
+                    continue
+                }
 
-                DebugLog.writeAttachmentEvent("Trash name: \(trashName ?? "nil")")
+                DebugLog.writeAttachmentEvent("Trash name: \(trashName)")
                 
                 let item = DeletedItem(type: "attachment")
                 item.taskID = task.id
@@ -149,6 +153,10 @@ final class AttachmentMaintenanceManager {
         
         for attachment in attachments {
             let trashName = attachment.deleteFileIfNeeded()
+            guard let trashName else {
+                AppLogger.persistence.error("Attachment cleanup aborted: failed to move attachment to Trash: \(attachment.originalName)")
+                continue
+            }
 
             let item = DeletedItem(type: "attachment")
             item.taskID = attachment.task?.id
@@ -175,6 +183,10 @@ final class AttachmentMaintenanceManager {
         
         for attachment in attachments {
             let trashName = attachment.deleteFileIfNeeded()
+            guard let trashName else {
+                AppLogger.persistence.error("Attachment cleanup aborted: failed to move attachment to Trash: \(attachment.originalName)")
+                continue
+            }
 
             let item = DeletedItem(type: "attachment")
             item.taskID = attachment.task?.id

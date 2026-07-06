@@ -190,10 +190,9 @@ extension TaskAttachment {
 
             let reachable = (try? cloud.checkResourceIsReachable()) ?? false
             DebugLog.writeAttachmentEvent("Reachable: \(reachable)")
-            
-            
+
             DebugLog.writeAttachmentEvent("CLOUD candidate: \(cloud.path)")
-            
+
             try? fm.startDownloadingUbiquitousItem(at: cloud)
 
             let values = try? cloud.resourceValues(forKeys: [
@@ -210,21 +209,19 @@ extension TaskAttachment {
 
             DebugLog.writeAttachmentEvent("CLOUD ubiquitous: \(ubiquitous)")
             DebugLog.writeAttachmentEvent("CLOUD readable: \(fm.isReadableFile(atPath: cloud.path))")
-            
-            
+
             DebugLog.writeAttachmentEvent("CLOUD exists: YES")
             DebugLog.writeAttachmentEvent("CLOUD size: \(size)")
             DebugLog.writeAttachmentEvent("CLOUD status: \(String(describing: status))")
-            
+            DebugLog.writeAttachmentEvent("Resolved file size: \(size)")
+
             let attrs = try? fm.attributesOfItem(atPath: cloud.path)
 
             DebugLog.writeAttachmentEvent("Creation Date: \(String(describing: attrs?[.creationDate]))")
             DebugLog.writeAttachmentEvent("Modification Date: \(String(describing: attrs?[.modificationDate]))")
-            
-            
+
             // 🔥 Return iCloud file only if really materialized
             if status == .current || status == .downloaded {
-
                 if size > 0 {
                     DebugLog.writeAttachmentEvent("RETURN CLOUD")
                     DebugLog.writeAttachmentEvent(cloud.path)
@@ -253,8 +250,7 @@ extension TaskAttachment {
             DebugLog.writeAttachmentEvent("LEGACY exists: true")
             DebugLog.writeAttachmentEvent("LEGACY readable: \(fm.isReadableFile(atPath: legacy.path))")
             DebugLog.writeAttachmentEvent("LEGACY size: \(legacySize)")
-            
-            
+
             // 🔥 SELF-HEALING:
             // if iCloud file is missing but legacy exists,
             // silently restore it into iCloud container.
@@ -271,17 +267,15 @@ extension TaskAttachment {
                     )[.size] as? Int64) ?? 0
 
                     DebugLog.writeAttachmentEvent("LEGACY size: \(legacySize)")
-                    
-                    
+
                     guard legacySize > 0 else {
 #if DEBUG
                         AppLogger.persistence.error(
                             "Self-healing skipped (empty legacy file): \(relativePath)"
                         )
 #endif
-                        
+                        DebugLog.writeAttachmentEvent("Resolved file size: \(legacySize)")
                         DebugLog.writeAttachmentEvent("✅ RETURN LEGACY")
-                        
                         return legacy
                     }
 
@@ -313,6 +307,7 @@ extension TaskAttachment {
                 }
             }
 
+            DebugLog.writeAttachmentEvent("Resolved file size: \(legacySize)")
             return legacy
         }
 
@@ -325,6 +320,8 @@ extension TaskAttachment {
                 $0.lastPathComponent.hasSuffix(relativePath)
            }) {
 
+            let trashSize = (try? fm.attributesOfItem(atPath: recovered.path)[.size] as? Int64) ?? 0
+            DebugLog.writeAttachmentEvent("Resolved file size: \(trashSize)")
             DebugLog.writeAttachmentEvent("✅ RETURN TRASH")
             DebugLog.writeAttachmentEvent("TRASH path: \(recovered.path)")
 
@@ -440,6 +437,7 @@ extension TaskAttachment {
         DebugLog.writeAttachmentEvent("DELETE REQUEST")
         DebugLog.writeAttachmentEvent("Attachment ID: \(id.uuidString)")
         DebugLog.writeAttachmentEvent("Task ID: \(task?.id.uuidString ?? "nil")")
+        DebugLog.writeAttachmentEvent("Caller Task: \(task?.title ?? "nil")")
         DebugLog.writeAttachmentEvent("Relative Path: \(relativePath)")
         DebugLog.writeAttachmentEvent("Original Name: \(originalName)")
         DebugLog.writeAttachmentEvent("CALL STACK:")
@@ -479,10 +477,10 @@ extension TaskAttachment {
             }
         }
 
-        // Se non abbiamo la Trash → fallback delete
         guard let trashDir = Self.trashDirectory else {
-            AppLogger.persistence.fault("Trash directory missing → fallback delete for \(sourceURL.lastPathComponent)")
-            try? fm.removeItem(at: sourceURL)
+            AppLogger.persistence.fault(
+                "Trash directory unavailable. Cleanup aborted."
+            )
             return nil
         }
 
@@ -526,8 +524,11 @@ extension TaskAttachment {
 
                 result = writeURL.lastPathComponent
             } catch {
-                AppLogger.persistence.fault("Move failed → fallback delete: \(error.localizedDescription)")
-                try? fm.removeItem(at: readURL)
+                AppLogger.persistence.fault(
+                    "Move to Trash failed: \(error.localizedDescription)"
+                )
+
+                result = nil
             }
         }
 
@@ -574,6 +575,18 @@ extension TaskAttachment {
         }
 
         guard fm.fileExists(atPath: url.path) else {
+            let attachmentName = originalName
+            let path = relativePath
+            let resolvedPath = url.path
+
+            await MainActor.run {
+                DebugLog.writeAttachmentEvent("")
+                DebugLog.writeAttachmentEvent("LOAD DATA FAILED")
+                DebugLog.writeAttachmentEvent("Attachment: \(attachmentName)")
+                DebugLog.writeAttachmentEvent("relativePath: \(path)")
+                DebugLog.writeAttachmentEvent("Resolved URL: \(resolvedPath)")
+                DebugLog.writeAttachmentEvent("Exists: false")
+            }
             return nil
         }
 
@@ -834,64 +847,95 @@ extension DeletedItem {
             if let task = try? context.fetch(descriptor).first {
                 
                 let fm = FileManager.default
-                
+                var restoreSucceeded = false
                 // 🔥 Find file in trash
                 if let fileURL = try? fm.contentsOfDirectory(at: trashDir, includingPropertiesForKeys: nil)
                     .first(where: { $0.lastPathComponent == trashFileName }) {
-                    
+
                     let destinationURL = attachmentsDir.appendingPathComponent(relativePath)
-                    
-                    // 🔒 ensure no collision
-                    if fm.fileExists(atPath: destinationURL.path) {
-                        try? fm.removeItem(at: destinationURL)
-                        
-                        
 
-                        
-                        
-                    }
-                    
-                    // 🔥 Move back to attachments folder
-                    do {
-                        try fm.moveItem(at: fileURL, to: destinationURL)
-                        DebugLog.writeAttachmentEvent("")
-                        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-                        DebugLog.writeAttachmentEvent("RESTORE")
-                        DebugLog.writeAttachmentEvent("From: \(fileURL.path)")
-                        DebugLog.writeAttachmentEvent("To: \(destinationURL.path)")
+                    if !fm.fileExists(atPath: destinationURL.path) {
 
-                        let restoredSize = (try? fm.attributesOfItem(
-                            atPath: destinationURL.path
-                        )[.size] as? Int64) ?? 0
+                        // 🔥 Move back to attachments folder
+                        do {
+                            try fm.moveItem(at: fileURL, to: destinationURL)
+                            guard fm.fileExists(atPath: destinationURL.path) else {
+                                throw NSError(
+                                    domain: "AttachmentRestore",
+                                    code: 1,
+                                    userInfo: [NSLocalizedDescriptionKey: "Restore verification failed"]
+                                )
+                            }
+                            let restoredSize = (try? fm.attributesOfItem(
+                                atPath: destinationURL.path
+                            )[.size] as? Int64) ?? 0
 
-                        DebugLog.writeAttachmentEvent("Restored size: \(restoredSize)")
-                        DebugLog.writeAttachmentEvent("Exists: \(fm.fileExists(atPath: destinationURL.path))")
-                        DebugLog.writeAttachmentEvent("Readable: \(fm.isReadableFile(atPath: destinationURL.path))")
+                            guard restoredSize > 0 else {
+                                throw NSError(
+                                    domain: "AttachmentRestore",
+                                    code: 2,
+                                    userInfo: [
+                                        NSLocalizedDescriptionKey: "Restored file is empty"
+                                    ]
+                                )
+                            }
+                            
+                            
+                            
+                            restoreSucceeded = true
+                            
+                            DebugLog.writeAttachmentEvent("")
+                            DebugLog.writeAttachmentEvent("═══════════════════════════════")
+                            DebugLog.writeAttachmentEvent("RESTORE")
+                            DebugLog.writeAttachmentEvent("From: \(fileURL.path)")
+                            DebugLog.writeAttachmentEvent("To: \(destinationURL.path)")
 
-                        if let values = try? destinationURL.resourceValues(forKeys: [
-                            .isUbiquitousItemKey,
-                            .ubiquitousItemDownloadingStatusKey
-                        ]) {
 
-                            DebugLog.writeAttachmentEvent(
-                                "isUbiquitous: \(values.isUbiquitousItem ?? false)"
-                            )
+                            DebugLog.writeAttachmentEvent("Restored size: \(restoredSize)")
+                            DebugLog.writeAttachmentEvent("Exists: \(fm.fileExists(atPath: destinationURL.path))")
+                            DebugLog.writeAttachmentEvent("Readable: \(fm.isReadableFile(atPath: destinationURL.path))")
 
-                            DebugLog.writeAttachmentEvent(
-                                "Download Status: \(String(describing: values.ubiquitousItemDownloadingStatus))"
+                            if let values = try? destinationURL.resourceValues(forKeys: [
+                                .isUbiquitousItemKey,
+                                .ubiquitousItemDownloadingStatusKey
+                            ]) {
+
+                                DebugLog.writeAttachmentEvent(
+                                    "isUbiquitous: \(values.isUbiquitousItem ?? false)"
+                                )
+
+                                DebugLog.writeAttachmentEvent(
+                                    "Download Status: \(String(describing: values.ubiquitousItemDownloadingStatus))"
+                                )
+                            }
+
+                            DebugLog.writeAttachmentEvent("RESTORE END")
+                            DebugLog.writeAttachmentEvent("═══════════════════════════════")
+                            DebugLog.writeAttachmentEvent("═══════════════════════════════")
+
+                        } catch {
+
+                            DebugLog.writeAttachmentEvent("RESTORE FAILED")
+                            DebugLog.writeAttachmentEvent(error.localizedDescription)
+
+                            AppLogger.persistence.error(
+                                "Restore move failed: \(error.localizedDescription)"
                             )
                         }
-
-                        DebugLog.writeAttachmentEvent("RESTORE END")
-                        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-                        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-                        
-                        
-                    } catch {
-                        AppLogger.persistence.error("Restore move failed: \(error.localizedDescription)")
+                    } else {
+                        AppLogger.persistence.notice(
+                            "Restore: destination already exists: \(destinationURL.lastPathComponent)"
+                        )
+                        restoreSucceeded = true
                     }
                 }
-                
+                guard restoreSucceeded else {
+
+                    AppLogger.persistence.error("Restore aborted: attachment file was not restored.")
+
+                    return
+
+                }
                 let ext = (fileName as NSString).pathExtension.lowercased()
 
                 let resolvedType: String

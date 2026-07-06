@@ -4765,6 +4765,34 @@
         }
       }
     },
+    "Can I customize the appearance of task rows?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich das Erscheinungsbild der Aufgabenzeilen anpassen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo personalizar el aspecto de las filas de las tareas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je personnaliser l’apparence des lignes des tâches ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso personalizzare l’aspetto delle righe delle attività?"
+          }
+        }
+      }
+    },
     "Can I delete all attachments at once?" : {
       "localizations" : {
         "de" : {
@@ -5045,6 +5073,34 @@
         }
       }
     },
+    "Can I save where a document is physically stored?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich den physischen Aufbewahrungsort eines Dokuments speichern?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo guardar dónde se almacena físicamente un documento?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je enregistrer l’emplacement physique d’un document ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso salvare dove è conservato fisicamente un documento?"
+          }
+        }
+      }
+    },
     "Can I scan cards and tickets with the camera?" : {
       "localizations" : {
         "de" : {
@@ -5097,6 +5153,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posso scansionare documenti e allegarli alle attività?"
+          }
+        }
+      }
+    },
+    "Can I snooze an overdue task?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich eine überfällige Aufgabe verschieben?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo posponer la notificación de una tarea ya vencida?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je reporter une tâche en retard ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso posticipare una notifica di un’attività già scaduta?"
           }
         }
       }
@@ -17369,6 +17453,34 @@
         }
       }
     },
+    "Overview gives you a quick summary of the information that matters most. It provides an at-a-glance view of your tasks, documents, Wallet items, trip lists, and other useful information, helping you quickly understand the current status of your data." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Übersicht bietet Ihnen eine schnelle Zusammenfassung der wichtigsten Informationen. Sie zeigt auf einen Blick Ihre Aufgaben, Dokumente, Wallet-Einträge, Reiselisten und weitere nützliche Informationen, damit Sie den aktuellen Stand Ihrer Daten sofort erkennen können."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El Resumen te ofrece una visión rápida de la información más importante. Muestra de un vistazo tus tareas, documentos, elementos de la Cartera, listas de viaje y otra información útil, ayudándote a conocer rápidamente el estado actual de tus datos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Récapitulatif vous offre une vue d’ensemble rapide des informations les plus importantes. Il affiche en un coup d’œil vos tâches, documents, éléments du Wallet, listes de voyage et d’autres informations utiles afin de vous permettre de connaître rapidement l’état actuel de vos données."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il Riepilogo ti offre una panoramica immediata delle informazioni più importanti. Mostra a colpo d’occhio attività, documenti, elementi del Wallet, checklist di viaggio e altre informazioni utili, aiutandoti a conoscere rapidamente lo stato attuale dei tuoi dati."
+          }
+        }
+      }
+    },
     "Pajamas" : {
       "localizations" : {
         "de" : {
@@ -28456,6 +28568,34 @@
         }
       }
     },
+    "What is the Overview?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was ist die Übersicht?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué es el Resumen?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qu’est-ce que le Récapitulatif ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Che cos’è il Riepilogo?"
+          }
+        }
+      }
+    },
     "What would you like to search for?" : {
       "comment" : "The dialog to be shown when the user is prompted to enter a search query.",
       "isCommentAutoGenerated" : true,
@@ -29470,6 +29610,34 @@
         }
       }
     },
+    "Yes. For each document you can record its physical storage location, such as a drawer, cabinet, folder, or safe. This helps you quickly find the original document whenever you need it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Für jedes Dokument können Sie den physischen Aufbewahrungsort angeben, z. B. eine Schublade, einen Schrank, einen Ordner oder einen Safe. So finden Sie das Originaldokument bei Bedarf schnell wieder."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Para cada documento puedes registrar el lugar donde se guarda físicamente, por ejemplo un cajón, un armario, una carpeta o una caja fuerte. Así podrás encontrar rápidamente el documento original cuando lo necesites."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Pour chaque document, vous pouvez enregistrer son emplacement de stockage physique, par exemple un tiroir, une armoire, un classeur ou un coffre-fort. Cela vous permet de retrouver rapidement le document original lorsque vous en avez besoin."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Per ogni documento puoi registrare la posizione in cui è conservato fisicamente, ad esempio un cassetto, un armadio, una cartella o una cassaforte. In questo modo potrai trovare rapidamente il documento originale quando ne avrai bisogno."
+          }
+        }
+      }
+    },
     "Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, cards, tickets and logos, trip lists, documents, app settings, and related data. You can restore them later or transfer everything to another device." : {
       "localizations" : {
         "de" : {
@@ -29550,6 +29718,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. ForMemo include una sezione Wallet nella quale puoi salvare e organizzare carte fedeltà e tickets, codici a barre, codici QR, informazioni del titolare, note, colori personalizzati e loghi opzionali."
+          }
+        }
+      }
+    },
+    "Yes. If a task is already overdue, you can manually snooze its notification by choosing one of the available time intervals. Unlike Reschedule, Snooze does not change the task deadline—it only postpones the notification." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Wenn eine Aufgabe bereits überfällig ist, können Sie ihre Benachrichtigung manuell verschieben, indem Sie eines der verfügbaren Zeitintervalle auswählen. Im Gegensatz zu „Neu planen“ wird dabei das Fälligkeitsdatum der Aufgabe nicht geändert – lediglich die Benachrichtigung wird verschoben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Si una tarea ya ha vencido, puedes posponer manualmente su notificación eligiendo uno de los intervalos de tiempo disponibles. A diferencia de Reprogramar, Posponer no modifica la fecha de vencimiento de la tarea: solo retrasa la notificación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Si une tâche est déjà en retard, vous pouvez reporter manuellement sa notification en choisissant l’un des intervalles de temps disponibles. Contrairement à Reprogrammer, Reporter ne modifie pas l’échéance de la tâche : il reporte uniquement la notification."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Se un’attività è già scaduta, puoi posticiparne manualmente la notifica scegliendo uno degli intervalli di tempo disponibili. A differenza di Riprogramma, Snooze non modifica la scadenza dell’attività: posticipa soltanto la notifica."
           }
         }
       }
@@ -30144,6 +30340,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Puoi eliminare manualmente tutti gli allegati delle attività completate dalle impostazioni."
+          }
+        }
+      }
+    },
+    "Yes. You can personalize task rows by choosing different styles, rounded corners, borders, and materials to match your preferred appearance." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sie können die Aufgabenzeilen individuell gestalten, indem Sie verschiedene Stile, abgerundete Ecken, Rahmen und Materialien auswählen, die Ihrem bevorzugten Erscheinungsbild entsprechen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes personalizar las filas de las tareas eligiendo diferentes estilos, esquinas redondeadas, bordes y materiales para adaptar su aspecto a tus preferencias."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez personnaliser les lignes des tâches en choisissant différents styles, des coins arrondis, des bordures et des matériaux afin d’adapter l’apparence à vos préférences."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi personalizzare le righe delle attività scegliendo diversi stili, angoli arrotondati, bordi e materiali per adattarne l’aspetto alle tue preferenze."
           }
         }
       }

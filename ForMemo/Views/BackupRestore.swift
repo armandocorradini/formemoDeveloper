@@ -762,6 +762,19 @@ private enum BackupManager {
 
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
 
+#if DEBUG
+if let files = try? FileManager.default.contentsOfDirectory(
+    atPath: attachmentsDirectory.path
+) {
+    DebugLog.writeAttachmentEvent("═══════════════════════════════")
+    DebugLog.writeAttachmentEvent("ATTACHMENTS DIRECTORY CONTENT")
+    files.forEach {
+        DebugLog.writeAttachmentEvent($0)
+    }
+}
+#endif
+            
+            
             for task in tasks {
 
                 guard let attachments = task.attachments else {
@@ -779,7 +792,15 @@ private enum BackupManager {
 
                     let fileURL = attachmentsDirectory
                         .appendingPathComponent(relativePath)
-
+#if DEBUG
+DebugLog.writeAttachmentEvent("═══════════════════════════════")
+DebugLog.writeAttachmentEvent("BACKUP ATTACHMENT")
+DebugLog.writeAttachmentEvent("relativePath: \(relativePath)")
+DebugLog.writeAttachmentEvent("fileURL: \(fileURL.path)")
+DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: fileURL.path))")
+#endif
+                    
+                    
                     guard FileManager.default.fileExists(atPath: fileURL.path) else {
                         continue
                     }
@@ -921,6 +942,16 @@ private enum BackupManager {
         restoreSettings: Bool
     ) async throws {
 
+        DebugLog.writeAttachmentEvent("═══════════════════════════════")
+        DebugLog.writeAttachmentEvent("RESTORE START")
+        DebugLog.writeAttachmentEvent("attachmentFiles: \(archive.attachmentFiles.count)")
+#if DEBUG
+for key in archive.attachmentFiles.keys.sorted() {
+    DebugLog.writeAttachmentEvent("ARCHIVE FILE: \(key)")
+}
+#endif
+        
+        
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
 
             try FileManager.default.createDirectory(
@@ -930,9 +961,25 @@ private enum BackupManager {
 
             for (relativePath, fileData) in archive.attachmentFiles {
 
+#if DEBUG
+DebugLog.writeAttachmentEvent("═══════════════════════════════")
+DebugLog.writeAttachmentEvent("RESTORE FILE")
+DebugLog.writeAttachmentEvent("relativePath: \(relativePath)")
+DebugLog.writeAttachmentEvent("bytes: \(fileData.count)")
+#endif
+                
+                
                 let destinationURL = attachmentsDirectory
                     .appendingPathComponent(relativePath)
 
+#if DEBUG
+DebugLog.writeAttachmentEvent("═══════════════════════════════")
+DebugLog.writeAttachmentEvent("RESTORE FILE")
+DebugLog.writeAttachmentEvent("relativePath: \(relativePath)")
+DebugLog.writeAttachmentEvent("bytes: \(fileData.count)")
+#endif
+                
+                
                 let parent = destinationURL.deletingLastPathComponent()
 
                 try FileManager.default.createDirectory(
@@ -962,6 +1009,14 @@ private enum BackupManager {
                         options: .atomic
                     )
                 }
+                
+#if DEBUG
+let exists = FileManager.default.fileExists(atPath: destinationURL.path)
+let size = (try? FileManager.default.attributesOfItem(atPath: destinationURL.path)[.size] as? Int64) ?? -1
+
+DebugLog.writeAttachmentEvent("written: \(exists)")
+DebugLog.writeAttachmentEvent("written size: \(size)")
+#endif
             }
         }
 
@@ -1076,6 +1131,20 @@ private enum BackupManager {
         }
 
         if restoreTasks {
+#if DEBUG
+DebugLog.writeAttachmentEvent("═══════════════════════════════")
+DebugLog.writeAttachmentEvent("ARCHIVE TASK CHECK")
+
+for dto in archive.tasks {
+    DebugLog.writeAttachmentEvent("Task: \(dto.title)")
+    DebugLog.writeAttachmentEvent("DTO attachments: \(dto.attachments?.count ?? 0)")
+
+    dto.attachments?.forEach {
+        DebugLog.writeAttachmentEvent("DTO relativePath: \($0.relativePath)")
+        DebugLog.writeAttachmentEvent("DTO originalName: \($0.originalName)")
+    }
+}
+#endif
             for dto in archive.tasks {
 
                 let descriptor = FetchDescriptor<TodoTask>(
@@ -1090,6 +1159,20 @@ private enum BackupManager {
 
                 let todo = TodoTask(from: dto)
 
+#if DEBUG
+DebugLog.writeAttachmentEvent("═══════════════════════════════")
+DebugLog.writeAttachmentEvent("TASK RESTORED")
+DebugLog.writeAttachmentEvent("title: \(todo.title)")
+DebugLog.writeAttachmentEvent("attachments: \(todo.attachments?.count ?? 0)")
+
+todo.attachments?.forEach {
+    DebugLog.writeAttachmentEvent("relativePath: \($0.relativePath)")
+    DebugLog.writeAttachmentEvent("originalName: \($0.originalName)")
+}
+#endif
+                
+                
+                
                 // Insert task FIRST so SwiftData creates a stable object graph
                 modelContext.insert(todo)
 
@@ -1124,6 +1207,40 @@ private enum BackupManager {
 
         try modelContext.save()
 
+#if DEBUG
+let descriptor = FetchDescriptor<TodoTask>()
+
+if let restoredTasks = try? modelContext.fetch(descriptor) {
+
+    for task in restoredTasks {
+        
+        DebugLog.writeAttachmentEvent("═══════════════════════════════")
+        DebugLog.writeAttachmentEvent("VERIFY DATABASE")
+        DebugLog.writeAttachmentEvent("task: \(task.title)")
+        DebugLog.writeAttachmentEvent("attachments: \(task.attachments?.count ?? 0)")
+        
+        task.attachments?.forEach {
+            DebugLog.writeAttachmentEvent("relativePath: \($0.relativePath)")
+            
+            if let dir = TaskAttachment.attachmentsDirectory {
+                
+                let url = dir.appendingPathComponent($0.relativePath)
+                
+                let exists = FileManager.default.fileExists(atPath: url.path)
+                
+                DebugLog.writeAttachmentEvent("exists on disk: \(exists)")
+                
+                if exists,
+                   let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+                   let size = attributes[.size] {
+                    DebugLog.writeAttachmentEvent("size: \(size)")
+                }
+            }
+        }
+    }
+}
+#endif
+        
         if restoreSettings && !archive.settings.isEmpty {
 
             var restoredSettings: [String: Any] = [:]

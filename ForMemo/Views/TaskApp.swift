@@ -87,7 +87,7 @@ struct ForMemoApp: App {
                 defaults.set(0, forKey: "badgeMode")
             }
         }
-        defaults.synchronize()
+//        defaults.synchronize()
 
 
         DebugLog.writeAppLaunch()
@@ -134,10 +134,6 @@ struct ForMemoApp: App {
                     retentionDays: appSettings.attachmentRetentionDays
                 )
             }
-        }
-
-        Task { @MainActor in
-            let context = sharedContainer.mainContext
 
             // 1️⃣ Setup notifiche (PRIMA DI TUTTO)
             await NotificationManager.shared.configure()
@@ -156,7 +152,7 @@ struct ForMemoApp: App {
             DebugLog.writeDatabaseSnapshot(context: context)
             // 🔥 Short stabilization.
             // UI no longer depends on CloudKit hydration.
-            try? await Task.sleep(for: .milliseconds(250))
+//            try? await Task.sleep(for: .milliseconds(250))
             
             // 5️⃣ Final notification rebuild
             NotificationManager.shared.refresh(force: true)

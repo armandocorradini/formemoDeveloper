@@ -1,4 +1,3 @@
-
 import Foundation
 
 struct AttachmentTransferObject: Hashable, Codable {
@@ -261,6 +260,7 @@ extension TodoTask {
     convenience init(from dto: TaskTransferObject) {
         
         self.init(
+            
             title: dto.title,
             taskDescription: dto.description,
             deadLine: dto.deadline,
@@ -270,6 +270,8 @@ extension TodoTask {
             locationLongitude: dto.longitude,
             priorityRaw: dto.priority
         )
+        
+        self.id = dto.id
         
         self.recurrenceRule = dto.recurrenceRule
         
