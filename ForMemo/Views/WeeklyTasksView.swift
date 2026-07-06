@@ -573,7 +573,10 @@ private struct WeeklyTaskRow: View {
         )
         
         .frame(
-            minHeight: TaskRowMetrics.rowHeight,
+            minHeight: max(
+                1,
+                TaskRowMetrics.rowHeight + CGFloat(settings.taskRowVerticalPadding)
+            ),
             alignment: .leading
         )
         .modifier(

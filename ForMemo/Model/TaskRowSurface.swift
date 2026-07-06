@@ -25,7 +25,10 @@ struct TaskRowSurface<S: InsettableShape>: View {
             case .none:
 
                 EmptyView()
-
+                
+            case .transparent:
+                shape.fill(Color.clear)
+                
             case .soft:
 
                 shape.fill(.ultraThinMaterial)
@@ -51,7 +54,9 @@ struct TaskRowSurface<S: InsettableShape>: View {
 
             materialLayer
 
-            if isGrouped && !isToday {
+            if isGrouped &&
+               !isToday &&
+               materialStyle != .transparent {
                 groupedBackgroundLayer
             }
 
@@ -108,6 +113,8 @@ struct TaskRowSurface<S: InsettableShape>: View {
         switch materialStyle {
         case .none:
             return 1.0
+        case .transparent:
+            return 0.0
         case .soft:
             return 0.70
         case .medium:

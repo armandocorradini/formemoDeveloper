@@ -20260,6 +20260,34 @@
         }
       }
     },
+    "Row height" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeilenhöhe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altura de la fila"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hauteur de ligne"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altezza riga"
+          }
+        }
+      }
+    },
     "Row Style" : {
       "localizations" : {
         "de" : {
@@ -26648,6 +26676,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abbonamento Treno"
+          }
+        }
+      }
+    },
+    "Transparent" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transparent"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transparente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transparent"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trasparente"
           }
         }
       }

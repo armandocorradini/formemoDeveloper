@@ -33,6 +33,7 @@ enum SurfaceBorderStyle: Int, CaseIterable, Codable, Sendable, Identifiable {
 
 enum SurfaceMaterialStyle: Int, CaseIterable, Codable, Sendable, Identifiable {
     case none
+    case transparent
     case soft
     case medium
     case strong
@@ -43,6 +44,7 @@ enum SurfaceMaterialStyle: Int, CaseIterable, Codable, Sendable, Identifiable {
     var localizedTitle: LocalizedStringKey {
         switch self {
         case .none:        return "None"
+        case .transparent: return "Transparent"
         case .soft:        return "Soft"
         case .medium:      return "Medium"
         case .strong:      return "Strong"
@@ -67,6 +69,8 @@ extension SurfaceMaterialStyle {
         switch self {
         case .none:
             return AnyShapeStyle(Color(.systemBackground))
+        case .transparent:
+            return AnyShapeStyle(Color.clear)
         case .soft:
             return AnyShapeStyle(.ultraThinMaterial)
         case .medium:

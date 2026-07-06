@@ -136,6 +136,7 @@ struct TaskListAppearanceView: View {
                     cornerRadius: CGFloat(settings.surfaceCornerRadius)
                 )
             )
+//            .id(settings.taskRowVerticalPadding)
 //                .padding(.horizontal, listStyleChoice == .plain ? 12 : 0)
 //                .listRowInsets(
 //                    listStyleChoice == .grouped
@@ -147,7 +148,13 @@ struct TaskListAppearanceView: View {
         .scrollDisabled(true)
         .contentMargins(.top, 18, for: .scrollContent)
         .contentMargins(.horizontal, 8, for: .scrollContent)
-        .frame(height: 120)
+//        .frame(height: 135)
+        .frame(
+            height:
+                TaskRowMetrics.rowHeight
+                + CGFloat(settings.taskRowVerticalPadding)
+                + 35
+        )
 //        .modifier(ListStyleModifier(style: listStyleChoice))
         .listStyle(.plain)
     }
@@ -206,6 +213,25 @@ struct TaskListAppearanceView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
+            }
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Row height")
+                    .font(.headline)
+
+                Slider(
+                    value: Binding(
+                        get: { settings.taskRowVerticalPadding },
+                        set: { settings.taskRowVerticalPadding = $0 }
+                    ),
+                    in: -20...20,
+                    step: 1
+                )
+
+                Text("\(Int(settings.taskRowVerticalPadding))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
             }
 
             Picker(
@@ -326,6 +352,7 @@ struct TaskListAppearanceView: View {
         settings.surfaceCornerRadius = 22
         settings.surfaceBorder = .hairline
         settings.surfaceMaterial = .none
+        settings.taskRowVerticalPadding = 0
         
         refreshID = UUID()
         

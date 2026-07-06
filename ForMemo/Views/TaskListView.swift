@@ -640,6 +640,7 @@ struct TaskRow: View {
     let task: TodoTask
     let showDateColumn: Bool
     let appearance: TaskRowAppearance
+    @Environment(AppSettings.self) private var settings
     private let now = Date()
 
     private var isToday: Bool {
@@ -658,7 +659,10 @@ struct TaskRow: View {
     }
 
     private var dynamicRowHeight: CGFloat {
-        TaskRowMetrics.rowHeight
+        max(
+            1,
+            TaskRowMetrics.rowHeight + CGFloat(settings.taskRowVerticalPadding)
+        )
     }
 
     var rowStyleToUse: Int {

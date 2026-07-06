@@ -149,7 +149,9 @@ struct ForMemoApp: App {
                 name: .attachmentsShouldRefresh,
                 object: nil
             )
+//#if DEBUG
             DebugLog.writeDatabaseSnapshot(context: context)
+//#endif
             // 🔥 Short stabilization.
             // UI no longer depends on CloudKit hydration.
 //            try? await Task.sleep(for: .milliseconds(250))

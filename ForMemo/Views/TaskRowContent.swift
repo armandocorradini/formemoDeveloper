@@ -35,6 +35,7 @@ struct TaskRowContent: View, Equatable, TaskRowBaseLogic {
     let highlightCriticalOverdue: Bool
     let showTodayExpiredLabel: Bool
     let dueIconEffect: DueIconEffect
+    @Environment(AppSettings.self) private var settings
     
 
     private var isToday: Bool {
@@ -69,7 +70,10 @@ struct TaskRowContent: View, Equatable, TaskRowBaseLogic {
         content
             .frame(
                 maxWidth: .infinity,
-                minHeight: TaskRowMetrics.rowHeight,
+                minHeight: max(
+                    1,
+                    TaskRowMetrics.rowHeight + CGFloat(settings.taskRowVerticalPadding)
+                ),
                 alignment: .leading
             )
             .contentShape(Rectangle())
@@ -258,7 +262,7 @@ extension TaskRowContent {
                 )
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, max(0, 6 + CGFloat(settings.taskRowVerticalPadding)))
     }
 }
 
@@ -1096,6 +1100,6 @@ extension TaskRowContent {
 
             Spacer(minLength: 0)
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, max(0, 6 + CGFloat(settings.taskRowVerticalPadding)))
     }
 }

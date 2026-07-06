@@ -58,6 +58,10 @@ final class AppSettings {
         surfaceMaterial = SurfaceMaterialStyle(
             rawValue: defaults.integer(forKey: "surfaceMaterial")
         ) ?? .strong
+        
+        taskRowVerticalPadding = defaults.object(forKey: "taskRowVerticalPadding") as? Double ?? 8
+        
+        
         dueIconEffectRaw = defaults.string(forKey: "dueIconEffect") ?? DueIconEffect.blink.rawValue
         
         let rawValue = defaults.string(forKey: "TaskListStyle")
@@ -206,6 +210,14 @@ final class AppSettings {
             UserDefaults.standard.set(
                 surfaceMaterial.rawValue,
                 forKey: "surfaceMaterial"
+            )
+        }
+    }
+    var taskRowVerticalPadding: Double {
+        didSet {
+            UserDefaults.standard.set(
+                taskRowVerticalPadding,
+                forKey: "taskRowVerticalPadding"
             )
         }
     }
@@ -441,6 +453,8 @@ final class AppSettings {
         surfaceCornerRadius = 22
         surfaceBorder = .hairline
         surfaceMaterial = .none
+        taskRowVerticalPadding = 8
+        
         dueIconEffectRaw = DueIconEffect.blink.rawValue
         taskListStyle = .plain
         showDateEveryRow = false
