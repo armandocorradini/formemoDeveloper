@@ -18,7 +18,8 @@ enum Persistence {
         DeletedItem.self,
         LoyaltyCard.self,
         TripList.self,
-        DocumentItem.self
+        DocumentItem.self,
+        VaultItem.self
     ])
 
 
@@ -95,6 +96,11 @@ enum Persistence {
             )
             print("❌ SWIFTDATA ERROR:")
             print(error)
+            if let swiftDataError = error as? SwiftDataError {
+                print("SwiftDataError:", swiftDataError)
+            }
+            print("Schema models:")
+            print(schema)
 
             DebugLog.write(
                 "❌ SwiftData container initialization FAILED: \(error.localizedDescription)"
@@ -104,13 +110,7 @@ enum Persistence {
                 "SwiftData ModelContainer error: \(error.localizedDescription)"
             )
 
-            assertionFailure(
-                "SwiftData container initialization failed: \(error.localizedDescription)"
-            )
-
-            fatalError(
-                "SwiftData container initialization failed"
-            )
+            fatalError("SwiftData container initialization failed: \(error)")
         }
     }
 }

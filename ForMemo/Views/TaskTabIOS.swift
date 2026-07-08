@@ -22,6 +22,7 @@ struct TaskTabView: View {
     @State private var calendarPath = NavigationPath()
     @State private var mapPath = NavigationPath()
     @State private var walletPath = NavigationPath()
+    @State private var vaultPath = NavigationPath()
     @State private var TripsPath = NavigationPath()
     @State private var documentsPath = NavigationPath()
     @State private var weatherPath = NavigationPath()
@@ -184,6 +185,28 @@ struct TaskTabView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                         
+                        Button {
+                            selectedTab = 11
+                            showMorePopover = false
+                        } label: {
+                            HStack(spacing: 10) {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "lock.shield")
+                                        .frame(width: 22)
+                                    Capsule()
+                                        .fill(Color.accentColor)
+                                        .frame(width: 16, height: 3)
+                                        .opacity(selectedTab == 11 ? 1 : 0)
+                                }
+                                Text(String(localized: "Vault"))
+                            }
+                            .foregroundStyle(selectedTab == 11 ? Color.accentColor : Color.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
                         Button {
                             selectedTab = 7
                             showMorePopover = false
@@ -399,6 +422,11 @@ struct TaskTabView: View {
             NavigationStack(path: $walletPath) {
                 WalletView()
             }
+        
+        case 11:
+            NavigationStack(path: $vaultPath) {
+                VaultGateView()
+            }
             
         case 7:
             NavigationStack(path: $TripsPath) {
@@ -449,6 +477,7 @@ struct TaskTabView: View {
                 sidebarRow(String(localized: "Start_tab"), "house", 0)
 
                 sidebarRow(String(localized: "wallet_tab"), "wallet.bifold", 6)
+                sidebarRow(String(localized: "Vault"), "lock.shield", 11)
                 sidebarRow(String(localized: "Trips"), "suitcase.rolling", 7)
                 sidebarRow(String(localized: "Documents"), "doc.text", 8)
                 if settings.showWeatherForecast {
@@ -577,6 +606,11 @@ struct TaskTabView: View {
         case 6:
             if !walletPath.isEmpty {
                 walletPath = NavigationPath()
+            }
+        
+        case 11:
+            if !vaultPath.isEmpty {
+                vaultPath = NavigationPath()
             }
             
         case 7:

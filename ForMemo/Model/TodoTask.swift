@@ -107,12 +107,12 @@ final class TodoTask {
         
         guard let nextDate = nextRecurrenceDate(from: currentDeadline) else { return }
         
-        self.deadLine = nextDate
+        deadLine = nextDate
         
-        self.isCompleted = false
-        self.completedAt = nil
-        self.snoozeUntil = nil
-        self.manualSnoozeUntil = nil
+        isCompleted = false
+        completedAt = nil
+        snoozeUntil = nil
+        manualSnoozeUntil = nil
     }
 }
 
@@ -299,7 +299,7 @@ extension TaskPriority {
 
 extension TodoTask {
     func shouldShowDaysBadge(showBadge: Bool, showBadgeOnlyWithPriority: Bool) -> Bool {
-        showBadge && (!showBadgeOnlyWithPriority || self.priority != .none)
+        showBadge && (!showBadgeOnlyWithPriority || priority != .none)
     }
 }
 

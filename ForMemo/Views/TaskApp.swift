@@ -255,6 +255,7 @@ struct ForMemoApp: App {
                 try? container.mainContext.save()
                 
             case .background:
+                VaultLock.shared.lock()
                 try? container.mainContext.save()
                 
             @unknown default:

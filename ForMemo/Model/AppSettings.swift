@@ -87,6 +87,10 @@ final class AppSettings {
         recentlyDeletedRetentionDays = defaults.object(forKey: "recentlyDeletedRetentionDays") as? Int ?? 30
         locationRemindersEnabled = defaults.object(forKey: "locationRemindersEnabled") as? Bool ?? false
         locationRadius = defaults.object(forKey: "locationRadius") as? Int ?? 150
+        vaultAutoLockInterval = defaults.object(forKey: "vaultAutoLockInterval") as? Int ?? 60
+        vaultClipboardClearInterval = defaults.object(forKey: "vaultClipboardClearInterval") as? Int ?? 90
+        vaultRequireFaceID = defaults.object(forKey: "vaultRequireFaceID") as? Bool ?? true
+        vaultAutoHidePasswords = defaults.object(forKey: "vaultAutoHidePasswords") as? Bool ?? true
     }
 
     @MainActor
@@ -437,6 +441,30 @@ final class AppSettings {
             )
         }
     }
+
+    var vaultAutoLockInterval: Int {
+        didSet {
+            UserDefaults.standard.set(vaultAutoLockInterval, forKey: "vaultAutoLockInterval")
+        }
+    }
+
+    var vaultClipboardClearInterval: Int {
+        didSet {
+            UserDefaults.standard.set(vaultClipboardClearInterval, forKey: "vaultClipboardClearInterval")
+        }
+    }
+
+    var vaultRequireFaceID: Bool {
+        didSet {
+            UserDefaults.standard.set(vaultRequireFaceID, forKey: "vaultRequireFaceID")
+        }
+    }
+
+    var vaultAutoHidePasswords: Bool {
+        didSet {
+            UserDefaults.standard.set(vaultAutoHidePasswords, forKey: "vaultAutoHidePasswords")
+        }
+    }
     
     
     private init() {
@@ -477,6 +505,10 @@ final class AppSettings {
         recentlyDeletedRetentionDays = 30
         locationRemindersEnabled = false
         locationRadius = 150
+        vaultAutoLockInterval = 60
+        vaultClipboardClearInterval = 90
+        vaultRequireFaceID = true
+        vaultAutoHidePasswords = true
 
         loadFromUserDefaults(.standard)
         

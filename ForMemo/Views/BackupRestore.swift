@@ -13,6 +13,8 @@ struct BackupRestoreView: View {
     private var tripLists: [TripList]
     @Query(sort: \DocumentItem.createdAt, order: .forward)
     private var documents: [DocumentItem]
+    @Query(sort: \VaultItem.title, order: .forward)
+    private var vaultItems: [VaultItem]
     @State private var isCreatingBackup = false
     @State private var isRestoringBackup = false
     @State private var showRestoreConfirmation = false
@@ -26,8 +28,13 @@ struct BackupRestoreView: View {
     @State private var restoreWalletCards = false
     @State private var restoreTripLists = false
     @State private var restoreDocuments = false
+    @State private var restoreVault = false
     @State private var restoreSettings = false
-
+    @State private var backupPassword = ""
+    @State private var backupPasswordConfirmation = ""
+    @State private var showBackupPasswordPrompt = false
+    @State private var showBackupCreationPasswordPrompt = false
+    
     var body: some View {
 
         ZStack {
@@ -60,26 +67,39 @@ struct BackupRestoreView: View {
                 Section("Backup") {
 
                     Button {
-                        Task {
-                            do {
-                                isCreatingBackup = true
-
-                                let url = try await BackupManager.createBackup(
-                                    tasks: tasks,
-                                    loyaltyCards: loyaltyCards,
-                                    tripLists: tripLists,
-                                    documents: documents
-                                )
-
-                                exportURL = url
-                                showExporter = true
-
-                                isCreatingBackup = false
-
-                            } catch {
-                                backupError = error.localizedDescription
-                                isCreatingBackup = false
+                        let hasVaultCredentials = vaultItems.contains {
+                            ($0.encryptedPassword?.isEmpty == false) ||
+                            ($0.encryptedPIN?.isEmpty == false) ||
+                            ($0.encryptedOTPSecret?.isEmpty == false) ||
+                            ($0.encryptedSecurityQuestion?.isEmpty == false) ||
+                            ($0.encryptedSecurityAnswer?.isEmpty == false) ||
+                            ($0.encryptedCustomerNumber?.isEmpty == false) ||
+                            ($0.encryptedRecoveryCode?.isEmpty == false)
+                        }
+                        if !hasVaultCredentials {
+                            // No Vault credentials to protect, no password required
+                            Task {
+                                do {
+                                    isCreatingBackup = true
+                                    let url = try await BackupManager.createBackup(
+                                        tasks: tasks,
+                                        loyaltyCards: loyaltyCards,
+                                        tripLists: tripLists,
+                                        documents: documents,
+                                        vaultItems: vaultItems,
+                                        vaultBackupPassword: ""
+                                    )
+                                    exportURL = url
+                                    showExporter = true
+                                    isCreatingBackup = false
+                                } catch {
+                                    backupError = error.localizedDescription
+                                    isCreatingBackup = false
+                                }
                             }
+                        } else {
+                            // Vault credentials present, prompt for password
+                            showBackupCreationPasswordPrompt = true
                         }
                     } label: {
 
@@ -263,7 +283,7 @@ struct BackupRestoreView: View {
             
 
             let archive = wrapper.archive
-            let hasSelection = restoreTasks || restoreWalletCards || restoreTripLists || restoreDocuments || restoreSettings
+            let hasSelection = restoreTasks || restoreWalletCards || restoreTripLists || restoreDocuments || restoreVault || restoreSettings
 
             NavigationStack {
                 ZStack {
@@ -280,6 +300,11 @@ struct BackupRestoreView: View {
 
                             if !archive.documents.isEmpty {
                                 Text("Documents: \(archive.documents.count)")
+                            }
+
+                            // Show Vault count after Documents (or after Cards & Tickets if Documents are absent)
+                            if !archive.vaultItems.isEmpty {
+                                Text("Vault: \(archive.vaultItems.count)")
                             }
 
                             if !archive.settings.isEmpty {
@@ -310,6 +335,10 @@ struct BackupRestoreView: View {
                                 )
                             }
 
+                            if !archive.vaultItems.isEmpty {
+                                Toggle("Vault", isOn: $restoreVault)
+                            }
+
                             if !archive.settings.isEmpty {
                                 Toggle(
                                     "Settings",
@@ -327,44 +356,61 @@ struct BackupRestoreView: View {
                                 restoreWalletCards = false
                                 restoreTripLists = false
                                 restoreDocuments = false
+                                restoreVault = false
                                 restoreSettings = false
                                 restoreArchive = nil
+                                backupPassword = ""
                             }
                         }
 
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("Restore") {
-                                let selectedTasks = restoreTasks
-                                let selectedWalletCards = restoreWalletCards
-                                let selectedTripLists = restoreTripLists
-                                let selectedDocuments = restoreDocuments
-                                let selectedSettings = restoreSettings
-                                restoreTasks = false
-                                restoreWalletCards = false
-                                restoreTripLists = false
-                                restoreDocuments = false
-                                restoreSettings = false
-                                restoreArchive = nil
-
-                                Task {
-                                    do {
-                                        isRestoringBackup = true
-
-                                        try await BackupManager.restoreArchive(
-                                            archive,
-                                            modelContext: modelContext,
-                                            restoreTasks: selectedTasks,
-                                            restoreWalletCards: selectedWalletCards,
-                                            restoreTripLists: selectedTripLists,
-                                            restoreDocuments: selectedDocuments,
-                                            restoreSettings: selectedSettings
-                                        )
-
-                                        isRestoringBackup = false
-                                    } catch {
-                                        restoreError = error.localizedDescription
-                                        isRestoringBackup = false
+                                // If restoring Vault, prompt for password, else restore immediately
+                                if !restoreVault {
+                                    // No vault restore, no password required
+                                    let selectedTasks = restoreTasks
+                                    let selectedWalletCards = restoreWalletCards
+                                    let selectedTripLists = restoreTripLists
+                                    let selectedDocuments = restoreDocuments
+                                    let selectedVault = restoreVault
+                                    let selectedSettings = restoreSettings
+                                    let archiveToRestore = restoreArchive
+                                    // Reset selections and archive
+                                    restoreTasks = false
+                                    restoreWalletCards = false
+                                    restoreTripLists = false
+                                    restoreDocuments = false
+                                    restoreVault = false
+                                    restoreSettings = false
+                                    restoreArchive = nil
+                                    backupPassword = ""
+                                    Task {
+                                        do {
+                                            isRestoringBackup = true
+                                            guard let archive = archiveToRestore else {
+                                                isRestoringBackup = false
+                                                return
+                                            }
+                                            try await BackupManager.restoreArchive(
+                                                archive,
+                                                modelContext: modelContext,
+                                                restoreTasks: selectedTasks,
+                                                restoreWalletCards: selectedWalletCards,
+                                                restoreTripLists: selectedTripLists,
+                                                restoreDocuments: selectedDocuments,
+                                                restoreVault: selectedVault,
+                                                backupPassword: "",
+                                                restoreSettings: selectedSettings
+                                            )
+                                            isRestoringBackup = false
+                                        } catch {
+                                            restoreError = error.localizedDescription
+                                            isRestoringBackup = false
+                                        }
                                     }
+                                } else {
+                                    // Vault restore selected, prompt for password
+                                    showBackupPasswordPrompt = true
                                 }
                             }
                             .disabled(!hasSelection)
@@ -401,6 +447,98 @@ struct BackupRestoreView: View {
         } message: {
             Text(restoreError ?? "")
         }
+        .alert("Backup Password", isPresented: $showBackupPasswordPrompt) {
+            SecureField("Password", text: $backupPassword)
+            Button("Cancel", role: .cancel) {
+                backupPassword = ""
+                showBackupPasswordPrompt = false
+            }
+            Button("Restore") {
+                let selectedTasks = restoreTasks
+                let selectedWalletCards = restoreWalletCards
+                let selectedTripLists = restoreTripLists
+                let selectedDocuments = restoreDocuments
+                let selectedVault = restoreVault
+                let selectedSettings = restoreSettings
+                let archiveToRestore = restoreArchive
+                restoreTasks = false
+                restoreWalletCards = false
+                restoreTripLists = false
+                restoreDocuments = false
+                restoreVault = false
+                restoreSettings = false
+                restoreArchive = nil
+                showBackupPasswordPrompt = false
+
+                Task {
+                    do {
+                        isRestoringBackup = true
+                        guard let archive = archiveToRestore else {
+                            isRestoringBackup = false
+                            backupPassword = ""
+                            return
+                        }
+                        try await BackupManager.restoreArchive(
+                            archive,
+                            modelContext: modelContext,
+                            restoreTasks: selectedTasks,
+                            restoreWalletCards: selectedWalletCards,
+                            restoreTripLists: selectedTripLists,
+                            restoreDocuments: selectedDocuments,
+                            restoreVault: selectedVault,
+                            backupPassword: backupPassword,
+                            restoreSettings: selectedSettings
+                        )
+                        isRestoringBackup = false
+                        backupPassword = ""
+                    } catch {
+                        restoreError = error.localizedDescription
+                        isRestoringBackup = false
+                        backupPassword = ""
+                    }
+                }
+            }
+        } message: {
+            Text("Enter the password to unlock the backup.")
+        }
+        .alert("Backup Password", isPresented: $showBackupCreationPasswordPrompt) {
+            SecureField("Password", text: $backupPassword)
+            SecureField("Confirm Password", text: $backupPasswordConfirmation)
+            Button("Cancel", role: .cancel) {
+                backupPassword = ""
+                backupPasswordConfirmation = ""
+                showBackupCreationPasswordPrompt = false
+            }
+            Button("Create Backup") {
+                showBackupCreationPasswordPrompt = false
+                Task {
+                    do {
+                        isCreatingBackup = true
+                        let url = try await BackupManager.createBackup(
+                            tasks: tasks,
+                            loyaltyCards: loyaltyCards,
+                            tripLists: tripLists,
+                            documents: documents,
+                            vaultItems: vaultItems,
+                            vaultBackupPassword: backupPassword
+                        )
+                        exportURL = url
+                        showExporter = true
+                        isCreatingBackup = false
+                        backupPassword = ""
+                        backupPasswordConfirmation = ""
+                    } catch {
+                        backupError = error.localizedDescription
+                        isCreatingBackup = false
+                        backupPassword = ""
+                        backupPasswordConfirmation = ""
+                    }
+                }
+            }
+            .disabled(backupPassword.isEmpty || backupPassword != backupPasswordConfirmation)
+        } message: {
+            Text("Choose a password and confirm it. This password will be required only to restore Vault data from this backup.")
+        }
         .navigationTitle("Backup & Restore")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -419,11 +557,12 @@ private struct RestoreArchiveSheetWrapper: Identifiable {
 }
 
 private enum BackupFormat {
-    static let currentVersion = 3
+    static let currentVersion = 4
 }
 
 private extension JSONEncoder {
-        static let backup: JSONEncoder = {
+    
+    static let backup: JSONEncoder = {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.sortedKeys]
             encoder.dateEncodingStrategy = .iso8601
@@ -449,6 +588,8 @@ private struct BackupArchive: Codable {
         case loyaltyCards
         case tripLists
         case documents
+        case vaultItems
+        case vaultBackupPackage
         case attachmentFiles
         case loyaltyCardLogoFiles
         case settings
@@ -460,6 +601,8 @@ private struct BackupArchive: Codable {
     let loyaltyCards: [LoyaltyCardTransferObject]
     let tripLists: [TripListTransferObject]
     let documents: [DocumentTransferObject]
+    let vaultItems: [VaultItemTransferObject]
+    let vaultBackupPackage: VaultBackupPackage?
     let attachmentFiles: [String: Data]
     let loyaltyCardLogoFiles: [String: Data]
     let settings: [String: Data]
@@ -471,6 +614,8 @@ private struct BackupArchive: Codable {
         loyaltyCards: [LoyaltyCardTransferObject],
         tripLists: [TripListTransferObject],
         documents: [DocumentTransferObject],
+        vaultItems: [VaultItemTransferObject],
+        vaultBackupPackage: VaultBackupPackage?,
         attachmentFiles: [String: Data],
         loyaltyCardLogoFiles: [String: Data],
         settings: [String: Data]
@@ -481,6 +626,8 @@ private struct BackupArchive: Codable {
         self.loyaltyCards = loyaltyCards
         self.tripLists = tripLists
         self.documents = documents
+        self.vaultItems = vaultItems
+        self.vaultBackupPackage = vaultBackupPackage
         self.attachmentFiles = attachmentFiles
         self.loyaltyCardLogoFiles = loyaltyCardLogoFiles
         self.settings = settings
@@ -513,6 +660,15 @@ private struct BackupArchive: Codable {
             [DocumentTransferObject].self,
             forKey: .documents
         ) ?? []
+        vaultItems = try container.decodeIfPresent(
+            [VaultItemTransferObject].self,
+            forKey: .vaultItems
+        ) ?? []
+
+        vaultBackupPackage = try container.decodeIfPresent(
+            VaultBackupPackage.self,
+            forKey: .vaultBackupPackage
+        )
         attachmentFiles = try container.decodeIfPresent(
             [String: Data].self,
             forKey: .attachmentFiles
@@ -550,6 +706,14 @@ private struct BackupArchive: Codable {
         try container.encode(
             documents,
             forKey: .documents
+        )
+        try container.encode(
+            vaultItems,
+            forKey: .vaultItems
+        )
+        try container.encodeIfPresent(
+            vaultBackupPackage,
+            forKey: .vaultBackupPackage
         )
         try container.encode(
             attachmentFiles,
@@ -710,6 +874,94 @@ private struct DocumentTransferObject: Codable {
     
     
 }
+
+private struct VaultItemTransferObject: Codable {
+
+    let id: UUID
+    let syncIdentifier: UUID
+    let version: Int
+
+    let title: String
+    let category: VaultCategory
+
+    let favorite: Bool
+
+    let tags: [String]
+    let sortOrder: Int
+
+    let icon: VaultIcon
+    let color: VaultColor
+
+    let username: String
+    let email: String
+    let website: String
+    let notes: String
+
+    let encryptedPassword: Data?
+    let encryptedPIN: Data?
+    let encryptedOTPSecret: Data?
+    let encryptedSecurityQuestion: Data?
+    let encryptedSecurityAnswer: Data?
+    let encryptedCustomerNumber: Data?
+    let encryptedRecoveryCode: Data?
+
+    let createdAt: Date
+    let modifiedAt: Date
+
+    let passwordUpdatedAt: Date?
+    let passwordExpiresAt: Date?
+
+    let lastViewedAt: Date?
+    let lastCopiedAt: Date?
+
+    let deletedAt: Date?
+
+    let requireBiometricEveryTime: Bool
+
+    init(item: VaultItem) {
+        id = item.id
+        syncIdentifier = item.syncIdentifier
+        version = item.version
+
+        title = item.title
+        category = item.category
+
+        favorite = item.favorite
+
+        tags = item.tags
+        sortOrder = item.sortOrder
+
+        icon = item.icon
+        color = item.color
+
+        username = item.username
+        email = item.email
+        website = item.website
+        notes = item.notes
+
+        encryptedPassword = item.encryptedPassword
+        encryptedPIN = item.encryptedPIN
+        encryptedOTPSecret = item.encryptedOTPSecret
+        encryptedSecurityQuestion = item.encryptedSecurityQuestion
+        encryptedSecurityAnswer = item.encryptedSecurityAnswer
+        encryptedCustomerNumber = item.encryptedCustomerNumber
+        encryptedRecoveryCode = item.encryptedRecoveryCode
+
+        createdAt = item.createdAt
+        modifiedAt = item.modifiedAt
+
+        passwordUpdatedAt = item.passwordUpdatedAt
+        passwordExpiresAt = item.passwordExpiresAt
+
+        lastViewedAt = item.lastViewedAt
+        lastCopiedAt = item.lastCopiedAt
+
+        deletedAt = item.deletedAt
+
+        requireBiometricEveryTime = item.requireBiometricEveryTime
+    }
+}
+
 private struct TripListTransferObject: Codable {
     let id: UUID
     let name: String
@@ -742,13 +994,36 @@ private enum BackupManager {
         tasks: [TodoTask],
         loyaltyCards: [LoyaltyCard],
         tripLists: [TripList],
-        documents: [DocumentItem]
+        documents: [DocumentItem],
+        vaultItems: [VaultItem],
+        vaultBackupPassword: String
     ) async throws -> URL {
 
         var attachmentPayload: [String: Data] = [:]
         var loyaltyLogoPayload: [String: Data] = [:]
         var settingsPayload: [String: Data] = [:]
 
+        let hasVaultCredentials = vaultItems.contains {
+            ($0.encryptedPassword?.isEmpty == false) ||
+            ($0.encryptedPIN?.isEmpty == false) ||
+            ($0.encryptedOTPSecret?.isEmpty == false) ||
+            ($0.encryptedSecurityQuestion?.isEmpty == false) ||
+            ($0.encryptedSecurityAnswer?.isEmpty == false) ||
+            ($0.encryptedCustomerNumber?.isEmpty == false) ||
+            ($0.encryptedRecoveryCode?.isEmpty == false)
+        }
+
+        let vaultPackage: VaultBackupPackage?
+
+        if hasVaultCredentials {
+            let vaultKey = try VaultCrypto.exportVaultKey()
+            vaultPackage = try VaultBackupCrypto.makePackage(
+                vaultKey: vaultKey,
+                password: vaultBackupPassword
+            )
+        } else {
+            vaultPackage = nil
+        }
         let exportedSettings = await MainActor.run {
             AppSettings.shared.exportSettings()
         }
@@ -847,6 +1122,10 @@ DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: 
             documents: documents.map {
                 DocumentTransferObject(document: $0)
             },
+            vaultItems: vaultItems.map {
+                VaultItemTransferObject(item: $0)
+            },
+            vaultBackupPackage: vaultPackage,
             attachmentFiles: attachmentPayload,
             loyaltyCardLogoFiles: loyaltyLogoPayload,
             settings: settingsPayload
@@ -929,7 +1208,8 @@ DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: 
         #endif
 
             throw error
-        }    }
+        }
+    }
 
     @MainActor
     static func restoreArchive(
@@ -939,6 +1219,8 @@ DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: 
         restoreWalletCards: Bool,
         restoreTripLists: Bool,
         restoreDocuments: Bool,
+        restoreVault: Bool,
+        backupPassword: String,
         restoreSettings: Bool
     ) async throws {
 
@@ -971,14 +1253,6 @@ DebugLog.writeAttachmentEvent("bytes: \(fileData.count)")
                 
                 let destinationURL = attachmentsDirectory
                     .appendingPathComponent(relativePath)
-
-#if DEBUG
-DebugLog.writeAttachmentEvent("═══════════════════════════════")
-DebugLog.writeAttachmentEvent("RESTORE FILE")
-DebugLog.writeAttachmentEvent("relativePath: \(relativePath)")
-DebugLog.writeAttachmentEvent("bytes: \(fileData.count)")
-#endif
-                
                 
                 let parent = destinationURL.deletingLastPathComponent()
 
@@ -991,13 +1265,11 @@ DebugLog.writeAttachmentEvent("bytes: \(fileData.count)")
 
                 if FileManager.default.fileExists(atPath: destinationURL.path) {
 
-                    let attributes = try? FileManager.default.attributesOfItem(
-                        atPath: destinationURL.path
-                    )
-
-                    let size = attributes?[.size] as? Int64 ?? 0
-
-                    shouldWrite = size == 0
+                    if let existingData = try? Data(contentsOf: destinationURL) {
+                        shouldWrite = existingData != fileData
+                    } else {
+                        shouldWrite = true
+                    }
 
                 } else {
                     shouldWrite = true
@@ -1241,6 +1513,63 @@ if let restoredTasks = try? modelContext.fetch(descriptor) {
 }
 #endif
         
+        if restoreVault {
+            // Restore Vault encryption key from archive.vaultBackupPackage
+            guard let vaultBackupPackage = archive.vaultBackupPackage else {
+                throw NSError(domain: "BackupManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Vault restore requested, but no Vault backup package was found in the archive."])
+            }
+
+            let rawKeyData = try VaultBackupCrypto.unwrapKey(
+                from: vaultBackupPackage,
+                password: backupPassword
+            )
+
+            try VaultCrypto.importVaultKey(rawKeyData)
+
+            // Restore Vault items from archive.vaultItems
+            for dto in archive.vaultItems {
+                let descriptor = FetchDescriptor<VaultItem>(
+                    predicate: #Predicate { $0.id == dto.id }
+                )
+                let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
+                guard !alreadyExists else {
+                    continue
+                }
+                let item = VaultItem(
+                    title: dto.title,
+                    category: dto.category
+                )
+                item.icon = dto.icon
+                item.color = dto.color
+                item.username = dto.username
+                item.email = dto.email
+                item.website = dto.website
+                item.notes = dto.notes
+                item.id = dto.id
+                item.syncIdentifier = dto.syncIdentifier
+                item.version = dto.version
+                item.favorite = dto.favorite
+                item.tags = dto.tags
+                item.sortOrder = dto.sortOrder
+                item.encryptedPassword = dto.encryptedPassword
+                item.encryptedPIN = dto.encryptedPIN
+                item.encryptedOTPSecret = dto.encryptedOTPSecret
+                item.encryptedSecurityQuestion = dto.encryptedSecurityQuestion
+                item.encryptedSecurityAnswer = dto.encryptedSecurityAnswer
+                item.encryptedCustomerNumber = dto.encryptedCustomerNumber
+                item.encryptedRecoveryCode = dto.encryptedRecoveryCode
+                item.createdAt = dto.createdAt
+                item.modifiedAt = dto.modifiedAt
+                item.passwordUpdatedAt = dto.passwordUpdatedAt
+                item.passwordExpiresAt = dto.passwordExpiresAt
+                item.lastViewedAt = dto.lastViewedAt
+                item.lastCopiedAt = dto.lastCopiedAt
+                item.deletedAt = dto.deletedAt
+                item.requireBiometricEveryTime = dto.requireBiometricEveryTime
+                modelContext.insert(item)
+            }
+        }
+
         if restoreSettings && !archive.settings.isEmpty {
 
             var restoredSettings: [String: Any] = [:]

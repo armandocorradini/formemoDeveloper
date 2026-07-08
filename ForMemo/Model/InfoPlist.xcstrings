@@ -80,7 +80,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta aplicación accede a tu calendario para importar eventos como tareas."
+            "value" : "Face ID se utiliza para desbloquear de forma segura tu Bóveda y proteger tus credenciales guardadas."
           }
         },
         "fr" : {
@@ -163,6 +163,41 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Questa app utilizza la fotocamera per scansionare carte fedeltà, biglietti, codici a barre, codici QR, documenti e per allegare foto alle tue attività."
+          }
+        }
+      }
+    },
+    "NSFaceIDUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID wird verwendet, um deinen Tresor sicher zu entsperren und deine gespeicherten Zugangsdaten zu schützen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID is used to securely unlock your Vault and protect your saved credentials."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID se utiliza para desbloquear de forma segura tu Bóveda y proteger tus credenciales guardadas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID est utilisé pour déverrouiller en toute sécurité votre Coffre-fort et protéger vos identifiants enregistrés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Face ID viene utilizzato per sbloccare in modo sicuro il tuo Vault e proteggere le credenziali salvate."
           }
         }
       }

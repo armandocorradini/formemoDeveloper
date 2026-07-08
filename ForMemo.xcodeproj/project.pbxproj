@@ -154,7 +154,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMPILER_INDEX_STORE_ENABLE = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 7L454SWB7H;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -166,6 +166,7 @@
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app accesses your calendar to import events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "This app accesses your calendar to export events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to take photos and scan documents to attach them to your tasks.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID is used to securely unlock your Vault and protect your saved credentials.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "ForMemo uses your location in the background to notify you when you arrive at a saved task location.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "ForMemo uses your location to let you attach places to your tasks.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "ForMemo uses the microphone to record voice notes for your tasks.";
@@ -208,7 +209,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMPILER_INDEX_STORE_ENABLE = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 7L454SWB7H;
 				ENABLE_PREVIEWS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -221,6 +222,7 @@
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "This app accesses your calendar to import events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "This app accesses your calendar to export events as tasks, helping you manage everything in one place.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to take photos and scan documents to attach them to your tasks.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID is used to securely unlock your Vault and protect your saved credentials.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "ForMemo uses your location in the background to notify you when you arrive at a saved task location.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "ForMemo uses your location to let you attach places to your tasks.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "ForMemo uses the microphone to record voice notes for your tasks.";
