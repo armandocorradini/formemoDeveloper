@@ -77,7 +77,7 @@ struct VaultEditView: View {
                 TextField("Notes", text: $notes, axis: .vertical)
                     .lineLimit(4...8)
 
-                Toggle("Require Face ID Every Time", isOn: $requireBiometricEveryTime)
+                Toggle("Require Device Authentication Every Time", isOn: $requireBiometricEveryTime)
             }
         }
         .navigationTitle(item == nil ? "New Credential" : "Edit Credential")

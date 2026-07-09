@@ -120,7 +120,6 @@ struct VaultPasswordField: View {
     }
 
     private func scheduleAutoHide() {
-        guard AppSettings.shared.vaultAutoHidePasswords else { return }
 
         autoHideTask?.cancel()
         autoHideTask = Task {

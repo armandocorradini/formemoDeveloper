@@ -252,6 +252,7 @@ struct ForMemoApp: App {
 
                 }
             case .inactive:
+                
                 try? container.mainContext.save()
                 
             case .background:

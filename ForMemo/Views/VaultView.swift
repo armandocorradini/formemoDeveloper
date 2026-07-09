@@ -73,22 +73,33 @@ struct VaultView: View {
             .navigationTitle(String(localized: "Vault"))
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
             .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    NavigationLink {
-                        RecentlyDeletedVaultView()
-                    } label: {
-                        Image(systemName: "trash")
-                    }
+
+                ToolbarItem(placement: .topBarLeading) {
                     NavigationLink {
                         VaultSettingsView()
                     } label: {
                         Image(systemName: "gearshape")
                     }
+                }
 
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        RecentlyDeletedVaultView()
+                    } label: {
+                        Image(systemName: "trash.circle")
+                    }
+                }
+
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showingAddItem = true
                     } label: {
                         Image(systemName: "plus")
+                            .font(.headline)
+                            .foregroundStyle(.white)
+                            .frame(width: 30, height: 30)
+                            .background(.green)
+                            .clipShape(Circle())
                     }
                 }
             }

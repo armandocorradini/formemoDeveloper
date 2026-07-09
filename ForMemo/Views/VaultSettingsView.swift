@@ -16,7 +16,7 @@ struct VaultSettingsView: View {
                     Text(String(localized: "Never")).tag(0)
                 }
 
-                Picker(String(localized: "Clipboard"), selection: $settings.vaultClipboardClearInterval) {
+                Picker(String(localized: "Clear Clipboard"), selection: $settings.vaultClipboardClearInterval) {
                     Text("30 s").tag(30)
                     Text("60 s").tag(60)
                     Text("90 s").tag(90)
@@ -24,10 +24,10 @@ struct VaultSettingsView: View {
                 }
             }
 
-            Section(String(localized: "Privacy")) {
-                Toggle(String(localized: "Require Face ID"), isOn: $settings.vaultRequireFaceID)
-                Toggle(String(localized: "Hide passwords automatically"), isOn: $settings.vaultAutoHidePasswords)
-            }
+//            Section(String(localized: "Privacy")) {
+////                Toggle(String(localized: "Require Face ID"), isOn: $settings.vaultRequireFaceID)
+////                Toggle(String(localized: "Hide passwords automatically"), isOn: $settings.vaultAutoHidePasswords)
+//            }
         }
         .navigationTitle(String(localized: "Vault"))
         .navigationBarTitleDisplayMode(.inline)

@@ -89,7 +89,7 @@ final class AppSettings {
         locationRadius = defaults.object(forKey: "locationRadius") as? Int ?? 150
         vaultAutoLockInterval = defaults.object(forKey: "vaultAutoLockInterval") as? Int ?? 60
         vaultClipboardClearInterval = defaults.object(forKey: "vaultClipboardClearInterval") as? Int ?? 90
-        vaultRequireFaceID = defaults.object(forKey: "vaultRequireFaceID") as? Bool ?? true
+//        vaultRequireFaceID = defaults.object(forKey: "vaultRequireFaceID") as? Bool ?? true
         vaultAutoHidePasswords = defaults.object(forKey: "vaultAutoHidePasswords") as? Bool ?? true
     }
 
@@ -454,11 +454,11 @@ final class AppSettings {
         }
     }
 
-    var vaultRequireFaceID: Bool {
-        didSet {
-            UserDefaults.standard.set(vaultRequireFaceID, forKey: "vaultRequireFaceID")
-        }
-    }
+//    var vaultRequireFaceID: Bool {
+//        didSet {
+//            UserDefaults.standard.set(vaultRequireFaceID, forKey: "vaultRequireFaceID")
+//        }
+//    }
 
     var vaultAutoHidePasswords: Bool {
         didSet {
@@ -507,7 +507,7 @@ final class AppSettings {
         locationRadius = 150
         vaultAutoLockInterval = 60
         vaultClipboardClearInterval = 90
-        vaultRequireFaceID = true
+//        vaultRequireFaceID = true
         vaultAutoHidePasswords = true
 
         loadFromUserDefaults(.standard)

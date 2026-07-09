@@ -12,6 +12,7 @@ struct TaskTabView: View {
     @Query private var trips: [TripList]
     
     @State private var selectedTab: Int = 0
+    @State private var previousTab = 0
     @State private var showSnoozeAlert = false
     @State private var showMorePopover = false
     
@@ -77,9 +78,32 @@ struct TaskTabView: View {
                     selectedTab = 1
                 }
             }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: Notification.Name("VaultAuthenticationFailed")
+                )
+            ) { _ in
+
+                vaultPath = NavigationPath()
+
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    selectedTab = previousTab == 11 ? 10 : previousTab
+                }
+            }
             .onChange(of: settings.showWeatherForecast) { _, enabled in
                 if !enabled && selectedTab == 9 {
                     selectedTab = 0
+                }
+            }
+            .onChange(of: selectedTab) { oldValue, newValue in
+
+                previousTab = oldValue
+
+                if oldValue == 11 && newValue != 11 {
+
+                    VaultLock.shared.lock()
+
+                    vaultPath = NavigationPath()
                 }
             }
             .alert(

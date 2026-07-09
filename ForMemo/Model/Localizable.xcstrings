@@ -2956,35 +2956,6 @@
         }
       }
     },
-    "Archive" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Archivieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicional"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Archiver"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Archivia"
-          }
-        }
-      }
-    },
     "Arctic" : {
       "localizations" : {
         "de" : {
@@ -6576,6 +6547,9 @@
         }
       }
     },
+    "Clear Clipboard" : {
+
+    },
     "Clear Night" : {
       "localizations" : {
         "de" : {
@@ -6628,34 +6602,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cielo Sereno"
-          }
-        }
-      }
-    },
-    "Clipboard" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zwischenablage"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Portapapeles"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Presse-papiers"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Appunti"
           }
         }
       }
@@ -12958,6 +12904,7 @@
       }
     },
     "Hide passwords automatically" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -19504,6 +19451,7 @@
       }
     },
     "Privacy" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -20872,61 +20820,8 @@
         }
       }
     },
-    "Require Face ID" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Face ID erforderlich"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Requerir Face ID"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exiger Face ID"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Richiedi Face ID"
-          }
-        }
-      }
-    },
-    "Require Face ID Every Time" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Face ID jedes Mal erforderlich"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Requerir Face ID siempre"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exiger Face ID à chaque fois"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Richiedi Face ID ogni volta"
-          }
-        }
-      }
+    "Require Device Authentication Every Time" : {
+
     },
     "Reschedule" : {
       "comment" : "A label for a menu item that reschedules a task.",

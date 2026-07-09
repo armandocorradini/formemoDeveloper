@@ -11,7 +11,8 @@ struct VaultDetailView: View {
     @State private var decryptedPassword = ""
     @State private var showingError = false
     @State private var errorMessage = ""
-
+    @State private var autoHideTask: Task<Void, Never>?
+    
     var body: some View {
         List {
             Section {
@@ -122,6 +123,12 @@ struct VaultDetailView: View {
                 }
             }
         }
+        .onDisappear {
+
+            autoHideTask?.cancel()
+            autoHideTask = nil
+
+        }
         .navigationTitle(item.title)
         .navigationBarTitleDisplayMode(.inline)
         .alert(errorMessage, isPresented: $showingError) {
@@ -131,6 +138,8 @@ struct VaultDetailView: View {
 
     private func togglePassword() async {
         if showingPassword {
+            autoHideTask?.cancel()
+            autoHideTask = nil
             decryptedPassword = ""
             showingPassword = false
             return
@@ -162,6 +171,25 @@ struct VaultDetailView: View {
             _ = encrypted
             decryptedPassword = try VaultManager.shared.decryptedPassword(for: item)
             showingPassword = true
+            
+            autoHideTask?.cancel()
+
+            autoHideTask = Task {
+
+                try? await Task.sleep(for: .seconds(15))
+
+                guard !Task.isCancelled else {
+                    return
+                }
+
+                await MainActor.run {
+
+                    decryptedPassword = ""
+                    showingPassword = false
+                    autoHideTask = nil
+
+                }
+            }
             try? VaultManager.shared.registerView(of: item, in: modelContext)
             VaultLock.shared.userDidAccessVault()
         } catch {

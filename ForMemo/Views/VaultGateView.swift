@@ -6,6 +6,34 @@ struct VaultGateView: View {
     @StateObject private var vaultLock = VaultLock.shared
     @State private var isUnlocking = false
 
+    private func unlockVault() {
+
+        guard !isUnlocking else { return }
+
+        isUnlocking = true
+
+        Task {
+
+            defer {
+                isUnlocking = false
+            }
+
+            do {
+
+                try await vaultLock.unlock()
+
+            } catch {
+
+                NotificationCenter.default.post(
+                    name: Notification.Name("VaultAuthenticationFailed"),
+                    object: nil
+                )
+            }
+        }
+    }
+    
+    
+    
     var body: some View {
         ZStack {
             if vaultLock.isUnlocked {
@@ -27,41 +55,8 @@ struct VaultGateView: View {
                             .foregroundStyle(.secondary)
                     }
 
-                    Button {
-                        guard !isUnlocking else { return }
-                        isUnlocking = true
-
-                        Task {
-                            defer {
-                                isUnlocking = false
-                            }
-
-                            do {
-                                try await vaultLock.unlock()
-                            } catch let error as LAError {
-                                print("🔐 Vault LAError:", error.code, error.localizedDescription)
-
-                                switch error.code {
-                                case .userCancel:
-                                    print("User cancelled authentication.")
-
-                                case .userFallback:
-                                    print("User requested passcode fallback.")
-
-                                case .systemCancel:
-                                    print("Authentication cancelled by the system.")
-
-                                default:
-                                    print("Unhandled LAError:", error)
-                                }
-
-                            } catch is CancellationError {
-                                print("Vault unlock cancelled.")
-
-                            } catch {
-                                print("Vault unlock failed:", error)
-                            }
-                        }
+                     Button {
+                        unlockVault()
                     } label: {
                         if isUnlocking {
                             ProgressView()
@@ -82,6 +77,17 @@ struct VaultGateView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .contentShape(Rectangle())
             }
+        }
+        .onAppear {
+            guard !vaultLock.isUnlocked else { return }
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                guard !vaultLock.isUnlocked else { return }
+                unlockVault()
+            }
+        }
+        .onDisappear {
+            isUnlocking = false
         }
         .animation(.snappy, value: vaultLock.isUnlocked)
         .navigationTitle(String(localized: "Vault"))

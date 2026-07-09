@@ -21,6 +21,7 @@ enum SecureClipboard {
 
         guard interval > .zero else {
             UIPasteboard.general.string = text
+            clearTask = nil
 
             NotificationCenter.default.post(
                 name: .secureClipboardDidCopy,
@@ -41,6 +42,7 @@ enum SecureClipboard {
             guard !Task.isCancelled else { return }
 
             guard UIPasteboard.general.string == text else {
+                clearTask = nil
                 return
             }
 

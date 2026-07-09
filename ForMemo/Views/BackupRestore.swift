@@ -34,6 +34,14 @@ struct BackupRestoreView: View {
     @State private var backupPasswordConfirmation = ""
     @State private var showBackupPasswordPrompt = false
     @State private var showBackupCreationPasswordPrompt = false
+    @State private var pendingRestoreArchive: BackupArchive?
+
+    @State private var pendingRestoreTasks = false
+    @State private var pendingRestoreWalletCards = false
+    @State private var pendingRestoreTripLists = false
+    @State private var pendingRestoreDocuments = false
+    @State private var pendingRestoreVault = false
+    @State private var pendingRestoreSettings = false
     
     var body: some View {
 
@@ -391,6 +399,18 @@ struct BackupRestoreView: View {
                                                 isRestoringBackup = false
                                                 return
                                             }
+#if DEBUG
+DebugLog.write("════════════════════")
+DebugLog.write("RESTORE FLAGS")
+DebugLog.write("Tasks: \(selectedTasks)")
+DebugLog.write("Cards: \(selectedWalletCards)")
+DebugLog.write("Trips: \(selectedTripLists)")
+DebugLog.write("Documents: \(selectedDocuments)")
+DebugLog.write("Vault: \(selectedVault)")
+DebugLog.write("Settings: \(selectedSettings)")
+#endif
+                                            
+                                            
                                             try await BackupManager.restoreArchive(
                                                 archive,
                                                 modelContext: modelContext,
@@ -410,6 +430,15 @@ struct BackupRestoreView: View {
                                     }
                                 } else {
                                     // Vault restore selected, prompt for password
+                                    pendingRestoreArchive = restoreArchive
+
+                                    pendingRestoreTasks = restoreTasks
+                                    pendingRestoreWalletCards = restoreWalletCards
+                                    pendingRestoreTripLists = restoreTripLists
+                                    pendingRestoreDocuments = restoreDocuments
+                                    pendingRestoreVault = restoreVault
+                                    pendingRestoreSettings = restoreSettings
+
                                     showBackupPasswordPrompt = true
                                 }
                             }
@@ -454,13 +483,14 @@ struct BackupRestoreView: View {
                 showBackupPasswordPrompt = false
             }
             Button("Restore") {
-                let selectedTasks = restoreTasks
-                let selectedWalletCards = restoreWalletCards
-                let selectedTripLists = restoreTripLists
-                let selectedDocuments = restoreDocuments
-                let selectedVault = restoreVault
-                let selectedSettings = restoreSettings
-                let archiveToRestore = restoreArchive
+                let selectedTasks = pendingRestoreTasks
+                let selectedWalletCards = pendingRestoreWalletCards
+                let selectedTripLists = pendingRestoreTripLists
+                let selectedDocuments = pendingRestoreDocuments
+                let selectedVault = pendingRestoreVault
+                let selectedSettings = pendingRestoreSettings
+
+                let archiveToRestore = pendingRestoreArchive
                 restoreTasks = false
                 restoreWalletCards = false
                 restoreTripLists = false
@@ -471,6 +501,19 @@ struct BackupRestoreView: View {
                 showBackupPasswordPrompt = false
 
                 Task {
+                    
+                    defer {
+                    pendingRestoreArchive = nil
+
+                    pendingRestoreTasks = false
+                    pendingRestoreWalletCards = false
+                    pendingRestoreTripLists = false
+                    pendingRestoreDocuments = false
+                    pendingRestoreVault = false
+                    pendingRestoreSettings = false
+
+                    backupPassword = ""
+                }
                     do {
                         isRestoringBackup = true
                         guard let archive = archiveToRestore else {
@@ -478,6 +521,18 @@ struct BackupRestoreView: View {
                             backupPassword = ""
                             return
                         }
+                        
+#if DEBUG
+DebugLog.write("════════════════════")
+DebugLog.write("RESTORE FLAGS")
+DebugLog.write("Tasks: \(selectedTasks)")
+DebugLog.write("Cards: \(selectedWalletCards)")
+DebugLog.write("Trips: \(selectedTripLists)")
+DebugLog.write("Documents: \(selectedDocuments)")
+DebugLog.write("Vault: \(selectedVault)")
+DebugLog.write("Settings: \(selectedSettings)")
+#endif
+                        
                         try await BackupManager.restoreArchive(
                             archive,
                             modelContext: modelContext,
@@ -490,11 +545,11 @@ struct BackupRestoreView: View {
                             restoreSettings: selectedSettings
                         )
                         isRestoringBackup = false
-                        backupPassword = ""
+                        
                     } catch {
                         restoreError = error.localizedDescription
                         isRestoringBackup = false
-                        backupPassword = ""
+                        
                     }
                 }
             }
@@ -1107,6 +1162,18 @@ DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: 
             loyaltyLogoPayload[relativePath] = logoData
         }
 
+        // DEBUG: Vault backup diagnostics
+#if DEBUG
+        DebugLog.write("════════════════════")
+        DebugLog.write("VAULT BACKUP")
+        DebugLog.write("Vault items exported: \(vaultItems.count)")
+        for item in vaultItems {
+            DebugLog.write(
+                "Vault: \(item.title) | deletedAt: \(String(describing: item.deletedAt))"
+            )
+        }
+#endif
+
         let archive = BackupArchive(
             version: BackupFormat.currentVersion,
             createdAt: .now,
@@ -1475,9 +1542,7 @@ todo.attachments?.forEach {
         )
 #endif
 
-        modelContext.processPendingChanges()
 
-        try modelContext.save()
 
 #if DEBUG
 let descriptor = FetchDescriptor<TodoTask>()
@@ -1515,6 +1580,21 @@ if let restoredTasks = try? modelContext.fetch(descriptor) {
         
         if restoreVault {
             // Restore Vault encryption key from archive.vaultBackupPackage
+            
+#if DEBUG
+DebugLog.write("════════════════════")
+DebugLog.write("VAULT RESTORE")
+DebugLog.write("Vault items in archive: \(archive.vaultItems.count)")
+
+for item in archive.vaultItems {
+    DebugLog.write(
+        "Archive: \(item.title) | deletedAt: \(String(describing: item.deletedAt))"
+    )
+}
+#endif
+            
+            
+            
             guard let vaultBackupPackage = archive.vaultBackupPackage else {
                 throw NSError(domain: "BackupManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Vault restore requested, but no Vault backup package was found in the archive."])
             }
@@ -1531,42 +1611,72 @@ if let restoredTasks = try? modelContext.fetch(descriptor) {
                 let descriptor = FetchDescriptor<VaultItem>(
                     predicate: #Predicate { $0.id == dto.id }
                 )
-                let alreadyExists = (try? modelContext.fetch(descriptor))?.isEmpty == false
-                guard !alreadyExists else {
-                    continue
+                let existingItems = try? modelContext.fetch(descriptor)
+                if let existing = existingItems?.first {
+                    // Update all properties from dto, including deletedAt
+                    existing.title = dto.title
+                    existing.category = dto.category
+                    existing.favorite = dto.favorite
+                    existing.tags = dto.tags
+                    existing.sortOrder = dto.sortOrder
+                    existing.icon = dto.icon
+                    existing.color = dto.color
+                    existing.username = dto.username
+                    existing.email = dto.email
+                    existing.website = dto.website
+                    existing.notes = dto.notes
+                    existing.encryptedPassword = dto.encryptedPassword
+                    existing.encryptedPIN = dto.encryptedPIN
+                    existing.encryptedOTPSecret = dto.encryptedOTPSecret
+                    existing.encryptedSecurityQuestion = dto.encryptedSecurityQuestion
+                    existing.encryptedSecurityAnswer = dto.encryptedSecurityAnswer
+                    existing.encryptedCustomerNumber = dto.encryptedCustomerNumber
+                    existing.encryptedRecoveryCode = dto.encryptedRecoveryCode
+                    existing.createdAt = dto.createdAt
+                    existing.modifiedAt = dto.modifiedAt
+                    existing.passwordUpdatedAt = dto.passwordUpdatedAt
+                    existing.passwordExpiresAt = dto.passwordExpiresAt
+                    existing.lastViewedAt = dto.lastViewedAt
+                    existing.lastCopiedAt = dto.lastCopiedAt
+                    existing.deletedAt = dto.deletedAt
+                    existing.requireBiometricEveryTime = dto.requireBiometricEveryTime
+                    existing.version = dto.version
+                    existing.syncIdentifier = dto.syncIdentifier
+                    // No need to insert, already present
+                } else {
+                    let item = VaultItem(
+                        title: dto.title,
+                        category: dto.category
+                    )
+                    item.icon = dto.icon
+                    item.color = dto.color
+                    item.username = dto.username
+                    item.email = dto.email
+                    item.website = dto.website
+                    item.notes = dto.notes
+                    item.id = dto.id
+                    item.syncIdentifier = dto.syncIdentifier
+                    item.version = dto.version
+                    item.favorite = dto.favorite
+                    item.tags = dto.tags
+                    item.sortOrder = dto.sortOrder
+                    item.encryptedPassword = dto.encryptedPassword
+                    item.encryptedPIN = dto.encryptedPIN
+                    item.encryptedOTPSecret = dto.encryptedOTPSecret
+                    item.encryptedSecurityQuestion = dto.encryptedSecurityQuestion
+                    item.encryptedSecurityAnswer = dto.encryptedSecurityAnswer
+                    item.encryptedCustomerNumber = dto.encryptedCustomerNumber
+                    item.encryptedRecoveryCode = dto.encryptedRecoveryCode
+                    item.createdAt = dto.createdAt
+                    item.modifiedAt = dto.modifiedAt
+                    item.passwordUpdatedAt = dto.passwordUpdatedAt
+                    item.passwordExpiresAt = dto.passwordExpiresAt
+                    item.lastViewedAt = dto.lastViewedAt
+                    item.lastCopiedAt = dto.lastCopiedAt
+                    item.deletedAt = dto.deletedAt
+                    item.requireBiometricEveryTime = dto.requireBiometricEveryTime
+                    modelContext.insert(item)
                 }
-                let item = VaultItem(
-                    title: dto.title,
-                    category: dto.category
-                )
-                item.icon = dto.icon
-                item.color = dto.color
-                item.username = dto.username
-                item.email = dto.email
-                item.website = dto.website
-                item.notes = dto.notes
-                item.id = dto.id
-                item.syncIdentifier = dto.syncIdentifier
-                item.version = dto.version
-                item.favorite = dto.favorite
-                item.tags = dto.tags
-                item.sortOrder = dto.sortOrder
-                item.encryptedPassword = dto.encryptedPassword
-                item.encryptedPIN = dto.encryptedPIN
-                item.encryptedOTPSecret = dto.encryptedOTPSecret
-                item.encryptedSecurityQuestion = dto.encryptedSecurityQuestion
-                item.encryptedSecurityAnswer = dto.encryptedSecurityAnswer
-                item.encryptedCustomerNumber = dto.encryptedCustomerNumber
-                item.encryptedRecoveryCode = dto.encryptedRecoveryCode
-                item.createdAt = dto.createdAt
-                item.modifiedAt = dto.modifiedAt
-                item.passwordUpdatedAt = dto.passwordUpdatedAt
-                item.passwordExpiresAt = dto.passwordExpiresAt
-                item.lastViewedAt = dto.lastViewedAt
-                item.lastCopiedAt = dto.lastCopiedAt
-                item.deletedAt = dto.deletedAt
-                item.requireBiometricEveryTime = dto.requireBiometricEveryTime
-                modelContext.insert(item)
             }
         }
 
@@ -1592,6 +1702,11 @@ if let restoredTasks = try? modelContext.fetch(descriptor) {
             }
         }
 
+        modelContext.processPendingChanges()
+
+        try modelContext.save()
+        
+        
         // Force attachment refresh after restore
         NotificationCenter.default.post(
             name: .taskDidChange,
