@@ -29,8 +29,8 @@ enum Persistence {
 
         DebugLog.write(
             cloudKitEnabled
-            ? "☁️ CLOUDKIT: Preparing SwiftData container"
-            : "🟠 BOOTSTRAP: Preparing LOCAL-FIRST SwiftData container"
+            ? "Persistence initialization started (CloudKit)"
+            : "Persistence initialization started (Local)"
         )
 
         do {
@@ -53,7 +53,6 @@ enum Persistence {
                     : .none
             )
 
-            let start = CFAbsoluteTimeGetCurrent()
 
             let container = try ModelContainer(
 
@@ -68,24 +67,11 @@ enum Persistence {
                 : "SwiftData container initialized (Local)"
             )
 
-            let elapsed = CFAbsoluteTimeGetCurrent() - start
-
-            DebugLog.write(
-
-                String(
-
-                    format: "⏱️ ModelContainer creation: %.3fs",
-
-                    elapsed
-
-                )
-
-            )
 
             DebugLog.write(
                 cloudKitEnabled
-                ? "☁️ CLOUDKIT: SwiftData container initialized"
-                : "🟠 BOOTSTRAP: LOCAL-FIRST container initialized"
+                ? "Persistence initialization completed (CloudKit)"
+                : "Persistence initialization completed (Local)"
             )
 
             return container
@@ -94,16 +80,9 @@ enum Persistence {
             CrashDetector.setLastEvent(
                 "SwiftData container initialization failed"
             )
-            print("❌ SWIFTDATA ERROR:")
-            print(error)
-            if let swiftDataError = error as? SwiftDataError {
-                print("SwiftDataError:", swiftDataError)
-            }
-            print("Schema models:")
-            print(schema)
 
             DebugLog.write(
-                "❌ SwiftData container initialization FAILED: \(error.localizedDescription)"
+                "Persistence initialization failed"
             )
 
             AppLogger.persistence.fault(

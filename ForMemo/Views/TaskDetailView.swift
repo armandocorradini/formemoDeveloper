@@ -433,9 +433,12 @@ struct TaskDetailView: View {
             
         } catch {
             DebugLog.writeCloudKitEvent(
-                "TaskDetail context save FAILED: \(error.localizedDescription)"
+                "TaskDetail context save failed"
             )
-            AppLogger.persistence.fault("CRITICAL SAVE FAILURE [TaskDetailView.saveTask]: \(error.localizedDescription)")
+            AppLogger.persistence.fault(
+                "Task detail save failed: \(error.localizedDescription)"
+            )
+            
             modelContext.rollback()
             assertionFailure("CRITICAL: TaskDetailView.saveTask failed → rollback executed")
         }
@@ -483,10 +486,7 @@ struct TaskDetailView: View {
         
         // ✅ SOLO UI
         preloadAttachments()
-        
-#if DEBUG
-        AppLogger.notifications.debug("CloudKit UI refresh (safe)")
-#endif
+
     }
     
     //MARK:preloadAttachments
@@ -842,7 +842,9 @@ struct TaskDetailView: View {
                 object: nil
             )
 #if DEBUG
-            AppLogger.notifications.info("Attachment saved: \( url.lastPathComponent)")
+AppLogger.notifications.info(
+    "Attachment saved"
+)
 #endif
         } catch {
             AppLogger.app.error("Attachment import error:\(error.localizedDescription))")
@@ -884,30 +886,42 @@ struct TaskDetailView: View {
     private func loadImageAsync(for attachment: TaskAttachment) async {
         
         guard imageCache[attachment.id] == nil else {
-            AppLogger.notifications.info("⚡️ CACHE HIT: \( attachment.originalName)")
+            AppLogger.notifications.info(
+                "Image cache hit"
+            )
             return
         }
         
-        AppLogger.notifications.info("📂 TRY LOAD: \( attachment.originalName)")
+        AppLogger.notifications.info(
+            "Loading attachment image"
+        )
         
         if let data = await attachment.loadDataAsync() {
             
-            AppLogger.persistence.info("DATA OK: \(attachment.originalName) size: \(data.count)")
+            AppLogger.persistence.info(
+                "Attachment data loaded"
+            )
             
             if let image = UIImage(data: data) {
                 
-                AppLogger.notifications.info("✅ IMAGE CREATED: \( attachment.originalName)")
+                AppLogger.notifications.info(
+                    "Attachment image created"
+                )
                 
                 await MainActor.run {
                     imageCache[attachment.id] = image
                 }
                 
             } else {
-                AppLogger.notifications.info("❌ IMAGE DECODE FAILED: \(attachment.originalName)")
+                AppLogger.notifications.info(
+                    "Attachment image decode failed"
+                )
             }
             
         } else {
-            AppLogger.notifications.info("❌ DATA NIL: \( attachment.originalName)")
+            AppLogger.notifications.info(
+                "Attachment data unavailable"
+            )
         }
     }
     // MARK: - Helpers

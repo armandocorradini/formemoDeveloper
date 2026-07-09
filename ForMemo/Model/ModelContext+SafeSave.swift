@@ -13,9 +13,11 @@ extension ModelContext {
             try self.save()
         } catch {
             DebugLog.writeCloudKitEvent(
-                "Context save FAILED [\(operation)]: \(error.localizedDescription)"
+                "Context save failed [\(operation)]"
             )
-            AppLogger.persistence.fault("CRITICAL SAVE FAILURE [\(operation)]: \(error.localizedDescription)")
+            AppLogger.persistence.fault(
+                "Context save failed [\(operation)]: \(error.localizedDescription)"
+            )
             self.rollback()
             
             #if DEBUG

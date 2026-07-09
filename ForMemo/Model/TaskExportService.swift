@@ -1,6 +1,7 @@
 import Foundation
 import EventKit
 import UIKit
+import os
 
 enum ExportFormat {
     case csv
@@ -44,9 +45,7 @@ private extension TaskExportService {
     
     func exportCSV(_ items: [TaskTransferObject]) {
         guard let url = CSVExporter.export(items: items) else {
-#if DEBUG
-            DebugLog.write("❌ CSV export failed")
-#endif
+
             return
         }
         
@@ -84,10 +83,6 @@ extension TaskExportService {
     func exportICS(_ items: [TaskTransferObject]) {
         
         guard let url = ICSExporter.export(items: items) else {
-#if DEBUG
-            DebugLog.write("❌ ICS export failed")
-#endif
-            
             return
         }
         
@@ -116,9 +111,9 @@ extension TaskExportService {
                 }
                 
             } catch {
-#if DEBUG
-                DebugLog.write("❌ Calendar export error: \(error.localizedDescription)")
-#endif
+                AppLogger.persistence.error(
+                    "Calendar export failed: \(error.localizedDescription)"
+                )
                 await MainActor.run {
                     onComplete(0)
                 }

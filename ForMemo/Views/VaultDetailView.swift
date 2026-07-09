@@ -153,16 +153,11 @@ struct VaultDetailView: View {
         }
         do {
             
-            DebugLog.write("🔐 Show Password requested")
-            DebugLog.write("🔐 Item requires Face ID: \(item.requireBiometricEveryTime)")
-            
             try await VaultLock.shared.authenticateIfRequired(
                 for: item,
                 reason: String(localized: "Show Password")
             )
-            DebugLog.write("🔐 Per-item authentication completed")
-            
-            
+      
         } catch {
             return
         }

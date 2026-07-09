@@ -36,12 +36,6 @@ final class AttachmentImporter {
             task: task
         )
 
-        DebugLog.writeAttachmentEvent("Attachment ID: \(attachment.id.uuidString)")
-        DebugLog.writeAttachmentEvent("Original Name: \(attachment.originalName)")
-        DebugLog.writeAttachmentEvent("Relative Path: \(attachment.relativePath)")
-        DebugLog.writeAttachmentEvent("Content Type: \(attachment.contentType)")
-        
-        
         // 🔥 Verify physical file before exposing attachment
         let verifiedSize = (try? FileManager.default.attributesOfItem(
             atPath: destinationURL.path
@@ -72,10 +66,6 @@ final class AttachmentImporter {
         
         try context.save()
         
-        DebugLog.writeAttachmentEvent("SwiftData SAVE OK")
-        DebugLog.writeAttachmentEvent("Task ID: \(task.id.uuidString)")
-        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-        
         context.processPendingChanges()
 
         NotificationCenter.default.post(
@@ -88,23 +78,6 @@ final class AttachmentImporter {
 
         let fm = FileManager.default
 
-        DebugLog.writeAttachmentEvent("")
-        DebugLog.writeAttachmentEvent("════════════════════════════════════")
-        DebugLog.writeAttachmentEvent("NUOVO IMPORT ALLEGATO")
-
-        DebugLog.writeAttachmentEvent("File originale:")
-        DebugLog.writeAttachmentEvent(originalURL.path)
-
-        DebugLog.writeAttachmentEvent("Esiste: \(fm.fileExists(atPath: originalURL.path))")
-        DebugLog.writeAttachmentEvent("Leggibile: \(fm.isReadableFile(atPath: originalURL.path))")
-
-        let sourceSize = (try? fm.attributesOfItem(
-            atPath: originalURL.path
-        )[.size] as? Int64) ?? 0
-
-        DebugLog.writeAttachmentEvent("Dimensione sorgente: \(sourceSize)")
-        
-        
         guard let directory = TaskAttachment.attachmentsDirectory else {
             throw NSError(
                 domain: "AttachmentImporter",
@@ -114,8 +87,6 @@ final class AttachmentImporter {
                 ]
             )
         }
-        DebugLog.writeAttachmentEvent("Directory scelta:")
-        DebugLog.writeAttachmentEvent(directory.path)
 
         try fm.createDirectory(
             at: directory,
@@ -126,34 +97,12 @@ final class AttachmentImporter {
             "\(UUID().uuidString)-\(originalURL.lastPathComponent)"
         )
 
-        DebugLog.writeAttachmentEvent("Destinazione:")
-        DebugLog.writeAttachmentEvent(destination.path)
-        
-        
-        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-        DebugLog.writeAttachmentEvent("IMPORT START")
-        DebugLog.writeAttachmentEvent("Original URL: \(originalURL.path)")
-        DebugLog.writeAttachmentEvent("Destination Directory: \(directory.path)")
-        DebugLog.writeAttachmentEvent("Destination URL: \(destination.path)")
-        
-        
         if fm.fileExists(atPath: destination.path) {
             try fm.removeItem(at: destination)
         }
-
-        DebugLog.writeAttachmentEvent("Inizio copia...")
         
         try fm.copyItem(at: originalURL, to: destination)
-        
-        DebugLog.writeAttachmentEvent("Copia completata")
-        
-        let attrs = try? fm.attributesOfItem(atPath: destination.path)
 
-        DebugLog.writeAttachmentEvent("COPY OK")
-        DebugLog.writeAttachmentEvent("Exists: \(fm.fileExists(atPath: destination.path))")
-        DebugLog.writeAttachmentEvent("Readable: \(fm.isReadableFile(atPath: destination.path))")
-        DebugLog.writeAttachmentEvent("Size: \(attrs?[.size] ?? 0)")
-        
         // 🔥 Verify readable non-empty file
         var readable = false
         var materialized = false
@@ -191,49 +140,7 @@ final class AttachmentImporter {
                 ]
             )
         }
-
-        let finalSize = (try? fm.attributesOfItem(
-
-            atPath: destination.path
-
-        )[.size] as? Int64) ?? 0
-
-        DebugLog.writeAttachmentEvent("Dimensione finale: \(finalSize)")
-
-        DebugLog.writeAttachmentEvent("Leggibile finale: \(fm.isReadableFile(atPath: destination.path))")
-
-        let values = try? destination.resourceValues(forKeys: [
-
-            .isUbiquitousItemKey,
-
-            .ubiquitousItemDownloadingStatusKey
-
-        ])
-
-        DebugLog.writeAttachmentEvent(
-
-            "iCloud: \(values?.isUbiquitousItem ?? false)"
-
-        )
-
-        DebugLog.writeAttachmentEvent(
-
-            "Download: \(String(describing: values?.ubiquitousItemDownloadingStatus))"
-
-        )
-
-        DebugLog.writeAttachmentEvent("IMPORT TERMINATO")
-
-        DebugLog.writeAttachmentEvent("Nome file: \(destination.lastPathComponent)")
-        DebugLog.writeAttachmentEvent("URL finale:")
-        DebugLog.writeAttachmentEvent(destination.path)
-
-        let reachable = (try? destination.checkResourceIsReachable()) ?? false
-        DebugLog.writeAttachmentEvent("Reachable: \(reachable)")
-        
-        DebugLog.writeAttachmentEvent("════════════════════════════════════")
-        
-        
+   
         return destination
     }
 }

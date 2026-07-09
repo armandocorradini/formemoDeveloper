@@ -922,11 +922,7 @@ Attivazione: \(triggerInfo)
         DebugLog.writeAttachmentEvent("")
         DebugLog.writeAttachmentEvent("════════════════════════════════════")
         DebugLog.writeAttachmentEvent("SETTINGS CLEANUP START")
-        Thread.callStackSymbols.forEach {
-            DebugLog.writeAttachmentEvent($0)
-        }
-        
-        
+
         guard let cutoff = Calendar.current.date(
             byAdding: .day,
             value: -recentlyDeletedRetentionDays,
@@ -935,27 +931,25 @@ Attivazione: \(triggerInfo)
             return
         }
         
-        DebugLog.writeAttachmentEvent("Retention: \(recentlyDeletedRetentionDays)")
-        DebugLog.writeAttachmentEvent("Cutoff: \(cutoff)")
+        DebugLog.writeAttachmentEvent("Retention policy applied")
+        DebugLog.writeAttachmentEvent("Cleanup cutoff calculated")
         
         let descriptor = FetchDescriptor<DeletedItem>(
             predicate: #Predicate { $0.deletedAt <= cutoff }
         )
         guard let items = try? modelContext.fetch(descriptor) else { return }
         
-        DebugLog.writeAttachmentEvent("Deleted items found: \(items.count)")
+        DebugLog.writeAttachmentEvent("Expired deleted items detected")
         
         for item in items {
             if let trashName = item.trashFileName,
                let trashDir = TaskAttachment.trashDirectory {
                 let url = trashDir.appendingPathComponent(trashName)
-                
-                let fm = FileManager.default
 
-                DebugLog.writeAttachmentEvent("DELETE TRASH FILE")
-                DebugLog.writeAttachmentEvent("Trash name: \(trashName)")
-                DebugLog.writeAttachmentEvent("Path: \(url.path)")
-                DebugLog.writeAttachmentEvent("Exists: \(fm.fileExists(atPath: url.path))")
+                DebugLog.writeAttachmentEvent("Deleting expired attachment")
+                DebugLog.writeAttachmentEvent("Removing expired trash attachment")
+                DebugLog.writeAttachmentEvent("Removing attachment from trash")
+                DebugLog.writeAttachmentEvent("Trash file removal requested")
                 
                 
                 try? FileManager.default.removeItem(at: url)

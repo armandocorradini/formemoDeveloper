@@ -28,11 +28,7 @@ struct SearchTasksIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        
-#if DEBUG
-        print("SearchTasksIntent started")
-        print("Search query:", query)
-#endif
+
         let container = Persistence.makeModelContainer(
             cloudKitEnabled: true
         )

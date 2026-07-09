@@ -213,9 +213,7 @@ private struct OpenMeteoHourly: Decodable {
     }
 
     func refreshIfNeeded() async {
-#if DEBUG
-        print("🌍 refreshIfNeeded called")
-#endif
+
         guard showWeatherForecast else {
             weatherByDay = [:]
             refreshID = UUID()
@@ -232,9 +230,7 @@ private struct OpenMeteoHourly: Decodable {
     }
 
     func refresh() async {
-#if DEBUG
-        print("🌦️ refresh() entered")
-#endif
+
         isLoading = true
         lastLoadFailed = false
 
@@ -250,13 +246,6 @@ private struct OpenMeteoHourly: Decodable {
 
             retryCount += 1
 
-#if DEBUG
-            print("📍 No current location available for WeatherKit")
-#endif
-
-            // Request a fresh one-shot location for WeatherKit.
-            // This reuses the existing location pipeline safely
-            // without affecting geofence reminders.
             LocationReminderManager.shared.requestCurrentLocation()
 
             isAvailable = false
@@ -273,10 +262,6 @@ private struct OpenMeteoHourly: Decodable {
         }
 
         do {
-
-#if DEBUG
-            print("🌦️ Weather refresh for: \(location.coordinate.latitude), \(location.coordinate.longitude)")
-#endif
 
             retryCount = 0
 
@@ -424,12 +409,6 @@ private struct OpenMeteoHourly: Decodable {
                     fallback: weatherCode,
                     hourlyCodes: daytimeCodes
                 )
-#if DEBUG
-                if Calendar.current.isDateInToday(date) {
-                    print("☀️ hourly codes:", daytimeCodes)
-                    print("☀️ dominant:", dominantWeatherCode)
-                }
-#endif
 
                 let daytimePrecipitationChance = daytimePrecipitationProbability(
                     for: date,
@@ -487,13 +466,6 @@ private struct OpenMeteoHourly: Decodable {
                     isCurrentlyDaytime = true
                 }
 
-                #if DEBUG
-                if Calendar.current.isDateInToday(date) {
-                    print("☁️ cloud cover:", decoded.daily.cloud_cover_mean[index])
-                    print("🌧️ rain chance:", Int(precipitationChance.rounded()))
-                    print("🌧️ rain amount:", precipitationAmount)
-                }
-                #endif
                 updated[key] = DailyWeatherInfo(
                     date: date,
                     symbolName: symbol(
@@ -522,20 +494,12 @@ private struct OpenMeteoHourly: Decodable {
             hourlyWeatherByDay = hourlyUpdated
             refreshID = UUID()
 
-#if DEBUG
-            print("🌤️ Weather forecast loaded: \(updated.count) days")
-#endif
-
             isAvailable = !updated.isEmpty
             isLoading = false
             lastLoadFailed = false
             lastRefresh = Date()
 
         } catch {
-
-#if DEBUG
-            print("❌ Open-Meteo fetch error:", error)
-#endif
 
             refreshID = UUID()
             isAvailable = false
@@ -673,10 +637,6 @@ private struct OpenMeteoHourly: Decodable {
 
         let (startHour, endHour) = weatherEvaluationWindow(for: date)
 
-    #if DEBUG
-        print("🌤️ Weather code window: \(startHour)-\(endHour)")
-    #endif
-
         return zip(hourly.time.indices, hourly.time)
             .compactMap { index, rawDate in
 
@@ -710,10 +670,6 @@ private struct OpenMeteoHourly: Decodable {
         let calendar = Calendar.current
 
         let (startHour, endHour) = weatherEvaluationWindow(for: date)
-
-    #if DEBUG
-        print("🌧️ Rain probability window: \(startHour)-\(endHour)")
-    #endif
 
         let values = zip(hourly.time.indices, hourly.time)
             .compactMap { index, rawDate -> Int? in
@@ -756,10 +712,6 @@ private struct OpenMeteoHourly: Decodable {
         let calendar = Calendar.current
 
         let (startHour, endHour) = weatherEvaluationWindow(for: date)
-
-    #if DEBUG
-        print("🌦️ Rain amount window: \(startHour)-\(endHour)")
-    #endif
 
         return zip(hourly.time.indices, hourly.time)
             .compactMap { index, rawDate -> Double? in

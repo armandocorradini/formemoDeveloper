@@ -22,7 +22,7 @@ enum DeletedFingerprintStore {
         )
         
         DebugLog.writeRecoveryEvent(
-            "Deleted fingerprint saved: \(task.title)"
+            "Deleted task fingerprint saved"
         )
     }
     

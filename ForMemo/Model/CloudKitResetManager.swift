@@ -11,7 +11,7 @@ enum CloudKitResetManager {
         // CloudKit operates only as a background sync layer.
 
         DebugLog.writeCloudKitEvent(
-            "ℹ️ CloudKit reset skipped (local-first architecture)"
+            "CloudKit reset skipped (local persistence architecture)"
         )
     }
 }

@@ -13,8 +13,9 @@ enum AppLogger {
 
 // MARK: - Debug Helper
 
-func debugLog(_ message: String) {
+@inline(__always)
+func debugLog(_ message: @autoclosure () -> String) {
 #if DEBUG
-    print(message)
+    print(message())
 #endif
 }

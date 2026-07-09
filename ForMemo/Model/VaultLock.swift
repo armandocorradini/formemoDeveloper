@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import LocalAuthentication
+import os
 
 enum VaultLockError: Error {
     case authenticationFailed
@@ -52,7 +53,7 @@ final class VaultLock: ObservableObject {
 
 
         var error: NSError?
-        DebugLog.write("🔐 Checking authentication availability")
+
         guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
             throw VaultLockError.biometricsUnavailable
         }
@@ -60,14 +61,10 @@ final class VaultLock: ObservableObject {
         let policy: LAPolicy = .deviceOwnerAuthentication
 
         do {
-            DebugLog.write("🔐 Starting authentication")
             let success = try await context.evaluatePolicy(
                 policy,
                 localizedReason: reason
             )
-            DebugLog.write("🔐 Authentication completed")
-            DebugLog.write("🔐 Policy: \(policy.rawValue)")
-            DebugLog.write("🔐 Authentication success: \(success)")
 
             guard !Task.isCancelled else {
                 throw CancellationError()
@@ -82,22 +79,19 @@ final class VaultLock: ObservableObject {
 
         } catch let error as LAError {
 
-            DebugLog.write(
-                "🔐 Authentication failed. LAError=\(error.code.rawValue) (\(error.localizedDescription))"
+            AppLogger.app.error(
+                "Vault authentication failed: \(error.localizedDescription)"
             )
             throw error
 
         }
-//#endif
+
     }
 
     func authenticateIfRequired(
         for item: VaultItem,
         reason: String = String(localized: "Show Password")
     ) async throws {
-
-        DebugLog.write("🔐 authenticateIfRequired called")
-        DebugLog.write("🔐 requireBiometricEveryTime = \(item.requireBiometricEveryTime)")
 
         guard item.requireBiometricEveryTime else {
             DebugLog.write("🔐 Per-item authentication not required")

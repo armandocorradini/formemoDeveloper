@@ -87,12 +87,6 @@ struct ForMemoApp: App {
                 defaults.set(0, forKey: "badgeMode")
             }
         }
-//        defaults.synchronize()
-
-
-        DebugLog.writeAppLaunch()
-        print(DebugLog.logURL)
-        DebugLog.write("TEST")
 
         // 🔥 SINGLE LOCAL-FIRST STORE
         // Local database is the source of truth.
@@ -105,18 +99,11 @@ struct ForMemoApp: App {
 
         let appSettings = AppSettings.shared
 
-        DebugLog.write(
-            "☁️ CLOUDKIT: App started with SINGLE LOCAL-FIRST container"
-        )
-
         NotificationManager.shared.modelContainer = sharedContainer
 
         
         CloudSettingsSync.shared.start()
-        
-        DebugLog.writeCloudKitEvent(
-            "CloudSettingsSync started"
-        )
+
         
         Task { @MainActor in
             let context = sharedContainer.mainContext
@@ -149,13 +136,7 @@ struct ForMemoApp: App {
                 name: .attachmentsShouldRefresh,
                 object: nil
             )
-//#if DEBUG
-            DebugLog.writeDatabaseSnapshot(context: context)
-//#endif
-            // 🔥 Short stabilization.
-            // UI no longer depends on CloudKit hydration.
-//            try? await Task.sleep(for: .milliseconds(250))
-            
+     
             // 5️⃣ Final notification rebuild
             NotificationManager.shared.refresh(force: true)
             CrashDetector.markLaunchCompleted()
@@ -194,16 +175,7 @@ struct ForMemoApp: App {
                 
             case .active:
                 Task { @MainActor in
-                    let activationStart = CFAbsoluteTimeGetCurrent()
-
-                    @MainActor
-                    func logStep(_ name: String) {
-                        let elapsed = CFAbsoluteTimeGetCurrent() - activationStart
-                        DebugLog.write("⏱️ ACTIVE \(name): \(String(format: "%.3f", elapsed))s")
-                    }
-
                     AppLogger.notifications.info("🟢 App became active")
-                    DebugLog.write("🟢 APP ACTIVE")
                     
                     // 🔥 AUTO-FIX LOCATION PERMISSIONS
                     let status = CLLocationManager().authorizationStatus
@@ -227,17 +199,11 @@ struct ForMemoApp: App {
                     
                     // 1️⃣ Applica azioni notifiche
                     NotificationActionProcessor.shared.processAll(using: context)
-                    logStep("processAll")
+ 
 
-                    DebugLog.writeAttachmentEvent(
-
-                        "Attachment self-healing skipped on app active"
-
-                    )
-                    
                     // 2️⃣ 🔥 CLEANUP RECENTLY DELETED (task + attachments)
                     cleanupRecentlyDeleted(context: context)
-                    logStep("recentlyDeleted")
+                
                     
                     // 3️⃣ UI refresh
                     NotificationCenter.default.post(
@@ -247,9 +213,6 @@ struct ForMemoApp: App {
                     
                     // 4️⃣ refresh notifiche (con piccolo delay SAFE)
                     NotificationManager.shared.refresh(force: true)
-                    logStep("notificationRefresh")
-                    logStep("ACTIVE COMPLETE")
-
                 }
             case .inactive:
                 
@@ -275,7 +238,6 @@ struct ForMemoApp: App {
             queue: .main
         ) { _ in
             Task { @MainActor in
-                let remoteStart = CFAbsoluteTimeGetCurrent()
 
                 let now = Date()
 
@@ -288,7 +250,6 @@ struct ForMemoApp: App {
 #if DEBUG
                 AppLogger.notifications.debug("📡 CloudKit push ricevuto")
 #endif
-                DebugLog.writeCloudKitEvent("Remote change notification received")
 
                 NotificationManager.shared.refreshFromCloudKit()
 
@@ -302,9 +263,6 @@ struct ForMemoApp: App {
                 NotificationCenter.default.post(
                     name: .attachmentsShouldRefresh,
                     object: nil
-                )
-                DebugLog.writeCloudKitEvent(
-                    "⏱️ Remote change total: \(String(format: "%.3f", CFAbsoluteTimeGetCurrent() - remoteStart))s"
                 )
             }
         }
@@ -344,15 +302,6 @@ struct ForMemoApp: App {
     @MainActor
     private func cleanupRecentlyDeleted(context: ModelContext) {
         
-        DebugLog.writeAttachmentEvent("")
-        DebugLog.writeAttachmentEvent("════════════════════════════════════")
-        DebugLog.writeAttachmentEvent("TASKAPP CLEANUP START")
-        DebugLog.writeAttachmentEvent("Retention: \(settings.recentlyDeletedRetentionDays)")
-        Thread.callStackSymbols.forEach {
-            DebugLog.writeAttachmentEvent($0)
-        }
-        
-        
         guard let cutoff = Calendar.current.date(
             byAdding: .day,
             value: -settings.recentlyDeletedRetentionDays,
@@ -367,10 +316,7 @@ struct ForMemoApp: App {
         var deletedSomething = false
         
         guard let items = try? context.fetch(descriptor) else { return }
-        
-        DebugLog.writeAttachmentEvent("Deleted items found: \(items.count)")
-        
-        
+
         for item in items {
             
             let deletedAt = item.deletedAt
@@ -381,18 +327,9 @@ struct ForMemoApp: App {
                 if let trashName = item.trashFileName,
                    let trashDir = TaskAttachment.trashDirectory {
                     
-                    let url = trashDir.appendingPathComponent(trashName)
-                    let fm = FileManager.default
-
-                    DebugLog.writeAttachmentEvent("")
-                    DebugLog.writeAttachmentEvent("TRASH DELETE")
-                    DebugLog.writeAttachmentEvent("Trash file: \(trashName)")
-                    DebugLog.writeAttachmentEvent("Path: \(url.path)")
-                    DebugLog.writeAttachmentEvent("Exists BEFORE: \(fm.fileExists(atPath: url.path))")
-                    
-                    try? fm.removeItem(at: url)
-
-                    DebugLog.writeAttachmentEvent("Exists AFTER: \(fm.fileExists(atPath: url.path))")
+                    try? FileManager.default.removeItem(
+                        at: trashDir.appendingPathComponent(trashName)
+                    )
                 }
                 
                 context.delete(item)

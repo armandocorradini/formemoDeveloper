@@ -51,8 +51,6 @@ extension TaskAttachment {
                     withIntermediateDirectories: true
                 )
             }
-            DebugLog.writeAttachmentEvent("ATTACHMENTS DIRECTORY")
-            DebugLog.writeAttachmentEvent(directory.path)
             return directory
         }
 
@@ -71,8 +69,6 @@ extension TaskAttachment {
                     withIntermediateDirectories: true
                 )
             }
-            DebugLog.writeAttachmentEvent("ATTACHMENTS DIRECTORY")
-            DebugLog.writeAttachmentEvent(directory.path)
             return directory
         }
 
@@ -146,51 +142,12 @@ extension TaskAttachment {
 
         let fm = FileManager.default
 
-        DebugLog.writeAttachmentEvent("attachmentsDirectory: \(Self.attachmentsDirectory?.path ?? "nil")")
-        DebugLog.writeAttachmentEvent("trashDirectory: \(Self.trashDirectory?.path ?? "nil")")
 
-        if let explicit = fm.url(
-            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
-        ) {
-            DebugLog.writeAttachmentEvent("Explicit container: \(explicit.path)")
-        } else {
-            DebugLog.writeAttachmentEvent("Explicit container: NIL")
-        }
-
-        if let `default` = fm.url(
-            forUbiquityContainerIdentifier: nil
-        ) {
-            DebugLog.writeAttachmentEvent("Default container: \(`default`.path)")
-        } else {
-            DebugLog.writeAttachmentEvent("Default container: NIL")
-        }
-  
-        
-        DebugLog.writeAttachmentEvent("")
-        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-        DebugLog.writeAttachmentEvent("RESOLVE START")
-        DebugLog.writeAttachmentEvent("relativePath: \(relativePath)")
-        DebugLog.writeAttachmentEvent("attachmentsDirectory:")
-        DebugLog.writeAttachmentEvent(Self.attachmentsDirectory?.path ?? "nil")
-
-        DebugLog.writeAttachmentEvent("trashDirectory:")
-        DebugLog.writeAttachmentEvent(Self.trashDirectory?.path ?? "nil")
-
-        DebugLog.writeAttachmentEvent("legacyDirectory:")
-        DebugLog.writeAttachmentEvent(Self.legacyAttachmentsDirectory()?.path ?? "nil")
         
         // 1️⃣ iCloud path
         if let cloud = cloudAttachmentsDirectory()?
             .appendingPathComponent(relativePath),
            fm.fileExists(atPath: cloud.path) {
-
-            DebugLog.writeAttachmentEvent("CLOUD PATH:")
-            DebugLog.writeAttachmentEvent(cloud.path)
-
-            let reachable = (try? cloud.checkResourceIsReachable()) ?? false
-            DebugLog.writeAttachmentEvent("Reachable: \(reachable)")
-
-            DebugLog.writeAttachmentEvent("CLOUD candidate: \(cloud.path)")
 
             try? fm.startDownloadingUbiquitousItem(at: cloud)
 
@@ -201,54 +158,23 @@ extension TaskAttachment {
 
             let status = values?.ubiquitousItemDownloadingStatus
             let size = values?.fileSize ?? 0
-
-            let ubiquitous = (try? cloud.resourceValues(
-                forKeys: [.isUbiquitousItemKey]
-            ))?.isUbiquitousItem ?? false
-
-            DebugLog.writeAttachmentEvent("CLOUD ubiquitous: \(ubiquitous)")
-            DebugLog.writeAttachmentEvent("CLOUD readable: \(fm.isReadableFile(atPath: cloud.path))")
-
-            DebugLog.writeAttachmentEvent("CLOUD exists: YES")
-            DebugLog.writeAttachmentEvent("CLOUD size: \(size)")
-            DebugLog.writeAttachmentEvent("CLOUD status: \(String(describing: status))")
-            DebugLog.writeAttachmentEvent("Resolved file size: \(size)")
-
-            let attrs = try? fm.attributesOfItem(atPath: cloud.path)
-
-            DebugLog.writeAttachmentEvent("Creation Date: \(String(describing: attrs?[.creationDate]))")
-            DebugLog.writeAttachmentEvent("Modification Date: \(String(describing: attrs?[.modificationDate]))")
-
+            
             // 🔥 Return iCloud file only if really materialized
             if status == .current || status == .downloaded {
                 if size > 0 {
-                    DebugLog.writeAttachmentEvent("RETURN CLOUD")
-                    DebugLog.writeAttachmentEvent(cloud.path)
                     return cloud
                 }
             }
         }
-        
-        if let cloudPath = cloudAttachmentsDirectory()?
-            .appendingPathComponent(relativePath) {
 
-            DebugLog.writeAttachmentEvent(
-                "CLOUD exists: \(fm.fileExists(atPath: cloudPath.path))"
-            )
-        }
-        
         // 2️⃣ Legacy local path
         if let legacy = legacyAttachmentsDirectory()?
             .appendingPathComponent(relativePath),
            fm.fileExists(atPath: legacy.path) {
-            DebugLog.writeAttachmentEvent("LEGACY candidate: \(legacy.path)")
-            let legacySize = (try? fm.attributesOfItem(
-                atPath: legacy.path
-            )[.size] as? Int64) ?? 0
-
-            DebugLog.writeAttachmentEvent("LEGACY exists: true")
-            DebugLog.writeAttachmentEvent("LEGACY readable: \(fm.isReadableFile(atPath: legacy.path))")
-            DebugLog.writeAttachmentEvent("LEGACY size: \(legacySize)")
+//
+//            let legacySize = (try? fm.attributesOfItem(
+//                atPath: legacy.path
+//            )[.size] as? Int64) ?? 0
 
             // 🔥 SELF-HEALING:
             // if iCloud file is missing but legacy exists,
@@ -265,16 +191,12 @@ extension TaskAttachment {
                         atPath: legacy.path
                     )[.size] as? Int64) ?? 0
 
-                    DebugLog.writeAttachmentEvent("LEGACY size: \(legacySize)")
-
                     guard legacySize > 0 else {
 #if DEBUG
                         AppLogger.persistence.error(
-                            "Self-healing skipped (empty legacy file): \(relativePath)"
+                            "Attachment self-healing skipped: empty source file."
                         )
 #endif
-                        DebugLog.writeAttachmentEvent("Resolved file size: \(legacySize)")
-                        DebugLog.writeAttachmentEvent("✅ RETURN LEGACY")
                         return legacy
                     }
 
@@ -290,7 +212,7 @@ extension TaskAttachment {
 
 #if DEBUG
                         AppLogger.persistence.debug(
-                            "♻️ Self-healed attachment: \(relativePath)"
+                            "Attachment self-healed successfully."
                         )
 #endif
 
@@ -306,7 +228,6 @@ extension TaskAttachment {
                 }
             }
 
-            DebugLog.writeAttachmentEvent("Resolved file size: \(legacySize)")
             return legacy
         }
 
@@ -318,50 +239,8 @@ extension TaskAttachment {
            ).first(where: {
                 $0.lastPathComponent.hasSuffix(relativePath)
            }) {
-
-            let trashSize = (try? fm.attributesOfItem(atPath: recovered.path)[.size] as? Int64) ?? 0
-            DebugLog.writeAttachmentEvent("Resolved file size: \(trashSize)")
-            DebugLog.writeAttachmentEvent("✅ RETURN TRASH")
-            DebugLog.writeAttachmentEvent("TRASH path: \(recovered.path)")
-
             return recovered
         }
-
-        DebugLog.writeAttachmentEvent("❌ RESULT = NIL")
-        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-        DebugLog.writeAttachmentEvent("FILE NON TROVATO")
-
-        if let cloud = cloudAttachmentsDirectory() {
-            let url = cloud.appendingPathComponent(relativePath)
-
-            DebugLog.writeAttachmentEvent("Cloud path:")
-            DebugLog.writeAttachmentEvent(url.path)
-            DebugLog.writeAttachmentEvent(
-                "Cloud exists: \(fm.fileExists(atPath: url.path))"
-            )
-        }
-
-        if let legacy = legacyAttachmentsDirectory() {
-            let url = legacy.appendingPathComponent(relativePath)
-
-            DebugLog.writeAttachmentEvent("Legacy path:")
-            DebugLog.writeAttachmentEvent(url.path)
-            DebugLog.writeAttachmentEvent(
-                "Legacy exists: \(fm.fileExists(atPath: url.path))"
-            )
-        }
-
-        if let trash = trashDirectory {
-            let url = trash.appendingPathComponent(relativePath)
-
-            DebugLog.writeAttachmentEvent("Trash path:")
-            DebugLog.writeAttachmentEvent(url.path)
-            DebugLog.writeAttachmentEvent(
-                "Trash exists: \(fm.fileExists(atPath: url.path))"
-            )
-        }
-
-        DebugLog.writeAttachmentEvent("═══════════════════════════════")
 
         return nil
     }
@@ -431,26 +310,7 @@ extension TaskAttachment {
         guard let sourceURL = fileURL else { return nil }
 
         let fm = FileManager.default
-        DebugLog.writeAttachmentEvent("")
-        DebugLog.writeAttachmentEvent("════════════════════════════════════")
-        DebugLog.writeAttachmentEvent("DELETE REQUEST")
-        DebugLog.writeAttachmentEvent("Attachment ID: \(id.uuidString)")
-        DebugLog.writeAttachmentEvent("Task ID: \(task?.id.uuidString ?? "nil")")
-        DebugLog.writeAttachmentEvent("Caller Task: \(task?.title ?? "nil")")
-        DebugLog.writeAttachmentEvent("Relative Path: \(relativePath)")
-        DebugLog.writeAttachmentEvent("Original Name: \(originalName)")
-        DebugLog.writeAttachmentEvent("CALL STACK:")
-        Thread.callStackSymbols.forEach {
-            DebugLog.writeAttachmentEvent($0)
-        }
-        DebugLog.writeAttachmentEvent("════════════════════════════════════")
-        DebugLog.writeAttachmentEvent("")
-        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-        DebugLog.writeAttachmentEvent("DELETE START")
-        DebugLog.writeAttachmentEvent("Source: \(sourceURL.path)")
-        DebugLog.writeAttachmentEvent("Exists: \(fm.fileExists(atPath: sourceURL.path))")
-        
-        
+
         // Se il file non esiste già → nessuna azione
         guard fm.fileExists(atPath: sourceURL.path) else {
             return nil
@@ -500,18 +360,7 @@ extension TaskAttachment {
         ) { readURL, writeURL in
             do {
                 try fm.moveItem(at: readURL, to: writeURL)
-                
-                DebugLog.writeAttachmentEvent("MOVE TO TRASH")
-                DebugLog.writeAttachmentEvent("From: \(readURL.path)")
-                DebugLog.writeAttachmentEvent("To: \(writeURL.path)")
 
-                let movedSize = (try? fm.attributesOfItem(
-                    atPath: writeURL.path
-                )[.size] as? Int64) ?? 0
-
-                DebugLog.writeAttachmentEvent("Trash size: \(movedSize)")
-                
-                
                 // 🔥 verifica reale
                 let size = (try? fm.attributesOfItem(atPath: writeURL.path)[.size] as? Int64) ?? 0
                 if size == 0 {
@@ -532,13 +381,11 @@ extension TaskAttachment {
         }
 
         if let coordError {
-            AppLogger.persistence.fault("File coordination failed: \(coordError.localizedDescription)")
+            AppLogger.persistence.fault(
+                "Attachment file coordination failed: \(coordError.localizedDescription)"
+            )
         }
 
-        DebugLog.writeAttachmentEvent("DELETE END")
-        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-        
-        
         return result
     }
 }
@@ -574,32 +421,14 @@ extension TaskAttachment {
         }
 
         guard fm.fileExists(atPath: url.path) else {
-            let attachmentName = originalName
-            let path = relativePath
-            let resolvedPath = url.path
-
-            await MainActor.run {
-                DebugLog.writeAttachmentEvent("")
-                DebugLog.writeAttachmentEvent("LOAD DATA FAILED")
-                DebugLog.writeAttachmentEvent("Attachment: \(attachmentName)")
-                DebugLog.writeAttachmentEvent("relativePath: \(path)")
-                DebugLog.writeAttachmentEvent("Resolved URL: \(resolvedPath)")
-                DebugLog.writeAttachmentEvent("Exists: false")
-            }
             return nil
         }
 
         guard let data = try? Data(contentsOf: url),
               !data.isEmpty else {
 
-#if DEBUG
-            print("❌ Attachment read failed or empty: \(url.lastPathComponent)")
-#endif
-
             return nil
         }
-
-
         return data
     }
 }

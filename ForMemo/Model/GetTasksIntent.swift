@@ -73,12 +73,7 @@ struct GetTasksIntent: AppIntent {
     
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-#if DEBUG
-        print("GetTasksIntent started")
-        // print("Requested date:", targetDate as Any) // removed as targetDate is gone
-#endif
-        
-        
+
         let container = Persistence.makeModelContainer(
             cloudKitEnabled: true
         )

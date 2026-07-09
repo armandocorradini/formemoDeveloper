@@ -204,48 +204,16 @@ extension DeletedItem {
                             
                             
                             restoreSucceeded = true
-                            
-                            DebugLog.writeAttachmentEvent("")
-                            DebugLog.writeAttachmentEvent("═══════════════════════════════")
-                            DebugLog.writeAttachmentEvent("RESTORE")
-                            DebugLog.writeAttachmentEvent("From: \(fileURL.path)")
-                            DebugLog.writeAttachmentEvent("To: \(destinationURL.path)")
-
-
-                            DebugLog.writeAttachmentEvent("Restored size: \(restoredSize)")
-                            DebugLog.writeAttachmentEvent("Exists: \(fm.fileExists(atPath: destinationURL.path))")
-                            DebugLog.writeAttachmentEvent("Readable: \(fm.isReadableFile(atPath: destinationURL.path))")
-
-                            if let values = try? destinationURL.resourceValues(forKeys: [
-                                .isUbiquitousItemKey,
-                                .ubiquitousItemDownloadingStatusKey
-                            ]) {
-
-                                DebugLog.writeAttachmentEvent(
-                                    "isUbiquitous: \(values.isUbiquitousItem ?? false)"
-                                )
-
-                                DebugLog.writeAttachmentEvent(
-                                    "Download Status: \(String(describing: values.ubiquitousItemDownloadingStatus))"
-                                )
-                            }
-
-                            DebugLog.writeAttachmentEvent("RESTORE END")
-                            DebugLog.writeAttachmentEvent("═══════════════════════════════")
-                            DebugLog.writeAttachmentEvent("═══════════════════════════════")
 
                         } catch {
 
-                            DebugLog.writeAttachmentEvent("RESTORE FAILED")
-                            DebugLog.writeAttachmentEvent(error.localizedDescription)
-
                             AppLogger.persistence.error(
-                                "Restore move failed: \(error.localizedDescription)"
+                                "Attachment restore failed: \(error.localizedDescription)"
                             )
                         }
                     } else {
                         AppLogger.persistence.notice(
-                            "Restore: destination already exists: \(destinationURL.lastPathComponent)"
+                            "Attachment restore skipped because destination already exists."
                         )
                         restoreSucceeded = true
                     }

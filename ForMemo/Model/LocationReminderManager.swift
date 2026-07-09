@@ -2,6 +2,7 @@ import Foundation
 import CoreLocation
 import SwiftData
 import UserNotifications
+import os
 
 @MainActor
 final class LocationReminderManager: NSObject, CLLocationManagerDelegate {
@@ -289,7 +290,9 @@ private var triggeredRecently: [String: Date] = {
     ) {
         // Required for requestLocation() – prevents crash
 #if DEBUG
-        print("Location error: \(error.localizedDescription)")
+        AppLogger.notifications.error(
+            "Location service error: \(error.localizedDescription)"
+        )
 #endif
     }
     
@@ -379,7 +382,9 @@ extension LocationReminderManager {
         UNUserNotificationCenter.current().add(request) { error in
 #if DEBUG
             if let error {
-                print("Notification scheduling error: \(error.localizedDescription)")
+                AppLogger.notifications.error(
+                    "Notification scheduling failed: \(error.localizedDescription)"
+                )
             }
 #endif
         }
@@ -387,27 +392,6 @@ extension LocationReminderManager {
 }
 
 
-
-
-//extension LocationReminderManager {
-//
-//
-//
-//    func debugTrigger(for task: TodoTask) {
-//
-//        guard let id = task.id.uuidString as String? else { return }
-//
-//
-//
-//        print("🧪 DEBUG: Simulating region entry for \(task.title)")
-//
-//
-//
-//        triggerNotification(for: id)
-//
-//    }
-//
-//}
 
 extension Notification.Name {
     static let locationPermissionChanged =

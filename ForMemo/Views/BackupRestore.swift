@@ -399,18 +399,7 @@ struct BackupRestoreView: View {
                                                 isRestoringBackup = false
                                                 return
                                             }
-#if DEBUG
-DebugLog.write("════════════════════")
-DebugLog.write("RESTORE FLAGS")
-DebugLog.write("Tasks: \(selectedTasks)")
-DebugLog.write("Cards: \(selectedWalletCards)")
-DebugLog.write("Trips: \(selectedTripLists)")
-DebugLog.write("Documents: \(selectedDocuments)")
-DebugLog.write("Vault: \(selectedVault)")
-DebugLog.write("Settings: \(selectedSettings)")
-#endif
-                                            
-                                            
+            
                                             try await BackupManager.restoreArchive(
                                                 archive,
                                                 modelContext: modelContext,
@@ -521,18 +510,7 @@ DebugLog.write("Settings: \(selectedSettings)")
                             backupPassword = ""
                             return
                         }
-                        
-#if DEBUG
-DebugLog.write("════════════════════")
-DebugLog.write("RESTORE FLAGS")
-DebugLog.write("Tasks: \(selectedTasks)")
-DebugLog.write("Cards: \(selectedWalletCards)")
-DebugLog.write("Trips: \(selectedTripLists)")
-DebugLog.write("Documents: \(selectedDocuments)")
-DebugLog.write("Vault: \(selectedVault)")
-DebugLog.write("Settings: \(selectedSettings)")
-#endif
-                        
+                                
                         try await BackupManager.restoreArchive(
                             archive,
                             modelContext: modelContext,
@@ -1091,19 +1069,6 @@ private enum BackupManager {
         }
 
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
-
-#if DEBUG
-if let files = try? FileManager.default.contentsOfDirectory(
-    atPath: attachmentsDirectory.path
-) {
-    DebugLog.writeAttachmentEvent("═══════════════════════════════")
-    DebugLog.writeAttachmentEvent("ATTACHMENTS DIRECTORY CONTENT")
-    files.forEach {
-        DebugLog.writeAttachmentEvent($0)
-    }
-}
-#endif
-            
             
             for task in tasks {
 
@@ -1122,14 +1087,6 @@ if let files = try? FileManager.default.contentsOfDirectory(
 
                     let fileURL = attachmentsDirectory
                         .appendingPathComponent(relativePath)
-#if DEBUG
-DebugLog.writeAttachmentEvent("═══════════════════════════════")
-DebugLog.writeAttachmentEvent("BACKUP ATTACHMENT")
-DebugLog.writeAttachmentEvent("relativePath: \(relativePath)")
-DebugLog.writeAttachmentEvent("fileURL: \(fileURL.path)")
-DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: fileURL.path))")
-#endif
-                    
                     
                     guard FileManager.default.fileExists(atPath: fileURL.path) else {
                         continue
@@ -1139,11 +1096,6 @@ DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: 
                         let data = try Data(contentsOf: fileURL)
                         attachmentPayload[relativePath] = data
                     } catch {
-#if DEBUG
-                        DebugLog.writeAttachmentEvent(
-                            "⚠️ Backup attachment read failed: \(error.localizedDescription)"
-                        )
-#endif
                     }
                 }
             }
@@ -1161,18 +1113,6 @@ DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: 
 
             loyaltyLogoPayload[relativePath] = logoData
         }
-
-        // DEBUG: Vault backup diagnostics
-#if DEBUG
-        DebugLog.write("════════════════════")
-        DebugLog.write("VAULT BACKUP")
-        DebugLog.write("Vault items exported: \(vaultItems.count)")
-        for item in vaultItems {
-            DebugLog.write(
-                "Vault: \(item.title) | deletedAt: \(String(describing: item.deletedAt))"
-            )
-        }
-#endif
 
         let archive = BackupArchive(
             version: BackupFormat.currentVersion,
@@ -1230,50 +1170,18 @@ DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: 
             }
             return archive
         } catch let DecodingError.dataCorrupted(context) {
-
-        #if DEBUG
-            DebugLog.write("❌ Backup decode error - Data corrupted")
-            DebugLog.write("Description: \(context.debugDescription)")
-            DebugLog.write("CodingPath: \(context.codingPath.map(\.stringValue).joined(separator: "."))")
-        #endif
-
             throw DecodingError.dataCorrupted(context)
-
         } catch let DecodingError.keyNotFound(key, context) {
-
-        #if DEBUG
-            DebugLog.write("❌ Backup decode error - Missing key: \(key.stringValue)")
-            DebugLog.write("CodingPath: \(context.codingPath.map(\.stringValue).joined(separator: "."))")
-        #endif
-
             throw DecodingError.keyNotFound(key, context)
 
         } catch let DecodingError.typeMismatch(type, context) {
-
-        #if DEBUG
-            DebugLog.write("❌ Backup decode error - Type mismatch: \(type)")
-            DebugLog.write("Description: \(context.debugDescription)")
-            DebugLog.write("CodingPath: \(context.codingPath.map(\.stringValue).joined(separator: "."))")
-        #endif
 
             throw DecodingError.typeMismatch(type, context)
 
         } catch let DecodingError.valueNotFound(type, context) {
 
-        #if DEBUG
-            DebugLog.write("❌ Backup decode error - Value not found: \(type)")
-            DebugLog.write("Description: \(context.debugDescription)")
-            DebugLog.write("CodingPath: \(context.codingPath.map(\.stringValue).joined(separator: "."))")
-        #endif
-
             throw DecodingError.valueNotFound(type, context)
-
         } catch {
-
-        #if DEBUG
-            DebugLog.write("❌ Backup decode error: \(error)")
-        #endif
-
             throw error
         }
     }
@@ -1291,16 +1199,6 @@ DebugLog.writeAttachmentEvent("exists: \(FileManager.default.fileExists(atPath: 
         restoreSettings: Bool
     ) async throws {
 
-        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-        DebugLog.writeAttachmentEvent("RESTORE START")
-        DebugLog.writeAttachmentEvent("attachmentFiles: \(archive.attachmentFiles.count)")
-#if DEBUG
-for key in archive.attachmentFiles.keys.sorted() {
-    DebugLog.writeAttachmentEvent("ARCHIVE FILE: \(key)")
-}
-#endif
-        
-        
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
 
             try FileManager.default.createDirectory(
@@ -1310,14 +1208,6 @@ for key in archive.attachmentFiles.keys.sorted() {
 
             for (relativePath, fileData) in archive.attachmentFiles {
 
-#if DEBUG
-DebugLog.writeAttachmentEvent("═══════════════════════════════")
-DebugLog.writeAttachmentEvent("RESTORE FILE")
-DebugLog.writeAttachmentEvent("relativePath: \(relativePath)")
-DebugLog.writeAttachmentEvent("bytes: \(fileData.count)")
-#endif
-                
-                
                 let destinationURL = attachmentsDirectory
                     .appendingPathComponent(relativePath)
                 
@@ -1348,14 +1238,7 @@ DebugLog.writeAttachmentEvent("bytes: \(fileData.count)")
                         options: .atomic
                     )
                 }
-                
-#if DEBUG
-let exists = FileManager.default.fileExists(atPath: destinationURL.path)
-let size = (try? FileManager.default.attributesOfItem(atPath: destinationURL.path)[.size] as? Int64) ?? -1
 
-DebugLog.writeAttachmentEvent("written: \(exists)")
-DebugLog.writeAttachmentEvent("written size: \(size)")
-#endif
             }
         }
 
@@ -1470,20 +1353,7 @@ DebugLog.writeAttachmentEvent("written size: \(size)")
         }
 
         if restoreTasks {
-#if DEBUG
-DebugLog.writeAttachmentEvent("═══════════════════════════════")
-DebugLog.writeAttachmentEvent("ARCHIVE TASK CHECK")
 
-for dto in archive.tasks {
-    DebugLog.writeAttachmentEvent("Task: \(dto.title)")
-    DebugLog.writeAttachmentEvent("DTO attachments: \(dto.attachments?.count ?? 0)")
-
-    dto.attachments?.forEach {
-        DebugLog.writeAttachmentEvent("DTO relativePath: \($0.relativePath)")
-        DebugLog.writeAttachmentEvent("DTO originalName: \($0.originalName)")
-    }
-}
-#endif
             for dto in archive.tasks {
 
                 let descriptor = FetchDescriptor<TodoTask>(
@@ -1497,21 +1367,7 @@ for dto in archive.tasks {
                 }
 
                 let todo = TodoTask(from: dto)
-
-#if DEBUG
-DebugLog.writeAttachmentEvent("═══════════════════════════════")
-DebugLog.writeAttachmentEvent("TASK RESTORED")
-DebugLog.writeAttachmentEvent("title: \(todo.title)")
-DebugLog.writeAttachmentEvent("attachments: \(todo.attachments?.count ?? 0)")
-
-todo.attachments?.forEach {
-    DebugLog.writeAttachmentEvent("relativePath: \($0.relativePath)")
-    DebugLog.writeAttachmentEvent("originalName: \($0.originalName)")
-}
-#endif
-                
-                
-                
+ 
                 // Insert task FIRST so SwiftData creates a stable object graph
                 modelContext.insert(todo)
 
@@ -1532,69 +1388,9 @@ todo.attachments?.forEach {
             }
         }
 
-#if DEBUG
-        DebugLog.write(
-            "Restore completed - Tasks: \(archive.tasks.count)"
-        )
-
-        DebugLog.write(
-            "Restore completed - Attachment files: \(archive.attachmentFiles.count)"
-        )
-#endif
-
-
-
-#if DEBUG
-let descriptor = FetchDescriptor<TodoTask>()
-
-if let restoredTasks = try? modelContext.fetch(descriptor) {
-
-    for task in restoredTasks {
-        
-        DebugLog.writeAttachmentEvent("═══════════════════════════════")
-        DebugLog.writeAttachmentEvent("VERIFY DATABASE")
-        DebugLog.writeAttachmentEvent("task: \(task.title)")
-        DebugLog.writeAttachmentEvent("attachments: \(task.attachments?.count ?? 0)")
-        
-        task.attachments?.forEach {
-            DebugLog.writeAttachmentEvent("relativePath: \($0.relativePath)")
-            
-            if let dir = TaskAttachment.attachmentsDirectory {
-                
-                let url = dir.appendingPathComponent($0.relativePath)
-                
-                let exists = FileManager.default.fileExists(atPath: url.path)
-                
-                DebugLog.writeAttachmentEvent("exists on disk: \(exists)")
-                
-                if exists,
-                   let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
-                   let size = attributes[.size] {
-                    DebugLog.writeAttachmentEvent("size: \(size)")
-                }
-            }
-        }
-    }
-}
-#endif
-        
         if restoreVault {
             // Restore Vault encryption key from archive.vaultBackupPackage
-            
-#if DEBUG
-DebugLog.write("════════════════════")
-DebugLog.write("VAULT RESTORE")
-DebugLog.write("Vault items in archive: \(archive.vaultItems.count)")
 
-for item in archive.vaultItems {
-    DebugLog.write(
-        "Archive: \(item.title) | deletedAt: \(String(describing: item.deletedAt))"
-    )
-}
-#endif
-            
-            
-            
             guard let vaultBackupPackage = archive.vaultBackupPackage else {
                 throw NSError(domain: "BackupManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Vault restore requested, but no Vault backup package was found in the archive."])
             }
