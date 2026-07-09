@@ -1,4 +1,3 @@
-
 import SwiftUI
 import SwiftData
 
@@ -116,6 +115,31 @@ struct RecentlyDeletedVaultView: View {
 
                             } label: {
 
+                                Label(
+                                    "Delete Now",
+                                    systemImage: "trash"
+                                )
+                            }
+                        }
+                        .contextMenu {
+                            Button {
+                                try? VaultManager.shared.restoreCredential(
+                                    item,
+                                    in: modelContext
+                                )
+                            } label: {
+                                Label(
+                                    "Restore",
+                                    systemImage: "arrow.uturn.backward"
+                                )
+                            }
+
+                            Button(role: .destructive) {
+                                try? VaultManager.shared.deleteCredentialPermanently(
+                                    item,
+                                    in: modelContext
+                                )
+                            } label: {
                                 Label(
                                     "Delete Now",
                                     systemImage: "trash"

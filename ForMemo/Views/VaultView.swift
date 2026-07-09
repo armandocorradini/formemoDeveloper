@@ -43,6 +43,37 @@ struct VaultView: View {
                 } label: {
                     VaultRow(item: item)
                 }
+                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                    Button {
+                        selectedItem = item
+                    } label: {
+                        Label(String(localized: "Edit"), systemImage: "pencil")
+                    }
+                    .tint(.blue)
+
+                    Button {
+                        item.favorite.toggle()
+                        try? modelContext.save()
+                    } label: {
+                        Label(
+                            item.favorite ? String(localized: "Remove Favorite") : String(localized: "Favorite"),
+                            systemImage: item.favorite ? "star.slash" : "star"
+                        )
+                    }
+                    .tint(.yellow)
+                }
+
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+
+                    Button(role: .destructive) {
+                        try? VaultManager.shared.deleteCredential(
+                            item,
+                            in: modelContext
+                        )
+                    } label: {
+                        Label(String(localized: "Delete"), systemImage: "trash")
+                    }
+                }
                 .contextMenu {
                     Button {
                         selectedItem = item
@@ -96,7 +127,7 @@ struct VaultView: View {
                     } label: {
                         Image(systemName: "plus")
                             .font(.headline)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.black)
                             .frame(width: 30, height: 30)
                             .background(.green)
                             .clipShape(Circle())

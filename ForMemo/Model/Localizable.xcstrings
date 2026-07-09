@@ -3920,7 +3920,32 @@
       }
     },
     "Backup Password" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Backup-Passwort"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contraseña de la copia de seguridad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mot de passe de sauvegarde"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password del backup"
+          }
+        }
+      }
     },
     "Backups are stored independently from iCloud sync. You can use them to safely migrate all your ForMemo data to another device." : {
       "localizations" : {
@@ -6146,6 +6171,34 @@
         }
       }
     },
+    "Change" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ändern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica"
+          }
+        }
+      }
+    },
     "Change of Clothes" : {
       "localizations" : {
         "de" : {
@@ -6170,6 +6223,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambio d’abiti"
+          }
+        }
+      }
+    },
+    "Change Password?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwort ändern?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cambiar la contraseña?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier le mot de passe ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modificare la password?"
           }
         }
       }
@@ -6375,7 +6456,32 @@
       }
     },
     "Choose a password and confirm it. This password will be required only to restore Vault data from this backup." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wählen Sie ein Passwort und bestätigen Sie es. Dieses Passwort wird nur zum Wiederherstellen der Tresordaten aus diesem Backup benötigt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige una contraseña y confírmala. Esta contraseña solo será necesaria para restaurar los datos del Bóveda desde esta copia de seguridad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un mot de passe et confirmez-le. Ce mot de passe sera requis uniquement pour restaurer les données du Coffre à partir de cette sauvegarde."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli una password e confermala. Questa password sarà richiesta solo per ripristinare i dati del Vault da questo backup."
+          }
+        }
+      }
     },
     "Choose Icon" : {
       "localizations" : {
@@ -6548,7 +6654,32 @@
       }
     },
     "Clear Clipboard" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zwischenablage leeren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vaciar el portapapeles"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer le presse-papiers"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svuota appunti"
+          }
+        }
+      }
     },
     "Clear Night" : {
       "localizations" : {
@@ -7083,7 +7214,32 @@
       }
     },
     "Confirm Password" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwort bestätigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmar contraseña"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmer le mot de passe"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conferma password"
+          }
+        }
+      }
     },
     "Confirm task deletion" : {
       "localizations" : {
@@ -8915,7 +9071,32 @@
       }
     },
     "Delete Now" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetzt löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar ahora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer maintenant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina ora"
+          }
+        }
+      }
     },
     "Delete task?" : {
       "localizations" : {
@@ -9060,7 +9241,32 @@
       }
     },
     "Deleted Vault items will appear here." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelöschte Tresorelemente werden hier angezeigt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los elementos eliminados de la Bóveda aparecerán aquí."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les éléments supprimés du Coffre apparaîtront ici."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gli elementi eliminati del Vault appariranno qui."
+          }
+        }
+      }
     },
     "Deleted: %@" : {
       "localizations" : {
@@ -10713,7 +10919,32 @@
       }
     },
     "Enter the password to unlock the backup." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geben Sie das Passwort ein, um das Backup zu entsperren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Introduce la contraseña para desbloquear la copia de seguridad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saisissez le mot de passe pour déverrouiller la sauvegarde."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inserisci la password per sbloccare il backup."
+          }
+        }
+      }
     },
     "Erase all Data" : {
       "localizations" : {
@@ -11473,6 +11704,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Molto intenso"
+          }
+        }
+      }
+    },
+    "fair" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mittel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aceptable"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moyen"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discreta"
           }
         }
       }
@@ -12452,6 +12711,34 @@
         }
       }
     },
+    "good" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gut"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buena"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bon"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buona"
+          }
+        }
+      }
+    },
     "GPS" : {
       "localizations" : {
         "de" : {
@@ -12899,35 +13186,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nascondi password"
-          }
-        }
-      }
-    },
-    "Hide passwords automatically" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Passwörter automatisch ausblenden"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ocultar automáticamente las contraseñas"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masquer automatiquement les mots de passe"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nascondi automaticamente le password"
           }
         }
       }
@@ -17057,7 +17315,32 @@
       }
     },
     "No Recently Deleted Items" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine kürzlich gelöschten Elemente"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay elementos eliminados recientemente"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun élément récemment supprimé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun elemento eliminato di recente"
+          }
+        }
+      }
     },
     "No reminders" : {
       "comment" : "A message displayed when the user has no reminders to import.",
@@ -19450,35 +19733,6 @@
         }
       }
     },
-    "Privacy" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datenschutz"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Privacidad"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Confidentialité"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Privacy"
-          }
-        }
-      }
-    },
     "Private Club" : {
       "localizations" : {
         "de" : {
@@ -20821,7 +21075,32 @@
       }
     },
     "Require Device Authentication Every Time" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geräteauthentifizierung jedes Mal erforderlich"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requerir autenticación del dispositivo siempre"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exiger l’authentification de l’appareil à chaque fois"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richiedi l’autenticazione del dispositivo ogni volta"
+          }
+        }
+      }
     },
     "Reschedule" : {
       "comment" : "A label for a menu item that reschedules a task.",
@@ -24443,6 +24722,34 @@
         }
       }
     },
+    "strong" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stark"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Segura"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fort"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Robusta"
+          }
+        }
+      }
+    },
     "Strong" : {
       "localizations" : {
         "de" : {
@@ -26249,6 +26556,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il badge si aggiorna automaticamente in base alle modifiche delle attività e al tempo. Se sembra errato, prova a riaprire l’app o controllare le impostazioni delle notifiche."
+          }
+        }
+      }
+    },
+    "The current password will be replaced. Make sure you have updated it for the corresponding account." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das aktuelle Passwort wird ersetzt. Stellen Sie sicher, dass Sie es auch für das entsprechende Konto aktualisiert haben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La contraseña actual será reemplazada. Asegúrate de haberla actualizado también para la cuenta correspondiente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le mot de passe actuel sera remplacé. Assurez-vous de l’avoir également mis à jour pour le compte correspondant."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La password attuale verrà sostituita. Assicurati di averla aggiornata anche per l’account corrispondente."
           }
         }
       }
@@ -28938,7 +29273,32 @@
       }
     },
     "Vault: %lld" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tresor: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bóveda: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coffre : %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vault: %lld"
+          }
+        }
+      }
     },
     "vault.unlock" : {
       "localizations" : {
@@ -28964,6 +29324,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sblocca cassaforte"
+          }
+        }
+      }
+    },
+    "veryWeak" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sehr schwach"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muy débil"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Très faible"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Molto debole"
           }
         }
       }
@@ -29386,6 +29774,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Custodia impermeabile per telefono"
+          }
+        }
+      }
+    },
+    "weak" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SchwachSchwach"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Débil"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faible"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Debole"
           }
         }
       }

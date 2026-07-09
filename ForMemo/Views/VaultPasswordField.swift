@@ -76,7 +76,7 @@ struct VaultPasswordField: View {
             ProgressView(value: strengthProgress)
 
             HStack {
-                Text(LocalizedStringKey(strength.localizedKey))
+                Text(strength.localizedKey)
                 Spacer()
                 Text(String(format: "%.0f bits", entropy))
                     .foregroundStyle(.secondary)

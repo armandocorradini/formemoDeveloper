@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct VaultEditView: View {
 
@@ -19,6 +20,8 @@ struct VaultEditView: View {
     @State private var password = ""
     @State private var requireBiometricEveryTime =
         VaultLock.hasBiometricAuthentication
+    @State private var originalPassword = ""
+    @State private var showingPasswordChangeConfirmation = false
     
     init(item: VaultItem? = nil) {
         self.item = item
@@ -88,12 +91,24 @@ struct VaultEditView: View {
             }
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") {
-                    save()
+                    if item != nil && password != originalPassword {
+                        showingPasswordChangeConfirmation = true
+                    } else {
+                        saveConfirmed()
+                    }
                 }
                 .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
         .onAppear(perform: load)
+        .alert("Change Password?", isPresented: $showingPasswordChangeConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Change", role: .destructive) {
+                saveConfirmed()
+            }
+        } message: {
+            Text("The current password will be replaced. Make sure you have updated it for the corresponding account.")
+        }
     }
 
     private func load() {
@@ -109,9 +124,10 @@ struct VaultEditView: View {
         requireBiometricEveryTime = item.requireBiometricEveryTime
 
         password = (try? VaultManager.shared.decryptedPassword(for: item)) ?? ""
+        originalPassword = password
     }
 
-    private func save() {
+    private func saveConfirmed() {
         if let item {
             do {
                 try VaultManager.shared.updateCredential(
@@ -129,7 +145,9 @@ struct VaultEditView: View {
                     in: modelContext
                 )
             } catch {
-                print("Vault update error:", error)
+                AppLogger.persistence.error(
+                    "Vault credential update failed: \(error.localizedDescription)"
+                )
                 return
             }
         } else {
@@ -148,7 +166,9 @@ struct VaultEditView: View {
                     in: modelContext
                 )
             } catch {
-                print("Vault create error:", error)
+                AppLogger.persistence.error(
+                    "Vault credential creation failed: \(error.localizedDescription)"
+                )
                 return
             }
             

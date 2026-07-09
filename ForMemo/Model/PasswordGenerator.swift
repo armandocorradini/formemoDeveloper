@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 struct PasswordOptions: Sendable, Codable {
 
@@ -24,13 +25,13 @@ enum PasswordStrength: Int, Sendable {
     case good
     case strong
 
-    var localizedKey: String {
+    var localizedKey: LocalizedStringKey {
         switch self {
-        case .veryWeak: return "password.strength.veryWeak"
-        case .weak:     return "password.strength.weak"
-        case .fair:     return "password.strength.fair"
-        case .good:     return "password.strength.good"
-        case .strong:   return "password.strength.strong"
+        case .veryWeak: return "veryWeak"
+        case .weak:     return "weak"
+        case .fair:     return "fair"
+        case .good:     return "good"
+        case .strong:   return "strong"
         }
     }
 }
