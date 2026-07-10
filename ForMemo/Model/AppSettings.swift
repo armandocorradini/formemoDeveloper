@@ -505,7 +505,7 @@ final class AppSettings {
         recentlyDeletedRetentionDays = 30
         locationRemindersEnabled = false
         locationRadius = 150
-        vaultAutoLockInterval = 60
+        vaultAutoLockInterval = 90
         vaultClipboardClearInterval = 90
 //        vaultRequireFaceID = true
         vaultAutoHidePasswords = true

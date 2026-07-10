@@ -6,6 +6,7 @@ struct VaultView: View {
     init() {}
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppSettings.self) private var settings
 
     @Query(sort: \VaultItem.title)
     private var items: [VaultItem]
@@ -41,6 +42,12 @@ struct VaultView: View {
                 } label: {
                     VaultRow(item: item)
                 }
+                .listRowBackground(
+                    Color(.systemBackground).opacity(0.3)
+                )
+                .listRowInsets(
+                    EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16)
+                )
                 .swipeActions(edge: .leading, allowsFullSwipe: false) {
                     Button {
                         selectedItem = item
@@ -102,6 +109,7 @@ struct VaultView: View {
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .navigationTitle(String(localized: "Vault"))
+      
             .navigationBarTitleDisplayMode(.inline)
             .contentMargins(.bottom, 70, for: .scrollContent)
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))

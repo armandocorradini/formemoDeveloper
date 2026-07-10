@@ -73,6 +73,7 @@ struct VaultDetailView: View {
                     .textSelection(.enabled)
                 }
             }
+            .listRowBackground(Color(.systemBackground).opacity(0.3))
 
             Section("Password") {
                 VStack(alignment: .leading, spacing: 12) {
@@ -96,6 +97,7 @@ struct VaultDetailView: View {
                     }
                 }
             }
+            .listRowBackground(Color(.systemBackground).opacity(0.3))
 
             if !item.website.isEmpty {
                 Section("Website") {
@@ -105,6 +107,7 @@ struct VaultDetailView: View {
                         }
                     }
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
             }
 
             if !item.notes.isEmpty {
@@ -112,6 +115,7 @@ struct VaultDetailView: View {
                     Text(item.notes)
                         .textSelection(.enabled)
                 }
+                .listRowBackground(Color(.systemBackground).opacity(0.3))
             }
 
             Section("Information") {
@@ -124,7 +128,9 @@ struct VaultDetailView: View {
                     )
                 }
             }
+            .listRowBackground(Color(.systemBackground).opacity(0.3))
             }
+            
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .onDisappear {
@@ -133,6 +139,7 @@ struct VaultDetailView: View {
                 autoHideTask = nil
 
             }
+            
             .navigationTitle(item.title)
             .navigationBarTitleDisplayMode(.inline)
             .contentMargins(.bottom, 70, for: .scrollContent)
