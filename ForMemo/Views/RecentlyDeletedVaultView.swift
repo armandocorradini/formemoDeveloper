@@ -154,6 +154,7 @@ struct RecentlyDeletedVaultView: View {
         }
         .navigationTitle("Recently Deleted")
         .navigationBarTitleDisplayMode(.inline)
+        .contentMargins(.bottom, 70, for: .scrollContent)
         .toolbar {
 
 //            ToolbarItem(placement: .topBarLeading) {

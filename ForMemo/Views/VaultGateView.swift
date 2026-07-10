@@ -36,48 +36,89 @@ struct VaultGateView: View {
     
     var body: some View {
         ZStack {
-            if vaultLock.isUnlocked {
-                VaultView()
-            } else {
-                VStack(spacing: 28) {
+            AppGlassBackground()
+            VaultView()
 
-                    Image(systemName: "lock.shield.fill")
-                        .font(.system(size: 64, weight: .regular))
-                        .foregroundStyle(Color.accentColor)
-                        .symbolRenderingMode(.hierarchical)
+                    .disabled(!vaultLock.isUnlocked)
 
-                    VStack(spacing: 8) {
-                        Text(String(localized: "Vault"))
-                            .font(.largeTitle.bold())
+                    .blur(radius: vaultLock.isUnlocked ? 0 : 6)
 
-                        Text(String(localized: "Unlock to access your secure credentials."))
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.secondary)
-                    }
+                if !vaultLock.isUnlocked {
 
-                     Button {
-                        unlockVault()
-                    } label: {
-                        if isUnlocking {
-                            ProgressView()
-                                .controlSize(.regular)
-                                .frame(maxWidth: .infinity)
-                        } else {
-                            Label(String(localized: "Unlock"), systemImage: "faceid")
-                                .frame(maxWidth: .infinity)
+                    VStack(spacing: 28) {
+
+                        Image(systemName: "lock.shield.fill")
+
+                            .font(.system(size: 64, weight: .regular))
+
+                            .foregroundStyle(Color.accentColor)
+
+                            .symbolRenderingMode(.hierarchical)
+
+                        VStack(spacing: 8) {
+
+                            Text(String(localized: "Vault"))
+
+                                .font(.largeTitle.bold())
+
+                            Text(String(localized: "Unlock to access your secure credentials."))
+
+                                .multilineTextAlignment(.center)
+
+                                .foregroundStyle(.secondary)
+
                         }
+
+                        Button {
+
+                            unlockVault()
+
+                        } label: {
+
+                            if isUnlocking {
+
+                                ProgressView()
+
+                                    .frame(maxWidth: .infinity)
+
+                            } else {
+
+                                Label(
+
+                                    String(localized: "Unlock"),
+
+                                    systemImage: VaultLock.hasBiometricAuthentication ? "faceid" : "lock"
+
+                                )
+
+                                .frame(maxWidth: .infinity)
+
+                            }
+
+                        }
+
+                        .buttonStyle(.borderedProminent)
+
+                        .controlSize(.large)
+
+                        .disabled(isUnlocking)
+
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(isUnlocking)
-                    .accessibilityIdentifier("vault.unlock")
+
+                    .padding(32)
+
+                    .frame(maxWidth: 420)
+
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    .background(.regularMaterial)
+
                 }
-                .padding(32)
-                .frame(maxWidth: 420)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .contentShape(Rectangle())
-            }
         }
+        .toolbar(
+            vaultLock.isUnlocked ? .visible : .hidden,
+            for: .navigationBar
+        )
         .onAppear {
             guard !vaultLock.isUnlocked else { return }
 
@@ -89,9 +130,9 @@ struct VaultGateView: View {
         .onDisappear {
             isUnlocking = false
         }
-        .animation(.snappy, value: vaultLock.isUnlocked)
-        .navigationTitle(String(localized: "Vault"))
-        .navigationBarTitleDisplayMode(.inline)
+//        .animation(.snappy, value: vaultLock.isUnlocked)
+//        .navigationTitle(String(localized: "Vault"))
+//        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

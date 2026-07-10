@@ -28,86 +28,91 @@ struct VaultEditView: View {
     }
 
     var body: some View {
-        Form {
-            Section("General") {
-                TextField("Title", text: $title)
-                Picker("Category", selection: $category) {
-                    ForEach(VaultCategory.allCases, id: \.self) {
-                        Text($0.localizedTitle)
-                            .tag($0)
+        ZStack {
+            AppGlassBackground()
+            Form {
+                Section("General") {
+                    TextField("Title", text: $title)
+                    Picker("Category", selection: $category) {
+                        ForEach(VaultCategory.allCases, id: \.self) {
+                            Text($0.localizedTitle)
+                                .tag($0)
+                        }
+                    }
+                    Picker("Icon", selection: $icon) {
+                        ForEach(VaultIcon.allCases, id: \.rawValue) { vaultIcon in
+                            Image(systemName: vaultIcon.rawValue)
+                                .tag(vaultIcon)
+                        }
+                    }
+
+                    Picker("Color", selection: $color) {
+                        ForEach(VaultColor.allCases, id: \.self) { color in
+                            Text(color.rawValue.capitalized)
+                                .foregroundStyle(color.swiftUIColor)
+                                .tag(color)
+                        }
                     }
                 }
-                Picker("Icon", selection: $icon) {
-                    ForEach(VaultIcon.allCases, id: \.rawValue) { vaultIcon in
-                        Image(systemName: vaultIcon.rawValue)
-                            .tag(vaultIcon)
-                    }
+
+                Section("Credentials") {
+                    TextField("Username", text: $username)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+
+                    TextField("Email", text: $email)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.emailAddress)
+                        .autocorrectionDisabled()
+
+                    VaultPasswordField(
+                        password: $password,
+                        requireBiometricEveryTime: requireBiometricEveryTime,
+                        authenticateBeforeEditing: true,
+                        authenticateBeforeGenerating: true
+                    )
                 }
 
-                Picker("Color", selection: $color) {
-                    ForEach(VaultColor.allCases, id: \.self) { color in
-                        Text(color.rawValue.capitalized)
-                            .foregroundStyle(color.swiftUIColor)
-                            .tag(color)
-                    }
+                Section("Additional") {
+                    TextField("Website", text: $website)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.URL)
+                        .autocorrectionDisabled()
+
+                    TextField("Notes", text: $notes, axis: .vertical)
+                        .lineLimit(4...8)
+
+                    Toggle("Require Device Authentication Every Time", isOn: $requireBiometricEveryTime)
                 }
             }
-
-            Section("Credentials") {
-                TextField("Username", text: $username)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-
-                TextField("Email", text: $email)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.emailAddress)
-                    .autocorrectionDisabled()
-
-                VaultPasswordField(
-                    password: $password,
-                    requireBiometricEveryTime: requireBiometricEveryTime,
-                    authenticateBeforeEditing: true,
-                    authenticateBeforeGenerating: true
-                )
-            }
-
-            Section("Additional") {
-                TextField("Website", text: $website)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.URL)
-                    .autocorrectionDisabled()
-
-                TextField("Notes", text: $notes, axis: .vertical)
-                    .lineLimit(4...8)
-
-                Toggle("Require Device Authentication Every Time", isOn: $requireBiometricEveryTime)
-            }
-        }
-        .navigationTitle(item == nil ? "New Credential" : "Edit Credential")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { dismiss() }
-            }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Save") {
-                    if item != nil && password != originalPassword {
-                        showingPasswordChangeConfirmation = true
-                    } else {
-                        saveConfirmed()
-                    }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .navigationTitle(item == nil ? "New Credential" : "Edit Credential")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
                 }
-                .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        if item != nil && password != originalPassword {
+                            showingPasswordChangeConfirmation = true
+                        } else {
+                            saveConfirmed()
+                        }
+                    }
+                    .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
             }
-        }
-        .onAppear(perform: load)
-        .alert("Change Password?", isPresented: $showingPasswordChangeConfirmation) {
-            Button("Cancel", role: .cancel) {}
-            Button("Change", role: .destructive) {
-                saveConfirmed()
+            .onAppear(perform: load)
+            .alert("Change Password?", isPresented: $showingPasswordChangeConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Change", role: .destructive) {
+                    saveConfirmed()
+                }
+            } message: {
+                Text("The current password will be replaced. Make sure you have updated it for the corresponding account.")
             }
-        } message: {
-            Text("The current password will be replaced. Make sure you have updated it for the corresponding account.")
         }
     }
 

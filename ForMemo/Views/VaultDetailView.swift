@@ -14,7 +14,9 @@ struct VaultDetailView: View {
     @State private var autoHideTask: Task<Void, Never>?
     
     var body: some View {
-        List {
+        ZStack {
+            AppGlassBackground()
+            List {
             Section {
                 VStack(spacing: 12) {
                     Image(systemName: item.icon.rawValue)
@@ -122,17 +124,21 @@ struct VaultDetailView: View {
                     )
                 }
             }
-        }
-        .onDisappear {
+            }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .onDisappear {
 
-            autoHideTask?.cancel()
-            autoHideTask = nil
+                autoHideTask?.cancel()
+                autoHideTask = nil
 
-        }
-        .navigationTitle(item.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .alert(errorMessage, isPresented: $showingError) {
-            Button("OK", role: .cancel) {}
+            }
+            .navigationTitle(item.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .contentMargins(.bottom, 70, for: .scrollContent)
+            .alert(errorMessage, isPresented: $showingError) {
+                Button("OK", role: .cancel) {}
+            }
         }
     }
 

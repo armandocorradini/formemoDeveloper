@@ -32,11 +32,9 @@ struct VaultView: View {
     }
 
     var body: some View {
-        NavigationStack {
-#if os(iOS)
-            Color.clear
-                .frame(height: 0)
-#endif
+        ZStack {
+            AppGlassBackground()
+
             List(filteredItems) { item in
                 NavigationLink {
                     VaultDetailView(item: item)
@@ -101,7 +99,11 @@ struct VaultView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
             .navigationTitle(String(localized: "Vault"))
+            .navigationBarTitleDisplayMode(.inline)
+            .contentMargins(.bottom, 70, for: .scrollContent)
             .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
             .toolbar {
 
@@ -125,12 +127,10 @@ struct VaultView: View {
                     Button {
                         showingAddItem = true
                     } label: {
-                        Image(systemName: "plus")
-                            .font(.headline)
-                            .foregroundStyle(.black)
-                            .frame(width: 30, height: 30)
-                            .background(.green)
-                            .clipShape(Circle())
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.title2)
+                            .padding(.trailing,0)
                     }
                 }
             }
