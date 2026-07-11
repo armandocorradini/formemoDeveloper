@@ -6,8 +6,39 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */; };
+		1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1CF984853000EBA300E1D1A9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1C1C22F82F7E983A00A77282 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1CF984783000EBA300E1D1A9;
+			remoteInfo = ForMemoCredentialProvider;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1CF9848C3000EBA300E1D1A9 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		1C1C23002F7E983A00A77282 /* ForMemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ForMemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoCredentialProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -17,6 +48,13 @@
 				Info.plist,
 			);
 			target = 1C1C22FF2F7E983A00A77282 /* ForMemo */;
+		};
+		1CF9848B3000EBA300E1D1A9 /* Exceptions for "ForMemoCredentialProvider" folder in "ForMemoCredentialProvider" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -34,6 +72,14 @@
 			path = Sound;
 			sourceTree = "<group>";
 		};
+		1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1CF9848B3000EBA300E1D1A9 /* Exceptions for "ForMemoCredentialProvider" folder in "ForMemoCredentialProvider" target */,
+			);
+			path = ForMemoCredentialProvider;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +87,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1CF984763000EBA300E1D1A9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,6 +106,8 @@
 			children = (
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
 				1C1C23022F7E983A00A77282 /* ForMemo */,
+				1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */,
+				1CF9847A3000EBA300E1D1A9 /* Frameworks */,
 				1C1C23012F7E983A00A77282 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -60,8 +116,17 @@
 			isa = PBXGroup;
 			children = (
 				1C1C23002F7E983A00A77282 /* ForMemo.app */,
+				1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		1CF9847A3000EBA300E1D1A9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -74,10 +139,12 @@
 				1C1C22FC2F7E983A00A77282 /* Sources */,
 				1C1C22FD2F7E983A00A77282 /* Frameworks */,
 				1C1C22FE2F7E983A00A77282 /* Resources */,
+				1CF9848C3000EBA300E1D1A9 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				1CF984863000EBA300E1D1A9 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1C1C23022F7E983A00A77282 /* ForMemo */,
@@ -90,6 +157,28 @@
 			productReference = 1C1C23002F7E983A00A77282 /* ForMemo.app */;
 			productType = "com.apple.product-type.application";
 		};
+		1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1CF984883000EBA300E1D1A9 /* Build configuration list for PBXNativeTarget "ForMemoCredentialProvider" */;
+			buildPhases = (
+				1CF984753000EBA300E1D1A9 /* Sources */,
+				1CF984763000EBA300E1D1A9 /* Frameworks */,
+				1CF984773000EBA300E1D1A9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */,
+			);
+			name = ForMemoCredentialProvider;
+			packageProductDependencies = (
+			);
+			productName = ForMemoCredentialProvider;
+			productReference = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -97,11 +186,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2640;
+				LastSwiftUpdateCheck = 2660;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					1C1C22FF2F7E983A00A77282 = {
 						CreatedOnToolsVersion = 26.4;
+					};
+					1CF984783000EBA300E1D1A9 = {
+						CreatedOnToolsVersion = 26.6;
 					};
 				};
 			};
@@ -120,12 +212,20 @@
 			projectRoot = "";
 			targets = (
 				1C1C22FF2F7E983A00A77282 /* ForMemo */,
+				1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1C1C22FE2F7E983A00A77282 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1CF984773000EBA300E1D1A9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -142,7 +242,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1CF984753000EBA300E1D1A9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1CF984863000EBA300E1D1A9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */;
+			targetProxy = 1CF984853000EBA300E1D1A9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1C1C230F2F7E983C00A77282 /* Debug */ = {
@@ -154,7 +269,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMPILER_INDEX_STORE_ENABLE = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 7L454SWB7H;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -209,7 +324,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMPILER_INDEX_STORE_ENABLE = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 7L454SWB7H;
 				ENABLE_PREVIEWS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -387,6 +502,70 @@
 			};
 			name = Release;
 		};
+		1CF984893000EBA300E1D1A9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = ForMemoCredentialProvider/ForMemoCredentialProvider.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 7L454SWB7H;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ForMemoCredentialProvider/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ForMemoCredentialProvider;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = corradini.armando.NewTask.ForMemoCredentialProvider;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1CF9848A3000EBA300E1D1A9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = ForMemoCredentialProvider/ForMemoCredentialProvider.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 7L454SWB7H;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ForMemoCredentialProvider/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ForMemoCredentialProvider;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = corradini.armando.NewTask.ForMemoCredentialProvider;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -404,6 +583,15 @@
 			buildConfigurations = (
 				1C1C230F2F7E983C00A77282 /* Debug */,
 				1C1C23102F7E983C00A77282 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1CF984883000EBA300E1D1A9 /* Build configuration list for PBXNativeTarget "ForMemoCredentialProvider" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1CF984893000EBA300E1D1A9 /* Debug */,
+				1CF9848A3000EBA300E1D1A9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

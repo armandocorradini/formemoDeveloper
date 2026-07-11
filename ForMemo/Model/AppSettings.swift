@@ -49,7 +49,7 @@ final class AppSettings {
         highlightColorHex = defaults.string(forKey: "tasklist.highlightColor") ?? (Color.red.toHex() ?? "")
         showTodayExpiredLabel = defaults.object(forKey: TaskListAppearanceKeys.showTodayExpiredLabel) as? Bool ?? true
         selectedTaskRowStyle = defaults.object(forKey: "selectedTaskRowStyle") as? Int ?? 0
-        surfaceCornerRadius = defaults.object(forKey: "surfaceCornerRadius") as? Double ?? 4
+        surfaceCornerRadius = defaults.object(forKey: "surfaceCornerRadius") as? Double ?? 22
 
         surfaceBorder = SurfaceBorderStyle(
             rawValue: defaults.integer(forKey: "surfaceBorder")
@@ -59,7 +59,7 @@ final class AppSettings {
             rawValue: defaults.integer(forKey: "surfaceMaterial")
         ) ?? .strong
         
-        taskRowVerticalPadding = defaults.object(forKey: "taskRowVerticalPadding") as? Double ?? 8
+        taskRowVerticalPadding = defaults.object(forKey: "taskRowVerticalPadding") as? Double ?? 0
         
         
         dueIconEffectRaw = defaults.string(forKey: "dueIconEffect") ?? DueIconEffect.blink.rawValue
@@ -481,7 +481,7 @@ final class AppSettings {
         surfaceCornerRadius = 22
         surfaceBorder = .hairline
         surfaceMaterial = .none
-        taskRowVerticalPadding = 8
+        taskRowVerticalPadding = 0
         
         dueIconEffectRaw = DueIconEffect.blink.rawValue
         taskListStyle = .plain

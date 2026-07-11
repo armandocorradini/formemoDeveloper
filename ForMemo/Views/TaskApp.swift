@@ -91,6 +91,8 @@ struct ForMemoApp: App {
         // 🔥 SINGLE LOCAL-FIRST STORE
         // Local database is the source of truth.
         // CloudKit only syncs the same persistent store.
+        StoreMigrationManager.prepareMigrationIfNeeded()
+        StoreMigrationManager.performMigrationIfNeeded()
         let sharedContainer = Persistence.makeModelContainer(
             cloudKitEnabled: true
         )

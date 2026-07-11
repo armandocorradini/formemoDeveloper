@@ -87,7 +87,7 @@ struct VaultEditView: View {
             }
             .scrollContentBackground(.hidden)
             .background(Color.clear)
-            .navigationTitle(item == nil ? "New Credential" : "Edit Credential")
+            .navigationTitle(item == nil ? "New Credential" : "Edit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

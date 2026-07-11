@@ -1,5 +1,5 @@
 import SwiftUI
-import LocalAuthentication
+//import LocalAuthentication
 
 struct VaultGateView: View {
 

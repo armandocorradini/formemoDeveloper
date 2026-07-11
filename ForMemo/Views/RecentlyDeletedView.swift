@@ -114,6 +114,13 @@ var body: some View {
                             Text(title(for: item))
                                 .lineLimit(1)
                             
+                            if item.type == "attachment" {
+                                Text("Deleted: \(item.deletedAt.formatted(date: .abbreviated, time: .shortened))")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            
                             if item.type == "loyaltycard" {
                                 Text(
                                     item.loyaltyItemType == "ticket"

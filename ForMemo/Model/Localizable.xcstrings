@@ -10521,6 +10521,7 @@
       }
     },
     "Edit Credential" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

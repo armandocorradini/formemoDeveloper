@@ -12,7 +12,69 @@ enum Persistence {
     private static let legacyStoreURL =
         URL.documentsDirectory.appendingPathComponent("local.store")
 
-    private static let schema = Schema([
+    private static func storeURL() -> URL {
+        selectedStoreURL()
+    }
+
+    private static let appGroupIdentifier = "group.corradini.armando.NewTask"
+
+    private static func appGroupStoreURL() -> URL? {
+        FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)?
+            .appendingPathComponent("local.store")
+    }
+
+    private static func appGroupStoreExists() -> Bool {
+        guard let url = appGroupStoreURL() else {
+            return false
+        }
+
+        return FileManager.default.fileExists(atPath: url.path)
+    }
+
+    private static func canUseAppGroupStore() -> Bool {
+
+        guard appGroupStoreExists() else {
+            AppLogger.persistence.debug("App Group store is not eligible")
+            return false
+        }
+
+        guard let marker = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)?
+            .appendingPathComponent(".migration-completed"),
+              FileManager.default.fileExists(atPath: marker.path)
+        else {
+            AppLogger.persistence.debug("Migration marker missing")
+            return false
+        }
+
+        AppLogger.persistence.debug("App Group store is eligible")
+
+        return true
+    }
+
+    private static func selectedStoreURL() -> URL {
+        let selectedURL = legacyStoreURL
+
+        AppLogger.persistence.debug("Selected SwiftData store: \(selectedURL.path)")
+
+        return selectedURL
+    }
+    
+    static var diagnosticsCurrentStoreURL: String {
+        selectedStoreURL().path
+    }
+
+    static var diagnosticsUsingAppGroupStore: Bool {
+        guard let appGroupURL = appGroupStoreURL() else {
+            return false
+        }
+
+        return selectedStoreURL() == appGroupURL
+    }
+    
+    
+    static let schema = Schema([
         TodoTask.self,
         TaskAttachment.self,
         DeletedItem.self,
@@ -46,7 +108,7 @@ enum Persistence {
 
             let configuration = ModelConfiguration(
                 schema: schema,
-                url: legacyStoreURL,
+                url: storeURL(),
                 cloudKitDatabase:
                     cloudKitEnabled
                     ? .private(cloudKitContainerID)

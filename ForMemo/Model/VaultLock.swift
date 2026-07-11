@@ -5,7 +5,7 @@ import os
 
 enum VaultLockError: Error {
     case authenticationFailed
-    case biometricsUnavailable
+    case authenticationUnavailable
     case appSettingsUnavailable
 }
 
@@ -38,15 +38,13 @@ final class VaultLock: ObservableObject {
 
     func unlock(reason: String = String(localized: "vault.unlock")) async throws {
         
-//#if targetEnvironment(simulator)
-//
-//isUnlocked = true
-//
-//scheduleAutoLock()
-//        print("SIMULATORE")
-//return
-//
-//#else
+#if targetEnvironment(simulator)
+
+isUnlocked = true
+scheduleAutoLock()
+return
+
+#endif
         
         let context = authenticationContext ?? LAContext()
         authenticationContext = context
@@ -55,7 +53,7 @@ final class VaultLock: ObservableObject {
         var error: NSError?
 
         guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
-            throw VaultLockError.biometricsUnavailable
+            throw VaultLockError.authenticationUnavailable
         }
 
         let policy: LAPolicy = .deviceOwnerAuthentication
@@ -94,11 +92,9 @@ final class VaultLock: ObservableObject {
     ) async throws {
 
         guard item.requireBiometricEveryTime else {
-            DebugLog.write("🔐 Per-item authentication not required")
+
             return
         }
-
-        DebugLog.write("🔐 Per-item authentication required")
 
         authenticationContext?.invalidate()
         authenticationContext = nil

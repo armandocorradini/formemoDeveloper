@@ -176,7 +176,7 @@ struct VaultDetailView: View {
         }
 
         do {
-            _ = encrypted
+           
             decryptedPassword = try VaultManager.shared.decryptedPassword(for: item)
             showingPassword = true
             

@@ -140,6 +140,14 @@ struct ResetAppView: View {
                 modelContext.delete(task)
             }
             
+            // 🔴 Vault
+            let vaultItems = try modelContext.fetch(FetchDescriptor<VaultItem>())
+
+            for item in vaultItems {
+                modelContext.delete(item)
+            }
+            
+            
             // 🔴 Loyalty Cards & Tickets
             let loyaltyCards = try modelContext.fetch(FetchDescriptor<LoyaltyCard>())
 

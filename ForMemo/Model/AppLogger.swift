@@ -9,6 +9,7 @@ enum AppLogger {
     static let notifications = Logger(subsystem: subsystem, category: "notifications")
     static let persistence = Logger(subsystem: subsystem, category: "persistence")
     static let ui = Logger(subsystem: subsystem, category: "ui")
+    static let autofill = Logger(subsystem: subsystem, category: "autofill")
 }
 
 // MARK: - Debug Helper

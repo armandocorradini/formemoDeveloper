@@ -368,6 +368,11 @@ enum DebugLog {
         let deletedCount = (try? context.fetchCount(
             FetchDescriptor<DeletedItem>()
         )) ?? 0
+        
+        let vaultCount = (try? context.fetchCount(
+            FetchDescriptor<VaultItem>()
+        )) ?? 0
+        
         let attachmentRecordCount = (try? context.fetchCount(
             FetchDescriptor<TaskAttachment>()
         )) ?? 0
@@ -375,6 +380,7 @@ enum DebugLog {
         write("📊 Documents: \(documentCount)")
         write("📊 Trips: \(tripCount)")
         write("📊 Cards & Tickets: \(cardCount)")
+        write("📊 Vault Items: \(vaultCount)")
         write("📊 Attachment Records: \(attachmentRecordCount)")
         write("📊 Deleted Items: \(deletedCount)")
         
@@ -382,6 +388,21 @@ enum DebugLog {
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
 
         write("")
+        write("")
+        write("════════════════════════════════════════════")
+        write("🔷 STORE MIGRATION DIAGNOSTICS")
+        write("════════════════════════════════════════════")
+        
+        write("Migration Engine: v1")
+        write("Migration Status: \(StoreMigrationManager.diagnosticsMigrationMarkerExists ? "Completed" : "Pending")")
+        write("Current Store: \(Persistence.diagnosticsCurrentStoreURL)")
+        write("Using App Group Store: \(Persistence.diagnosticsUsingAppGroupStore ? "YES" : "NO")")
+        write("Migration Needed: \(StoreMigrationManager.diagnosticsMigrationNeeded ? "YES" : "NO")")
+
+        write("Legacy Store: \(StoreMigrationManager.diagnosticsLegacyStoreExists ? "YES" : "NO")")
+        write("App Group Store: \(StoreMigrationManager.diagnosticsAppGroupStoreExists ? "YES" : "NO")")
+
+        write("════════════════════════════════════════════")
         write("════════════════════════════════════════════")
         write("🔬 ATTACHMENT FORENSIC SNAPSHOT")
         write("📅 Snapshot: \(ISO8601DateFormatter().string(from: Date()))")
@@ -710,7 +731,13 @@ struct ExportDiagnosticsView: View {
                     as: UTF8.self
                 )
 
-                logContent = String(content.prefix(12000))
+                let maxLength = 50000
+
+                if content.count > maxLength {
+                    logContent = String(content.suffix(maxLength))
+                } else {
+                    logContent = content
+                }
 
             } catch {
 
@@ -727,7 +754,13 @@ struct ExportDiagnosticsView: View {
                             as: UTF8.self
                         )
 
-                        logContent = String(retryContent.prefix(12000))
+                        let maxLength = 50000
+
+                        if retryContent.count > maxLength {
+                            logContent = String(retryContent.suffix(maxLength))
+                        } else {
+                            logContent = retryContent
+                        }
 
                     } else {
 
@@ -800,7 +833,7 @@ struct ExportDiagnosticsView: View {
                             .foregroundStyle(.secondary)
 
                         ScrollView {
-                            Text(String(logContent.prefix(12000)))
+                            Text(String(logContent.prefix(50000)))
                                 .font(.caption.monospaced())
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -830,11 +863,8 @@ struct ExportDiagnosticsView: View {
         .onAppear {
             DebugLog.ensureLogFileExists()
 
-            DebugLog.writeDatabaseSnapshot(context: modelContext)
-
-            DispatchQueue.main.asyncAfter(
-                deadline: .now() + 0.3
-            ) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                DebugLog.writeDatabaseSnapshot(context: modelContext)
                 refreshDiagnostics()
             }
         }
@@ -844,9 +874,11 @@ struct ExportDiagnosticsView: View {
             )
         ) { _ in
 
-            DebugLog.writeDatabaseSnapshot(context: modelContext)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                DebugLog.writeDatabaseSnapshot(context: modelContext)
+                refreshDiagnostics()
+            }
 
-            refreshDiagnostics()
         }
     }
 }
