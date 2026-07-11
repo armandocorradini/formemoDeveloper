@@ -614,6 +614,13 @@ struct Dashboard: View {
                     Image(systemName: "line.3.horizontal.decrease.circle")
                 }
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    OverviewView()
+                } label: {
+                    Image(systemName: "line.3.horizontal.button.angledtop.vertical.right")
+                }
+            }
         }
         .navigationDestination(item: $selectedTask) { task in
             TaskDetailView(task: task)

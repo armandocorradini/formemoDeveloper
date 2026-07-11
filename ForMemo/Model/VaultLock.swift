@@ -42,13 +42,11 @@ final class VaultLock: ObservableObject {
 
 isUnlocked = true
 scheduleAutoLock()
-return
 
-#endif
+#else
         
         let context = authenticationContext ?? LAContext()
         authenticationContext = context
-
 
         var error: NSError?
 
@@ -83,7 +81,7 @@ return
             throw error
 
         }
-
+#endif
     }
 
     func authenticateIfRequired(

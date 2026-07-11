@@ -54,7 +54,18 @@ enum Persistence {
     }
 
     private static func selectedStoreURL() -> URL {
-        let selectedURL = legacyStoreURL
+
+        let selectedURL: URL
+
+        if canUseAppGroupStore(),
+           let appGroupURL = appGroupStoreURL() {
+
+            selectedURL = appGroupURL
+
+        } else {
+
+            selectedURL = legacyStoreURL
+        }
 
         AppLogger.persistence.debug("Selected SwiftData store: \(selectedURL.path)")
 
@@ -123,6 +134,26 @@ enum Persistence {
                 configurations: [configuration]
 
             )
+            
+            let context = ModelContext(container)
+            
+            let taskCount = (try? context.fetchCount(
+                FetchDescriptor<TodoTask>()
+            )) ?? -1
+
+            let vaultCount = (try? context.fetchCount(
+                FetchDescriptor<VaultItem>()
+            )) ?? -1
+
+            AppLogger.persistence.notice(
+                "ModelContainer initial TodoTask count: \(taskCount)"
+            )
+
+            AppLogger.persistence.notice(
+                "ModelContainer initial VaultItem count: \(vaultCount)"
+            )
+            
+            
             CrashDetector.setLastEvent(
                 cloudKitEnabled
                 ? "SwiftData container initialized (CloudKit)"

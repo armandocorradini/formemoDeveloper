@@ -353,6 +353,17 @@ enum DebugLog {
             FetchDescriptor<TodoTask>()
         )) ?? 0
 
+        let tasks = (try? context.fetch(FetchDescriptor<TodoTask>())) ?? []
+
+        write("Live TodoTask objects: \(tasks.count)")
+        
+        let completed = tasks.filter(\.isCompleted).count
+        let open = tasks.count - completed
+
+        write("Live Fetch -> Open: \(open)")
+        write("Live Fetch -> Completed: \(completed)")
+        
+        
         let documentCount = (try? context.fetchCount(
             FetchDescriptor<DocumentItem>()
         )) ?? 0
@@ -372,6 +383,22 @@ enum DebugLog {
         let vaultCount = (try? context.fetchCount(
             FetchDescriptor<VaultItem>()
         )) ?? 0
+        let vaultItems = (try? context.fetch(
+            FetchDescriptor<VaultItem>()
+        )) ?? []
+
+        write("Vault fetch count: \(vaultItems.count)")
+
+        let activeVault = vaultItems.filter { $0.deletedAt == nil }.count
+        let deletedVault = vaultItems.filter { $0.deletedAt != nil }.count
+
+        write("Vault active: \(activeVault)")
+        write("Vault deleted: \(deletedVault)")
+        
+        
+        for item in vaultItems.prefix(10) {
+            write("Vault -> \(item.title) deleted: \(item.deletedAt != nil)")
+        }
         
         let attachmentRecordCount = (try? context.fetchCount(
             FetchDescriptor<TaskAttachment>()
@@ -392,10 +419,15 @@ enum DebugLog {
         write("════════════════════════════════════════════")
         write("🔷 STORE MIGRATION DIAGNOSTICS")
         write("════════════════════════════════════════════")
-        
+        write("Current Store Exists: \(FileManager.default.fileExists(atPath: Persistence.diagnosticsCurrentStoreURL))")
+        let attributes = try? FileManager.default.attributesOfItem(atPath: Persistence.diagnosticsCurrentStoreURL)
+
+        write("Current Store Size: \(attributes?[.size] ?? 0)")
+        write("Current Store Modified: \(attributes?[.modificationDate] ?? "-")")
         write("Migration Engine: v1")
         write("Migration Status: \(StoreMigrationManager.diagnosticsMigrationMarkerExists ? "Completed" : "Pending")")
         write("Current Store: \(Persistence.diagnosticsCurrentStoreURL)")
+        
         write("Using App Group Store: \(Persistence.diagnosticsUsingAppGroupStore ? "YES" : "NO")")
         write("Migration Needed: \(StoreMigrationManager.diagnosticsMigrationNeeded ? "YES" : "NO")")
 
@@ -403,12 +435,11 @@ enum DebugLog {
         write("App Group Store: \(StoreMigrationManager.diagnosticsAppGroupStoreExists ? "YES" : "NO")")
 
         write("════════════════════════════════════════════")
-        write("════════════════════════════════════════════")
+
         write("🔬 ATTACHMENT FORENSIC SNAPSHOT")
         write("📅 Snapshot: \(ISO8601DateFormatter().string(from: Date()))")
         write("📱 Version: \(version)")
         write("🔨 Build: \(build)")
-        write("════════════════════════════════════════════")
         write("════════════════════════════════════════════")
 
         let fm = FileManager.default

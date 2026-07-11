@@ -22,6 +22,20 @@ struct OverviewView: View {
     
     @Query private var trips: [TripList]
     
+    @Query(
+        filter: #Predicate<VaultItem> {
+            $0.deletedAt == nil
+        }
+    )
+    private var activeVaultItems: [VaultItem]
+
+    @Query(
+        filter: #Predicate<VaultItem> {
+            $0.deletedAt != nil
+        }
+    )
+    private var deletedVaultItems: [VaultItem]
+    
     private var activeAttachmentsSize: String {
         formattedAttachmentSize(
             for: activeTasks.flatMap { $0.attachments ?? [] }
@@ -77,6 +91,7 @@ struct OverviewView: View {
                     tasksSection
                     documentsSection
                     walletSection
+                    vaultSection
                     tripsSection
                 }
                 .padding()
@@ -291,7 +306,39 @@ private extension OverviewView {
         }
     }
 
+    
+    var vaultSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
 
+            Text("Vault")
+                .font(.headline)
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 10) {
+
+                LabeledContent("Credentials") {
+                    Text("\(activeVaultItems.count)")
+                }
+
+                LabeledContent("Recently Deleted") {
+                    Text("\(deletedVaultItems.count)")
+                }
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.regularMaterial)
+                .shadow(color: .black.opacity(0.10), radius: 12, y: 6)
+                .shadow(color: .white.opacity(0.08), radius: 1, y: -1)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.white.opacity(0.10), lineWidth: 1)
+        }
+    }
+    
     var tripsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Trip Lists")
