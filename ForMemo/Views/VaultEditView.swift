@@ -93,6 +93,7 @@ struct VaultEditView: View {
             .background(Color.clear)
             .navigationTitle(item == nil ? "New Credential" : "Edit")
             .navigationBarTitleDisplayMode(.inline)
+            .scrollDismissesKeyboard(.immediately)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

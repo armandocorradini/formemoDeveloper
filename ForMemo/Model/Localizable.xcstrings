@@ -9688,6 +9688,34 @@
         }
       }
     },
+    "Disable AutoFill first" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deaktiviere zuerst „Automatisch ausfüllen“"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactiva primero Autorrelleno"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactivez d’abord le remplissage automatique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disattiva prima Inserimento automatico"
+          }
+        }
+      }
+    },
     "Disclaimer" : {
       "localizations" : {
         "de" : {
@@ -23430,6 +23458,34 @@
         }
       }
     },
+    "Show or hide the Vault and its credentials" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den Tresor und seine Zugangsdaten ein- oder ausblenden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muestra u oculta la bóveda y sus credenciales"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher ou masquer le coffre-fort et ses identifiants"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra o nascondi la cassaforte e le sue credenziali"
+          }
+        }
+      }
+    },
     "Show Password" : {
       "localizations" : {
         "de" : {
@@ -27902,6 +27958,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In file .ICS         "
+          }
+        }
+      }
+    },
+    "To hide the Vault, first disable ForMemo AutoFill in Settings > Passwords > Password Options > AutoFill Passwords. Then return here and turn off Vault." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um den Tresor auszublenden, gehe zuerst zu Einstellungen > Allgemein > Automatisch ausfüllen & Passwörter und deaktiviere das automatische Ausfüllen von Passwörtern und Passkeys. Kehre dann hierher zurück und deaktiviere den Tresor."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para ocultar la bóveda, ve primero a Ajustes > General > Autorrelleno y contraseñas y desactiva Autorrelleno de contraseñas y claves de acceso. Después vuelve aquí y desactiva la bóveda."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour masquer le coffre-fort, accédez d’abord à Réglages > Général > Remplissage automatique et mots de passe, puis désactivez le remplissage automatique des mots de passe et des clés d’accès. Revenez ensuite ici et désactivez le coffre-fort."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per nascondere la Cassaforte vai prima in Impostazioni > Generali > Inserimento automatico e password e disattiva Inserimento automatico di password e passkey. Poi torna qui e disattiva Cassaforte."
           }
         }
       }

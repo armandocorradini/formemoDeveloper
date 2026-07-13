@@ -259,15 +259,6 @@ struct TaskListAppearanceView: View {
                         .tag(style)
                 }
             }
-
-//            Button("Restore Defaults") {
-//                settings.surfaceCornerRadius = 18
-//                settings.surfaceBorder = .hairline
-//                settings.surfaceMaterial = .strong
-//            }
-//            .frame(maxWidth: .infinity)
-//            .buttonStyle(.bordered)
-//            .padding(.top, 8)
         }
     }
     

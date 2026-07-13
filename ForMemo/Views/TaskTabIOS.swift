@@ -95,6 +95,13 @@ struct TaskTabView: View {
                     selectedTab = 0
                 }
             }
+        
+            .onChange(of: settings.showVault) { _, enabled in
+                if !enabled && selectedTab == 11 {
+                    selectedTab = 0
+                }
+            }
+        
             .onChange(of: selectedTab) { oldValue, newValue in
 
                 previousTab = oldValue
@@ -209,28 +216,32 @@ struct TaskTabView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                         
-                        Button {
-                            selectedTab = 11
-                            showMorePopover = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "lock.shield")
-                                        .frame(width: 22)
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                        .frame(width: 16, height: 3)
-                                        .opacity(selectedTab == 11 ? 1 : 0)
+                        if settings.showVault {
+                            Button {
+                                selectedTab = 11
+                                showMorePopover = false
+                            } label: {
+                                HStack(spacing: 10) {
+                                    VStack(spacing: 4) {
+                                        Image(systemName: "key.shield")
+                                            .frame(width: 22)
+                                        Capsule()
+                                            .fill(Color.accentColor)
+                                            .frame(width: 16, height: 3)
+                                            .opacity(selectedTab == 9 ? 1 : 0)
+                                    }
+                                    Text("Vault")
                                 }
-                                Text(String(localized: "Vault"))
+                                .foregroundStyle(selectedTab == 11 ? Color.accentColor : Color.primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
                             }
-                            .foregroundStyle(selectedTab == 11 ? Color.accentColor : Color.primary)
+                            .buttonStyle(.plain)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
                         }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
+                        
+                        
+                        
                         Button {
                             selectedTab = 7
                             showMorePopover = false
@@ -325,6 +336,8 @@ struct TaskTabView: View {
                             .buttonStyle(.plain)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        
+
 
                         Button {
                             selectedTab = 5
@@ -501,12 +514,15 @@ struct TaskTabView: View {
                 sidebarRow(String(localized: "Start_tab"), "house", 0)
 
                 sidebarRow(String(localized: "wallet_tab"), "wallet.bifold", 6)
-                sidebarRow(String(localized: "Vault"), "lock.shield", 11)
+                if settings.showVault {
+                    sidebarRow(String(localized: "Vault"), "key.shield", 11)
+                }
                 sidebarRow(String(localized: "Trips"), "suitcase.rolling", 7)
                 sidebarRow(String(localized: "Documents"), "doc.text", 8)
                 if settings.showWeatherForecast {
                     sidebarRow(String(localized: "Forecast"), "cloud.sun", 9)
                 }
+
                 sidebarRow(String(localized: "settings_tab"), "gear", 2)
             }
             .listStyle(.sidebar)

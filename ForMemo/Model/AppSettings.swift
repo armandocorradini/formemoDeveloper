@@ -57,7 +57,7 @@ final class AppSettings {
 
         surfaceMaterial = SurfaceMaterialStyle(
             rawValue: defaults.integer(forKey: "surfaceMaterial")
-        ) ?? .strong
+        ) ?? .none
         
         taskRowVerticalPadding = defaults.object(forKey: "taskRowVerticalPadding") as? Double ?? 0
         
@@ -73,6 +73,9 @@ final class AppSettings {
         startupTab = defaults.object(forKey: "startupTab") as? Int ?? 1
         notificationLeadTimeDays = defaults.object(forKey: "notificationLeadTimeDays") as? Int ?? 1
         showWeatherForecast = defaults.object(forKey: "showWeatherForecast") as? Bool ?? true
+        
+        showVault = defaults.object(forKey: "showVault") as? Bool ?? true
+        
         showDashboardTomorrow = defaults.object(forKey: "showDashboardTomorrow") as? Bool ?? true
         showDashboardContinue = defaults.object(forKey: "showDashboardContinue") as? Bool ?? true
         siriAutoReminderEnabled = defaults.object(forKey: "siriAutoReminderEnabled") as? Bool ?? true
@@ -87,7 +90,7 @@ final class AppSettings {
         recentlyDeletedRetentionDays = defaults.object(forKey: "recentlyDeletedRetentionDays") as? Int ?? 30
         locationRemindersEnabled = defaults.object(forKey: "locationRemindersEnabled") as? Bool ?? false
         locationRadius = defaults.object(forKey: "locationRadius") as? Int ?? 150
-        vaultAutoLockInterval = defaults.object(forKey: "vaultAutoLockInterval") as? Int ?? 60
+        vaultAutoLockInterval = defaults.object(forKey: "vaultAutoLockInterval") as? Int ?? 120
         vaultClipboardClearInterval = defaults.object(forKey: "vaultClipboardClearInterval") as? Int ?? 90
 //        vaultRequireFaceID = defaults.object(forKey: "vaultRequireFaceID") as? Bool ?? true
         vaultAutoHidePasswords = defaults.object(forKey: "vaultAutoHidePasswords") as? Bool ?? true
@@ -307,6 +310,15 @@ final class AppSettings {
         }
     }
 
+    var showVault: Bool {
+        didSet {
+            UserDefaults.standard.set(
+                showVault,
+                forKey: "showVault"
+            )
+        }
+    }
+    
     var showDashboardTomorrow: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -491,6 +503,7 @@ final class AppSettings {
         startupTab = 1
         notificationLeadTimeDays = 1
         showWeatherForecast = true
+        showVault = true
         showDashboardTomorrow = true
         showDashboardContinue = true
         siriAutoReminderEnabled = true
@@ -505,7 +518,7 @@ final class AppSettings {
         recentlyDeletedRetentionDays = 30
         locationRemindersEnabled = false
         locationRadius = 150
-        vaultAutoLockInterval = 90
+        vaultAutoLockInterval = 120
         vaultClipboardClearInterval = 90
 //        vaultRequireFaceID = true
         vaultAutoHidePasswords = true

@@ -1,3 +1,4 @@
+@preconcurrency import AuthenticationServices
 import SwiftUI
 import EventKit
 import SwiftData
@@ -86,6 +87,7 @@ struct SettingsView: View {
     }
     
     @State private var showLocationPermissionAlert = false
+    @State private var showAutoFillDisableAlert = false
     @State private var showImportReminders = false
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
 
@@ -320,6 +322,30 @@ struct SettingsView: View {
                                 }
                             }
                         }
+                        
+                        Toggle(
+                            isOn: Binding(
+                                get: { settings.showVault },
+                                set: { newValue in
+                                    updateVaultVisibility(to: newValue)
+                                }
+                            )
+                        ) {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Vault")
+                                    
+                                    Text("Show or hide the Vault and its credentials")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "key.shield")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+                        
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
@@ -861,6 +887,11 @@ Attivazione: \(triggerInfo)
                 }
             }
             .id(backgroundColor1Hex + backgroundColor2Hex)
+            .alert("Disable AutoFill first", isPresented: $showAutoFillDisableAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("To hide the Vault, first go to Settings > General > AutoFill & Passwords and turn off AutoFill Passwords and Passkeys. Then return here and turn off Vault.")
+            }
         }
         
     }
@@ -958,6 +989,25 @@ Attivazione: \(triggerInfo)
         }
         try? modelContext.save()
     }
+
+    private func updateVaultVisibility(to isVisible: Bool) {
+        guard !isVisible else {
+            settings.showVault = true
+            return
+        }
+
+        ASCredentialIdentityStore.shared.getState { state in
+            Task { @MainActor in
+                if state.isEnabled {
+                    // Keep the Vault available while its credentials can still
+                    // be offered by the system's Password AutoFill service.
+                    showAutoFillDisableAlert = true
+                } else {
+                    settings.showVault = false
+                }
+            }
+        }
+    }
 }
 
 // MARK: - App Theme
@@ -982,5 +1032,3 @@ extension AppTheme {
         }
     }
 }
-
-
