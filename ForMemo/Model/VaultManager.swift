@@ -41,6 +41,7 @@ final class VaultManager {
 
         context.insert(item)
         try context.save()
+        VaultAutoFillManager.shared.synchronize(using: context)
 
         return item
     }
@@ -77,6 +78,7 @@ final class VaultManager {
         }
 
         try context.save()
+        VaultAutoFillManager.shared.synchronize(using: context)
     }
 
     func decryptedPassword(for item: VaultItem) throws -> String {
@@ -107,6 +109,7 @@ final class VaultManager {
         item.lastCopiedAt = nil
 
         try context.save()
+        VaultAutoFillManager.shared.synchronize(using: context)
     }
 
     func restoreCredential(
@@ -116,6 +119,7 @@ final class VaultManager {
         item.deletedAt = nil
         item.modifiedAt = .now
         try context.save()
+        VaultAutoFillManager.shared.synchronize(using: context)
     }
 
     func deleteCredentialPermanently(
@@ -124,5 +128,6 @@ final class VaultManager {
     ) throws {
         context.delete(item)
         try context.save()
+        VaultAutoFillManager.shared.synchronize(using: context)
     }
 }

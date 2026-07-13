@@ -117,6 +117,7 @@ struct ForMemoApp: App {
             AttachmentMigration.runIfNeeded(
                 context: context
             )
+            VaultAutoFillManager.shared.synchronize(using: context)
             if appSettings.autoDeleteCompletedAttachments {
                 try? AttachmentMaintenanceManager.shared.performAutomaticCleanup(
                     context: context,
@@ -221,7 +222,7 @@ struct ForMemoApp: App {
                 try? container.mainContext.save()
                 
             case .background:
-                VaultLock.shared.lock()
+//                VaultLock.shared.lock()
                 try? container.mainContext.save()
                 
             @unknown default:
@@ -260,6 +261,7 @@ struct ForMemoApp: App {
                 NotificationActionProcessor.shared.processAll(
                     using: context
                 )
+                VaultAutoFillManager.shared.synchronize(using: context)
 
                 // ✅ trigger UI
                 NotificationCenter.default.post(

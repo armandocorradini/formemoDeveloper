@@ -102,6 +102,7 @@ scheduleAutoLock()
     
     
     func lock() {
+//        print("LOCK ESEGUITO")
         lockTask?.cancel()
         lockTask = nil
         isUnlocked = false
@@ -127,6 +128,7 @@ scheduleAutoLock()
             guard !Task.isCancelled else { return }
 
             guard self.isUnlocked else { return }
+//            print("AUTOLOCK SCATTATO")
             self.lock()
         }
     }

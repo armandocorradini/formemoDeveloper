@@ -79,10 +79,3 @@ struct VaultRow: View {
         )
     }
 }
-
-#Preview {
-    List {
-        VaultRow(item: VaultItem(title: "Apple ID"))
-    }
-    .modelContainer(for: VaultItem.self, inMemory: true)
-}

@@ -15,8 +15,12 @@
 	</array>
 	<key>com.apple.developer.siri</key>
 	<true/>
-    <key>com.apple.developer.authentication-services.autofill-credential-provider</key>
-    <true/>
+	<key>com.apple.developer.authentication-services.autofill-credential-provider</key>
+	<true/>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>7L454SWB7H.com.formemo.vault.shared</string>
+	</array>
 	<key>com.apple.developer.ubiquity-container-identifiers</key>
 	<array>
 		<string>iCloud.corradini.armando.NewTask</string>

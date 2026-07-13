@@ -517,7 +517,9 @@ struct Dashboard: View {
                                             sectionCard(
                                                 title: item.title,
                                                 systemImage: item.systemImage,
-                                                logoData: item.logoData
+                                                logoData: item.logoData,
+                                                isCompleted: isTripComplete(trip),
+                                                remainingItems: remainingTripItems(for: trip)
                                             )
                                         }
                                         .buttonStyle(.plain)
@@ -661,7 +663,9 @@ struct Dashboard: View {
     private func sectionCard(
         title: String,
         systemImage: String?,
-        logoData: Data?
+        logoData: Data?,
+        isCompleted: Bool = false,
+        remainingItems: Int? = nil
     ) -> some View {
         HStack(spacing: 16) {
             Group {
@@ -684,9 +688,17 @@ struct Dashboard: View {
                         .frame(width: 28)
                 }
             }
-            Text(title)
-                .font(.subheadline)
-                .foregroundStyle(.primary)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundStyle(isCompleted ? .green : .primary)
+
+                if let remainingItems {
+                    Text("\(remainingItems) \(String(localized: "remaining"))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
             Spacer()
             Image(systemName: "chevron.right")
                 .foregroundStyle(.secondary)
@@ -711,6 +723,15 @@ struct Dashboard: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(.white.opacity(0.10), lineWidth: 1)
         }
+    }
+
+    private func isTripComplete(_ trip: TripList) -> Bool {
+        let items = trip.sections.flatMap(\.items)
+        return !items.isEmpty && items.allSatisfy(\.isChecked)
+    }
+
+    private func remainingTripItems(for trip: TripList) -> Int {
+        trip.sections.flatMap(\.items).filter { !$0.isChecked }.count
     }
 
     @ViewBuilder

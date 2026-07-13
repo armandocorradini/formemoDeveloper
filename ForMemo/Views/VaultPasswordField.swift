@@ -139,10 +139,3 @@ struct VaultPasswordField: View {
         entropy = evaluation.entropy
     }
 }
-
-#Preview {
-    @Previewable @State var password = "CorrectHorseBatteryStaple"
-
-    VaultPasswordField(password: $password)
-        .padding()
-}

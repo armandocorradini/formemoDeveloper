@@ -3611,6 +3611,62 @@
         }
       }
     },
+    "Authenticate with Face ID to continue." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentifizieren Sie sich mit Face ID, um fortzufahren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autentícate con Face ID para continuar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentifiez-vous avec Face ID pour continuer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autenticati con Face ID per continuare."
+          }
+        }
+      }
+    },
+    "Authenticate with your device passcode to continue." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentifizieren Sie sich mit dem Gerätecode, um fortzufahren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autentícate con el código de acceso de tu dispositivo para continuar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authentifiez-vous avec le code d’accès de votre appareil pour continuer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autenticati con il codice del dispositivo per continuare."
+          }
+        }
+      }
+    },
     "Auto Lock" : {
       "localizations" : {
         "de" : {
@@ -3663,6 +3719,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elimina automaticamente gli allegati"
+          }
+        }
+      }
+    },
+    "AutoFill" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatisch ausfüllen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorrelleno"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remplissage automatique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compilazione automatica"
           }
         }
       }
@@ -6309,6 +6393,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Controlla %@"
+          }
+        }
+      }
+    },
+    "Check AutoFill Status" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status des automatischen Ausfüllens prüfen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprobar el estado del autorrelleno"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifier l’état du remplissage automatique"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verifica stato della compilazione automatica"
           }
         }
       }
@@ -10520,35 +10632,6 @@
         }
       }
     },
-    "Edit Credential" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zugangsdaten bearbeiten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Editar credencial"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifier l’identifiant"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modifica credenziale"
-          }
-        }
-      }
-    },
     "Edit Ticket" : {
       "localizations" : {
         "de" : {
@@ -10857,6 +10940,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abilita le notifiche"
+          }
+        }
+      }
+    },
+    "Enabled" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiviert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abilitato"
           }
         }
       }
@@ -17683,6 +17794,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessuno"
+          }
+        }
+      }
+    },
+    "Not Enabled" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht aktiviert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No activado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non activé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non abilitato"
           }
         }
       }
@@ -27795,6 +27934,34 @@
         }
       }
     },
+    "To use AutoFill, enable ForMemo in Settings > Passwords > Password Options." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um das automatische Ausfüllen zu verwenden, aktivieren Sie ForMemo unter Einstellungen > Passwörter > Passwortoptionen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para usar el autorrelleno, activa ForMemo en Ajustes > Contraseñas > Opciones de contraseñas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour utiliser le remplissage automatique, activez ForMemo dans Réglages > Mots de passe > Options des mots de passe."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per utilizzare la compilazione automatica, abilita ForMemo in Impostazioni > Password > Opzioni password."
+          }
+        }
+      }
+    },
     "toast.exported %lld" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -28905,30 +29072,58 @@
         }
       }
     },
-    "Unlock to access your secure credentials." : {
+    "Unlock Vault" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entsperren Sie den Tresor, um auf Ihre sicheren Zugangsdaten zuzugreifen."
+            "value" : "Tresor entsperren"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desbloquea para acceder a tus credenciales seguras."
+            "value" : "Desbloquear bóveda"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Déverrouillez pour accéder à vos identifiants sécurisés."
+            "value" : "Déverrouiller le coffre-fort"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sblocca per accedere alle tue credenziali protette."
+            "value" : "Sblocca cassaforte"
+          }
+        }
+      }
+    },
+    "Unlock with Face ID" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit Face ID entsperren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desbloquear con Face ID"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déverrouiller avec Face ID"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sblocca con Face ID"
           }
         }
       }
@@ -29269,6 +29464,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cassaforte"
+          }
+        }
+      }
+    },
+    "Vault Locked" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tresor gesperrt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bóveda bloqueada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coffre-fort verrouillé"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cassaforte bloccata"
           }
         }
       }

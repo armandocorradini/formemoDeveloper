@@ -206,9 +206,3 @@ struct VaultDetailView: View {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        VaultDetailView(item: VaultItem(title: "Apple ID"))
-    }
-}

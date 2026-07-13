@@ -6,7 +6,11 @@ struct VaultEditView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-
+    @StateObject private var vaultLock = VaultLock.shared
+    
+    @State private var showingLockCover = false
+    @State private var hasLoaded = false
+    
     let item: VaultItem?
 
     @State private var title = ""
@@ -104,7 +108,16 @@ struct VaultEditView: View {
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            .onAppear(perform: load)
+
+            .onAppear {
+
+                if !hasLoaded {
+                    load()
+                    hasLoaded = true
+                }
+
+                showingLockCover = !vaultLock.isUnlocked
+            }
             .alert("Change Password?", isPresented: $showingPasswordChangeConfirmation) {
                 Button("Cancel", role: .cancel) {}
                 Button("Change", role: .destructive) {
@@ -112,6 +125,15 @@ struct VaultEditView: View {
                 }
             } message: {
                 Text("The current password will be replaced. Make sure you have updated it for the corresponding account.")
+            }
+            .fullScreenCover(isPresented: $showingLockCover) {
+
+                VaultLockCoverView()
+                    .interactiveDismissDisabled()
+            }
+
+            .onChange(of: vaultLock.isUnlocked) { _, unlocked in
+                showingLockCover = !unlocked
             }
         }
     }
@@ -180,12 +202,5 @@ struct VaultEditView: View {
         }
 
         dismiss()
-    }
-}
-
-#Preview {
-    NavigationStack {
-        VaultEditView()
-            .modelContainer(for: VaultItem.self, inMemory: true)
     }
 }

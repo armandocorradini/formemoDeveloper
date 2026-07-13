@@ -112,7 +112,12 @@ struct VaultView: View {
       
             .navigationBarTitleDisplayMode(.inline)
             .contentMargins(.bottom, 70, for: .scrollContent)
-            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
+            .modifier(
+                VaultSearchModifier(
+                    enabled: !filteredItems.isEmpty,
+                    searchText: $searchText
+                )
+            )
             .toolbar {
 
                 ToolbarItem(placement: .topBarLeading) {
@@ -165,7 +170,23 @@ struct VaultView: View {
     }
 }
 
-#Preview {
-    VaultView()
-        .modelContainer(for: VaultItem.self, inMemory: true)
+
+
+private struct VaultSearchModifier: ViewModifier {
+
+    let enabled: Bool
+    @Binding var searchText: String
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+
+        if enabled {
+            content.searchable(
+                text: $searchText,
+                placement: .navigationBarDrawer(displayMode: .always)
+            )
+        } else {
+            content
+        }
+    }
 }

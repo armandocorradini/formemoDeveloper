@@ -16,6 +16,8 @@ enum VaultCrypto {
     private static let account = "masterKey"
     private static let versionAccount = "masterKey.version"
     private static let keyVersion = 1
+    // This group is intentionally shared only with the Credential Provider extension.
+    private static let keychainAccessGroup = "7L454SWB7H.com.formemo.vault.shared"
     private static var cachedKey: SymmetricKey?
 
     static func encrypt(_ string: String) throws -> Data {
@@ -38,6 +40,12 @@ enum VaultCrypto {
         return string
     }
 
+    /// Ensures an existing app-only master key is copied to the group used by
+    /// the Credential Provider extension before AutoFill identities are shown.
+    static func prepareForAutoFill() throws {
+        _ = try loadOrCreateKey()
+    }
+
     private static func loadOrCreateKey() throws -> SymmetricKey {
         if let cachedKey {
             return cachedKey
@@ -50,6 +58,16 @@ enum VaultCrypto {
             return existing
         }
 
+        // Existing installations stored the key in the app-only access group. Copy it
+        // once so AutoFill can decrypt the already-encrypted VaultItem passwords.
+        if let legacyKey = try loadLegacyKey() {
+            let raw = legacyKey.withUnsafeBytes { Data($0) }
+            try saveKey(raw)
+            try saveKeyVersion(keyVersion)
+            cachedKey = legacyKey
+            return legacyKey
+        }
+
         let key = SymmetricKey(size: .bits256)
         let raw = key.withUnsafeBytes { Data($0) }
         try saveKey(raw)
@@ -59,6 +77,29 @@ enum VaultCrypto {
     }
 
     private static func loadKey() throws -> SymmetricKey? {
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true
+        ]
+        query[kSecAttrAccessGroup as String] = keychainAccessGroup
+
+        var result: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+
+        switch status {
+        case errSecSuccess:
+            guard let data = result as? Data else { return nil }
+            return SymmetricKey(data: data)
+        case errSecItemNotFound:
+            return nil
+        default:
+            throw VaultCryptoError.keychainError(status)
+        }
+    }
+
+    private static func loadLegacyKey() throws -> SymmetricKey? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -68,7 +109,6 @@ enum VaultCrypto {
 
         var result: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-
         switch status {
         case errSecSuccess:
             guard let data = result as? Data else { return nil }
@@ -87,6 +127,7 @@ enum VaultCrypto {
             kSecAttrAccount as String: account,
             kSecValueData as String: data
         ]
+        query[kSecAttrAccessGroup as String] = keychainAccessGroup
 
         if requireBiometrics {
             guard let access = SecAccessControlCreateWithFlags(
@@ -105,11 +146,13 @@ enum VaultCrypto {
         let status = SecItemAdd(query as CFDictionary, nil)
 
         if status == errSecDuplicateItem {
-            let search: [String: Any] = [
+            var search: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: service,
                 kSecAttrAccount as String: account
             ]
+
+            search[kSecAttrAccessGroup as String] = keychainAccessGroup
 
             var update: [String: Any] = [
                 kSecValueData as String: data
@@ -146,7 +189,7 @@ enum VaultCrypto {
     private static func saveKeyVersion(_ version: Int) throws {
         let data = Data(String(version).utf8)
 
-        let query: [String: Any] = [
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: versionAccount,
@@ -154,14 +197,17 @@ enum VaultCrypto {
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
 
+        query[kSecAttrAccessGroup as String] = keychainAccessGroup
+
         let status = SecItemAdd(query as CFDictionary, nil)
 
         if status == errSecDuplicateItem {
-            let search: [String: Any] = [
+            var search: [String: Any] = [
                 kSecClass as String: kSecClassGenericPassword,
                 kSecAttrService as String: service,
                 kSecAttrAccount as String: versionAccount
             ]
+            search[kSecAttrAccessGroup as String] = keychainAccessGroup
 
             let update: [String: Any] = [
                 kSecValueData as String: data
@@ -177,12 +223,13 @@ enum VaultCrypto {
     }
 
     private static func currentKeyVersion() -> Int? {
-        let query: [String: Any] = [
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: versionAccount,
             kSecReturnData as String: true
         ]
+        query[kSecAttrAccessGroup as String] = keychainAccessGroup
 
         var result: CFTypeRef?
         guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,

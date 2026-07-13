@@ -110,9 +110,6 @@ struct TravelKitListView: View {
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 
-                                Text(localizedTripText(category.name))
-                                    .font(.headline)
-
                                 let totalItems = category.sections.reduce(0) { $0 + $1.items.count }
 
                                 let checkedItems = category.sections.reduce(0) {
@@ -122,6 +119,11 @@ struct TravelKitListView: View {
                                 }
 
                                 let remainingItems = max(totalItems - checkedItems, 0)
+                                let isComplete = totalItems > 0 && remainingItems == 0
+
+                                Text(localizedTripText(category.name))
+                                    .font(.headline)
+                                    .foregroundStyle(isComplete ? .green : .primary)
 
                                 Text(
                                     "\(totalItems) \(String(localized: "items")) • \(remainingItems) \(String(localized: "remaining"))"
@@ -892,6 +894,7 @@ struct TripChecklistView: View {
                     let totalItems = section.items.count
                     let checkedItems = section.items.filter(\.isChecked).count
                     let remainingItems = max(totalItems - checkedItems, 0)
+                    let isComplete = totalItems > 0 && remainingItems == 0
 
                     HStack(spacing: 12) {
 
@@ -951,7 +954,7 @@ struct TripChecklistView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(localizedTripText(section.title))
                                         .font(.system(size: 18, weight: .semibold))
-                                        .foregroundColor(.primary)
+                                        .foregroundStyle(isComplete ? .green : .primary)
                                         .textCase(nil)
                                     if totalItems > 0 {
                                         Text("\(remainingItems) \(String(localized: "remaining"))")
@@ -1793,8 +1796,4 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Cancel")
     _ = String(localized: "Collapse All Sections")
     _ = String(localized: "Expand All Sections")
-}
-
-#Preview {
-    TravelKitListView()
 }

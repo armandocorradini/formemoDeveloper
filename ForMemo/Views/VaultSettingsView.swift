@@ -1,8 +1,10 @@
+@preconcurrency import AuthenticationServices
 import SwiftUI
 
 struct VaultSettingsView: View {
 
     @Environment(AppSettings.self) private var settings
+    @State private var autoFillEnabled: Bool?
 
     var body: some View {
         @Bindable var settings = settings
@@ -26,16 +28,50 @@ struct VaultSettingsView: View {
                     }
                 }
 
-//                Section(String(localized: "Privacy")) {
-////                    Toggle(String(localized: "Require Face ID"), isOn: $settings.vaultRequireFaceID)
-////                    Toggle(String(localized: "Hide passwords automatically"), isOn: $settings.vaultAutoHidePasswords)
-//                }
+                Section("AutoFill") {
+                    HStack {
+                        Label("AutoFill", systemImage: "key.fill")
+                        Spacer()
+                        if let autoFillEnabled {
+                            Label(
+                                autoFillEnabled ? "Enabled" : "Not Enabled",
+                                systemImage: autoFillEnabled ? "checkmark.circle.fill" : "exclamationmark.circle"
+                            )
+                            .foregroundStyle(autoFillEnabled ? .green : .secondary)
+                            .font(.subheadline)
+                        } else {
+                            ProgressView()
+                        }
+                    }
+
+                    Button("Check AutoFill Status") {
+                        refreshAutoFillStatus()
+                    }
+
+                    if autoFillEnabled != true {
+                        Text("To use AutoFill, enable ForMemo in Settings > Passwords > Password Options.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
             }
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .navigationTitle(String(localized: "Vault"))
             .navigationBarTitleDisplayMode(.inline)
         }
+        .onAppear {
+            refreshAutoFillStatus()
+        }
+    }
+
+    private func refreshAutoFillStatus() {
+        ASCredentialIdentityStore.shared.getState { state in
+            let enabled = state.isEnabled
+            Task { @MainActor in
+                autoFillEnabled = enabled
+            }
+        }
     }
 }
-
