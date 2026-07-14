@@ -842,6 +842,7 @@ Attivazione: \(triggerInfo)
                     checkNotificationStatus()
                     cleanupRecentlyDeleted()
                     syncLocationPermission()
+                    syncVaultWithAutoFill()
                 }
             }
             .onReceive(
@@ -1008,6 +1009,17 @@ Attivazione: \(triggerInfo)
             }
         }
     }
+    
+    private func syncVaultWithAutoFill() {
+        ASCredentialIdentityStore.shared.getState { state in
+            Task { @MainActor in
+                if state.isEnabled {
+                    settings.showVault = true
+                }
+            }
+        }
+    }
+    
 }
 
 // MARK: - App Theme

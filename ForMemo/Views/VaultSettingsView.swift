@@ -49,7 +49,7 @@ struct VaultSettingsView: View {
                     }
 
                     if autoFillEnabled != true {
-                        Text("To use AutoFill, enable ForMemo in Settings > Passwords > Password Options.")
+                        Text("To use AutoFill, go to Settings > General > AutoFill & Passwords, then turn on ForMemo.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }

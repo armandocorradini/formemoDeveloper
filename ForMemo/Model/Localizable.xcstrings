@@ -27962,7 +27962,7 @@
         }
       }
     },
-    "To hide the Vault, first disable ForMemo AutoFill in Settings > Passwords > Password Options > AutoFill Passwords. Then return here and turn off Vault." : {
+    "To hide the Vault, first go to Settings > General > AutoFill & Passwords and turn off AutoFill Passwords and Passkeys. Then return here and turn off Vault." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -27985,7 +27985,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Per nascondere la Cassaforte vai prima in Impostazioni > Generali > Inserimento automatico e password e disattiva Inserimento automatico di password e passkey. Poi torna qui e disattiva Cassaforte."
+            "value" : "Per nascondere la Cassaforte, vai prima in Impostazioni > Generali > Inserimento automatico e password e disattiva Inserimento automatico di password e passkey. Poi torna qui e disattiva Cassaforte."
           }
         }
       }
@@ -28018,30 +28018,30 @@
         }
       }
     },
-    "To use AutoFill, enable ForMemo in Settings > Passwords > Password Options." : {
+    "To use AutoFill, go to Settings > General > AutoFill & Passwords, then turn on ForMemo." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Um das automatische Ausfüllen zu verwenden, aktivieren Sie ForMemo unter Einstellungen > Passwörter > Passwortoptionen."
+            "value" : "Um „Automatisch ausfüllen“ zu verwenden, gehe zu Einstellungen > Allgemein > Automatisch ausfüllen & Passwörter und aktiviere anschließend ForMemo."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para usar el autorrelleno, activa ForMemo en Ajustes > Contraseñas > Opciones de contraseñas."
+            "value" : "Para usar Autorrelleno, ve a Ajustes > General > Autorrelleno y contraseñas y, a continuación, activa ForMemo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pour utiliser le remplissage automatique, activez ForMemo dans Réglages > Mots de passe > Options des mots de passe."
+            "value" : "Pour utiliser le remplissage automatique, accédez à Réglages > Général > Remplissage automatique et mots de passe, puis activez ForMemo."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Per utilizzare la compilazione automatica, abilita ForMemo in Impostazioni > Password > Opzioni password."
+            "value" : "Per usare Inserimento automatico, vai in Impostazioni > Generali > Inserimento automatico e password, quindi attiva ForMemo."
           }
         }
       }
