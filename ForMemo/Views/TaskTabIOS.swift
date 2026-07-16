@@ -134,6 +134,18 @@ struct TaskTabView: View {
     }
     
     // MARK: - iPhone
+
+    private var visibleTabs: [AppTab] {
+        settings.orderedTabs.filter { $0.isVisible(using: settings) }
+    }
+
+    private var primaryTabs: [AppTab] {
+        Array(visibleTabs.prefix(4))
+    }
+
+    private var moreTabs: [AppTab] {
+        Array(visibleTabs.dropFirst(4))
+    }
     
     private var iPhoneLayout: some View {
         
@@ -143,30 +155,9 @@ struct TaskTabView: View {
         .safeAreaInset(edge: .bottom) {
             
             HStack(spacing: 10) {
-                
-                tabItem(
-                    "house",
-                    "Dashboard",
-                    10
-                )
-
-                tabItem(
-                    "checklist",
-                    String(localized: "list_tab"),
-                    1
-                )
-
-                tabItem(
-                    "calendar",
-                    String(localized: "calendar_tab"),
-                    3
-                )
-
-                tabItem(
-                    "wallet.bifold",
-                    String(localized: "wallet_tab"),
-                    6
-                )
+                ForEach(primaryTabs) { tab in
+                    tabItem(tab.icon, tab.title(using: settings), tab.rawValue)
+                }
                 
                 Button {
                     showMorePopover.toggle()
@@ -180,210 +171,22 @@ struct TaskTabView: View {
                         Capsule()
                             .fill(Color.accentColor)
                             .frame(width: 16, height: 3)
-                            .opacity([0,2,4,5,7,8,9].contains(selectedTab) ? 1 : 0)
+                            .opacity(moreTabs.contains { $0.rawValue == selectedTab } ? 1 : 0)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 49)
                     .contentShape(Rectangle())
                     .foregroundStyle(
-                        [0,2,4,5,7,8,9].contains(selectedTab)
+                        moreTabs.contains { $0.rawValue == selectedTab }
                         ? Color.accentColor
                         : Color.primary
                     )
                 }
                 .popover(isPresented: $showMorePopover, attachmentAnchor: .point(.top), arrowEdge: .bottom) {
                     VStack(alignment: .leading, spacing: 10) {
-                        Button {
-                            selectedTab = 0
-                            showMorePopover = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "info")
-                                        .frame(width: 22)
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                        .frame(width: 16, height: 3)
-                                        .opacity(selectedTab == 0 ? 1 : 0)
-                                }
-                                Text(String(localized: "Start_tab"))
-                            }
-                            .foregroundStyle(selectedTab == 0 ? Color.accentColor : Color.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
+                        ForEach(moreTabs) { tab in
+                            moreTabItem(tab)
                         }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        
-                        if settings.showVault {
-                            Button {
-                                selectedTab = 11
-                                showMorePopover = false
-                            } label: {
-                                HStack(spacing: 10) {
-                                    VStack(spacing: 4) {
-                                        Image(systemName: "key.shield")
-                                            .frame(width: 22)
-                                        Capsule()
-                                            .fill(Color.accentColor)
-                                            .frame(width: 16, height: 3)
-                                            .opacity(selectedTab == 9 ? 1 : 0)
-                                    }
-                                    Text("Vault")
-                                }
-                                .foregroundStyle(selectedTab == 11 ? Color.accentColor : Color.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        
-                        
-                        
-                        Button {
-                            selectedTab = 7
-                            showMorePopover = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "suitcase.rolling")
-                                        .frame(width: 22)
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                        .frame(width: 16, height: 3)
-                                        .opacity(selectedTab == 7 ? 1 : 0)
-                                }
-                                Text("Trips")
-                            }
-                            .foregroundStyle(selectedTab == 7 ? Color.accentColor : Color.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        Button {
-                            selectedTab = 8
-                            showMorePopover = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "doc.text")
-                                        .frame(width: 22)
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                        .frame(width: 16, height: 3)
-                                        .opacity(selectedTab == 8 ? 1 : 0)
-                                }
-                                Text(String(localized: "Documents"))
-                            }
-                            .foregroundStyle(selectedTab == 8 ? Color.accentColor : Color.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        // Today button inserted here
-                        Button {
-                            selectedTab = 4
-                            showMorePopover = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "calendar.day.timeline.right")
-                                        .frame(width: 22)
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                        .frame(width: 16, height: 3)
-                                        .opacity(selectedTab == 4 ? 1 : 0)
-                                }
-                                Text(
-                                    settings.taskWeekDays == 1
-                                    ? String(localized: "today_tab")
-                                    : String(localized: "\(settings.taskWeekDays) days_tab")
-                                )
-                            }
-                            .foregroundStyle(selectedTab == 4 ? Color.accentColor : Color.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        if settings.showWeatherForecast {
-                            Button {
-                                selectedTab = 9
-                                showMorePopover = false
-                            } label: {
-                                HStack(spacing: 10) {
-                                    VStack(spacing: 4) {
-                                        Image(systemName: "cloud.sun")
-                                            .frame(width: 22)
-                                        Capsule()
-                                            .fill(Color.accentColor)
-                                            .frame(width: 16, height: 3)
-                                            .opacity(selectedTab == 9 ? 1 : 0)
-                                    }
-                                    Text("Forecast")
-                                }
-                                .foregroundStyle(selectedTab == 9 ? Color.accentColor : Color.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        
-
-
-                        Button {
-                            selectedTab = 5
-                            showMorePopover = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "map")
-                                        .frame(width: 22)
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                        .frame(width: 16, height: 3)
-                                        .opacity(selectedTab == 5 ? 1 : 0)
-                                }
-                                Text(String(localized: "map_tab"))
-                            }
-                            .foregroundStyle(selectedTab == 5 ? Color.accentColor : Color.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        Divider()
-
-                        Button {
-                            selectedTab = 2
-                            showMorePopover = false
-                        } label: {
-                            HStack(spacing: 10) {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "gear")
-                                        .frame(width: 22)
-                                    Capsule()
-                                        .fill(Color.accentColor)
-                                        .frame(width: 16, height: 3)
-                                        .opacity(selectedTab == 2 ? 1 : 0)
-                                }
-                                Text(String(localized: "settings_tab"))
-                            }
-                            .foregroundStyle(selectedTab == 2 ? Color.accentColor : Color.primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.vertical, 13)
                     .padding(.trailing, 36)
@@ -498,32 +301,9 @@ struct TaskTabView: View {
         NavigationSplitView {
             
             List {
-                sidebarRow("Dashboard", "house", 10)
-                sidebarRow(String(localized: "list_tab"), "checklist", 1)
-                
-                sidebarRow(
-                    settings.taskWeekDays == 1
-                    ? String(localized: "today_tab")
-                    : String(localized: "days_tab \(settings.taskWeekDays)"),
-                    "calendar.day.timeline.right",
-                    4
-                )
-                
-                sidebarRow(String(localized: "calendar_tab"), "calendar", 3)
-                sidebarRow(String(localized: "map_tab"), "map", 5)
-                sidebarRow(String(localized: "Start_tab"), "house", 0)
-
-                sidebarRow(String(localized: "wallet_tab"), "wallet.bifold", 6)
-                if settings.showVault {
-                    sidebarRow(String(localized: "Vault"), "key.shield", 11)
+                ForEach(visibleTabs) { tab in
+                    sidebarRow(tab.title(using: settings), tab.icon, tab.rawValue)
                 }
-                sidebarRow(String(localized: "Trips"), "suitcase.rolling", 7)
-                sidebarRow(String(localized: "Documents"), "doc.text", 8)
-                if settings.showWeatherForecast {
-                    sidebarRow(String(localized: "Forecast"), "cloud.sun", 9)
-                }
-
-                sidebarRow(String(localized: "settings_tab"), "gear", 2)
             }
             .listStyle(.sidebar)
             .navigationTitle("Tasks")
@@ -555,6 +335,31 @@ struct TaskTabView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
+    }
+
+    private func moreTabItem(_ tab: AppTab) -> some View {
+        Button {
+            selectedTab = tab.rawValue
+            showMorePopover = false
+        } label: {
+            HStack(spacing: 10) {
+                VStack(spacing: 4) {
+                    Image(systemName: tab.icon)
+                        .frame(width: 22)
+                    Capsule()
+                        .fill(Color.accentColor)
+                        .frame(width: 16, height: 3)
+                        .opacity(selectedTab == tab.rawValue ? 1 : 0)
+                }
+
+                Text(tab.title(using: settings))
+            }
+            .foregroundStyle(selectedTab == tab.rawValue ? Color.accentColor : Color.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     private func tabItem(

@@ -345,6 +345,24 @@ struct SettingsView: View {
                                     .frame(width: iconWidth)
                             }
                         }
+
+                        NavigationLink {
+                            TabBarCustomizationView()
+                        } label: {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Customize Tab Bar")
+
+                                    Text("Choose the order of all sections")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "rectangle.3.group")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
                         
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))

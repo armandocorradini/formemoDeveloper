@@ -73,6 +73,9 @@ final class AppSettings {
         startupTab = defaults.object(forKey: "startupTab") as? Int ?? 1
         notificationLeadTimeDays = defaults.object(forKey: "notificationLeadTimeDays") as? Int ?? 1
         showWeatherForecast = defaults.object(forKey: "showWeatherForecast") as? Bool ?? true
+        tabOrder = Self.normalizedTabOrder(
+            defaults.array(forKey: "tabOrder") as? [Int] ?? AppTab.defaultOrder.map(\.rawValue)
+        )
         
         showVault = defaults.object(forKey: "showVault") as? Bool ?? true
         
@@ -477,6 +480,23 @@ final class AppSettings {
             UserDefaults.standard.set(vaultAutoHidePasswords, forKey: "vaultAutoHidePasswords")
         }
     }
+
+    var tabOrder: [Int] {
+        didSet {
+            UserDefaults.standard.set(tabOrder, forKey: "tabOrder")
+        }
+    }
+
+    var orderedTabs: [AppTab] {
+        Self.normalizedTabOrder(tabOrder).compactMap(AppTab.init(rawValue:))
+    }
+
+    private static func normalizedTabOrder(_ order: [Int]) -> [Int] {
+        let knownTabs = Set(AppTab.allCases.map(\.rawValue))
+        let validOrder = order.filter(knownTabs.contains)
+        let missingTabs = AppTab.defaultOrder.map(\.rawValue).filter { !validOrder.contains($0) }
+        return validOrder + missingTabs
+    }
     
     
     private init() {
@@ -522,6 +542,7 @@ final class AppSettings {
         vaultClipboardClearInterval = 90
 //        vaultRequireFaceID = true
         vaultAutoHidePasswords = true
+        tabOrder = AppTab.defaultOrder.map(\.rawValue)
 
         loadFromUserDefaults(.standard)
         

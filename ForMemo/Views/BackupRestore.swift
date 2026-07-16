@@ -1049,10 +1049,8 @@ private enum BackupManager {
         let vaultPackage: VaultBackupPackage?
 
         if hasVaultCredentials {
-            let vaultKey = try VaultCrypto.exportVaultKey()
-            vaultPackage = try VaultBackupCrypto.makePackage(
-                vaultKey: vaultKey,
-                password: vaultBackupPassword
+            vaultPackage = try VaultCrypto.exportVaultKey(
+                protecting: vaultBackupPassword
             )
         } else {
             vaultPackage = nil
@@ -1395,12 +1393,10 @@ private enum BackupManager {
                 throw NSError(domain: "BackupManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Vault restore requested, but no Vault backup package was found in the archive."])
             }
 
-            let rawKeyData = try VaultBackupCrypto.unwrapKey(
-                from: vaultBackupPackage,
-                password: backupPassword
+            try VaultCrypto.importVaultKey(
+                vaultBackupPackage,
+                protecting: backupPassword
             )
-
-            try VaultCrypto.importVaultKey(rawKeyData)
 
             // Restore Vault items from archive.vaultItems
             for dto in archive.vaultItems {

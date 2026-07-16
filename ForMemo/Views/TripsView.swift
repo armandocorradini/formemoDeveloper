@@ -1737,7 +1737,7 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Sunscreen")
     _ = String(localized: "Deodorant")
     _ = String(localized: "Hairbrush")
-    _ = String(localized: "Neck Pillow")
+//    _ = String(localized: "Neck Pillow")
     _ = String(localized: "Snacks")
     _ = String(localized: "Car Documents")
     _ = String(localized: "Phone Holder")
@@ -1796,4 +1796,5 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Cancel")
     _ = String(localized: "Collapse All Sections")
     _ = String(localized: "Expand All Sections")
+    _ = String(localized: "Towel")
 }

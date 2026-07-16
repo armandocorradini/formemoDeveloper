@@ -198,6 +198,49 @@ struct AppQuickGuideView: View {
             tint: .blue
 
         ),
+        
+            .init(
+                title: String(localized: "Vault & Secure Credentials"),
+                description: String(localized: "Store and organize personal credentials such as usernames, websites, passwords, and notes. Generate strong passwords, mark favorites, and protect access using your device authentication."),
+                icon: "lock.shield",
+                tint: .indigo
+            ),
+
+            .init(
+                title: String(localized: "AutoFill Passwords"),
+                description: String(localized: "Enable ForMemo in iOS Settings > General > AutoFill & Passwords to use saved credentials in supported apps and websites. Copied passwords can be cleared automatically from the clipboard."),
+                icon: "key.fill",
+                tint: .blue
+            ),
+
+            .init(
+                title: String(localized: "Overview"),
+                description: String(localized: "See an at-a-glance summary of your tasks, documents, Wallet items, trip lists, and Vault data to quickly understand what needs your attention."),
+                icon: "rectangle.3.group",
+                tint: .teal
+            ),
+
+            .init(
+                title: String(localized: "Make ForMemo Yours"),
+                description: String(localized: "Reorder the tabs in the navigation bar and personalize task rows by choosing their style, corners, borders, material, and height."),
+                icon: "slider.horizontal.3",
+                tint: .purple
+            ),
+
+            .init(
+                title: String(localized: "Document Storage Location"),
+                description: String(localized: "For each document, record where the original is physically stored, such as a drawer, cabinet, folder, or safe."),
+                icon: "cabinet",
+                tint: .brown
+            ),
+
+            .init(
+                title: String(localized: "Snooze Overdue Tasks"),
+                description: String(localized: "Manually snooze notifications for overdue tasks without changing the original task deadline."),
+                icon: "clock.arrow.circlepath",
+                tint: .orange
+            ),
+        
             .init(
                 title: String(localized:"Customize your task list"),
                 description: String(localized:"""
@@ -225,17 +268,16 @@ struct AppQuickGuideView: View {
             ),
 
         .init(
+            title: String(localized:"Backup & Restore"),
+            description: String(localized:"Create complete backups including tasks, reminders, attachments, cards, tickets, trip lists, documents, Vault items, and app settings. Vault data in a backup requires a password for restoration. Restore everything or only selected sections on the same or another device."),
+            icon: "externaldrive.badge.timemachine",
+            tint: .indigo
+        ),
+        .init(
             title: String(localized:"Settings Backup"),
             description: String(localized:"Your appearance preferences, navigation settings, weather options, badge settings and other supported preferences can be included in backups and restored independently from your data."),
             icon: "gearshape.2",
             tint: .gray
-        ),
-
-        .init(
-            title: String(localized:"Backup & Restore"),
-            description: String(localized:"Create complete backups including tasks, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets, trip lists, documents and app settings. Restore everything or only selected sections on the same or another device."),
-            icon: "externaldrive.badge.timemachine",
-            tint: .indigo
         )
     ]
     

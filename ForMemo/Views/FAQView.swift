@@ -332,6 +332,38 @@ struct FAQView: View {
                 answer: String(localized:"Yes. Trip Lists, sections, items and templates are synchronized with iCloud if enabled and included in manual backups.")
             )
         ]),
+        // MARK: - VAULT & AUTOFILL
+        FAQSection(title: String(localized: "Vault & AutoFill"), items: [
+            FAQItem(
+                question: String(localized: "What is the Vault?"),
+                answer: String(localized: "The Vault lets you securely organize personal credentials such as usernames, email addresses, websites, passwords, and notes. You can mark credentials as favorites, generate strong passwords, and keep track of password updates or expiry dates.")
+            ),
+            FAQItem(
+                question: String(localized: "How is Vault content protected?"),
+                answer: String(localized: "Sensitive Vault information is encrypted. Access to the Vault and password visibility may require Face ID, Touch ID, or your device passcode. ForMemo does not receive or store biometric data.")
+            ),
+            FAQItem(
+                question: String(localized: "How do I use AutoFill?"),
+                answer: String(localized: "Enable ForMemo in iOS Settings > General > AutoFill & Passwords. Once enabled, ForMemo can suggest saved credentials in supported apps and websites.")
+            ),
+            FAQItem(
+                question: String(localized: "What happens when I copy a password?"),
+                answer: String(localized: "ForMemo can automatically clear copied passwords from the clipboard after the interval selected in Vault settings. You can change this interval or disable automatic clearing at any time.")
+            ),
+            FAQItem(
+                question: String(localized: "Are Vault credentials included in backups?"),
+                answer: String(localized: "Yes. When a backup includes Vault data, you create a password that is required to restore the Vault on a device. Keep this password safe: it cannot be recovered by ForMemo.")
+            ),
+            FAQItem(
+                question: String(localized: "Can I restore only Vault data from a backup?"),
+                answer: String(localized: "Yes. During restore, you can select the Vault independently from other data categories, such as tasks, cards, documents, trip lists, and settings.")
+            ),
+            FAQItem(
+                question: String(localized: "Can I recover a forgotten Vault backup password?"),
+                answer: String(localized: "No. For security reasons, ForMemo cannot recover or reset the password used to restore Vault data from a backup.")
+            )
+        ]),
+
         // MARK: - DATA
         FAQSection(title: String(localized: "Data & Recovery"), items: [
             FAQItem(

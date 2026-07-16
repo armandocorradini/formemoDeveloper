@@ -80,7 +80,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Face ID se utiliza para desbloquear de forma segura tu Bóveda y proteger tus credenciales guardadas."
+            "value" : "Esta aplicación accede a tu calendario para importar eventos como tareas."
           }
         },
         "fr" : {

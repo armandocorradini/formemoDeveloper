@@ -241,15 +241,29 @@ enum VaultCrypto {
 
         return version
     }
-    static func exportVaultKey() throws -> Data {
+    /// Exports the master key only as a password-protected backup package.
+    /// The raw key never leaves this type.
+    static func exportVaultKey(protecting backupPassword: String) throws -> VaultBackupPackage {
         guard let key = try loadKey() else {
             throw VaultCryptoError.keyNotFound
         }
 
-        return key.withUnsafeBytes { Data($0) }
+        let rawKey = key.withUnsafeBytes { Data($0) }
+        return try VaultBackupCrypto.makePackage(
+            vaultKey: rawKey,
+            password: backupPassword
+        )
     }
 
-    static func importVaultKey(_ data: Data) throws {
+    /// Restores the master key from an authenticated password-protected package.
+    static func importVaultKey(
+        _ package: VaultBackupPackage,
+        protecting backupPassword: String
+    ) throws {
+        let data = try VaultBackupCrypto.unwrapKey(
+            from: package,
+            password: backupPassword
+        )
         guard data.count == 32 else {
             throw VaultCryptoError.invalidData
         }
