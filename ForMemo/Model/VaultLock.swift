@@ -84,6 +84,40 @@ scheduleAutoLock()
 #endif
     }
 
+    func authenticate(
+        reason: String
+    ) async throws {
+
+    #if targetEnvironment(simulator)
+
+        return
+
+    #else
+
+        let context = LAContext()
+        context.touchIDAuthenticationAllowableReuseDuration = 0
+
+        var error: NSError?
+
+        guard context.canEvaluatePolicy(
+            .deviceOwnerAuthentication,
+            error: &error
+        ) else {
+            throw VaultLockError.authenticationUnavailable
+        }
+
+        let success = try await context.evaluatePolicy(
+            .deviceOwnerAuthentication,
+            localizedReason: reason
+        )
+
+        guard success else {
+            throw VaultLockError.authenticationFailed
+        }
+
+    #endif
+    }
+    
     func authenticateIfRequired(
         for item: VaultItem,
         reason: String = String(localized: "Show Password")

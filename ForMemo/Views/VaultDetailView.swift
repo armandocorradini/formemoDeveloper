@@ -4,7 +4,8 @@ import SwiftData
 struct VaultDetailView: View {
 
     @Environment(\.modelContext) private var modelContext
-
+    @State private var showCopiedToast = false
+    
     let item: VaultItem
 
     @State private var showingPassword = false
@@ -52,6 +53,7 @@ struct VaultDetailView: View {
                         LabeledContent("Username", value: item.username)
                         Button {
                             SecureClipboard.copy(item.username)
+                            showCopied()
                         } label: {
                             Image(systemName: "doc.on.doc")
                         }
@@ -65,6 +67,7 @@ struct VaultDetailView: View {
                         LabeledContent("Email", value: item.email)
                         Button {
                             SecureClipboard.copy(item.email)
+                            showCopied()
                         } label: {
                             Image(systemName: "doc.on.doc")
                         }
@@ -91,6 +94,7 @@ struct VaultDetailView: View {
                     if showingPassword {
                         Button {
                             SecureClipboard.copy(decryptedPassword)
+                            showCopied()
                         } label: {
                             Label("Copy Password", systemImage: "doc.on.doc")
                         }
@@ -130,7 +134,20 @@ struct VaultDetailView: View {
             }
             .listRowBackground(Color(.systemBackground).opacity(0.3))
             }
-            
+            .overlay(alignment: .top) {
+                if showCopiedToast {
+                    Label("Copied", systemImage: "checkmark.circle.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 10)
+                        .background(.ultraThinMaterial)
+                        .background(Color.black.opacity(0.75))
+                        .clipShape(Capsule())
+                        .padding(.bottom, 30)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .onDisappear {
@@ -164,16 +181,6 @@ struct VaultDetailView: View {
             showingError = true
             return
         }
-        do {
-            
-            try await VaultLock.shared.authenticateIfRequired(
-                for: item,
-                reason: String(localized: "Show Password")
-            )
-      
-        } catch {
-            return
-        }
 
         do {
            
@@ -205,4 +212,22 @@ struct VaultDetailView: View {
             showingError = true
         }
     }
+    
+    private func showCopied() {
+        withAnimation(.easeInOut(duration: 0.2)) {
+            showCopiedToast = true
+        }
+
+        Task {
+            try? await Task.sleep(for: .seconds(1.2))
+
+            await MainActor.run {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    showCopiedToast = false
+                }
+            }
+        }
+    }
+    
+    
 }

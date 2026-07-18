@@ -13,7 +13,8 @@ struct VaultView: View {
 
     @State private var searchText = ""
     @State private var showingAddItem = false
-    @State private var selectedItem: VaultItem?
+    @State private var selectedDetailItem: VaultItem?
+    @State private var selectedEditItem: VaultItem?
 
     private var filteredItems: [VaultItem] {
         guard !searchText.isEmpty else {
@@ -37,11 +38,25 @@ struct VaultView: View {
             AppGlassBackground()
 
             List(filteredItems) { item in
-                NavigationLink {
-                    VaultDetailView(item: item)
+                Button {
+                    Task {
+                        do {
+                            try await VaultLock.shared.authenticate(
+                                reason: String(localized: "View Credential")
+                            )
+
+                            await MainActor.run {
+                                selectedDetailItem = item
+                            }
+
+                        } catch {
+                            return
+                        }
+                    }
                 } label: {
                     VaultRow(item: item)
                 }
+                .buttonStyle(.plain)
                 .listRowBackground(
                     Color(.systemBackground).opacity(0.3)
                 )
@@ -50,7 +65,20 @@ struct VaultView: View {
                 )
                 .swipeActions(edge: .leading, allowsFullSwipe: false) {
                     Button {
-                        selectedItem = item
+                        Task {
+                            do {
+                                try await VaultLock.shared.authenticate(
+                                    reason: String(localized: "Edit Credential")
+                                )
+
+                                await MainActor.run {
+                                    selectedEditItem = item
+                                }
+
+                            } catch {
+                                return
+                            }
+                        }
                     } label: {
                         Label(String(localized: "Edit"), systemImage: "pencil")
                     }
@@ -81,7 +109,20 @@ struct VaultView: View {
                 }
                 .contextMenu {
                     Button {
-                        selectedItem = item
+                        Task {
+                            do {
+                                try await VaultLock.shared.authenticate(
+                                    reason: String(localized: "Edit Credential")
+                                )
+
+                                await MainActor.run {
+                                    selectedEditItem = item
+                                }
+
+                            } catch {
+                                return
+                            }
+                        }
                     } label: {
                         Label("Edit", systemImage: "pencil")
                     }
@@ -147,12 +188,15 @@ struct VaultView: View {
                     }
                 }
             }
+            .navigationDestination(item: $selectedDetailItem) { item in
+                VaultDetailView(item: item)
+            }
             .sheet(isPresented: $showingAddItem) {
                 NavigationStack {
                     VaultEditView()
                 }
             }
-            .sheet(item: $selectedItem) { item in
+            .sheet(item: $selectedEditItem) { item in
                 NavigationStack {
                     VaultEditView(item: item)
                 }
