@@ -22,6 +22,14 @@ struct VaultEditView: View {
     @State private var website = ""
     @State private var notes = ""
     @State private var password = ""
+    @State private var pin = ""
+    @State private var customerNumber = ""
+    @State private var recoveryCode = ""
+    @State private var securityQuestion = ""
+    @State private var securityAnswer = ""
+    @State private var otpSecret = ""
+    @State private var passwordExpiresAt = Date()
+    @State private var hasPasswordExpiration = false
     @State private var requireBiometricEveryTime =
         VaultLock.hasBiometricAuthentication
     @State private var originalPassword = ""
@@ -75,6 +83,30 @@ struct VaultEditView: View {
                         authenticateBeforeEditing: true,
                         authenticateBeforeGenerating: true
                     )
+
+                    SecureField("PIN", text: $pin)
+                        .keyboardType(.numberPad)
+                    TextField("Customer Number", text: $customerNumber)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+
+                Section("Recovery & Security") {
+                    SecureField("Recovery Code", text: $recoveryCode)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    TextField("Security Question", text: $securityQuestion)
+                    SecureField("Security Answer", text: $securityAnswer)
+                    SecureField("OTP Secret", text: $otpSecret)
+                        .textInputAutocapitalization(.characters)
+                        .autocorrectionDisabled()
+                }
+
+                Section("Password Expiration") {
+                    Toggle("Set Password Expiration", isOn: $hasPasswordExpiration)
+                    if hasPasswordExpiration {
+                        DatePicker("Expires", selection: $passwordExpiresAt, displayedComponents: .date)
+                    }
                 }
 
                 Section("Additional") {
@@ -153,6 +185,17 @@ struct VaultEditView: View {
 
         password = (try? VaultManager.shared.decryptedPassword(for: item)) ?? ""
         originalPassword = password
+        let values = (try? VaultManager.shared.decryptedSensitiveValues(for: item))
+        pin = values?.pin ?? ""
+        customerNumber = values?.customerNumber ?? ""
+        recoveryCode = values?.recoveryCode ?? ""
+        securityQuestion = values?.securityQuestion ?? ""
+        securityAnswer = values?.securityAnswer ?? ""
+        otpSecret = values?.otpSecret ?? ""
+        if let expiration = values?.passwordExpiresAt {
+            passwordExpiresAt = expiration
+            hasPasswordExpiration = true
+        }
     }
 
     private func saveConfirmed() {
@@ -170,6 +213,7 @@ struct VaultEditView: View {
                     icon: icon,
                     color: color,
                     requireBiometricEveryTime: requireBiometricEveryTime,
+                    sensitiveValues: sensitiveValues,
                     in: modelContext
                 )
             } catch {
@@ -191,6 +235,7 @@ struct VaultEditView: View {
                     icon: icon,
                     color: color,
                     requireBiometricEveryTime: requireBiometricEveryTime,
+                    sensitiveValues: sensitiveValues,
                     in: modelContext
                 )
             } catch {
@@ -203,5 +248,17 @@ struct VaultEditView: View {
         }
 
         dismiss()
+    }
+
+    private var sensitiveValues: VaultManager.SensitiveValues {
+        .init(
+            pin: pin,
+            customerNumber: customerNumber,
+            recoveryCode: recoveryCode,
+            securityQuestion: securityQuestion,
+            securityAnswer: securityAnswer,
+            otpSecret: otpSecret,
+            passwordExpiresAt: hasPasswordExpiration ? passwordExpiresAt : nil
+        )
     }
 }
