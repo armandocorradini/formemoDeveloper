@@ -92,7 +92,8 @@ enum Persistence {
         LoyaltyCard.self,
         TripList.self,
         DocumentItem.self,
-        VaultItem.self
+        VaultItem.self,
+        VaultSecret.self
     ])
 
 

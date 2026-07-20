@@ -67,6 +67,8 @@ struct VaultRow: View {
 
 
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
         .padding(.vertical, 4)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(item.title), \(subtitle)")

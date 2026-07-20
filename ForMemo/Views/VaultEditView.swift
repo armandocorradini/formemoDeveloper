@@ -12,7 +12,7 @@ struct VaultEditView: View {
     @State private var hasLoaded = false
     
     let item: VaultItem?
-
+    @State private var favorite = false
     @State private var title = ""
     @State private var category: VaultCategory = .website
     @State private var icon: VaultIcon = .lockShield
@@ -23,17 +23,17 @@ struct VaultEditView: View {
     @State private var notes = ""
     @State private var password = ""
     @State private var pin = ""
-    @State private var customerNumber = ""
-    @State private var recoveryCode = ""
-    @State private var securityQuestion = ""
-    @State private var securityAnswer = ""
-    @State private var otpSecret = ""
+
+    @State private var secrets: [SecretValue] = []
+
     @State private var passwordExpiresAt = Date()
     @State private var hasPasswordExpiration = false
-    @State private var requireBiometricEveryTime =
-        VaultLock.hasBiometricAuthentication
+
     @State private var originalPassword = ""
     @State private var showingPasswordChangeConfirmation = false
+    
+    @State private var secretToDelete: Int?
+    
     
     init(item: VaultItem? = nil) {
         self.item = item
@@ -44,7 +44,16 @@ struct VaultEditView: View {
             AppGlassBackground()
             Form {
                 Section("General") {
-                    TextField("Title", text: $title)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Title")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        
+                        TextField("Title", text: $title)
+                        
+                    }
+                    
                     Picker("Category", selection: $category) {
                         ForEach(VaultCategory.allCases, id: \.self) {
                             Text($0.localizedTitle)
@@ -65,42 +74,120 @@ struct VaultEditView: View {
                                 .tag(color)
                         }
                     }
+                    
+                    Toggle("Favorite", isOn: $favorite)
+                    
                 }
 
                 Section("Credentials") {
-                    TextField("Username", text: $username)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-
-                    TextField("Email", text: $email)
-                        .textInputAutocapitalization(.never)
-                        .keyboardType(.emailAddress)
-                        .autocorrectionDisabled()
-
+                    VStack(alignment: .leading, spacing: 4) {
+                        
+                        Text("Username")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        
+                        TextField("", text: $username)
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        
+                        Text("Email")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        
+                        TextField("", text: $email)
+                            .textInputAutocapitalization(.never)
+                            .keyboardType(.emailAddress)
+                            .autocorrectionDisabled()
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                    Text("Password")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
                     VaultPasswordField(
                         password: $password,
-                        requireBiometricEveryTime: requireBiometricEveryTime,
                         authenticateBeforeEditing: true,
                         authenticateBeforeGenerating: true
                     )
+                }
+  
+                    
+                    VStack(alignment: .leading, spacing: 4) {
 
-                    SecureField("PIN", text: $pin)
-                        .keyboardType(.numberPad)
-                    TextField("Customer Number", text: $customerNumber)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+                        Text("PIN")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        VaultSecureTextField(
+                            title: "",
+                            text: $pin,
+                            keyboardType: .numberPad
+                        )
+                    }
+                    
+                    if !secrets.isEmpty {
+
+                        ForEach(Array(secrets.enumerated()), id: \.element.id) { index, _ in
+
+                            VStack(alignment: .leading, spacing: 8) {
+
+                                TextField(
+                                    "Label",
+                                    text: $secrets[index].label,
+                                    axis: .vertical
+                                )
+
+                                VaultSecureTextField(
+                                    title: "Value",
+                                    text: $secrets[index].value
+                                )
+                            }
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    secretToDelete = index
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+
+                                Button(role: .destructive) {
+
+                                    secretToDelete = index
+
+                                } label: {
+
+                                    Label("Delete", systemImage: "trash")
+
+                                }
+                            }
+                        }
+                    }
+                            Button {
+
+                                secrets.append(
+                                    SecretValue(
+                                        label: "",
+                                        value: ""
+                                    )
+                                )
+
+                            } label: {
+
+                                Label("Add Secret", systemImage: "plus")
+
+                            }
+                        
+                    
+                    
+                    
                 }
 
-                Section("Recovery & Security") {
-                    SecureField("Recovery Code", text: $recoveryCode)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    TextField("Security Question", text: $securityQuestion)
-                    SecureField("Security Answer", text: $securityAnswer)
-                    SecureField("OTP Secret", text: $otpSecret)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                }
+
 
                 Section("Password Expiration") {
                     Toggle("Set Password Expiration", isOn: $hasPasswordExpiration)
@@ -118,7 +205,6 @@ struct VaultEditView: View {
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(4...8)
 
-                    Toggle("Require Device Authentication Every Time", isOn: $requireBiometricEveryTime)
                 }
             }
             .scrollContentBackground(.hidden)
@@ -159,6 +245,37 @@ struct VaultEditView: View {
             } message: {
                 Text("The current password will be replaced. Make sure you have updated it for the corresponding account.")
             }
+            
+            .alert(
+                "Delete this secret?",
+                isPresented: Binding(
+                    get: { secretToDelete != nil },
+                    set: { if !$0 { secretToDelete = nil } }
+                )
+            ) {
+
+                Button("Cancel", role: .cancel) {
+                    secretToDelete = nil
+                }
+
+                Button("Delete", role: .destructive) {
+
+                    if let index = secretToDelete,
+                       secrets.indices.contains(index) {
+
+                        secrets.remove(at: index)
+                    }
+
+                    secretToDelete = nil
+                }
+
+            } message: {
+
+                Text(
+                    "The selected secret, including its label and value, will be permanently removed from this credential. This action cannot be undone."
+                )
+
+            }
             .fullScreenCover(isPresented: $showingLockCover) {
 
                 VaultLockCoverView()
@@ -173,6 +290,7 @@ struct VaultEditView: View {
 
     private func load() {
         guard let item else { return }
+        favorite = item.favorite
         title = item.title
         category = item.category
         icon = item.icon
@@ -181,17 +299,15 @@ struct VaultEditView: View {
         email = item.email
         website = item.website
         notes = item.notes
-        requireBiometricEveryTime = item.requireBiometricEveryTime
+
 
         password = (try? VaultManager.shared.decryptedPassword(for: item)) ?? ""
         originalPassword = password
-        let values = (try? VaultManager.shared.decryptedSensitiveValues(for: item))
+        let values = try? VaultManager.shared.decryptedSensitiveValues(for: item)
+
         pin = values?.pin ?? ""
-        customerNumber = values?.customerNumber ?? ""
-        recoveryCode = values?.recoveryCode ?? ""
-        securityQuestion = values?.securityQuestion ?? ""
-        securityAnswer = values?.securityAnswer ?? ""
-        otpSecret = values?.otpSecret ?? ""
+        secrets = values?.secrets ?? []
+
         if let expiration = values?.passwordExpiresAt {
             passwordExpiresAt = expiration
             hasPasswordExpiration = true
@@ -212,7 +328,7 @@ struct VaultEditView: View {
                     password: password,
                     icon: icon,
                     color: color,
-                    requireBiometricEveryTime: requireBiometricEveryTime,
+                    favorite: favorite,
                     sensitiveValues: sensitiveValues,
                     in: modelContext
                 )
@@ -234,7 +350,7 @@ struct VaultEditView: View {
                     password: password,
                     icon: icon,
                     color: color,
-                    requireBiometricEveryTime: requireBiometricEveryTime,
+                    favorite: favorite,
                     sensitiveValues: sensitiveValues,
                     in: modelContext
                 )
@@ -250,15 +366,12 @@ struct VaultEditView: View {
         dismiss()
     }
 
-    private var sensitiveValues: VaultManager.SensitiveValues {
+    private var sensitiveValues: SensitiveValues {
         .init(
+            password: password,
             pin: pin,
-            customerNumber: customerNumber,
-            recoveryCode: recoveryCode,
-            securityQuestion: securityQuestion,
-            securityAnswer: securityAnswer,
-            otpSecret: otpSecret,
-            passwordExpiresAt: hasPasswordExpiration ? passwordExpiresAt : nil
+            passwordExpiresAt: hasPasswordExpiration ? passwordExpiresAt : nil,
+            secrets: secrets
         )
     }
 }

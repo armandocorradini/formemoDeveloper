@@ -75,14 +75,12 @@ struct BackupRestoreView: View {
                 Section("Backup") {
 
                     Button {
-                        let hasVaultCredentials = vaultItems.contains {
-                            ($0.encryptedPassword?.isEmpty == false) ||
-                            ($0.encryptedPIN?.isEmpty == false) ||
-                            ($0.encryptedOTPSecret?.isEmpty == false) ||
-                            ($0.encryptedSecurityQuestion?.isEmpty == false) ||
-                            ($0.encryptedSecurityAnswer?.isEmpty == false) ||
-                            ($0.encryptedCustomerNumber?.isEmpty == false) ||
-                            ($0.encryptedRecoveryCode?.isEmpty == false)
+                        let hasVaultCredentials = vaultItems.contains { item in
+                            let hasPassword = !(item.encryptedPassword?.isEmpty ?? true)
+                            let hasPIN = !(item.encryptedPIN?.isEmpty ?? true)
+                            let hasSecrets = !((item.secrets ?? []).isEmpty)
+
+                            return hasPassword || hasPIN || hasSecrets
                         }
                         if !hasVaultCredentials {
                             // No Vault credentials to protect, no password required
@@ -590,7 +588,7 @@ private struct RestoreArchiveSheetWrapper: Identifiable {
 }
 
 private enum BackupFormat {
-    static let currentVersion = 4
+    static let currentVersion = 5
 }
 
 private extension JSONEncoder {
@@ -908,6 +906,29 @@ private struct DocumentTransferObject: Codable {
     
 }
 
+private struct VaultSecretTransferObject: Codable {
+
+    let encryptedLabel: Data?
+    let encryptedValue: Data?
+    let sortOrder: Int
+
+    init(secret: VaultSecret) {
+        encryptedLabel = secret.encryptedLabel
+        encryptedValue = secret.encryptedValue
+        sortOrder = secret.sortOrder
+    }
+    init(
+        encryptedLabel: Data?,
+        encryptedValue: Data?,
+        sortOrder: Int
+    ) {
+        self.encryptedLabel = encryptedLabel
+        self.encryptedValue = encryptedValue
+        self.sortOrder = sortOrder
+    }
+}
+
+
 private struct VaultItemTransferObject: Codable {
 
     let id: UUID
@@ -932,12 +953,9 @@ private struct VaultItemTransferObject: Codable {
 
     let encryptedPassword: Data?
     let encryptedPIN: Data?
-    let encryptedOTPSecret: Data?
-    let encryptedSecurityQuestion: Data?
-    let encryptedSecurityAnswer: Data?
-    let encryptedCustomerNumber: Data?
-    let encryptedRecoveryCode: Data?
 
+    let secrets: [VaultSecretTransferObject]
+    
     let createdAt: Date
     let modifiedAt: Date
 
@@ -948,8 +966,6 @@ private struct VaultItemTransferObject: Codable {
     let lastCopiedAt: Date?
 
     let deletedAt: Date?
-
-    let requireBiometricEveryTime: Bool
 
     init(item: VaultItem) {
         id = item.id
@@ -974,11 +990,10 @@ private struct VaultItemTransferObject: Codable {
 
         encryptedPassword = item.encryptedPassword
         encryptedPIN = item.encryptedPIN
-        encryptedOTPSecret = item.encryptedOTPSecret
-        encryptedSecurityQuestion = item.encryptedSecurityQuestion
-        encryptedSecurityAnswer = item.encryptedSecurityAnswer
-        encryptedCustomerNumber = item.encryptedCustomerNumber
-        encryptedRecoveryCode = item.encryptedRecoveryCode
+        
+        secrets = (item.secrets ?? []).map {
+            VaultSecretTransferObject(secret: $0)
+        }
 
         createdAt = item.createdAt
         modifiedAt = item.modifiedAt
@@ -991,7 +1006,6 @@ private struct VaultItemTransferObject: Codable {
 
         deletedAt = item.deletedAt
 
-        requireBiometricEveryTime = item.requireBiometricEveryTime
     }
 }
 
@@ -1036,14 +1050,12 @@ private enum BackupManager {
         var loyaltyLogoPayload: [String: Data] = [:]
         var settingsPayload: [String: Data] = [:]
 
-        let hasVaultCredentials = vaultItems.contains {
-            ($0.encryptedPassword?.isEmpty == false) ||
-            ($0.encryptedPIN?.isEmpty == false) ||
-            ($0.encryptedOTPSecret?.isEmpty == false) ||
-            ($0.encryptedSecurityQuestion?.isEmpty == false) ||
-            ($0.encryptedSecurityAnswer?.isEmpty == false) ||
-            ($0.encryptedCustomerNumber?.isEmpty == false) ||
-            ($0.encryptedRecoveryCode?.isEmpty == false)
+        let hasVaultCredentials = vaultItems.contains { item in
+            let hasPassword = !(item.encryptedPassword?.isEmpty ?? true)
+            let hasPIN = !(item.encryptedPIN?.isEmpty ?? true)
+            let hasSecrets = !((item.secrets ?? []).isEmpty)
+
+            return hasPassword || hasPIN || hasSecrets
         }
 
         let vaultPackage: VaultBackupPackage?
@@ -1419,11 +1431,22 @@ private enum BackupManager {
                     existing.notes = dto.notes
                     existing.encryptedPassword = dto.encryptedPassword
                     existing.encryptedPIN = dto.encryptedPIN
-                    existing.encryptedOTPSecret = dto.encryptedOTPSecret
-                    existing.encryptedSecurityQuestion = dto.encryptedSecurityQuestion
-                    existing.encryptedSecurityAnswer = dto.encryptedSecurityAnswer
-                    existing.encryptedCustomerNumber = dto.encryptedCustomerNumber
-                    existing.encryptedRecoveryCode = dto.encryptedRecoveryCode
+                
+                    existing.secrets = []
+
+                    for dtoSecret in dto.secrets {
+
+                        let secret = VaultSecret(
+                            encryptedLabel: dtoSecret.encryptedLabel,
+                            encryptedValue: dtoSecret.encryptedValue,
+                            sortOrder: dtoSecret.sortOrder
+                        )
+                        modelContext.insert(secret)
+                        secret.vaultItem = existing
+                        existing.secrets?.append(secret)
+                    }
+                    
+                    
                     existing.createdAt = dto.createdAt
                     existing.modifiedAt = dto.modifiedAt
                     existing.passwordUpdatedAt = dto.passwordUpdatedAt
@@ -1431,7 +1454,7 @@ private enum BackupManager {
                     existing.lastViewedAt = dto.lastViewedAt
                     existing.lastCopiedAt = dto.lastCopiedAt
                     existing.deletedAt = dto.deletedAt
-                    existing.requireBiometricEveryTime = dto.requireBiometricEveryTime
+
                     existing.version = dto.version
                     existing.syncIdentifier = dto.syncIdentifier
                     // No need to insert, already present
@@ -1454,11 +1477,21 @@ private enum BackupManager {
                     item.sortOrder = dto.sortOrder
                     item.encryptedPassword = dto.encryptedPassword
                     item.encryptedPIN = dto.encryptedPIN
-                    item.encryptedOTPSecret = dto.encryptedOTPSecret
-                    item.encryptedSecurityQuestion = dto.encryptedSecurityQuestion
-                    item.encryptedSecurityAnswer = dto.encryptedSecurityAnswer
-                    item.encryptedCustomerNumber = dto.encryptedCustomerNumber
-                    item.encryptedRecoveryCode = dto.encryptedRecoveryCode
+
+                    item.secrets = []
+
+                    for dtoSecret in dto.secrets {
+
+                        let secret = VaultSecret(
+                            encryptedLabel: dtoSecret.encryptedLabel,
+                            encryptedValue: dtoSecret.encryptedValue,
+                            sortOrder: dtoSecret.sortOrder
+                        )
+                        modelContext.insert(secret)
+                        secret.vaultItem = item
+                        item.secrets?.append(secret)
+                    }
+                    
                     item.createdAt = dto.createdAt
                     item.modifiedAt = dto.modifiedAt
                     item.passwordUpdatedAt = dto.passwordUpdatedAt
@@ -1466,7 +1499,7 @@ private enum BackupManager {
                     item.lastViewedAt = dto.lastViewedAt
                     item.lastCopiedAt = dto.lastCopiedAt
                     item.deletedAt = dto.deletedAt
-                    item.requireBiometricEveryTime = dto.requireBiometricEveryTime
+
                     modelContext.insert(item)
                 }
             }

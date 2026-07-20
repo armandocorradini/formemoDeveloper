@@ -208,13 +208,6 @@ struct WalletView: View {
                                         if let holder = card.cardHolder,
                                            !holder.isEmpty {
 
-//                                            Text(
-//                                                card.itemType == "ticket"
-//                                                ? String(localized: "Ticket Holder")
-//                                                : String(localized: "Card Holder")
-//                                            )
-//                                            .font(.caption2)
-//                                            .foregroundStyle(.secondary)
 
                                             Text(holder)
                                                 .font(.subheadline)

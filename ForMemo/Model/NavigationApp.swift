@@ -40,7 +40,7 @@ struct NavigationApp: Identifiable, Hashable {
 
     static let chooseApp = NavigationApp(
         id: "chooser",
-        title: "Choose Every Time",
+        title: String(localized: "Choose Every Time"),
         scheme: nil
     )
 

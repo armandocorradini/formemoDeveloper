@@ -103,16 +103,21 @@ final class VaultItem {
     var email = ""
     var website = ""
     var notes = ""
+    
+
+    
+    @Relationship(
+        deleteRule: .cascade,
+        inverse: \VaultSecret.vaultItem
+    )
+    var secrets: [VaultSecret]?
+    
 
     // MARK: - Encrypted fields
 
     var encryptedPassword: Data?
     var encryptedPIN: Data?
-    var encryptedOTPSecret: Data?
-    var encryptedSecurityQuestion: Data?
-    var encryptedSecurityAnswer: Data?
-    var encryptedCustomerNumber: Data?
-    var encryptedRecoveryCode: Data?
+ 
 
     // MARK: - Dates
 
@@ -157,12 +162,7 @@ final class VaultItem {
 
         self.encryptedPassword = nil
         self.encryptedPIN = nil
-        self.encryptedOTPSecret = nil
-        self.encryptedSecurityQuestion = nil
-        self.encryptedSecurityAnswer = nil
-        self.encryptedCustomerNumber = nil
-        self.encryptedRecoveryCode = nil
-
+ 
         let now = Date()
 
         self.createdAt = now

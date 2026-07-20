@@ -123,11 +123,6 @@ scheduleAutoLock()
         reason: String = String(localized: "Show Password")
     ) async throws {
 
-        guard item.requireBiometricEveryTime else {
-
-            return
-        }
-
         authenticationContext?.invalidate()
         authenticationContext = nil
 

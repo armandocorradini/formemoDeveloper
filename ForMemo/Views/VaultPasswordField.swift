@@ -3,7 +3,7 @@ import SwiftUI
 struct VaultPasswordField: View {
     
     @Binding var password: String
-    var requireBiometricEveryTime: Bool = false
+
     var authenticateBeforeEditing: Bool = false
     var authenticateBeforeGenerating: Bool = false
     
@@ -29,7 +29,8 @@ struct VaultPasswordField: View {
                 HStack {
                     Group {
                         if isRevealed {
-                            TextField(String(localized: "Password"), text: $password)
+                            TextField(String(localized: "Password"), text: $password,
+                            axis: .vertical)
                         } else {
                             SecureField(String(localized: "Password"), text: $password)
                         }
@@ -115,7 +116,7 @@ struct VaultPasswordField: View {
     }
     
     private func toggleReveal() {
-        guard requireBiometricEveryTime || authenticateBeforeEditing else {
+        guard  authenticateBeforeEditing else {
             withAnimation(.snappy) {
                 isRevealed.toggle()
             }

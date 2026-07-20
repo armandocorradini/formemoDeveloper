@@ -2562,6 +2562,9 @@
         }
       }
     },
+    "Add Secret" : {
+
+    },
     "Add Task" : {
       "localizations" : {
         "de" : {
@@ -6707,6 +6710,34 @@
         }
       }
     },
+    "Choose Every Time" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jedes Mal auswählen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir cada vez"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Every Time"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli ogni volta"
+          }
+        }
+      }
+    },
     "Choose Icon" : {
       "localizations" : {
         "de" : {
@@ -8375,6 +8406,7 @@
       }
     },
     "Customer Number" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -9377,6 +9409,9 @@
           }
         }
       }
+    },
+    "Delete this secret?" : {
+
     },
     "Deleted items are temporarily stored and can be restored before permanent removal." : {
       "localizations" : {
@@ -15468,6 +15503,9 @@
         }
       }
     },
+    "Label" : {
+
+    },
     "Lagoon" : {
       "localizations" : {
         "de" : {
@@ -18843,34 +18881,6 @@
         }
       }
     },
-    "One-Time Password" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einmalpasswort"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contraseña de un solo uso"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mot de passe à usage unique"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Password monouso"
-          }
-        }
-      }
-    },
     "Only attachments of completed tasks are deleted automatically if the option is enabled in settings." : {
       "localizations" : {
         "de" : {
@@ -19207,34 +19217,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Altro"
-          }
-        }
-      }
-    },
-    "OTP Secret" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "OTP-Geheimschlüssel"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clave secreta OTP"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clé secrète OTP"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chiave segreta OTP"
           }
         }
       }
@@ -21029,6 +21011,7 @@
       }
     },
     "Recovery & Security" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21057,6 +21040,7 @@
       }
     },
     "Recovery Code" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21662,34 +21646,6 @@
         }
       }
     },
-    "Refreshes in %llds" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktualisierung in %Ilds"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Se actualiza en %Ilds"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Actualisation dans %Ilds"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Si aggiorna tra %Ilds"
-          }
-        }
-      }
-    },
     "remaining" : {
       "localizations" : {
         "de" : {
@@ -22025,34 +21981,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ripeti"
-          }
-        }
-      }
-    },
-    "Require Device Authentication Every Time" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geräteauthentifizierung jedes Mal erforderlich"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Requerir autenticación del dispositivo siempre"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Exiger l’authentification de l’appareil à chaque fois"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Richiedi l’autenticazione del dispositivo ogni volta"
           }
         }
       }
@@ -23448,6 +23376,7 @@
       }
     },
     "Security Answer" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -23476,6 +23405,7 @@
       }
     },
     "Security Question" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -23504,6 +23434,7 @@
       }
     },
     "Security Questions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -24552,6 +24483,9 @@
           }
         }
       }
+    },
+    "Show Secret" : {
+
     },
     "Show Tomorrow" : {
       "localizations" : {
@@ -28075,6 +28009,9 @@
         }
       }
     },
+    "The selected secret, including its label and value, will be permanently removed from this credential. This action cannot be undone." : {
+
+    },
     "The set date will be permanently removed." : {
       "localizations" : {
         "de" : {
@@ -30618,6 +30555,9 @@
           }
         }
       }
+    },
+    "Value" : {
+
     },
     "Variable" : {
       "localizations" : {

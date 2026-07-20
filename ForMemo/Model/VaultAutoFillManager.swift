@@ -19,7 +19,11 @@ final class VaultAutoFillManager {
     func synchronize(using context: ModelContext) {
         do {
             try VaultCrypto.prepareForAutoFill()
-            let items = try context.fetch(FetchDescriptor<VaultItem>())
+            let descriptor = FetchDescriptor<VaultItem>(
+                predicate: #Predicate { $0.deletedAt == nil }
+            )
+
+            let items = try context.fetch(descriptor)
             let credentials = items.compactMap(SharedVaultCredential.init(item:))
             try write(credentials)
             replaceSystemIdentities(for: credentials)

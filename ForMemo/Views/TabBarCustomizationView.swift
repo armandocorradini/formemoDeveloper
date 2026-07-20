@@ -32,6 +32,7 @@ struct TabBarCustomizationView: View {
                 Text("Drag sections to choose their order. Hidden sections keep their position and return there when enabled again.")
             }
         }
+        .contentMargins(.bottom, 70, for: .scrollContent)
         .navigationTitle("Customize Tab Bar")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {

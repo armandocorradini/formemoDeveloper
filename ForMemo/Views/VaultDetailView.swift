@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct VaultDetailView: View {
-
+    @Environment(\.openURL) private var openURL
     @Environment(\.modelContext) private var modelContext
     @State private var showCopiedToast = false
     
@@ -10,7 +10,7 @@ struct VaultDetailView: View {
 
     @State private var showingPassword = false
     @State private var decryptedPassword = ""
-    @State private var sensitiveValues = VaultManager.SensitiveValues()
+    @State private var sensitiveValues = SensitiveValues()
     @State private var revealedFields = Set<String>()
     @State private var showingError = false
     @State private var errorMessage = ""
@@ -102,53 +102,62 @@ struct VaultDetailView: View {
             }
             .listRowBackground(Color(.systemBackground).opacity(0.3))
 
-            if item.encryptedPIN != nil || item.encryptedCustomerNumber != nil || item.encryptedRecoveryCode != nil {
-                Section("Sensitive Information") {
-                    if item.encryptedPIN != nil { sensitiveRow("PIN", value: sensitiveValues.pin, id: "pin") }
-                    if item.encryptedCustomerNumber != nil { sensitiveRow("Customer Number", value: sensitiveValues.customerNumber, id: "customerNumber") }
-                    if item.encryptedRecoveryCode != nil { sensitiveRow("Recovery Code", value: sensitiveValues.recoveryCode, id: "recoveryCode") }
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-            }
+                if item.encryptedPIN != nil || !sensitiveValues.secrets.isEmpty {
 
-            if item.encryptedSecurityQuestion != nil || item.encryptedSecurityAnswer != nil {
-                Section("Security Questions") {
-                    if item.encryptedSecurityQuestion != nil { sensitiveRow("Security Question", value: sensitiveValues.securityQuestion, id: "securityQuestion") }
-                    if item.encryptedSecurityAnswer != nil { sensitiveRow("Security Answer", value: sensitiveValues.securityAnswer, id: "securityAnswer") }
-                }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-            }
+                    Section("Sensitive Information") {
 
-            if item.encryptedOTPSecret != nil {
-                Section("One-Time Password") {
-                    TimelineView(.periodic(from: .now, by: 1)) { context in
-                        let code = VaultManager.shared.currentTOTP(for: sensitiveValues.otpSecret, at: context.date) ?? "Invalid secret"
-                        let remaining = max(0, 30 - Int(context.date.timeIntervalSince1970) % 30)
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(code).font(.title3.monospacedDigit().weight(.semibold))
-                                Text("Refreshes in \(remaining)s").font(.caption).foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Button { copy(code) } label: { Image(systemName: "doc.on.doc") }
-                                .buttonStyle(.plain)
+                        if item.encryptedPIN != nil {
+                            sensitiveRow("PIN", value: sensitiveValues.pin, id: "pin")
+                        }
+
+                        ForEach(sensitiveValues.secrets) { secret in
+
+                            sensitiveRow(
+                                secret.label,
+                                value: secret.value,
+                                id: secret.id.uuidString
+                            )
                         }
                     }
-                    sensitiveRow("OTP Secret", value: sensitiveValues.otpSecret, id: "otpSecret")
-                }
+
                 .listRowBackground(Color(.systemBackground).opacity(0.3))
             }
 
-            if !item.website.isEmpty {
-                Section("Website") {
-                    if let url = URL(string: item.website.hasPrefix("http") ? item.website : "https://\(item.website)") {
-                        Link(destination: url) {
+//                if item.encryptedPIN != nil || !sensitiveValues.secrets.isEmpty {
+//
+//                    Section("Sensitive Information") {
+//
+//                        if item.encryptedPIN != nil {
+//                            sensitiveRow("PIN", value: sensitiveValues.pin, id: "pin")
+//                        }
+//
+//                        ForEach(sensitiveValues.secrets) { secret in
+//                            sensitiveRow(
+//                                secret.label,
+//                                value: secret.value,
+//                                id: secret.id.uuidString
+//                            )
+//                        }
+//                    }
+//                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+//                }
+
+                if !item.website.isEmpty {
+                    Section("Website") {
+
+                        Button {
+
+                            openWebsite()
+
+                        } label: {
+
                             Label("Open Website", systemImage: "safari")
+
                         }
+
                     }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
                 }
-                .listRowBackground(Color(.systemBackground).opacity(0.3))
-            }
 
             if !item.notes.isEmpty {
                 Section("Notes") {
@@ -203,7 +212,6 @@ struct VaultDetailView: View {
             }
             .task {
                 sensitiveValues = (try? VaultManager.shared.decryptedSensitiveValues(for: item)) ?? .init()
-                try? VaultManager.shared.registerView(of: item, in: modelContext)
             }
             
             .navigationTitle(item.title)
@@ -284,12 +292,70 @@ struct VaultDetailView: View {
             LabeledContent(label, value: revealedFields.contains(id) ? value : String(repeating: "•", count: 10))
                 .font(.body.monospaced())
             Button {
-                if revealedFields.contains(id) { revealedFields.remove(id) } else { revealedFields.insert(id) }
-            } label: { Image(systemName: revealedFields.contains(id) ? "eye.slash" : "eye") }
+
+                if revealedFields.contains(id) {
+
+                    revealedFields.remove(id)
+
+                } else {
+
+                    revealedFields.insert(id)
+
+                    Task {
+
+                        try? await Task.sleep(for: .seconds(15))
+
+                        await MainActor.run {
+                            revealedFields.remove(id)
+                            return
+                        }
+
+                    }
+                }
+
+            } label: {
+
+                Image(systemName: revealedFields.contains(id) ? "eye.slash" : "eye")
+
+            }
                 .buttonStyle(.plain)
             Button { copy(value) } label: { Image(systemName: "doc.on.doc") }
                 .buttonStyle(.plain)
         }
+    }
+    private func openWebsite() {
+
+        let website = item.website
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !website.isEmpty else {
+
+            errorMessage = "No website saved"
+            showingError = true
+            return
+
+        }
+
+        var address = website
+
+        if !address.lowercased().hasPrefix("http://") &&
+           !address.lowercased().hasPrefix("https://") {
+
+            address = "https://" + address
+
+        }
+
+        guard
+            let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed),
+            let url = URL(string: encoded)
+        else {
+            errorMessage = "Invalid website address"
+            showingError = true
+            return
+        }
+
+        openURL(url)
+
     }
 
     private func copy(_ value: String) {
