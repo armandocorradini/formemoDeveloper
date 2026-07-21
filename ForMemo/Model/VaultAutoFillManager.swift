@@ -63,7 +63,7 @@ final class VaultAutoFillManager {
 
         ASCredentialIdentityStore.shared.getState { state in
             guard state.isEnabled else {
-                AppLogger.autofill.notice("AutoFill is not enabled")
+//                AppLogger.autofill.notice("AutoFill is not enabled")
                 return
             }
 

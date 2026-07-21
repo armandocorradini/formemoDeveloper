@@ -232,8 +232,4 @@ struct DocumentsView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        DocumentsView()
-    }
-}
+

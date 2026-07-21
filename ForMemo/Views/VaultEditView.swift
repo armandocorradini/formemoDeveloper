@@ -315,6 +315,12 @@ struct VaultEditView: View {
     }
 
     private func saveConfirmed() {
+        let cleanedSecrets = secrets.filter {
+
+            !$0.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+            !$0.value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
+        }
         if let item {
             do {
                 try VaultManager.shared.updateCredential(
@@ -329,7 +335,7 @@ struct VaultEditView: View {
                     icon: icon,
                     color: color,
                     favorite: favorite,
-                    sensitiveValues: sensitiveValues,
+                    sensitiveValues: sensitiveValues(cleanedSecrets),
                     in: modelContext
                 )
             } catch {
@@ -351,7 +357,7 @@ struct VaultEditView: View {
                     icon: icon,
                     color: color,
                     favorite: favorite,
-                    sensitiveValues: sensitiveValues,
+                    sensitiveValues: sensitiveValues(cleanedSecrets),
                     in: modelContext
                 )
             } catch {
@@ -366,12 +372,14 @@ struct VaultEditView: View {
         dismiss()
     }
 
-    private var sensitiveValues: SensitiveValues {
+    private func sensitiveValues(
+        _ secrets: [SecretValue]
+    ) -> SensitiveValues {
+
         .init(
             password: password,
             pin: pin,
             passwordExpiresAt: hasPasswordExpiration ? passwordExpiresAt : nil,
             secrets: secrets
         )
-    }
-}
+    }}

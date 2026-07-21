@@ -465,8 +465,3 @@ struct NotificationView: View {
     }
 }
 
-#Preview {
-    NavigationStack {
-        NotificationView()
-    }
-}

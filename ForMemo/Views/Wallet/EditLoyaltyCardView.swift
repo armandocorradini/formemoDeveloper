@@ -369,16 +369,3 @@ private extension UIImage {
         }
     }
 }
-
-#Preview {
-
-    EditLoyaltyCardView(
-        card: LoyaltyCard(
-            storeName: "Coop",
-            cardHolder: "Armando",
-            barcodeValue: "8001234567890",
-            barcodeFormat: "EAN13",
-            notes: "Family card"
-        )
-    )
-}

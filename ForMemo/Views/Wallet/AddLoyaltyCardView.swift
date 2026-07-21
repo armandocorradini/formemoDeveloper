@@ -559,7 +559,3 @@ private extension CGImagePropertyOrientation {
         }
     }
 }
-
-#Preview {
-    AddLoyaltyCardView()
-}

@@ -347,13 +347,3 @@ struct WeatherDayView: View {
     }
 
 }
-
-#Preview {
-    NavigationStack {
-        WeatherDayView(
-            date: .now,
-            showsCloseButton: true,
-            cameFromForecast: false
-        )
-    }
-}

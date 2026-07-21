@@ -346,8 +346,4 @@ struct WeatherForecastView: View {
         .capitalized
     }
 }
-#Preview {
-    NavigationStack {
-        WeatherForecastView()
-    }
-}
+

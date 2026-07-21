@@ -323,18 +323,6 @@ struct LoyaltyCardDetailView: View {
     }
 }
 
-#Preview {
-
-    LoyaltyCardDetailView(
-        card: LoyaltyCard(
-            storeName: "Coop",
-            cardHolder: "Armando",
-            barcodeValue: "8001234567890",
-            barcodeFormat: "EAN13",
-            notes: "Main family card", colorHex: "#00A86B"
-        )
-    )
-}
 
 
 

@@ -289,11 +289,3 @@ struct DocumentDetailView: View {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        DocumentDetailView(
-            document: DocumentItem(name: "Passport")
-        )
-    }
-}
