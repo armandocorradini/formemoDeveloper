@@ -385,6 +385,8 @@ final class AppSettings {
         }
     }
     
+    var diagnosticAttachmentFailure = false
+    
     var badgeMode: Int {
         didSet {
             UserDefaults.standard.set(

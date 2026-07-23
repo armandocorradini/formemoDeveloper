@@ -143,13 +143,10 @@ extension TaskAttachment {
         let fm = FileManager.default
 
 
-        
         // 1️⃣ iCloud path
         if let cloud = cloudAttachmentsDirectory()?
             .appendingPathComponent(relativePath),
            fm.fileExists(atPath: cloud.path) {
-
-            try? fm.startDownloadingUbiquitousItem(at: cloud)
 
             let values = try? cloud.resourceValues(forKeys: [
                 .ubiquitousItemDownloadingStatusKey,
@@ -158,14 +155,44 @@ extension TaskAttachment {
 
             let status = values?.ubiquitousItemDownloadingStatus
             let size = values?.fileSize ?? 0
-            
-            // 🔥 Return iCloud file only if really materialized
-            if status == .current || status == .downloaded {
-                if size > 0 {
-                    return cloud
-                }
+
+            // Il file esiste nel container iCloud, ma è solo un placeholder:
+            // restituisci comunque il suo URL affinché i chiamanti async possano
+            // avviare e attendere il download, invece di trattarlo come mancante.
+            if status == .notDownloaded {
+                try? fm.startDownloadingUbiquitousItem(at: cloud)
+                return cloud
+            }
+
+            // File effettivamente pronto: conserva il comportamento attuale.
+            if (status == .current || status == .downloaded), size > 0 {
+                return cloud
             }
         }
+        
+        
+//        // 1️⃣ iCloud path
+//        if let cloud = cloudAttachmentsDirectory()?
+//            .appendingPathComponent(relativePath),
+//           fm.fileExists(atPath: cloud.path) {
+//
+//            try? fm.startDownloadingUbiquitousItem(at: cloud)
+//
+//            let values = try? cloud.resourceValues(forKeys: [
+//                .ubiquitousItemDownloadingStatusKey,
+//                .fileSizeKey
+//            ])
+//
+//            let status = values?.ubiquitousItemDownloadingStatus
+//            let size = values?.fileSize ?? 0
+//            
+//            // 🔥 Return iCloud file only if really materialized
+//            if status == .current || status == .downloaded {
+//                if size > 0 {
+//                    return cloud
+//                }
+//            }
+//        }
 
         // 2️⃣ Legacy local path
         if let legacy = legacyAttachmentsDirectory()?

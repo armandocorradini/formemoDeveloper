@@ -84,14 +84,28 @@ struct AppGlassBackground: View {
 
     var body: some View {
         ZStack {
+            
             LinearGradient(
-                colors: [
+                colors: settings.diagnosticAttachmentFailure
+                ? [
+                    .red,
+                    .red.opacity(0.6)
+                ]
+                : [
                     Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
                     Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
+//            LinearGradient(
+//                colors: [
+//                    Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
+//                    Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
+//                ],
+//                startPoint: .topLeading,
+//                endPoint: .bottomTrailing
+//            )
             .ignoresSafeArea()
 
             Rectangle()

@@ -36,6 +36,9 @@ struct OverviewView: View {
     )
     private var deletedVaultItems: [VaultItem]
     
+    
+    
+    
     private var activeAttachmentsSize: String {
         formattedAttachmentSize(
             for: activeTasks.flatMap { $0.attachments ?? [] }
@@ -51,6 +54,26 @@ struct OverviewView: View {
             for: completedTasks.flatMap { $0.attachments ?? [] }
         )
     }
+    
+    private var activeAttachmentBytes: Int64 {
+
+        activeTasks
+            .flatMap { $0.attachments ?? [] }
+            .reduce(Int64(0)) { total, attachment in
+
+                guard
+                    let url = attachment.fileURL,
+                    let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize
+                else {
+                    return total
+                }
+
+                return total + Int64(size)
+            }
+    }
+    
+    
+    
     private func formattedAttachmentSize(
         for attachments: [TaskAttachment]
     ) -> String {
@@ -102,7 +125,11 @@ struct OverviewView: View {
         .navigationTitle("Overview")
         .navigationBarTitleDisplayMode(.inline)
         .contentMargins(.bottom, 70, for: .scrollContent)
-    }
+        .onAppear {
+            AppSettings.shared.diagnosticAttachmentFailure =
+                activeAttachmentsCount > 0 &&
+                activeAttachmentBytes == 0
+        }    }
 }
 
 // MARK: - Proprietà Calcolate (Ottimizzate per performance)

@@ -1,8 +1,41 @@
 import SwiftUI
+import SwiftData
 
 struct StartView: View {
     
     @State private var isAnimating = false
+    
+    @Environment(\.modelContext) private var modelContext
+
+    
+    private var activeAttachmentsCount: Int {
+        activeTasks.reduce(0) { total, task in
+            total + (task.attachments?.count ?? 0)
+        }
+    }
+
+    private var activeAttachmentBytes: Int64 {
+        activeTasks
+            .flatMap { $0.attachments ?? [] }
+            .reduce(Int64(0)) { total, attachment in
+                guard
+                    let url = attachment.fileURL,
+                    let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize
+                else {
+                    return total
+                }
+                return total + Int64(size)
+            }
+    }
+    
+    private func updateAttachmentDiagnostic() {
+        AppSettings.shared.diagnosticAttachmentFailure =
+            activeAttachmentsCount > 0 &&
+            activeAttachmentBytes == 0
+    }
+    
+    @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
+    private var activeTasks: [TodoTask]
     
     var body: some View {
         ZStack {
@@ -70,6 +103,10 @@ struct StartView: View {
                 ])
                 .ignoresSafeArea()
             }
+        }
+        
+        .task {
+            updateAttachmentDiagnostic()
         }
     }
     private var appVersionString: String {
