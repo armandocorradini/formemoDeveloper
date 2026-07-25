@@ -3,7 +3,7 @@ import SwiftData
 import os
 
 struct VaultEditView: View {
-
+    
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @StateObject private var vaultLock = VaultLock.shared
@@ -23,12 +23,12 @@ struct VaultEditView: View {
     @State private var notes = ""
     @State private var password = ""
     @State private var pin = ""
-
+    
     @State private var secrets: [SecretValue] = []
-
+    
     @State private var passwordExpiresAt = Date()
     @State private var hasPasswordExpiration = false
-
+    
     @State private var originalPassword = ""
     @State private var showingPasswordChangeConfirmation = false
     
@@ -38,7 +38,7 @@ struct VaultEditView: View {
     init(item: VaultItem? = nil) {
         self.item = item
     }
-
+    
     var body: some View {
         ZStack {
             AppGlassBackground()
@@ -66,7 +66,7 @@ struct VaultEditView: View {
                                 .tag(vaultIcon)
                         }
                     }
-
+                    
                     Picker("Color", selection: $color) {
                         ForEach(VaultColor.allCases, id: \.self) { color in
                             Text(color.rawValue.capitalized)
@@ -78,7 +78,7 @@ struct VaultEditView: View {
                     Toggle("Favorite", isOn: $favorite)
                     
                 }
-
+                
                 Section("Credentials") {
                     VStack(alignment: .leading, spacing: 4) {
                         
@@ -104,24 +104,24 @@ struct VaultEditView: View {
                     }
                     
                     VStack(alignment: .leading, spacing: 4) {
-                    Text("Password")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        Text("Password")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        
+                        VaultPasswordField(
+                            password: $password,
+                            authenticateBeforeEditing: true,
+                            authenticateBeforeGenerating: true
+                        )
+                    }
                     
-                    VaultPasswordField(
-                        password: $password,
-                        authenticateBeforeEditing: true,
-                        authenticateBeforeGenerating: true
-                    )
-                }
-  
                     
                     VStack(alignment: .leading, spacing: 4) {
-
+                        
                         Text("PIN")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-
+                        
                         VaultSecureTextField(
                             title: "",
                             text: $pin,
@@ -130,17 +130,17 @@ struct VaultEditView: View {
                     }
                     
                     if !secrets.isEmpty {
-
+                        
                         ForEach(Array(secrets.enumerated()), id: \.element.id) { index, _ in
-
+                            
                             VStack(alignment: .leading, spacing: 8) {
-
+                                
                                 TextField(
                                     "Label",
                                     text: $secrets[index].label,
                                     axis: .vertical
                                 )
-
+                                
                                 VaultSecureTextField(
                                     title: "Value",
                                     text: $secrets[index].value
@@ -154,57 +154,57 @@ struct VaultEditView: View {
                                 }
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-
+                                
                                 Button(role: .destructive) {
-
+                                    
                                     secretToDelete = index
-
+                                    
                                 } label: {
-
+                                    
                                     Label("Delete", systemImage: "trash")
-
+                                    
                                 }
                             }
                         }
                     }
-                            Button {
-
-                                secrets.append(
-                                    SecretValue(
-                                        label: "",
-                                        value: ""
-                                    )
-                                )
-
-                            } label: {
-
-                                Label("Add Secret", systemImage: "plus")
-
-                            }
+                    Button {
                         
+                        secrets.append(
+                            SecretValue(
+                                label: "",
+                                value: ""
+                            )
+                        )
+                        
+                    } label: {
+                        
+                        Label("Add Secret", systemImage: "plus")
+                        
+                    }
+                    
                     
                     
                     
                 }
-
-
-
+                
+                
+                
                 Section("Password Expiration") {
                     Toggle("Set Password Expiration", isOn: $hasPasswordExpiration)
                     if hasPasswordExpiration {
                         DatePicker("Expires", selection: $passwordExpiresAt, displayedComponents: .date)
                     }
                 }
-
+                
                 Section("Additional") {
                     TextField("Website", text: $website)
                         .textInputAutocapitalization(.never)
                         .keyboardType(.URL)
                         .autocorrectionDisabled()
-
+                    
                     TextField("Notes", text: $notes, axis: .vertical)
                         .lineLimit(4...8)
-
+                    
                 }
             }
             .scrollContentBackground(.hidden)
@@ -227,14 +227,14 @@ struct VaultEditView: View {
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-
+            
             .onAppear {
-
+                
                 if !hasLoaded {
                     load()
                     hasLoaded = true
                 }
-
+                
                 showingLockCover = !vaultLock.isUnlocked
             }
             .alert("Change Password?", isPresented: $showingPasswordChangeConfirmation) {
@@ -253,41 +253,41 @@ struct VaultEditView: View {
                     set: { if !$0 { secretToDelete = nil } }
                 )
             ) {
-
+                
                 Button("Cancel", role: .cancel) {
                     secretToDelete = nil
                 }
-
+                
                 Button("Delete", role: .destructive) {
-
+                    
                     if let index = secretToDelete,
                        secrets.indices.contains(index) {
-
+                        
                         secrets.remove(at: index)
                     }
-
+                    
                     secretToDelete = nil
                 }
-
+                
             } message: {
-
+                
                 Text(
                     "The selected secret, including its label and value, will be permanently removed from this credential. This action cannot be undone."
                 )
-
+                
             }
             .fullScreenCover(isPresented: $showingLockCover) {
-
+                
                 VaultLockCoverView()
                     .interactiveDismissDisabled()
             }
-
+            
             .onChange(of: vaultLock.isUnlocked) { _, unlocked in
                 showingLockCover = !unlocked
             }
         }
     }
-
+    
     private func load() {
         guard let item else { return }
         favorite = item.favorite
@@ -299,28 +299,23 @@ struct VaultEditView: View {
         email = item.email
         website = item.website
         notes = item.notes
-
-
+        
+        
         password = (try? VaultManager.shared.decryptedPassword(for: item)) ?? ""
         originalPassword = password
         let values = try? VaultManager.shared.decryptedSensitiveValues(for: item)
-
+        
         pin = values?.pin ?? ""
         secrets = values?.secrets ?? []
-
+        
         if let expiration = values?.passwordExpiresAt {
             passwordExpiresAt = expiration
             hasPasswordExpiration = true
         }
     }
-
+    
     private func saveConfirmed() {
-        let cleanedSecrets = secrets.filter {
 
-            !$0.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
-            !$0.value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-
-        }
         if let item {
             do {
                 try VaultManager.shared.updateCredential(
@@ -335,7 +330,12 @@ struct VaultEditView: View {
                     icon: icon,
                     color: color,
                     favorite: favorite,
-                    sensitiveValues: sensitiveValues(cleanedSecrets),
+                    sensitiveValues: VaultManager.shared.makeSensitiveValues(
+                        password: password,
+                        pin: pin,
+                        passwordExpiresAt: hasPasswordExpiration ? passwordExpiresAt : nil,
+                        secrets: secrets
+                    ),
                     in: modelContext
                 )
             } catch {
@@ -357,7 +357,12 @@ struct VaultEditView: View {
                     icon: icon,
                     color: color,
                     favorite: favorite,
-                    sensitiveValues: sensitiveValues(cleanedSecrets),
+                    sensitiveValues: VaultManager.shared.makeSensitiveValues(
+                        password: password,
+                        pin: pin,
+                        passwordExpiresAt: hasPasswordExpiration ? passwordExpiresAt : nil,
+                        secrets: secrets
+                    ),
                     in: modelContext
                 )
             } catch {
@@ -368,18 +373,8 @@ struct VaultEditView: View {
             }
             
         }
-
+        
         dismiss()
     }
-
-    private func sensitiveValues(
-        _ secrets: [SecretValue]
-    ) -> SensitiveValues {
-
-        .init(
-            password: password,
-            pin: pin,
-            passwordExpiresAt: hasPasswordExpiration ? passwordExpiresAt : nil,
-            secrets: secrets
-        )
-    }}
+    
+}

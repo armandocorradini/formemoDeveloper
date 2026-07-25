@@ -2,16 +2,25 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>comgooglemaps</string>
-		<string>waze</string>
-	</array>
-	<key>NSUserNotificationsUsageDescription</key>
-	<string>Used to send reminders about your tasks.</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
+
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>comgooglemaps</string>
+        <string>waze</string>
+    </array>
+
+    <key>NSUserActivityTypes</key>
+    <array>
+        <string>ASCredentialExchangeActivityType</string>
+    </array>
+
+    <key>NSUserNotificationsUsageDescription</key>
+    <string>Used to send reminders about your tasks.</string>
+
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>remote-notification</string>
+    </array>
+
 </dict>
 </plist>

@@ -9,6 +9,28 @@ final class VaultManager {
     
     private init() {}
 
+    func makeSensitiveValues(
+        password: String,
+        pin: String,
+        passwordExpiresAt: Date?,
+        secrets: [SecretValue]
+    ) -> SensitiveValues {
+
+        let cleanedSecrets = secrets.filter {
+
+            !$0.label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+            !$0.value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
+        }
+
+        return SensitiveValues(
+            password: password,
+            pin: pin,
+            passwordExpiresAt: passwordExpiresAt,
+            secrets: cleanedSecrets
+        )
+    }
+    
     
     func createCredential(
         title: String,
@@ -28,14 +50,18 @@ final class VaultManager {
         let item = VaultItem(title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                              category: category)
         
-        item.icon = icon
-        item.color = color
-        item.favorite = favorite
-        item.username = username.trimmingCharacters(in: .whitespacesAndNewlines)
-        item.email = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        item.website = website.trimmingCharacters(in: .whitespacesAndNewlines)
-        item.notes = notes
-        item.modifiedAt = Date()
+        updateCommonFields(
+            of: item,
+            title: title,
+            category: category,
+            username: username,
+            email: email,
+            website: website,
+            notes: notes,
+            icon: icon,
+            color: color,
+            favorite: favorite
+        )
         
         try apply(sensitiveValues ?? .init(), password: password, to: item)
         
@@ -62,16 +88,18 @@ final class VaultManager {
         in context: ModelContext
     ) throws {
         
-        item.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        item.category = category
-        item.icon = icon
-        item.color = color
-        item.username = username.trimmingCharacters(in: .whitespacesAndNewlines)
-        item.email = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        item.website = website.trimmingCharacters(in: .whitespacesAndNewlines)
-        item.notes = notes
-        item.favorite = favorite
-        item.modifiedAt = Date()
+        updateCommonFields(
+            of: item,
+            title: title,
+            category: category,
+            username: username,
+            email: email,
+            website: website,
+            notes: notes,
+            icon: icon,
+            color: color,
+            favorite: favorite
+        )
         
         try apply(sensitiveValues ?? .init(), password: password, to: item)
         
@@ -127,6 +155,36 @@ final class VaultManager {
         }
         
     }
+    
+    private func updateCommonFields(
+        of item: VaultItem,
+        title: String,
+        category: VaultCategory,
+        username: String,
+        email: String,
+        website: String,
+        notes: String,
+        icon: VaultIcon,
+        color: VaultColor,
+        favorite: Bool
+    ) {
+
+        item.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        item.category = category
+        item.icon = icon
+        item.color = color
+        item.favorite = favorite
+
+        item.username = username.trimmingCharacters(in: .whitespacesAndNewlines)
+        item.email = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        item.website = website.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        item.notes = notes
+        item.modifiedAt = .now
+    }
+    
+
+    
     
     private func apply(
         _ values: SensitiveValues,
@@ -215,16 +273,3 @@ final class VaultManager {
     }
 }
 
-struct SecretValue: Identifiable {
-    var id = UUID()
-    var label = ""
-    var value = ""
-}
-
-
-struct SensitiveValues {
-    var password = ""
-    var pin = ""
-    var passwordExpiresAt: Date?
-    var secrets: [SecretValue] = []
-}

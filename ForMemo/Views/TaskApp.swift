@@ -5,7 +5,7 @@ import CoreData
 import AppIntents
 import os
 import CoreLocation
-
+import AuthenticationServices
 
 #if canImport(AppKit)
 import AppKit
@@ -169,6 +169,44 @@ struct ForMemoApp: App {
 #endif
                 .environment(appSettings)
                 .preferredColorScheme(appSettings.selectedTheme.colorScheme)
+                .onContinueUserActivity(ASCredentialExchangeActivity) { activity in
+
+                    Task {
+
+                        guard let token = activity.userInfo?[ASCredentialImportToken] as? UUID else {
+                            AppLogger.app.error("Credential Exchange: import token missing")
+                            return
+                        }
+
+                        do {
+
+                            let manager = ASCredentialImportManager()
+
+                            let exportedData = try await manager.importCredentials(
+                                token: token
+                            )
+
+                            let mapper = AppleCredentialImportMapper()
+
+                            let records = try mapper.map(exportedData)
+
+                            let result = try await VaultImportService.shared.importRecords(
+                                records,
+                                in: container.mainContext
+                            )
+
+                            AppLogger.app.info(
+                                "Credential Exchange: processed \(result.processed) records"
+                            )
+
+                        } catch {
+
+                            AppLogger.app.error(
+                                "Credential Exchange import failed: \(error.localizedDescription)"
+                            )
+                        }
+                    }
+                }
         }
         
         .modelContainer(container)

@@ -143,6 +143,7 @@ struct VaultDetailView: View {
 //                }
 
                 if !item.website.isEmpty {
+
                     Section("Website") {
 
                         Button {
@@ -152,6 +153,21 @@ struct VaultDetailView: View {
                         } label: {
 
                             Label("Open Website", systemImage: "safari")
+
+                        }
+
+                        Button {
+
+                            Task {
+                                await exportToPasswords()
+                            }
+
+                        } label: {
+
+                            Label(
+                                "Export to Passwords",
+                                systemImage: "person.badge.key"
+                            )
 
                         }
 
@@ -358,6 +374,37 @@ struct VaultDetailView: View {
 
     }
 
+    @MainActor
+    private func exportToPasswords() async {
+
+        guard
+            let scene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene })
+                .first,
+            let window = scene.keyWindow
+        else {
+
+            errorMessage = "Unable to access the application window."
+            showingError = true
+            return
+        }
+
+        do {
+
+            try await VaultExportService.shared.export(
+                credential: item,
+                from: window
+            )
+
+        } catch {
+
+            errorMessage = error.localizedDescription
+            showingError = true
+
+        }
+    }
+    
+    
     private func copy(_ value: String) {
         SecureClipboard.copy(value)
         try? VaultManager.shared.registerCopy(of: item, in: modelContext)
