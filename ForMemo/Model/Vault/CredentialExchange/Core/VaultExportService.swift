@@ -2,6 +2,11 @@ import AuthenticationServices
 import SwiftData
 import UIKit
 
+struct ExportResult: Sendable {
+    let hasUnsupportedFields: Bool
+}
+
+
 @MainActor
 final class VaultExportService {
 
@@ -12,7 +17,7 @@ final class VaultExportService {
     func export(
         credential: VaultItem,
         from window: UIWindow
-    ) async throws {
+    ) async throws -> ExportResult {
 
         let manager = ASCredentialExportManager(
             presentationAnchor: window
@@ -36,6 +41,16 @@ final class VaultExportService {
         )
 
         try await manager.exportCredentials(credentialData)
+
+        let values = try VaultManager.shared.decryptedSensitiveValues(for: credential)
+
+        return ExportResult(
+            hasUnsupportedFields:
+                !values.pin.isEmpty ||
+                !values.secrets.isEmpty
+        )
     }
 
+
 }
+

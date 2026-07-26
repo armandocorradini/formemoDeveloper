@@ -14,10 +14,12 @@ enum VaultExportMapper {
 
         let item = try makeItem(from: vault)
 
+        let login = nonEmpty(vault.username) ?? nonEmpty(vault.email) ?? ""
+
         let account = ASImportableAccount(
-            id: Data("formemo-default-vault".utf8),
-            userName: exporterDisplayName,
-            email: "",
+            id: Data(vault.id.uuidString.utf8),
+            userName: login,
+            email: nonEmpty(vault.email) ?? "",
             collections: [],
             items: [item]
         )
@@ -101,16 +103,16 @@ enum VaultExportMapper {
             )
         }
 
-        if !additionalFields.isEmpty {
-            credentials.append(
-                .customFields(
-                    .init(
-                        label: "Additional Fields",
-                        fields: additionalFields
-                    )
-                )
-            )
-        }
+//        if !additionalFields.isEmpty {
+//            credentials.append(
+//                .customFields(
+//                    .init(
+//                        label: "Additional Fields",
+//                        fields: additionalFields
+//                    )
+//                )
+//            )
+//        }
 
         if let notes = nonEmpty(vault.notes) {
             credentials.append(

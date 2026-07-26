@@ -6,6 +6,8 @@ struct VaultDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var showCopiedToast = false
     
+    @State private var alertTitle = ""
+    
     let item: VaultItem
 
     @State private var showingPassword = false
@@ -233,9 +235,12 @@ struct VaultDetailView: View {
             .navigationTitle(item.title)
             .navigationBarTitleDisplayMode(.inline)
             .contentMargins(.bottom, 70, for: .scrollContent)
-            .alert(errorMessage, isPresented: $showingError) {
-                Button("OK", role: .cancel) {}
+            .alert(alertTitle, isPresented: $showingError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
             }
+            
         }
     }
 
@@ -250,7 +255,9 @@ struct VaultDetailView: View {
 
         guard let encrypted = item.encryptedPassword,
               !encrypted.isEmpty else {
-            errorMessage = "No password saved"
+
+            alertTitle = String(localized: "Error")
+            errorMessage = String(localized: "No password saved")
             showingError = true
             return
         }
@@ -281,8 +288,11 @@ struct VaultDetailView: View {
             try? VaultManager.shared.registerView(of: item, in: modelContext)
             VaultLock.shared.userDidAccessVault()
         } catch {
-            errorMessage = "Unable to decrypt the password"
+
+            alertTitle = String(localized: "Error")
+            errorMessage = String(localized: "Unable to decrypt the password")
             showingError = true
+
         }
     }
     
@@ -346,7 +356,8 @@ struct VaultDetailView: View {
 
         guard !website.isEmpty else {
 
-            errorMessage = "No website saved"
+            alertTitle = String(localized: "Error")
+            errorMessage = String(localized: "No website saved")
             showingError = true
             return
 
@@ -365,11 +376,13 @@ struct VaultDetailView: View {
             let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed),
             let url = URL(string: encoded)
         else {
-            errorMessage = "Invalid website address"
+
+            alertTitle = String(localized: "Error")
+            errorMessage = String(localized: "Invalid website address")
             showingError = true
             return
-        }
 
+        }
         openURL(url)
 
     }
@@ -384,20 +397,41 @@ struct VaultDetailView: View {
             let window = scene.keyWindow
         else {
 
-            errorMessage = "Unable to access the application window."
-            showingError = true
-            return
-        }
+            alertTitle = String(localized: "Error")
+               errorMessage = String(localized: "Unable to access the application window.")
+               showingError = true
+               return
+
+           }
 
         do {
 
-            try await VaultExportService.shared.export(
+            let result = try await VaultExportService.shared.export(
                 credential: item,
                 from: window
             )
 
-        } catch {
+            if result.hasUnsupportedFields {
 
+                alertTitle = String(localized: "Export Completed")
+
+                errorMessage = String(
+                localized:
+                """
+                The credential was exported successfully to Apple Password.
+
+                Apple Password currently imports usernames, email addresses, passwords, websites, and notes.
+
+                PINs and custom secure fields are not currently supported by Apple Password and remain securely stored in ForMemo.
+                """
+                )
+
+                showingError = true
+            }
+
+        } catch {
+            
+            alertTitle = String(localized: "Export Failed")
             errorMessage = error.localizedDescription
             showingError = true
 
