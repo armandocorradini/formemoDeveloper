@@ -72,6 +72,11 @@
 			path = Sound;
 			sourceTree = "<group>";
 		};
+		1CD950403016ADB2000D4CEB /* Vault  */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "Vault ";
+			sourceTree = "<group>";
+		};
 		1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -106,6 +111,7 @@
 			children = (
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
 				1C1C23022F7E983A00A77282 /* ForMemo */,
+				1CD950403016ADB2000D4CEB /* Vault  */,
 				1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */,
 				1CF9847A3000EBA300E1D1A9 /* Frameworks */,
 				1C1C23012F7E983A00A77282 /* Products */,
@@ -149,6 +155,7 @@
 			fileSystemSynchronizedGroups = (
 				1C1C23022F7E983A00A77282 /* ForMemo */,
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
+				1CD950403016ADB2000D4CEB /* Vault  */,
 			);
 			name = ForMemo;
 			packageProductDependencies = (
