@@ -158,7 +158,7 @@ struct BackupRestoreView: View {
                     }
                     .foregroundStyle(.primary)
                 }
-                Section("Information") {
+                Section {
 
                     Label {
                         VStack(alignment: .leading, spacing: 2) {
