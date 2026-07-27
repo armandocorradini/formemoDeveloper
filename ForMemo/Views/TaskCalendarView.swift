@@ -1005,10 +1005,10 @@ private struct DayTasksInlineView: View {
                                 .padding(.vertical, 1)
                                 .padding(.trailing, 10)
 
-                            HStack(alignment: .center, spacing: 15) {
+                            HStack(alignment: .center, spacing: 10) {
 
                                 Text(task.deadLine?.formatted(.dateTime.hour().minute()) ?? "")
-                                    .font(.callout.monospacedDigit())
+                                    .font(.subheadline.monospacedDigit())
                                     .foregroundStyle(
                                         isOverdue(task) ? .red : .secondary
                                     )
@@ -1060,7 +1060,7 @@ private struct DayTasksInlineView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
-                        .padding(.vertical, 4)
+                        .padding(.vertical, 1)
                     }
                     .buttonStyle(.plain)
                     .contentShape(Rectangle())

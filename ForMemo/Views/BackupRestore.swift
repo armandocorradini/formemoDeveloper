@@ -55,23 +55,23 @@ struct BackupRestoreView: View {
 
                     VStack(alignment: .leading, spacing: 10) {
 
-                        Label {
-                            Text("Backup & Restore")
-                                .font(.title3.bold())
-                        } icon: {
-                            Image(systemName: "externaldrive.badge.icloud")
-                                .foregroundStyle(.blue)
-                        }
+//                        Label {
+//                            Text("Backup & Restore")
+//                                .font(.title3.bold())
+//                        } icon: {
+//                            Image(systemName: "externaldrive.badge.icloud")
+//                                .foregroundStyle(.blue)
+//                        }
 
                         Text(
                             "Backups are stored independently from iCloud sync. You can use them to safely migrate all your ForMemo data to another device."
                         )
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                        .foregroundStyle(.primary)
                     }
                     .padding(.vertical, 8)
                     .listRowInsets(
-                        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                        EdgeInsets(top: 2, leading: 16, bottom: 8, trailing: 16)
                     )
                     .listRowBackground(Color.clear)
                 }
@@ -160,50 +160,54 @@ struct BackupRestoreView: View {
                 }
                 Section {
 
-                    Label {
-                        VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 18) {
 
-                            Text("Backup includes")
+                        HStack(alignment: .top, spacing: 12) {
 
-                            Text(
-                                "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, cards and tickets, documents and attachments are included in the backup archive."
-                            )
+                            Image(systemName: "checkmark.shield")
+                                .foregroundStyle(.green)
+                                .frame(width: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+
+                                Text("Backup includes")
+
+                                Text(
+                                    "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, cards and tickets, documents and attachments are included in the backup archive."
+                                )
+                                
+                                .foregroundStyle(.secondary)
+                            }
                             .font(.caption)
-                            .foregroundStyle(.secondary)
                         }
 
-                    } icon: {
+                        Divider()
+                            .padding(.leading, 36)
 
-                        Image(systemName: "checkmark.shield")
-                            .foregroundStyle(.green)
+                        HStack(alignment: .top, spacing: 12) {
 
-                    }
-                    .listRowBackground(Color.clear)
+                            Image(systemName: "externaldrive")
+                                .foregroundStyle(.blue)
+                                .frame(width: 24)
 
-                    Label {
+                            VStack(alignment: .leading, spacing: 2) {
 
-                        VStack(alignment: .leading, spacing: 2) {
+                                Text("Independent from iCloud Sync")
 
-                            Text("Independent from iCloud Sync")
-
-                            Text(
-                                "Backups can be stored anywhere and restored even on a different Apple account."
-                            )
+                                Text(
+                                    "Backups can be stored anywhere and restored even on a different Apple account."
+                                )
+                                
+                                .foregroundStyle(.secondary)
+                            }
                             .font(.caption)
-                            .foregroundStyle(.secondary)
-
                         }
-
-                    } icon: {
-
-                        Image(systemName: "externaldrive")
-                            .foregroundStyle(.blue)
-
                     }
                     .listRowBackground(Color.clear)
                 }
             }
             .scrollContentBackground(.hidden)
+            .listSectionSpacing(12)
             .background(Color.clear)
             .contentMargins(.bottom, 70, for: .scrollContent)
         }
