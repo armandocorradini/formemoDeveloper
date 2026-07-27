@@ -3152,6 +3152,34 @@
         }
       }
     },
+    "Are imported passwords encrypted?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Werden importierte Passwörter verschlüsselt?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Las contraseñas importadas se cifran?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les mots de passe importés sont-ils chiffrés ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le password importate vengono crittografate?"
+          }
+        }
+      }
+    },
     "Are trip lists included in backups?" : {
       "localizations" : {
         "de" : {
@@ -5299,6 +5327,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posso filtrare le attività senza una scadenza?"
+          }
+        }
+      }
+    },
+    "Can I import credentials into the Vault?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich Anmeldedaten in den Tresor importieren?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo importar credenciales a la Caja fuerte?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je importer des identifiants dans le Coffre-fort ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso importare credenziali nella Cassaforte?"
+          }
+        }
+      }
+    },
+    "Can I import only selected passwords?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich nur ausgewählte Passwörter importieren?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo importar solo algunas contraseñas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je importer uniquement certains mots de passe ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso importare solo alcune password?"
           }
         }
       }
@@ -8150,6 +8234,34 @@
         }
       }
     },
+    "Create strong passwords directly while adding or editing Vault credentials. Generated passwords help improve the security of your accounts." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erstellen Sie sichere Passwörter direkt beim Hinzufügen oder Bearbeiten von Tresor-Anmeldedaten. Die generierten Passwörter tragen dazu bei, die Sicherheit Ihrer Konten zu erhöhen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cree contraseñas seguras directamente al añadir o editar las credenciales de la Caja fuerte. Las contraseñas generadas ayudan a mejorar la seguridad de sus cuentas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créez des mots de passe robustes directement lors de l'ajout ou de la modification des identifiants du Coffre-fort. Les mots de passe générés contribuent à renforcer la sécurité de vos comptes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crea password robuste direttamente durante l'aggiunta o la modifica delle credenziali della Cassaforte. Le password generate contribuiscono a migliorare la sicurezza dei tuoi account."
+          }
+        }
+      }
+    },
     "Created" : {
       "localizations" : {
         "de" : {
@@ -9940,30 +10052,30 @@
         }
       }
     },
-    "Disclaimer and Terms of Use\n\nThe %@ App (\"App\") is designed for personal task management, organization, productivity, secure information storage, and personal data management.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization and productivity. All information, reminders, credentials, suggestions, forecasts, generated passwords, maps, and other features are provided for informational and convenience purposes only and do not constitute any guarantee of execution, accuracy, completeness, reliability, or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, activities, stored information, credentials, backups, security settings, and use of the information and features provided by the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, recurrence rules, countdowns, snooze functions, and related reminder features are provided for informational purposes only. While the App schedules notifications using the operating system, their delivery, timing, and accuracy depend on system services, device settings, battery optimization, Focus modes, permissions, connectivity, and other external factors. The App does not guarantee timely delivery or correct operation. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, GPS availability, device conditions, network connectivity, and Apple location services. Reminder triggers may not always occur at the expected place or time.\n\n5. Voice Assistant (Siri): Siri Shortcuts, voice commands, and related integrations depend entirely on Apple services and system capabilities. Voice recognition and interpretation may vary and are not guaranteed to be accurate or available under all conditions.\n\n6. Map and Location Features: Maps, routes, coordinates, nearby locations, travel information, and other location-based features depend on Apple Maps, GPS accuracy, network connectivity, and device conditions. The App does not guarantee the precision, availability, completeness, or real-time accuracy of any map or location information.\n\n7. Weather Information: Weather forecasts, current conditions, hourly forecasts, daily forecasts, weather icons, and related weather information are provided for informational purposes only. Weather data depends on third-party providers, device location, network connectivity, and external services. Forecasts may differ from other weather services and should never be relied upon for emergency, safety-critical, professional, aviation, maritime, or other important decisions.\n\n8. Loyalty Cards, Tickets, Logos, Barcodes, and QR Codes: Loyalty cards, tickets, logos, barcode information, QR codes, generated barcodes, scanned barcodes, and related images are stored solely for user convenience. Compatibility with stores, scanners, ticket systems, payment systems, or third-party services is not guaranteed. Users remain responsible for verifying the validity and usability of stored information.\n\n9. Vault and Stored Information: The Vault allows you to store confidential information including usernames, email addresses, passwords, websites, PIN codes, OTP secrets, recovery codes, customer numbers, security questions and answers, notes, tags, favorites, password history information, password expiration dates, and other supported Vault content. The App encrypts Vault information using the security technologies available on the device. However, no software can guarantee absolute protection against unauthorized access, data loss, hardware failures, compromised devices, malware, jailbroken devices, or other security threats. You are solely responsible for protecting your device, Apple ID, device passcode, and any information stored within the Vault.\n\n10. Device Authentication: Access to the Vault may rely on Face ID, Touch ID, device passcode, or other authentication mechanisms provided by the operating system. Individual Vault items may optionally require biometric authentication even after the Vault has been unlocked. The App never receives, stores, or transmits biometric information. Authentication availability depends entirely on device hardware, operating system support, and user configuration.\n\n11. Password Generator, Clipboard, and AutoFill: Password generation, password visibility controls, automatic Vault locking, clipboard auto-clearing, and AutoFill features are provided solely for user convenience. Generated passwords are created locally on the device. Clipboard contents may temporarily remain accessible according to iOS system behavior until automatically cleared or manually removed. AutoFill requires proper system configuration and depends on Apple Password AutoFill services, supported applications, supported websites, and operating system capabilities. The App does not guarantee AutoFill compatibility or correct operation with every website, application, or service.\n\n12. Data Storage, Backups, and Synchronization: Information may be stored locally on the device and, where enabled, synchronized through the user's personal iCloud account. Backup, restore, export, import, and synchronization operations depend on device conditions, storage availability, iCloud services, permissions, software versions, and other external factors. Backups may include tasks, reminders, recurrence rules, attachments, loyalty cards, tickets, documents, trips, Vault items, application settings, and other supported data. Vault backups may be encrypted using a password chosen by the user. This password is never stored by the App or its developers and cannot be recovered if forgotten. Restore operations may support selective restoration of compatible data categories. The App does not guarantee that any backup, restore, synchronization, import, or export operation will always be successful, complete, accurate, or recoverable.\n\n13. Third-Party Services: Certain App features rely on Apple services or other third-party services, including but not limited to iCloud, Maps, Weather providers, Siri, Face ID, Touch ID, Password AutoFill, Wallet, and system notification services. The availability, compatibility, performance, reliability, privacy practices, and continued operation of these services are outside the control of the App developers.\n\n14. Feature Availability: Some features may not be available on every device, operating system version, geographic region, language, hardware configuration, or user account. Certain functions require specific permissions, Apple services, network connectivity, compatible hardware, or supported operating system versions. Continuous availability or uninterrupted operation of all App features is not guaranteed.\n\n15. Import and Export Features: Import, export, sharing, backup, restore, and migration features are provided for convenience only. Compatibility with external file formats, cloud providers, third-party applications, and future versions of the App cannot be guaranteed. Users are responsible for securely storing exported files, especially encrypted Vault backups.\n\n16. No Critical Use: The App is not designed, certified, or intended for emergency services, medical use, legal advice, financial decision-making, public safety, industrial control, navigation, aviation, military operations, or any mission-critical activity where delays, failures, inaccuracies, or unavailable information could result in injury, death, property damage, financial loss, or other significant consequences.\n\n17. Updates, Changes, and Limitation of Liability: The App, its functionality, supported features, and this Disclaimer may be modified, updated, suspended, or discontinued at any time without prior notice. Continued use of the App constitutes acceptance of any such changes. To the fullest extent permitted by applicable law, the developers shall not be liable for any direct, indirect, incidental, consequential, or special damages arising from the use of, inability to use, or reliance upon the App, including but not limited to data loss, synchronization failures, notification failures, backup or restore failures, forgotten backup passwords, AutoFill failures, biometric authentication failures, third-party service interruptions, inaccurate weather information, inaccurate location information, or unauthorized access resulting from compromised devices.\n\nBy using %@, you confirm that you have read, understood, and fully accepted this Disclaimer and Terms of Use." : {
+    "Disclaimer and Terms of Use\n\nThe %@ App (\"App\") is designed for personal task management, organization, productivity, secure information storage, and personal data management.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization and productivity. All information, reminders, credentials, suggestions, forecasts, generated passwords, maps, and other features are provided for informational and convenience purposes only and do not constitute any guarantee of execution, accuracy, completeness, reliability, or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, activities, stored information, credentials, backups, security settings, and use of the information and features provided by the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, recurrence rules, countdowns, snooze functions, and related reminder features are provided for informational purposes only. While the App schedules notifications using the operating system, their delivery, timing, and accuracy depend on system services, device settings, battery optimization, Focus modes, permissions, connectivity, and other external factors. The App does not guarantee timely delivery or correct operation. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, GPS availability, device conditions, network connectivity, and Apple location services. Reminder triggers may not always occur at the expected place or time.\n\n5. Voice Assistant (Siri): Siri Shortcuts, voice commands, and related integrations depend entirely on Apple services and system capabilities. Voice recognition and interpretation may vary and are not guaranteed to be accurate or available under all conditions.\n\n6. Map and Location Features: Maps, routes, coordinates, nearby locations, travel information, and other location-based features depend on Apple Maps, GPS accuracy, network connectivity, and device conditions. The App does not guarantee the precision, availability, completeness, or real-time accuracy of any map or location information.\n\n7. Weather Information: Weather forecasts, current conditions, hourly forecasts, daily forecasts, weather icons, and related weather information are provided for informational purposes only. Weather data depends on third-party providers, device location, network connectivity, and external services. Forecasts may differ from other weather services and should never be relied upon for emergency, safety-critical, professional, aviation, maritime, or other important decisions.\n\n8. Loyalty Cards, Tickets, Logos, Barcodes, and QR Codes: Loyalty cards, tickets, logos, barcode information, QR codes, generated barcodes, scanned barcodes, and related images are stored solely for user convenience. Compatibility with stores, scanners, ticket systems, payment systems, or third-party services is not guaranteed. Users remain responsible for verifying the validity and usability of stored information.\n\n9. Vault and Stored Information: The Vault allows you to store confidential information including usernames, email addresses, passwords, websites, PIN codes, OTP secrets, notes, tags, favorites, custom secrets, password expiration dates, and other supported Vault content. Each Vault item may contain multiple custom secrets with user-defined labels. The App encrypts Vault information using the security technologies available on the device. However, no software can guarantee absolute protection against unauthorized access, data loss, hardware failures, compromised devices, malware, jailbroken devices, or other security threats. You are solely responsible for protecting your device, Apple ID, device passcode, and any information stored within the Vault.\n\n10. Device Authentication: Access to the Vault may rely on Face ID, Touch ID, device passcode, or other authentication mechanisms provided by the operating system. Individual Vault items may optionally require biometric authentication even after the Vault has been unlocked. The App never receives, stores, or transmits biometric information. Authentication availability depends entirely on device hardware, operating system support, and user configuration.\n\n11. Password Generator, Clipboard, and AutoFill: Password generation, password visibility controls, automatic Vault locking, clipboard auto-clearing, and AutoFill features are provided solely for user convenience. Generated passwords are created locally on the device. Clipboard contents may temporarily remain accessible according to iOS system behavior until automatically cleared or manually removed. AutoFill requires proper system configuration and depends on Apple Password AutoFill services, supported applications, supported websites, and operating system capabilities. The App does not guarantee AutoFill compatibility or correct operation with every website, application, or service.\n\n12. Data Storage, Backups, and Synchronization: Information may be stored locally on the device and, where enabled, synchronized through the user's personal iCloud account. Backup, restore, export, import, and synchronization operations depend on device conditions, storage availability, iCloud services, permissions, software versions, and other external factors. Backups may include tasks, reminders, recurrence rules, attachments, loyalty cards, tickets, documents, trips, Vault items, application settings, and other supported data. Vault backups may be encrypted using a password chosen by the user. This password is never stored by the App or its developers and cannot be recovered if forgotten. Restore operations may support selective restoration of compatible data categories. The App does not guarantee that any backup, restore, synchronization, import, or export operation will always be successful, complete, accurate, or recoverable.\n\n13. Third-Party Services: Certain App features rely on Apple services or other third-party services, including but not limited to iCloud, Maps, Weather providers, Siri, Face ID, Touch ID, Password AutoFill, Wallet, and system notification services. The availability, compatibility, performance, reliability, privacy practices, and continued operation of these services are outside the control of the App developers.\n\n14. Feature Availability: Some features may not be available on every device, operating system version, geographic region, language, hardware configuration, or user account. Certain functions require specific permissions, Apple services, network connectivity, compatible hardware, or supported operating system versions. Continuous availability or uninterrupted operation of all App features is not guaranteed.\n\n15. Import and Export Features: Supported Vault credential import and export features are intended solely for data portability between compatible applications and file formats. Compatibility with external file formats, cloud providers, third-party applications, and future versions of the App cannot be guaranteed. Users are responsible for securely storing exported files, especially encrypted Vault backups.\n\n16. No Critical Use: The App is not designed, certified, or intended for emergency services, medical use, legal advice, financial decision-making, public safety, industrial control, navigation, aviation, military operations, or any mission-critical activity where delays, failures, inaccuracies, or unavailable information could result in injury, death, property damage, financial loss, or other significant consequences.\n\n17. Updates, Changes, and Limitation of Liability: The App, its functionality, supported features, and this Disclaimer may be modified, updated, suspended, or discontinued at any time without prior notice. Continued use of the App constitutes acceptance of any such changes. To the fullest extent permitted by applicable law, the developers shall not be liable for any direct, indirect, incidental, consequential, or special damages arising from the use of, inability to use, or reliance upon the App, including but not limited to data loss, synchronization failures, notification failures, backup or restore failures, forgotten backup passwords, AutoFill failures, biometric authentication failures, third-party service interruptions, inaccurate weather information, inaccurate location information, or unauthorized access resulting from compromised devices.\n\nBy using %@, you confirm that you have read, understood, and fully accepted this Disclaimer and Terms of Use." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Haftungsausschluss und Nutzungsbedingungen\n\nDie %@ App („App“) wurde für die persönliche Aufgabenverwaltung, Organisation, Produktivität, die sichere Speicherung von Informationen sowie die Verwaltung persönlicher Daten entwickelt.\n\nDurch die Nutzung der App bestätigen Sie, dass Sie die folgenden Bestimmungen gelesen haben und ihnen zustimmen:\n\n1. Zweck der App: Die App dient ausschließlich der persönlichen Organisation und Produktivität. Sämtliche Informationen, Erinnerungen, Zugangsdaten, Vorschläge, Vorhersagen, generierte Passwörter, Karten sowie alle weiteren Funktionen werden ausschließlich zu Informations- und Komfortzwecken bereitgestellt und stellen keinerlei Garantie hinsichtlich Ausführung, Richtigkeit, Vollständigkeit, Zuverlässigkeit oder bestimmter Ergebnisse dar.\n\n2. Verantwortung des Nutzers: Die App wird „wie besehen“ („as is“) ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt. Sie sind allein verantwortlich für Ihre Entscheidungen, Ihre Aktivitäten, die gespeicherten Informationen, Zugangsdaten, Sicherungen, Sicherheitseinstellungen sowie für die Nutzung der von der App bereitgestellten Informationen und Funktionen.\n\n3. Benachrichtigungen, App-Badges und Erinnerungen: Benachrichtigungen, App-Symbol-Badges, Erinnerungen, Wiederholungsregeln, Countdowns, Schlummerfunktionen (Snooze) sowie die damit verbundenen Erinnerungsfunktionen werden ausschließlich zu Informationszwecken bereitgestellt. Obwohl die App Benachrichtigungen über das Betriebssystem plant, hängen deren Zustellung, Zeitpunkt und Genauigkeit von Systemdiensten, Geräteeinstellungen, Batterieoptimierung, Fokusmodi, Berechtigungen, Netzwerkverbindung und weiteren externen Faktoren ab. Die App übernimmt keine Gewähr für eine rechtzeitige Zustellung oder die ordnungsgemäße Funktion dieser Features. Sie sollten sich bei kritischen oder zeitabhängigen Aufgaben nicht ausschließlich auf diese Funktionen verlassen.\n\n4. Standortbasierte Erinnerungen: Standortbasierte Erinnerungen hängen von den Systemberechtigungen, der Verfügbarkeit des GPS, dem Gerätezustand, der Netzwerkverbindung sowie den Apple-Ortungsdiensten ab. Erinnerungen werden möglicherweise nicht immer am erwarteten Ort oder zum erwarteten Zeitpunkt ausgelöst.\n\n5. Sprachassistent (Siri): Siri-Kurzbefehle, Sprachbefehle und die damit verbundenen Integrationen hängen vollständig von Apple-Diensten und den Funktionen des Betriebssystems ab. Die Spracherkennung und Sprachinterpretation können variieren und werden weder hinsichtlich ihrer Genauigkeit noch ihrer ständigen Verfügbarkeit garantiert.\n\n6. Karten- und Standortfunktionen: Karten, Routen, Koordinaten, Orte in der Nähe, Reiseinformationen und sonstige standortbezogene Funktionen hängen von Apple Maps, der Genauigkeit des GPS, der Netzwerkverbindung sowie dem Zustand des Geräts ab. Die App übernimmt keine Gewähr für die Genauigkeit, Verfügbarkeit, Vollständigkeit oder Echtzeitaktualität von Karten- oder Standortinformationen.\n\n7. Wetterinformationen: Wettervorhersagen, aktuelle Wetterbedingungen, stündliche und tägliche Vorhersagen, Wettersymbole sowie damit zusammenhängende Wetterinformationen werden ausschließlich zu Informationszwecken bereitgestellt. Wetterdaten hängen von Drittanbietern, dem Gerätestandort, der Netzwerkverbindung und externen Diensten ab. Wettervorhersagen können von den Angaben anderer Wetterdienste abweichen und dürfen niemals als alleinige Grundlage für Notfälle, sicherheitsrelevante, berufliche, luftfahrtbezogene, maritime oder sonstige wichtige Entscheidungen verwendet werden.\n\n8. Kundenkarten, Tickets, Logos, Barcodes und QR-Codes: Kundenkarten, Tickets, Logos, Barcodeinformationen, QR-Codes, generierte Barcodes, gescannte Barcodes sowie die dazugehörigen Bilder werden ausschließlich zur Erleichterung der Nutzung gespeichert. Eine Kompatibilität mit Geschäften, Barcode-Scannern, Ticketsystemen, Zahlungssystemen oder Diensten Dritter wird nicht gewährleistet. Der Nutzer bleibt selbst dafür verantwortlich, die Gültigkeit und Verwendbarkeit der gespeicherten Informationen zu überprüfen.\n\n9. Tresor und Gespeicherte Informationen: Der Tresor ermöglicht die Speicherung vertraulicher Informationen, darunter Benutzernamen, E-Mail-Adressen, Passwörter, Webseiten, PIN-Codes, OTP-Geheimschlüssel, Wiederherstellungscodes, Kundennummern, Sicherheitsfragen und -antworten, Notizen, Tags, Favoriten, Passwortverlauf, Passwortablaufdaten sowie weiterer vom Tresor unterstützter Inhalte. Die App schützt die im Tresor gespeicherten Informationen mithilfe der auf dem Gerät verfügbaren Sicherheitstechnologien. Dennoch kann keine Software einen absoluten Schutz vor unbefugtem Zugriff, Datenverlust, Hardwarefehlern, kompromittierten Geräten, Schadsoftware, Geräten mit Jailbreak oder sonstigen Sicherheitsbedrohungen gewährleisten. Sie sind allein für den Schutz Ihres Geräts, Ihres Apple Accounts, Ihres Gerätecodes sowie sämtlicher im Tresor gespeicherten Informationen verantwortlich.\n\n10. Geräteauthentifizierung: Der Zugriff auf den Tresor kann von Face ID, Touch ID, dem Gerätecode oder anderen vom Betriebssystem bereitgestellten Authentifizierungsmechanismen abhängen. Einzelne Elemente des Tresors können optional auch nach dem Entsperren des Tresors eine biometrische Authentifizierung erfordern. Die App empfängt, speichert oder überträgt niemals biometrische Informationen. Die Verfügbarkeit der Authentifizierung hängt ausschließlich von der Gerätehardware, der Unterstützung durch das Betriebssystem und der vom Nutzer gewählten Konfiguration ab.\n\n11. Passwortgenerator, Zwischenablage und Automatisches Ausfüllen: Die Passwortgenerierung, die Steuerung der Passwortsichtbarkeit, die automatische Sperrung des Tresors, das automatische Leeren der Zwischenablage sowie die Funktionen zum Automatischen Ausfüllen werden ausschließlich zum Komfort des Nutzers bereitgestellt. Generierte Passwörter werden lokal auf dem Gerät erstellt. Inhalte der Zwischenablage können entsprechend dem Verhalten des iOS-Systems bis zu ihrer automatischen oder manuellen Löschung vorübergehend zugänglich bleiben. Das Automatische Ausfüllen setzt eine ordnungsgemäße Systemkonfiguration voraus und hängt von Apples Diensten für das automatische Ausfüllen von Passwörtern, unterstützten Apps, unterstützten Websites sowie den Funktionen des Betriebssystems ab. Die App übernimmt keine Gewähr für die Kompatibilität oder die ordnungsgemäße Funktion des Automatischen Ausfüllens mit beliebigen Websites, Anwendungen oder Diensten.\n\n12. Datenspeicherung, Backups und Synchronisierung: Informationen können lokal auf dem Gerät gespeichert und – sofern aktiviert – über das persönliche iCloud-Konto des Nutzers synchronisiert werden. Sicherungs-, Wiederherstellungs-, Export-, Import- und Synchronisierungsvorgänge hängen vom Zustand des Geräts, der verfügbaren Speicherkapazität, den iCloud-Diensten, Berechtigungen, Softwareversionen sowie weiteren externen Faktoren ab. Backups können Aufgaben, Erinnerungen, Wiederholungsregeln, Anhänge, Kundenkarten, Tickets, Dokumente, Reisen, Tresorelemente, App-Einstellungen und weitere unterstützte Daten enthalten. Backups des Tresors können mit einem vom Nutzer gewählten Passwort verschlüsselt werden. Dieses Passwort wird weder von der App noch von ihren Entwicklern gespeichert und kann im Falle eines Verlusts nicht wiederhergestellt werden. Wiederherstellungsvorgänge können die selektive Wiederherstellung kompatibler Datenkategorien unterstützen. Die App übernimmt keine Gewähr dafür, dass Sicherungs-, Wiederherstellungs-, Synchronisierungs-, Import- oder Exportvorgänge jederzeit erfolgreich, vollständig, fehlerfrei oder wiederherstellbar sind.\n\n13. Dienste Dritter: Bestimmte Funktionen der App sind von Apple-Diensten oder anderen Diensten Dritter abhängig, einschließlich, jedoch nicht beschränkt auf iCloud, Karten, Wetterdienste, Siri, Face ID, Touch ID, Automatisches Ausfüllen von Passwörtern, Wallet sowie Systembenachrichtigungsdienste. Die Verfügbarkeit, Kompatibilität, Leistung, Zuverlässigkeit, Datenschutzpraktiken und der fortlaufende Betrieb dieser Dienste liegen außerhalb des Einflussbereichs der Entwickler der App.\n\n14. Verfügbarkeit der Funktionen: Einige Funktionen stehen möglicherweise nicht auf allen Geräten, in allen Versionen des Betriebssystems, in allen geografischen Regionen, Sprachen, Hardwarekonfigurationen oder Benutzerkonten zur Verfügung. Bestimmte Funktionen erfordern spezielle Berechtigungen, Apple-Dienste, eine Netzwerkverbindung, kompatible Hardware oder unterstützte Versionen des Betriebssystems. Eine dauerhafte Verfügbarkeit oder ein unterbrechungsfreier Betrieb sämtlicher Funktionen der App wird nicht gewährleistet.\n\n15. Import- und Exportfunktionen: Import-, Export-, Freigabe-, Sicherungs-, Wiederherstellungs- und Migrationsfunktionen werden ausschließlich zum Komfort des Nutzers bereitgestellt. Die Kompatibilität mit externen Dateiformaten, Cloud-Anbietern, Anwendungen Dritter oder zukünftigen Versionen der App kann nicht garantiert werden. Der Nutzer ist für die sichere Aufbewahrung exportierter Dateien verantwortlich, insbesondere verschlüsselter Tresor-Backups.\n\n16. Keine Kritische Nutzung: Die App wurde weder entwickelt noch zertifiziert oder vorgesehen für den Einsatz in Notfalldiensten, medizinischen Anwendungen, der Rechtsberatung, finanziellen Entscheidungen, der öffentlichen Sicherheit, industriellen Steuerungssystemen, Navigation, Luftfahrt, militärischen Einsätzen oder anderen sicherheits- bzw. missionskritischen Tätigkeiten, bei denen Verzögerungen, Fehlfunktionen, Ungenauigkeiten oder die Nichtverfügbarkeit von Informationen zu Verletzungen, Todesfällen, Sachschäden, finanziellen Verlusten oder anderen schwerwiegenden Folgen führen könnten.\n\n17. Aktualisierungen, Änderungen und Haftungsbeschränkung: Die App, ihre Funktionen, die unterstützten Leistungsmerkmale sowie dieser Haftungsausschluss können jederzeit und ohne vorherige Ankündigung geändert, aktualisiert, ausgesetzt oder eingestellt werden. Die fortgesetzte Nutzung der App gilt als Zustimmung zu diesen Änderungen. Soweit nach geltendem Recht zulässig, haften die Entwickler weder für direkte noch indirekte, zufällige, Folgeschäden oder besondere Schäden, die sich aus der Nutzung der App, der Unmöglichkeit ihrer Nutzung oder dem Vertrauen auf die App ergeben, einschließlich, jedoch nicht beschränkt auf Datenverlust, Synchronisierungsfehler, Benachrichtigungsausfälle, Fehler bei Sicherung oder Wiederherstellung, vergessene Backup-Passwörter, Fehler beim Automatischen Ausfüllen, Fehler bei der biometrischen Authentifizierung, Unterbrechungen von Diensten Dritter, ungenaue Wetterinformationen, ungenaue Standortinformationen oder unbefugten Zugriff infolge kompromittierter Geräte.\n\nDurch die Nutzung von %@ bestätigen Sie, dass Sie diesen Haftungsausschluss und diese Nutzungsbedingungen gelesen, verstanden und vollständig akzeptiert haben."
+            "value" : "Haftungsausschluss und Nutzungsbedingungen\n\nDie %@ App („App“) wurde für die persönliche Aufgabenverwaltung, Organisation, Produktivität, die sichere Speicherung von Informationen sowie die Verwaltung persönlicher Daten entwickelt.\n\nDurch die Nutzung der App bestätigen Sie, dass Sie die folgenden Bestimmungen gelesen haben und ihnen zustimmen:\n\n1. Zweck der App: Die App dient ausschließlich der persönlichen Organisation und Produktivität. Sämtliche Informationen, Erinnerungen, Zugangsdaten, Vorschläge, Vorhersagen, generierte Passwörter, Karten sowie alle weiteren Funktionen werden ausschließlich zu Informations- und Komfortzwecken bereitgestellt und stellen keinerlei Garantie hinsichtlich Ausführung, Richtigkeit, Vollständigkeit, Zuverlässigkeit oder bestimmter Ergebnisse dar.\n\n2. Verantwortung des Nutzers: Die App wird „wie besehen“ („as is“) ohne jegliche ausdrückliche oder stillschweigende Gewährleistung bereitgestellt. Sie sind allein verantwortlich für Ihre Entscheidungen, Ihre Aktivitäten, die gespeicherten Informationen, Zugangsdaten, Sicherungen, Sicherheitseinstellungen sowie für die Nutzung der von der App bereitgestellten Informationen und Funktionen.\n\n3. Benachrichtigungen, App-Badges und Erinnerungen: Benachrichtigungen, App-Symbol-Badges, Erinnerungen, Wiederholungsregeln, Countdowns, Schlummerfunktionen (Snooze) sowie die damit verbundenen Erinnerungsfunktionen werden ausschließlich zu Informationszwecken bereitgestellt. Obwohl die App Benachrichtigungen über das Betriebssystem plant, hängen deren Zustellung, Zeitpunkt und Genauigkeit von Systemdiensten, Geräteeinstellungen, Batterieoptimierung, Fokusmodi, Berechtigungen, Netzwerkverbindung und weiteren externen Faktoren ab. Die App übernimmt keine Gewähr für eine rechtzeitige Zustellung oder die ordnungsgemäße Funktion dieser Features. Sie sollten sich bei kritischen oder zeitabhängigen Aufgaben nicht ausschließlich auf diese Funktionen verlassen.\n\n4. Standortbasierte Erinnerungen: Standortbasierte Erinnerungen hängen von den Systemberechtigungen, der Verfügbarkeit des GPS, dem Gerätezustand, der Netzwerkverbindung sowie den Apple-Ortungsdiensten ab. Erinnerungen werden möglicherweise nicht immer am erwarteten Ort oder zum erwarteten Zeitpunkt ausgelöst.\n\n5. Sprachassistent (Siri): Siri-Kurzbefehle, Sprachbefehle und die damit verbundenen Integrationen hängen vollständig von Apple-Diensten und den Funktionen des Betriebssystems ab. Die Spracherkennung und Sprachinterpretation können variieren und werden weder hinsichtlich ihrer Genauigkeit noch ihrer ständigen Verfügbarkeit garantiert.\n\n6. Karten- und Standortfunktionen: Karten, Routen, Koordinaten, Orte in der Nähe, Reiseinformationen und sonstige standortbezogene Funktionen hängen von Apple Maps, der Genauigkeit des GPS, der Netzwerkverbindung sowie dem Zustand des Geräts ab. Die App übernimmt keine Gewähr für die Genauigkeit, Verfügbarkeit, Vollständigkeit oder Echtzeitaktualität von Karten- oder Standortinformationen.\n\n7. Wetterinformationen: Wettervorhersagen, aktuelle Wetterbedingungen, stündliche und tägliche Vorhersagen, Wettersymbole sowie damit zusammenhängende Wetterinformationen werden ausschließlich zu Informationszwecken bereitgestellt. Wetterdaten hängen von Drittanbietern, dem Gerätestandort, der Netzwerkverbindung und externen Diensten ab. Wettervorhersagen können von den Angaben anderer Wetterdienste abweichen und dürfen niemals als alleinige Grundlage für Notfälle, sicherheitsrelevante, berufliche, luftfahrtbezogene, maritime oder sonstige wichtige Entscheidungen verwendet werden.\n\n8. Kundenkarten, Tickets, Logos, Barcodes und QR-Codes: Kundenkarten, Tickets, Logos, Barcodeinformationen, QR-Codes, generierte Barcodes, gescannte Barcodes sowie die dazugehörigen Bilder werden ausschließlich zur Erleichterung der Nutzung gespeichert. Eine Kompatibilität mit Geschäften, Barcode-Scannern, Ticketsystemen, Zahlungssystemen oder Diensten Dritter wird nicht gewährleistet. Der Nutzer bleibt selbst dafür verantwortlich, die Gültigkeit und Verwendbarkeit der gespeicherten Informationen zu überprüfen.\n\n9. Tresor und gespeicherte Informationen\nDer Tresor ermöglicht das Speichern vertraulicher Informationen, darunter Benutzernamen, E-Mail-Adressen, Passwörter, Websites, PIN-Codes, OTP-Geheimnisse, Notizen, Tags, Favoriten, benutzerdefinierte Geheimnisse, Passwortablaufdaten sowie andere vom Tresor unterstützte Inhalte. Jeder Tresoreintrag kann mehrere benutzerdefinierte Geheimnisse mit benutzerdefinierten Bezeichnungen enthalten. Die App verschlüsselt die im Tresor gespeicherten Informationen mithilfe der auf dem Gerät verfügbaren Sicherheitstechnologien. Dennoch kann keine Software absoluten Schutz vor unbefugtem Zugriff, Datenverlust, Hardwarefehlern, kompromittierten Geräten, Schadsoftware, Geräten mit Jailbreak oder anderen Sicherheitsbedrohungen gewährleisten. Sie sind allein für den Schutz Ihres Geräts, Ihrer Apple-ID, Ihres Gerätecodes und aller im Tresor gespeicherten Informationen verantwortlich.\n\n10. Geräteauthentifizierung: Der Zugriff auf den Tresor kann von Face ID, Touch ID, dem Gerätecode oder anderen vom Betriebssystem bereitgestellten Authentifizierungsmechanismen abhängen. Einzelne Elemente des Tresors können optional auch nach dem Entsperren des Tresors eine biometrische Authentifizierung erfordern. Die App empfängt, speichert oder überträgt niemals biometrische Informationen. Die Verfügbarkeit der Authentifizierung hängt ausschließlich von der Gerätehardware, der Unterstützung durch das Betriebssystem und der vom Nutzer gewählten Konfiguration ab.\n\n11. Passwortgenerator, Zwischenablage und Automatisches Ausfüllen: Die Passwortgenerierung, die Steuerung der Passwortsichtbarkeit, die automatische Sperrung des Tresors, das automatische Leeren der Zwischenablage sowie die Funktionen zum Automatischen Ausfüllen werden ausschließlich zum Komfort des Nutzers bereitgestellt. Generierte Passwörter werden lokal auf dem Gerät erstellt. Inhalte der Zwischenablage können entsprechend dem Verhalten des iOS-Systems bis zu ihrer automatischen oder manuellen Löschung vorübergehend zugänglich bleiben. Das Automatische Ausfüllen setzt eine ordnungsgemäße Systemkonfiguration voraus und hängt von Apples Diensten für das automatische Ausfüllen von Passwörtern, unterstützten Apps, unterstützten Websites sowie den Funktionen des Betriebssystems ab. Die App übernimmt keine Gewähr für die Kompatibilität oder die ordnungsgemäße Funktion des Automatischen Ausfüllens mit beliebigen Websites, Anwendungen oder Diensten.\n\n12. Datenspeicherung, Backups und Synchronisierung: Informationen können lokal auf dem Gerät gespeichert und – sofern aktiviert – über das persönliche iCloud-Konto des Nutzers synchronisiert werden. Sicherungs-, Wiederherstellungs-, Export-, Import- und Synchronisierungsvorgänge hängen vom Zustand des Geräts, der verfügbaren Speicherkapazität, den iCloud-Diensten, Berechtigungen, Softwareversionen sowie weiteren externen Faktoren ab. Backups können Aufgaben, Erinnerungen, Wiederholungsregeln, Anhänge, Kundenkarten, Tickets, Dokumente, Reisen, Tresorelemente, App-Einstellungen und weitere unterstützte Daten enthalten. Backups des Tresors können mit einem vom Nutzer gewählten Passwort verschlüsselt werden. Dieses Passwort wird weder von der App noch von ihren Entwicklern gespeichert und kann im Falle eines Verlusts nicht wiederhergestellt werden. Wiederherstellungsvorgänge können die selektive Wiederherstellung kompatibler Datenkategorien unterstützen. Die App übernimmt keine Gewähr dafür, dass Sicherungs-, Wiederherstellungs-, Synchronisierungs-, Import- oder Exportvorgänge jederzeit erfolgreich, vollständig, fehlerfrei oder wiederherstellbar sind.\n\n13. Dienste Dritter: Bestimmte Funktionen der App sind von Apple-Diensten oder anderen Diensten Dritter abhängig, einschließlich, jedoch nicht beschränkt auf iCloud, Karten, Wetterdienste, Siri, Face ID, Touch ID, Automatisches Ausfüllen von Passwörtern, Wallet sowie Systembenachrichtigungsdienste. Die Verfügbarkeit, Kompatibilität, Leistung, Zuverlässigkeit, Datenschutzpraktiken und der fortlaufende Betrieb dieser Dienste liegen außerhalb des Einflussbereichs der Entwickler der App.\n\n14. Verfügbarkeit der Funktionen: Einige Funktionen stehen möglicherweise nicht auf allen Geräten, in allen Versionen des Betriebssystems, in allen geografischen Regionen, Sprachen, Hardwarekonfigurationen oder Benutzerkonten zur Verfügung. Bestimmte Funktionen erfordern spezielle Berechtigungen, Apple-Dienste, eine Netzwerkverbindung, kompatible Hardware oder unterstützte Versionen des Betriebssystems. Eine dauerhafte Verfügbarkeit oder ein unterbrechungsfreier Betrieb sämtlicher Funktionen der App wird nicht gewährleistet.\n\n15. Import- und Exportfunktionen\nDie unterstützten Import- und Exportfunktionen für Tresor-Anmeldedaten dienen ausschließlich der Datenübertragbarkeit zwischen kompatiblen Anwendungen und Dateiformaten. Die Kompatibilität mit externen Dateiformaten, Cloud-Anbietern, Anwendungen von Drittanbietern und zukünftigen Versionen der App kann nicht garantiert werden. Benutzer sind für die sichere Aufbewahrung exportierter Dateien verantwortlich, insbesondere verschlüsselter Tresor-Backups.\n\n16. Keine Kritische Nutzung: Die App wurde weder entwickelt noch zertifiziert oder vorgesehen für den Einsatz in Notfalldiensten, medizinischen Anwendungen, der Rechtsberatung, finanziellen Entscheidungen, der öffentlichen Sicherheit, industriellen Steuerungssystemen, Navigation, Luftfahrt, militärischen Einsätzen oder anderen sicherheits- bzw. missionskritischen Tätigkeiten, bei denen Verzögerungen, Fehlfunktionen, Ungenauigkeiten oder die Nichtverfügbarkeit von Informationen zu Verletzungen, Todesfällen, Sachschäden, finanziellen Verlusten oder anderen schwerwiegenden Folgen führen könnten.\n\n17. Aktualisierungen, Änderungen und Haftungsbeschränkung: Die App, ihre Funktionen, die unterstützten Leistungsmerkmale sowie dieser Haftungsausschluss können jederzeit und ohne vorherige Ankündigung geändert, aktualisiert, ausgesetzt oder eingestellt werden. Die fortgesetzte Nutzung der App gilt als Zustimmung zu diesen Änderungen. Soweit nach geltendem Recht zulässig, haften die Entwickler weder für direkte noch indirekte, zufällige, Folgeschäden oder besondere Schäden, die sich aus der Nutzung der App, der Unmöglichkeit ihrer Nutzung oder dem Vertrauen auf die App ergeben, einschließlich, jedoch nicht beschränkt auf Datenverlust, Synchronisierungsfehler, Benachrichtigungsausfälle, Fehler bei Sicherung oder Wiederherstellung, vergessene Backup-Passwörter, Fehler beim Automatischen Ausfüllen, Fehler bei der biometrischen Authentifizierung, Unterbrechungen von Diensten Dritter, ungenaue Wetterinformationen, ungenaue Standortinformationen oder unbefugten Zugriff infolge kompromittierter Geräte.\n\nDurch die Nutzung von %@ bestätigen Sie, dass Sie diesen Haftungsausschluss und diese Nutzungsbedingungen gelesen, verstanden und vollständig akzeptiert haben."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Disclaimer and Terms of Use\n\nThe %1$@ App (\"App\") is designed for personal task management, organization, productivity, secure information storage, and personal data management.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization and productivity. All information, reminders, credentials, suggestions, forecasts, generated passwords, maps, and other features are provided for informational and convenience purposes only and do not constitute any guarantee of execution, accuracy, completeness, reliability, or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, activities, stored information, credentials, backups, security settings, and use of the information and features provided by the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, recurrence rules, countdowns, snooze functions, and related reminder features are provided for informational purposes only. While the App schedules notifications using the operating system, their delivery, timing, and accuracy depend on system services, device settings, battery optimization, Focus modes, permissions, connectivity, and other external factors. The App does not guarantee timely delivery or correct operation. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, GPS availability, device conditions, network connectivity, and Apple location services. Reminder triggers may not always occur at the expected place or time.\n\n5. Voice Assistant (Siri): Siri Shortcuts, voice commands, and related integrations depend entirely on Apple services and system capabilities. Voice recognition and interpretation may vary and are not guaranteed to be accurate or available under all conditions.\n\n6. Map and Location Features: Maps, routes, coordinates, nearby locations, travel information, and other location-based features depend on Apple Maps, GPS accuracy, network connectivity, and device conditions. The App does not guarantee the precision, availability, completeness, or real-time accuracy of any map or location information.\n\n7. Weather Information: Weather forecasts, current conditions, hourly forecasts, daily forecasts, weather icons, and related weather information are provided for informational purposes only. Weather data depends on third-party providers, device location, network connectivity, and external services. Forecasts may differ from other weather services and should never be relied upon for emergency, safety-critical, professional, aviation, maritime, or other important decisions.\n\n8. Loyalty Cards, Tickets, Logos, Barcodes, and QR Codes: Loyalty cards, tickets, logos, barcode information, QR codes, generated barcodes, scanned barcodes, and related images are stored solely for user convenience. Compatibility with stores, scanners, ticket systems, payment systems, or third-party services is not guaranteed. Users remain responsible for verifying the validity and usability of stored information.\n\n9. Vault and Stored Information: The Vault allows you to store confidential information including usernames, email addresses, passwords, websites, PIN codes, OTP secrets, recovery codes, customer numbers, security questions and answers, notes, tags, favorites, password history information, password expiration dates, and other supported Vault content. The App encrypts Vault information using the security technologies available on the device. However, no software can guarantee absolute protection against unauthorized access, data loss, hardware failures, compromised devices, malware, jailbroken devices, or other security threats. You are solely responsible for protecting your device, Apple ID, device passcode, and any information stored within the Vault.\n\n10. Device Authentication: Access to the Vault may rely on Face ID, Touch ID, device passcode, or other authentication mechanisms provided by the operating system. Individual Vault items may optionally require biometric authentication even after the Vault has been unlocked. The App never receives, stores, or transmits biometric information. Authentication availability depends entirely on device hardware, operating system support, and user configuration.\n\n11. Password Generator, Clipboard, and AutoFill: Password generation, password visibility controls, automatic Vault locking, clipboard auto-clearing, and AutoFill features are provided solely for user convenience. Generated passwords are created locally on the device. Clipboard contents may temporarily remain accessible according to iOS system behavior until automatically cleared or manually removed. AutoFill requires proper system configuration and depends on Apple Password AutoFill services, supported applications, supported websites, and operating system capabilities. The App does not guarantee AutoFill compatibility or correct operation with every website, application, or service.\n\n12. Data Storage, Backups, and Synchronization: Information may be stored locally on the device and, where enabled, synchronized through the user's personal iCloud account. Backup, restore, export, import, and synchronization operations depend on device conditions, storage availability, iCloud services, permissions, software versions, and other external factors. Backups may include tasks, reminders, recurrence rules, attachments, loyalty cards, tickets, documents, trips, Vault items, application settings, and other supported data. Vault backups may be encrypted using a password chosen by the user. This password is never stored by the App or its developers and cannot be recovered if forgotten. Restore operations may support selective restoration of compatible data categories. The App does not guarantee that any backup, restore, synchronization, import, or export operation will always be successful, complete, accurate, or recoverable.\n\n13. Third-Party Services: Certain App features rely on Apple services or other third-party services, including but not limited to iCloud, Maps, Weather providers, Siri, Face ID, Touch ID, Password AutoFill, Wallet, and system notification services. The availability, compatibility, performance, reliability, privacy practices, and continued operation of these services are outside the control of the App developers.\n\n14. Feature Availability: Some features may not be available on every device, operating system version, geographic region, language, hardware configuration, or user account. Certain functions require specific permissions, Apple services, network connectivity, compatible hardware, or supported operating system versions. Continuous availability or uninterrupted operation of all App features is not guaranteed.\n\n15. Import and Export Features: Import, export, sharing, backup, restore, and migration features are provided for convenience only. Compatibility with external file formats, cloud providers, third-party applications, and future versions of the App cannot be guaranteed. Users are responsible for securely storing exported files, especially encrypted Vault backups.\n\n16. No Critical Use: The App is not designed, certified, or intended for emergency services, medical use, legal advice, financial decision-making, public safety, industrial control, navigation, aviation, military operations, or any mission-critical activity where delays, failures, inaccuracies, or unavailable information could result in injury, death, property damage, financial loss, or other significant consequences.\n\n17. Updates, Changes, and Limitation of Liability: The App, its functionality, supported features, and this Disclaimer may be modified, updated, suspended, or discontinued at any time without prior notice. Continued use of the App constitutes acceptance of any such changes. To the fullest extent permitted by applicable law, the developers shall not be liable for any direct, indirect, incidental, consequential, or special damages arising from the use of, inability to use, or reliance upon the App, including but not limited to data loss, synchronization failures, notification failures, backup or restore failures, forgotten backup passwords, AutoFill failures, biometric authentication failures, third-party service interruptions, inaccurate weather information, inaccurate location information, or unauthorized access resulting from compromised devices.\n\nBy using %2$@, you confirm that you have read, understood, and fully accepted this Disclaimer and Terms of Use."
+            "value" : "Disclaimer and Terms of Use\n\nThe %1$@ App (\"App\") is designed for personal task management, organization, productivity, secure information storage, and personal data management.\n\nBy using the App, you acknowledge and agree to the following:\n\n1. Purpose of the App: The App is intended solely for personal organization and productivity. All information, reminders, credentials, suggestions, forecasts, generated passwords, maps, and other features are provided for informational and convenience purposes only and do not constitute any guarantee of execution, accuracy, completeness, reliability, or outcome.\n\n2. User Responsibility: The App is provided \"as is\", without warranties of any kind, express or implied. You are solely responsible for your decisions, activities, stored information, credentials, backups, security settings, and use of the information and features provided by the App.\n\n3. Notifications, Badges, and Reminders: Notifications, app icon badges, reminders, recurrence rules, countdowns, snooze functions, and related reminder features are provided for informational purposes only. While the App schedules notifications using the operating system, their delivery, timing, and accuracy depend on system services, device settings, battery optimization, Focus modes, permissions, connectivity, and other external factors. The App does not guarantee timely delivery or correct operation. You should not rely exclusively on these features for critical or time-sensitive tasks.\n\n4. Location-Based Reminders: Location-based reminders depend on system permissions, GPS availability, device conditions, network connectivity, and Apple location services. Reminder triggers may not always occur at the expected place or time.\n\n5. Voice Assistant (Siri): Siri Shortcuts, voice commands, and related integrations depend entirely on Apple services and system capabilities. Voice recognition and interpretation may vary and are not guaranteed to be accurate or available under all conditions.\n\n6. Map and Location Features: Maps, routes, coordinates, nearby locations, travel information, and other location-based features depend on Apple Maps, GPS accuracy, network connectivity, and device conditions. The App does not guarantee the precision, availability, completeness, or real-time accuracy of any map or location information.\n\n7. Weather Information: Weather forecasts, current conditions, hourly forecasts, daily forecasts, weather icons, and related weather information are provided for informational purposes only. Weather data depends on third-party providers, device location, network connectivity, and external services. Forecasts may differ from other weather services and should never be relied upon for emergency, safety-critical, professional, aviation, maritime, or other important decisions.\n\n8. Loyalty Cards, Tickets, Logos, Barcodes, and QR Codes: Loyalty cards, tickets, logos, barcode information, QR codes, generated barcodes, scanned barcodes, and related images are stored solely for user convenience. Compatibility with stores, scanners, ticket systems, payment systems, or third-party services is not guaranteed. Users remain responsible for verifying the validity and usability of stored information.\n\n9. Vault and Stored Information: The Vault allows you to store confidential information including usernames, email addresses, passwords, websites, PIN codes, OTP secrets, notes, tags, favorites, custom secrets, password expiration dates, and other supported Vault content. Each Vault item may contain multiple custom secrets with user-defined labels. The App encrypts Vault information using the security technologies available on the device. However, no software can guarantee absolute protection against unauthorized access, data loss, hardware failures, compromised devices, malware, jailbroken devices, or other security threats. You are solely responsible for protecting your device, Apple ID, device passcode, and any information stored within the Vault.\n\n10. Device Authentication: Access to the Vault may rely on Face ID, Touch ID, device passcode, or other authentication mechanisms provided by the operating system. Individual Vault items may optionally require biometric authentication even after the Vault has been unlocked. The App never receives, stores, or transmits biometric information. Authentication availability depends entirely on device hardware, operating system support, and user configuration.\n\n11. Password Generator, Clipboard, and AutoFill: Password generation, password visibility controls, automatic Vault locking, clipboard auto-clearing, and AutoFill features are provided solely for user convenience. Generated passwords are created locally on the device. Clipboard contents may temporarily remain accessible according to iOS system behavior until automatically cleared or manually removed. AutoFill requires proper system configuration and depends on Apple Password AutoFill services, supported applications, supported websites, and operating system capabilities. The App does not guarantee AutoFill compatibility or correct operation with every website, application, or service.\n\n12. Data Storage, Backups, and Synchronization: Information may be stored locally on the device and, where enabled, synchronized through the user's personal iCloud account. Backup, restore, export, import, and synchronization operations depend on device conditions, storage availability, iCloud services, permissions, software versions, and other external factors. Backups may include tasks, reminders, recurrence rules, attachments, loyalty cards, tickets, documents, trips, Vault items, application settings, and other supported data. Vault backups may be encrypted using a password chosen by the user. This password is never stored by the App or its developers and cannot be recovered if forgotten. Restore operations may support selective restoration of compatible data categories. The App does not guarantee that any backup, restore, synchronization, import, or export operation will always be successful, complete, accurate, or recoverable.\n\n13. Third-Party Services: Certain App features rely on Apple services or other third-party services, including but not limited to iCloud, Maps, Weather providers, Siri, Face ID, Touch ID, Password AutoFill, Wallet, and system notification services. The availability, compatibility, performance, reliability, privacy practices, and continued operation of these services are outside the control of the App developers.\n\n14. Feature Availability: Some features may not be available on every device, operating system version, geographic region, language, hardware configuration, or user account. Certain functions require specific permissions, Apple services, network connectivity, compatible hardware, or supported operating system versions. Continuous availability or uninterrupted operation of all App features is not guaranteed.\n\n15. Import and Export Features: Supported Vault credential import and export features are intended solely for data portability between compatible applications and file formats. Compatibility with external file formats, cloud providers, third-party applications, and future versions of the App cannot be guaranteed. Users are responsible for securely storing exported files, especially encrypted Vault backups.\n\n16. No Critical Use: The App is not designed, certified, or intended for emergency services, medical use, legal advice, financial decision-making, public safety, industrial control, navigation, aviation, military operations, or any mission-critical activity where delays, failures, inaccuracies, or unavailable information could result in injury, death, property damage, financial loss, or other significant consequences.\n\n17. Updates, Changes, and Limitation of Liability: The App, its functionality, supported features, and this Disclaimer may be modified, updated, suspended, or discontinued at any time without prior notice. Continued use of the App constitutes acceptance of any such changes. To the fullest extent permitted by applicable law, the developers shall not be liable for any direct, indirect, incidental, consequential, or special damages arising from the use of, inability to use, or reliance upon the App, including but not limited to data loss, synchronization failures, notification failures, backup or restore failures, forgotten backup passwords, AutoFill failures, biometric authentication failures, third-party service interruptions, inaccurate weather information, inaccurate location information, or unauthorized access resulting from compromised devices.\n\nBy using %2$@, you confirm that you have read, understood, and fully accepted this Disclaimer and Terms of Use."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Descargo de Responsabilidad y Condiciones de Uso\n\nLa aplicación %@ (la «Aplicación») ha sido diseñada para la gestión de tareas personales, la organización, la productividad, el almacenamiento seguro de información y la gestión de datos personales.\n\nAl utilizar la Aplicación, el usuario declara haber leído y aceptado las siguientes disposiciones:\n\n1. Finalidad de la Aplicación: La Aplicación está destinada exclusivamente a la organización personal y la productividad. Toda la información, recordatorios, credenciales, sugerencias, previsiones, contraseñas generadas, tarjetas y demás funcionalidades se proporcionan únicamente con fines informativos y para la comodidad del usuario. No constituyen garantía alguna respecto a su ejecución, exactitud, integridad, fiabilidad o a los resultados obtenidos.\n\n2. Responsabilidad del Usuario: La Aplicación se proporciona «tal cual», sin ningún tipo de garantía, expresa o implícita. El usuario es el único responsable de sus decisiones, actividades, información almacenada, credenciales, copias de seguridad, configuraciones de seguridad y del uso de la información y de las funcionalidades ofrecidas por la Aplicación.\n\n3. Notificaciones, Insignias y Recordatorios: Las notificaciones, las insignias del icono de la Aplicación, los recordatorios, las reglas de repetición, las cuentas atrás, las funciones de aplazamiento (Snooze) y las funcionalidades relacionadas se proporcionan únicamente con fines informativos. Aunque la Aplicación programa las notificaciones mediante el sistema operativo, su entrega, puntualidad y exactitud dependen de los servicios del sistema, la configuración del dispositivo, la optimización de la batería, los modos de Concentración, los permisos, la conectividad y otros factores externos. La Aplicación no garantiza la recepción puntual de las notificaciones ni el correcto funcionamiento de dichas funciones. No deben utilizarse como único medio de referencia para actividades críticas o sensibles al tiempo.\n\n4. Recordatorios Basados en la Ubicación: Los recordatorios basados en la ubicación dependen de los permisos del sistema, la disponibilidad del GPS, el estado del dispositivo, la conectividad de red y los servicios de localización de Apple. Es posible que los recordatorios no se activen en el lugar o en el momento previstos.\n\n5. Asistente de Voz (Siri): Los Atajos de Siri, los comandos de voz y las integraciones relacionadas dependen por completo de los servicios de Apple y de las capacidades del sistema operativo. El reconocimiento e interpretación de la voz pueden variar y no se garantiza que sean siempre precisos o estén disponibles en todas las circunstancias.\n\n6. Mapas y Funciones de Ubicación: Los mapas, rutas, coordenadas, lugares cercanos, información de viajes y demás funciones relacionadas con la ubicación dependen de Apple Maps, de la precisión del GPS, de la conectividad de red y del estado del dispositivo. La Aplicación no garantiza la exactitud, disponibilidad, integridad ni la actualización en tiempo real de la información cartográfica o de ubicación.\n\n7. Información Meteorológica: Las previsiones meteorológicas, las condiciones actuales, las previsiones horarias y diarias, los iconos del tiempo y la información relacionada se proporcionan únicamente con fines informativos. Los datos meteorológicos dependen de proveedores externos, de la ubicación del dispositivo, de la conectividad de red y de servicios externos. Las previsiones pueden diferir de las ofrecidas por otros servicios meteorológicos y nunca deben utilizarse como base para decisiones de emergencia, seguridad, profesionales, aeronáuticas, marítimas o de cualquier otra naturaleza crítica.\n\n8. Tarjetas de Fidelización, Entradas, Logotipos, Códigos de Barras y Códigos QR: Las tarjetas de fidelización, entradas, logotipos, información de códigos de barras, códigos QR, códigos de barras generados, códigos de barras escaneados y las imágenes asociadas se almacenan únicamente para comodidad del usuario. No se garantiza la compatibilidad con comercios, lectores de códigos, sistemas de entradas, sistemas de pago o servicios de terceros. El usuario sigue siendo responsable de verificar la validez y la utilidad de la información almacenada.\n\n9. Caja Fuerte e Información Almacenada: La Caja Fuerte permite almacenar información confidencial, incluidos nombres de usuario, direcciones de correo electrónico, contraseñas, sitios web, códigos PIN, claves secretas OTP, códigos de recuperación, números de cliente, preguntas y respuestas de seguridad, notas, etiquetas, favoritos, historial de contraseñas, fechas de caducidad de contraseñas y cualquier otro contenido compatible con la Caja Fuerte. La Aplicación protege la información almacenada mediante las tecnologías de seguridad disponibles en el dispositivo. Sin embargo, ningún software puede garantizar una protección absoluta frente a accesos no autorizados, pérdida de datos, fallos de hardware, dispositivos comprometidos, software malicioso, dispositivos con jailbreak u otras amenazas de seguridad. El usuario es el único responsable de proteger su dispositivo, su cuenta de Apple, el código de desbloqueo del dispositivo y toda la información almacenada en la Caja Fuerte.\n\n10. Autenticación del Dispositivo: El acceso a la Caja Fuerte puede depender de Face ID, Touch ID, el código de desbloqueo del dispositivo u otros mecanismos de autenticación proporcionados por el sistema operativo. Los elementos individuales de la Caja Fuerte pueden requerir, de forma opcional, autenticación biométrica incluso después de haber desbloqueado la Caja Fuerte. La Aplicación nunca recibe, almacena ni transmite información biométrica. La disponibilidad de la autenticación depende exclusivamente del hardware del dispositivo, del soporte del sistema operativo y de la configuración elegida por el usuario.\n\n11. Generador de Contraseñas, Portapapeles y Autorrelleno: La generación de contraseñas, los controles de visibilidad de las contraseñas, el bloqueo automático de la Caja Fuerte, el borrado automático del portapapeles y las funciones de Autorrelleno se proporcionan únicamente para la comodidad del usuario. Las contraseñas generadas se crean localmente en el dispositivo. El contenido del portapapeles puede permanecer temporalmente accesible conforme al funcionamiento de iOS hasta que sea eliminado automática o manualmente. El Autorrelleno requiere una configuración adecuada del sistema y depende de los servicios de Autorrelleno de Contraseñas de Apple, de aplicaciones compatibles, de sitios web compatibles y de las capacidades del sistema operativo. La Aplicación no garantiza la compatibilidad ni el correcto funcionamiento del Autorrelleno con ningún sitio web, aplicación o servicio.\n\n12. Almacenamiento de Datos, Copias de Seguridad y Sincronización: La información puede almacenarse localmente en el dispositivo y, cuando esté habilitado, sincronizarse mediante la cuenta personal de iCloud del usuario. Las operaciones de copia de seguridad, restauración, exportación, importación y sincronización dependen del estado del dispositivo, de la disponibilidad de almacenamiento, de los servicios de iCloud, de los permisos, de las versiones del software y de otros factores externos. Las copias de seguridad pueden incluir tareas, recordatorios, reglas de repetición, archivos adjuntos, tarjetas de fidelización, entradas, documentos, viajes, elementos de la Caja Fuerte, ajustes de la Aplicación y cualquier otro dato compatible. Las copias de seguridad de la Caja Fuerte pueden cifrarse mediante una contraseña elegida por el usuario. Dicha contraseña nunca es almacenada por la Aplicación ni por sus desarrolladores y no podrá recuperarse si se olvida. Las operaciones de restauración pueden permitir la restauración selectiva de categorías de datos compatibles. La Aplicación no garantiza que las operaciones de copia de seguridad, restauración, sincronización, importación o exportación se completen siempre con éxito, de forma íntegra, exacta o recuperable.\n\n13. Servicios de Terceros: Algunas funciones de la Aplicación dependen de servicios de Apple u otros servicios de terceros, incluidos, entre otros, iCloud, Mapas, proveedores de información meteorológica, Siri, Face ID, Touch ID, Autorrelleno de Contraseñas, Wallet y los servicios de notificaciones del sistema. La disponibilidad, compatibilidad, rendimiento, fiabilidad, prácticas de privacidad y funcionamiento continuado de dichos servicios están fuera del control de los desarrolladores de la Aplicación.\n\n14. Disponibilidad de las Funciones: Es posible que algunas funciones no estén disponibles en todos los dispositivos, versiones del sistema operativo, regiones geográficas, idiomas, configuraciones de hardware o cuentas de usuario. Determinadas funciones requieren permisos específicos, servicios de Apple, conexión de red, hardware compatible o versiones compatibles del sistema operativo. No se garantiza la disponibilidad permanente ni el funcionamiento ininterrumpido de todas las funciones de la Aplicación.\n\n15. Funciones de Importación y Exportación: Las funciones de importación, exportación, uso compartido, copia de seguridad, restauración y migración se proporcionan únicamente para la comodidad del usuario. No puede garantizarse la compatibilidad con formatos de archivo externos, proveedores de almacenamiento en la nube, aplicaciones de terceros o futuras versiones de la Aplicación. El usuario es responsable de conservar de forma segura los archivos exportados, especialmente las copias de seguridad cifradas de la Caja Fuerte.\n\n16. Ausencia de Uso Crítico: La Aplicación no ha sido diseñada, certificada ni destinada para su utilización en servicios de emergencia, aplicaciones médicas, asesoramiento jurídico, decisiones financieras, seguridad pública, control industrial, navegación, aviación, operaciones militares o cualquier otra actividad crítica en la que retrasos, fallos, imprecisiones o la indisponibilidad de la información puedan causar lesiones, fallecimientos, daños materiales, pérdidas económicas u otras consecuencias graves.\n\n17. Actualizaciones, Modificaciones y Limitación de Responsabilidad: La Aplicación, sus funciones, las características compatibles y el presente Descargo de Responsabilidad podrán modificarse, actualizarse, suspenderse o interrumpirse en cualquier momento y sin previo aviso. El uso continuado de la Aplicación implica la aceptación de dichas modificaciones. En la máxima medida permitida por la legislación aplicable, los desarrolladores no serán responsables de ningún daño directo, indirecto, incidental, consecuente o especial derivado del uso de la Aplicación, de la imposibilidad de utilizarla o de la confianza depositada en ella, incluidos, entre otros, la pérdida de datos, errores de sincronización, fallos de las notificaciones, errores en las copias de seguridad o restauraciones, el olvido de la contraseña de copia de seguridad, fallos del Autorrelleno, errores de autenticación biométrica, interrupciones de servicios de terceros, información meteorológica inexacta, información de ubicación inexacta o accesos no autorizados como consecuencia de dispositivos comprometidos.\n\nAl utilizar %@, usted confirma que ha leído, comprendido y aceptado íntegramente el presente Descargo de Responsabilidad y las presentes Condiciones de Uso.\n"
+            "value" : "Descargo de Responsabilidad y Condiciones de Uso\n\nLa aplicación %@ (la «Aplicación») ha sido diseñada para la gestión de tareas personales, la organización, la productividad, el almacenamiento seguro de información y la gestión de datos personales.\n\nAl utilizar la Aplicación, el usuario declara haber leído y aceptado las siguientes disposiciones:\n\n1. Finalidad de la Aplicación: La Aplicación está destinada exclusivamente a la organización personal y la productividad. Toda la información, recordatorios, credenciales, sugerencias, previsiones, contraseñas generadas, tarjetas y demás funcionalidades se proporcionan únicamente con fines informativos y para la comodidad del usuario. No constituyen garantía alguna respecto a su ejecución, exactitud, integridad, fiabilidad o a los resultados obtenidos.\n\n2. Responsabilidad del Usuario: La Aplicación se proporciona «tal cual», sin ningún tipo de garantía, expresa o implícita. El usuario es el único responsable de sus decisiones, actividades, información almacenada, credenciales, copias de seguridad, configuraciones de seguridad y del uso de la información y de las funcionalidades ofrecidas por la Aplicación.\n\n3. Notificaciones, Insignias y Recordatorios: Las notificaciones, las insignias del icono de la Aplicación, los recordatorios, las reglas de repetición, las cuentas atrás, las funciones de aplazamiento (Snooze) y las funcionalidades relacionadas se proporcionan únicamente con fines informativos. Aunque la Aplicación programa las notificaciones mediante el sistema operativo, su entrega, puntualidad y exactitud dependen de los servicios del sistema, la configuración del dispositivo, la optimización de la batería, los modos de Concentración, los permisos, la conectividad y otros factores externos. La Aplicación no garantiza la recepción puntual de las notificaciones ni el correcto funcionamiento de dichas funciones. No deben utilizarse como único medio de referencia para actividades críticas o sensibles al tiempo.\n\n4. Recordatorios Basados en la Ubicación: Los recordatorios basados en la ubicación dependen de los permisos del sistema, la disponibilidad del GPS, el estado del dispositivo, la conectividad de red y los servicios de localización de Apple. Es posible que los recordatorios no se activen en el lugar o en el momento previstos.\n\n5. Asistente de Voz (Siri): Los Atajos de Siri, los comandos de voz y las integraciones relacionadas dependen por completo de los servicios de Apple y de las capacidades del sistema operativo. El reconocimiento e interpretación de la voz pueden variar y no se garantiza que sean siempre precisos o estén disponibles en todas las circunstancias.\n\n6. Mapas y Funciones de Ubicación: Los mapas, rutas, coordenadas, lugares cercanos, información de viajes y demás funciones relacionadas con la ubicación dependen de Apple Maps, de la precisión del GPS, de la conectividad de red y del estado del dispositivo. La Aplicación no garantiza la exactitud, disponibilidad, integridad ni la actualización en tiempo real de la información cartográfica o de ubicación.\n\n7. Información Meteorológica: Las previsiones meteorológicas, las condiciones actuales, las previsiones horarias y diarias, los iconos del tiempo y la información relacionada se proporcionan únicamente con fines informativos. Los datos meteorológicos dependen de proveedores externos, de la ubicación del dispositivo, de la conectividad de red y de servicios externos. Las previsiones pueden diferir de las ofrecidas por otros servicios meteorológicos y nunca deben utilizarse como base para decisiones de emergencia, seguridad, profesionales, aeronáuticas, marítimas o de cualquier otra naturaleza crítica.\n\n8. Tarjetas de Fidelización, Entradas, Logotipos, Códigos de Barras y Códigos QR: Las tarjetas de fidelización, entradas, logotipos, información de códigos de barras, códigos QR, códigos de barras generados, códigos de barras escaneados y las imágenes asociadas se almacenan únicamente para comodidad del usuario. No se garantiza la compatibilidad con comercios, lectores de códigos, sistemas de entradas, sistemas de pago o servicios de terceros. El usuario sigue siendo responsable de verificar la validez y la utilidad de la información almacenada.\n\n9. Caja fuerte e información almacenada\nLa Caja fuerte permite almacenar información confidencial, incluidos nombres de usuario, direcciones de correo electrónico, contraseñas, sitios web, códigos PIN, secretos OTP, notas, etiquetas, favoritos, secretos personalizados, fechas de caducidad de las contraseñas y otros contenidos compatibles con la Caja fuerte. Cada elemento de la Caja fuerte puede contener varios secretos personalizados con etiquetas definidas por el usuario. La App cifra la información de la Caja fuerte utilizando las tecnologías de seguridad disponibles en el dispositivo. Sin embargo, ningún software puede garantizar una protección absoluta frente a accesos no autorizados, pérdida de datos, fallos de hardware, dispositivos comprometidos, malware, dispositivos con jailbreak u otras amenazas de seguridad. Usted es el único responsable de proteger su dispositivo, su Apple ID, el código de desbloqueo del dispositivo y cualquier información almacenada en la Caja fuerte.\n\n10. Autenticación del Dispositivo: El acceso a la Caja Fuerte puede depender de Face ID, Touch ID, el código de desbloqueo del dispositivo u otros mecanismos de autenticación proporcionados por el sistema operativo. Los elementos individuales de la Caja Fuerte pueden requerir, de forma opcional, autenticación biométrica incluso después de haber desbloqueado la Caja Fuerte. La Aplicación nunca recibe, almacena ni transmite información biométrica. La disponibilidad de la autenticación depende exclusivamente del hardware del dispositivo, del soporte del sistema operativo y de la configuración elegida por el usuario.\n\n11. Generador de Contraseñas, Portapapeles y Autorrelleno: La generación de contraseñas, los controles de visibilidad de las contraseñas, el bloqueo automático de la Caja Fuerte, el borrado automático del portapapeles y las funciones de Autorrelleno se proporcionan únicamente para la comodidad del usuario. Las contraseñas generadas se crean localmente en el dispositivo. El contenido del portapapeles puede permanecer temporalmente accesible conforme al funcionamiento de iOS hasta que sea eliminado automática o manualmente. El Autorrelleno requiere una configuración adecuada del sistema y depende de los servicios de Autorrelleno de Contraseñas de Apple, de aplicaciones compatibles, de sitios web compatibles y de las capacidades del sistema operativo. La Aplicación no garantiza la compatibilidad ni el correcto funcionamiento del Autorrelleno con ningún sitio web, aplicación o servicio.\n\n12. Almacenamiento de Datos, Copias de Seguridad y Sincronización: La información puede almacenarse localmente en el dispositivo y, cuando esté habilitado, sincronizarse mediante la cuenta personal de iCloud del usuario. Las operaciones de copia de seguridad, restauración, exportación, importación y sincronización dependen del estado del dispositivo, de la disponibilidad de almacenamiento, de los servicios de iCloud, de los permisos, de las versiones del software y de otros factores externos. Las copias de seguridad pueden incluir tareas, recordatorios, reglas de repetición, archivos adjuntos, tarjetas de fidelización, entradas, documentos, viajes, elementos de la Caja Fuerte, ajustes de la Aplicación y cualquier otro dato compatible. Las copias de seguridad de la Caja Fuerte pueden cifrarse mediante una contraseña elegida por el usuario. Dicha contraseña nunca es almacenada por la Aplicación ni por sus desarrolladores y no podrá recuperarse si se olvida. Las operaciones de restauración pueden permitir la restauración selectiva de categorías de datos compatibles. La Aplicación no garantiza que las operaciones de copia de seguridad, restauración, sincronización, importación o exportación se completen siempre con éxito, de forma íntegra, exacta o recuperable.\n\n13. Servicios de Terceros: Algunas funciones de la Aplicación dependen de servicios de Apple u otros servicios de terceros, incluidos, entre otros, iCloud, Mapas, proveedores de información meteorológica, Siri, Face ID, Touch ID, Autorrelleno de Contraseñas, Wallet y los servicios de notificaciones del sistema. La disponibilidad, compatibilidad, rendimiento, fiabilidad, prácticas de privacidad y funcionamiento continuado de dichos servicios están fuera del control de los desarrolladores de la Aplicación.\n\n14. Disponibilidad de las Funciones: Es posible que algunas funciones no estén disponibles en todos los dispositivos, versiones del sistema operativo, regiones geográficas, idiomas, configuraciones de hardware o cuentas de usuario. Determinadas funciones requieren permisos específicos, servicios de Apple, conexión de red, hardware compatible o versiones compatibles del sistema operativo. No se garantiza la disponibilidad permanente ni el funcionamiento ininterrumpido de todas las funciones de la Aplicación.\n\n15. Funciones de importación y exportación\nLas funciones compatibles de importación y exportación de credenciales de la Caja fuerte están destinadas exclusivamente a facilitar la portabilidad de los datos entre aplicaciones y formatos de archivo compatibles. No se puede garantizar la compatibilidad con formatos de archivo externos, proveedores de servicios en la nube, aplicaciones de terceros ni futuras versiones de la App. Los usuarios son responsables de almacenar de forma segura los archivos exportados, especialmente las copias de seguridad cifradas de la Caja fuerte.\n\n16. Ausencia de Uso Crítico: La Aplicación no ha sido diseñada, certificada ni destinada para su utilización en servicios de emergencia, aplicaciones médicas, asesoramiento jurídico, decisiones financieras, seguridad pública, control industrial, navegación, aviación, operaciones militares o cualquier otra actividad crítica en la que retrasos, fallos, imprecisiones o la indisponibilidad de la información puedan causar lesiones, fallecimientos, daños materiales, pérdidas económicas u otras consecuencias graves.\n\n17. Actualizaciones, Modificaciones y Limitación de Responsabilidad: La Aplicación, sus funciones, las características compatibles y el presente Descargo de Responsabilidad podrán modificarse, actualizarse, suspenderse o interrumpirse en cualquier momento y sin previo aviso. El uso continuado de la Aplicación implica la aceptación de dichas modificaciones. En la máxima medida permitida por la legislación aplicable, los desarrolladores no serán responsables de ningún daño directo, indirecto, incidental, consecuente o especial derivado del uso de la Aplicación, de la imposibilidad de utilizarla o de la confianza depositada en ella, incluidos, entre otros, la pérdida de datos, errores de sincronización, fallos de las notificaciones, errores en las copias de seguridad o restauraciones, el olvido de la contraseña de copia de seguridad, fallos del Autorrelleno, errores de autenticación biométrica, interrupciones de servicios de terceros, información meteorológica inexacta, información de ubicación inexacta o accesos no autorizados como consecuencia de dispositivos comprometidos.\n\nAl utilizar %@, usted confirma que ha leído, comprendido y aceptado íntegramente el presente Descargo de Responsabilidad y las presentes Condiciones de Uso.\n"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clause de Non-Responsabilité et Conditions d'Utilisation\n\nL'application %@ (« l'Application ») est conçue pour la gestion des tâches personnelles, l'organisation, la productivité, le stockage sécurisé des informations et la gestion des données personnelles.\n\nEn utilisant l'Application, vous reconnaissez avoir pris connaissance des dispositions suivantes et les accepter :\n\n1. Objet de l'Application : L'Application est exclusivement destinée à l'organisation personnelle et à la productivité. Toutes les informations, rappels, identifiants, suggestions, prévisions, mots de passe générés, cartes, ainsi que les autres fonctionnalités, sont fournis uniquement à titre informatif et pour votre confort d'utilisation. Ils ne constituent aucune garantie quant à l'exécution, l'exactitude, l'exhaustivité, la fiabilité ou aux résultats obtenus.\n\n2. Responsabilité de l'Utilisateur : L'Application est fournie « en l'état », sans aucune garantie, expresse ou implicite. Vous êtes seul responsable de vos décisions, de vos activités, des informations enregistrées, de vos identifiants, de vos sauvegardes, de vos paramètres de sécurité ainsi que de l'utilisation des informations et des fonctionnalités mises à disposition par l'Application.\n\n3. Notifications, Badges et Rappels : Les notifications, les badges de l'icône de l'Application, les rappels, les règles de récurrence, les comptes à rebours, les fonctions de report (Snooze) et les fonctionnalités associées sont fournis uniquement à titre informatif. Bien que l'Application programme les notifications à l'aide du système d'exploitation, leur distribution, leur ponctualité et leur exactitude dépendent des services système, des réglages de l'appareil, de l'optimisation de la batterie, des modes Concentration, des autorisations, de la connectivité ainsi que d'autres facteurs externes. L'Application ne garantit ni la réception en temps voulu des notifications ni le bon fonctionnement de ces fonctionnalités. Vous ne devez pas vous y fier exclusivement pour des activités critiques ou sensibles au facteur temps.\n\n4. Rappels Basés sur la Localisation : Les rappels géolocalisés dépendent des autorisations du système, de la disponibilité du GPS, de l'état de l'appareil, de la connectivité réseau ainsi que des services de localisation d'Apple. Leur déclenchement peut ne pas se produire à l'endroit ou au moment attendu.\n\n5. Assistant Vocal (Siri) : Les Raccourcis Siri, les commandes vocales et les intégrations associées dépendent entièrement des services Apple et des capacités du système d'exploitation. La reconnaissance et l'interprétation vocales peuvent varier et ne sont pas garanties comme étant toujours exactes ou disponibles dans toutes les circonstances.\n\n6. Cartes et Fonctionnalités de Localisation : Les cartes, itinéraires, coordonnées, lieux à proximité, informations de voyage et autres fonctionnalités liées à la localisation dépendent d'Apple Maps, de la précision du GPS, de la connectivité réseau et de l'état de l'appareil. L'Application ne garantit ni la précision, ni la disponibilité, ni l'exhaustivité, ni l'exactitude en temps réel des informations cartographiques ou de localisation.\n\n7. Informations Météorologiques : Les prévisions météorologiques, les conditions actuelles, les prévisions horaires, les prévisions quotidiennes, les icônes météo et les informations associées sont fournies uniquement à titre informatif. Les données météorologiques dépendent de fournisseurs tiers, de la localisation de l'appareil, de la connectivité réseau et de services externes. Les prévisions peuvent différer de celles d'autres services météorologiques et ne doivent jamais servir de base à des décisions d'urgence, de sécurité, professionnelles, aéronautiques, maritimes ou à toute autre décision importante.\n\n8. Cartes de Fidélité, Billets, Logos, Codes-Barres et Codes QR : Les cartes de fidélité, billets, logos, informations de codes-barres, codes QR, codes-barres générés, codes-barres numérisés ainsi que les images associées sont enregistrés uniquement pour le confort de l'utilisateur. La compatibilité avec les magasins, lecteurs de codes, systèmes de billetterie, systèmes de paiement ou services tiers n'est pas garantie. L'utilisateur demeure responsable de vérifier la validité et l'utilisabilité des informations enregistrées.\n\n9. Coffre-Fort et Informations Enregistrées : Le Coffre-Fort permet de stocker des informations confidentielles, notamment des noms d'utilisateur, adresses e-mail, mots de passe, sites web, codes PIN, clés secrètes OTP, codes de récupération, numéros de client, questions et réponses de sécurité, notes, étiquettes, favoris, historique des mots de passe, dates d'expiration des mots de passe ainsi que tout autre contenu pris en charge par le Coffre-Fort. L'Application protège les informations du Coffre-Fort au moyen des technologies de sécurité disponibles sur l'appareil. Toutefois, aucun logiciel ne peut garantir une protection absolue contre les accès non autorisés, les pertes de données, les défaillances matérielles, les appareils compromis, les logiciels malveillants, les appareils jailbreakés ou toute autre menace de sécurité. Vous êtes seul responsable de la protection de votre appareil, de votre compte Apple, du code de déverrouillage de votre appareil ainsi que de toutes les informations enregistrées dans le Coffre-Fort.\n\n10. Authentification de l'Appareil : L'accès au Coffre-Fort peut reposer sur Face ID, Touch ID, le code de déverrouillage de l'appareil ou tout autre mécanisme d'authentification fourni par le système d'exploitation. Les éléments individuels du Coffre-Fort peuvent, de manière facultative, exiger une authentification biométrique même après le déverrouillage du Coffre-Fort. L'Application ne reçoit, ne stocke ni ne transmet jamais d'informations biométriques. La disponibilité de l'authentification dépend exclusivement du matériel de l'appareil, de la prise en charge par le système d'exploitation et de la configuration choisie par l'utilisateur.\n\n11. Générateur de Mots de Passe, Presse-papiers et Remplissage Automatique : La génération de mots de passe, les contrôles de visibilité des mots de passe, le verrouillage automatique du Coffre-Fort, l'effacement automatique du presse-papiers et les fonctionnalités de Remplissage Automatique sont fournis uniquement pour le confort de l'utilisateur. Les mots de passe générés sont créés localement sur l'appareil. Le contenu du presse-papiers peut rester temporairement accessible conformément au fonctionnement d'iOS jusqu'à sa suppression automatique ou manuelle. Le Remplissage Automatique nécessite une configuration correcte du système et dépend des services Apple de Remplissage Automatique des Mots de Passe, des applications compatibles, des sites web compatibles ainsi que des fonctionnalités du système d'exploitation. L'Application ne garantit ni la compatibilité ni le bon fonctionnement du Remplissage Automatique avec un quelconque site web, une quelconque application ou un quelconque service.\n\n12. Stockage des Données, Sauvegardes et Synchronisation : Les informations peuvent être stockées localement sur l'appareil et, lorsqu'elle est activée, synchronisées via le compte iCloud personnel de l'utilisateur. Les opérations de sauvegarde, restauration, exportation, importation et synchronisation dépendent de l'état de l'appareil, de la disponibilité de l'espace de stockage, des services iCloud, des autorisations, des versions logicielles ainsi que d'autres facteurs externes. Les sauvegardes peuvent inclure les tâches, rappels, règles de récurrence, pièces jointes, cartes de fidélité, billets, documents, voyages, éléments du Coffre-Fort, paramètres de l'Application et toute autre donnée prise en charge. Les sauvegardes du Coffre-Fort peuvent être chiffrées à l'aide d'un mot de passe choisi par l'utilisateur. Ce mot de passe n'est jamais enregistré par l'Application ni par ses développeurs et ne peut pas être récupéré s'il est oublié. Les opérations de restauration peuvent permettre une restauration sélective des catégories de données compatibles. L'Application ne garantit pas que les opérations de sauvegarde, de restauration, de synchronisation, d'importation ou d'exportation seront toujours réalisées avec succès, de manière complète, exacte ou qu'elles permettront la récupération des données.\n\n13. Services Tiers : Certaines fonctionnalités de l'Application dépendent de services Apple ou d'autres services tiers, notamment, sans que cette liste soit limitative, iCloud, Plans, les fournisseurs de données météorologiques, Siri, Face ID, Touch ID, le Remplissage Automatique des Mots de Passe, Wallet et les services de notification du système. La disponibilité, la compatibilité, les performances, la fiabilité, les pratiques en matière de confidentialité ainsi que le fonctionnement continu de ces services échappent au contrôle des développeurs de l'Application.\n\n14. Disponibilité des Fonctionnalités : Certaines fonctionnalités peuvent ne pas être disponibles sur tous les appareils, toutes les versions du système d'exploitation, dans toutes les régions géographiques, toutes les langues, toutes les configurations matérielles ou pour tous les comptes utilisateurs. Certaines fonctions nécessitent des autorisations spécifiques, des services Apple, une connexion réseau, un matériel compatible ou des versions prises en charge du système d'exploitation. La disponibilité permanente ou le fonctionnement ininterrompu de l'ensemble des fonctionnalités de l'Application ne sont pas garantis.\n\n15. Fonctionnalités d'Importation et d'Exportation : Les fonctionnalités d'importation, d'exportation, de partage, de sauvegarde, de restauration et de migration sont fournies uniquement pour le confort de l'utilisateur. La compatibilité avec des formats de fichiers externes, des fournisseurs de services cloud, des applications tierces ou de futures versions de l'Application ne peut être garantie. L'utilisateur est responsable de la conservation sécurisée des fichiers exportés, en particulier des sauvegardes chiffrées du Coffre-Fort.\n\n16. Absence d'Utilisation Critique : L'Application n'est ni conçue, ni certifiée, ni destinée à être utilisée pour les services d'urgence, les usages médicaux, les conseils juridiques, les décisions financières, la sécurité publique, le contrôle industriel, la navigation, l'aviation, les opérations militaires ou toute autre activité critique pour laquelle des retards, des dysfonctionnements, des inexactitudes ou l'indisponibilité des informations pourraient entraîner des blessures, un décès, des dommages matériels, des pertes financières ou d'autres conséquences importantes.\n\n17. Mises à Jour, Modifications et Limitation de Responsabilité : L'Application, ses fonctionnalités, les fonctions prises en charge ainsi que la présente Clause de Non-Responsabilité peuvent être modifiées, mises à jour, suspendues ou interrompues à tout moment, sans préavis. La poursuite de l'utilisation de l'Application vaut acceptation de ces modifications. Dans toute la mesure permise par la législation applicable, les développeurs ne pourront être tenus responsables des dommages directs, indirects, accessoires, consécutifs ou particuliers résultant de l'utilisation de l'Application, de l'impossibilité de l'utiliser ou de la confiance accordée à celle-ci, y compris, sans s'y limiter, les pertes de données, les erreurs de synchronisation, les défaillances des notifications, les échecs de sauvegarde ou de restauration, l'oubli du mot de passe de sauvegarde, les défaillances du Remplissage Automatique, les échecs d'authentification biométrique, les interruptions de services tiers, les informations météorologiques inexactes, les informations de localisation inexactes ou les accès non autorisés résultant d'appareils compromis.\n\nEn utilisant %@, vous confirmez avoir lu, compris et accepté intégralement la présente Clause de Non-Responsabilité ainsi que les présentes Conditions d'Utilisation."
+            "value" : "Clause de Non-Responsabilité et Conditions d'Utilisation\n\nL'application %@ (« l'Application ») est conçue pour la gestion des tâches personnelles, l'organisation, la productivité, le stockage sécurisé des informations et la gestion des données personnelles.\n\nEn utilisant l'Application, vous reconnaissez avoir pris connaissance des dispositions suivantes et les accepter :\n\n1. Objet de l'Application : L'Application est exclusivement destinée à l'organisation personnelle et à la productivité. Toutes les informations, rappels, identifiants, suggestions, prévisions, mots de passe générés, cartes, ainsi que les autres fonctionnalités, sont fournis uniquement à titre informatif et pour votre confort d'utilisation. Ils ne constituent aucune garantie quant à l'exécution, l'exactitude, l'exhaustivité, la fiabilité ou aux résultats obtenus.\n\n2. Responsabilité de l'Utilisateur : L'Application est fournie « en l'état », sans aucune garantie, expresse ou implicite. Vous êtes seul responsable de vos décisions, de vos activités, des informations enregistrées, de vos identifiants, de vos sauvegardes, de vos paramètres de sécurité ainsi que de l'utilisation des informations et des fonctionnalités mises à disposition par l'Application.\n\n3. Notifications, Badges et Rappels : Les notifications, les badges de l'icône de l'Application, les rappels, les règles de récurrence, les comptes à rebours, les fonctions de report (Snooze) et les fonctionnalités associées sont fournis uniquement à titre informatif. Bien que l'Application programme les notifications à l'aide du système d'exploitation, leur distribution, leur ponctualité et leur exactitude dépendent des services système, des réglages de l'appareil, de l'optimisation de la batterie, des modes Concentration, des autorisations, de la connectivité ainsi que d'autres facteurs externes. L'Application ne garantit ni la réception en temps voulu des notifications ni le bon fonctionnement de ces fonctionnalités. Vous ne devez pas vous y fier exclusivement pour des activités critiques ou sensibles au facteur temps.\n\n4. Rappels Basés sur la Localisation : Les rappels géolocalisés dépendent des autorisations du système, de la disponibilité du GPS, de l'état de l'appareil, de la connectivité réseau ainsi que des services de localisation d'Apple. Leur déclenchement peut ne pas se produire à l'endroit ou au moment attendu.\n\n5. Assistant Vocal (Siri) : Les Raccourcis Siri, les commandes vocales et les intégrations associées dépendent entièrement des services Apple et des capacités du système d'exploitation. La reconnaissance et l'interprétation vocales peuvent varier et ne sont pas garanties comme étant toujours exactes ou disponibles dans toutes les circonstances.\n\n6. Cartes et Fonctionnalités de Localisation : Les cartes, itinéraires, coordonnées, lieux à proximité, informations de voyage et autres fonctionnalités liées à la localisation dépendent d'Apple Maps, de la précision du GPS, de la connectivité réseau et de l'état de l'appareil. L'Application ne garantit ni la précision, ni la disponibilité, ni l'exhaustivité, ni l'exactitude en temps réel des informations cartographiques ou de localisation.\n\n7. Informations Météorologiques : Les prévisions météorologiques, les conditions actuelles, les prévisions horaires, les prévisions quotidiennes, les icônes météo et les informations associées sont fournies uniquement à titre informatif. Les données météorologiques dépendent de fournisseurs tiers, de la localisation de l'appareil, de la connectivité réseau et de services externes. Les prévisions peuvent différer de celles d'autres services météorologiques et ne doivent jamais servir de base à des décisions d'urgence, de sécurité, professionnelles, aéronautiques, maritimes ou à toute autre décision importante.\n\n8. Cartes de Fidélité, Billets, Logos, Codes-Barres et Codes QR : Les cartes de fidélité, billets, logos, informations de codes-barres, codes QR, codes-barres générés, codes-barres numérisés ainsi que les images associées sont enregistrés uniquement pour le confort de l'utilisateur. La compatibilité avec les magasins, lecteurs de codes, systèmes de billetterie, systèmes de paiement ou services tiers n'est pas garantie. L'utilisateur demeure responsable de vérifier la validité et l'utilisabilité des informations enregistrées.\n\n9. Coffre-fort et informations stockées\nLe Coffre-fort vous permet de stocker des informations confidentielles, notamment des noms d'utilisateur, des adresses e-mail, des mots de passe, des sites web, des codes PIN, des secrets OTP, des notes, des étiquettes, des favoris, des secrets personnalisés, des dates d'expiration des mots de passe et tout autre contenu pris en charge par le Coffre-fort. Chaque élément du Coffre-fort peut contenir plusieurs secrets personnalisés avec des libellés définis par l'utilisateur. L'App chiffre les informations du Coffre-fort à l'aide des technologies de sécurité disponibles sur l'appareil. Toutefois, aucun logiciel ne peut garantir une protection absolue contre les accès non autorisés, la perte de données, les défaillances matérielles, les appareils compromis, les logiciels malveillants, les appareils débridés (jailbreak) ou d'autres menaces pour la sécurité. Vous êtes seul responsable de la protection de votre appareil, de votre identifiant Apple, du code de déverrouillage de votre appareil et de toutes les informations stockées dans le Coffre-fort.\n\n10. Authentification de l'Appareil : L'accès au Coffre-Fort peut reposer sur Face ID, Touch ID, le code de déverrouillage de l'appareil ou tout autre mécanisme d'authentification fourni par le système d'exploitation. Les éléments individuels du Coffre-Fort peuvent, de manière facultative, exiger une authentification biométrique même après le déverrouillage du Coffre-Fort. L'Application ne reçoit, ne stocke ni ne transmet jamais d'informations biométriques. La disponibilité de l'authentification dépend exclusivement du matériel de l'appareil, de la prise en charge par le système d'exploitation et de la configuration choisie par l'utilisateur.\n\n11. Générateur de Mots de Passe, Presse-papiers et Remplissage Automatique : La génération de mots de passe, les contrôles de visibilité des mots de passe, le verrouillage automatique du Coffre-Fort, l'effacement automatique du presse-papiers et les fonctionnalités de Remplissage Automatique sont fournis uniquement pour le confort de l'utilisateur. Les mots de passe générés sont créés localement sur l'appareil. Le contenu du presse-papiers peut rester temporairement accessible conformément au fonctionnement d'iOS jusqu'à sa suppression automatique ou manuelle. Le Remplissage Automatique nécessite une configuration correcte du système et dépend des services Apple de Remplissage Automatique des Mots de Passe, des applications compatibles, des sites web compatibles ainsi que des fonctionnalités du système d'exploitation. L'Application ne garantit ni la compatibilité ni le bon fonctionnement du Remplissage Automatique avec un quelconque site web, une quelconque application ou un quelconque service.\n\n12. Stockage des Données, Sauvegardes et Synchronisation : Les informations peuvent être stockées localement sur l'appareil et, lorsqu'elle est activée, synchronisées via le compte iCloud personnel de l'utilisateur. Les opérations de sauvegarde, restauration, exportation, importation et synchronisation dépendent de l'état de l'appareil, de la disponibilité de l'espace de stockage, des services iCloud, des autorisations, des versions logicielles ainsi que d'autres facteurs externes. Les sauvegardes peuvent inclure les tâches, rappels, règles de récurrence, pièces jointes, cartes de fidélité, billets, documents, voyages, éléments du Coffre-Fort, paramètres de l'Application et toute autre donnée prise en charge. Les sauvegardes du Coffre-Fort peuvent être chiffrées à l'aide d'un mot de passe choisi par l'utilisateur. Ce mot de passe n'est jamais enregistré par l'Application ni par ses développeurs et ne peut pas être récupéré s'il est oublié. Les opérations de restauration peuvent permettre une restauration sélective des catégories de données compatibles. L'Application ne garantit pas que les opérations de sauvegarde, de restauration, de synchronisation, d'importation ou d'exportation seront toujours réalisées avec succès, de manière complète, exacte ou qu'elles permettront la récupération des données.\n\n13. Services Tiers : Certaines fonctionnalités de l'Application dépendent de services Apple ou d'autres services tiers, notamment, sans que cette liste soit limitative, iCloud, Plans, les fournisseurs de données météorologiques, Siri, Face ID, Touch ID, le Remplissage Automatique des Mots de Passe, Wallet et les services de notification du système. La disponibilité, la compatibilité, les performances, la fiabilité, les pratiques en matière de confidentialité ainsi que le fonctionnement continu de ces services échappent au contrôle des développeurs de l'Application.\n\n14. Disponibilité des Fonctionnalités : Certaines fonctionnalités peuvent ne pas être disponibles sur tous les appareils, toutes les versions du système d'exploitation, dans toutes les régions géographiques, toutes les langues, toutes les configurations matérielles ou pour tous les comptes utilisateurs. Certaines fonctions nécessitent des autorisations spécifiques, des services Apple, une connexion réseau, un matériel compatible ou des versions prises en charge du système d'exploitation. La disponibilité permanente ou le fonctionnement ininterrompu de l'ensemble des fonctionnalités de l'Application ne sont pas garantis.\n\n15. Fonctions d'importation et d'exportation\nLes fonctions prises en charge d'importation et d'exportation des identifiants du Coffre-fort sont destinées uniquement à faciliter la portabilité des données entre des applications et des formats de fichiers compatibles. La compatibilité avec les formats de fichiers externes, les fournisseurs de services cloud, les applications tierces et les futures versions de l'App ne peut être garantie. Les utilisateurs sont responsables du stockage sécurisé des fichiers exportés, en particulier des sauvegardes chiffrées du Coffre-fort.\n\n16. Absence d'Utilisation Critique : L'Application n'est ni conçue, ni certifiée, ni destinée à être utilisée pour les services d'urgence, les usages médicaux, les conseils juridiques, les décisions financières, la sécurité publique, le contrôle industriel, la navigation, l'aviation, les opérations militaires ou toute autre activité critique pour laquelle des retards, des dysfonctionnements, des inexactitudes ou l'indisponibilité des informations pourraient entraîner des blessures, un décès, des dommages matériels, des pertes financières ou d'autres conséquences importantes.\n\n17. Mises à Jour, Modifications et Limitation de Responsabilité : L'Application, ses fonctionnalités, les fonctions prises en charge ainsi que la présente Clause de Non-Responsabilité peuvent être modifiées, mises à jour, suspendues ou interrompues à tout moment, sans préavis. La poursuite de l'utilisation de l'Application vaut acceptation de ces modifications. Dans toute la mesure permise par la législation applicable, les développeurs ne pourront être tenus responsables des dommages directs, indirects, accessoires, consécutifs ou particuliers résultant de l'utilisation de l'Application, de l'impossibilité de l'utiliser ou de la confiance accordée à celle-ci, y compris, sans s'y limiter, les pertes de données, les erreurs de synchronisation, les défaillances des notifications, les échecs de sauvegarde ou de restauration, l'oubli du mot de passe de sauvegarde, les défaillances du Remplissage Automatique, les échecs d'authentification biométrique, les interruptions de services tiers, les informations météorologiques inexactes, les informations de localisation inexactes ou les accès non autorisés résultant d'appareils compromis.\n\nEn utilisant %@, vous confirmez avoir lu, compris et accepté intégralement la présente Clause de Non-Responsabilité ainsi que les présentes Conditions d'Utilisation."
           }
         },
         "it" : {
@@ -10534,6 +10646,34 @@
         }
       }
     },
+    "Does the Vault include a password generator?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enthält der Tresor einen Passwortgenerator?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿La Caja fuerte incluye un generador de contraseñas?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Coffre-fort inclut-il un générateur de mots de passe ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La Cassaforte include un generatore di password?"
+          }
+        }
+      }
+    },
     "Done" : {
       "localizations" : {
         "de" : {
@@ -10856,6 +10996,34 @@
         }
       }
     },
+    "Each Vault item can contain multiple custom secrets. You can store additional confidential information with your own labels alongside the main credential." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeder Tresoreintrag kann mehrere benutzerdefinierte Geheimnisse enthalten.\nSie können zusätzliche vertrauliche Informationen mit eigenen Bezeichnungen zusammen mit den Hauptanmeldedaten speichern."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada elemento de la Caja fuerte puede contener varios secretos personalizados.\nPuede almacenar información confidencial adicional con sus propias etiquetas junto a la credencial principal."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque élément du Coffre-fort peut contenir plusieurs secrets personnalisés.\nVous pouvez enregistrer des informations confidentielles supplémentaires avec vos propres libellés, en plus de l'identifiant principal."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni elemento della Cassaforte può contenere più segreti personalizzati.\nPuoi archiviare informazioni riservate aggiuntive con etichette personalizzate insieme alla credenziale principale."
+          }
+        }
+      }
+    },
     "Edit" : {
       "localizations" : {
         "de" : {
@@ -11166,58 +11334,58 @@
         }
       }
     },
-    "Enable ForMemo in iOS Settings > General > AutoFill & Passwords to use saved credentials in supported apps and websites. Copied passwords can be cleared automatically from the clipboard." : {
+    "Enable ForMemo in iOS Settings > General > AutoFill & Passwords to securely use your saved Vault credentials in supported apps and websites. Copied passwords can be cleared automatically from the clipboard." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aktivieren Sie ForMemo unter iOS-Einstellungen > Allgemein > AutoAusfüllen & Passwörter, um gespeicherte Zugangsdaten in unterstützten Apps und Websites zu verwenden. Kopierte Passwörter können automatisch aus der Zwischenablage gelöscht werden."
+            "value" : "Aktivieren Sie ForMemo unter iOS-Einstellungen > Allgemein > AutoFill & Passwörter, um Ihre im Tresor gespeicherten Anmeldedaten sicher in unterstützten Apps und auf Websites zu verwenden. Kopierte Passwörter können automatisch aus der Zwischenablage entfernt werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activa ForMemo en Ajustes > General > Autorrelleno y contraseñas de iOS para utilizar las credenciales guardadas en aplicaciones y sitios web compatibles. Las contraseñas copiadas pueden eliminarse automáticamente del portapapeles."
+            "value" : "Active ForMemo en Ajustes de iOS > General > Autorrelleno y contraseñas para utilizar de forma segura las credenciales guardadas en la Caja fuerte en aplicaciones y sitios web compatibles. Las contraseñas copiadas pueden eliminarse automáticamente del portapapeles."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activez ForMemo dans Réglages iOS > Général > Remplissage automatique et mots de passe pour utiliser les identifiants enregistrés dans les apps et sites web compatibles. Les mots de passe copiés peuvent être automatiquement effacés du presse-papiers."
+            "value" : "Activez ForMemo dans Réglages iOS > Général > Remplissage automatique et mots de passe afin d'utiliser en toute sécurité les identifiants enregistrés dans le Coffre-fort sur les applications et sites web compatibles. Les mots de passe copiés peuvent être automatiquement supprimés du presse-papiers."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abilita ForMemo in Impostazioni > Generali > Inserimento automatico e password di iOS per utilizzare le credenziali salvate nelle app e nei siti web supportati. Le password copiate possono essere rimosse automaticamente dagli appunti."
+            "value" : "Abilita ForMemo in Impostazioni di iOS > Generali > Compilazione automatica e password per utilizzare in modo sicuro le credenziali salvate nella Cassaforte nelle app e nei siti web supportati. Le password copiate possono essere rimosse automaticamente dagli appunti."
           }
         }
       }
     },
-    "Enable ForMemo in iOS Settings > General > AutoFill & Passwords. Once enabled, ForMemo can suggest saved credentials in supported apps and websites." : {
+    "Enable ForMemo in Settings > General > AutoFill & Passwords.\n\nOnce enabled, ForMemo can securely suggest credentials stored in the Vault when you sign in to supported apps and websites." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aktivieren Sie ForMemo unter iOS-Einstellungen > Allgemein > AutoAusfüllen & Passwörter. Nach der Aktivierung kann ForMemo gespeicherte Zugangsdaten in unterstützten Apps und Websites vorschlagen."
+            "value" : "Aktivieren Sie ForMemo unter Einstellungen > Allgemein > AutoFill & Passwörter.\n\nNach der Aktivierung kann ForMemo die im Tresor gespeicherten Anmeldedaten beim Anmelden in unterstützten Apps und Websites sicher vorschlagen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activa ForMemo en Ajustes > General > Autorrelleno y contraseñas. Una vez activado, ForMemo podrá sugerir las credenciales guardadas en aplicaciones y sitios web compatibles."
+            "value" : "Activa ForMemo en Ajustes > General > Autorrelleno y contraseñas.\n\nUna vez activado, ForMemo podrá sugerir de forma segura las credenciales almacenadas en la Caja fuerte al iniciar sesión en aplicaciones y sitios web compatibles."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activez ForMemo dans Réglages iOS > Général > Remplissage automatique et mots de passe. Une fois activé, ForMemo peut proposer des identifiants enregistrés dans les apps et sites web compatibles."
+            "value" : "Activez ForMemo dans Réglages > Général > Remplissage automatique et mots de passe.\n\nUne fois activé, ForMemo peut proposer en toute sécurité les identifiants enregistrés dans le Coffre-fort lorsque vous vous connectez à des applications et des sites web compatibles."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abilita ForMemo in Impostazioni > Generali > Inserimento automatico e password. Una volta abilitato, ForMemo potrà suggerire le credenziali salvate nelle app e nei siti web supportati."
+            "value" : "Abilita ForMemo in Impostazioni > Generali > Riempimento automatico e password.\n\nUna volta attivato, ForMemo potrà suggerire in modo sicuro le credenziali salvate nella Cassaforte durante l'accesso ad app e siti web compatibili."
           }
         }
       }
@@ -12859,6 +13027,34 @@
         }
       }
     },
+    "ForMemo supports direct credential import from the Apple Passwords app.\n\n1. Open the Passwords app.\n2. Tap the More button (...), then choose Export Data to Another App.\n3. Select the credentials you want to transfer.\n4. Authenticate with Face ID, Touch ID, or your device passcode.\n5. Select ForMemo.\n\nThe selected credentials are imported directly into the Vault." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo unterstützt den direkten Import von Anmeldedaten aus der Apple-App Passwörter.\n\n1. Öffnen Sie die App Passwörter.\n2. Tippen Sie auf die Taste Mehr (...) und wählen Sie Daten an eine andere App exportieren.\n3. Wählen Sie die Anmeldedaten aus, die Sie übertragen möchten.\n4. Authentifizieren Sie sich mit Face ID, Touch ID oder Ihrem Gerätecode.\n5. Wählen Sie ForMemo.\n\nDie ausgewählten Anmeldedaten werden direkt in den Tresor importiert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo admite la importación directa de credenciales desde la aplicación Contraseñas de Apple.\n\n1. Abre la aplicación Contraseñas.\n2. Pulsa el botón Más (...) y selecciona Exportar datos a otra aplicación.\n3. Selecciona las credenciales que deseas transferir.\n4. Autentícate con Face ID, Touch ID o el código de tu dispositivo.\n5. Selecciona ForMemo.\n\nLas credenciales seleccionadas se importarán directamente a la Caja fuerte."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo prend en charge l'importation directe des identifiants depuis l'application Mots de passe d'Apple.\n\n1. Ouvrez l'application Mots de passe.\n2. Touchez le bouton Plus (...), puis choisissez Exporter les données vers une autre app.\n3. Sélectionnez les identifiants que vous souhaitez transférer.\n4. Authentifiez-vous avec Face ID, Touch ID ou le code de votre appareil.\n5. Sélectionnez ForMemo.\n\nLes identifiants sélectionnés sont importés directement dans le Coffre-fort."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo supporta l'importazione diretta delle credenziali dall'app Password di Apple.\n\n1. Apri l'app Password.\n2. Tocca il pulsante Altro (...), quindi scegli Esporta dati in un'altra app.\n3. Seleziona le credenziali da trasferire.\n4. Conferma con Face ID, Touch ID o il codice del dispositivo.\n5. Seleziona ForMemo.\n\nLe credenziali selezionate vengono importate direttamente nella Cassaforte."
+          }
+        }
+      }
+    },
     "ForMemo supports three main Siri commands:\n\n• “New ForMemo” creates a new task using natural language. The app can automatically assign a category and reminder based on your task title and deadline.\n• “Search ForMemo” lets you search tasks by keyword.\n• “Check ForMemo” reads tasks planned for a date or period such as today, tomorrow, weekends, weeks, or specific dates.\n\nAutomatic category and reminder assignment can be enabled in Settings for Siri-created tasks." : {
       "localizations" : {
         "de" : {
@@ -14172,6 +14368,34 @@
         }
       }
     },
+    "How do I import passwords from Apple Passwords into the Vault?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wie importiere ich Passwörter aus Apple Passwörter in den Tresor?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Cómo importo contraseñas desde Contraseñas de Apple a la Caja fuerte?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comment importer des mots de passe depuis Mots de passe Apple vers le Coffre-fort ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come faccio a importare le password da Password di Apple nella Cassaforte?"
+          }
+        }
+      }
+    },
     "How do I use AutoFill?" : {
       "localizations" : {
         "de" : {
@@ -14722,6 +14946,34 @@
         }
       }
     },
+    "Import Credentials" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anmeldedaten importieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar credenciales"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer des identifiants"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importa credenziali"
+          }
+        }
+      }
+    },
     "Import CSV" : {
       "comment" : "A button that imports a CSV file.",
       "isCommentAutoGenerated" : true,
@@ -14866,6 +15118,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Risultato importazione"
+          }
+        }
+      }
+    },
+    "Import supported credential files from compatible password managers into the Vault to quickly transfer your existing accounts." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importieren Sie unterstützte Anmeldedateien aus kompatiblen Passwort-Managern in den Tresor, um Ihre bestehenden Konten schnell zu übernehmen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importe en la Caja fuerte archivos de credenciales compatibles procedentes de gestores de contraseñas compatibles para transferir rápidamente sus cuentas existentes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importez dans le Coffre-fort des fichiers d'identifiants pris en charge provenant de gestionnaires de mots de passe compatibles afin de transférer rapidement vos comptes existants."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importa nella Cassaforte file di credenziali supportati provenienti da gestori di password compatibili per trasferire rapidamente gli account esistenti."
           }
         }
       }
@@ -19919,6 +20199,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La password scade"
+          }
+        }
+      }
+    },
+    "Password Generator" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passwortgenerator"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generador de contraseñas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Générateur de mots de passe"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generatore di password"
           }
         }
       }
@@ -25845,30 +26153,30 @@
         }
       }
     },
-    "Store and organize personal credentials such as usernames, websites, passwords, and notes. Generate strong passwords, mark favorites, and protect access using your device authentication." : {
+    "Store and organize personal credentials including usernames, email addresses, websites, passwords, PINs, OTP secrets, notes, and custom secrets. Organize credentials into categories, mark favorites, generate strong passwords, and protect access using your device authentication." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Speichern und organisieren Sie persönliche Zugangsdaten wie Benutzernamen, Websites, Passwörter und Notizen. Generieren Sie sichere Passwörter, markieren Sie Favoriten und schützen Sie den Zugriff mithilfe der Geräteauthentifizierung."
+            "value" : "Speichern und verwalten Sie persönliche Anmeldedaten wie Benutzernamen, E-Mail-Adressen, Websites, Passwörter, PINs, OTP-Geheimnisse, Notizen und benutzerdefinierte Geheimnisse. Organisieren Sie Anmeldedaten in Kategorien, markieren Sie Favoriten, erstellen Sie sichere Passwörter und schützen Sie den Zugriff mit der Authentifizierung Ihres Geräts."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guarda y organiza de forma segura credenciales personales como nombres de usuario, sitios web, contraseñas y notas. Genera contraseñas seguras, marca favoritos y protege el acceso mediante la autenticación del dispositivo."
+            "value" : "Almacene y organice credenciales personales como nombres de usuario, direcciones de correo electrónico, sitios web, contraseñas, PIN, secretos OTP, notas y secretos personalizados.Organice las credenciales por categorías, márquelas como favoritas, genere contraseñas seguras y proteja el acceso mediante la autenticación de su dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enregistrez et organisez des identifiants personnels, tels que des noms d’utilisateur, sites web, mots de passe et notes. Générez des mots de passe robustes, marquez vos favoris et protégez l’accès grâce à l’authentification de votre appareil."
+            "value" : "Stockez et organisez des identifiants personnels tels que des noms d'utilisateur, des adresses e-mail, des sites web, des mots de passe, des codes PIN, des secrets OTP, des notes et des secrets personnalisés.Organisez vos identifiants par catégories, marquez-les comme favoris, générez des mots de passe robustes et protégez l'accès grâce à l'authentification de votre appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Archivia e organizza in modo sicuro credenziali personali come nomi utente, siti web, password e note. Genera password sicure, contrassegna i preferiti e proteggi l'accesso tramite l'autenticazione del dispositivo."
+            "value" : "Archivia e organizza credenziali personali come nomi utente, indirizzi email, siti web, password, PIN, segreti OTP, note e segreti personalizzati.Organizza le credenziali in categorie, contrassegnale come preferite, genera password robuste e proteggi l'accesso utilizzando l'autenticazione del dispositivo."
           }
         }
       }
@@ -28257,30 +28565,30 @@
         }
       }
     },
-    "The Vault lets you securely organize personal credentials such as usernames, email addresses, websites, passwords, and notes. You can mark credentials as favorites, generate strong passwords, and keep track of password updates or expiry dates." : {
+    "The Vault lets you securely store and organize personal credentials such as usernames, email addresses, websites, passwords, PINs, OTP secrets, notes, and custom secrets.\n\nYou can organize credentials into categories, mark them as favorites, generate strong passwords, keep track of password updates and expiry dates, and import credentials from compatible password managers." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Der Tresor ermöglicht Ihnen, persönliche Zugangsdaten wie Benutzernamen, E-Mail-Adressen, Websites, Passwörter und Notizen sicher zu organisieren. Sie können Zugangsdaten als Favoriten markieren, sichere Passwörter generieren und Passwortänderungen oder Ablaufdaten nachverfolgen."
+            "value" : "Der Tresor ermöglicht es Ihnen, persönliche Anmeldedaten wie Benutzernamen, E-Mail-Adressen, Websites, Passwörter, PINs, OTP-Geheimnisse, Notizen und benutzerdefinierte Geheimnisse sicher zu speichern und zu organisieren.\n\nSie können Anmeldedaten in Kategorien organisieren, als Favoriten markieren, sichere Passwörter erstellen, Passwortaktualisierungen und Ablaufdaten verfolgen sowie Anmeldedaten aus kompatiblen Passwort-Managern importieren."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La Caja fuerte te permite organizar de forma segura credenciales personales como nombres de usuario, direcciones de correo electrónico, sitios web, contraseñas y notas. Puedes marcar credenciales como favoritas, generar contraseñas seguras y realizar un seguimiento de las actualizaciones o fechas de caducidad de las contraseñas."
+            "value" : "La Caja fuerte te permite almacenar y organizar de forma segura credenciales personales como nombres de usuario, direcciones de correo electrónico, sitios web, contraseñas, PIN, secretos OTP, notas y secretos personalizados.\n\nPuedes organizar las credenciales por categorías, marcarlas como favoritas, generar contraseñas seguras, realizar un seguimiento de las actualizaciones y las fechas de caducidad de las contraseñas e importar credenciales desde gestores de contraseñas compatibles."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le Coffre vous permet d’organiser en toute sécurité vos identifiants personnels, tels que des noms d’utilisateur, adresses e-mail, sites web, mots de passe et notes. Vous pouvez marquer des identifiants comme favoris, générer des mots de passe robustes et suivre les mises à jour ou dates d’expiration des mots de passe."
+            "value" : "Le Coffre-fort vous permet de stocker et d'organiser en toute sécurité des identifiants personnels tels que des noms d'utilisateur, des adresses e-mail, des sites web, des mots de passe, des codes PIN, des secrets OTP, des notes et des secrets personnalisés.\n\nVous pouvez organiser vos identifiants en catégories, les marquer comme favoris, générer des mots de passe robustes, suivre les mises à jour et les dates d'expiration des mots de passe, et importer des identifiants depuis des gestionnaires de mots de passe compatibles."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La Cassaforte consente di organizzare in modo sicuro credenziali personali come nomi utente, indirizzi email, siti web, password e note. Puoi contrassegnare le credenziali come preferite, generare password sicure e tenere traccia degli aggiornamenti o delle date di scadenza delle password."
+            "value" : "La Cassaforte ti permette di archiviare e organizzare in modo sicuro credenziali personali come nomi utente, indirizzi email, siti web, password, PIN, codici OTP, note e segreti personalizzati.\n\nPuoi organizzare le credenziali in categorie, contrassegnarle come preferite, generare password sicure, monitorare gli aggiornamenti e le scadenze delle password e importare credenziali da gestori di password compatibili."
           }
         }
       }
@@ -31853,6 +32161,34 @@
         }
       }
     },
+    "What are custom secrets?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Was sind benutzerdefinierte Geheimnisse?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Qué son los secretos personalizados?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Que sont les secrets personnalisés ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Che cosa sono i segreti personalizzati?"
+          }
+        }
+      }
+    },
     "What are Powerful Filters?" : {
       "localizations" : {
         "de" : {
@@ -32213,34 +32549,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Qual è la differenza tra le modalità badge?"
-          }
-        }
-      }
-    },
-    "What is the Documents section used for?" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wofür wird der Bereich Dokumente verwendet?"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Para qué sirve la sección Documentos?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "À quoi sert la section Documents ?"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A cosa serve la sezione Documenti?"
           }
         }
       }
@@ -33203,6 +33511,34 @@
         }
       }
     },
+    "Yes. As soon as credentials are imported into the Vault, they are securely encrypted before being stored." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sobald Anmeldedaten in den Tresor importiert werden, werden sie vor der Speicherung sicher verschlüsselt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. En cuanto las credenciales se importan a la Caja fuerte, se cifran de forma segura antes de almacenarse."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Dès que les identifiants sont importés dans le Coffre-fort, ils sont chiffrés de manière sécurisée avant d'être enregistrés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Non appena le credenziali vengono importate nella Cassaforte, vengono crittografate in modo sicuro prima di essere archiviate."
+          }
+        }
+      }
+    },
     "Yes. Audio recordings can be attached directly to tasks." : {
       "localizations" : {
         "de" : {
@@ -33623,6 +33959,34 @@
         }
       }
     },
+    "Yes. If the source application supports it, you can choose which credentials to import instead of transferring your entire password database." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Wenn die Quellanwendung dies unterstützt, können Sie auswählen, welche Anmeldedaten importiert werden sollen, anstatt Ihre gesamte Passwortdatenbank zu übertragen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Si la aplicación de origen lo permite, puedes elegir qué credenciales importar en lugar de transferir toda tu base de datos de contraseñas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Si l'application source le permet, vous pouvez choisir les identifiants à importer au lieu de transférer l'ensemble de votre base de données de mots de passe."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Se l'app di origine lo consente, puoi scegliere quali credenziali importare invece di trasferire l'intero archivio delle password."
+          }
+        }
+      }
+    },
     "Yes. In Settings > General, you can choose whether the badge counts overdue tasks or tasks that reached the global notification time." : {
       "localizations" : {
         "de" : {
@@ -33815,6 +34179,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. La sezione Viaggi ti consente di creare e gestire liste di viaggio per i tuoi spostamenti."
+          }
+        }
+      }
+    },
+    "Yes. The Vault includes a password generator to help you create strong passwords when adding or updating credentials." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Der Tresor enthält einen Passwortgenerator, der Ihnen beim Erstellen sicherer Passwörter beim Hinzufügen oder Aktualisieren von Anmeldedaten hilft."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. La Caja fuerte incluye un generador de contraseñas que le ayuda a crear contraseñas seguras al añadir o actualizar credenciales."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Le Coffre-fort comprend un générateur de mots de passe qui vous aide à créer des mots de passe robustes lors de l'ajout ou de la mise à jour d'identifiants."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. La Cassaforte include un generatore di password che ti aiuta a creare password robuste quando aggiungi o aggiorni una credenziale."
+          }
+        }
+      }
+    },
+    "Yes. The Vault supports importing credentials from compatible password managers.\n\nDepending on the source application, credentials can be imported directly or by using a supported import format." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Der Tresor unterstützt den Import von Anmeldedaten aus kompatiblen Passwort-Managern.\n\nJe nach Quellanwendung können Anmeldedaten entweder direkt oder mithilfe eines unterstützten Importformats importiert werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. La Caja fuerte permite importar credenciales desde gestores de contraseñas compatibles.\n\nSegún la aplicación de origen, las credenciales pueden importarse directamente o mediante un formato de importación compatible."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Le Coffre-fort prend en charge l'importation des identifiants provenant de gestionnaires de mots de passe compatibles.\n\nSelon l'application source, les identifiants peuvent être importés directement ou à l'aide d'un format d'importation pris en charge."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. La Cassaforte supporta l'importazione di credenziali da gestori di password compatibili.\n\nA seconda dell'app di origine, le credenzziali possono essere importate direttamente oppure utilizzando un formato di importazione supportato."
           }
         }
       }

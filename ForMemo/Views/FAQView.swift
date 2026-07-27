@@ -52,10 +52,6 @@ struct FAQView: View {
                 answer: String(localized:"Yes. The Trips section lets you create and manage packing lists for your travels.")
             ),
             FAQItem(
-                question: String(localized:"What is the Documents section used for?"),
-                answer: String(localized:"The Documents section helps you keep track of important documents and their expiration dates. You can store document details, issue dates, expiry dates, notes, and receive reminders before a document expires.")
-            ),
-            FAQItem(
                 question: String(localized:"How do recurring tasks work?"),
                 answer: String(localized:"You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the app automatically creates the next one based on the selected frequency, so you don’t need to recreate it manually. You can modify or stop recurrence at any time.")
             ),
@@ -336,7 +332,13 @@ struct FAQView: View {
         FAQSection(title: String(localized: "Vault & AutoFill"), items: [
             FAQItem(
                 question: String(localized: "What is the Vault?"),
-                answer: String(localized: "The Vault lets you securely organize personal credentials such as usernames, email addresses, websites, passwords, and notes. You can mark credentials as favorites, generate strong passwords, and keep track of password updates or expiry dates.")
+                answer: String(localized:
+            """
+            The Vault lets you securely store and organize personal credentials such as usernames, email addresses, websites, passwords, PINs, OTP secrets, notes, and custom secrets.
+
+            You can organize credentials into categories, mark them as favorites, generate strong passwords, keep track of password updates and expiry dates, and import credentials from compatible password managers.
+            """
+                )
             ),
             FAQItem(
                 question: String(localized: "How is Vault content protected?"),
@@ -344,7 +346,13 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized: "How do I use AutoFill?"),
-                answer: String(localized: "Enable ForMemo in iOS Settings > General > AutoFill & Passwords. Once enabled, ForMemo can suggest saved credentials in supported apps and websites.")
+                answer: String(localized:
+            """
+            Enable ForMemo in Settings > General > AutoFill & Passwords.
+
+            Once enabled, ForMemo can securely suggest credentials stored in the Vault when you sign in to supported apps and websites.
+            """
+                )
             ),
             FAQItem(
                 question: String(localized: "What happens when I copy a password?"),
@@ -361,6 +369,56 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized: "Can I recover a forgotten Vault backup password?"),
                 answer: String(localized: "No. For security reasons, ForMemo cannot recover or reset the password used to restore Vault data from a backup.")
+            ),
+            FAQItem(
+                question: String(localized: "Can I import credentials into the Vault?"),
+                answer: String(localized:
+            """
+            Yes. The Vault supports importing credentials from compatible password managers.
+
+            Depending on the source application, credentials can be imported directly or by using a supported import format.
+            """
+                )
+            ),
+            FAQItem(
+                question: String(localized: "How do I import passwords from Apple Passwords into the Vault?"),
+                answer: String(localized:
+            """
+            ForMemo supports direct credential import from the Apple Passwords app.
+
+            1. Open the Passwords app.
+            2. Tap the More button (...), then choose Export Data to Another App.
+            3. Select the credentials you want to transfer.
+            4. Authenticate with Face ID, Touch ID, or your device passcode.
+            5. Select ForMemo.
+
+            The selected credentials are imported directly into the Vault.
+            """
+                )
+            ),
+            FAQItem(
+                question: String(localized: "Can I import only selected passwords?"),
+                answer: String(localized:
+            """
+            Yes. If the source application supports it, you can choose which credentials to import instead of transferring your entire password database.
+            """
+                )
+            ),
+            FAQItem(
+                question: String(localized: "Are imported passwords encrypted?"),
+                answer: String(localized:
+            """
+            Yes. As soon as credentials are imported into the Vault, they are securely encrypted before being stored.
+            """
+                )
+            ),
+            FAQItem(
+                question: String(localized: "What are custom secrets?"),
+                answer: String(localized: "Each Vault item can contain multiple custom secrets. You can store additional confidential information with your own labels alongside the main credential.")
+            ),
+            FAQItem(
+                question: String(localized: "Does the Vault include a password generator?"),
+                answer: String(localized: "Yes. The Vault includes a password generator to help you create strong passwords when adding or updating credentials.")
             )
         ]),
 

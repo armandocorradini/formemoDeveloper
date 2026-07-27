@@ -201,18 +201,29 @@ struct AppQuickGuideView: View {
         
             .init(
                 title: String(localized: "Vault & Secure Credentials"),
-                description: String(localized: "Store and organize personal credentials such as usernames, websites, passwords, and notes. Generate strong passwords, mark favorites, and protect access using your device authentication."),
+                description: String(localized: "Store and organize personal credentials including usernames, email addresses, websites, passwords, PINs, OTP secrets, notes, and custom secrets. Organize credentials into categories, mark favorites, generate strong passwords, and protect access using your device authentication."),
                 icon: "lock.shield",
                 tint: .indigo
             ),
 
             .init(
                 title: String(localized: "AutoFill Passwords"),
-                description: String(localized: "Enable ForMemo in iOS Settings > General > AutoFill & Passwords to use saved credentials in supported apps and websites. Copied passwords can be cleared automatically from the clipboard."),
+                description: String(localized: "Enable ForMemo in iOS Settings > General > AutoFill & Passwords to securely use your saved Vault credentials in supported apps and websites. Copied passwords can be cleared automatically from the clipboard."),
                 icon: "key.fill",
                 tint: .blue
             ),
-
+        .init(
+            title: String(localized: "Password Generator"),
+            description: String(localized: "Create strong passwords directly while adding or editing Vault credentials. Generated passwords help improve the security of your accounts."),
+            icon: "key.horizontal",
+            tint: .green
+        ),
+        .init(
+            title: String(localized: "Import Credentials"),
+            description: String(localized: "Import supported credential files from compatible password managers into the Vault to quickly transfer your existing accounts."),
+            icon: "square.and.arrow.down",
+            tint: .blue
+        ),
             .init(
                 title: String(localized: "Overview"),
                 description: String(localized: "See an at-a-glance summary of your tasks, documents, Wallet items, trip lists, and Vault data to quickly understand what needs your attention."),
