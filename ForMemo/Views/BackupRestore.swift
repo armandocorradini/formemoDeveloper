@@ -69,10 +69,14 @@ struct BackupRestoreView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     }
-                    .padding(.vertical, 6)
+                    .padding(.vertical, 8)
+                    .listRowInsets(
+                        EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
+                    )
+                    .listRowBackground(Color.clear)
                 }
 
-                Section("Backup") {
+                Section {
 
                     Button {
                         let hasVaultCredentials = vaultItems.contains { item in
@@ -129,7 +133,7 @@ struct BackupRestoreView: View {
                     .foregroundStyle(.primary)
                 }
 
-                Section("Restore") {
+                Section {
 
                     Button {
                         showRestoreConfirmation = true
@@ -167,12 +171,17 @@ struct BackupRestoreView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         }
+
                     } icon: {
+
                         Image(systemName: "checkmark.shield")
                             .foregroundStyle(.green)
+
                     }
+                    .listRowBackground(Color.clear)
 
                     Label {
+
                         VStack(alignment: .leading, spacing: 2) {
 
                             Text("Independent from iCloud Sync")
@@ -182,11 +191,16 @@ struct BackupRestoreView: View {
                             )
                             .font(.caption)
                             .foregroundStyle(.secondary)
+
                         }
+
                     } icon: {
+
                         Image(systemName: "externaldrive")
                             .foregroundStyle(.blue)
+
                     }
+                    .listRowBackground(Color.clear)
                 }
             }
             .scrollContentBackground(.hidden)
