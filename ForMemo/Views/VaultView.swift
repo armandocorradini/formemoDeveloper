@@ -16,20 +16,23 @@ struct VaultView: View {
     @State private var selectedDetailItem: VaultItem?
     @State private var selectedEditItem: VaultItem?
 
+    
+    private var activeItems: [VaultItem] {
+        items.filter { $0.deletedAt == nil }
+    }
+
     private var filteredItems: [VaultItem] {
         guard !searchText.isEmpty else {
-            return items.filter { $0.deletedAt == nil }
+            return activeItems
         }
 
-        return items.filter {
-            $0.deletedAt == nil && (
-                $0.title.localizedCaseInsensitiveContains(searchText) ||
-                $0.username.localizedCaseInsensitiveContains(searchText) ||
-                $0.email.localizedCaseInsensitiveContains(searchText) ||
-                $0.website.localizedCaseInsensitiveContains(searchText) ||
-                $0.notes.localizedCaseInsensitiveContains(searchText) ||
-                $0.tags.joined(separator: " ").localizedCaseInsensitiveContains(searchText)
-            )
+        return activeItems.filter {
+            $0.title.localizedCaseInsensitiveContains(searchText) ||
+            $0.username.localizedCaseInsensitiveContains(searchText) ||
+            $0.email.localizedCaseInsensitiveContains(searchText) ||
+            $0.website.localizedCaseInsensitiveContains(searchText) ||
+            $0.notes.localizedCaseInsensitiveContains(searchText) ||
+            $0.tags.joined(separator: " ").localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -155,7 +158,7 @@ struct VaultView: View {
             .contentMargins(.bottom, 70, for: .scrollContent)
             .modifier(
                 VaultSearchModifier(
-                    enabled: !filteredItems.isEmpty,
+                    enabled: !activeItems.isEmpty,
                     searchText: $searchText
                 )
             )
@@ -202,15 +205,16 @@ struct VaultView: View {
                 }
             }
             .overlay {
-                if filteredItems.isEmpty {
+                if activeItems.isEmpty {
                     ContentUnavailableView(
                         String(localized: "No Credentials"),
                         systemImage: "lock.shield",
                         description: Text(String(localized: "Your secure credentials will appear here."))
                     )
+                } else if filteredItems.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
                 }
-            }
-        }
+            }        }
     }
 }
 
