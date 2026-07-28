@@ -3,6 +3,8 @@ import SwiftData
 import os
 
 struct TaskCalendarView: View {
+    @Environment(AppSettings.self)
+    private var settings
     
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \TodoTask.deadLine, animation: .default) private var tasks: [TodoTask]
@@ -640,8 +642,11 @@ private extension TaskCalendarView {
     @MainActor
     func toggleCompleted(_ task: TodoTask) {
         if task.recurrenceRule != nil {
-            // Complete and reschedule recurring task
-            task.completeRecurringTask(in: modelContext)
+            // Complete(se scelto da utenet) and reschedule recurring task
+            task.completeRecurringTask(
+                in: modelContext,
+                options: settings.recurringTaskOptions
+            )
         } else {
             task.isCompleted.toggle()
             task.completedAt = task.isCompleted ? .now : nil
@@ -1070,7 +1075,10 @@ private struct DayTasksInlineView: View {
                         Button {
                             if task.recurrenceRule != nil {
                                 // Complete and reschedule recurring task
-                                task.completeRecurringTask(in: modelContext)
+                                task.completeRecurringTask(
+                                    in: modelContext,
+                                    options: settings.recurringTaskOptions
+                                )
                             } else {
                                 task.isCompleted.toggle()
                                 if task.isCompleted {
@@ -1116,7 +1124,10 @@ private struct DayTasksInlineView: View {
                         Button {
                             if task.recurrenceRule != nil {
                                 // Complete and reschedule recurring task
-                                task.completeRecurringTask(in: modelContext)
+                                task.completeRecurringTask(
+                                    in: modelContext,
+                                    options: settings.recurringTaskOptions
+                                )
                             } else {
                                 task.isCompleted.toggle()
                                 if task.isCompleted {

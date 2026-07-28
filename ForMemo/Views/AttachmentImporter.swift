@@ -57,6 +57,12 @@ final class AttachmentImporter {
             )
         }
         
+        DebugLog.writeAttachmentLifecycle(
+            action: "CREATE",
+            attachmentID: String(attachment.id.uuidString.prefix(8)),
+            taskID: String(task.id.uuidString.prefix(8))
+        )
+        
         context.insert(attachment)
         
         if task.attachments == nil {

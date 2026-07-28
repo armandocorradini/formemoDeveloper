@@ -120,36 +120,5 @@ final class AttachmentMaintenanceManager {
         context.safeSave(operation: "AttachmentCleanup")
   
     }
-    
-    // MARK: - Core Deletion
-    
-    private func delete(
-        _ attachments: [TaskAttachment],
-        in context: ModelContext
-    ) throws {
-        
-        for attachment in attachments {
-            let trashName = attachment.deleteFileIfNeeded()
-            guard let trashName else {
-                AppLogger.persistence.error(
-                    "Attachment cleanup aborted: failed to move attachment to Trash."
-                )
-                continue
-            }
 
-            let item = DeletedItem(type: "attachment")
-            item.taskID = attachment.task?.id
-            item.fileName = attachment.originalName
-            item.relativePath = attachment.relativePath
-            item.trashFileName = trashName
-
-            context.insert(item)
-
-            context.delete(attachment)
-        }
-        
-        context.processPendingChanges()
-        context.safeSave(operation: "AttachmentCleanup")
-        
-    }
 }

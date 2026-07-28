@@ -140,9 +140,31 @@ extension TaskAttachment {
         relativePath: String
     ) -> URL? {
 
+        DebugLog.write(
+            """
+        📎 Resolver start
+        iCloudDir=\(cloudAttachmentsDirectory() != nil)
+        legacyDir=\(legacyAttachmentsDirectory() != nil)
+        """
+        )
+        
+        
         let fm = FileManager.default
 
+        if let directory = attachmentsDirectory {
 
+            let exists = fm.fileExists(atPath: directory.path)
+
+            DebugLog.write(
+                "📁 Attachments directory exists: \(exists)"
+            )
+
+        } else {
+
+            DebugLog.write(
+                "📁 Attachments directory is NIL"
+            )
+        }
         // 1️⃣ iCloud path
         if let cloud = cloudAttachmentsDirectory()?
             .appendingPathComponent(relativePath),
@@ -169,43 +191,12 @@ extension TaskAttachment {
                 return cloud
             }
         }
-        
-        
-//        // 1️⃣ iCloud path
-//        if let cloud = cloudAttachmentsDirectory()?
-//            .appendingPathComponent(relativePath),
-//           fm.fileExists(atPath: cloud.path) {
-//
-//            try? fm.startDownloadingUbiquitousItem(at: cloud)
-//
-//            let values = try? cloud.resourceValues(forKeys: [
-//                .ubiquitousItemDownloadingStatusKey,
-//                .fileSizeKey
-//            ])
-//
-//            let status = values?.ubiquitousItemDownloadingStatus
-//            let size = values?.fileSize ?? 0
-//            
-//            // 🔥 Return iCloud file only if really materialized
-//            if status == .current || status == .downloaded {
-//                if size > 0 {
-//                    return cloud
-//                }
-//            }
-//        }
 
         // 2️⃣ Legacy local path
         if let legacy = legacyAttachmentsDirectory()?
             .appendingPathComponent(relativePath),
            fm.fileExists(atPath: legacy.path) {
-//
-//            let legacySize = (try? fm.attributesOfItem(
-//                atPath: legacy.path
-//            )[.size] as? Int64) ?? 0
 
-            // 🔥 SELF-HEALING:
-            // if iCloud file is missing but legacy exists,
-            // silently restore it into iCloud container.
             if let cloudDirectory = cloudAttachmentsDirectory() {
 
                 let cloudURL = cloudDirectory
@@ -268,7 +259,13 @@ extension TaskAttachment {
            }) {
             return recovered
         }
-
+        DebugLog.write(
+            """
+        📎 Resolver failed
+        iCloudDir=\(cloudAttachmentsDirectory() != nil)
+        legacyDir=\(legacyAttachmentsDirectory() != nil)
+        """
+        )
         return nil
     }
     

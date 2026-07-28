@@ -1608,8 +1608,11 @@ struct TodoSectionView: View {
         // 🔥 RICORRENZA: intercetta PRIMA di cambiare stato
         if task.recurrenceRule != nil {
 
-            // 🔁 Ricorrenza: completa e rischedula
-            task.completeRecurringTask(in: modelContext)
+            // 🔁 Ricorrenza: completa(se scelto dall'utente)  e rischedula
+            task.completeRecurringTask(
+                in: modelContext,
+                options: settings.recurringTaskOptions
+            )
 
             modelContext.processPendingChanges()
 
@@ -1823,8 +1826,11 @@ struct CompletedSectionView: View {
         // 🔥 RICORRENZA: se riattivi un task ricorrente NON ha senso tenerlo completato
         if task.recurrenceRule != nil {
 
-            // 🔁 Ricorrenza: completa e rischedula
-            task.completeRecurringTask(in: modelContext)
+            // 🔁 Ricorrenza: completa(se scelto da utente) e rischedula
+            task.completeRecurringTask(
+                in: modelContext,
+                options: settings.recurringTaskOptions
+            )
 
             modelContext.processPendingChanges()
 

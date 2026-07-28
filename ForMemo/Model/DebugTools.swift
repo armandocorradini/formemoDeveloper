@@ -147,6 +147,8 @@ enum DebugTools {
 }
 enum DebugLog {
     
+    private static let sessionID = String(UUID().uuidString.prefix(8))
+    
     private static let logQueue = DispatchQueue(
         label: "ForMemo.Diagnostics"
     )
@@ -333,6 +335,27 @@ enum DebugLog {
     static func writeAttachmentEvent(_ message: String) {
         write("📎 [ATTACHMENTS] \(message)")
     }
+    
+    static func writeAttachmentLifecycle(
+        action: String,
+        attachmentID: String,
+        taskID: String? = nil,
+        reason: String? = nil
+    ) {
+        var message = "📎 [LIFECYCLE] [S:\(sessionID)] \(action)"
+        message += " attachment=\(attachmentID)"
+
+        if let taskID {
+            message += " task=\(taskID)"
+        }
+
+        if let reason {
+            message += " reason=\(reason)"
+        }
+
+        write(message)
+    }
+    
     static func writeDatabaseSnapshot(context: ModelContext) {
 
         let openTasks = (try? context.fetchCount(
@@ -913,3 +936,5 @@ struct ExportDiagnosticsView: View {
         }
     }
 }
+
+

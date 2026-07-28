@@ -307,32 +307,37 @@ extension TodoTask {
 
 extension TodoTask {
     
-    func completeRecurringTask(in context: ModelContext) {
+    func completeRecurringTask(
+        in context: ModelContext,
+        options: RecurringTaskOptions
+    ) {
         
-        // 1️⃣ CREA COPIA COMPLETATA (STORICO)
-        let completedCopy = TodoTask(
-            title: self.title,
-            taskDescription: self.taskDescription
-        )
-        
-        completedCopy.deadLine = self.deadLine
-        completedCopy.reminderOffsetMinutes = self.reminderOffsetMinutes
-        completedCopy.priority = self.priority
-        completedCopy.mainTag = self.mainTag
-        
-        completedCopy.locationName = self.locationName
-        completedCopy.locationLatitude = self.locationLatitude
-        completedCopy.locationLongitude = self.locationLongitude
-        
-        completedCopy.isCompleted = true
-        completedCopy.completedAt = Date()
-        
-        // 🔴 fondamentale: NO ricorrenza nella copia
-        completedCopy.recurrenceRule = nil
-        completedCopy.recurrenceInterval = 1
-        
-        context.insert(completedCopy)
-        
+        if options.keepHistory {
+
+            // 1️⃣ CREA COPIA COMPLETATA (STORICO se settato dall'utente)
+            let completedCopy = TodoTask(
+                title: self.title,
+                taskDescription: self.taskDescription
+            )
+
+            completedCopy.deadLine = self.deadLine
+            completedCopy.reminderOffsetMinutes = self.reminderOffsetMinutes
+            completedCopy.priority = self.priority
+            completedCopy.mainTag = self.mainTag
+
+            completedCopy.locationName = self.locationName
+            completedCopy.locationLatitude = self.locationLatitude
+            completedCopy.locationLongitude = self.locationLongitude
+
+            completedCopy.isCompleted = true
+            completedCopy.completedAt = Date()
+
+            // 🔴 fondamentale: NO ricorrenza nella copia
+            completedCopy.recurrenceRule = nil
+            completedCopy.recurrenceInterval = 1
+
+            context.insert(completedCopy)
+        }
         // 2️⃣ AGGIORNA TASK ORIGINALE → PROSSIMA OCCORRENZA
         moveToNextOccurrence()
         
@@ -370,4 +375,10 @@ extension TodoTask {
             break
         }
     }
+}
+
+
+
+struct RecurringTaskOptions {
+    let keepHistory: Bool
 }

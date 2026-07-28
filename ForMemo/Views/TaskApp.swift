@@ -110,13 +110,13 @@ struct ForMemoApp: App {
         Task { @MainActor in
             let context = sharedContainer.mainContext
 
-            // 🔥 SINGLE LOCAL-FIRST STORE
-            // Existing SQLite database is reused directly.
-            // CloudKit only syncs the SAME local database.
-
             AttachmentMigration.runIfNeeded(
                 context: context
             )
+            DebugLog.writeDatabaseSnapshot(
+                context: context
+            )
+            
             VaultAutoFillManager.shared.synchronize(using: context)
             if appSettings.autoDeleteCompletedAttachments {
                 try? AttachmentMaintenanceManager.shared.performAutomaticCleanup(
@@ -238,6 +238,10 @@ struct ForMemoApp: App {
                     
                     let context = container.mainContext
                     
+                    DebugLog.writeDatabaseSnapshot(
+                        context: context
+                    )
+                    
                     // 1️⃣ Applica azioni notifiche
                     NotificationActionProcessor.shared.processAll(using: context)
  
@@ -296,6 +300,10 @@ struct ForMemoApp: App {
 
                 let context = self.container.mainContext
 
+                DebugLog.writeDatabaseSnapshot(
+                    context: context
+                )
+                
                 NotificationActionProcessor.shared.processAll(
                     using: context
                 )

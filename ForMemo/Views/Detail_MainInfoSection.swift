@@ -87,7 +87,10 @@ import SwiftData
                     get: { task.isCompleted },
                     set: { newValue in
                         if newValue == true, task.recurrenceRule != nil {
-                            task.completeRecurringTask(in: modelContext)
+                            task.completeRecurringTask(
+                                in: modelContext,
+                                options: settings.recurringTaskOptions
+                            )
                         } else {
                             task.isCompleted = newValue
                             task.completedAt = newValue ? .now : nil

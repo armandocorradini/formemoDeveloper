@@ -69,6 +69,10 @@ final class AppSettings {
         
         showDateEveryRow = defaults.object(forKey: "TaskListShowDateEveryRow") as? Bool ?? false
         confirmTaskDeletion = defaults.object(forKey: "confirmTaskDeletion") as? Bool ?? true
+        keepRecurringTaskHistory = defaults.object(
+            forKey: "keepRecurringTaskHistory"
+        ) as? Bool ?? true
+        
         taskWeekDays = defaults.object(forKey: "TaskWeekDays") as? Int ?? 3
         startupTab = defaults.object(forKey: "startupTab") as? Int ?? 1
         notificationLeadTimeDays = defaults.object(forKey: "notificationLeadTimeDays") as? Int ?? 1
@@ -271,6 +275,22 @@ final class AppSettings {
             UserDefaults.standard.set(
                 confirmTaskDeletion,
                 forKey: "confirmTaskDeletion"
+            )
+        }
+    }
+    
+    var recurringTaskOptions: RecurringTaskOptions {
+        RecurringTaskOptions(
+            keepHistory: keepRecurringTaskHistory
+        )
+    }
+    
+    
+    var keepRecurringTaskHistory: Bool {
+        didSet {
+            UserDefaults.standard.set(
+                keepRecurringTaskHistory,
+                forKey: "keepRecurringTaskHistory"
             )
         }
     }
@@ -521,6 +541,7 @@ final class AppSettings {
         taskListStyle = .plain
         showDateEveryRow = false
         confirmTaskDeletion = true
+        keepRecurringTaskHistory = true
         taskWeekDays = 3
         startupTab = 1
         notificationLeadTimeDays = 1

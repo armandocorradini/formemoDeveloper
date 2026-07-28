@@ -15832,6 +15832,34 @@
         }
       }
     },
+    "Keep history of recurring tasks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verlauf wiederkehrender Aufgaben behalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conservar el historial de las tareas recurrentes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conserver l’historique des tâches récurrentes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conserva la cronologia delle attività ricorrenti"
+          }
+        }
+      }
+    },
     "Keep track of important documents, expiry dates, notes and reminders. Receive notifications before documents expire." : {
       "localizations" : {
         "de" : {
@@ -32635,6 +32663,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cosa vuoi cercare?"
+          }
+        }
+      }
+    },
+    "When enabled, completing a recurring task saves the completed occurrence and automatically schedules the next one. When disabled, the task is simply moved to the next occurrence without creating a completed record." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn diese Option aktiviert ist, wird jede abgeschlossene Wiederholung einer wiederkehrenden Aufgabe gespeichert und die nächste automatisch geplant. Ist sie deaktiviert, wird die Aufgabe lediglich auf die nächste Wiederholung verschoben, ohne einen abgeschlossenen Eintrag zu speichern."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando esta opción está activada, cada recurrencia completada de una tarea recurrente se conserva en el historial y la siguiente se programa automáticamente. Cuando está desactivada, la tarea simplemente se traslada a la siguiente recurrencia sin guardar un registro de la recurrencia completada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lorsque cette option est activée, chaque occurrence terminée d’une tâche récurrente est conservée dans l’historique et la suivante est programmée automatiquement. Lorsqu’elle est désactivée, la tâche est simplement reportée à l’occurrence suivante sans enregistrer l’occurrence terminée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando questa opzione è attiva, ogni occorrenza completata di un'attività ricorrente viene conservata nella cronologia e la successiva viene pianificata automaticamente. Quando è disattivata, l'attività viene semplicemente spostata alla ricorrenza successiva senza salvare l'occorrenza completata."
           }
         }
       }

@@ -131,6 +131,23 @@ struct OtherSettingsView: View {
                     )
                 }
                 
+                Section("Recurring Tasks") {
+
+                    Toggle(
+                        "Keep history of recurring tasks",
+                        isOn: Binding(
+                            get: { settings.keepRecurringTaskHistory },
+                            set: { settings.keepRecurringTaskHistory = $0 }
+                        )
+                    )
+
+                    Text(
+                        "When enabled, completing a recurring task saves the completed occurrence and automatically schedules the next one. When disabled, the task is simply moved to the next occurrence without creating a completed record."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                }
+                
             }
             .onChange(of: badgeIncludeExpired) { oldValue, newValue in
                 // Questa logica viene eseguita non appena il valore cambia

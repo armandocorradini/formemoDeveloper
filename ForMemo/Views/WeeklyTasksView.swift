@@ -776,8 +776,11 @@ private struct WeeklyTaskRow: View {
     private func completeTask() {
         guard task.isCompleted == false else { return }
         if task.recurrenceRule != nil {
-            // Complete and reschedule recurring task
-            task.completeRecurringTask(in: modelContext)
+            // Complete(se scelto da utente) and reschedule recurring task
+            task.completeRecurringTask(
+                in: modelContext,
+                options: settings.recurringTaskOptions
+            )
         } else {
             task.isCompleted = true
             task.completedAt = .now
