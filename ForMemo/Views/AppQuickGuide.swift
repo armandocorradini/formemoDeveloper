@@ -182,8 +182,8 @@ struct AppQuickGuideView: View {
             tint: .orange
         ),
         .init(
-            title: String(localized:"Recurring Tasks"),
-            description: String(localized:"Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the next one is created automatically based on the selected frequency."),
+            title: String(localized: "Recurring Tasks"),
+            description: String(localized: "Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the next occurrence is scheduled automatically. You can also choose whether to keep completed occurrences in your history or simply move the task to the next occurrence."),
             icon: "arrow.triangle.2.circlepath",
             tint: .blue
         ),

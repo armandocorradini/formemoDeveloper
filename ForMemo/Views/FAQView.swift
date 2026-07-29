@@ -53,7 +53,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"How do recurring tasks work?"),
-                answer: String(localized:"You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the app automatically creates the next one based on the selected frequency, so you don’t need to recreate it manually. You can modify or stop recurrence at any time.")
+                answer: String(localized:"You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, ForMemo automatically schedules the next occurrence based on the selected frequency. You can also choose whether completed occurrences are kept in your history or whether the task simply moves to the next occurrence without creating a completed record. You can change or stop recurrence at any time.")
             ),
             FAQItem(
                 question: String(localized:"Does the app include weather forecasts?"),
@@ -434,11 +434,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Does the app support backup and restore?"),
-                answer: String(localized:"Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, cards, tickets and logos, trip lists, documents, app settings, and related data. You can restore them later or transfer everything to another device.")
+                answer: String(localized:"Yes. ForMemo allows you to create complete backups that can include tasks, reminders, attachments, cards, tickets and logos, trip lists, documents, Vault data, app settings, and related information. You can restore everything later or transfer your data to another compatible device.")
             ),
             FAQItem(
                 question: String(localized:"What is included in a backup?"),
-                answer: String(localized:"Backups include tasks, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets and logos, trip lists, documents, and app settings. Backups are independent from iCloud sync and can be used to transfer data to another device.")
+                answer: String(localized:"Backups can include tasks, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets and logos, trip lists, documents, Vault data, and app settings. Backups are independent of iCloud synchronization and can be used to transfer your data to another compatible device.")
             ),
             FAQItem(
                 question: String(localized:"Are attachments included in backups?"),

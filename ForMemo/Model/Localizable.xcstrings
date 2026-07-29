@@ -4171,30 +4171,30 @@
         }
       }
     },
-    "Backups include tasks, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets and logos, trip lists, documents, and app settings. Backups are independent from iCloud sync and can be used to transfer data to another device." : {
+    "Backups can include tasks, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets and logos, trip lists, documents, Vault data, and app settings. Backups are independent of iCloud synchronization and can be used to transfer your data to another compatible device." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Backups enthalten Aufgaben, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Standorte, Anhänge, Karten, Tickets und Logos, Reiselisten, Dokumente sowie App-Einstellungen. Backups sind unabhängig von der Cloud-Synchronisierung und können verwendet werden, um Daten auf ein anderes Gerät zu übertragen."
+            "value" : "Backups können Aufgaben, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Orte, Anhänge, Karten, Tickets und Logos, Reiselisten, Dokumente, Tresor-Daten und App-Einstellungen enthalten. Backups sind unabhängig von der iCloud-Synchronisierung und können verwendet werden, um Ihre Daten auf ein anderes kompatibles Gerät zu übertragen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las copias de seguridad incluyen tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, archivos adjuntos, tarjetas, tickets y logotipos, listas de viaje, documentos y ajustes de la aplicación. Las copias de seguridad son independientes de la sincronización en la nube y pueden utilizarse para transferir datos a otro dispositivo."
+            "value" : "Las copias de seguridad pueden incluir tareas, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, archivos adjuntos, tarjetas, entradas y logotipos, listas de viaje, documentos, datos de la Caja fuerte y ajustes de la app. Las copias de seguridad son independientes de la sincronización con iCloud y pueden utilizarse para transferir tus datos a otro dispositivo compatible."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les sauvegardes incluent les tâches, les rappels, les règles de récurrence, les étiquettes, les priorités, les emplacements, les pièces jointes, les cartes, les tickets et leurs logos, les listes de voyage, les documents et les paramètres de l’application. Les sauvegardes sont indépendantes de la synchronisation Cloud et peuvent être utilisées pour transférer des données vers un autre appareil."
+            "value" : "Les sauvegardes peuvent inclure les tâches, rappels, règles de récurrence, étiquettes, priorités, emplacements, pièces jointes, cartes, billets et logos, listes de voyage, documents, les données du Coffre-fort et les réglages de l’app. Les sauvegardes sont indépendantes de la synchronisation iCloud et peuvent être utilisées pour transférer vos données vers un autre appareil compatible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I backup includono attività, promemoria, regole di ricorrenza, tag, priorità, posizioni, allegati, carte, tickets e loghi, liste di viaggio, documenti e impostazioni dell’app. I backup sono indipendenti dalla sincronizzazione Cloud e possono essere utilizzati per trasferire i dati su un altro dispositivo."
+            "value" : "I backup possono includere attività, promemoria, regole di ricorrenza, tag, priorità, posizioni, allegati, carte, biglietti e loghi, checklist di viaggio, documenti, dati della Cassaforte e impostazioni dell'app. I backup sono indipendenti dalla sincronizzazione con iCloud e possono essere utilizzati per trasferire i tuoi dati su un altro dispositivo compatibile."
           }
         }
       }
@@ -24209,30 +24209,30 @@
         }
       }
     },
-    "Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the next one is created automatically based on the selected frequency." : {
+    "Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the next occurrence is scheduled automatically. You can also choose whether to keep completed occurrences in your history or simply move the task to the next occurrence." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lege fest, dass sich Aufgaben stündlich, täglich, wöchentlich, monatlich oder jährlich wiederholen. Wenn du eine wiederkehrende Aufgabe abschließt, wird die nächste automatisch entsprechend der gewählten Frequenz erstellt."
+            "value" : "Legen Sie fest, dass Aufgaben stündlich, täglich, wöchentlich, monatlich oder jährlich wiederholt werden. Wenn Sie eine wiederkehrende Aufgabe abschließen, wird die nächste Wiederholung automatisch geplant. Sie können außerdem festlegen, ob abgeschlossene Wiederholungen im Verlauf gespeichert werden oder die Aufgabe direkt zur nächsten Wiederholung wechselt."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configura las tareas para que se repitan cada hora, día, semana, mes o año. Cuando completas una tarea recurrente, la siguiente se crea automáticamente según la frecuencia seleccionada."
+            "value" : "Configura las tareas para que se repitan cada hora, cada día, cada semana, cada mes o cada año. Cuando completas una tarea recurrente, la siguiente recurrencia se programa automáticamente. También puedes elegir si deseas conservar las recurrencias completadas en el historial o simplemente pasar la tarea a la siguiente recurrencia."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configurez les tâches pour qu’elles se répètent toutes les heures, tous les jours, toutes les semaines, tous les mois ou tous les ans. Lorsque vous terminez une tâche récurrente, la suivante est créée automatiquement selon la fréquence sélectionnée."
+            "value" : "Configurez les tâches pour qu’elles se répètent toutes les heures, tous les jours, toutes les semaines, tous les mois ou tous les ans. Lorsque vous terminez une tâche récurrente, l’occurrence suivante est programmée automatiquement. Vous pouvez également choisir de conserver les occurrences terminées dans l’historique ou de simplement faire passer la tâche à l’occurrence suivante."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Imposta le attività in modo che si ripetano ogni ora, giorno, settimana, mese o anno. Quando completi un’attività ricorrente, la successiva viene creata automaticamente in base alla frequenza selezionata."
+            "value" : "Imposta le attività in modo che si ripetano ogni ora, ogni giorno, ogni settimana, ogni mese o ogni anno. Quando completi un'attività ricorrente, l'occorrenza successiva viene pianificata automaticamente. Puoi anche scegliere se conservare le occorrenze completate nella cronologia oppure spostare semplicemente l'attività all'occorrenza successiva."
           }
         }
       }
@@ -33819,30 +33819,30 @@
         }
       }
     },
-    "Yes. ForMemo allows you to create complete backups that include tasks, reminders, attachments, cards, tickets and logos, trip lists, documents, app settings, and related data. You can restore them later or transfer everything to another device." : {
+    "Yes. ForMemo allows you to create complete backups that can include tasks, reminders, attachments, cards, tickets and logos, trip lists, documents, Vault data, app settings, and related information. You can restore everything later or transfer your data to another compatible device." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. ForMemo ermöglicht die Erstellung vollständiger Backups, die Aufgaben, Erinnerungen, Anhänge, Karten, Tickets und Logos, Reiselisten, Dokumente, App-Einstellungen und zugehörige Daten enthalten. Sie können diese später wiederherstellen oder alles auf ein anderes Gerät übertragen."
+            "value" : "Ja. Mit ForMemo können Sie vollständige Backups erstellen, die Aufgaben, Erinnerungen, Anhänge, Karten, Tickets und Logos, Reiselisten, Dokumente, Tresor-Daten, App-Einstellungen sowie zugehörige Informationen enthalten können. Sie können später alles wiederherstellen oder Ihre Daten auf ein anderes kompatibles Gerät übertragen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. ForMemo permite crear copias de seguridad completas que incluyen tareas, recordatorios, archivos adjuntos, tarjetas, tickets y logotipos, listas de viaje, documentos, ajustes de la aplicación y datos relacionados. Podrás restaurarlas más adelante o transferirlo todo a otro dispositivo."
+            "value" : "Sí. ForMemo te permite crear copias de seguridad completas que pueden incluir tareas, recordatorios, archivos adjuntos, tarjetas, entradas y logotipos, listas de viaje, documentos, datos de la Caja fuerte, ajustes de la app e información relacionada. Después podrás restaurarlo todo o transferir tus datos a otro dispositivo compatible."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. ForMemo vous permet de créer des sauvegardes complètes incluant les tâches, rappels, pièces jointes, cartes, tickets et logos, listes de voyage, documents, paramètres de l’application et données associées. Vous pourrez les restaurer ultérieurement ou tout transférer vers un autre appareil."
+            "value" : "Oui. ForMemo vous permet de créer des sauvegardes complètes pouvant inclure les tâches, rappels, pièces jointes, cartes, billets et logos, listes de voyage, documents, les données du Coffre-fort, les réglages de l’app et les informations associées. Vous pouvez ensuite tout restaurer ou transférer vos données vers un autre appareil compatible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. ForMemo consente di creare backup completi che includono attività, promemoria, allegati, carte, tickets e loghi, liste di viaggio, documenti, impostazioni dell’app e dati correlati. Potrai ripristinarli in seguito oppure trasferire tutto su un altro dispositivo."
+            "value" : "Sì. ForMemo ti consente di creare backup completi che possono includere attività, promemoria, allegati, carte, biglietti e loghi, checklist di viaggio, documenti, dati della Cassaforte, impostazioni dell'app e informazioni correlate. Potrai ripristinare tutto in un secondo momento oppure trasferire i tuoi dati su un altro dispositivo compatibile."
           }
         }
       }
@@ -34919,30 +34919,30 @@
         }
       }
     },
-    "You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the app automatically creates the next one based on the selected frequency, so you don’t need to recreate it manually. You can modify or stop recurrence at any time." : {
+    "You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, ForMemo automatically schedules the next occurrence based on the selected frequency. You can also choose whether completed occurrences are kept in your history or whether the task simply moves to the next occurrence without creating a completed record. You can change or stop recurrence at any time." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Du kannst Aufgaben so festlegen, dass sie sich stündlich, täglich, wöchentlich, monatlich oder jährlich wiederholen. Wenn du eine wiederkehrende Aufgabe abschließt, erstellt die App automatisch die nächste entsprechend der gewählten Frequenz, sodass du sie nicht manuell neu erstellen musst.\nDu kannst die Wiederholung jederzeit ändern oder beenden."
+            "value" : "Sie können Aufgaben so festlegen, dass sie stündlich, täglich, wöchentlich, monatlich oder jährlich wiederholt werden. Wenn Sie eine wiederkehrende Aufgabe abschließen, plant ForMemo die nächste Wiederholung automatisch entsprechend der gewählten Häufigkeit. Sie können außerdem festlegen, ob abgeschlossene Wiederholungen im Verlauf gespeichert werden oder die Aufgabe ohne gespeicherten Abschluss direkt zur nächsten Wiederholung wechselt. Sie können die Wiederholung jederzeit ändern oder beenden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Puedes configurar las tareas para que se repitan cada hora, día, semana, mes o año. Cuando completas una tarea recurrente, la aplicación crea automáticamente la siguiente según la frecuencia seleccionada, para que no tengas que volver a crearla manualmente.\nPuedes modificar o detener la recurrencia en cualquier momento."
+            "value" : "Puedes configurar las tareas para que se repitan cada hora, cada día, cada semana, cada mes o cada año. Cuando completas una tarea recurrente, ForMemo programa automáticamente la siguiente recurrencia según la frecuencia seleccionada. También puedes elegir si las recurrencias completadas se conservan en el historial o si la tarea simplemente pasa a la siguiente recurrencia sin guardar un registro de la recurrencia completada. Puedes modificar o detener la recurrencia en cualquier momento."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous pouvez configurer les tâches pour qu’elles se répètent toutes les heures, tous les jours, toutes les semaines, tous les mois ou tous les ans. Lorsque vous terminez une tâche récurrente, l’application crée automatiquement la suivante selon la fréquence sélectionnée, afin que vous n’ayez pas à la recréer manuellement.\nVous pouvez modifier ou arrêter la récurrence à tout moment."
+            "value" : "Vous pouvez configurer les tâches pour qu’elles se répètent toutes les heures, tous les jours, toutes les semaines, tous les mois ou tous les ans. Lorsque vous terminez une tâche récurrente, ForMemo programme automatiquement l’occurrence suivante selon la fréquence choisie. Vous pouvez également choisir de conserver les occurrences terminées dans l’historique ou de simplement faire passer la tâche à l’occurrence suivante sans enregistrer l’occurrence terminée. Vous pouvez modifier ou arrêter la récurrence à tout moment."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Puoi impostare le attività in modo che si ripetano ogni ora, giorno, settimana, mese o anno. Quando completi un’attività ricorrente, l’app crea automaticamente quella successiva in base alla frequenza selezionata, così non dovrai ricrearla manualmente.\nPuoi modificare o interrompere la ricorrenza in qualsiasi momento."
+            "value" : "Puoi impostare le attività in modo che si ripetano ogni ora, ogni giorno, ogni settimana, ogni mese o ogni anno. Quando completi un'attività ricorrente, ForMemo pianifica automaticamente l'occorrenza successiva in base alla frequenza selezionata. Puoi anche scegliere se conservare le occorrenze completate nella cronologia oppure fare in modo che l'attività venga semplicemente spostata all'occorrenza successiva senza salvare quella completata. Puoi modificare o interrompere la ricorrenza in qualsiasi momento."
           }
         }
       }
