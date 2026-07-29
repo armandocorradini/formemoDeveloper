@@ -503,7 +503,7 @@ struct Dashboard: View {
                     // Show Continue section only if enabled and there are items
                     if settings.showDashboardContinue && !continueItems.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
-                            Label("Continue", systemImage: "clock.arrow.trianglehead.clockwise.rotate.90.path.dotted")
+                            Label("Recent", systemImage: "clock.arrow.trianglehead.clockwise.rotate.90.path.dotted")
                                 .font(.headline)
                                 .foregroundStyle(.primary)
 
@@ -611,7 +611,7 @@ struct Dashboard: View {
             ToolbarItem(placement: .topBarLeading) {
                 Menu {
                     Toggle("Show Tomorrow", isOn: Bindable(settings).showDashboardTomorrow)
-                    Toggle("Show Continue", isOn: Bindable(settings).showDashboardContinue)
+                    Toggle("Show Recent", isOn: Bindable(settings).showDashboardContinue)
                 } label: {
                     Image(systemName: "line.3.horizontal.decrease.circle")
                 }

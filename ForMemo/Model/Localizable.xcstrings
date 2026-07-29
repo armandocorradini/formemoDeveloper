@@ -798,25 +798,25 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%Ild Elemente"
+            "value" : "%lld Elemente"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%Ild elementos"
+            "value" : "%lld elementos"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%Ild éléments"
+            "value" : "%lld éléments"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%Ild elementi"
+            "value" : "%lld elementi"
           }
         }
       }
@@ -1019,7 +1019,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "• Cambia el estilo del icono principal de las tareas\n• Elige el color del globo de días\n• Muestra u oculta los iconos de adjuntos, ubicación y prioridad\n• Previsualiza los cambios antes de aplicarlos"
+            "value" : "• Cambia el estilo del icono principal de las tareas\n• Elige el color de la insignia de días\n• Muestra u oculta los iconos de adjuntos, ubicación y prioridad\n• Previsualiza los cambios antes de aplicarlos"
           }
         },
         "fr" : {
@@ -1517,7 +1517,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⚠️ ¡Coincide con la notificación!"
+            "value" : "⚠️ Coincide con tu notificación global predeterminada."
           }
         },
         "fr" : {
@@ -2200,25 +2200,25 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "($input) am ($date) hinzufügen"
+            "value" : "Füge ${input} am ${date} hinzu"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir ($input) el ($date)"
+            "value" : "Añadir ${input} el ${date}"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter ($input) le ($date)"
+            "value" : "Ajouter ${input} le ${date}"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi ${input} il${date}"
+            "value" : "Aggiungi ${input} il ${date}"
           }
         }
       }
@@ -2629,7 +2629,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir tickets"
+            "value" : "Añadir entrada"
           }
         },
         "fr" : {
@@ -3085,7 +3085,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "es pièces jointes sont-elles incluses dans les sauvegardes ?\n"
+            "value" : "Les pièces jointes sont-elles incluses dans les sauvegardes ?"
           }
         },
         "it" : {
@@ -3107,7 +3107,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Las tarjetas y las tickets están incluidas en las copias de seguridad?"
+            "value" : "¿Las tarjetas y las entradas están incluidas en las copias de seguridad?"
           }
         },
         "fr" : {
@@ -3275,7 +3275,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Êtes-vous sûr de vouloir désélectionner tous les éléments ?"
+            "value" : "¿Seguro que quieres quitar todas las marcas de verificación?"
           }
         },
         "fr" : {
@@ -3422,7 +3422,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Al vencimiento, el badge se actualiza solo cuando las tareas pasan a estar vencidas. Con notificación global, el badge se actualiza exactamente en el mismo momento en que se activa la notificación global anticipada.\nPuedes cambiar este comportamiento en cualquier momento en Ajustes > General."
+            "value" : "Al vencimiento, la insignia se actualiza solo cuando las tareas pasan a estar vencidas. Con notificación global, la insignia se actualiza exactamente en el mismo momento en que se activa la notificación global anticipada.\nPuedes cambiar este comportamiento en cualquier momento en Ajustes > General."
           }
         },
         "fr" : {
@@ -4212,7 +4212,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Actualización del badge"
+            "value" : "Actualización de la insignia"
           }
         },
         "fr" : {
@@ -7280,7 +7280,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Réduire toutes les sections"
+            "value" : "Contraer todas las secciones"
           }
         },
         "fr" : {
@@ -11699,7 +11699,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pour accéder au calendrier, activez l’accès dans Réglages → ForMemo → Calendrier."
+            "value" : "Para acceder al calendario, activa el acceso en Ajustes → ForMemo → Calendarios."
           }
         },
         "fr" : {
@@ -11735,7 +11735,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pour importer les rappels, activez l’accès dans Réglages → ForMemo → Rappels."
+            "value" : "Para importar recordatorios, activa el acceso en Ajustes → ForMemo → Recordatorios."
           }
         },
         "fr" : {
@@ -11877,7 +11877,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Développer toutes les sections"
+            "value" : "Expandir todas las secciones"
           }
         },
         "fr" : {
@@ -19043,7 +19043,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hora de notificación y globo"
+            "value" : "Hora de la notificación e insignia"
           }
         },
         "fr" : {
@@ -21414,6 +21414,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pronto per il salvataggio"
+          }
+        }
+      }
+    },
+    "Recent" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zuletzt verwendet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recientes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récents"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recenti"
           }
         }
       }
@@ -24564,7 +24592,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar el globo de la app"
+            "value" : "Mostrar la insignia de la app"
           }
         },
         "fr" : {
@@ -24620,7 +24648,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar el globo solo si hay prioridad definida"
+            "value" : "Mostrar la insignia solo si hay una prioridad definida"
           }
         },
         "fr" : {
@@ -24633,34 +24661,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra badge solo con priorità impostata"
-          }
-        }
-      }
-    },
-    "Show Continue" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "„Fortsetzen“ anzeigen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostrar Continuar"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afficher Continuer"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostra Continua"
           }
         }
       }
@@ -24704,7 +24704,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mostrar el globo de días"
+            "value" : "Mostrar la insignia de días"
           }
         },
         "fr" : {
@@ -24857,6 +24857,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra icona priorità"
+          }
+        }
+      }
+    },
+    "Show Recent" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zuletzt verwendet anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar recientes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher les éléments récents"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra recenti"
           }
         }
       }
@@ -25208,7 +25236,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Globos inteligentes"
+            "value" : "Insignias inteligentes"
           }
         },
         "fr" : {
@@ -28002,7 +28030,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El badge de la aplicación muestra las tareas que requieren atención según el modo de badge seleccionado. En Ajustes > General, puedes elegir si el badge debe actualizarse solo cuando las tareas vencen o antes del vencimiento, en el momento en que se activa la notificación global. El badge se actualiza automáticamente incluso si la aplicación está cerrada."
+            "value" : "La insignia de la aplicación muestra las tareas que requieren atención según el modo de insignia seleccionado. En Ajustes > General, puedes elegir si la insignia debe actualizarse solo cuando las tareas vencen o antes del vencimiento, en el momento en que se activa la notificación global. La insignia se actualiza automáticamente incluso si la aplicación está cerrada."
           }
         },
         "fr" : {
@@ -28114,7 +28142,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El comportamiento del badge depende del modo seleccionado. En modo clásico, las tareas aparecen en el badge solo después de que haya pasado su fecha límite. En modo de notificación global, las tareas pueden aparecer antes, cuando se activa la notificación anticipada."
+            "value" : "El comportamiento de la insignia depende del modo seleccionado. En el modo clásico, las tareas aparecen en la insignia solo después de que haya pasado su fecha límite. En el modo de notificación global, las tareas pueden aparecer antes, cuando se activa la notificación anticipada."
           }
         },
         "fr" : {
@@ -28304,7 +28332,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le rapport de diagnostic contient uniquement des événements techniques de l’application, des informations de configuration et des décomptes agrégés des éléments. Les titres des tâches, les notes, les pièces jointes, les détails des documents, les informations des cartes et les contenus personnels ne sont jamais inclus."
+            "value" : "Der Diagnosebericht enthält nur technische App-Ereignisse, Konfigurationsinformationen und aggregierte Elementanzahlen. Aufgabentitel, Notizen, Anhänge, Dokumentdetails, Karteninformationen und persönliche Inhalte werden nie einbezogen."
           }
         },
         "es" : {
@@ -29572,7 +29600,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para mostrar el globo en el icono de la app y recibir recordatorios y notificaciones sonoras, debes permitir las notificaciones para %@."
+            "value" : "Para mostrar la insignia en el icono de la app y recibir recordatorios y notificaciones sonoras, debes permitir las notificaciones para %@."
           }
         },
         "fr" : {
@@ -30340,7 +30368,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reise-Checklisten: %lld"
+            "value" : "Listas de viaje: %lld"
           }
         },
         "fr" : {
@@ -30508,7 +30536,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reise-Checklisten: %lld"
+            "value" : "Tropical"
           }
         },
         "fr" : {
@@ -32536,7 +32564,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "¿Cuál es la diferencia entre los modos de badge?"
+            "value" : "¿Cuál es la diferencia entre los modos de insignia?"
           }
         },
         "fr" : {
@@ -34032,7 +34060,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "les tâches en retard ou les tâches ayant atteint l’heure de la notification globale."
+            "value" : "Oui. Dans Réglages > Général, vous pouvez choisir si le badge compte les tâches en retard ou les tâches ayant atteint l’heure de la notification globale."
           }
         },
         "it" : {
@@ -34982,7 +35010,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Du hast nichts geplant für"
+            "value" : "Du hast nichts für %@ geplant."
           }
         },
         "es" : {
@@ -35018,7 +35046,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recibirás una notificación %lld día(s) antes del vencimiento y otra en el momento del vencimiento.\nPuedes elegir abajo si el badge de la aplicación se actualiza al vencimiento o ya con la notificación global."
+            "value" : "Recibirás una notificación %lld día(s) antes del vencimiento y otra en el momento del vencimiento.\nPuedes elegir abajo si la insignia de la aplicación se actualiza al vencimiento o ya con la notificación global."
           }
         },
         "fr" : {
@@ -35048,7 +35076,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recibirás una notificación solo en el momento exacto de la tarea. Como las notificaciones globales están desactivadas, el badge de la aplicación se actualiza solo cuando las tareas vencen."
+            "value" : "Recibirás una notificación solo en el momento exacto de la tarea. Como las notificaciones globales están desactivadas, la insignia de la aplicación se actualiza solo cuando las tareas vencen."
           }
         },
         "fr" : {
