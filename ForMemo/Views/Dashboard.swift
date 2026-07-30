@@ -78,9 +78,13 @@ struct Dashboard: View {
                 id: "card-\(card.id)",
                 title: card.storeName,
                 systemImage: nil,
-                logoData: LoyaltyCardLogoStore.load(
-                    relativePath: "\(card.id.uuidString).jpg"
-                ),
+                logoData:
+                    LoyaltyCardLogoStore.load(
+                        asset: card.logoAsset
+                    )
+                    ?? LoyaltyCardLogoStore.load(
+                        relativePath: "\(card.id.uuidString).jpg"
+                    ),
                 lastOpenedAt: lastOpenedAt,
                 destination: .loyaltyCard(card)
             )

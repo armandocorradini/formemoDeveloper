@@ -82,9 +82,24 @@ struct WalletView: View {
         ZStack {
 
             AppGlassBackground()
-
             Color.clear
                 .onAppear {
+
+                    var needsSave = false
+
+                    // Migrazione lazy dei logo legacy
+                    for card in cards {
+
+                        if WalletAsset.createLegacyLogoReference(
+                            for: card,
+                            in: modelContext
+                        ) != nil {
+
+                            needsSave = true
+                        }
+                    }
+
+                    // Codice già esistente
                     if cards.allSatisfy({ $0.sortOrder == 0 }) && !cards.isEmpty {
 
                         let alphabetical = cards.sorted {
@@ -101,6 +116,10 @@ struct WalletView: View {
                             card.sortOrder = index + 1
                         }
 
+                        needsSave = true
+                    }
+
+                    if needsSave {
                         try? modelContext.save()
                     }
                 }
@@ -128,6 +147,8 @@ struct WalletView: View {
                         ForEach(filteredCards) { card in
 
                             let logoData = LoyaltyCardLogoStore.load(
+                                asset: card.logoAsset
+                            ) ?? LoyaltyCardLogoStore.load(
                                 relativePath: "\(card.id.uuidString).jpg"
                             )
 

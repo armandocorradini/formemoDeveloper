@@ -9,13 +9,19 @@ struct LoyaltyCardDetailView: View {
     let card: LoyaltyCard
     @State private var zoomScale: CGFloat = 1
     @State private var lastZoomScale: CGFloat = 1
-    
+    @State private var previewImage: PreviewImage?
     private var cardBackgroundColor: Color {
         Color(
             hex: card.colorHex ?? "#3B82F6"
         ) ?? .blue
     }
 
+    private struct PreviewImage: Identifiable {
+        let id = UUID()
+        let image: UIImage
+    }
+    
+    
     private var prefersDarkText: Bool {
         UIColor(cardBackgroundColor).isLightColor
     }
@@ -44,6 +50,27 @@ struct LoyaltyCardDetailView: View {
         card.itemType == "ticket"
     }
 
+    private var logoData: Data? {
+        LoyaltyCardLogoStore.load(
+            asset: card.logoAsset
+        ) ?? LoyaltyCardLogoStore.load(
+            relativePath: "\(card.id.uuidString).jpg"
+        )
+    }
+
+    private var frontData: Data? {
+        LoyaltyCardLogoStore.load(
+            asset: card.frontAsset
+        )
+    }
+
+    private var backData: Data? {
+        LoyaltyCardLogoStore.load(
+            asset: card.backAsset
+        )
+    }
+    
+    
     var body: some View {
 
         ZStack {
@@ -62,9 +89,7 @@ struct LoyaltyCardDetailView: View {
 
                         HStack(alignment: .top, spacing: 14) {
 
-                            if let data = LoyaltyCardLogoStore.load(
-                                relativePath: "\(card.id.uuidString).jpg"
-                            ),
+                            if let data = logoData,
                                let uiImage = UIImage(data: data) {
 
                                 Image(uiImage: uiImage)
@@ -248,7 +273,65 @@ struct LoyaltyCardDetailView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
-
+                HStack{
+                    if let frontData,
+                       let uiImage = UIImage(data: frontData) {
+                        
+                        VStack( spacing: 10) {
+                            
+                            Text("Front")
+                                .font(.headline)
+                            
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 150, height: 95)
+                                .clipped()
+                                .clipShape(
+                                    RoundedRectangle(
+                                        cornerRadius: 16,
+                                        style: .continuous
+                                    )
+                                )
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    previewImage = PreviewImage(image: uiImage)
+                                 }
+                            
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    if let backData,
+                       let uiImage = UIImage(data: backData) {
+                        
+                        VStack( spacing: 10) {
+                            
+                            Text("Back")
+                                .font(.headline)
+                            
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 150, height: 95)
+                                .clipped()
+                                .clipShape(
+                                    RoundedRectangle(
+                                        cornerRadius: 16,
+                                        style: .continuous
+                                    )
+                                )
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    previewImage = PreviewImage(image: uiImage)
+                                 }
+                            
+                        }
+                        .frame(width: 150)
+                        .padding(.horizontal)
+                    }
+    
+                }
                 if let notes = card.notes,
                    !notes.isEmpty {
 
@@ -270,6 +353,7 @@ struct LoyaltyCardDetailView: View {
                         RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .fill(Color(.secondarySystemBackground))
                     )
+                    .frame(width: 150)
                     .padding(.horizontal)
                 }
 
@@ -305,11 +389,26 @@ struct LoyaltyCardDetailView: View {
         }
         }
         .onAppear {
+
+            var needsSave = false
+
+            if WalletAsset.createLegacyLogoReference(
+                for: card,
+                in: modelContext
+            ) != nil {
+
+                needsSave = true
+            }
+
             card.lastOpenedAt = .now
-            do {
-                try modelContext.save()
-            } catch {
-                print("Failed to update lastOpenedAt: \(error)")
+            needsSave = true
+
+            if needsSave {
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("Failed to update LoyaltyCard: \(error)")
+                }
             }
         }
         .navigationTitle(
@@ -320,10 +419,13 @@ struct LoyaltyCardDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .scrollContentBackground(.hidden)
         .containerBackground(.clear, for: .navigation)
+
+        .fullScreenCover(item: $previewImage) { preview in
+            ImagePreviewView(image: preview.image)
+        }
+
     }
 }
-
-
 
 
 private extension UIColor {

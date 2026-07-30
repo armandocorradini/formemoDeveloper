@@ -589,6 +589,23 @@ enum DebugLog {
 
         write("Database records: \(attachments.count)")
 
+        
+        for attachment in attachments {
+
+            let taskTitle = attachment.task?.title ?? "<no task>"
+
+            DebugLog.write("""
+            ═══════════════════════════════
+            ATTACHMENT RECORD
+            id           = \(attachment.id)
+            createdAt    = \(attachment.createdAt)
+            originalName = \(attachment.originalName)
+            relativePath = \(attachment.relativePath)
+            task         = \(taskTitle)
+            ═══════════════════════════════
+            """)
+        }
+        
         var resolvedCount = 0
         var availableCount = 0
         var cloudCount = 0
@@ -598,9 +615,19 @@ enum DebugLog {
         var nilURLCount = 0
 
         for attachment in attachments {
+
+            DebugLog.write("""
+            ───────────────────────────────
+            DB RECORD
+            id = \(attachment.id)
+            originalName = \(attachment.originalName)
+            relativePath = \(attachment.relativePath)
+            """)
+            
             if attachment.isActuallyAvailable {
                 availableCount += 1
             }
+
             let fileURL = attachment.fileURL
             if let fileURL {
                 resolvedCount += 1
@@ -649,7 +676,29 @@ enum DebugLog {
             databaseFiles.insert(attachment.relativePath)
         }
 
+        write("")
+        write("════════════════════════════════════")
+        write("DIRECTORY CHECK")
+        write("════════════════════════════════════")
 
+        write("attachmentsDirectory:")
+        write(TaskAttachment.attachmentsDirectory?.path ?? "nil")
+
+        write("cloudAttachmentsDirectory:")
+        write(TaskAttachment.attachmentsDirectory?.path ?? "nil")
+
+        if let dir = TaskAttachment.attachmentsDirectory {
+
+            if let files = try? FileManager.default.contentsOfDirectory(
+                at: dir,
+                includingPropertiesForKeys: nil
+            ) {
+
+                write("Files found in attachmentsDirectory: \(files.count)")
+            } else {
+                write("Unable to enumerate attachmentsDirectory")
+            }
+        }
         
         var filesystemFiles = Set<String>()
 
@@ -672,8 +721,14 @@ enum DebugLog {
         write("Missing files: \(missingFiles.count)")
         write("Orphan files: \(orphanFiles.count)")
 
-        // Do not log missing/orphan file names for privacy.
-        
+        for file in missingFiles.sorted() {
+            write("❌ Missing: \(file)")
+        }
+
+        for file in orphanFiles.sorted() {
+            write("⚠️ Orphan: \(file)")
+        }
+    
         
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
            let files = try? FileManager.default.contentsOfDirectory(

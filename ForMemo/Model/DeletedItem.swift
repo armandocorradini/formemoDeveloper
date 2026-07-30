@@ -48,6 +48,12 @@ final class DeletedItem {
     var loyaltyColorHex: String?
 
     var loyaltySortOrder: Int?
+    
+    // WALLET ASSETS
+    var loyaltyLogoRelativePath: String?
+    var loyaltyFrontRelativePath: String?
+    var loyaltyBackRelativePath: String?
+    
 
     // TRIP
     var tripID: UUID?
@@ -262,6 +268,12 @@ extension DeletedItem {
                     return
                 }
             }
+            print("=== RESTORE ===")
+            print("Logo:", loyaltyLogoRelativePath ?? "nil")
+            print("Front:", loyaltyFrontRelativePath ?? "nil")
+            print("Back:", loyaltyBackRelativePath ?? "nil")
+            
+            
 
             let card = LoyaltyCard(
                 id: loyaltyCardID ?? UUID(),
@@ -276,6 +288,33 @@ extension DeletedItem {
             )
 
             context.insert(card)
+            if card.assets == nil {
+                card.assets = []
+            }
+
+            if let path = loyaltyLogoRelativePath {
+                let asset = WalletAsset(kind: .logo, relativePath: path)
+                asset.card = card
+                card.assets?.append(asset)
+                context.insert(asset)
+            }
+
+            if let path = loyaltyFrontRelativePath {
+                let asset = WalletAsset(kind: .front, relativePath: path)
+                asset.card = card
+                card.assets?.append(asset)
+                context.insert(asset)
+            }
+
+            if let path = loyaltyBackRelativePath {
+                let asset = WalletAsset(kind: .back, relativePath: path)
+                asset.card = card
+                card.assets?.append(asset)
+                context.insert(asset)
+            }
+            
+            print("Restored assets:", card.assets?.count ?? 0)
+            
         }
 
         if type == "trip" {

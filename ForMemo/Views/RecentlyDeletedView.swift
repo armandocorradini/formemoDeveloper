@@ -71,18 +71,8 @@ var body: some View {
                                         .symbolRenderingMode(.hierarchical)
                                         .foregroundStyle(.orange)
                                 } else if item.type == "loyaltycard" {
-
-                                    Image(
-                                        systemName: item.loyaltyItemType == "ticket"
-                                        ? "ticket.fill"
-                                        : "creditcard"
-                                    )
-                                    .symbolRenderingMode(.hierarchical)
-                                    .foregroundStyle(
-                                        item.loyaltyItemType == "ticket"
-                                        ? .orange
-                                        : .blue
-                                    )
+                                    
+                                    DeletedLoyaltyCardPreviewView(item: item)
                                 } else if item.type == "document" {
                                     let icon = DocumentType(rawValue: item.documentTypeRaw ?? "")?.systemImage ?? "doc.text"
 
@@ -285,14 +275,32 @@ var body: some View {
     // MARK: - Helpers
     
     private func deleteFile(_ item: DeletedItem) {
+
+        // Allegati Task
         if let trashName = item.trashFileName,
            let dir = TaskAttachment.trashDirectory {
-            
+
             let url = dir.appendingPathComponent(trashName)
 
             if FileManager.default.fileExists(atPath: url.path) {
                 try? FileManager.default.removeItem(at: url)
             }
+        }
+
+        // Loyalty Card / Ticket
+        if item.type == "loyaltycard" {
+
+            LoyaltyCardLogoStore.delete(
+                relativePath: item.loyaltyLogoRelativePath
+            )
+
+            LoyaltyCardLogoStore.delete(
+                relativePath: item.loyaltyFrontRelativePath
+            )
+
+            LoyaltyCardLogoStore.delete(
+                relativePath: item.loyaltyBackRelativePath
+            )
         }
     }
     
@@ -359,6 +367,46 @@ struct AttachmentPreviewView: View {
             Image(systemName: "doc")
                 .foregroundStyle(.secondary)
                 .frame(width: 36, height: 36)
+        }
+    }
+}
+
+
+struct DeletedLoyaltyCardPreviewView: View {
+
+    let item: DeletedItem
+
+    var body: some View {
+
+        if let path = item.loyaltyLogoRelativePath,
+           let data = LoyaltyCardLogoStore.load(relativePath: path),
+           let image = UIImage(data: data) {
+
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 36, height: 36)
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: 8,
+                        style: .continuous
+                    )
+                )
+
+        } else {
+
+            Image(
+                systemName: item.loyaltyItemType == "ticket"
+                ? "ticket.fill"
+                : "creditcard"
+            )
+            .symbolRenderingMode(.hierarchical)
+            .foregroundStyle(
+                item.loyaltyItemType == "ticket"
+                ? .orange
+                : .blue
+            )
+            .frame(width: 36, height: 36)
         }
     }
 }

@@ -19,14 +19,36 @@ struct AddLoyaltyCardView: View {
     @State private var notes = ""
     @State private var showScanner = false
     @State private var showCamera = false
-    @State private var selectedLogoItem: PhotosPickerItem?
-    @State private var selectedTicketImageItem: PhotosPickerItem?
+
+    
     @State private var logoData: Data?
     @State private var selectedColor: Color = .blue
     @State private var isLoadingLogo = false
     @State private var capturedImage: UIImage?
     @State private var showNoCodeFoundAlert = false
+    
+    @State private var frontImageData: Data?
+    @State private var backImageData: Data?
+    
+    @State private var selectedTicketImageItem: PhotosPickerItem?
+    
+    
+    @State private var showFrontPhotoPicker = false
+    @State private var showBackPhotoPicker = false
 
+    @State private var showingFrontMenu = false
+    @State private var showingBackMenu = false
+
+    @State private var viewingImage: UIImage?
+    @State private var showImageViewer = false
+
+    @State private var cameraTarget: WalletAssetKind?
+
+    @State private var frontPickerItem: PhotosPickerItem?
+    @State private var backPickerItem: PhotosPickerItem?
+    @State private var selectedPhotoItem: PhotosPickerItem?
+
+    
     var body: some View {
 
         NavigationStack {
@@ -37,21 +59,21 @@ struct AddLoyaltyCardView: View {
                 Form {
 
                     Section {
-
-                        HStack(spacing: 16) {
-
+                        
+                        HStack(spacing: 20) {
+                            
                             Group {
                                 if let logoData,
                                    let uiImage = UIImage(data: logoData) {
-
+                                    
                                     Image(uiImage: uiImage)
                                         .resizable()
                                         .scaledToFill()
                                         .frame(width: 72, height: 72)
                                         .clipped()
-
+                                    
                                 } else {
-
+                                    
                                     Image(systemName: "photo")
                                         .resizable()
                                         .scaledToFit()
@@ -60,18 +82,24 @@ struct AddLoyaltyCardView: View {
                                 }
                             }
                             .frame(width: 72, height: 72)
-                            .background(.ultraThinMaterial)
+                            .background(
+                                RoundedRectangle(
+                                    cornerRadius: 22,
+                                    style: .continuous
+                                )
+                                .fill(selectedColor)
+                            )
                             .clipShape(
                                 RoundedRectangle(
                                     cornerRadius: 22,
                                     style: .continuous
                                 )
                             )
-
+                            
                             VStack(alignment: .leading, spacing: 10) {
-
+                                
                                 PhotosPicker(
-                                    selection: $selectedLogoItem,
+                                    selection: $selectedPhotoItem,
                                     matching: .images
                                 ) {
                                     HStack {
@@ -79,22 +107,27 @@ struct AddLoyaltyCardView: View {
                                             "Choose Logo",
                                             systemImage: "photo.badge.plus"
                                         )
-
+                                        
                                         Spacer(minLength: 0)
                                     }
                                     .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
-
+                                
+                                
+                                
                                 Button {
+                                    cameraTarget = .logo
                                     showCamera = true
                                 } label: {
+                                    
                                     HStack {
+                                        
                                         Label(
                                             "Take Photo",
                                             systemImage: "camera.fill"
                                         )
-
+                                        
                                         Spacer(minLength: 0)
                                     }
                                     .contentShape(Rectangle())
@@ -102,7 +135,108 @@ struct AddLoyaltyCardView: View {
                                 .buttonStyle(.plain)
                             }
                         }
+                        
+                        if logoData != nil {
+
+                            Button(role: .destructive) {
+                                logoData = nil
+                            } label: {
+                                Label("Remove Logo", systemImage: "xmark.circle")
+                            }
+                        }
                     }
+                    Section("Images") {
+                        
+                        HStack(alignment: .top, spacing: 20) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                
+                                Text("Front")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                
+                                Button {
+                                    showingFrontMenu = true
+                                } label: {
+                                    
+                                    ImagePlaceholder(imageData: frontImageData)
+                                    
+                                }
+                                .buttonStyle(.plain)
+                                .confirmationDialog(
+                                    "Front Image",
+                                    isPresented: $showingFrontMenu
+                                ) {
+                                    
+                                    Button("Take Photo") {
+                                        cameraTarget = .front
+                                        showCamera = true
+                                    }
+                                    
+                                    Button("Choose Photo") {
+                                        showFrontPhotoPicker = true
+                                    }
+                                    if frontImageData != nil {
+
+                                        Button("Remove Image", role: .destructive) {
+                                            frontImageData = nil
+                                        }
+                                    }
+                                    Button("Cancel", role: .cancel) { }
+                                }
+                                .photosPicker(
+                                    isPresented: $showFrontPhotoPicker,
+                                    selection: $frontPickerItem,
+                                    matching: .images
+                                )
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                
+                                Text("Back")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                
+                                Button {
+                                    showingBackMenu = true
+                                } label: {
+                                    
+                                    ImagePlaceholder(imageData: backImageData)
+                                }
+                                .buttonStyle(.plain)
+                                .confirmationDialog(
+                                    "Back Image",
+                                    isPresented: $showingBackMenu
+                                ) {
+                                    
+                                    Button("Take Photo") {
+                                        cameraTarget = .back
+                                        showCamera = true
+                                    }
+                                    
+                                    Button("Choose Photo") {
+                                        showBackPhotoPicker = true
+                                    }
+                                    if backImageData != nil {
+
+                                        Button("Remove Image", role: .destructive) {
+                                            backImageData = nil
+                                        }
+                                    }
+                                    Button("Cancel", role: .cancel) { }
+                                }
+                                .photosPicker(
+                                    isPresented: $showBackPhotoPicker,
+                                    selection: $backPickerItem,
+                                    matching: .images
+                                )
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            
+                        }
+                    }
+     
 
                     Section {
 
@@ -238,30 +372,83 @@ struct AddLoyaltyCardView: View {
                 capturedImage = image
             }
         }
-        .onChange(of: selectedLogoItem) { _, newItem in
+        .onChange(of: selectedPhotoItem) { _, newItem in
 
             guard let newItem else {
                 return
             }
 
-            isLoadingLogo = true
-
             Task {
-                defer {
-                    DispatchQueue.main.async {
-                        isLoadingLogo = false
-                    }
+
+                guard let data = try? await newItem.loadTransferable(type: Data.self),
+                      let image = UIImage(data: data) else {
+                    return
                 }
 
-                if let data = try? await newItem.loadTransferable(type: Data.self),
-                   let image = UIImage(data: data) {
+                let resized = image.resizedForWalletLogo(maxDimension: 300)
 
-                    let resized = image.resizedForWalletLogo(maxDimension: 300)
-                    let compressed = resized.jpegData(compressionQuality: 0.65)
+                guard let compressed = resized.jpegData(compressionQuality: 0.65) else {
+                    return
+                }
 
-                    await MainActor.run {
-                        logoData = compressed
-                    }
+                await MainActor.run {
+
+                    logoData = compressed
+
+                }
+
+            }
+        }
+        
+        .onChange(of: frontPickerItem) { _, newItem in
+
+            guard let newItem else {
+                return
+            }
+
+            Task {
+
+                guard let data = try? await newItem.loadTransferable(type: Data.self),
+                      let image = UIImage(data: data) else {
+                    return
+                }
+
+                let resized = image.resizedForWalletLogo(maxDimension: 1200)
+
+                guard let compressed = resized.jpegData(compressionQuality: 0.80) else {
+                    return
+                }
+
+                await MainActor.run {
+
+                    frontImageData = compressed
+                }
+            }
+        }
+        
+        .onChange(of: backPickerItem) { _, newItem in
+
+            guard let newItem else {
+                return
+            }
+
+            Task {
+
+                guard let data = try? await newItem.loadTransferable(type: Data.self),
+                      let image = UIImage(data: data) else {
+                    return
+                }
+
+                let resized = image.resizedForWalletLogo(maxDimension: 1200)
+
+                guard let compressed = resized.jpegData(compressionQuality: 0.80) else {
+                    return
+                }
+
+                await MainActor.run {
+
+                    backImageData = compressed
+
                 }
             }
         }
@@ -365,10 +552,57 @@ struct AddLoyaltyCardView: View {
                 return
             }
 
-            let resized = newImage.resizedForWalletLogo(maxDimension: 300)
-            let compressed = resized.jpegData(compressionQuality: 0.65)
+            let maxDimension: CGFloat
 
-            logoData = compressed
+            switch cameraTarget {
+            case .logo:
+                maxDimension = 300
+
+            case .front, .back:
+                maxDimension = 1200
+
+            case nil:
+                maxDimension = 300
+            }
+
+            let resized = newImage.resizedForWalletLogo(maxDimension: maxDimension)
+
+            let quality: CGFloat
+
+            switch cameraTarget {
+            case .logo:
+                quality = 0.65
+
+            case .front, .back:
+                quality = 0.80
+
+            case nil:
+                quality = 0.65
+            }
+
+            guard let compressed = resized.jpegData(compressionQuality: quality) else {
+                return
+            }
+            
+            switch cameraTarget {
+
+            case .logo:
+                logoData = compressed
+
+            case .front:
+                frontImageData = compressed
+
+            case .back:
+                backImageData = compressed
+
+            case nil:
+                break
+            }
+
+            capturedImage = nil
+            cameraTarget = nil
+            
+            
         }
         .alert(
             "No Code Found",
@@ -406,17 +640,87 @@ struct AddLoyaltyCardView: View {
         modelContext.insert(card)
 
         if let logoData {
-            _ = LoyaltyCardLogoStore.save(
+
+            _ = WalletAsset.create(
+                kind: .logo,
                 imageData: logoData,
-                for: card.id
+                for: card,
+                in: modelContext
+            )
+        }
+        
+        if let frontImageData {
+
+            _ = WalletAsset.create(
+                kind: .front,
+                imageData: frontImageData,
+                for: card,
+                in: modelContext
             )
         }
 
-        try? modelContext.save()
+        if let backImageData {
 
+            _ = WalletAsset.create(
+                kind: .back,
+                imageData: backImageData,
+                for: card,
+                in: modelContext
+            )
+        }
+        
+        
+        try? modelContext.save()
+        let count = (try? modelContext.fetchCount(
+            FetchDescriptor<WalletAsset>()
+        )) ?? -1
+
+        print("WalletAsset count:", count)
         dismiss()
     }
 }
+
+
+
+private struct ImagePlaceholder: View {
+
+    let imageData: Data?
+
+    var body: some View {
+
+        Group {
+
+            if let imageData,
+               let image = UIImage(data: imageData) {
+
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+
+            } else {
+
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(.gray.opacity(0.15))
+                    .overlay {
+
+                        VStack(spacing: 8) {
+
+                            Image(systemName: "photo")
+
+                            Text("Add Image")
+                                .font(.caption2)
+                        }
+                        .foregroundStyle(.secondary)
+                    }
+            }
+        }
+        .frame(width: 140, height: 90)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+
+
 // MARK: - Barcode Scanner
 
 private struct BarcodeScannerSheet: UIViewControllerRepresentable {

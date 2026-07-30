@@ -791,7 +791,8 @@ private struct LoyaltyCardTransferObject: Codable {
     let colorHex: String?
     let sortOrder: Int
     let createdAt: Date
-
+    let assets: [WalletAssetTransferObject]
+    
     enum CodingKeys: String, CodingKey {
         case id
         case storeName
@@ -803,6 +804,7 @@ private struct LoyaltyCardTransferObject: Codable {
         case colorHex
         case sortOrder
         case createdAt
+        case assets
     }
 
     init(card: LoyaltyCard) {
@@ -816,6 +818,12 @@ private struct LoyaltyCardTransferObject: Codable {
         self.colorHex = card.colorHex
         self.sortOrder = card.sortOrder
         self.createdAt = card.createdAt
+        self.assets = (card.assets ?? []).map {
+            WalletAssetTransferObject(
+                kind: $0.kind,
+                relativePath: $0.relativePath
+            )
+        }
     }
 
     init(from decoder: Decoder) throws {
@@ -842,7 +850,18 @@ private struct LoyaltyCardTransferObject: Codable {
         ) ?? 0
 
         createdAt = try container.decode(Date.self, forKey: .createdAt)
+        
+        assets = try container.decodeIfPresent(
+            [WalletAssetTransferObject].self,
+            forKey: .assets
+        ) ?? []
     }
+    
+    struct WalletAssetTransferObject: Codable {
+        let kind: WalletAssetKind
+        let relativePath: String
+    }
+
 }
 
 private struct DocumentTransferObject: Codable {
@@ -1131,15 +1150,14 @@ private enum BackupManager {
 
         for card in loyaltyCards {
 
-            let relativePath = "\(card.id.uuidString).jpg"
+            for asset in card.assets ?? [] {
 
-            guard let logoData = LoyaltyCardLogoStore.load(
-                relativePath: relativePath
-            ) else {
-                continue
+                guard let data = LoyaltyCardLogoStore.load(asset: asset) else {
+                    continue
+                }
+
+                loyaltyLogoPayload[asset.relativePath] = data
             }
-
-            loyaltyLogoPayload[relativePath] = logoData
         }
 
         let archive = BackupArchive(
@@ -1377,6 +1395,35 @@ private enum BackupManager {
                 card.sortOrder = cardDTO.sortOrder
 
                 modelContext.insert(card)
+
+                for assetDTO in cardDTO.assets {
+
+                    let asset = WalletAsset(
+                        kind: assetDTO.kind,
+                        relativePath: assetDTO.relativePath
+                    )
+
+                    asset.card = card
+
+                    modelContext.insert(asset)
+                }
+                
+                if cardDTO.assets.isEmpty {
+
+                    let legacyRelativePath = "\(card.id.uuidString).jpg"
+
+                    if archive.loyaltyCardLogoFiles[legacyRelativePath] != nil {
+
+                        let asset = WalletAsset(
+                            kind: .logo,
+                            relativePath: legacyRelativePath
+                        )
+
+                        asset.card = card
+
+                        modelContext.insert(asset)
+                    }
+                }
             }
         }
 
@@ -1578,3 +1625,5 @@ private struct BackupFileDocument: FileDocument {
         try FileWrapper(url: fileURL)
     }
 }
+
+

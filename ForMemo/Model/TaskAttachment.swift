@@ -142,22 +142,52 @@ extension TaskAttachment {
 
         DebugLog.write(
             """
-        📎 Resolver start
-        iCloudDir=\(cloudAttachmentsDirectory() != nil)
-        legacyDir=\(legacyAttachmentsDirectory() != nil)
-        """
+            📎 Resolver start
+            relativePath = \(relativePath)
+            iCloudDir = \(cloudAttachmentsDirectory() != nil)
+            legacyDir = \(legacyAttachmentsDirectory() != nil)
+            """
         )
-        
-        
+
         let fm = FileManager.default
+        
+        DebugLog.write("════════════════════════════════════")
+        DebugLog.write("RESOLVER START")
+        DebugLog.write("relativePath = \(relativePath)")
+        DebugLog.write("attachmentsDirectory = \(attachmentsDirectory?.path ?? "nil")")
+        DebugLog.write("cloudDirectory = \(cloudAttachmentsDirectory()?.path ?? "nil")")
+        DebugLog.write("legacyDirectory = \(legacyAttachmentsDirectory()?.path ?? "nil")")
+        DebugLog.write("════════════════════════════════════")
+        
+
+        // ===== Directory diagnostics =====
 
         if let directory = attachmentsDirectory {
 
             let exists = fm.fileExists(atPath: directory.path)
 
             DebugLog.write(
-                "📁 Attachments directory exists: \(exists)"
+                """
+                📁 Attachments directory exists: \(exists)
+                📁 Directory: \(directory.path)
+                """
             )
+
+            if let files = try? fm.contentsOfDirectory(
+                at: directory,
+                includingPropertiesForKeys: nil
+            ) {
+
+                DebugLog.write(
+                    "📁 Files in directory: \(files.count)"
+                )
+
+                for file in files.prefix(30) {
+                    DebugLog.write(
+                        "   • \(file.lastPathComponent)"
+                    )
+                }
+            }
 
         } else {
 
@@ -165,37 +195,101 @@ extension TaskAttachment {
                 "📁 Attachments directory is NIL"
             )
         }
-        // 1️⃣ iCloud path
-        if let cloud = cloudAttachmentsDirectory()?
-            .appendingPathComponent(relativePath),
-           fm.fileExists(atPath: cloud.path) {
 
-            let values = try? cloud.resourceValues(forKeys: [
-                .ubiquitousItemDownloadingStatusKey,
-                .fileSizeKey
-            ])
+        // ===== Candidate paths =====
 
-            let status = values?.ubiquitousItemDownloadingStatus
-            let size = values?.fileSize ?? 0
+        if let cloudDir = cloudAttachmentsDirectory() {
 
-            // Il file esiste nel container iCloud, ma è solo un placeholder:
-            // restituisci comunque il suo URL affinché i chiamanti async possano
-            // avviare e attendere il download, invece di trattarlo come mancante.
-            if status == .notDownloaded {
-                try? fm.startDownloadingUbiquitousItem(at: cloud)
-                return cloud
-            }
+            let candidate = cloudDir.appendingPathComponent(relativePath)
 
-            // File effettivamente pronto: conserva il comportamento attuale.
-            if (status == .current || status == .downloaded), size > 0 {
-                return cloud
-            }
+            DebugLog.write(
+                """
+                ☁️ Cloud candidate:
+                \(candidate.path)
+                exists = \(fm.fileExists(atPath: candidate.path))
+                """
+            )
         }
 
-        // 2️⃣ Legacy local path
+        if let legacyDir = legacyAttachmentsDirectory() {
+
+            let candidate = legacyDir.appendingPathComponent(relativePath)
+
+            DebugLog.write(
+                """
+                📂 Legacy candidate:
+                \(candidate.path)
+                exists = \(fm.fileExists(atPath: candidate.path))
+                """
+            )
+        }
+
+        // =====================================================
+        // 1️⃣ Cloud
+        // =====================================================
+
+        if let cloudDir = cloudAttachmentsDirectory() {
+            
+            let cloud = cloudDir.appendingPathComponent(relativePath)
+            
+            DebugLog.write("Cloud candidate = \(cloud.path)")
+            DebugLog.write("Cloud exists = \(fm.fileExists(atPath: cloud.path))")
+            
+            if fm.fileExists(atPath: cloud.path) {
+                
+                let values = try? cloud.resourceValues(forKeys: [
+                    .ubiquitousItemDownloadingStatusKey,
+                    .fileSizeKey
+                ])
+                
+                let status = values?.ubiquitousItemDownloadingStatus
+                let size = values?.fileSize ?? 0
+                
+                DebugLog.write(
+                """
+                ☁️ Cloud file FOUND
+                status = \(String(describing: status))
+                size = \(size)
+                """
+                )
+                
+                if status == .notDownloaded {
+                    
+                    DebugLog.write(
+                        "☁️ Starting download..."
+                    )
+                    
+                    try? fm.startDownloadingUbiquitousItem(at: cloud)
+                    
+                    return cloud
+                }
+                
+                if (status == .current || status == .downloaded),
+                   size > 0 {
+                    
+                    DebugLog.write(
+                        "☁️ Returning cloud URL"
+                    )
+                    
+                    return cloud
+                }
+                
+                DebugLog.write(
+                    "☁️ Cloud file exists but not usable"
+                )
+            }
+        }
+        // =====================================================
+        // 2️⃣ Legacy
+        // =====================================================
+
         if let legacy = legacyAttachmentsDirectory()?
             .appendingPathComponent(relativePath),
            fm.fileExists(atPath: legacy.path) {
+
+            DebugLog.write(
+                "📂 Legacy file FOUND"
+            )
 
             if let cloudDirectory = cloudAttachmentsDirectory() {
 
@@ -204,17 +298,21 @@ extension TaskAttachment {
 
                 if !fm.fileExists(atPath: cloudURL.path) {
 
-                    // 🔥 Avoid restoring empty/corrupted legacy files
-                    let legacySize = (try? fm.attributesOfItem(
-                        atPath: legacy.path
-                    )[.size] as? Int64) ?? 0
+                    let legacySize =
+                        (try? fm.attributesOfItem(
+                            atPath: legacy.path
+                        )[.size] as? Int64) ?? 0
+
+                    DebugLog.write(
+                        "📂 Legacy size = \(legacySize)"
+                    )
 
                     guard legacySize > 0 else {
-#if DEBUG
-                        AppLogger.persistence.error(
-                            "Attachment self-healing skipped: empty source file."
+
+                        DebugLog.write(
+                            "📂 Legacy file empty"
                         )
-#endif
+
                         return legacy
                     }
 
@@ -224,24 +322,27 @@ extension TaskAttachment {
                     )
 
                     do {
-                        try fm.copyItem(at: legacy, to: cloudURL)
 
-                        try? fm.startDownloadingUbiquitousItem(at: cloudURL)
-
-#if DEBUG
-                        AppLogger.persistence.debug(
-                            "Attachment self-healed successfully."
+                        try fm.copyItem(
+                            at: legacy,
+                            to: cloudURL
                         )
-#endif
+
+                        try? fm.startDownloadingUbiquitousItem(
+                            at: cloudURL
+                        )
+
+                        DebugLog.write(
+                            "📂 Self-healing succeeded"
+                        )
 
                         return cloudURL
 
                     } catch {
-#if DEBUG
-                        AppLogger.persistence.error(
-                            "Self-healing failed: \(error.localizedDescription)"
+
+                        DebugLog.write(
+                            "📂 Self-healing failed: \(error)"
                         )
-#endif
                     }
                 }
             }
@@ -249,7 +350,10 @@ extension TaskAttachment {
             return legacy
         }
 
-        // 3️⃣ Trash fallback (recovery)
+        // =====================================================
+        // 3️⃣ Trash
+        // =====================================================
+
         if let trash = trashDirectory,
            let recovered = try? fm.contentsOfDirectory(
                 at: trash,
@@ -257,15 +361,21 @@ extension TaskAttachment {
            ).first(where: {
                 $0.lastPathComponent.hasSuffix(relativePath)
            }) {
+
+            DebugLog.write(
+                "🗑 Recovered from Trash"
+            )
+
             return recovered
         }
+
         DebugLog.write(
             """
-        📎 Resolver failed
-        iCloudDir=\(cloudAttachmentsDirectory() != nil)
-        legacyDir=\(legacyAttachmentsDirectory() != nil)
-        """
+            📎 Resolver FAILED
+            relativePath = \(relativePath)
+            """
         )
+
         return nil
     }
     

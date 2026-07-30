@@ -18,7 +18,21 @@ struct EditLoyaltyCardView: View {
     @State private var previewLogoData: Data?
     @State private var capturedImage: UIImage?
     @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var frontImageData: Data?
+    @State private var backImageData: Data?
+    @State private var showBackPhotoPicker = false
+    @State private var showingFrontMenu = false
+    @State private var showingBackMenu = false
 
+    @State private var viewingImage: UIImage?
+    @State private var showImageViewer = false
+    
+    @State private var showFrontPhotoPicker = false
+    @State private var cameraTarget: WalletAssetKind?
+    
+    
+    @State private var frontPickerItem: PhotosPickerItem?
+    @State private var backPickerItem: PhotosPickerItem?
     private var currentLogoData: Data? {
 
         if let previewLogoData {
@@ -30,6 +44,25 @@ struct EditLoyaltyCardView: View {
         )
     }
 
+    private var currentFrontData: Data? {
+        if let frontImageData {
+            return frontImageData
+        }
+
+        return LoyaltyCardLogoStore.load(
+            asset: card.frontAsset
+        )
+    }
+
+    private var currentBackData: Data? {
+        if let backImageData {
+            return backImageData
+        }
+
+        return LoyaltyCardLogoStore.load(
+            asset: card.backAsset
+        )
+    }
     private var isTicket: Bool {
         card.itemType == "ticket"
     }
@@ -140,6 +173,201 @@ struct EditLoyaltyCardView: View {
                     }
                 }
 
+                     Section("Images") {
+                        
+                        HStack(alignment: .top, spacing: 20) {
+
+                            // FRONT
+
+                            VStack(alignment: .leading, spacing: 8) {
+
+                                Text("Front")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                Button {
+                                    showingFrontMenu = true
+                                } label: {
+
+                                    Group {
+
+                                        if let data = currentFrontData,
+                                           let image = UIImage(data: data) {
+
+                                            Image(uiImage: image)
+                                                .resizable()
+                                                .scaledToFill()
+
+                                        } else {
+
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(.gray.opacity(0.15))
+                                                .overlay {
+
+                                                    VStack(spacing: 8) {
+
+                                                        Image(systemName: "photo")
+
+                                                        Text("Add Image")
+                                                            .font(.caption2)
+                                                    }
+                                                    .foregroundStyle(.secondary)
+                                                }
+                                        }
+                                    }
+                                    .frame(width: 140, height: 90)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
+                                .buttonStyle(.plain)
+                                .confirmationDialog(
+                                    "Front Image",
+                                    isPresented: $showingFrontMenu
+                                ) {
+
+                                    Button("Take Photo") {
+                                        cameraTarget = .front
+                                        showCamera = true
+                                    }
+
+                                    Button("Choose Photo") {
+                                        showFrontPhotoPicker = true
+                                    }
+
+                                    if currentFrontData != nil {
+
+                                        Button("View Image") {
+
+                                            if let data = currentFrontData,
+                                               let image = UIImage(data: data) {
+                                                viewingImage = image
+                                                showImageViewer = true
+                                            }
+                                        }
+
+                                        Button("Remove Image", role: .destructive) {
+
+                                            frontImageData = nil
+
+                                            if let asset = card.frontAsset {
+                                                LoyaltyCardLogoStore.delete(asset: asset)
+                                                modelContext.delete(asset)
+                                            }
+
+                                            do {
+                                                try modelContext.save()
+                                                modelContext.processPendingChanges()
+                                            } catch {
+                                                print("Failed to remove front image: \(error)")
+                                            }
+                                        }
+                                    }
+
+                                    Button("Cancel", role: .cancel) { }
+                                }
+                                .photosPicker(
+                                    isPresented: $showFrontPhotoPicker,
+                                    selection: $frontPickerItem,
+                                    matching: .images
+                                )
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                            // BACK
+
+                            VStack(alignment: .leading, spacing: 8) {
+
+                                Text("Back")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+
+                                Button {
+                                    showingBackMenu = true
+                                } label: {
+
+                                    Group {
+
+                                        if let data = currentBackData,
+                                           let image = UIImage(data: data) {
+
+                                            Image(uiImage: image)
+                                                .resizable()
+                                                .scaledToFill()
+
+                                        } else {
+
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(.gray.opacity(0.15))
+                                                .overlay {
+
+                                                    VStack(spacing: 8) {
+
+                                                        Image(systemName: "photo")
+
+                                                        Text("Add Image")
+                                                            .font(.caption2)
+                                                    }
+                                                    .foregroundStyle(.secondary)
+                                                }
+                                        }
+                                    }
+                                    .frame(width: 140, height: 90)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
+                                .buttonStyle(.plain)
+                                .confirmationDialog(
+                                    "Back Image",
+                                    isPresented: $showingBackMenu
+                                ) {
+
+                                    Button("Take Photo") {
+                                        cameraTarget = .back
+                                        showCamera = true
+                                    }
+
+                                    Button("Choose Photo") {
+                                        showBackPhotoPicker = true
+                                    }
+
+                                    if currentBackData != nil {
+
+                                        Button("View Image") {
+
+                                            if let data = currentBackData,
+                                               let image = UIImage(data: data) {
+                                                viewingImage = image
+                                                showImageViewer = true
+                                            }
+                                        }
+
+                                        Button("Remove Image", role: .destructive) {
+
+                                            backImageData = nil
+
+                                            if let asset = card.backAsset {
+                                                LoyaltyCardLogoStore.delete(asset: asset)
+                                                modelContext.delete(asset)
+                                            }
+
+                                            do {
+                                                try modelContext.save()
+                                                modelContext.processPendingChanges()
+                                            } catch {
+                                                print("Failed to remove back image: \(error)")
+                                            }
+                                        }
+                                    }
+
+                                    Button("Cancel", role: .cancel) { }
+                                }
+                                .photosPicker(
+                                    isPresented: $showBackPhotoPicker,
+                                    selection: $backPickerItem,
+                                    matching: .images
+                                )
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
                 Section {
 
                     ColorPicker(
@@ -240,10 +468,25 @@ struct EditLoyaltyCardView: View {
                 }
             }
             .onAppear {
+
                 selectedColor = Color(
                     hex: card.colorHex ?? "#3B82F6"
                 ) ?? .blue
+
+                if card.logoAsset == nil {
+
+                    if WalletAsset.createLegacyLogoReference(
+                        for: card,
+                        in: modelContext
+                    ) != nil {
+
+                        try? modelContext.save()
+                    }
+                }
+
                 previewLogoData = LoyaltyCardLogoStore.load(
+                    asset: card.logoAsset
+                ) ?? LoyaltyCardLogoStore.load(
                     relativePath: "\(card.id.uuidString).jpg"
                 )
             }
@@ -278,9 +521,16 @@ struct EditLoyaltyCardView: View {
 
                         previewLogoData = compressed
 
-                        _ = LoyaltyCardLogoStore.save(
+                        if let existing = card.logoAsset {
+                            LoyaltyCardLogoStore.delete(asset: existing)
+                            modelContext.delete(existing)
+                        }
+
+                        _ = WalletAsset.create(
+                            kind: .logo,
                             imageData: compressed,
-                            for: card.id
+                            for: card,
+                            in: modelContext
                         )
                     }
 
@@ -292,33 +542,213 @@ struct EditLoyaltyCardView: View {
                     }
                 }
             }
+                
+            .onChange(of: frontPickerItem) { _, newItem in
+
+                guard let newItem else {
+                    return
+                }
+
+                Task {
+
+                    guard let data = try? await newItem.loadTransferable(type: Data.self),
+                          let image = UIImage(data: data) else {
+                        return
+                    }
+
+                    let resized = image.resizedForWalletLogo(maxDimension: 1200)
+
+                    guard let compressed = resized.jpegData(compressionQuality: 0.80) else {
+                        return
+                    }
+
+                    await MainActor.run {
+
+                        frontImageData = compressed
+
+                        if let existing = card.frontAsset {
+                            LoyaltyCardLogoStore.delete(asset: existing)
+                            modelContext.delete(existing)
+                        }
+
+                        _ = WalletAsset.create(
+                            kind: .front,
+                            imageData: compressed,
+                            for: card,
+                            in: modelContext
+                        )
+                    }
+
+                    do {
+                        try modelContext.save()
+                        modelContext.processPendingChanges()
+                    } catch {
+                        print("Failed to save front image: \(error)")
+                    }
+                }
+            }
+                
+            .onChange(of: backPickerItem) { _, newItem in
+
+                guard let newItem else {
+                    return
+                }
+
+                Task {
+
+                    guard let data = try? await newItem.loadTransferable(type: Data.self),
+                          let image = UIImage(data: data) else {
+                        return
+                    }
+
+                    let resized = image.resizedForWalletLogo(maxDimension: 1200)
+
+                    guard let compressed = resized.jpegData(compressionQuality: 0.80) else {
+                        return
+                    }
+
+                    await MainActor.run {
+
+                        backImageData = compressed
+
+                        if let existing = card.backAsset {
+                            LoyaltyCardLogoStore.delete(asset: existing)
+                            modelContext.delete(existing)
+                        }
+
+                        _ = WalletAsset.create(
+                            kind: .back,
+                            imageData: compressed,
+                            for: card,
+                            in: modelContext
+                        )
+                    }
+
+                    do {
+                        try modelContext.save()
+                        modelContext.processPendingChanges()
+                    } catch {
+                        print("Failed to save back image: \(error)")
+                    }
+                }
+            }
+                
+                
             .onChange(of: capturedImage) { _, newImage in
-    
+
                 guard let newImage else {
                     return
                 }
-                let resized = newImage.resizedForWalletLogo(maxDimension: 300)
 
-                guard let compressed = resized.jpegData(compressionQuality: 0.65) else {
-                    return
+                switch cameraTarget {
+
+                case .front:
+
+                    let resized = newImage.resizedForWalletLogo(maxDimension: 1200)
+
+                    guard let compressed = resized.jpegData(compressionQuality: 0.80) else {
+                        return
+                    }
+
+                    frontImageData = compressed
+
+                    if let existing = card.frontAsset {
+                        LoyaltyCardLogoStore.delete(asset: existing)
+                        modelContext.delete(existing)
+                    }
+
+                    _ = WalletAsset.create(
+                        kind: .front,
+                        imageData: compressed,
+                        for: card,
+                        in: modelContext
+                    )
+
+                case .back:
+
+                    let resized = newImage.resizedForWalletLogo(maxDimension: 1200)
+
+                    guard let compressed = resized.jpegData(compressionQuality: 0.80) else {
+                        return
+                    }
+
+                    backImageData = compressed
+
+                    if let existing = card.backAsset {
+                        LoyaltyCardLogoStore.delete(asset: existing)
+                        modelContext.delete(existing)
+                    }
+
+                    _ = WalletAsset.create(
+                        kind: .back,
+                        imageData: compressed,
+                        for: card,
+                        in: modelContext
+                    )
+
+                default:
+
+                    let resized = newImage.resizedForWalletLogo(maxDimension: 300)
+
+                    guard let compressed = resized.jpegData(compressionQuality: 0.65) else {
+                        return
+                    }
+
+                    previewLogoData = compressed
+
+                    if let existing = card.logoAsset {
+                        LoyaltyCardLogoStore.delete(asset: existing)
+                        modelContext.delete(existing)
+                    }
+
+                    _ = WalletAsset.create(
+                        kind: .logo,
+                        imageData: compressed,
+                        for: card,
+                        in: modelContext
+                    )
                 }
-
-                previewLogoData = compressed
-
-                _ = LoyaltyCardLogoStore.save(
-                    imageData: compressed,
-                    for: card.id
-                )
 
                 do {
                     try modelContext.save()
                     modelContext.processPendingChanges()
                 } catch {
-                    print("Failed to save captured logo: \(error)")
+                    print("Failed to save captured image: \(error)")
                 }
+
+                cameraTarget = nil
             }
             .scrollContentBackground(.hidden)
             .background(Color.clear)
+                
+            .sheet(isPresented: $showImageViewer) {
+
+                NavigationStack {
+
+                    ZStack {
+
+                        Color.black
+                            .ignoresSafeArea()
+
+                        if let image = viewingImage {
+
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .padding()
+                        }
+                    }
+                    .onTapGesture {
+                        showImageViewer = false
+                        viewingImage = nil
+                    }                        .toolbar {
+
+
+                        }
+                }
+            }
+                
+                
             }
         }
     }
@@ -344,6 +774,8 @@ struct EditLoyaltyCardView: View {
         }
     }
 }
+
+
 
 private extension UIImage {
 

@@ -37,7 +37,6 @@ func deleteLoyaltyCard(
     _ card: LoyaltyCard,
     in context: ModelContext
 ) {
-
     LoyaltyCard.createDeletedCardRecord(
         from: card,
         in: context
@@ -49,7 +48,6 @@ func deleteLoyaltyCard(
         operation: "DeleteLoyaltyCard"
     )
 }
-
 @MainActor
 func deleteTrip(
     _ trip: TripList,

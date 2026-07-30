@@ -90,6 +90,7 @@ enum Persistence {
         TaskAttachment.self,
         DeletedItem.self,
         LoyaltyCard.self,
+        WalletAsset.self,
         TripList.self,
         DocumentItem.self,
         VaultItem.self,

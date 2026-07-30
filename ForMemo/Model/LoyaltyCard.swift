@@ -20,6 +20,24 @@ final class LoyaltyCard {
     var sortOrder: Int = 0
     var createdAt: Date = Date()
     var lastOpenedAt: Date?
+    
+    
+    // WALLET ASSETS
+
+    var loyaltyLogoRelativePath: String?
+
+    var loyaltyFrontRelativePath: String?
+
+    var loyaltyBackRelativePath: String?
+    
+    
+    @Relationship(
+        deleteRule: .cascade,
+        inverse: \WalletAsset.card
+    )
+    var assets: [WalletAsset]?
+    
+    
 
     init(
         id: UUID = UUID(),
@@ -71,7 +89,46 @@ extension LoyaltyCard {
         item.loyaltyColorHex = card.colorHex
 
         item.loyaltySortOrder = card.sortOrder
+        
+        
+        print("=== DELETE CARD ===")
+        print("Assets:", card.assets?.count ?? 0)
+        print("Logo:", card.logoAsset?.relativePath ?? "nil")
+        print("Front:", card.frontAsset?.relativePath ?? "nil")
+        print("Back:", card.backAsset?.relativePath ?? "nil")
+        
+        item.loyaltyLogoRelativePath =
+            card.logoAsset?.relativePath
+            ?? card.loyaltyLogoRelativePath
+            ?? "\(card.id.uuidString).jpg"
+
+        item.loyaltyFrontRelativePath =
+            card.frontAsset?.relativePath
+            ?? card.loyaltyFrontRelativePath
+
+        item.loyaltyBackRelativePath =
+            card.backAsset?.relativePath
+            ?? card.loyaltyBackRelativePath
 
         context.insert(item)
     }
+}
+extension LoyaltyCard {
+
+    func asset(for kind: WalletAssetKind) -> WalletAsset? {
+        assets?.first { $0.kind == kind }
+    }
+
+    var logoAsset: WalletAsset? {
+        asset(for: .logo)
+    }
+
+    var frontAsset: WalletAsset? {
+        asset(for: .front)
+    }
+
+    var backAsset: WalletAsset? {
+        asset(for: .back)
+    }
+
 }

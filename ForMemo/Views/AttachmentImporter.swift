@@ -108,8 +108,19 @@ final class AttachmentImporter {
         }
         
         try fm.copyItem(at: originalURL, to: destination)
+        DebugLog.write("FILE APPENA SCRITTO = \(destination.path)")        // 🔥 Verify readable non-empty file
+        
+        let files = try fm.contentsOfDirectory(
+            at: directory,
+            includingPropertiesForKeys: nil
+        )
 
-        // 🔥 Verify readable non-empty file
+        DebugLog.write("FILES SUBITO DOPO COPY = \(files.count)")
+
+        for file in files {
+            DebugLog.write(file.lastPathComponent)
+        }
+        
         var readable = false
         var materialized = false
 

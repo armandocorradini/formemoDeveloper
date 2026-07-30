@@ -149,17 +149,27 @@ struct ResetAppView: View {
             
             
             // 🔴 Loyalty Cards & Tickets
-            let loyaltyCards = try modelContext.fetch(FetchDescriptor<LoyaltyCard>())
+            let loyaltyCards = try modelContext.fetch(
+                FetchDescriptor<LoyaltyCard>()
+            )
 
             for card in loyaltyCards {
 
-                LoyaltyCardLogoStore.delete(
-                    relativePath: "\(card.id.uuidString).jpg"
-                )
+                LoyaltyCardLogoStore.delete(asset: card.logoAsset)
+                LoyaltyCardLogoStore.delete(asset: card.frontAsset)
+                LoyaltyCardLogoStore.delete(asset: card.backAsset)
 
                 modelContext.delete(card)
             }
+            let walletAssets = try modelContext.fetch(
+                FetchDescriptor<WalletAsset>()
+            )
 
+            for asset in walletAssets {
+                modelContext.delete(asset)
+            }
+            
+            
             // 🔴 Trip Lists
             let tripLists = try modelContext.fetch(FetchDescriptor<TripList>())
 
@@ -211,6 +221,18 @@ struct ResetAppView: View {
                     try? fileManager.removeItem(at: file)
                 }
             }
+            
+            if let walletDirectory = LoyaltyCardLogoStore.directoryURL,
+               let files = try? fileManager.contentsOfDirectory(
+                    at: walletDirectory,
+                    includingPropertiesForKeys: nil
+               ) {
+
+                for file in files {
+                    try? fileManager.removeItem(at: file)
+                }
+            }
+            
             
             // 🔴 Badge
             try await center.setBadgeCount(0)
