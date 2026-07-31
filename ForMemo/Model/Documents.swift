@@ -32,6 +32,30 @@ final class DocumentItem {
 
     var lastOpenedAt: Date?
 
+    var assets: [DocumentAsset]?
+    
+    var sortedAssets: [DocumentAsset] {
+        (assets ?? []).sorted {
+            $0.pageIndex < $1.pageIndex
+        }
+    }
+
+    var imageAssets: [DocumentAsset] {
+        sortedAssets.filter(\.isImage)
+    }
+
+    var pdfAssets: [DocumentAsset] {
+        sortedAssets.filter(\.isPDF)
+    }
+
+    var primaryAsset: DocumentAsset? {
+        sortedAssets.first
+    }
+
+    var hasAssets: Bool {
+        !(assets ?? []).isEmpty
+    }
+
     init(
         name: String,
         documentType: DocumentType = .other,

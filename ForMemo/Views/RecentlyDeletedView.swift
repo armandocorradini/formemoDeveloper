@@ -74,11 +74,12 @@ var body: some View {
                                     
                                     DeletedLoyaltyCardPreviewView(item: item)
                                 } else if item.type == "document" {
-                                    let icon = DocumentType(rawValue: item.documentTypeRaw ?? "")?.systemImage ?? "doc.text"
 
-                                    Image(systemName: icon)
-                                        .symbolRenderingMode(.hierarchical)
-                                        .foregroundStyle(.green)
+                                    DeletedDocumentPreviewView(
+                                        documentID: item.documentID,
+                                        items: items
+                                    )
+                                
                                 } else if let raw = item.mainTagRaw,
                                    let tag = TaskMainTag(rawValue: raw) {
                                     Image(systemName: tag.mainIcon)
@@ -302,6 +303,17 @@ var body: some View {
                 relativePath: item.loyaltyBackRelativePath
             )
         }
+        
+        if item.type == "documentAsset",
+           let trashName = item.trashFileName,
+           let dir = DocumentAssetStore.trashDirectory {
+
+            let url = dir.appendingPathComponent(trashName)
+
+            if FileManager.default.fileExists(atPath: url.path) {
+                try? FileManager.default.removeItem(at: url)
+            }
+        }
     }
     
     private func title(for item: DeletedItem) -> String {
@@ -371,7 +383,74 @@ struct AttachmentPreviewView: View {
     }
 }
 
+struct DeletedDocumentPreviewView: View {
 
+    let documentID: UUID?
+    let items: [DeletedItem]
+
+    var body: some View {
+
+        if let preview = previewImage {
+
+            Image(uiImage: preview)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 36, height: 36)
+                .clipped()
+                .cornerRadius(6)
+
+        } else {
+
+            let icon = DocumentType(
+                rawValue: items.first(where: {
+                    $0.type == "document" &&
+                    $0.documentID == documentID
+                })?.documentTypeRaw ?? ""
+            )?.systemImage ?? "doc.text"
+
+            Image(systemName: icon)
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.green)
+                .frame(width: 36, height: 36)
+        }
+    }
+
+    private var previewImage: UIImage? {
+
+        guard let documentID else {
+            return nil
+        }
+
+        let asset = items
+            .filter {
+                $0.type == "documentAsset" &&
+                $0.documentID == documentID &&
+                $0.documentAssetKindRaw == DocumentAssetKind.image.rawValue
+            }
+            .sorted {
+                ($0.documentPageIndex ?? 0) < ($1.documentPageIndex ?? 0)
+            }
+            .first
+
+        guard
+            let trashName = asset?.trashFileName,
+            let dir = DocumentAssetStore.trashDirectory
+        else {
+            return nil
+        }
+
+        let url = dir.appendingPathComponent(trashName)
+
+        guard
+            let data = try? Data(contentsOf: url),
+            let image = UIImage(data: data)
+        else {
+            return nil
+        }
+
+        return image
+    }
+}
 struct DeletedLoyaltyCardPreviewView: View {
 
     let item: DeletedItem

@@ -637,6 +637,8 @@ private struct BackupArchive: Codable {
         case loyaltyCards
         case tripLists
         case documents
+        case documentAssets
+        case documentFiles
         case vaultItems
         case vaultBackupPackage
         case attachmentFiles
@@ -650,11 +652,14 @@ private struct BackupArchive: Codable {
     let loyaltyCards: [LoyaltyCardTransferObject]
     let tripLists: [TripListTransferObject]
     let documents: [DocumentTransferObject]
+    let documentAssets: [DocumentAssetTransferObject]
+    let documentFiles: [String: Data]
     let vaultItems: [VaultItemTransferObject]
     let vaultBackupPackage: VaultBackupPackage?
     let attachmentFiles: [String: Data]
     let loyaltyCardLogoFiles: [String: Data]
     let settings: [String: Data]
+
 
     init(
         version: Int,
@@ -663,6 +668,8 @@ private struct BackupArchive: Codable {
         loyaltyCards: [LoyaltyCardTransferObject],
         tripLists: [TripListTransferObject],
         documents: [DocumentTransferObject],
+        documentAssets: [DocumentAssetTransferObject],
+        documentFiles: [String: Data],
         vaultItems: [VaultItemTransferObject],
         vaultBackupPackage: VaultBackupPackage?,
         attachmentFiles: [String: Data],
@@ -675,11 +682,15 @@ private struct BackupArchive: Codable {
         self.loyaltyCards = loyaltyCards
         self.tripLists = tripLists
         self.documents = documents
+        self.documentAssets = documentAssets
+        self.documentFiles = documentFiles
         self.vaultItems = vaultItems
         self.vaultBackupPackage = vaultBackupPackage
         self.attachmentFiles = attachmentFiles
         self.loyaltyCardLogoFiles = loyaltyCardLogoFiles
         self.settings = settings
+        
+        
     }
 
     init(from decoder: Decoder) throws {
@@ -709,6 +720,15 @@ private struct BackupArchive: Codable {
             [DocumentTransferObject].self,
             forKey: .documents
         ) ?? []
+        documentAssets = try container.decodeIfPresent(
+            [DocumentAssetTransferObject].self,
+            forKey: .documentAssets
+        ) ?? []
+
+        documentFiles = try container.decodeIfPresent(
+            [String: Data].self,
+            forKey: .documentFiles
+        ) ?? [:]
         vaultItems = try container.decodeIfPresent(
             [VaultItemTransferObject].self,
             forKey: .vaultItems
@@ -742,6 +762,8 @@ private struct BackupArchive: Codable {
         let encodedTasks = try tasks.map {
             try JSONEncoder.backup.encode($0)
         }
+        
+        
 
         try container.encode(encodedTasks, forKey: .tasks)
         try container.encode(
@@ -756,6 +778,17 @@ private struct BackupArchive: Codable {
             documents,
             forKey: .documents
         )
+        
+        try container.encode(
+            documentAssets,
+            forKey: .documentAssets
+        )
+
+        try container.encode(
+            documentFiles,
+            forKey: .documentFiles
+        )
+        
         try container.encode(
             vaultItems,
             forKey: .vaultItems
@@ -943,6 +976,27 @@ private struct DocumentTransferObject: Codable {
     
 }
 
+private struct DocumentAssetTransferObject: Codable {
+
+    let documentID: UUID
+    let relativePath: String
+    let kindRaw: String
+    let pageIndex: Int
+    let fileSize: Int64
+    let createdAt: Date
+
+    init(asset: DocumentAsset) {
+        documentID = asset.document?.id ?? UUID()
+        relativePath = asset.relativePath
+        kindRaw = asset.kindRaw
+        pageIndex = asset.pageIndex
+        fileSize = asset.fileSize
+        createdAt = asset.createdAt
+    }
+}
+
+
+
 private struct VaultSecretTransferObject: Codable {
 
     let encryptedLabel: Data?
@@ -1085,6 +1139,10 @@ private enum BackupManager {
 
         var attachmentPayload: [String: Data] = [:]
         var loyaltyLogoPayload: [String: Data] = [:]
+
+        var documentAssetPayload: [DocumentAssetTransferObject] = []
+        var documentFilePayload: [String: Data] = [:]
+
         var settingsPayload: [String: Data] = [:]
 
         let hasVaultCredentials = vaultItems.contains { item in
@@ -1160,6 +1218,26 @@ private enum BackupManager {
             }
         }
 
+        
+        for document in documents {
+
+            for asset in document.assets ?? [] {
+
+                let dto = DocumentAssetTransferObject(asset: asset)
+                documentAssetPayload.append(dto)
+                
+                
+                guard
+                    let url = asset.fileURL,
+                    let data = try? Data(contentsOf: url)
+                else {
+                    continue
+                }
+
+                documentFilePayload[asset.relativePath] = data
+            }
+        }
+        
         let archive = BackupArchive(
             version: BackupFormat.currentVersion,
             createdAt: .now,
@@ -1175,6 +1253,9 @@ private enum BackupManager {
             documents: documents.map {
                 DocumentTransferObject(document: $0)
             },
+            documentAssets: documentAssetPayload,
+            documentFiles: documentFilePayload,
+            
             vaultItems: vaultItems.map {
                 VaultItemTransferObject(item: $0)
             },
@@ -1307,6 +1388,32 @@ private enum BackupManager {
             }
         }
 
+        if let documentDirectory = DocumentAssetStore.assetsDirectory {
+
+            try FileManager.default.createDirectory(
+                at: documentDirectory,
+                withIntermediateDirectories: true
+            )
+
+            for (relativePath, fileData) in archive.documentFiles {
+
+                let destinationURL = documentDirectory
+                    .appendingPathComponent(relativePath)
+
+                let parent = destinationURL.deletingLastPathComponent()
+
+                try FileManager.default.createDirectory(
+                    at: parent,
+                    withIntermediateDirectories: true
+                )
+
+                try fileData.write(
+                    to: destinationURL,
+                    options: .atomic
+                )
+            }
+        }
+        
         if restoreDocuments && !archive.documents.isEmpty {
             for dto in archive.documents {
 
@@ -1337,6 +1444,37 @@ private enum BackupManager {
             }
         }
 
+        if restoreDocuments && !archive.documentAssets.isEmpty {
+
+            for dto in archive.documentAssets {
+
+                let descriptor = FetchDescriptor<DocumentItem>(
+                    predicate: #Predicate {
+                        $0.id == dto.documentID
+                    }
+                )
+
+                guard
+                    let document = try? modelContext.fetch(descriptor).first
+                else {
+                    continue
+                }
+
+                let asset = DocumentAsset(
+                    relativePath: dto.relativePath,
+                    kind: DocumentAssetKind(rawValue: dto.kindRaw) ?? .other,
+                    pageIndex: dto.pageIndex,
+                    fileSize: dto.fileSize,
+                    createdAt: dto.createdAt
+                )
+
+                asset.document = document
+
+                modelContext.insert(asset)
+            }
+        }
+        
+        
         if restoreTripLists && !archive.tripLists.isEmpty {
             for tripDTO in archive.tripLists {
 

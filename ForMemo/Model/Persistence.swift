@@ -84,7 +84,6 @@ enum Persistence {
         return selectedStoreURL() == appGroupURL
     }
     
-    
     static let schema = Schema([
         TodoTask.self,
         TaskAttachment.self,
@@ -93,10 +92,10 @@ enum Persistence {
         WalletAsset.self,
         TripList.self,
         DocumentItem.self,
+        DocumentAsset.self,
         VaultItem.self,
         VaultSecret.self
     ])
-
 
     static func makeModelContainer(
         cloudKitEnabled: Bool

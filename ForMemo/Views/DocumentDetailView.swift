@@ -1,5 +1,8 @@
 import SwiftUI
 import SwiftData
+import os
+import UniformTypeIdentifiers
+import PhotosUI
 
 struct DocumentDetailView: View {
 
@@ -8,6 +11,15 @@ struct DocumentDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @FocusState private var isNameFocused: Bool
 
+    @State private var showingAddAssetMenu = false
+    @State private var showingCamera = false
+    @State private var showingScanner = false
+    @State private var showingPhotoPicker = false
+    @State private var selectedPhotos: [PhotosPickerItem] = []
+    @State private var showingPDFImporter = false
+    
+    @State private var selectedAsset: DocumentAsset?
+    
     var body: some View {
         
         ZStack {
@@ -168,6 +180,67 @@ struct DocumentDetailView: View {
             .listRowBackground(
                 Color(.systemBackground).opacity(0.3)
             )
+                
+                Section {
+
+                    if document.sortedAssets.isEmpty {
+
+                        ContentUnavailableView(
+                            String(localized: "No Pages"),
+                            systemImage: "doc.viewfinder",
+                            description: Text(
+                                String(localized: "Add photos, scans or PDFs to this document.")
+                            )
+                        )
+
+                    } else {
+
+                        ScrollView(.horizontal) {
+
+                            LazyHStack(spacing: 12) {
+
+                                ForEach(document.sortedAssets) { asset in
+
+                                    Button {
+
+                                        selectedAsset = asset
+
+                                    } label: {
+
+                                        DocumentAssetThumbnail(
+                                            asset: asset
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+                        .scrollIndicators(.hidden)
+                        .frame(height: 130)
+
+                    }
+
+                    Button {
+
+                        showingAddAssetMenu = true
+
+                    } label: {
+
+                        Label(
+                            String(localized: "Add"),
+                            systemImage: "plus.circle.fill"
+                        )
+                    }
+
+                } header: {
+
+                    Text(String(localized: "Document"))
+
+                }
+                .listRowBackground(
+                    Color(.systemBackground).opacity(0.3)
+                )
+                
             
             Section {
                 
@@ -286,6 +359,155 @@ struct DocumentDetailView: View {
                     isNameFocused = true
                 }
             }
+            
+            .confirmationDialog(
+                String(localized: "Add to Document"),
+                isPresented: $showingAddAssetMenu
+            ) {
+
+                Button(String(localized: "Take Photo")) {
+                    showingCamera = true
+                }
+
+                Button(String(localized: "Scan Document")) {
+                    showingScanner = true
+                }
+
+                Button(String(localized: "Choose Photo")) {
+                    showingPhotoPicker = true
+                }
+
+                Button(String(localized: "Import PDF")) {
+                    showingPDFImporter = true
+                }
+
+                Button(
+                    String(localized: "Cancel"),
+                    role: .cancel
+                ) { }
+
+            }
+            .sheet(isPresented: $showingCamera) {
+
+                CameraPicker { image in
+
+                    do {
+
+                        try DocumentImportService.importImages(
+                            [image],
+                            into: document,
+                            in: modelContext
+                        )
+
+                    } catch {
+
+                        AppLogger.ui.error(
+                            "Camera import failed: \(error.localizedDescription)"
+                        )
+                    }
+                }
+            }
+            
+            .sheet(isPresented: $showingScanner) {
+
+                DocumentScannerView { images in
+
+                    do {
+
+                        try DocumentImportService.importImages(
+                            images,
+                            into: document,
+                            in: modelContext
+                        )
+
+                    } catch {
+
+                        AppLogger.ui.error(
+                            "Scanner import failed: \(error.localizedDescription)"
+                        )
+                    }
+                }
+            }
+            
+            .photosPicker(
+                isPresented: $showingPhotoPicker,
+                selection: $selectedPhotos,
+                maxSelectionCount: nil,
+                matching: .images
+            )
+            .onChange(of: selectedPhotos) {
+
+                Task {
+
+                    var images: [UIImage] = []
+
+                    for item in selectedPhotos {
+
+                        if let data = try? await item.loadTransferable(type: Data.self),
+                           let image = UIImage(data: data) {
+
+                            images.append(image)
+                        }
+                    }
+
+                    guard !images.isEmpty else {
+                        return
+                    }
+
+                    do {
+
+                        try DocumentImportService.importImages(
+                            images,
+                            into: document,
+                            in: modelContext
+                        )
+
+                    } catch {
+
+                        AppLogger.ui.error(
+                            "Photo import failed: \(error.localizedDescription)"
+                        )
+                    }
+
+                    selectedPhotos.removeAll()
+                }
+            }
+            
+            .fullScreenCover(item: $selectedAsset) { asset in
+
+                DocumentAssetDetailView(
+                    document: document,
+                    asset: asset
+                )
+            }
+            
+            
+            .fileImporter(
+                isPresented: $showingPDFImporter,
+                allowedContentTypes: [.pdf],
+                allowsMultipleSelection: false
+            ) { result in
+
+                do {
+
+                    guard let url = try result.get().first else {
+                        return
+                    }
+
+                    try DocumentImportService.importPDF(
+                        from: url,
+                        into: document,
+                        in: modelContext
+                    )
+
+                } catch {
+
+                    AppLogger.ui.error(
+                        "PDF import failed: \(error.localizedDescription)"
+                    )
+                }
+            }
+            
         }
     }
 }

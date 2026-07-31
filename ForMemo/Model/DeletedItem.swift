@@ -86,6 +86,10 @@ final class DeletedItem {
     var documentNotificationDaysBefore: Int?
 
     var documentCreatedAt: Date?
+    // DOCUMENT ASSET
+
+    var documentAssetKindRaw: String?
+    var documentPageIndex: Int?
     
     init(type: String) {
         self.type = type
@@ -257,6 +261,54 @@ extension DeletedItem {
             }
         }
 
+        if type == "documentAsset",
+           let documentID,
+           let relativePath,
+           let trashFileName,
+           let kindRaw = documentAssetKindRaw {
+
+            let descriptor = FetchDescriptor<DocumentItem>(
+                predicate: #Predicate { $0.id == documentID }
+            )
+
+            guard let document = try? context.fetch(descriptor).first else {
+                return
+            }
+
+            guard
+                DocumentAssetStore.restoreFromTrash(
+                    trashFileName: trashFileName,
+                    relativePath: relativePath
+                )
+            else {
+
+                AppLogger.persistence.error(
+                    "Document asset restore failed."
+                )
+
+                return
+            }
+
+            let kind =
+                DocumentAssetKind(rawValue: kindRaw) ?? .other
+
+            let asset = DocumentAsset(
+                relativePath: relativePath,
+                kind: kind,
+                pageIndex: documentPageIndex ?? 0,
+                document: document
+            )
+
+            context.insert(asset)
+
+            if document.assets == nil {
+                document.assets = []
+            }
+
+            document.assets?.append(asset)
+        }
+        
+        
         if type == "loyaltycard" {
 
             if let existingID = loyaltyCardID {
@@ -379,6 +431,21 @@ extension DeletedItem {
             document.createdAt = documentCreatedAt ?? Date()
 
             context.insert(document)
+            
+            guard let currentDocumentID = documentID else { return }
+
+            let descriptor = FetchDescriptor<DeletedItem>()
+
+            if let deletedItems = try? context.fetch(descriptor) {
+
+                for item in deletedItems
+                where item.type == "documentAsset"
+                    && item.documentID == currentDocumentID {
+
+                    item.restore(in: context)
+                    context.delete(item)
+                }
+            }
         }
 
         context.safeSave(operation: "DeletedItemRestore")

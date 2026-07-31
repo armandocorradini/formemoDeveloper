@@ -76,6 +76,25 @@ func deleteDocument(
         from: document,
         in: context
     )
+    
+    for asset in document.sortedAssets {
+
+        let trashFileName =
+            DocumentAssetStore.moveToTrash(
+                relativePath: asset.relativePath
+            )
+
+        let item = DeletedItem(type: "documentAsset")
+
+        item.documentID = document.id
+        item.relativePath = asset.relativePath
+        item.trashFileName = trashFileName
+
+        item.documentAssetKindRaw = asset.kindRaw
+        item.documentPageIndex = asset.pageIndex
+
+        context.insert(item)
+    }
 
     NotificationManager.shared.removeDocumentNotification(
         documentID: document.id
