@@ -145,9 +145,256 @@ enum DebugTools {
         }
     }
 }
+
+enum DiagnosticsProfile: String, CaseIterable, Identifiable {
+
+    case off
+    case standard
+    case attachmentAnalysis
+    case full
+    case custom
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .off:
+            return "Off"
+        case .standard:
+            return "Standard"
+        case .attachmentAnalysis:
+            return "Attachment Analysis"
+        case .full:
+            return "Full"
+        case .custom:
+            return "Custom"
+        }
+    }
+    
+    var settings: (
+        generalSnapshot: Bool,
+        storeMigration: Bool,
+        attachmentEnvironment: Bool,
+        attachmentDatabase: Bool,
+        filesystemEnumeration: Bool,
+        attachmentIntegrity: Bool
+    ) {
+
+        DiagnosticsConfiguration.values(for: self)
+    }
+}
+
+enum DiagnosticsConfiguration {
+
+    private static let defaults = UserDefaults.standard
+
+    static func bool(
+        _ key: String,
+        default defaultValue: Bool
+    ) -> Bool {
+
+        if defaults.object(forKey: key) == nil {
+            return defaultValue
+        }
+
+        return defaults.bool(forKey: key)
+    }
+
+    static func set(
+        _ value: Bool,
+        for key: String
+    ) {
+
+        defaults.set(value, forKey: key)
+    }
+    
+    static func values(
+        for profile: DiagnosticsProfile
+    ) -> (
+        generalSnapshot: Bool,
+        storeMigration: Bool,
+        attachmentEnvironment: Bool,
+        attachmentDatabase: Bool,
+        filesystemEnumeration: Bool,
+        attachmentIntegrity: Bool
+    ) {
+
+        switch profile {
+
+        case .off:
+
+            return (
+                false,
+                false,
+                false,
+                false,
+                false,
+                false
+            )
+
+        case .standard:
+
+            return (
+                true,
+                true,
+                true,
+                false,
+                false,
+                false
+            )
+
+        case .attachmentAnalysis:
+
+            return (
+                true,
+                true,
+                true,
+                true,
+                true,
+                false
+            )
+
+        case .full:
+
+            return (
+                true,
+                true,
+                true,
+                true,
+                true,
+                true
+            )
+
+        case .custom:
+
+            return (
+                bool("Diag.General", default: true),
+                bool("Diag.Migration", default: true),
+                bool("Diag.Environment", default: true),
+                bool("Diag.Database", default: false),
+                bool("Diag.Filesystem", default: false),
+                bool("Diag.Integrity", default: false)
+            )
+        }
+    }
+    
+    static func apply(_ profile: DiagnosticsProfile) {
+
+        switch profile {
+
+        case .off:
+
+            set(false, for: "Diag.General")
+            set(false, for: "Diag.Migration")
+            set(false, for: "Diag.Environment")
+            set(false, for: "Diag.Database")
+            set(false, for: "Diag.Filesystem")
+            set(false, for: "Diag.Integrity")
+
+        case .standard:
+
+            set(true,  for: "Diag.General")
+            set(true,  for: "Diag.Migration")
+            set(true,  for: "Diag.Environment")
+            set(false, for: "Diag.Database")
+            set(false, for: "Diag.Filesystem")
+            set(false, for: "Diag.Integrity")
+
+        case .attachmentAnalysis:
+
+            set(true, for: "Diag.General")
+            set(true, for: "Diag.Migration")
+            set(true, for: "Diag.Environment")
+            set(true, for: "Diag.Database")
+            set(true, for: "Diag.Filesystem")
+            set(false, for: "Diag.Integrity")
+
+        case .full:
+
+            set(true, for: "Diag.General")
+            set(true, for: "Diag.Migration")
+            set(true, for: "Diag.Environment")
+            set(true, for: "Diag.Database")
+            set(true, for: "Diag.Filesystem")
+            set(true, for: "Diag.Integrity")
+
+        case .custom:
+            break
+        }
+    }
+    
+    static var currentProfile: DiagnosticsProfile {
+
+        let general      = bool("Diag.General",     default: true)
+        let migration    = bool("Diag.Migration",   default: true)
+        let environment  = bool("Diag.Environment", default: true)
+        let database     = bool("Diag.Database",    default: false)
+        let filesystem   = bool("Diag.Filesystem",  default: false)
+        let integrity    = bool("Diag.Integrity",   default: false)
+
+        for profile in [
+            DiagnosticsProfile.off,
+            .standard,
+            .attachmentAnalysis,
+            .full
+        ] {
+
+            let values = values(for: profile)
+
+            if values.generalSnapshot == general &&
+               values.storeMigration == migration &&
+               values.attachmentEnvironment == environment &&
+               values.attachmentDatabase == database &&
+               values.filesystemEnumeration == filesystem &&
+               values.attachmentIntegrity == integrity {
+
+                return profile
+            }
+        }
+
+        return .custom
+    }
+}
+enum DiagnosticsOptions {
+
+    private static var profile: DiagnosticsProfile {
+        DiagnosticsConfiguration.currentProfile
+    }
+
+    static var generalSnapshot: Bool {
+        profile.settings.generalSnapshot
+    }
+
+    static var storeMigration: Bool {
+        profile.settings.storeMigration
+    }
+
+    static var attachmentEnvironment: Bool {
+        profile.settings.attachmentEnvironment
+    }
+
+    static var attachmentDatabase: Bool {
+        profile.settings.attachmentDatabase
+    }
+
+    static var filesystemEnumeration: Bool {
+        profile.settings.filesystemEnumeration
+    }
+
+    static var attachmentIntegrity: Bool {
+        profile.settings.attachmentIntegrity
+    }
+}
+
 enum DebugLog {
     
     private static let sessionID = String(UUID().uuidString.prefix(8))
+    
+    private static let timestampFormatter = ISO8601DateFormatter()
+    
+    static var isEnabled: Bool {
+        DiagnosticsConfiguration.currentProfile != .off
+    }
     
     private static let logQueue = DispatchQueue(
         label: "ForMemo.Diagnostics"
@@ -160,8 +407,7 @@ enum DebugLog {
     
     static func write(_ message: String) {
         
-        let formatter = ISO8601DateFormatter()
-        let timestamp = formatter.string(from: Date())
+        let timestamp = timestampFormatter.string(from: Date())
         
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
@@ -209,6 +455,11 @@ enum DebugLog {
             }
         }
     }
+    
+    private static func forensic(_ message: @autoclosure () -> String) {
+        write(message())
+    }
+    
     static func writeAppLaunch() {
         
         if !FileManager.default.fileExists(atPath: logURL.path) {
@@ -356,8 +607,71 @@ enum DebugLog {
         write(message)
     }
     
-    static func writeDatabaseSnapshot(context: ModelContext) {
+    private static func writeStoreMigrationDiagnostics() {
 
+        guard isEnabled,
+              DiagnosticsOptions.storeMigration else {
+            return
+        }
+        
+        
+        write("")
+        write("")
+        write("════════════════════════════════════════════")
+        write("🔷 STORE MIGRATION DIAGNOSTICS")
+        write("════════════════════════════════════════════")
+
+        write("Current Store Exists: \(FileManager.default.fileExists(atPath: Persistence.diagnosticsCurrentStoreURL))")
+
+        let attributes = try? FileManager.default.attributesOfItem(
+            atPath: Persistence.diagnosticsCurrentStoreURL
+        )
+
+        write("Current Store Size: \(attributes?[.size] ?? 0)")
+        write("Current Store Modified: \(attributes?[.modificationDate] ?? "-")")
+
+        write("Migration Engine: v1")
+
+        write("Migration Status: \(StoreMigrationManager.diagnosticsMigrationMarkerExists ? "Completed" : "Pending")")
+
+        write("Current Store: \(Persistence.diagnosticsCurrentStoreURL)")
+
+        write("Using App Group Store: \(Persistence.diagnosticsUsingAppGroupStore ? "YES" : "NO")")
+
+        write("Migration Needed: \(StoreMigrationManager.diagnosticsMigrationNeeded ? "YES" : "NO")")
+
+        write("Legacy Store: \(StoreMigrationManager.diagnosticsLegacyStoreExists ? "YES" : "NO")")
+
+        write("App Group Store: \(StoreMigrationManager.diagnosticsAppGroupStoreExists ? "YES" : "NO")")
+
+        write("════════════════════════════════════════════")
+    }
+    
+    private static func writeAttachmentForensics(
+        version: String,
+        build: String
+    ) {
+        guard isEnabled,
+              DiagnosticsOptions.attachmentDatabase else {
+            return
+        }
+        forensic("🔬 ATTACHMENT FORENSIC SNAPSHOT")
+        forensic("📅 Snapshot: \(ISO8601DateFormatter().string(from: Date()))")
+        forensic("📱 Version: \(version)")
+        forensic("🔨 Build: \(build)")
+        forensic("════════════════════════════════════════════")
+        
+    }
+    
+    private static func writeGeneralSnapshot(
+        context: ModelContext
+    ) {
+        
+        guard isEnabled,
+              DiagnosticsOptions.generalSnapshot else {
+            return
+        }
+        
         let openTasks = (try? context.fetchCount(
             FetchDescriptor<TodoTask>(
                 predicate: #Predicate { !$0.isCompleted }
@@ -372,98 +686,91 @@ enum DebugLog {
 
         write("📊 Open Tasks: \(openTasks)")
         write("📊 Completed Tasks: \(completedTasks)")
-        let taskCount = (try? context.fetchCount(
-            FetchDescriptor<TodoTask>()
-        )) ?? 0
-
-        let tasks = (try? context.fetch(FetchDescriptor<TodoTask>())) ?? []
-
-        write("Live TodoTask objects: \(tasks.count)")
-        
-        let completed = tasks.filter(\.isCompleted).count
-        let open = tasks.count - completed
-
-        write("Live Fetch -> Open: \(open)")
-        write("Live Fetch -> Completed: \(completed)")
         
         
-        let documentCount = (try? context.fetchCount(
-            FetchDescriptor<DocumentItem>()
-        )) ?? 0
+    }
+    
+    
+    private static func writeAttachmentEnvironment(
+        environment env: AttachmentEnvironment
+    ){
 
-        let tripCount = (try? context.fetchCount(
-            FetchDescriptor<TripList>()
-        )) ?? 0
-
-        let cardCount = (try? context.fetchCount(
-            FetchDescriptor<LoyaltyCard>()
-        )) ?? 0
-
-        let deletedCount = (try? context.fetchCount(
-            FetchDescriptor<DeletedItem>()
-        )) ?? 0
-        
-        let vaultCount = (try? context.fetchCount(
-            FetchDescriptor<VaultItem>()
-        )) ?? 0
-        let vaultItems = (try? context.fetch(
-            FetchDescriptor<VaultItem>()
-        )) ?? []
-
-        write("Vault fetch count: \(vaultItems.count)")
-
-        let activeVault = vaultItems.filter { $0.deletedAt == nil }.count
-        let deletedVault = vaultItems.filter { $0.deletedAt != nil }.count
-
-        write("Vault active: \(activeVault)")
-        write("Vault deleted: \(deletedVault)")
-        
-        
-        for item in vaultItems.prefix(10) {
-            write("Vault -> \(item.title) deleted: \(item.deletedAt != nil)")
+        guard isEnabled,
+              DiagnosticsOptions.attachmentEnvironment else {
+            return
         }
-        
-        let attachmentRecordCount = (try? context.fetchCount(
-            FetchDescriptor<TaskAttachment>()
-        )) ?? 0
-        write("📊 Tasks: \(taskCount)")
-        write("📊 Documents: \(documentCount)")
-        write("📊 Trips: \(tripCount)")
-        write("📊 Cards & Tickets: \(cardCount)")
-        write("📊 Vault Items: \(vaultCount)")
-        write("📊 Attachment Records: \(attachmentRecordCount)")
-        write("📊 Deleted Items: \(deletedCount)")
-        
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
 
-        write("")
-        write("")
-        write("════════════════════════════════════════════")
-        write("🔷 STORE MIGRATION DIAGNOSTICS")
-        write("════════════════════════════════════════════")
-        write("Current Store Exists: \(FileManager.default.fileExists(atPath: Persistence.diagnosticsCurrentStoreURL))")
-        let attributes = try? FileManager.default.attributesOfItem(atPath: Persistence.diagnosticsCurrentStoreURL)
+        forensic("🏠 HOME: [redacted]")
+        forensic("📁 DOCUMENTS: [redacted]")
 
-        write("Current Store Size: \(attributes?[.size] ?? 0)")
-        write("Current Store Modified: \(attributes?[.modificationDate] ?? "-")")
-        write("Migration Engine: v1")
-        write("Migration Status: \(StoreMigrationManager.diagnosticsMigrationMarkerExists ? "Completed" : "Pending")")
-        write("Current Store: \(Persistence.diagnosticsCurrentStoreURL)")
-        
-        write("Using App Group Store: \(Persistence.diagnosticsUsingAppGroupStore ? "YES" : "NO")")
-        write("Migration Needed: \(StoreMigrationManager.diagnosticsMigrationNeeded ? "YES" : "NO")")
+        forensic("☁️ iCloud Available: \(env.cloudContainer == nil ? "NO" : "YES")")
+        forensic("☁️ iCloud Container: [redacted]")
+        forensic("☁️ Default Container: [redacted]")
 
-        write("Legacy Store: \(StoreMigrationManager.diagnosticsLegacyStoreExists ? "YES" : "NO")")
-        write("App Group Store: \(StoreMigrationManager.diagnosticsAppGroupStoreExists ? "YES" : "NO")")
+        forensic("☁️ Explicit == Default: \(env.cloudContainer?.path == env.defaultContainer?.path)")
 
-        write("════════════════════════════════════════════")
+        forensic("☁️ Cloud Attachments: [redacted]")
+        forensic("☁️ Cloud Trash: [redacted]")
 
-        write("🔬 ATTACHMENT FORENSIC SNAPSHOT")
-        write("📅 Snapshot: \(ISO8601DateFormatter().string(from: Date()))")
-        write("📱 Version: \(version)")
-        write("🔨 Build: \(build)")
-        write("════════════════════════════════════════════")
+        forensic("📂 Legacy Attachments: [redacted]")
+        forensic("🗑 Legacy Trash: [redacted]")
+
+        forensic("📎 TaskAttachment.attachmentsDirectory: [redacted]")
+        forensic("🗑 TaskAttachment.trashDirectory: [redacted]")
+
+        forensic("📦 Bundle Identifier: \(Bundle.main.bundleIdentifier ?? "nil")")
+        forensic("📱 Process Name: \(ProcessInfo.processInfo.processName)")
+
+        forensic("🟣 attachmentMigrationVersion: \(UserDefaults.standard.integer(forKey: "attachmentMigrationVersion"))")
+
+        forensic("════════════════════════════════════════════")
+    }
+    
+    
+    
+    
+    
+    
+    
+    private struct AttachmentEnvironment {
+
+        let fm: FileManager
+
+        let documentsDirectory: URL?
+
+        let cloudContainer: URL?
+
+        let defaultContainer: URL?
+
+        let cloudAttachments: URL?
+
+        let cloudTrash: URL?
+
+        let legacyAttachments: URL?
+
+        let legacyTrash: URL?
+    }
+    
+    
+    private struct AttachmentDatabaseAnalysis {
+
+        var attachments: [TaskAttachment] = []
+
+        var resolvedCount = 0
+        var availableCount = 0
+
+        var cloudCount = 0
+        var legacyCount = 0
+        var trashCount = 0
+
+        var missingCount = 0
+        var nilURLCount = 0
+
+        var databaseFiles = Set<String>()
+    }
+    
+    
+    private static func makeAttachmentEnvironment() -> AttachmentEnvironment {
 
         let fm = FileManager.default
 
@@ -479,8 +786,7 @@ enum DebugLog {
         let defaultContainer = fm.url(
             forUbiquityContainerIdentifier: nil
         )
-        
-        
+
         let cloudAttachments = cloudContainer?
             .appendingPathComponent("Documents", isDirectory: true)
             .appendingPathComponent("TaskAttachments", isDirectory: true)
@@ -495,186 +801,131 @@ enum DebugLog {
         let legacyTrash = documentsDirectory?
             .appendingPathComponent("TaskAttachments_Trash", isDirectory: true)
 
-        write("🏠 HOME: [redacted]")
-        write("📁 DOCUMENTS: [redacted]")
-        write("☁️ iCloud Available: \(cloudContainer == nil ? "NO" : "YES")")
-        write("☁️ iCloud Container: [redacted]")
-        write("☁️ Default Container: [redacted]")
-        write("☁️ Explicit == Default: \(cloudContainer?.path == defaultContainer?.path)")
-        write("☁️ Cloud Attachments: [redacted]")
-        write("☁️ Cloud Trash: [redacted]")
-        write("📂 Legacy Attachments: [redacted]")
-        write("🗑 Legacy Trash: [redacted]")
-        write("📎 TaskAttachment.attachmentsDirectory: [redacted]")
-        write("🗑 TaskAttachment.trashDirectory: [redacted]")
+        return AttachmentEnvironment(
+            fm: fm,
+            documentsDirectory: documentsDirectory,
+            cloudContainer: cloudContainer,
+            defaultContainer: defaultContainer,
+            cloudAttachments: cloudAttachments,
+            cloudTrash: cloudTrash,
+            legacyAttachments: legacyAttachments,
+            legacyTrash: legacyTrash
+        )
 
-        write("📦 Bundle Identifier: \(Bundle.main.bundleIdentifier ?? "nil")")
-        write("📱 Process Name: \(ProcessInfo.processInfo.processName)")
-
-        write("🟣 attachmentMigrationVersion: \(UserDefaults.standard.integer(forKey: "attachmentMigrationVersion"))")
-
-        write("════════════════════════════════════════════")
         
-        func dumpDirectory(_ title: String, url: URL?) {
-            write("")
-            write("📂 \(title)")
-            guard let url else {
-                write("   Path: [redacted]")
-                return
-            }
-            write("   Path: [redacted]")
-            let exists = fm.fileExists(atPath: url.path)
-            write("   Exists: \(exists ? "YES" : "NO")")
-            guard exists else {
-                return
-            }
-            guard let files = try? fm.contentsOfDirectory(
-                at: url,
-                includingPropertiesForKeys: [
-                    .fileSizeKey,
-                    .contentModificationDateKey,
-                    .isUbiquitousItemKey,
-                    .ubiquitousItemDownloadingStatusKey
-                ]
-            ) else {
-                write("   Unable to enumerate directory")
-                return
-            }
-            write("   Files: \(files.count)")
-            if files.isEmpty {
-                return
-            }
-            // Aggregate metadata only, no filenames or paths
-            var totalSize = 0
-            var downloaded = 0
-            var notDownloaded = 0
-            var current = 0
-            var ubiquitousCount = 0
-            for file in files {
-                let values = try? file.resourceValues(forKeys: [
-                    .fileSizeKey,
-                    .isUbiquitousItemKey,
-                    .ubiquitousItemDownloadingStatusKey
-                ])
-                totalSize += values?.fileSize ?? 0
-                if let isUbiquitous = values?.isUbiquitousItem, isUbiquitous { ubiquitousCount += 1 }
-                switch values?.ubiquitousItemDownloadingStatus {
-                case .downloaded:
-                    downloaded += 1
-                case .notDownloaded:
-                    notDownloaded += 1
-                case .current:
-                    current += 1
-                default:
-                    break
-                }
-            }
-            let sizeMB = Double(totalSize) / 1_048_576
-            write("   Attachment metadata collected (\(files.count) files, \(String(format: "%.1f", sizeMB)) MB, ubiquitous: \(ubiquitousCount), downloaded: \(downloaded), notDownloaded: \(notDownloaded), current: \(current))")
+        
+    }
+    
+    private static func analyzeAttachmentDatabase(
+        context: ModelContext,
+        environment env: AttachmentEnvironment
+    ) -> AttachmentDatabaseAnalysis {
+
+        var result = AttachmentDatabaseAnalysis()
+
+        guard isEnabled,
+              DiagnosticsOptions.attachmentDatabase else {
+            return result
         }
-        
-        
-        dumpDirectory("Cloud Attachments", url: cloudAttachments)
-        dumpDirectory("Legacy Attachments", url: legacyAttachments)
-        dumpDirectory("Cloud Trash", url: cloudTrash)
-        dumpDirectory("Legacy Trash", url: legacyTrash)
-      
-        write("")
-        write("════════════════════════════════════════════")
-        write("📊 ATTACHMENT DATABASE ANALYSIS")
-        write("════════════════════════════════════════════")
+
+        forensic("")
+        forensic("════════════════════════════════════════════")
+        forensic("📊 ATTACHMENT DATABASE ANALYSIS")
+        forensic("════════════════════════════════════════════")
 
         let attachmentDescriptor = FetchDescriptor<TaskAttachment>()
-        let attachments = (try? context.fetch(attachmentDescriptor)) ?? []
+        result.attachments = (try? context.fetch(attachmentDescriptor)) ?? []
 
-        write("Database records: \(attachments.count)")
+        forensic("Database records: \(result.attachments.count)")
 
-        
-        for attachment in attachments {
+        if DiagnosticsOptions.attachmentIntegrity {
 
-            let taskTitle = attachment.task?.title ?? "<no task>"
+            for attachment in result.attachments {
 
-            DebugLog.write("""
-            ═══════════════════════════════
-            ATTACHMENT RECORD
-            id           = \(attachment.id)
-            createdAt    = \(attachment.createdAt)
-            originalName = \(attachment.originalName)
-            relativePath = \(attachment.relativePath)
-            task         = \(taskTitle)
-            ═══════════════════════════════
-            """)
+                let taskTitle = attachment.task?.title ?? "<no task>"
+
+                forensic("""
+        ═══════════════════════════════
+        ATTACHMENT RECORD
+        id           = \(attachment.id)
+        createdAt    = \(attachment.createdAt)
+        originalName = \(attachment.originalName)
+        relativePath = \(attachment.relativePath)
+        task         = \(taskTitle)
+        ═══════════════════════════════
+        """)
+            }
         }
-        
-        var resolvedCount = 0
-        var availableCount = 0
-        var cloudCount = 0
-        var legacyCount = 0
-        var trashCount = 0
-        var missingCount = 0
-        var nilURLCount = 0
 
-        for attachment in attachments {
+        for attachment in result.attachments {
 
-            DebugLog.write("""
-            ───────────────────────────────
-            DB RECORD
-            id = \(attachment.id)
-            originalName = \(attachment.originalName)
-            relativePath = \(attachment.relativePath)
-            """)
-            
+            result.databaseFiles.insert(attachment.relativePath)
+
             if attachment.isActuallyAvailable {
-                availableCount += 1
+                result.availableCount += 1
             }
 
-            let fileURL = attachment.fileURL
-            if let fileURL {
-                resolvedCount += 1
-                let fileExists = FileManager.default.fileExists(atPath: fileURL.path)
-                if !fileExists {
-                    missingCount += 1
-                }
-                let path = fileURL.path
-                if path.hasPrefix(cloudAttachments?.path ?? "") {
-                    cloudCount += 1
-                } else if path.hasPrefix(legacyAttachments?.path ?? "") {
-                    legacyCount += 1
-                } else if path.hasPrefix(cloudTrash?.path ?? "") || path.hasPrefix(legacyTrash?.path ?? "") {
-                    trashCount += 1
-                }
-            } else {
-                missingCount += 1
-                nilURLCount += 1
+            guard let fileURL = attachment.fileURL else {
+                result.missingCount += 1
+                result.nilURLCount += 1
+                continue
+            }
+
+            result.resolvedCount += 1
+
+            if !FileManager.default.fileExists(atPath: fileURL.path) {
+                result.missingCount += 1
+            }
+
+            let path = fileURL.path
+
+            if path.hasPrefix(env.cloudAttachments?.path ?? "") {
+                result.cloudCount += 1
+            } else if path.hasPrefix(env.legacyAttachments?.path ?? "") {
+                result.legacyCount += 1
+            } else if path.hasPrefix(env.cloudTrash?.path ?? "") ||
+                        path.hasPrefix(env.legacyTrash?.path ?? "") {
+                result.trashCount += 1
             }
         }
 
-        write("")
-        write("════════════════════════════════════════════")
-        write("📈 ATTACHMENT SUMMARY")
-        write("════════════════════════════════════════════")
+        if DiagnosticsOptions.attachmentIntegrity {
 
-        write("Records: \(attachments.count)")
-        write("Resolved URLs: \(resolvedCount)")
-        write("Available: \(availableCount)")
-        write("Cloud: \(cloudCount)")
-        write("Legacy: \(legacyCount)")
-        write("Trash: \(trashCount)")
-        write("Missing: \(missingCount)")
-        write("Nil URLs: \(nilURLCount)")
-        write("════════════════════════════════════════════")
-        
-        write("")
-        write("════════════════════════════════════════════")
+            forensic("")
+            forensic("════════════════════════════════════════════")
+            forensic("📈 ATTACHMENT SUMMARY")
+            forensic("════════════════════════════════════════════")
+
+            forensic("Records: \(result.attachments.count)")
+            forensic("Resolved URLs: \(result.resolvedCount)")
+            forensic("Available: \(result.availableCount)")
+            forensic("Cloud: \(result.cloudCount)")
+            forensic("Legacy: \(result.legacyCount)")
+            forensic("Trash: \(result.trashCount)")
+            forensic("Missing: \(result.missingCount)")
+            forensic("Nil URLs: \(result.nilURLCount)")
+            forensic("════════════════════════════════════════════")
+        }
+
+        return result
+    }
+    
+    private static func writeAttachmentIntegrityCheck(
+        analysis: AttachmentDatabaseAnalysis,
+        environment env: AttachmentEnvironment
+    ) {
+        guard isEnabled,
+              DiagnosticsOptions.filesystemEnumeration else {
+            return
+        }
+
+        forensic("")
+        forensic("════════════════════════════════════════════")
+
         write("📂 DATABASE ↔ FILESYSTEM CHECK")
         write("════════════════════════════════════════════")
 
-        var databaseFiles = Set<String>()
-
-        for attachment in attachments {
-            // Do not log per-attachment info here for privacy.
-            databaseFiles.insert(attachment.relativePath)
-        }
+        let databaseFiles = analysis.databaseFiles
 
         write("")
         write("════════════════════════════════════")
@@ -699,11 +950,11 @@ enum DebugLog {
                 write("Unable to enumerate attachmentsDirectory")
             }
         }
-        
+
         var filesystemFiles = Set<String>()
 
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
-           let files = try? fm.contentsOfDirectory(
+           let files = try? env.fm.contentsOfDirectory(
                 at: attachmentsDirectory,
                 includingPropertiesForKeys: nil
            ) {
@@ -728,8 +979,7 @@ enum DebugLog {
         for file in orphanFiles.sorted() {
             write("⚠️ Orphan: \(file)")
         }
-    
-        
+
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
            let files = try? FileManager.default.contentsOfDirectory(
                 at: attachmentsDirectory,
@@ -750,7 +1000,150 @@ enum DebugLog {
             write("📎 Attachment Size: \(String(format: "%.1f", sizeMB)) MB")
         }
     }
+    
+    private static func dumpDirectory(
+        _ title: String,
+        url: URL?,
+        environment env: AttachmentEnvironment
+    ) {
+        
+        guard isEnabled,
+              DiagnosticsOptions.filesystemEnumeration else {
+            return
+        }
+        
+        write("")
+        write("📂 \(title)")
+        guard let url else {
+            write("   Path: [redacted]")
+            return
+        }
+        write("   Path: [redacted]")
+        let exists = env.fm.fileExists(atPath: url.path)
+        write("   Exists: \(exists ? "YES" : "NO")")
+        guard exists else {
+            return
+        }
+        guard let files = try? env.fm.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: [
+                .fileSizeKey,
+                .contentModificationDateKey,
+                .isUbiquitousItemKey,
+                .ubiquitousItemDownloadingStatusKey
+            ]
+        ) else {
+            write("   Unable to enumerate directory")
+            return
+        }
+        write("   Files: \(files.count)")
+        if files.isEmpty {
+            return
+        }
+        // Aggregate metadata only, no filenames or paths
+        var totalSize = 0
+        var downloaded = 0
+        var notDownloaded = 0
+        var current = 0
+        var ubiquitousCount = 0
+        for file in files {
+            let values = try? file.resourceValues(forKeys: [
+                .fileSizeKey,
+                .isUbiquitousItemKey,
+                .ubiquitousItemDownloadingStatusKey
+            ])
+            totalSize += values?.fileSize ?? 0
+            if let isUbiquitous = values?.isUbiquitousItem, isUbiquitous { ubiquitousCount += 1 }
+            switch values?.ubiquitousItemDownloadingStatus {
+            case .downloaded:
+                downloaded += 1
+            case .notDownloaded:
+                notDownloaded += 1
+            case .current:
+                current += 1
+            default:
+                break
+            }
+        }
+        let sizeMB = Double(totalSize) / 1_048_576
+        write("   Attachment metadata collected (\(files.count) files, \(String(format: "%.1f", sizeMB)) MB, ubiquitous: \(ubiquitousCount), downloaded: \(downloaded), notDownloaded: \(notDownloaded), current: \(current))")
+    }
+    
+    
+    private static func writeAttachmentDiagnostics(
+        context: ModelContext,
+        environment env: AttachmentEnvironment
+    ) {
+
+        writeAttachmentForensics(
+            version: Bundle.main.releaseVersionNumber,
+            build: Bundle.main.buildVersionNumber
+        )
+
+        writeAttachmentEnvironment(
+            environment: env
+        )
+
+        dumpDirectory(
+            "Cloud Attachments",
+            url: env.cloudAttachments,
+            environment: env
+        )
+
+        dumpDirectory(
+            "Legacy Attachments",
+            url: env.legacyAttachments,
+            environment: env
+        )
+
+        dumpDirectory(
+            "Cloud Trash",
+            url: env.cloudTrash,
+            environment: env
+        )
+
+        dumpDirectory(
+            "Legacy Trash",
+            url: env.legacyTrash,
+            environment: env
+        )
+
+        let analysis = analyzeAttachmentDatabase(
+            context: context,
+            environment: env
+        )
+
+        writeAttachmentIntegrityCheck(
+            analysis: analysis,
+            environment: env
+        )
+    }
+        
+    static func writeDatabaseSnapshot(context: ModelContext) {
+
+        guard isEnabled else {
+            return
+        }
+
+        writeGeneralSnapshot(context: context)
+
+        let env = makeAttachmentEnvironment()
+
+        writeStoreMigrationDiagnostics()
+
+        writeAttachmentDiagnostics(
+            context: context,
+            environment: env
+        )
+    }
+    
+    
     static func ensureLogFileExists() {
+        
+        guard isEnabled else {
+            return
+        }
+        
         
         if !FileManager.default.fileExists(atPath: logURL.path) {
             
@@ -824,7 +1217,14 @@ struct ExportDiagnosticsView: View {
     @State private var logExists = false
     @State private var logContent = ""
     @State private var refreshID = UUID()
-
+    @State private var versionTapCount = 0
+    
+    @State private var developerMode = false
+    
+    @AppStorage("DiagnosticsProfile")
+    private var diagnosticsProfile: String = DiagnosticsProfile.standard.rawValue
+    
+    
     
     private func refreshDiagnostics() {
         logExists = FileManager.default.fileExists(
@@ -900,7 +1300,18 @@ struct ExportDiagnosticsView: View {
                 let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
                 
                 LabeledContent("App Version") {
+
                     Text("\(version) (\(build))")
+                        .onTapGesture {
+
+                            versionTapCount += 1
+
+                            guard versionTapCount >= 10 else {
+                                return
+                            }
+
+                            developerMode = true
+                        }
                 }
                 
                 HStack {
@@ -965,6 +1376,140 @@ struct ExportDiagnosticsView: View {
                 }
                 #endif
             }
+            
+            if developerMode {
+
+                Section("Developer Diagnostics") {
+
+                    Picker(
+                        "Diagnostics Profile",
+                        selection: $diagnosticsProfile
+                    ) {
+
+                        ForEach(
+                            DiagnosticsProfile.allCases.filter {
+                                $0 != .custom || diagnosticsProfile == DiagnosticsProfile.custom.rawValue
+                            }
+                        ) { profile in
+
+                            Text(profile.title)
+                                .tag(profile.rawValue)
+                        }
+                    }
+                    .onChange(of: diagnosticsProfile) { _, newValue in
+
+                        guard let profile = DiagnosticsProfile(
+                            rawValue: newValue
+                        ) else {
+                            return
+                        }
+
+                        DiagnosticsConfiguration.apply(profile)
+                        diagnosticsProfile = DiagnosticsConfiguration.currentProfile.rawValue
+                    }
+                        
+                    Toggle(
+                        "General Snapshot",
+                        isOn: Binding(
+                            get: { DiagnosticsOptions.generalSnapshot },
+                            set: { newValue in
+                                DiagnosticsConfiguration.set(
+                                    newValue,
+                                    for: "Diag.General"
+                                )
+
+                                diagnosticsProfile = DiagnosticsConfiguration.currentProfile.rawValue
+                            }
+                        )
+                    )
+
+                    Toggle(
+                        "Store Migration",
+                        isOn: Binding(
+                            get: { DiagnosticsOptions.storeMigration },
+                            set: { newValue in
+
+                                DiagnosticsConfiguration.set(
+                                    newValue,
+                                    for: "Diag.Migration"
+                                )
+
+                                diagnosticsProfile = DiagnosticsConfiguration.currentProfile.rawValue
+                            }
+                        )
+                    )
+
+                    Toggle(
+                        "Attachment Environment",
+                        isOn: Binding(
+                            get: { DiagnosticsOptions.attachmentEnvironment },
+                            set: { newValue in
+
+                                DiagnosticsConfiguration.set(
+                                    newValue,
+                                    for: "Diag.Environment"
+                                )
+
+                                diagnosticsProfile = DiagnosticsConfiguration.currentProfile.rawValue
+                            }
+                        )
+                    )
+
+                    Toggle(
+                        "Database Analysis",
+                        isOn: Binding(
+                            get: { DiagnosticsOptions.attachmentDatabase },
+                            set: { newValue in
+
+                                DiagnosticsConfiguration.set(
+                                    newValue,
+                                    for: "Diag.Database"
+                                )
+
+                                diagnosticsProfile = DiagnosticsConfiguration.currentProfile.rawValue
+                            }
+                        )
+                    )
+
+                    Toggle(
+                        "Filesystem Enumeration",
+                        isOn: Binding(
+                            get: { DiagnosticsOptions.filesystemEnumeration },
+                            set: { newValue in
+
+                                DiagnosticsConfiguration.set(
+                                    newValue,
+                                    for: "Diag.Filesystem"
+                                )
+
+                                diagnosticsProfile = DiagnosticsConfiguration.currentProfile.rawValue
+
+                            }
+                        )
+                    )
+
+                    Toggle(
+                        "Attachment Integrity",
+                        isOn: Binding(
+                            get: { DiagnosticsOptions.attachmentIntegrity },
+                            set: { newValue in
+
+                                DiagnosticsConfiguration.set(
+                                    newValue,
+                                    for: "Diag.Integrity"
+                                )
+
+                                diagnosticsProfile = DiagnosticsConfiguration.currentProfile.rawValue
+                            }
+                        )
+                    )
+                    
+
+                    
+                }
+            }
+            
+            
         }
         .id(refreshID)
         .navigationTitle("Diagnostics")
@@ -972,9 +1517,12 @@ struct ExportDiagnosticsView: View {
         .onAppear {
             DebugLog.ensureLogFileExists()
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                DebugLog.writeDatabaseSnapshot(context: modelContext)
-                refreshDiagnostics()
+            if DebugLog.isEnabled {
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    DebugLog.writeDatabaseSnapshot(context: modelContext)
+                    refreshDiagnostics()
+                }
             }
         }
         .onReceive(
@@ -983,13 +1531,31 @@ struct ExportDiagnosticsView: View {
             )
         ) { _ in
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                DebugLog.writeDatabaseSnapshot(context: modelContext)
-                refreshDiagnostics()
+            if DebugLog.isEnabled {
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    DebugLog.writeDatabaseSnapshot(context: modelContext)
+                    refreshDiagnostics()
+                }
             }
 
         }
+        .onDisappear {
+
+            developerMode = false
+            versionTapCount = 0
+        }
+        
     }
 }
 
+private extension Bundle {
 
+    var releaseVersionNumber: String {
+        infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+    }
+
+    var buildVersionNumber: String {
+        infoDictionary?["CFBundleVersion"] as? String ?? "?"
+    }
+}

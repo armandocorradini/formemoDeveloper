@@ -13,6 +13,7 @@ struct EditLoyaltyCardView: View {
     @Bindable var card: LoyaltyCard
 
     @State private var showCamera = false
+    @State private var cameraSession = UUID()
     @State private var selectedColor: Color = .blue
     @State private var isLoadingLogo = false
     @State private var previewLogoData: Data?
@@ -82,7 +83,7 @@ struct EditLoyaltyCardView: View {
 
                         Group {
 
-                            if let data = currentLogoData,
+                            if let data = previewLogoData,
                                let uiImage = UIImage(data: data) {
 
                                 Image(uiImage: uiImage)
@@ -140,7 +141,7 @@ struct EditLoyaltyCardView: View {
                             .buttonStyle(.plain)
 
                             Button {
-                                showCamera = true
+                                presentCamera(target: .logo)
                             } label: {
                                 HStack {
                                     Label(
@@ -226,7 +227,7 @@ struct EditLoyaltyCardView: View {
 
                                     Button("Take Photo") {
                                         cameraTarget = .front
-                                        showCamera = true
+                                        presentCamera(target: .front)
                                     }
 
                                     Button("Choose Photo") {
@@ -321,7 +322,7 @@ struct EditLoyaltyCardView: View {
 
                                     Button("Take Photo") {
                                         cameraTarget = .back
-                                        showCamera = true
+                                        presentCamera(target: .front)
                                     }
 
                                     Button("Choose Photo") {
@@ -493,11 +494,7 @@ struct EditLoyaltyCardView: View {
             .onChange(of: selectedColor) { _, newValue in
                 card.colorHex = newValue.toHex()
             }
-            .sheet(isPresented: $showCamera) {
-                CameraPicker(allowsEditing: true) { image in
-                    capturedImage = image
-                }
-            }
+
             .onChange(of: selectedPhotoItem) { _, newItem in
 
                 guard let newItem else {
@@ -716,7 +713,8 @@ struct EditLoyaltyCardView: View {
                     print("Failed to save captured image: \(error)")
                 }
 
-                cameraTarget = nil
+                capturedImage = nil
+                showCamera = false
             }
             .scrollContentBackground(.hidden)
             .background(Color.clear)
@@ -751,6 +749,16 @@ struct EditLoyaltyCardView: View {
                 
             }
         }
+        
+        .fullScreenCover(
+            isPresented: $showCamera
+        ) {
+            CameraPicker(allowsEditing: true) { image in
+                capturedImage = image
+            }
+            .id(cameraSession)
+        }
+        
     }
 
     // MARK: - Save
@@ -773,6 +781,19 @@ struct EditLoyaltyCardView: View {
             print("Failed to save loyalty card: \(error)")
         }
     }
+    
+    private func presentCamera(
+        target: WalletAssetKind
+    ) {
+        cameraTarget = target
+        cameraSession = UUID()
+
+        DispatchQueue.main.async {
+            showCamera = true
+        }
+    }
+    
+    
 }
 
 

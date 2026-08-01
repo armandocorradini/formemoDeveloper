@@ -19,7 +19,7 @@ struct AddLoyaltyCardView: View {
     @State private var notes = ""
     @State private var showScanner = false
     @State private var showCamera = false
-
+    @State private var cameraSession = UUID()
     
     @State private var logoData: Data?
     @State private var selectedColor: Color = .blue
@@ -117,8 +117,7 @@ struct AddLoyaltyCardView: View {
                                 
                                 
                                 Button {
-                                    cameraTarget = .logo
-                                    showCamera = true
+                                    presentCamera(target: .logo)
                                 } label: {
                                     
                                     HStack {
@@ -168,8 +167,7 @@ struct AddLoyaltyCardView: View {
                                 ) {
                                     
                                     Button("Take Photo") {
-                                        cameraTarget = .front
-                                        showCamera = true
+                                        presentCamera(target: .front)
                                     }
                                     
                                     Button("Choose Photo") {
@@ -211,8 +209,7 @@ struct AddLoyaltyCardView: View {
                                 ) {
                                     
                                     Button("Take Photo") {
-                                        cameraTarget = .back
-                                        showCamera = true
+                                        presentCamera(target: .back)
                                     }
                                     
                                     Button("Choose Photo") {
@@ -367,10 +364,11 @@ struct AddLoyaltyCardView: View {
                     barcodeFormat: $barcodeFormat
                 )
             }
-        .sheet(isPresented: $showCamera) {
+        .fullScreenCover(isPresented: $showCamera) {
             CameraPicker(allowsEditing: true) { image in
                 capturedImage = image
             }
+            .id(cameraSession)
         }
         .onChange(of: selectedPhotoItem) { _, newItem in
 
@@ -616,6 +614,19 @@ struct AddLoyaltyCardView: View {
         }
     }
 
+    private func presentCamera(
+        target: WalletAssetKind
+    ) {
+
+        cameraTarget = target
+        cameraSession = UUID()
+
+        DispatchQueue.main.async {
+            showCamera = true
+        }
+    }
+    
+    
     // MARK: - Save
 
     private func saveCard() {
