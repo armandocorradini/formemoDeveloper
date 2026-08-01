@@ -115,7 +115,8 @@ extension LoyaltyCard {
 extension LoyaltyCard {
 
     func asset(for kind: WalletAssetKind) -> WalletAsset? {
-        assets?.first { $0.kind == kind }
+        assets?.first { $0.kind == kind
+        }
     }
 
     var logoAsset: WalletAsset? {
@@ -129,5 +130,10 @@ extension LoyaltyCard {
     var backAsset: WalletAsset? {
         asset(for: .back)
     }
+    
+    
+    
+    
+    
 
 }

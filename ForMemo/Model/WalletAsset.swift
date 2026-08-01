@@ -54,6 +54,18 @@ final class WalletAsset {
 
         asset.card = card
         
+        switch kind {
+
+        case .logo:
+            card.loyaltyLogoRelativePath = relativePath
+
+        case .front:
+            card.loyaltyFrontRelativePath = relativePath
+
+        case .back:
+            card.loyaltyBackRelativePath = relativePath
+        }
+        
         if card.assets == nil {
             card.assets = []
         }

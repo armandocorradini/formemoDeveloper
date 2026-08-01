@@ -769,6 +769,39 @@ enum DebugLog {
     }
     
     
+    private struct DocumentAssetsAnalysis {
+
+        var documents = 0
+
+        var assets = 0
+
+        var orphanAssets = 0
+
+        var filesWithoutRecord = 0
+
+        var recordsWithoutFile = 0
+    }
+
+    private struct WalletAssetsAnalysis {
+
+        var cards = 0
+        var tickets = 0
+
+        var logos = 0
+        var frontImages = 0
+        var backImages = 0
+
+        var totalAssets = 0
+        var orphanAssets = 0
+
+        var filesWithoutRecord = 0
+
+        var recordsWithoutFile = 0
+        var duplicateLogoCards = 0
+        var duplicateFrontCards = 0
+        var duplicateBackCards = 0
+    }
+    
     private static func makeAttachmentEnvironment() -> AttachmentEnvironment {
 
         let fm = FileManager.default
@@ -909,6 +942,186 @@ enum DebugLog {
         return result
     }
     
+    private static func analyzeDocumentAssets(
+        context: ModelContext
+    ) -> DocumentAssetsAnalysis {
+
+        var result = DocumentAssetsAnalysis()
+
+        guard isEnabled,
+              DiagnosticsOptions.attachmentDatabase else {
+            return result
+        }
+
+        let documentDescriptor = FetchDescriptor<DocumentItem>()
+        let assetDescriptor = FetchDescriptor<DocumentAsset>()
+
+        let documents =
+            (try? context.fetch(documentDescriptor)) ?? []
+
+        let assets =
+            (try? context.fetch(assetDescriptor)) ?? []
+
+        result.documents = documents.count
+        result.assets = assets.count
+
+        result.orphanAssets =
+            assets.filter {
+                $0.document == nil
+            }.count
+        
+        let fm = FileManager.default
+
+        result.recordsWithoutFile =
+            assets.filter {
+
+                guard
+                    let url = DocumentAssetStore.fileURL(
+                        relativePath: $0.relativePath
+                    )
+                else {
+                    return true
+                }
+
+                return !fm.fileExists(
+                    atPath: url.path
+                )
+
+            }.count
+        if let directory = DocumentAssetStore.assetsDirectory,
+           let files = try? fm.contentsOfDirectory(
+                at: directory,
+                includingPropertiesForKeys: nil
+           ) {
+
+            let databaseFiles = Set(
+                assets.map(\.relativePath)
+            )
+
+            result.filesWithoutRecord =
+                files.filter {
+                    !databaseFiles.contains(
+                        $0.lastPathComponent
+                    )
+                }.count
+        }
+        return result
+    }
+    
+    private static func analyzeWalletAssets(
+        context: ModelContext
+    ) -> WalletAssetsAnalysis {
+
+        var result = WalletAssetsAnalysis()
+
+        guard isEnabled,
+              DiagnosticsOptions.attachmentDatabase else {
+            return result
+        }
+
+        let cardDescriptor = FetchDescriptor<LoyaltyCard>()
+
+        let assetDescriptor = FetchDescriptor<WalletAsset>()
+
+        let cards =
+            (try? context.fetch(cardDescriptor)) ?? []
+
+        let assets =
+            (try? context.fetch(assetDescriptor)) ?? []
+        
+        for card in cards {
+
+            let cardAssets = assets.filter {
+                $0.card?.persistentModelID == card.persistentModelID
+            }
+
+            if cardAssets.filter({ $0.kind == .logo }).count > 1 {
+                result.duplicateLogoCards += 1
+            }
+
+            if cardAssets.filter({ $0.kind == .front }).count > 1 {
+                result.duplicateFrontCards += 1
+            }
+
+            if cardAssets.filter({ $0.kind == .back }).count > 1 {
+                result.duplicateBackCards += 1
+            }
+        }
+
+        result.cards =
+            cards.filter {
+                $0.itemType != "ticket"
+            }.count
+
+        result.tickets =
+            cards.filter {
+                $0.itemType == "ticket"
+            }.count
+
+        result.logos =
+            assets.filter {
+                $0.kind == .logo
+            }.count
+
+        result.frontImages =
+            assets.filter {
+                $0.kind == .front
+            }.count
+
+        result.backImages =
+            assets.filter {
+                $0.kind == .back
+            }.count
+
+        result.totalAssets = assets.count
+
+        result.orphanAssets =
+            assets.filter {
+                $0.card == nil
+            }.count
+        let fm = FileManager.default
+
+        result.recordsWithoutFile =
+            assets.filter {
+
+                guard
+                    let directory = LoyaltyCardLogoStore.directoryURL
+                else {
+                    return true
+                }
+
+                let url = directory.appendingPathComponent(
+                    $0.relativePath
+                )
+
+                return !fm.fileExists(
+                    atPath: url.path
+                )
+
+            }.count
+        
+        if let directory = LoyaltyCardLogoStore.directoryURL,
+           let files = try? fm.contentsOfDirectory(
+                at: directory,
+                includingPropertiesForKeys: nil
+           ) {
+
+            let databaseFiles = Set(
+                assets.map(\.relativePath)
+            )
+
+            result.filesWithoutRecord =
+                files.filter {
+                    !databaseFiles.contains(
+                        $0.lastPathComponent
+                    )
+                }.count
+        }
+        
+        
+        return result
+    }
+    
     private static func writeAttachmentIntegrityCheck(
         analysis: AttachmentDatabaseAnalysis,
         environment env: AttachmentEnvironment
@@ -998,6 +1211,55 @@ enum DebugLog {
             write("📎 Attachment Files: \(files.count)")
             write("📎 Attachment Size: \(String(format: "%.1f", sizeMB)) MB")
         }
+    }
+    
+    private static func writeDocumentAssetsDiagnostics(
+        _ analysis: DocumentAssetsAnalysis
+    ) {
+
+        guard isEnabled,
+              DiagnosticsOptions.attachmentDatabase else {
+            return
+        }
+
+        forensic("")
+        forensic("════════════════════════════════════════════")
+        forensic("📄 DOCUMENT ASSETS")
+        forensic("════════════════════════════════════════════")
+
+        forensic("Documents: \(analysis.documents)")
+        forensic("Files: \(analysis.assets)")
+        forensic("Orphan Assets: \(analysis.orphanAssets)")
+        forensic("Files without record: \(analysis.filesWithoutRecord)")
+        forensic("Records without file: \(analysis.recordsWithoutFile)")
+    }
+    
+    private static func writeWalletAssetsDiagnostics(
+        _ analysis: WalletAssetsAnalysis
+    ) {
+
+        guard isEnabled,
+              DiagnosticsOptions.attachmentDatabase else {
+            return
+        }
+
+        forensic("")
+        forensic("════════════════════════════════════════════")
+        forensic("💳 WALLET ASSETS")
+        forensic("════════════════════════════════════════════")
+
+        forensic("Cards: \(analysis.cards)")
+        forensic("Tickets: \(analysis.tickets)")
+        forensic("Logo Images: \(analysis.logos)")
+        forensic("Front Images: \(analysis.frontImages)")
+        forensic("Back Images: \(analysis.backImages)")
+        forensic("Total Images: \(analysis.totalAssets)")
+        forensic("Orphan Assets: \(analysis.orphanAssets)")
+        forensic("Files without record: \(analysis.filesWithoutRecord)")
+        forensic("Records without file: \(analysis.recordsWithoutFile)")
+        forensic("Duplicate Logo Cards: \(analysis.duplicateLogoCards)")
+        forensic("Duplicate Front Cards: \(analysis.duplicateFrontCards)")
+        forensic("Duplicate Back Cards: \(analysis.duplicateBackCards)")
     }
     
     private static func dumpDirectory(
@@ -1116,6 +1378,23 @@ enum DebugLog {
             analysis: analysis,
             environment: env
         )
+        
+        let documentAnalysis = analyzeDocumentAssets(
+            context: context
+        )
+
+        writeDocumentAssetsDiagnostics(
+            documentAnalysis
+        )
+
+        let walletAnalysis = analyzeWalletAssets(
+            context: context
+        )
+
+        writeWalletAssetsDiagnostics(
+            walletAnalysis
+        )
+        
     }
         
     static func writeDatabaseSnapshot(context: ModelContext) {
