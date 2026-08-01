@@ -32,6 +32,10 @@ final class DocumentItem {
 
     var lastOpenedAt: Date?
 
+    @Relationship(
+        deleteRule: .cascade,
+        inverse: \DocumentAsset.document
+    )
     var assets: [DocumentAsset]?
     
     var sortedAssets: [DocumentAsset] {

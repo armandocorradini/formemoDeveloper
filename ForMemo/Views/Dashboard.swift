@@ -82,9 +82,14 @@ struct Dashboard: View {
                     LoyaltyCardLogoStore.load(
                         asset: card.logoAsset
                     )
-                    ?? LoyaltyCardLogoStore.load(
-                        relativePath: "\(card.id.uuidString).jpg"
-                    ),
+                    ?? {
+                        if let relativePath = card.loyaltyLogoRelativePath {
+                            return LoyaltyCardLogoStore.load(
+                                relativePath: relativePath
+                            )
+                        }
+                        return nil
+                    }(),
                 lastOpenedAt: lastOpenedAt,
                 destination: .loyaltyCard(card)
             )

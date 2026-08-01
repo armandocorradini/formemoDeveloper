@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import os
 
 enum WalletAssetKind: String, Codable {
 
@@ -75,17 +76,27 @@ final class WalletAsset {
             return card.logoAsset
         }
 
+        guard card.assets?.contains(where: { $0.kind == .logo }) != true else {
+            return card.logoAsset
+        }
+
         let legacyRelativePath = "\(card.id.uuidString).jpg"
 
-        guard LoyaltyCardLogoStore.load(
+        guard let imageData = LoyaltyCardLogoStore.loadLegacy(
             relativePath: legacyRelativePath
-        ) != nil else {
+        ) else {
+            return nil
+        }
+
+        guard let newRelativePath = LoyaltyCardLogoStore.save(
+            imageData: imageData
+        ) else {
             return nil
         }
 
         let asset = WalletAsset(
             kind: .logo,
-            relativePath: legacyRelativePath
+            relativePath: newRelativePath
         )
 
         asset.card = card
@@ -97,6 +108,17 @@ final class WalletAsset {
         card.assets?.append(asset)
 
         context.insert(asset)
+
+        do {
+
+            try context.save()
+
+        } catch {
+
+            AppLogger.persistence.error(
+                "Legacy wallet logo migration failed: \(error.localizedDescription)"
+            )
+        }
 
         return asset
     }

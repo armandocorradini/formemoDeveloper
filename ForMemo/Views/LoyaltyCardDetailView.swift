@@ -51,13 +51,21 @@ struct LoyaltyCardDetailView: View {
     }
 
     private var logoData: Data? {
-        LoyaltyCardLogoStore.load(
-            asset: card.logoAsset
-        ) ?? LoyaltyCardLogoStore.load(
-            relativePath: "\(card.id.uuidString).jpg"
-        )
-    }
 
+        if let data = LoyaltyCardLogoStore.load(
+            asset: card.logoAsset
+        ) {
+            return data
+        }
+
+        if let relativePath = card.loyaltyLogoRelativePath {
+            return LoyaltyCardLogoStore.load(
+                relativePath: relativePath
+            )
+        }
+
+        return nil
+    }
     private var frontData: Data? {
         LoyaltyCardLogoStore.load(
             asset: card.frontAsset
@@ -390,25 +398,17 @@ struct LoyaltyCardDetailView: View {
         }
         .onAppear {
 
-            var needsSave = false
-
-            if WalletAsset.createLegacyLogoReference(
+            _ = WalletAsset.createLegacyLogoReference(
                 for: card,
                 in: modelContext
-            ) != nil {
-
-                needsSave = true
-            }
+            )
 
             card.lastOpenedAt = .now
-            needsSave = true
 
-            if needsSave {
-                do {
-                    try modelContext.save()
-                } catch {
-                    print("Failed to update LoyaltyCard: \(error)")
-                }
+            do {
+                try modelContext.save()
+            } catch {
+                print("Failed to update LoyaltyCard: \(error)")
             }
         }
         .navigationTitle(

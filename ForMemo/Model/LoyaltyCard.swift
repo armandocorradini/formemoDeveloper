@@ -100,7 +100,6 @@ extension LoyaltyCard {
         item.loyaltyLogoRelativePath =
             card.logoAsset?.relativePath
             ?? card.loyaltyLogoRelativePath
-            ?? "\(card.id.uuidString).jpg"
 
         item.loyaltyFrontRelativePath =
             card.frontAsset?.relativePath

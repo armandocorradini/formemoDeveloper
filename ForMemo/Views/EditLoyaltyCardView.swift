@@ -34,15 +34,26 @@ struct EditLoyaltyCardView: View {
     
     @State private var frontPickerItem: PhotosPickerItem?
     @State private var backPickerItem: PhotosPickerItem?
+    
     private var currentLogoData: Data? {
 
         if let previewLogoData {
             return previewLogoData
         }
 
-        return LoyaltyCardLogoStore.load(
-            relativePath: "\(card.id.uuidString).jpg"
-        )
+        if let data = LoyaltyCardLogoStore.load(
+            asset: card.logoAsset
+        ) {
+            return data
+        }
+
+        if let relativePath = card.loyaltyLogoRelativePath {
+            return LoyaltyCardLogoStore.load(
+                relativePath: relativePath
+            )
+        }
+
+        return nil
     }
 
     private var currentFrontData: Data? {
@@ -160,9 +171,19 @@ struct EditLoyaltyCardView: View {
                                 Button(role: .destructive) {
                                     previewLogoData = nil
 
-                                    LoyaltyCardLogoStore.delete(
-                                        relativePath: "\(card.id.uuidString).jpg"
-                                    )
+                                    if let asset = card.logoAsset {
+                                        LoyaltyCardLogoStore.delete(asset: asset)
+                                        modelContext.delete(asset)
+                                    }
+
+                                    previewLogoData = nil
+
+                                    do {
+                                        try modelContext.save()
+                                        modelContext.processPendingChanges()
+                                    } catch {
+                                        print("Failed to remove logo: \(error)")
+                                    }
                                 } label: {
                                     Label(
                                         "Remove Logo",
@@ -475,21 +496,23 @@ struct EditLoyaltyCardView: View {
                 ) ?? .blue
 
                 if card.logoAsset == nil {
-
-                    if WalletAsset.createLegacyLogoReference(
+                    _ = WalletAsset.createLegacyLogoReference(
                         for: card,
                         in: modelContext
-                    ) != nil {
-
-                        try? modelContext.save()
-                    }
+                    )
                 }
 
                 previewLogoData = LoyaltyCardLogoStore.load(
                     asset: card.logoAsset
-                ) ?? LoyaltyCardLogoStore.load(
-                    relativePath: "\(card.id.uuidString).jpg"
                 )
+
+                if previewLogoData == nil,
+                   let relativePath = card.loyaltyLogoRelativePath {
+
+                    previewLogoData = LoyaltyCardLogoStore.load(
+                        relativePath: relativePath
+                    )
+                }
             }
             .onChange(of: selectedColor) { _, newValue in
                 card.colorHex = newValue.toHex()

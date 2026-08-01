@@ -5,13 +5,51 @@ enum LoyaltyCardLogoStore {
     
     private static let folderName = "LoyaltyCardLogos"
     
-    static var directoryURL: URL? {
-        
-        FileManager.default
-            .urls(for: .documentDirectory, in: .userDomainMask)
-            .first?
-            .appendingPathComponent(folderName, isDirectory: true)
-    }
+    static var directoryURL: URL? = {
+
+        let fm = FileManager.default
+
+        if let containerURL = fm.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) {
+
+            let directory = containerURL
+                .appendingPathComponent("Documents", isDirectory: true)
+                .appendingPathComponent(folderName, isDirectory: true)
+
+            if !fm.fileExists(atPath: directory.path) {
+
+                try? fm.createDirectory(
+                    at: directory,
+                    withIntermediateDirectories: true
+                )
+            }
+
+            return directory
+        }
+
+        if let localURL = fm.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first {
+
+            let directory = localURL
+                .appendingPathComponent(folderName, isDirectory: true)
+
+            if !fm.fileExists(atPath: directory.path) {
+
+                try? fm.createDirectory(
+                    at: directory,
+                    withIntermediateDirectories: true
+                )
+            }
+
+            return directory
+        }
+
+        return nil
+
+    }()
 
     
     static func load(relativePath: String?) -> Data? {
@@ -25,6 +63,33 @@ enum LoyaltyCardLogoStore {
         
         return try? Data(contentsOf: fileURL)
     }
+    
+    static func loadLegacy(
+        relativePath: String
+    ) -> Data? {
+
+        guard let localDirectory =
+            FileManager.default
+                .urls(
+                    for: .documentDirectory,
+                    in: .userDomainMask
+                )
+                .first?
+                .appendingPathComponent(
+                    folderName,
+                    isDirectory: true
+                )
+        else {
+            return nil
+        }
+
+        let fileURL = localDirectory
+            .appendingPathComponent(relativePath)
+
+        return try? Data(contentsOf: fileURL)
+    }
+    
+    
     
     static func delete(relativePath: String?) {
         

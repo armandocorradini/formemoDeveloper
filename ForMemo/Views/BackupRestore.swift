@@ -1550,11 +1550,16 @@ private enum BackupManager {
 
                     let legacyRelativePath = "\(card.id.uuidString).jpg"
 
-                    if archive.loyaltyCardLogoFiles[legacyRelativePath] != nil {
+                    if let imageData =
+                        archive.loyaltyCardLogoFiles[legacyRelativePath],
+                       let newRelativePath =
+                        LoyaltyCardLogoStore.save(
+                            imageData: imageData
+                        ) {
 
                         let asset = WalletAsset(
                             kind: .logo,
-                            relativePath: legacyRelativePath
+                            relativePath: newRelativePath
                         )
 
                         asset.card = card

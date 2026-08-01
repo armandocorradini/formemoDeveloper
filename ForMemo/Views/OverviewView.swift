@@ -12,13 +12,18 @@ struct OverviewView: View {
     private var completedTasks: [TodoTask]
 
     @Query private var documents: [DocumentItem]
-
+    @Query private var documentAssets: [DocumentAsset]
+    
+    
     // 2. Separate le query per evitare filtri in memoria
     @Query(filter: #Predicate<LoyaltyCard> { $0.itemType == "ticket" })
     private var tickets: [LoyaltyCard]
 
     @Query(filter: #Predicate<LoyaltyCard> { $0.itemType != "ticket" })
     private var cardsOnly: [LoyaltyCard]
+    
+    @Query
+    private var walletAssets: [WalletAsset]
     
     @Query private var trips: [TripList]
     
@@ -134,7 +139,25 @@ struct OverviewView: View {
 
 // MARK: - Proprietà Calcolate (Ottimizzate per performance)
 private extension OverviewView {
-    
+    var documentAssetsCount: Int {
+        documentAssets.count
+    }
+
+    var walletAssetsCount: Int {
+        walletAssets.count
+    }
+
+    var walletLogosCount: Int {
+        walletAssets.filter { $0.kind == .logo }.count
+    }
+
+    var walletFrontImagesCount: Int {
+        walletAssets.filter { $0.kind == .front }.count
+    }
+
+    var walletBackImagesCount: Int {
+        walletAssets.filter { $0.kind == .back }.count
+    }
     // Calcolo scadenze centralizzato senza istanziare Date() nei loop
     var overdueTasksCount: Int {
         let now = Date()
@@ -285,6 +308,9 @@ private extension OverviewView {
                 .overlay(.white.opacity(0.12))
             VStack(alignment: .leading, spacing: 10) {
                 LabeledContent("Documents") { Text("\(documents.count)") }
+                LabeledContent("Images/Files") {
+                    Text("\(documentAssetsCount)")
+                }
                 LabeledContent("Expiring in 30 days") { Text("\(expiringDocumentsCount)") }
             }
         }
@@ -317,6 +343,22 @@ private extension OverviewView {
 
                 LabeledContent("Tickets") {
                     Text("\(tickets.count)")
+                }
+
+                LabeledContent("Logos Images") {
+                    Text("\(walletLogosCount)")
+                }
+
+                LabeledContent("Front Images") {
+                    Text("\(walletFrontImagesCount)")
+                }
+
+                LabeledContent("Back Images") {
+                    Text("\(walletBackImagesCount)")
+                }
+
+                LabeledContent("Total Images") {
+                    Text("\(walletAssetsCount)")
                 }
             }
         }
