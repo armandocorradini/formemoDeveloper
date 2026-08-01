@@ -159,18 +159,18 @@ enum DiagnosticsProfile: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .off:
-            return "Off"
+            return String(localized: "Off")
         case .standard:
-            return "Standard"
+            return String(localized: "Standard")
         case .attachmentAnalysis:
-            return "Attachment Analysis"
+            return String(localized: "Attachment Analysis")
         case .full:
-            return "Full"
+            return String(localized: "Full")
         case .custom:
-            return "Custom"
+            return String(localized: "Custom")
         }
     }
-    
+
     var settings: (
         generalSnapshot: Bool,
         storeMigration: Bool,
@@ -179,7 +179,6 @@ enum DiagnosticsProfile: String, CaseIterable, Identifiable {
         filesystemEnumeration: Bool,
         attachmentIntegrity: Bool
     ) {
-
         DiagnosticsConfiguration.values(for: self)
     }
 }
