@@ -113,6 +113,7 @@ struct ForMemoApp: App {
             AttachmentMigration.runIfNeeded(
                 context: context
             )
+            WalletAsset.normalizePersistedKinds(in: context)
             DebugLog.writeDatabaseSnapshot(
                 context: context
             )

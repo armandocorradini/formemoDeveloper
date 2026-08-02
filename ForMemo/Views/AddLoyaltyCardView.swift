@@ -647,61 +647,61 @@ struct AddLoyaltyCardView: View {
             notes: cleanedNotes.isEmpty ? nil : cleanedNotes,
             colorHex: colorHex
         )
-        print("INSERT CARD")
         modelContext.insert(card)
-        print("CARD INSERTED")
-        do {
-            try modelContext.save()
-            print("✅ Insert save OK")
-        } catch {
-            print("❌ Insert save:", error)
-        }
-        
-        
-        if let logoData {
 
-            _ = WalletAsset.create(
+        var createdAssets: [WalletAsset] = []
+        if let logoData {
+            createdAssets.append(try! WalletAsset.createRequired(
                 kind: .logo,
                 imageData: logoData,
                 for: card,
                 in: modelContext
-            )
+            ))
         }
         
         if let frontImageData {
-
-            _ = WalletAsset.create(
+            createdAssets.append(try! WalletAsset.createRequired(
                 kind: .front,
                 imageData: frontImageData,
                 for: card,
                 in: modelContext
-            )
+            ))
         }
 
         if let backImageData {
-
-            _ = WalletAsset.create(
+            createdAssets.append(try! WalletAsset.createRequired(
                 kind: .back,
                 imageData: backImageData,
                 for: card,
                 in: modelContext
-            )
+            ))
         }
-        
-        
-        do {
-            try modelContext.save()
-            print("✅ Final save OK")
-        } catch {
-            print("❌ Final save:", error)
-        }
-        
-        
-        let count = (try? modelContext.fetchCount(
-            FetchDescriptor<WalletAsset>()
-        )) ?? -1
 
-        print("WalletAsset count:", count)
+        // Do not catch this save: SwiftData/CoreData reports its original error
+        // at the exact failing transaction instead of allowing a partial card.
+        try! modelContext.save()
+
+        let cardID = card.id
+
+        let savedCards = try! modelContext.fetch(
+            FetchDescriptor<LoyaltyCard>(
+                predicate: #Predicate<LoyaltyCard> { loyalty in
+                    loyalty.id == cardID
+                }
+            )
+        )
+        precondition(savedCards.count == 1, "LoyaltyCard was discarded by the local save")
+
+        let savedAssets = try! modelContext.fetch(FetchDescriptor<WalletAsset>())
+        let savedAssetIDs = Set(savedAssets.map(\.id))
+        precondition(
+            createdAssets.allSatisfy { asset in
+                savedAssetIDs.contains(asset.id)
+                    && savedAssets.first(where: { $0.id == asset.id })?.card?.id == card.id
+            },
+            "WalletAsset was discarded by the local save"
+        )
+
         dismiss()
     }
 }

@@ -7,57 +7,32 @@ enum LoyaltyCardLogoStore {
     private static let cache = NSCache<NSString, NSData>()
 
 
-    static var directoryURL: URL? = {
+    static var directoryURL: URL? {
+        cloudDirectoryURL ?? localDirectoryURL
+    }
 
-        let fm = FileManager.default
+    private static var cloudDirectoryURL: URL? {
+        guard let containerURL = FileManager.default.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) else { return nil }
+        let directory = containerURL
+            .appendingPathComponent("Documents", isDirectory: true)
+            .appendingPathComponent(folderName, isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
+    }
 
-//        if let containerURL = fm.url(
-//            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
-//        ) {
-//
-//            let directory = containerURL
-//                .appendingPathComponent("Documents", isDirectory: true)
-//                .appendingPathComponent(folderName, isDirectory: true)
-//
-//            if !fm.fileExists(atPath: directory.path) {
-//
-//                try? fm.createDirectory(
-//                    at: directory,
-//                    withIntermediateDirectories: true
-//                )
-//            }
-//
-//            return directory
-//        }
-
-        if let localURL = fm.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first {
-
-            let directory = localURL
-                .appendingPathComponent(folderName, isDirectory: true)
-
-            if !fm.fileExists(atPath: directory.path) {
-
-                try? fm.createDirectory(
-                    at: directory,
-                    withIntermediateDirectories: true
-                )
-            }
-
-            return directory
-        }
-
-        return nil
-
-    }()
+    private static var localDirectoryURL: URL? {
+        guard let localURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
+        let directory = localURL.appendingPathComponent(folderName, isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
+    }
 
     
     static func load(relativePath: String?) -> Data? {
 
-        guard let relativePath,
-              let directoryURL else {
+        guard let relativePath else {
             return nil
         }
 
@@ -65,10 +40,18 @@ enum LoyaltyCardLogoStore {
             return cached as Data
         }
 
-        let fileURL = directoryURL.appendingPathComponent(relativePath)
-
-        guard let data = try? Data(contentsOf: fileURL) else {
+        let cloudURL = cloudDirectoryURL?.appendingPathComponent(relativePath)
+        let localURL = localDirectoryURL?.appendingPathComponent(relativePath)
+        guard let fileURL = [cloudURL, localURL].compactMap({ $0 }).first(where: {
+            FileManager.default.fileExists(atPath: $0.path)
+        }), let data = try? Data(contentsOf: fileURL), !data.isEmpty else {
             return nil
+        }
+
+        if fileURL == localURL,
+           let cloudURL,
+           !FileManager.default.fileExists(atPath: cloudURL.path) {
+            try? FileManager.default.copyItem(at: fileURL, to: cloudURL)
         }
 
         cache.setObject(data as NSData, forKey: relativePath as NSString)
@@ -105,18 +88,17 @@ enum LoyaltyCardLogoStore {
     
     static func delete(relativePath: String?) {
         
-        guard let relativePath,
-              let directoryURL else {
+        guard let relativePath else {
             return
         }
-        
-        let fileURL = directoryURL.appendingPathComponent(relativePath)
         
         cache.removeObject(
             forKey: relativePath as NSString
         )
         
-        try? FileManager.default.removeItem(at: fileURL)
+        for directory in [cloudDirectoryURL, localDirectoryURL].compactMap({ $0 }) {
+            try? FileManager.default.removeItem(at: directory.appendingPathComponent(relativePath))
+        }
     }
     
     static func load(

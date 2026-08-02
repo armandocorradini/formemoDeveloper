@@ -16,7 +16,7 @@ enum AttachmentMigration {
         }
         
         let versionKey = "attachmentMigrationVersion"
-        let currentVersion = 3
+        let currentVersion = 4
 
         let defaults = UserDefaults.standard
 
@@ -91,10 +91,7 @@ enum AttachmentMigration {
                     at: iCloudDir,
                     withIntermediateDirectories: true
                 )
-//                let legacySize = (try? fm.attributesOfItem(
-//                    atPath: fileURL.path
-//                )[.size] as? Int64) ?? 0
-//                try fm.copyItem(at: fileURL, to: newURL)
+                try fm.copyItem(at: fileURL, to: newURL)
                 
                 var uploadReady = false
                 for _ in 0..<20 {

@@ -32,48 +32,9 @@ final class TaskAttachment {
 }
 extension TaskAttachment {
     
-    static var attachmentsDirectory: URL? = {
-
-        let fm = FileManager.default
-
-        // 🔵 iCloud se disponibile
-        if let containerURL = fm.url(
-            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
-        ) {
-
-            let directory = containerURL
-                .appendingPathComponent("Documents", isDirectory: true)
-                .appendingPathComponent("TaskAttachments", isDirectory: true)
-
-            if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(
-                    at: directory,
-                    withIntermediateDirectories: true
-                )
-            }
-            return directory
-        }
-
-        // 🟡 FALLBACK LOCALE LEGACY
-        if let localURL = fm.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first {
-
-            let directory = localURL
-                .appendingPathComponent("TaskAttachments", isDirectory: true)
-
-            if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(
-                    at: directory,
-                    withIntermediateDirectories: true
-                )
-            }
-            return directory
-        }
-
-        return nil
-    }()
+    static var attachmentsDirectory: URL? {
+        cloudAttachmentsDirectory() ?? legacyAttachmentsDirectory()
+    }
     
     static var trashDirectory: URL? = {
         
@@ -111,28 +72,25 @@ extension TaskAttachment {
     
     private static func legacyAttachmentsDirectory() -> URL? {
 
-        FileManager.default.urls(
+        guard let directory = FileManager.default.urls(
             for: .documentDirectory,
             in: .userDomainMask
-        ).first?
-            .appendingPathComponent("TaskAttachments", isDirectory: true)
+        ).first?.appendingPathComponent("TaskAttachments", isDirectory: true) else { return nil }
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
     }
 
     private static func cloudAttachmentsDirectory() -> URL? {
 
-        guard let directory = attachmentsDirectory else {
+        guard let containerURL = FileManager.default.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) else {
             return nil
         }
-
-        // Restituisce la cartella condivisa degli allegati solo se è quella iCloud.
-        // Se attachmentsDirectory è in fallback locale, il resolver continuerà
-        // automaticamente a usare legacyAttachmentsDirectory().
-        let path = directory.path
-
-        guard path.contains("/Mobile Documents/") else {
-            return nil
-        }
-
+        let directory = containerURL
+            .appendingPathComponent("Documents", isDirectory: true)
+            .appendingPathComponent("TaskAttachments", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory
     }
 
