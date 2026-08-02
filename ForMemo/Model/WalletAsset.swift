@@ -32,7 +32,6 @@ final class WalletAsset {
         self.relativePath = relativePath
     }
     
-    
     @discardableResult
     static func create(
         kind: WalletAssetKind,
@@ -52,8 +51,13 @@ final class WalletAsset {
             relativePath: relativePath
         )
 
+        // 1. Inserisci subito il nuovo modello nel context
+        context.insert(asset)
+
+        // 2. Collega la relazione inversa
         asset.card = card
-        
+
+        // 3. Aggiorna i campi legacy
         switch kind {
 
         case .logo:
@@ -65,19 +69,18 @@ final class WalletAsset {
         case .back:
             card.loyaltyBackRelativePath = relativePath
         }
-        
-        if card.assets == nil {
-            card.assets = []
-        }
 
-        card.assets?.append(asset)
-
-
-        context.insert(asset)
+//        // 4. Aggiorna la relazione sul padre
+//        if card.assets == nil {
+//            card.assets = []
+//        }
+//
+//        card.assets?.append(asset)
 
         return asset
     }
     
+    @MainActor
     @discardableResult
     static func createLegacyLogoReference(
         for card: LoyaltyCard,
@@ -111,6 +114,8 @@ final class WalletAsset {
             relativePath: newRelativePath
         )
 
+        context.insert(asset)
+
         asset.card = card
 
         if card.assets == nil {
@@ -119,18 +124,9 @@ final class WalletAsset {
 
         card.assets?.append(asset)
 
-        context.insert(asset)
-
-        do {
-
-            try context.save()
-
-        } catch {
-
-            AppLogger.persistence.error(
-                "Legacy wallet logo migration failed: \(error.localizedDescription)"
-            )
-        }
+        context.safeSave(
+            operation: "CreateLegacyWalletLogoReference"
+        )
 
         return asset
     }

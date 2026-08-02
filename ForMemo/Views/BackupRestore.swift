@@ -1455,7 +1455,8 @@ private enum BackupManager {
                 )
 
                 guard
-                    let document = try? modelContext.fetch(descriptor).first
+                    let documents = try? modelContext.fetch(descriptor),
+                    let document = documents.first
                 else {
                     continue
                 }

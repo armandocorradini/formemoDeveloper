@@ -411,9 +411,9 @@ struct AddLoyaltyCardView: View {
                     return
                 }
 
-                let resized = image.resizedForWalletLogo(maxDimension: 1200)
+                let resized = image.resizedForWalletLogo(maxDimension: 300)
 
-                guard let compressed = resized.jpegData(compressionQuality: 0.80) else {
+                guard let compressed = resized.jpegData(compressionQuality: 0.65) else {
                     return
                 }
 
@@ -630,7 +630,7 @@ struct AddLoyaltyCardView: View {
     // MARK: - Save
 
     private func saveCard() {
-
+        print("======== SAVE CARD START ========")
         let cleanedStore = storeName.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanedHolder = cardHolder.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanedBarcode = barcodeValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -647,9 +647,17 @@ struct AddLoyaltyCardView: View {
             notes: cleanedNotes.isEmpty ? nil : cleanedNotes,
             colorHex: colorHex
         )
-
+        print("INSERT CARD")
         modelContext.insert(card)
-
+        print("CARD INSERTED")
+        do {
+            try modelContext.save()
+            print("✅ Insert save OK")
+        } catch {
+            print("❌ Insert save:", error)
+        }
+        
+        
         if let logoData {
 
             _ = WalletAsset.create(
@@ -681,7 +689,14 @@ struct AddLoyaltyCardView: View {
         }
         
         
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+            print("✅ Final save OK")
+        } catch {
+            print("❌ Final save:", error)
+        }
+        
+        
         let count = (try? modelContext.fetchCount(
             FetchDescriptor<WalletAsset>()
         )) ?? -1

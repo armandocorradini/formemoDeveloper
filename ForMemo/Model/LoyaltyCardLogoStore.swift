@@ -4,29 +4,31 @@ import Foundation
 enum LoyaltyCardLogoStore {
     
     private static let folderName = "LoyaltyCardLogos"
-    
+    private static let cache = NSCache<NSString, NSData>()
+
+
     static var directoryURL: URL? = {
 
         let fm = FileManager.default
 
-        if let containerURL = fm.url(
-            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
-        ) {
-
-            let directory = containerURL
-                .appendingPathComponent("Documents", isDirectory: true)
-                .appendingPathComponent(folderName, isDirectory: true)
-
-            if !fm.fileExists(atPath: directory.path) {
-
-                try? fm.createDirectory(
-                    at: directory,
-                    withIntermediateDirectories: true
-                )
-            }
-
-            return directory
-        }
+//        if let containerURL = fm.url(
+//            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+//        ) {
+//
+//            let directory = containerURL
+//                .appendingPathComponent("Documents", isDirectory: true)
+//                .appendingPathComponent(folderName, isDirectory: true)
+//
+//            if !fm.fileExists(atPath: directory.path) {
+//
+//                try? fm.createDirectory(
+//                    at: directory,
+//                    withIntermediateDirectories: true
+//                )
+//            }
+//
+//            return directory
+//        }
 
         if let localURL = fm.urls(
             for: .documentDirectory,
@@ -53,15 +55,25 @@ enum LoyaltyCardLogoStore {
 
     
     static func load(relativePath: String?) -> Data? {
-        
+
         guard let relativePath,
               let directoryURL else {
             return nil
         }
-        
+
+        if let cached = cache.object(forKey: relativePath as NSString) {
+            return cached as Data
+        }
+
         let fileURL = directoryURL.appendingPathComponent(relativePath)
-        
-        return try? Data(contentsOf: fileURL)
+
+        guard let data = try? Data(contentsOf: fileURL) else {
+            return nil
+        }
+
+        cache.setObject(data as NSData, forKey: relativePath as NSString)
+
+        return data
     }
     
     static func loadLegacy(
@@ -99,6 +111,10 @@ enum LoyaltyCardLogoStore {
         }
         
         let fileURL = directoryURL.appendingPathComponent(relativePath)
+        
+        cache.removeObject(
+            forKey: relativePath as NSString
+        )
         
         try? FileManager.default.removeItem(at: fileURL)
     }
@@ -153,6 +169,11 @@ enum LoyaltyCardLogoStore {
             try imageData.write(
                 to: fileURL,
                 options: .atomic
+            )
+            
+            cache.setObject(
+                imageData as NSData,
+                forKey: fileName as NSString
             )
             
             return fileName

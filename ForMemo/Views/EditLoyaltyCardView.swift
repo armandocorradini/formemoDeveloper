@@ -177,13 +177,11 @@ struct EditLoyaltyCardView: View {
                                     }
 
                                     previewLogoData = nil
+                                    modelContext.safeSave(
+                                        operation: "RemoveLoyaltyLogo"
+                                    )
+                                    modelContext.processPendingChanges()
 
-                                    do {
-                                        try modelContext.save()
-                                        modelContext.processPendingChanges()
-                                    } catch {
-                                        print("Failed to remove logo: \(error)")
-                                    }
                                 } label: {
                                     Label(
                                         "Remove Logo",
@@ -275,12 +273,11 @@ struct EditLoyaltyCardView: View {
                                                 modelContext.delete(asset)
                                             }
 
-                                            do {
-                                                try modelContext.save()
-                                                modelContext.processPendingChanges()
-                                            } catch {
-                                                print("Failed to remove front image: \(error)")
-                                            }
+                                            modelContext.safeSave(
+                                                operation: "RemoveLoyaltyFrontImage"
+                                            )
+                                            modelContext.processPendingChanges()
+                                            
                                         }
                                     }
 
@@ -370,12 +367,10 @@ struct EditLoyaltyCardView: View {
                                                 modelContext.delete(asset)
                                             }
 
-                                            do {
-                                                try modelContext.save()
-                                                modelContext.processPendingChanges()
-                                            } catch {
-                                                print("Failed to remove back image: \(error)")
-                                            }
+                                            modelContext.safeSave(
+                                                operation: "RemoveLoyaltyBackImage"
+                                            )
+                                            modelContext.processPendingChanges()
                                         }
                                     }
 
@@ -554,12 +549,10 @@ struct EditLoyaltyCardView: View {
                         )
                     }
 
-                    do {
-                        try modelContext.save()
-                        modelContext.processPendingChanges()
-                    } catch {
-                        print("Failed to save selected logo: \(error)")
-                    }
+                    modelContext.safeSave(
+                        operation: "UpdateLoyaltyLogo"
+                    )
+                    modelContext.processPendingChanges()
                 }
             }
                 
@@ -599,12 +592,10 @@ struct EditLoyaltyCardView: View {
                         )
                     }
 
-                    do {
-                        try modelContext.save()
-                        modelContext.processPendingChanges()
-                    } catch {
-                        print("Failed to save front image: \(error)")
-                    }
+                    modelContext.safeSave(
+                        operation: "UpdateLoyaltyFrontImage"
+                    )
+                    modelContext.processPendingChanges()
                 }
             }
                 
@@ -644,12 +635,10 @@ struct EditLoyaltyCardView: View {
                         )
                     }
 
-                    do {
-                        try modelContext.save()
-                        modelContext.processPendingChanges()
-                    } catch {
-                        print("Failed to save back image: \(error)")
-                    }
+                    modelContext.safeSave(
+                        operation: "UpdateLoyaltyBackImage"
+                    )
+                    modelContext.processPendingChanges()
                 }
             }
                 
@@ -729,12 +718,10 @@ struct EditLoyaltyCardView: View {
                     )
                 }
 
-                do {
-                    try modelContext.save()
-                    modelContext.processPendingChanges()
-                } catch {
-                    print("Failed to save captured image: \(error)")
-                }
+                modelContext.safeSave(
+                    operation: "UpdateLoyaltyCapturedImage"
+                )
+                modelContext.processPendingChanges()
 
                 capturedImage = nil
                 showCamera = false
@@ -797,12 +784,11 @@ struct EditLoyaltyCardView: View {
         card.barcodeFormat = card.barcodeFormat
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        do {
-            try modelContext.save()
-            dismiss()
-        } catch {
-            print("Failed to save loyalty card: \(error)")
-        }
+        modelContext.safeSave(
+            operation: "SaveLoyaltyCard"
+        )
+
+        dismiss()
     }
     
     private func presentCamera(

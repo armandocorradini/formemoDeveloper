@@ -449,17 +449,40 @@ enum StoreMigrationManager {
     static func performMigrationIfNeeded() {
         migrationLogger.debug("Migration requested")
 
+        DebugLog.writeMigrationEvent("Migration requested")
+        DebugLog.writeMigrationEvent("Marker exists: \(migrationMarkerExists())")
+        DebugLog.writeMigrationEvent("Legacy ready: \(legacyStoreIsReadyForMigration())")
+        DebugLog.writeMigrationEvent("App Group empty: \(appGroupStoreIsEmpty())")
+        DebugLog.writeMigrationEvent("Migration needed: \(migrationNeeded)")
+        
+        
+        
         guard migrationNeeded else {
+
+            DebugLog.writeMigrationEvent(
+                "Migration skipped: not required"
+            )
+
             migrationLogger.debug("Migration not required")
             return
         }
 
         guard legacyStoreIsReadyForMigration() else {
+
+            DebugLog.writeMigrationEvent(
+                "Migration aborted: legacy store not ready"
+            )
+
             migrationLogger.error("Legacy store is not ready for migration")
             return
         }
         
         guard migrationPreflightPassed() else {
+
+            DebugLog.writeMigrationEvent(
+                "Migration aborted: preflight failed"
+            )
+
             migrationLogger.error("Migration preflight failed")
             return
         }

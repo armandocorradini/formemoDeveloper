@@ -3688,7 +3688,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Analisi del database"
+            "value" : "Integrità allegati"
           }
         }
       }
@@ -7324,6 +7324,9 @@
           }
         }
       }
+    },
+    "Clear Diagnostics Log" : {
+
     },
     "Clear Night" : {
       "localizations" : {
@@ -13850,6 +13853,9 @@
           }
         }
       }
+    },
+    "Generate Diagnostics Now" : {
+
     },
     "Generate password" : {
       "localizations" : {

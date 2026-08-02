@@ -898,6 +898,8 @@ enum DebugLog {
             }
 
             guard let fileURL = attachment.fileURL else {
+                forensic("❌ fileURL=nil relativePath=\(attachment.relativePath)")
+                
                 result.missingCount += 1
                 result.nilURLCount += 1
                 continue
@@ -910,6 +912,7 @@ enum DebugLog {
             }
 
             let path = fileURL.path
+            forensic("📎 resolved=\(path)")
 
             if path.hasPrefix(env.cloudAttachments?.path ?? "") {
                 result.cloudCount += 1
@@ -923,6 +926,7 @@ enum DebugLog {
 
         if DiagnosticsOptions.attachmentIntegrity {
 
+            forensic("")
             forensic("")
             forensic("════════════════════════════════════════════")
             forensic("📈 ATTACHMENT SUMMARY")
@@ -1639,20 +1643,7 @@ struct ExportDiagnosticsView: View {
                         .frame(height: 160)
                     }
                 }
-
-                #if DEBUG
-                Button(role: .destructive) {
-                    DebugLog.clear()
-                    logExists = false
-                    logContent = ""
-                    refreshID = UUID()
-                } label: {
-                    Label(
-                        "Clear Diagnostics Log",
-                        systemImage: "trash"
-                    )
-                }
-                #endif
+        
             }
             
             if developerMode {
@@ -1782,7 +1773,43 @@ struct ExportDiagnosticsView: View {
                         )
                     )
                     
+                    Button(role: .destructive) {
+                        DebugLog.clear()
+                        logExists = false
+                        logContent = ""
+                        refreshID = UUID()
+                    } label: {
+                        Label(
+                            "Clear Diagnostics Log",
+                            systemImage: "trash"
+                        )
+                    }
+                    
+                    Button {
 
+                        DebugLog.write("════════════════════════════════════════════")
+                        DebugLog.write("")
+                        DebugLog.write("")
+                        DebugLog.write("════════════════════════════════════════════")
+                        DebugLog.write("📋 MANUAL DIAGNOSTICS")
+                        DebugLog.write("Date: \(Date())")
+                        DebugLog.write("════════════════════════════════════════════")
+                        DebugLog.write("════════════════════════════════════════════")
+
+                        DebugLog.writeDatabaseSnapshot(
+                            context: modelContext
+                        )
+
+                        refreshDiagnostics()
+
+                    } label: {
+
+                        Label(
+                            "Generate Diagnostics Now",
+                            systemImage: "arrow.clockwise.circle"
+                        )
+                    }
+                    
                     
                 }
             }

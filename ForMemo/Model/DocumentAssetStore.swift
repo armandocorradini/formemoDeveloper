@@ -21,10 +21,16 @@ enum DocumentAssetStore {
                 .appendingPathComponent("DocumentAssets", isDirectory: true)
 
             if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(
-                    at: directory,
-                    withIntermediateDirectories: true
-                )
+                do {
+                    try fm.createDirectory(
+                        at: directory,
+                        withIntermediateDirectories: true
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "Unable to create DocumentAssets directory: \(error.localizedDescription)"
+                    )
+                }
             }
 
             return directory
@@ -39,10 +45,16 @@ enum DocumentAssetStore {
                 .appendingPathComponent("DocumentAssets", isDirectory: true)
 
             if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(
-                    at: directory,
-                    withIntermediateDirectories: true
-                )
+                do {
+                    try fm.createDirectory(
+                        at: directory,
+                        withIntermediateDirectories: true
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "Unable to create DocumentAssets directory: \(error.localizedDescription)"
+                    )
+                }
             }
 
             return directory
@@ -380,10 +392,16 @@ enum DocumentAssetStore {
                 .appendingPathComponent("DocumentAssets_Trash", isDirectory: true)
 
             if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(
-                    at: directory,
-                    withIntermediateDirectories: true
-                )
+                do {
+                    try fm.createDirectory(
+                        at: directory,
+                        withIntermediateDirectories: true
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "Unable to create DocumentAssets directory: \(error.localizedDescription)"
+                    )
+                }
             }
 
             return directory
@@ -398,10 +416,16 @@ enum DocumentAssetStore {
                 .appendingPathComponent("DocumentAssets_Trash", isDirectory: true)
 
             if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(
-                    at: directory,
-                    withIntermediateDirectories: true
-                )
+                do {
+                    try fm.createDirectory(
+                        at: directory,
+                        withIntermediateDirectories: true
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "Unable to create DocumentAssets directory: \(error.localizedDescription)"
+                    )
+                }
             }
 
             return directory

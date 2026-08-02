@@ -46,7 +46,9 @@ final class DocumentImportService {
 
         document.updatedAt = .now
 
-        try context.save()
+        context.safeSave(
+            operation: "ImportDocumentImages"
+        )
         context.processPendingChanges()
     }
 
@@ -88,7 +90,9 @@ final class DocumentImportService {
 
         document.updatedAt = .now
 
-        try context.save()
+        context.safeSave(
+            operation: "ImportDocumentPDF"
+        )
         context.processPendingChanges()
     }
 
@@ -119,7 +123,9 @@ final class DocumentImportService {
 
         document.updatedAt = .now
 
-        try? context.save()
+        context.safeSave(
+            operation: "ImportDocumentPDF"
+        )
         context.processPendingChanges()
     }
 }
