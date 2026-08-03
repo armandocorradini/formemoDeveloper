@@ -90,9 +90,7 @@ extension LoyaltyCard {
         print("=== DELETE CARD ===")
         print("Assets:", card.assets?.count ?? 0)
         print("Logo:", card.logoAsset?.relativePath ?? "nil")
-        print("Front:", card.frontAsset?.relativePath ?? "nil")
-        print("Back:", card.backAsset?.relativePath ?? "nil")
-        
+        print("Gallery:", card.galleryAssets.count)
         item.loyaltyLogoRelativePath =
             card.logoAsset?.relativePath
             ?? card.loyaltyLogoRelativePath
@@ -111,16 +109,10 @@ extension LoyaltyCard {
         asset(for: .logo)
     }
 
-    var frontAsset: WalletAsset? {
-        asset(for: .front)
-    }
 
-    var backAsset: WalletAsset? {
-        asset(for: .back)
-    }
     
     var galleryAssets: [WalletAsset] {
-        (assets ?? []).filter { $0.kind != .logo }
+        (assets ?? []).filter { $0.kind == .gallery }
     }
     
     

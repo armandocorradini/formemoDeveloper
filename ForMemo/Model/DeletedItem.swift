@@ -352,14 +352,14 @@ extension DeletedItem {
             }
 
             if let path = loyaltyFrontRelativePath {
-                let asset = WalletAsset(kind: .front, relativePath: path, fileSize: 0)
+                let asset = WalletAsset(kind: .gallery, relativePath: path, fileSize: 0)
                 asset.card = card
                 card.assets?.append(asset)
                 context.insert(asset)
             }
 
             if let path = loyaltyBackRelativePath {
-                let asset = WalletAsset(kind: .back, relativePath: path, fileSize: 00)
+                let asset = WalletAsset(kind: .gallery, relativePath: path, fileSize: 00)
                 asset.card = card
                 card.assets?.append(asset)
                 context.insert(asset)

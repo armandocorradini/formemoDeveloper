@@ -6,8 +6,7 @@ import os
 enum WalletAssetKind: String, Codable {
 
     case logo
-    case front
-    case back
+    case gallery
 }
 
 
@@ -110,10 +109,7 @@ final class WalletAsset {
         case .logo:
             card.loyaltyLogoRelativePath = relativePath
 
-        case .front:
-            break
-            
-        case .back:
+        case .gallery:
             break
         }
 

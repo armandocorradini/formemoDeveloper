@@ -200,7 +200,7 @@ struct AddLoyaltyCardView: View {
                         ) {
 
                             Button("Take Photo") {
-                                presentCamera(target: .front)
+                                presentCamera(target: .gallery)
                             }
 
                             Button("Choose Photo") {
@@ -512,7 +512,7 @@ struct AddLoyaltyCardView: View {
             case .logo:
                 maxDimension = 300
 
-            case .front, .back:
+            case .gallery:
                 maxDimension = 1200
 
             case nil:
@@ -530,7 +530,7 @@ struct AddLoyaltyCardView: View {
             case .logo:
                 quality = 0.65
 
-            case .front, .back:
+            case .gallery:
                 quality = 0.80
 
             case nil:
@@ -548,7 +548,7 @@ struct AddLoyaltyCardView: View {
             case .logo:
                 logoData = compressed
 
-            case .front, .back:
+            case .gallery:
                 galleryImages.append(compressed)
 
             case nil:
@@ -625,7 +625,7 @@ struct AddLoyaltyCardView: View {
 
             try! WalletImportService.importImages(
                 [image],
-                kind: .front,
+                kind: .gallery,
                 into: card,
                 in: modelContext
             )

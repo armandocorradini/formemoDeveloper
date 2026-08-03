@@ -374,31 +374,13 @@ struct EditLoyaltyCardView: View {
 
                 switch cameraTarget {
 
-                case .front:
+                case .gallery:
 
                     do {
 
                         try WalletImportService.importImages(
                             [newImage],
-                            kind: .front,
-                            into: card,
-                            in: modelContext
-                        )
-
-                    } catch {
-
-                        assertionFailure(
-                            "Failed to import camera image: \(error)"
-                        )
-                    }
-
-                case .back:
-
-                    do {
-
-                        try WalletImportService.importImages(
-                            [newImage],
-                            kind: .back,
+                            kind: .gallery,
                             into: card,
                             in: modelContext
                         )

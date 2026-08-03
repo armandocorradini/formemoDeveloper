@@ -155,9 +155,17 @@ struct ResetAppView: View {
 
             for card in loyaltyCards {
 
-                LoyaltyCardLogoStore.delete(asset: card.logoAsset)
-                LoyaltyCardLogoStore.delete(asset: card.frontAsset)
-                LoyaltyCardLogoStore.delete(asset: card.backAsset)
+                if let logo = card.logoAsset {
+                    WalletAssetStore.delete(
+                        relativePath: logo.relativePath
+                    )
+                }
+
+                for asset in card.galleryAssets {
+                    WalletAssetStore.delete(
+                        relativePath: asset.relativePath
+                    )
+                }
 
                 modelContext.delete(card)
             }

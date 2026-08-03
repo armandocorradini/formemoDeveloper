@@ -94,20 +94,6 @@ enum WalletAssetStore {
         )
     }
 
-    // MARK: - Save PDF
-
-    @discardableResult
-    static func savePDF(
-        from sourceURL: URL
-    ) throws -> (relativePath: String, fileSize: Int64) {
-
-        let data = try Data(contentsOf: sourceURL)
-
-        return try save(
-            data: data,
-            fileExtension: "pdf"
-        )
-    }
 
     // MARK: - Load
 

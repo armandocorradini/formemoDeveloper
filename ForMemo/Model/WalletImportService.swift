@@ -11,7 +11,7 @@ final class WalletImportService {
 
     static func importImages(
         _ images: [UIImage],
-        kind: WalletAssetKind = .front,
+        kind: WalletAssetKind = .gallery,
         into card: LoyaltyCard,
         in context: ModelContext,
         compressionQuality: CGFloat = 0.80
@@ -70,44 +70,7 @@ final class WalletImportService {
         )
     }
     
-    // MARK: - Documents
 
-    static func importDocuments(
-        from urls: [URL],
-        kind: WalletAssetKind = .front,
-        into card: LoyaltyCard,
-        in context: ModelContext
-    ) throws {
-
-        if card.assets == nil {
-            card.assets = []
-        }
-
-        for url in urls {
-
-            let result = try WalletAssetStore.savePDF(
-                from: url
-            )
-
-            let asset = WalletAsset(
-                kind: kind,
-                relativePath: result.relativePath,
-                fileSize: result.fileSize
-            )
-
-            asset.card = card
-
-            context.insert(asset)
-
-            card.assets?.append(asset)
-        }
-
-        context.safeSave(
-            operation: "ImportWalletDocuments"
-        )
-
-        context.processPendingChanges()
-    }
     
     // MARK: - Delete
 

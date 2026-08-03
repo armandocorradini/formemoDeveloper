@@ -69,18 +69,8 @@ struct LoyaltyCardDetailView: View {
 
         return nil
     }
-    
-    
-    private var frontData: Data? {
-        LoyaltyCardLogoStore.load(
-            asset: card.frontAsset
-        )
-    }
-
-    private var backData: Data? {
-        LoyaltyCardLogoStore.load(
-            asset: card.backAsset
-        )
+    private var galleryAssets: [WalletAsset] {
+        card.galleryAssets
     }
     
     
@@ -286,65 +276,52 @@ struct LoyaltyCardDetailView: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                 }
-                HStack{
-                    if let frontData,
-                       let uiImage = UIImage(data: frontData) {
-                        
-                        VStack( spacing: 10) {
-                            
-                            Text("Front")
-                                .font(.headline)
-                            
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 150, height: 95)
-                                .clipped()
-                                .clipShape(
-                                    RoundedRectangle(
-                                        cornerRadius: 16,
-                                        style: .continuous
-                                    )
-                                )
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    previewImage = PreviewImage(image: uiImage)
-                                 }
-                            
+              
+                if !galleryAssets.isEmpty {
+
+                    VStack(alignment: .leading, spacing: 12) {
+
+                        Text("Images")
+                            .font(.headline)
+                            .padding(.horizontal)
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+
+                            LazyHStack(spacing: 12) {
+
+                                ForEach(galleryAssets) { asset in
+
+                                    if let data = WalletAssetStore.loadData(
+                                        relativePath: asset.relativePath
+                                    ),
+                                    let uiImage = UIImage(data: data) {
+
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 150, height: 95)
+                                            .clipped()
+                                            .clipShape(
+                                                RoundedRectangle(
+                                                    cornerRadius: 16,
+                                                    style: .continuous
+                                                )
+                                            )
+                                            .contentShape(Rectangle())
+                                            .onTapGesture {
+                                                previewImage = PreviewImage(
+                                                    image: uiImage
+                                                )
+                                            }
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
                     }
-                    
-                    if let backData,
-                       let uiImage = UIImage(data: backData) {
-                        
-                        VStack( spacing: 10) {
-                            
-                            Text("Back")
-                                .font(.headline)
-                            
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 150, height: 95)
-                                .clipped()
-                                .clipShape(
-                                    RoundedRectangle(
-                                        cornerRadius: 16,
-                                        style: .continuous
-                                    )
-                                )
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    previewImage = PreviewImage(image: uiImage)
-                                 }
-                            
-                        }
-                        .frame(width: 150)
-                        .padding(.horizontal)
-                    }
-    
                 }
+                
+                
                 if let notes = card.notes,
                    !notes.isEmpty {
 

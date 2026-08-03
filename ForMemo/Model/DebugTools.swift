@@ -1043,13 +1043,10 @@ enum DebugLog {
                 result.duplicateLogoCards += 1
             }
 
-            if cardAssets.filter({ $0.kind == .front }).count > 1 {
+            if cardAssets.filter({ $0.kind == .gallery }).count > 1 {
                 result.duplicateFrontCards += 1
             }
 
-            if cardAssets.filter({ $0.kind == .back }).count > 1 {
-                result.duplicateBackCards += 1
-            }
         }
 
         result.cards =
@@ -1069,12 +1066,12 @@ enum DebugLog {
 
         result.frontImages =
             assets.filter {
-                $0.kind == .front
+                $0.kind == .gallery
             }.count
 
         result.backImages =
             assets.filter {
-                $0.kind == .back
+                $0.kind == .gallery
             }.count
 
         result.totalAssets = assets.count

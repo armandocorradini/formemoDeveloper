@@ -21,7 +21,7 @@ struct WalletViewerView: View {
     @State private var importedDocumentURL: URL?
     @State private var selectedAsset: WalletAsset?
 
-    @State private var showingPDFImporter = false
+  
 
     
     init(
@@ -92,18 +92,13 @@ struct WalletViewerView: View {
         ) {
 
             Button(String(localized: "Take Photo")) {
-                onCameraRequested(.front)
+                onCameraRequested(.gallery)
             }
 
             Button(String(localized: "Choose Photo")) {
                 showGalleryPhotoPicker = true
             }
 
-            Button(
-                String(localized: "Import PDF")
-            ) {
-                showingPDFImporter = true
-            }
 
             Button(
                 String(localized: "Cancel"),
@@ -149,29 +144,7 @@ struct WalletViewerView: View {
                 galleryPickerItem = nil
             }
         }
-        .fileImporter(
-            isPresented: $showingPDFImporter,
-            allowedContentTypes: [.pdf]
-        ) { result in
 
-            do {
-
-                let url = try result.get()
-
-                try WalletImportService.importDocuments(
-                    from: [url],
-                    into: card,
-                    in: modelContext
-                )
-
-            } catch {
-
-                assertionFailure(
-                    "PDF import failed: \(error)"
-                )
-            }
-        }
-        
         .fullScreenCover(item: $selectedAsset) { asset in
 
             NavigationStack {

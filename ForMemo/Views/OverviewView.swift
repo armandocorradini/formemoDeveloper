@@ -151,13 +151,11 @@ private extension OverviewView {
         walletAssets.filter { $0.kind == .logo }.count
     }
 
-    var walletFrontImagesCount: Int {
-        walletAssets.filter { $0.kind == .front }.count
+    var walletGalleryImagesCount: Int {
+        walletAssets.filter { $0.kind == .gallery }.count
     }
 
-    var walletBackImagesCount: Int {
-        walletAssets.filter { $0.kind == .back }.count
-    }
+
     // Calcolo scadenze centralizzato senza istanziare Date() nei loop
     var overdueTasksCount: Int {
         let now = Date()
@@ -350,11 +348,11 @@ private extension OverviewView {
                 }
 
                 LabeledContent("Front Images") {
-                    Text("\(walletFrontImagesCount)")
+                    Text("\(walletGalleryImagesCount)")
                 }
 
                 LabeledContent("Back Images") {
-                    Text("\(walletBackImagesCount)")
+                    Text("\(walletGalleryImagesCount)")
                 }
 
                 LabeledContent("Total Images") {
