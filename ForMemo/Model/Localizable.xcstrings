@@ -4116,6 +4116,7 @@
       }
     },
     "Back Image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7326,7 +7327,32 @@
       }
     },
     "Clear Diagnostics Log" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnoseprotokoll löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borrar el registro de diagnósticos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer le journal des diagnostics"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancella il log delle diagnosi"
+          }
+        }
+      }
     },
     "Clear Night" : {
       "localizations" : {
@@ -9744,6 +9770,9 @@
           }
         }
       }
+    },
+    "Delete Image" : {
+
     },
     "Delete Now" : {
       "localizations" : {
@@ -13603,6 +13632,7 @@
       }
     },
     "Front Image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -13770,6 +13800,9 @@
         }
       }
     },
+    "Gallery" : {
+
+    },
     "Gas Bottle" : {
       "localizations" : {
         "de" : {
@@ -13855,7 +13888,32 @@
       }
     },
     "Generate Diagnostics Now" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnose jetzt erstellen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Generar diagnóstico ahora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Générer les diagnostics maintenant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Genera diagnosi ora"
+          }
+        }
+      }
     },
     "Generate password" : {
       "localizations" : {
@@ -23042,6 +23100,7 @@
       }
     },
     "Remove Image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -32390,6 +32449,7 @@
       }
     },
     "View Image" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

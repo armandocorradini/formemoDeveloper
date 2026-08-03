@@ -27,26 +27,25 @@ struct AddLoyaltyCardView: View {
     @State private var capturedImage: UIImage?
     @State private var showNoCodeFoundAlert = false
     
-    @State private var frontImageData: Data?
-    @State private var backImageData: Data?
+    @State private var galleryImages: [Data] = []
     
     @State private var selectedTicketImageItem: PhotosPickerItem?
     
-    
-    @State private var showFrontPhotoPicker = false
-    @State private var showBackPhotoPicker = false
 
-    @State private var showingFrontMenu = false
-    @State private var showingBackMenu = false
 
     @State private var viewingImage: UIImage?
     @State private var showImageViewer = false
 
     @State private var cameraTarget: WalletAssetKind?
 
-    @State private var frontPickerItem: PhotosPickerItem?
-    @State private var backPickerItem: PhotosPickerItem?
+
     @State private var selectedPhotoItem: PhotosPickerItem?
+    
+    
+    @State private var showGalleryPhotoPicker = false
+    @State private var showingGalleryMenu = false
+    @State private var galleryPickerItem: PhotosPickerItem?
+    
 
     
     var body: some View {
@@ -145,93 +144,76 @@ struct AddLoyaltyCardView: View {
                         }
                     }
                     Section("Images") {
-                        
-                        HStack(alignment: .top, spacing: 20) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                
-                                Text("Front")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                
-                                Button {
-                                    showingFrontMenu = true
-                                } label: {
-                                    
-                                    ImagePlaceholder(imageData: frontImageData)
-                                    
-                                }
-                                .buttonStyle(.plain)
-                                .confirmationDialog(
-                                    "Front Image",
-                                    isPresented: $showingFrontMenu
-                                ) {
-                                    
-                                    Button("Take Photo") {
-                                        presentCamera(target: .front)
-                                    }
-                                    
-                                    Button("Choose Photo") {
-                                        showFrontPhotoPicker = true
-                                    }
-                                    if frontImageData != nil {
 
-                                        Button("Remove Image", role: .destructive) {
-                                            frontImageData = nil
+                        ScrollView(.horizontal, showsIndicators: false) {
+
+                            LazyHStack(spacing: 12) {
+
+                                ForEach(0..<galleryImages.count, id: \.self) { index in
+
+                                    Button {
+
+                                        if let image = UIImage(data: galleryImages[index]) {
+                                            viewingImage = image
+                                            showImageViewer = true
+                                        }
+
+                                    } label: {
+
+                                        ImagePlaceholder(
+                                            imageData: galleryImages[index]
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .contextMenu {
+
+                                        Button(role: .destructive) {
+                                            galleryImages.remove(at: index)
+                                        } label: {
+                                            Label("Remove", systemImage: "trash")
                                         }
                                     }
-                                    Button("Cancel", role: .cancel) { }
                                 }
-                                .photosPicker(
-                                    isPresented: $showFrontPhotoPicker,
-                                    selection: $frontPickerItem,
-                                    matching: .images
-                                )
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            }
-                            
-                            
-                            VStack(alignment: .leading, spacing: 8) {
-                                
-                                Text("Back")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                
+
                                 Button {
-                                    showingBackMenu = true
+
+                                    showingGalleryMenu = true
+
                                 } label: {
-                                    
-                                    ImagePlaceholder(imageData: backImageData)
+
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(.gray.opacity(0.15))
+                                        .frame(width: 140, height: 90)
+                                        .overlay {
+
+                                            Image(systemName: "plus")
+                                                .font(.title2)
+                                        }
                                 }
                                 .buttonStyle(.plain)
-                                .confirmationDialog(
-                                    "Back Image",
-                                    isPresented: $showingBackMenu
-                                ) {
-                                    
-                                    Button("Take Photo") {
-                                        presentCamera(target: .back)
-                                    }
-                                    
-                                    Button("Choose Photo") {
-                                        showBackPhotoPicker = true
-                                    }
-                                    if backImageData != nil {
-
-                                        Button("Remove Image", role: .destructive) {
-                                            backImageData = nil
-                                        }
-                                    }
-                                    Button("Cancel", role: .cancel) { }
-                                }
-                                .photosPicker(
-                                    isPresented: $showBackPhotoPicker,
-                                    selection: $backPickerItem,
-                                    matching: .images
-                                )
-                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
-                            
+                            .padding(.vertical, 4)
                         }
+                        .confirmationDialog(
+                            "Add Image",
+                            isPresented: $showingGalleryMenu
+                        ) {
+
+                            Button("Take Photo") {
+                                presentCamera(target: .front)
+                            }
+
+                            Button("Choose Photo") {
+                                showGalleryPhotoPicker = true
+                            }
+
+                            Button("Cancel", role: .cancel) { }
+                        }
+                        .photosPicker(
+                            isPresented: $showGalleryPhotoPicker,
+                            selection: $galleryPickerItem,
+                            matching: .images
+                        )
                     }
      
 
@@ -397,8 +379,7 @@ struct AddLoyaltyCardView: View {
 
             }
         }
-        
-        .onChange(of: frontPickerItem) { _, newItem in
+        .onChange(of: galleryPickerItem) { _, newItem in
 
             guard let newItem else {
                 return
@@ -406,34 +387,10 @@ struct AddLoyaltyCardView: View {
 
             Task {
 
-                guard let data = try? await newItem.loadTransferable(type: Data.self),
-                      let image = UIImage(data: data) else {
-                    return
-                }
-
-                let resized = image.resizedForWalletLogo(maxDimension: 300)
-
-                guard let compressed = resized.jpegData(compressionQuality: 0.65) else {
-                    return
-                }
-
-                await MainActor.run {
-
-                    frontImageData = compressed
-                }
-            }
-        }
-        
-        .onChange(of: backPickerItem) { _, newItem in
-
-            guard let newItem else {
-                return
-            }
-
-            Task {
-
-                guard let data = try? await newItem.loadTransferable(type: Data.self),
-                      let image = UIImage(data: data) else {
+                guard
+                    let data = try? await newItem.loadTransferable(type: Data.self),
+                    let image = UIImage(data: data)
+                else {
                     return
                 }
 
@@ -444,9 +401,7 @@ struct AddLoyaltyCardView: View {
                 }
 
                 await MainActor.run {
-
-                    backImageData = compressed
-
+                    galleryImages.append(compressed)
                 }
             }
         }
@@ -553,6 +508,7 @@ struct AddLoyaltyCardView: View {
             let maxDimension: CGFloat
 
             switch cameraTarget {
+
             case .logo:
                 maxDimension = 300
 
@@ -563,11 +519,14 @@ struct AddLoyaltyCardView: View {
                 maxDimension = 300
             }
 
-            let resized = newImage.resizedForWalletLogo(maxDimension: maxDimension)
+            let resized = newImage.resizedForWalletLogo(
+                maxDimension: maxDimension
+            )
 
             let quality: CGFloat
 
             switch cameraTarget {
+
             case .logo:
                 quality = 0.65
 
@@ -578,20 +537,19 @@ struct AddLoyaltyCardView: View {
                 quality = 0.65
             }
 
-            guard let compressed = resized.jpegData(compressionQuality: quality) else {
+            guard let compressed = resized.jpegData(
+                compressionQuality: quality
+            ) else {
                 return
             }
-            
+
             switch cameraTarget {
 
             case .logo:
                 logoData = compressed
 
-            case .front:
-                frontImageData = compressed
-
-            case .back:
-                backImageData = compressed
+            case .front, .back:
+                galleryImages.append(compressed)
 
             case nil:
                 break
@@ -599,8 +557,6 @@ struct AddLoyaltyCardView: View {
 
             capturedImage = nil
             cameraTarget = nil
-            
-            
         }
         .alert(
             "No Code Found",
@@ -650,36 +606,38 @@ struct AddLoyaltyCardView: View {
         modelContext.insert(card)
 
         var createdAssets: [WalletAsset] = []
-        if let logoData {
-            createdAssets.append(try! WalletAsset.createRequired(
-                kind: .logo,
-                imageData: logoData,
-                for: card,
+
+        if let logoData,
+           let image = UIImage(data: logoData) {
+
+            try! WalletImportService.importLogo(
+                image,
+                into: card,
                 in: modelContext
-            ))
+            )
         }
-        
-        if let frontImageData {
-            createdAssets.append(try! WalletAsset.createRequired(
+
+        for imageData in galleryImages {
+
+            guard let image = UIImage(data: imageData) else {
+                continue
+            }
+
+            try! WalletImportService.importImages(
+                [image],
                 kind: .front,
-                imageData: frontImageData,
-                for: card,
+                into: card,
                 in: modelContext
-            ))
+            )
         }
 
-        if let backImageData {
-            createdAssets.append(try! WalletAsset.createRequired(
-                kind: .back,
-                imageData: backImageData,
-                for: card,
-                in: modelContext
-            ))
-        }
+        createdAssets = card.assets ?? []
 
-        // Do not catch this save: SwiftData/CoreData reports its original error
-        // at the exact failing transaction instead of allowing a partial card.
-        try! modelContext.save()
+        modelContext.safeSave(
+            operation: "CreateLoyaltyCard"
+        )
+
+        modelContext.processPendingChanges()
 
         let cardID = card.id
 

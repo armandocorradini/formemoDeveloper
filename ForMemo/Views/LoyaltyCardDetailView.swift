@@ -52,13 +52,16 @@ struct LoyaltyCardDetailView: View {
 
     private var logoData: Data? {
 
-        if let data = LoyaltyCardLogoStore.load(
-            asset: card.logoAsset
-        ) {
-            return data
+        if let asset = card.logoAsset {
+
+            return WalletAssetStore.loadData(
+                relativePath: asset.relativePath
+            )
         }
 
+        // Compatibilità con le versioni precedenti
         if let relativePath = card.loyaltyLogoRelativePath {
+
             return LoyaltyCardLogoStore.load(
                 relativePath: relativePath
             )
@@ -66,6 +69,8 @@ struct LoyaltyCardDetailView: View {
 
         return nil
     }
+    
+    
     private var frontData: Data? {
         LoyaltyCardLogoStore.load(
             asset: card.frontAsset
@@ -398,10 +403,7 @@ struct LoyaltyCardDetailView: View {
         }
         .onAppear {
 
-            _ = WalletAsset.createLegacyLogoReference(
-                for: card,
-                in: modelContext
-            )
+  
 
             card.lastOpenedAt = .now
 

@@ -25,10 +25,6 @@ final class LoyaltyCard {
     // WALLET ASSETS
 
     var loyaltyLogoRelativePath: String?
-
-    var loyaltyFrontRelativePath: String?
-
-    var loyaltyBackRelativePath: String?
     
     
     @Relationship(
@@ -101,14 +97,6 @@ extension LoyaltyCard {
             card.logoAsset?.relativePath
             ?? card.loyaltyLogoRelativePath
 
-        item.loyaltyFrontRelativePath =
-            card.frontAsset?.relativePath
-            ?? card.loyaltyFrontRelativePath
-
-        item.loyaltyBackRelativePath =
-            card.backAsset?.relativePath
-            ?? card.loyaltyBackRelativePath
-
         context.insert(item)
     }
 }
@@ -131,7 +119,9 @@ extension LoyaltyCard {
         asset(for: .back)
     }
     
-    
+    var galleryAssets: [WalletAsset] {
+        (assets ?? []).filter { $0.kind != .logo }
+    }
     
     
     

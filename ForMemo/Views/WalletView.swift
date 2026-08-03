@@ -87,17 +87,6 @@ struct WalletView: View {
 
                     var needsSave = false
 
-                    // Migrazione lazy dei logo legacy
-                    for card in cards {
-
-                        if WalletAsset.createLegacyLogoReference(
-                            for: card,
-                            in: modelContext
-                        ) != nil {
-
-                            needsSave = true
-                        }
-                    }
 
                     // Codice già esistente
                     if cards.allSatisfy({ $0.sortOrder == 0 }) && !cards.isEmpty {
@@ -146,15 +135,25 @@ struct WalletView: View {
                     List {
                         ForEach(filteredCards) { card in
 
-                            let logoData = LoyaltyCardLogoStore.load(
-                                asset: card.logoAsset
-                            ) ?? {
+                            let logoData = {
+
+                                if let asset = card.logoAsset {
+
+                                    return WalletAssetStore.loadData(
+                                        relativePath: asset.relativePath
+                                    )
+                                }
+
+                                // Compatibilità con le versioni precedenti
                                 if let relativePath = card.loyaltyLogoRelativePath {
+
                                     return LoyaltyCardLogoStore.load(
                                         relativePath: relativePath
                                     )
                                 }
+
                                 return nil
+
                             }()
 
                             NavigationLink(value: card) {

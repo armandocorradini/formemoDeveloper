@@ -1539,7 +1539,7 @@ private enum BackupManager {
 
                     let asset = WalletAsset(
                         kind: assetDTO.kind,
-                        relativePath: assetDTO.relativePath
+                        relativePath: assetDTO.relativePath, fileSize: 0
                     )
 
                     asset.card = card
@@ -1560,7 +1560,8 @@ private enum BackupManager {
 
                         let asset = WalletAsset(
                             kind: .logo,
-                            relativePath: newRelativePath
+                            relativePath: newRelativePath,
+                            fileSize: Int64(imageData.count)
                         )
 
                         asset.card = card

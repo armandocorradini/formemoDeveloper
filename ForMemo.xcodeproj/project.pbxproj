@@ -46,6 +46,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Model/WalletAssetDetailView.swift,
 			);
 			target = 1C1C22FF2F7E983A00A77282 /* ForMemo */;
 		};

@@ -113,10 +113,19 @@ struct ForMemoApp: App {
             AttachmentMigration.runIfNeeded(
                 context: context
             )
-            WalletAsset.normalizePersistedKinds(in: context)
+
+            WalletMigrationService.runIfNeeded(
+                context: context
+            )
+
+            WalletAsset.normalizePersistedKinds(
+                in: context
+            )
+
             DebugLog.writeDatabaseSnapshot(
                 context: context
             )
+            
             
             VaultAutoFillManager.shared.synchronize(using: context)
             if appSettings.autoDeleteCompletedAttachments {

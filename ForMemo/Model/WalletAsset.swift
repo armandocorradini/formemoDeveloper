@@ -2,12 +2,18 @@ import Foundation
 import SwiftData
 import os
 
+
 enum WalletAssetKind: String, Codable {
 
     case logo
     case front
     case back
 }
+
+
+
+
+
 
 enum WalletAssetCreationError: LocalizedError {
     case emptyImageData
@@ -33,7 +39,8 @@ final class WalletAsset {
     var kindRaw: String = WalletAssetKind.logo.rawValue
 
     var relativePath: String = ""
-
+    var fileSize: Int64 = 0
+    
     var createdAt: Date = Date()
     var modifiedAt: Date = Date()
 
@@ -47,10 +54,13 @@ final class WalletAsset {
     
     init(
         kind: WalletAssetKind,
-        relativePath: String
+        relativePath: String,
+        fileSize: Int64
     ) {
+
         self.kindRaw = kind.rawValue
         self.relativePath = relativePath
+        self.fileSize = fileSize
     }
     
     @discardableResult
@@ -61,27 +71,39 @@ final class WalletAsset {
         in context: ModelContext
     ) -> WalletAsset? {
 
-        guard let relativePath = LoyaltyCardLogoStore.save(
-            imageData: imageData
-        ) else {
+        let result: (relativePath: String, fileSize: Int64)
+
+        do {
+
+            result = try WalletAssetStore.save(
+                data: imageData,
+                fileExtension: "jpg"
+            )
+
+        } catch {
+
             return nil
         }
 
+        let relativePath = result.relativePath
+
         let asset = WalletAsset(
             kind: kind,
-            relativePath: relativePath
+            relativePath: relativePath,
+            fileSize: result.fileSize
         )
 
-        context.insert(asset)
         asset.card = card
+
+        context.insert(asset)
 
         if card.assets == nil {
             card.assets = []
         }
-        if card.assets?.contains(where: { $0.id == asset.id }) == false {
-            card.assets?.append(asset)
-        }
 
+        card.assets?.append(asset)
+        
+        
         // 3. Aggiorna i campi legacy
         switch kind {
 
@@ -89,10 +111,10 @@ final class WalletAsset {
             card.loyaltyLogoRelativePath = relativePath
 
         case .front:
-            card.loyaltyFrontRelativePath = relativePath
-
+            break
+            
         case .back:
-            card.loyaltyBackRelativePath = relativePath
+            break
         }
 
         return asset
@@ -130,60 +152,6 @@ final class WalletAsset {
     }
     
     @MainActor
-    @discardableResult
-    static func createLegacyLogoReference(
-        for card: LoyaltyCard,
-        in context: ModelContext
-    ) -> WalletAsset? {
-
-        guard card.logoAsset == nil else {
-            return card.logoAsset
-        }
-
-        guard card.assets?.contains(where: { $0.kind == .logo }) != true else {
-            return card.logoAsset
-        }
-
-        let legacyRelativePath = "\(card.id.uuidString).jpg"
-
-        guard let imageData = LoyaltyCardLogoStore.loadLegacy(
-            relativePath: legacyRelativePath
-        ) else {
-            return nil
-        }
-
-        guard let newRelativePath = LoyaltyCardLogoStore.save(
-            imageData: imageData
-        ) else {
-            return nil
-        }
-
-        let asset = WalletAsset(
-            kind: .logo,
-            relativePath: newRelativePath
-        )
-
-        context.insert(asset)
-
-        asset.card = card
-
-        if card.assets == nil {
-            card.assets = []
-        }
-
-        card.assets?.append(asset)
-
-        context.safeSave(
-            operation: "CreateLegacyWalletLogoReference"
-        )
-
-        return asset
-    }
-
-    /// Repairs the scalar kind introduced after the original transformable enum.
-    /// The parent already stores the three paths, so this is deterministic and
-    /// does not require a second CloudKit migration.
-    @MainActor
     static func normalizePersistedKinds(in context: ModelContext) {
         guard let assets = try? context.fetch(FetchDescriptor<WalletAsset>()) else {
             return
@@ -192,11 +160,7 @@ final class WalletAsset {
         for asset in assets {
             guard let card = asset.card else { continue }
             let expectedKind: WalletAssetKind?
-            if asset.relativePath == card.loyaltyFrontRelativePath {
-                expectedKind = .front
-            } else if asset.relativePath == card.loyaltyBackRelativePath {
-                expectedKind = .back
-            } else if asset.relativePath == card.loyaltyLogoRelativePath {
+            if asset.relativePath == card.loyaltyLogoRelativePath {
                 expectedKind = .logo
             } else {
                 expectedKind = nil
@@ -211,4 +175,8 @@ final class WalletAsset {
             context.safeSave(operation: "NormalizeWalletAssetKinds")
         }
     }
+    
+    
+    
+    
 }
