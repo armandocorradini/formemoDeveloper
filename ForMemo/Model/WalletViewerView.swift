@@ -116,18 +116,17 @@ struct WalletViewerView: View {
 
             Task {
 
-                var images: [UIImage] = []
+                var images: [Data] = []
 
                 for item in items {
 
-                    guard
-                        let data = try? await item.loadTransferable(type: Data.self),
-                        let image = UIImage(data: data)
-                    else {
-                        continue
-                    }
+                        guard
+                            let data = try? await item.loadTransferable(type: Data.self)
+                        else {
+                            continue
+                        }
 
-                    images.append(image)
+                        images.append(data)
                 }
 
                 guard !images.isEmpty else {
