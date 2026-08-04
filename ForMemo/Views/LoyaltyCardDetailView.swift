@@ -62,7 +62,7 @@ struct LoyaltyCardDetailView: View {
         // Compatibilità con le versioni precedenti
         if let relativePath = card.loyaltyLogoRelativePath {
 
-            return LoyaltyCardLogoStore.load(
+            return WalletAssetStore.loadData(
                 relativePath: relativePath
             )
         }

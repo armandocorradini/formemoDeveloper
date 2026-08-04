@@ -40,7 +40,7 @@ struct EditLoyaltyCardView: View {
         }
 
         if let relativePath = card.loyaltyLogoRelativePath {
-            return LoyaltyCardLogoStore.load(
+            return WalletAssetStore.loadData(
                 relativePath: relativePath
             )
         }
@@ -300,7 +300,7 @@ struct EditLoyaltyCardView: View {
                 if previewLogoData == nil,
                    let relativePath = card.loyaltyLogoRelativePath {
 
-                    previewLogoData = LoyaltyCardLogoStore.load(
+                    previewLogoData = WalletAssetStore.loadData(
                         relativePath: relativePath
                     )
                 }

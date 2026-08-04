@@ -78,18 +78,23 @@ struct Dashboard: View {
                 id: "card-\(card.id)",
                 title: card.storeName,
                 systemImage: nil,
-                logoData:
-                    LoyaltyCardLogoStore.load(
-                        asset: card.logoAsset
-                    )
-                    ?? {
-                        if let relativePath = card.loyaltyLogoRelativePath {
-                            return LoyaltyCardLogoStore.load(
-                                relativePath: relativePath
-                            )
-                        }
-                        return nil
-                    }(),
+                logoData: {
+
+                    if let relativePath = card.logoAsset?.relativePath {
+                        return WalletAssetStore.loadData(
+                            relativePath: relativePath
+                        )
+                    }
+
+                    if let relativePath = card.loyaltyLogoRelativePath {
+                        return WalletAssetStore.loadData(
+                            relativePath: relativePath
+                        )
+                    }
+
+                    return nil
+
+                }(),
                 lastOpenedAt: lastOpenedAt,
                 destination: .loyaltyCard(card)
             )

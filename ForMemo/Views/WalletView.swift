@@ -145,9 +145,16 @@ struct WalletView: View {
                                 }
 
                                 // Compatibilità con le versioni precedenti
+                                if let asset = card.logoAsset {
+
+                                    return WalletAssetStore.loadData(
+                                        relativePath: asset.relativePath
+                                    )
+                                }
+
                                 if let relativePath = card.loyaltyLogoRelativePath {
 
-                                    return LoyaltyCardLogoStore.load(
+                                    return WalletAssetStore.loadData(
                                         relativePath: relativePath
                                     )
                                 }

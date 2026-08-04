@@ -291,15 +291,15 @@ var body: some View {
         // Loyalty Card / Ticket
         if item.type == "loyaltycard" {
 
-            LoyaltyCardLogoStore.delete(
+            WalletAssetStore.delete(
                 relativePath: item.loyaltyLogoRelativePath
             )
 
-            LoyaltyCardLogoStore.delete(
+            WalletAssetStore.delete(
                 relativePath: item.loyaltyFrontRelativePath
             )
 
-            LoyaltyCardLogoStore.delete(
+            WalletAssetStore.delete(
                 relativePath: item.loyaltyBackRelativePath
             )
         }
@@ -458,7 +458,9 @@ struct DeletedLoyaltyCardPreviewView: View {
     var body: some View {
 
         if let path = item.loyaltyLogoRelativePath,
-           let data = LoyaltyCardLogoStore.load(relativePath: path),
+           let data = WalletAssetStore.loadData(
+               relativePath: path
+           ),
            let image = UIImage(data: data) {
 
             Image(uiImage: image)

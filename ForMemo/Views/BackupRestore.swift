@@ -1138,7 +1138,7 @@ private enum BackupManager {
     ) async throws -> URL {
 
         var attachmentPayload: [String: Data] = [:]
-        var loyaltyLogoPayload: [String: Data] = [:]
+        var walletAssetPayload: [String: Data] = [:]
 
         var documentAssetPayload: [DocumentAssetTransferObject] = []
         var documentFilePayload: [String: Data] = [:]
@@ -1210,11 +1210,13 @@ private enum BackupManager {
 
             for asset in card.assets ?? [] {
 
-                guard let data = LoyaltyCardLogoStore.load(asset: asset) else {
+                guard let data = WalletAssetStore.loadData(
+                    relativePath: asset.relativePath
+                ) else {
                     continue
                 }
 
-                loyaltyLogoPayload[asset.relativePath] = data
+                walletAssetPayload[asset.relativePath] = data
             }
         }
 
@@ -1261,7 +1263,7 @@ private enum BackupManager {
             },
             vaultBackupPackage: vaultPackage,
             attachmentFiles: attachmentPayload,
-            loyaltyCardLogoFiles: loyaltyLogoPayload,
+            loyaltyCardLogoFiles: walletAssetPayload,
             settings: settingsPayload
         )
 
@@ -1369,20 +1371,27 @@ private enum BackupManager {
             }
         }
 
-        if let logoDirectory = LoyaltyCardLogoStore.directoryURL {
+        if let walletDirectory = WalletAssetStore.assetsDirectory {
 
             try FileManager.default.createDirectory(
-                at: logoDirectory,
+                at: walletDirectory,
                 withIntermediateDirectories: true
             )
 
-            for (relativePath, logoData) in archive.loyaltyCardLogoFiles {
+            for (relativePath, fileData) in archive.loyaltyCardLogoFiles {
 
-                let fileURL = logoDirectory
+                let destinationURL = walletDirectory
                     .appendingPathComponent(relativePath)
 
-                try logoData.write(
-                    to: fileURL,
+                let parent = destinationURL.deletingLastPathComponent()
+
+                try FileManager.default.createDirectory(
+                    at: parent,
+                    withIntermediateDirectories: true
+                )
+
+                try fileData.write(
+                    to: destinationURL,
                     options: .atomic
                 )
             }
@@ -1539,10 +1548,15 @@ private enum BackupManager {
 
                     let asset = WalletAsset(
                         kind: assetDTO.kind,
-                        relativePath: assetDTO.relativePath, fileSize: 0
+                        relativePath: assetDTO.relativePath,
+                        fileSize: 0
                     )
 
                     asset.card = card
+
+                    if asset.kind == .logo {
+                        card.loyaltyLogoRelativePath = asset.relativePath
+                    }
 
                     modelContext.insert(asset)
                 }
@@ -1552,16 +1566,17 @@ private enum BackupManager {
                     let legacyRelativePath = "\(card.id.uuidString).jpg"
 
                     if let imageData =
-                        archive.loyaltyCardLogoFiles[legacyRelativePath],
-                       let newRelativePath =
-                        LoyaltyCardLogoStore.save(
-                            imageData: imageData
-                        ) {
+                        archive.loyaltyCardLogoFiles[legacyRelativePath] {
+
+                        let result = try WalletAssetStore.save(
+                            data: imageData,
+                            fileExtension: "jpg"
+                        )
 
                         let asset = WalletAsset(
                             kind: .logo,
-                            relativePath: newRelativePath,
-                            fileSize: Int64(imageData.count)
+                            relativePath: result.relativePath,
+                            fileSize: result.fileSize
                         )
 
                         asset.card = card

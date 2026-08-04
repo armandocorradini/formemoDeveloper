@@ -26,7 +26,7 @@ enum WalletMigrationService {
         }
         
         // file legacy assente
-        guard let imageData = LoyaltyCardLogoStore.loadLegacy(
+        guard let imageData = LegacyLoyaltyCardLogoStore.loadLegacy(
             relativePath: legacyPath
         ) else {
             return

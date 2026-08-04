@@ -230,7 +230,7 @@ struct ResetAppView: View {
                 }
             }
             
-            if let walletDirectory = LoyaltyCardLogoStore.directoryURL,
+            if let walletDirectory = WalletAssetStore.assetsDirectory,
                let files = try? fileManager.contentsOfDirectory(
                     at: walletDirectory,
                     includingPropertiesForKeys: nil

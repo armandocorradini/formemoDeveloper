@@ -1069,10 +1069,7 @@ enum DebugLog {
                 $0.kind == .gallery
             }.count
 
-        result.backImages =
-            assets.filter {
-                $0.kind == .gallery
-            }.count
+        result.backImages = 0
 
         result.totalAssets = assets.count
 
@@ -1086,7 +1083,7 @@ enum DebugLog {
             assets.filter {
 
                 guard
-                    let directory = LoyaltyCardLogoStore.directoryURL
+                    let directory = WalletAssetStore.assetsDirectory
                 else {
                     return true
                 }
@@ -1101,7 +1098,7 @@ enum DebugLog {
 
             }.count
         
-        if let directory = LoyaltyCardLogoStore.directoryURL,
+        if let directory = WalletAssetStore.assetsDirectory,
            let files = try? fm.contentsOfDirectory(
                 at: directory,
                 includingPropertiesForKeys: nil

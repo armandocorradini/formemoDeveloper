@@ -9,7 +9,7 @@ enum ForMemoStorageManager {
         totalSize(
             of:
                 TaskAttachment.attachmentsDirectory,
-                LoyaltyCardLogoStore.directoryURL
+            WalletAssetStore.assetsDirectory
         )
     }
 
