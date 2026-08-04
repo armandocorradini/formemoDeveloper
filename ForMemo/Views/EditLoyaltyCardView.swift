@@ -319,20 +319,13 @@ struct EditLoyaltyCardView: View {
 
                 Task {
 
-                    guard let data = try? await newItem.loadTransferable(type: Data.self),
-                          let image = UIImage(data: data) else {
-                        return
-                    }
-
-                    let resized = image.resizedForWalletLogo(maxDimension: 300)
-
-                    guard let compressed = resized.jpegData(compressionQuality: 0.65) else {
+                    guard let data = try? await newItem.loadTransferable(type: Data.self) else {
                         return
                     }
 
                     await MainActor.run {
 
-                        previewLogoData = compressed
+                        previewLogoData = data
 
                         do {
 
@@ -344,14 +337,11 @@ struct EditLoyaltyCardView: View {
                                 )
                             }
 
-                            if let image = UIImage(data: compressed) {
-
-                                try WalletImportService.importLogo(
-                                    image,
-                                    into: card,
-                                    in: modelContext
-                                )
-                            }
+                            try WalletImportService.importLogo(
+                                data,
+                                into: card,
+                                in: modelContext
+                            )
 
                         } catch {
 
@@ -396,13 +386,11 @@ struct EditLoyaltyCardView: View {
 
                 default:
 
-                    let resized = newImage.resizedForWalletLogo(maxDimension: 300)
-
-                    guard let compressed = resized.jpegData(compressionQuality: 0.65) else {
+                    guard let data = newImage.jpegData(compressionQuality: 1.0) else {
                         return
                     }
 
-                    previewLogoData = compressed
+                    previewLogoData = data
 
                     do {
 
@@ -414,14 +402,11 @@ struct EditLoyaltyCardView: View {
                             )
                         }
 
-                        if let image = UIImage(data: compressed) {
-
-                            try WalletImportService.importLogo(
-                                image,
-                                into: card,
-                                in: modelContext
-                            )
-                        }
+                        try WalletImportService.importLogo(
+                            data,
+                            into: card,
+                            in: modelContext
+                        )
 
                     } catch {
 
