@@ -17,7 +17,7 @@ struct WalletViewerView: View {
 
     @State private var showingGalleryMenu = false
     @State private var showGalleryPhotoPicker = false
-    @State private var galleryPickerItem: PhotosPickerItem?
+    @State private var galleryPickerItems: [PhotosPickerItem] = []
     @State private var importedDocumentURL: URL?
     @State private var selectedAsset: WalletAsset?
 
@@ -108,31 +108,45 @@ struct WalletViewerView: View {
         }
         .photosPicker(
             isPresented: $showGalleryPhotoPicker,
-            selection: $galleryPickerItem,
+            selection: $galleryPickerItems,
+            maxSelectionCount: nil,
             matching: .images
         )
-        .onChange(of: galleryPickerItem) { _, item in
-
-            guard let item else {
-                return
-            }
+        .onChange(of: galleryPickerItems) { _, items in
 
             Task {
 
-                guard
-                    let data = try? await item.loadTransferable(type: Data.self),
-                    let image = UIImage(data: data)
-                else {
+                var images: [UIImage] = []
+
+                for item in items {
+
+                    guard
+                        let data = try? await item.loadTransferable(type: Data.self),
+                        let image = UIImage(data: data)
+                    else {
+                        continue
+                    }
+
+                    images.append(image)
+                }
+
+                guard !images.isEmpty else {
                     return
                 }
 
                 do {
 
                     try WalletImportService.importImages(
-                        [image],
+                        images,
                         into: card,
                         in: modelContext
                     )
+
+                    modelContext.safeSave(
+                        operation: "ImportGalleryImages"
+                    )
+
+                    modelContext.processPendingChanges()
 
                 } catch {
 
@@ -141,7 +155,7 @@ struct WalletViewerView: View {
                     )
                 }
 
-                galleryPickerItem = nil
+                galleryPickerItems.removeAll()
             }
         }
 

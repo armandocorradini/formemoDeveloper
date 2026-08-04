@@ -24,7 +24,9 @@ struct EditLoyaltyCardView: View {
     @State private var showImageViewer = false
     
     @State private var cameraTarget: WalletAssetKind?
-
+    
+    @State private var showingPhotoPicker = false
+    @State private var selectedPhotos: [PhotosPickerItem] = []
     
     private var currentLogoData: Data? {
 
@@ -480,7 +482,62 @@ struct EditLoyaltyCardView: View {
             }
             .id(cameraSession)
         }
-        
+        .photosPicker(
+            isPresented: $showingPhotoPicker,
+            selection: $selectedPhotos,
+            maxSelectionCount: nil,
+            matching: .images
+        )
+        .onChange(of: selectedPhotos) { _, newItems in
+
+            Task {
+
+                var images: [UIImage] = []
+
+                for item in newItems {
+
+                    guard
+                        let data = try? await item.loadTransferable(type: Data.self),
+                        let image = UIImage(data: data)
+                    else {
+                        continue
+                    }
+
+                    images.append(image)
+                }
+
+                guard !images.isEmpty else {
+                    return
+                }
+
+                do {
+
+                    try WalletImportService.importImages(
+                        images,
+                        kind: .gallery,
+                        into: card,
+                        in: modelContext
+                    )
+
+                    await MainActor.run {
+
+                        modelContext.safeSave(
+                            operation: "ImportGalleryImages"
+                        )
+
+                        modelContext.processPendingChanges()
+
+                        selectedPhotos.removeAll()
+                    }
+
+                } catch {
+
+                    assertionFailure(
+                        "Failed to import gallery images: \(error)"
+                    )
+                }
+            }
+        }
     }
  
     

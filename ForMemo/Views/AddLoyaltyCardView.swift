@@ -44,7 +44,7 @@ struct AddLoyaltyCardView: View {
     
     @State private var showGalleryPhotoPicker = false
     @State private var showingGalleryMenu = false
-    @State private var galleryPickerItem: PhotosPickerItem?
+    @State private var galleryPickerItems: [PhotosPickerItem] = []
     
 
     
@@ -211,7 +211,8 @@ struct AddLoyaltyCardView: View {
                         }
                         .photosPicker(
                             isPresented: $showGalleryPhotoPicker,
-                            selection: $galleryPickerItem,
+                            selection: $galleryPickerItems,
+                            maxSelectionCount: nil,
                             matching: .images
                         )
                     }
@@ -379,29 +380,38 @@ struct AddLoyaltyCardView: View {
 
             }
         }
-        .onChange(of: galleryPickerItem) { _, newItem in
-
-            guard let newItem else {
-                return
-            }
+        .onChange(of: galleryPickerItems) { _, newItems in
 
             Task {
 
-                guard
-                    let data = try? await newItem.loadTransferable(type: Data.self),
-                    let image = UIImage(data: data)
-                else {
-                    return
-                }
+                var images: [Data] = []
 
-                let resized = image.resizedForWalletLogo(maxDimension: 1200)
+                for item in newItems {
 
-                guard let compressed = resized.jpegData(compressionQuality: 0.80) else {
-                    return
+                    guard
+                        let data = try? await item.loadTransferable(type: Data.self),
+                        let image = UIImage(data: data)
+                    else {
+                        continue
+                    }
+
+                    let resized = image.resizedForWalletLogo(
+                        maxDimension: 1200
+                    )
+
+                    guard let compressed = resized.jpegData(
+                        compressionQuality: 0.80
+                    ) else {
+                        continue
+                    }
+
+                    images.append(compressed)
                 }
 
                 await MainActor.run {
-                    galleryImages.append(compressed)
+
+                    galleryImages.append(contentsOf: images)
+                    galleryPickerItems.removeAll()
                 }
             }
         }
