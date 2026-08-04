@@ -41,6 +41,59 @@ struct OverviewView: View {
     )
     private var deletedVaultItems: [VaultItem]
     
+    @Query(sort: \DeletedItem.deletedAt, order: .reverse)
+    private var deletedItems: [DeletedItem]
+    
+    
+    var recentlyDeletedItemsCount: Int {
+        deletedItems.count
+    }
+
+    var recentlyDeletedStorage: String {
+        formattedSize(bytes: recentlyDeletedStorageBytes)
+    }
+
+    private var recentlyDeletedStorageBytes: Int64 {
+
+        folderSize(TaskAttachment.trashDirectory)
+        + folderSize(DocumentAssetStore.trashDirectory)
+        + folderSize(WalletAssetStore.trashDirectory)
+    }
+
+    private func folderSize(_ directory: URL?) -> Int64 {
+
+        guard let directory else {
+            return 0
+        }
+
+        let fm = FileManager.default
+
+        guard let enumerator = fm.enumerator(
+            at: directory,
+            includingPropertiesForKeys: [.fileSizeKey]
+        ) else {
+            return 0
+        }
+
+        var total: Int64 = 0
+
+        for case let url as URL in enumerator {
+
+            if let size = try? url
+                .resourceValues(forKeys: [.fileSizeKey])
+                .fileSize {
+
+                total += Int64(size)
+            }
+        }
+
+        return total
+    }
+    
+    
+    
+    
+    
     
     
     
@@ -49,6 +102,37 @@ struct OverviewView: View {
             for: activeTasks.flatMap { $0.attachments ?? [] }
         )
     }
+    
+    private func formattedSize(bytes: Int64) -> String {
+
+        ByteCountFormatter.string(
+            fromByteCount: bytes,
+            countStyle: .file
+        )
+    }
+
+    private func totalSize<T>(
+        of assets: [T],
+        url: (T) -> URL?
+    ) -> String {
+
+        let bytes = assets.reduce(Int64(0)) { total, asset in
+
+            guard
+                let fileURL = url(asset),
+                let size = try? fileURL
+                    .resourceValues(forKeys: [.fileSizeKey])
+                    .fileSize
+            else {
+                return total
+            }
+
+            return total + Int64(size)
+        }
+
+        return formattedSize(bytes: bytes)
+    }
+    
 
     private var usedStorage: String {
         ForMemoStorageManager.usedStorageString()
@@ -119,8 +203,9 @@ struct OverviewView: View {
                     tasksSection
                     documentsSection
                     walletSection
-                    vaultSection
                     tripsSection
+                    recentlyDeletedSection
+                    vaultSection
                 }
                 .padding()
             }
@@ -143,10 +228,26 @@ private extension OverviewView {
         documentAssets.count
     }
 
+    var documentAssetsSize: String {
+
+        totalSize(of: documentAssets) {
+            $0.fileURL
+        }
+    }
+    
     var walletAssetsCount: Int {
         walletAssets.count
     }
 
+    var walletAssetsSize: String {
+
+        let bytes = walletAssets.reduce(Int64(0)) {
+            $0 + $1.fileSize
+        }
+
+        return formattedSize(bytes: bytes)
+    }
+    
     var walletLogosCount: Int {
         walletAssets.filter { $0.kind == .logo }.count
     }
@@ -309,6 +410,10 @@ private extension OverviewView {
                 LabeledContent("Images/Files") {
                     Text("\(documentAssetsCount)")
                 }
+                    LabeledContent("Storage") {
+                        Text(documentAssetsSize)
+                    
+                }
                 LabeledContent("Expiring in 30 days") { Text("\(expiringDocumentsCount)") }
             }
         }
@@ -347,16 +452,12 @@ private extension OverviewView {
                     Text("\(walletLogosCount)")
                 }
 
-                LabeledContent("Front Images") {
-                    Text("\(walletGalleryImagesCount)")
-                }
-
-                LabeledContent("Back Images") {
-                    Text("\(walletGalleryImagesCount)")
-                }
-
-                LabeledContent("Total Images") {
+                LabeledContent("Images") {
                     Text("\(walletAssetsCount)")
+                }
+
+                LabeledContent("Storage") {
+                    Text(walletAssetsSize)
                 }
             }
         }
@@ -418,6 +519,39 @@ private extension OverviewView {
                 LabeledContent("In progress") { Text("\(tripsInProgressCount)") }
                 LabeledContent("Completed") { Text("\(tripsCompletedCount)") }
                 LabeledContent("Not started") { Text("\(tripsNotStartedCount)") }
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.regularMaterial)
+                .shadow(color: .black.opacity(0.10), radius: 12, y: 6)
+                .shadow(color: .white.opacity(0.08), radius: 1, y: -1)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.white.opacity(0.10), lineWidth: 1)
+        }
+    }
+    
+    var recentlyDeletedSection: some View {
+
+        VStack(alignment: .leading, spacing: 12) {
+
+            Text("Recently Deleted")
+                .font(.headline)
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 10) {
+
+                LabeledContent("Items") {
+                    Text("\(recentlyDeletedItemsCount)")
+                }
+
+                LabeledContent("Storage") {
+                    Text(recentlyDeletedStorage)
+                }
             }
         }
         .padding(16)
