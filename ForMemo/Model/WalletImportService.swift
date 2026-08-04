@@ -14,7 +14,7 @@ final class WalletImportService {
         kind: WalletAssetKind = .gallery,
         into card: LoyaltyCard,
         in context: ModelContext,
-        compressionQuality: CGFloat = 0.80
+        compressionQuality: CGFloat = 0.70
     ) throws {
 
         if card.assets == nil {
@@ -24,7 +24,7 @@ final class WalletImportService {
         for image in images {
 
             let resized = image.resizedForWallet(
-                maxDimension: 1200
+                maxDimension: 800
             )
 
             let result = try WalletAssetStore.save(
@@ -52,6 +52,27 @@ final class WalletImportService {
         context.processPendingChanges()
     }
     
+    
+    static func importImages(
+        _ imagesData: [Data],
+        kind: WalletAssetKind = .gallery,
+        into card: LoyaltyCard,
+        in context: ModelContext,
+        compressionQuality: CGFloat = 0.70
+    ) throws {
+
+        let images = imagesData.compactMap(UIImage.init(data:))
+
+        try importImages(
+            images,
+            kind: kind,
+            into: card,
+            in: context,
+            compressionQuality: compressionQuality
+        )
+    }
+    
+    
     // MARK: - Logo
 
     static func importLogo(
@@ -70,7 +91,24 @@ final class WalletImportService {
         )
     }
     
+    static func importLogo(
+        _ imageData: Data,
+        into card: LoyaltyCard,
+        in context: ModelContext,
+        compressionQuality: CGFloat = 0.80
+    ) throws {
 
+        guard let image = UIImage(data: imageData) else {
+            return
+        }
+
+        try importLogo(
+            image,
+            into: card,
+            in: context,
+            compressionQuality: compressionQuality
+        )
+    }
     
     // MARK: - Delete
 

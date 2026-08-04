@@ -361,21 +361,13 @@ struct AddLoyaltyCardView: View {
 
             Task {
 
-                guard let data = try? await newItem.loadTransferable(type: Data.self),
-                      let image = UIImage(data: data) else {
-                    return
-                }
-
-                let resized = image.resizedForWalletLogo(maxDimension: 300)
-
-                guard let compressed = resized.jpegData(compressionQuality: 0.65) else {
+                guard let data = try? await newItem.loadTransferable(type: Data.self)
+                else {
                     return
                 }
 
                 await MainActor.run {
-
-                    logoData = compressed
-
+                    logoData = data
                 }
 
             }
@@ -389,23 +381,13 @@ struct AddLoyaltyCardView: View {
                 for item in newItems {
 
                     guard
-                        let data = try? await item.loadTransferable(type: Data.self),
-                        let image = UIImage(data: data)
+                        let data = try? await item.loadTransferable(type: Data.self)
+                       
                     else {
                         continue
                     }
 
-                    let resized = image.resizedForWalletLogo(
-                        maxDimension: 1200
-                    )
-
-                    guard let compressed = resized.jpegData(
-                        compressionQuality: 0.80
-                    ) else {
-                        continue
-                    }
-
-                    images.append(compressed)
+                    images.append(data)
                 }
 
                 await MainActor.run {
@@ -515,40 +497,8 @@ struct AddLoyaltyCardView: View {
                 return
             }
 
-            let maxDimension: CGFloat
-
-            switch cameraTarget {
-
-            case .logo:
-                maxDimension = 300
-
-            case .gallery:
-                maxDimension = 1200
-
-            case nil:
-                maxDimension = 300
-            }
-
-            let resized = newImage.resizedForWalletLogo(
-                maxDimension: maxDimension
-            )
-
-            let quality: CGFloat
-
-            switch cameraTarget {
-
-            case .logo:
-                quality = 0.65
-
-            case .gallery:
-                quality = 0.80
-
-            case nil:
-                quality = 0.65
-            }
-
-            guard let compressed = resized.jpegData(
-                compressionQuality: quality
+            guard let originalData = newImage.jpegData(
+                compressionQuality: 1.0
             ) else {
                 return
             }
@@ -556,10 +506,10 @@ struct AddLoyaltyCardView: View {
             switch cameraTarget {
 
             case .logo:
-                logoData = compressed
+                logoData = newImage.jpegData(compressionQuality: 1.0)
 
             case .gallery:
-                galleryImages.append(compressed)
+                galleryImages.append(originalData)
 
             case nil:
                 break
@@ -617,29 +567,21 @@ struct AddLoyaltyCardView: View {
 
         var createdAssets: [WalletAsset] = []
 
-        if let logoData,
-           let image = UIImage(data: logoData) {
+        if let logoData {
 
             try! WalletImportService.importLogo(
-                image,
+                logoData,
                 into: card,
                 in: modelContext
             )
         }
 
-        for imageData in galleryImages {
-
-            guard let image = UIImage(data: imageData) else {
-                continue
-            }
-
-            try! WalletImportService.importImages(
-                [image],
-                kind: .gallery,
-                into: card,
-                in: modelContext
-            )
-        }
+        try! WalletImportService.importImages(
+            galleryImages,
+            kind: .gallery,
+            into: card,
+            in: modelContext
+        )
 
         createdAssets = card.assets ?? []
 
@@ -814,31 +756,6 @@ private struct BarcodeScannerSheet: UIViewControllerRepresentable {
     }
 }
 
-
-private extension UIImage {
-
-    func resizedForWalletLogo(maxDimension: CGFloat = 300) -> UIImage {
-
-        let longestSide = max(size.width, size.height)
-
-        guard longestSide > maxDimension else {
-            return self
-        }
-
-        let scale = maxDimension / longestSide
-
-        let newSize = CGSize(
-            width: size.width * scale,
-            height: size.height * scale
-        )
-
-        let renderer = UIGraphicsImageRenderer(size: newSize)
-
-        return renderer.image { _ in
-            draw(in: CGRect(origin: .zero, size: newSize))
-        }
-    }
-}
 
 private extension CGImagePropertyOrientation {
 

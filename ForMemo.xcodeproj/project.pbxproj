@@ -7,6 +7,181 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C634D8C30220C9C0092DB89 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1C634CF630220C9C0092DB89 /* InfoPlist.xcstrings */; };
+		1C634D8D30220C9C0092DB89 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1C634CFA30220C9C0092DB89 /* Localizable.xcstrings */; };
+		1C634D8E30220C9C0092DB89 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1C634D0530220C9C0092DB89 /* PrivacyInfo.xcprivacy */; };
+		1C634D8F30220C9C0092DB89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C634D8830220C9C0092DB89 /* Assets.xcassets */; };
+		1C634D9130220C9C0092DB89 /* AddTaskIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */; };
+		1C634D9230220C9C0092DB89 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CD530220C9C0092DB89 /* AppDelegate.swift */; };
+		1C634D9330220C9C0092DB89 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CD630220C9C0092DB89 /* AppError.swift */; };
+		1C634D9430220C9C0092DB89 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CD730220C9C0092DB89 /* AppLogger.swift */; };
+		1C634D9530220C9C0092DB89 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CD830220C9C0092DB89 /* AppSettings.swift */; };
+		1C634D9630220C9C0092DB89 /* AppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CD930220C9C0092DB89 /* AppShortcuts.swift */; };
+		1C634D9730220C9C0092DB89 /* AppTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CDA30220C9C0092DB89 /* AppTab.swift */; };
+		1C634D9830220C9C0092DB89 /* AttachmentMaintenanceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CDB30220C9C0092DB89 /* AttachmentMaintenanceManager.swift */; };
+		1C634D9930220C9C0092DB89 /* AttachmentMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CDC30220C9C0092DB89 /* AttachmentMigration.swift */; };
+		1C634D9A30220C9C0092DB89 /* CalendarExportEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CDD30220C9C0092DB89 /* CalendarExportEngine.swift */; };
+		1C634D9B30220C9C0092DB89 /* CalendarPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CDE30220C9C0092DB89 /* CalendarPickerView.swift */; };
+		1C634D9C30220C9C0092DB89 /* CloudKitResetManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CDF30220C9C0092DB89 /* CloudKitResetManager.swift */; };
+		1C634D9D30220C9C0092DB89 /* CloudSettingsSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE030220C9C0092DB89 /* CloudSettingsSync.swift */; };
+		1C634D9E30220C9C0092DB89 /* CredentialSavingRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE130220C9C0092DB89 /* CredentialSavingRequest.swift */; };
+		1C634D9F30220C9C0092DB89 /* CSVImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE230220C9C0092DB89 /* CSVImporter.swift */; };
+		1C634DA030220C9C0092DB89 /* CSVTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE330220C9C0092DB89 /* CSVTask.swift */; };
+		1C634DA130220C9C0092DB89 /* DebugTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE430220C9C0092DB89 /* DebugTools.swift */; };
+		1C634DA230220C9C0092DB89 /* DeletedFingerprintStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE530220C9C0092DB89 /* DeletedFingerprintStore.swift */; };
+		1C634DA330220C9C0092DB89 /* DeletedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE630220C9C0092DB89 /* DeletedItem.swift */; };
+		1C634DA430220C9C0092DB89 /* DeleteTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE730220C9C0092DB89 /* DeleteTask.swift */; };
+		1C634DA530220C9C0092DB89 /* DocumentAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE830220C9C0092DB89 /* DocumentAsset.swift */; };
+		1C634DA630220C9C0092DB89 /* DocumentAssetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CE930220C9C0092DB89 /* DocumentAssetStore.swift */; };
+		1C634DA730220C9C0092DB89 /* DocumentImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CEA30220C9C0092DB89 /* DocumentImportService.swift */; };
+		1C634DA830220C9C0092DB89 /* Documents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CEB30220C9C0092DB89 /* Documents.swift */; };
+		1C634DA930220C9C0092DB89 /* DocumentScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CEC30220C9C0092DB89 /* DocumentScannerView.swift */; };
+		1C634DAA30220C9C0092DB89 /* FMTripDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CED30220C9C0092DB89 /* FMTripDocument.swift */; };
+		1C634DAB30220C9C0092DB89 /* ForMemoStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CEE30220C9C0092DB89 /* ForMemoStorageManager.swift */; };
+		1C634DAC30220C9C0092DB89 /* GetTasksIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CEF30220C9C0092DB89 /* GetTasksIntent.swift */; };
+		1C634DAD30220C9C0092DB89 /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF030220C9C0092DB89 /* Global.swift */; };
+		1C634DAE30220C9C0092DB89 /* ICSExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF130220C9C0092DB89 /* ICSExporter.swift */; };
+		1C634DAF30220C9C0092DB89 /* Import.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF230220C9C0092DB89 /* Import.swift */; };
+		1C634DB030220C9C0092DB89 /* ImportCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF330220C9C0092DB89 /* ImportCalendar.swift */; };
+		1C634DB130220C9C0092DB89 /* ImportCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF430220C9C0092DB89 /* ImportCard.swift */; };
+		1C634DB230220C9C0092DB89 /* ImportExportCSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF530220C9C0092DB89 /* ImportExportCSV.swift */; };
+		1C634DB330220C9C0092DB89 /* LaunchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF730220C9C0092DB89 /* LaunchCoordinator.swift */; };
+		1C634DB430220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF830220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift */; };
+		1C634DB530220C9C0092DB89 /* LegacyTaskRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */; };
+		1C634DB630220C9C0092DB89 /* LocationReminderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CFB30220C9C0092DB89 /* LocationReminderManager.swift */; };
+		1C634DB730220C9C0092DB89 /* LoyaltyCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CFC30220C9C0092DB89 /* LoyaltyCard.swift */; };
+		1C634DB830220C9C0092DB89 /* ModelContext+SafeSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CFD30220C9C0092DB89 /* ModelContext+SafeSave.swift */; };
+		1C634DB930220C9C0092DB89 /* NavigationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CFE30220C9C0092DB89 /* NavigationApp.swift */; };
+		1C634DBA30220C9C0092DB89 /* Notification+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CFF30220C9C0092DB89 /* Notification+Extensions.swift */; };
+		1C634DBB30220C9C0092DB89 /* NotificationActionProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0030220C9C0092DB89 /* NotificationActionProcessor.swift */; };
+		1C634DBC30220C9C0092DB89 /* NotificationLeadTime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0130220C9C0092DB89 /* NotificationLeadTime.swift */; };
+		1C634DBD30220C9C0092DB89 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0230220C9C0092DB89 /* NotificationManager.swift */; };
+		1C634DBE30220C9C0092DB89 /* PasswordGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0330220C9C0092DB89 /* PasswordGenerator.swift */; };
+		1C634DBF30220C9C0092DB89 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0430220C9C0092DB89 /* Persistence.swift */; };
+		1C634DC030220C9C0092DB89 /* RemindersAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0630220C9C0092DB89 /* RemindersAccess.swift */; };
+		1C634DC130220C9C0092DB89 /* ReminderScrubberControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0730220C9C0092DB89 /* ReminderScrubberControl.swift */; };
+		1C634DC230220C9C0092DB89 /* RowBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0830220C9C0092DB89 /* RowBackground.swift */; };
+		1C634DC330220C9C0092DB89 /* RowCardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0930220C9C0092DB89 /* RowCardStyle.swift */; };
+		1C634DC430220C9C0092DB89 /* SearchTasksIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0A30220C9C0092DB89 /* SearchTasksIntent.swift */; };
+		1C634DC530220C9C0092DB89 /* SecretValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0B30220C9C0092DB89 /* SecretValue.swift */; };
+		1C634DC630220C9C0092DB89 /* SecureClipboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0C30220C9C0092DB89 /* SecureClipboard.swift */; };
+		1C634DC730220C9C0092DB89 /* SensitiveValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0D30220C9C0092DB89 /* SensitiveValues.swift */; };
+		1C634DC830220C9C0092DB89 /* StoreMigrationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0E30220C9C0092DB89 /* StoreMigrationManager.swift */; };
+		1C634DC930220C9C0092DB89 /* SurfaceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D0F30220C9C0092DB89 /* SurfaceSettings.swift */; };
+		1C634DCA30220C9C0092DB89 /* TaskAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1030220C9C0092DB89 /* TaskAttachment.swift */; };
+		1C634DCB30220C9C0092DB89 /* TaskBadgePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1130220C9C0092DB89 /* TaskBadgePolicy.swift */; };
+		1C634DCC30220C9C0092DB89 /* TaskExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1230220C9C0092DB89 /* TaskExportService.swift */; };
+		1C634DCD30220C9C0092DB89 /* TaskRowAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1330220C9C0092DB89 /* TaskRowAppearance.swift */; };
+		1C634DCE30220C9C0092DB89 /* TaskRowBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1430220C9C0092DB89 /* TaskRowBorder.swift */; };
+		1C634DCF30220C9C0092DB89 /* TaskRowDisplayModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1530220C9C0092DB89 /* TaskRowDisplayModel.swift */; };
+		1C634DD030220C9C0092DB89 /* TaskRowSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1630220C9C0092DB89 /* TaskRowSurface.swift */; };
+		1C634DD130220C9C0092DB89 /* TaskTransferObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1730220C9C0092DB89 /* TaskTransferObject.swift */; };
+		1C634DD230220C9C0092DB89 /* TodoTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1830220C9C0092DB89 /* TodoTask.swift */; };
+		1C634DD330220C9C0092DB89 /* TripList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1930220C9C0092DB89 /* TripList.swift */; };
+		1C634DD430220C9C0092DB89 /* VaultAutoFillManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1A30220C9C0092DB89 /* VaultAutoFillManager.swift */; };
+		1C634DD530220C9C0092DB89 /* VaultBackupCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1B30220C9C0092DB89 /* VaultBackupCrypto.swift */; };
+		1C634DD630220C9C0092DB89 /* VaultCredentialSavingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1C30220C9C0092DB89 /* VaultCredentialSavingManager.swift */; };
+		1C634DD730220C9C0092DB89 /* VaultCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1D30220C9C0092DB89 /* VaultCrypto.swift */; };
+		1C634DD830220C9C0092DB89 /* VaultItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1E30220C9C0092DB89 /* VaultItem.swift */; };
+		1C634DD930220C9C0092DB89 /* VaultLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D1F30220C9C0092DB89 /* VaultLock.swift */; };
+		1C634DDA30220C9C0092DB89 /* VaultManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2030220C9C0092DB89 /* VaultManager.swift */; };
+		1C634DDB30220C9C0092DB89 /* VaultSecret.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2130220C9C0092DB89 /* VaultSecret.swift */; };
+		1C634DDC30220C9C0092DB89 /* WalletAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2230220C9C0092DB89 /* WalletAsset.swift */; };
+		1C634DDE30220C9C0092DB89 /* WalletAssetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2430220C9C0092DB89 /* WalletAssetStore.swift */; };
+		1C634DDF30220C9C0092DB89 /* WalletDeleteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2530220C9C0092DB89 /* WalletDeleteService.swift */; };
+		1C634DE030220C9C0092DB89 /* WalletImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2630220C9C0092DB89 /* WalletImportService.swift */; };
+		1C634DE130220C9C0092DB89 /* WalletMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2730220C9C0092DB89 /* WalletMigrationService.swift */; };
+		1C634DE230220C9C0092DB89 /* WalletViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2830220C9C0092DB89 /* WalletViewerView.swift */; };
+		1C634DE330220C9C0092DB89 /* WeatherManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2930220C9C0092DB89 /* WeatherManager.swift */; };
+		1C634DE430220C9C0092DB89 /* AppleCredentialExchangeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2B30220C9C0092DB89 /* AppleCredentialExchangeProvider.swift */; };
+		1C634DE530220C9C0092DB89 /* AppleCredentialExportMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2C30220C9C0092DB89 /* AppleCredentialExportMapper.swift */; };
+		1C634DE630220C9C0092DB89 /* AppleCredentialImportMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2D30220C9C0092DB89 /* AppleCredentialImportMapper.swift */; };
+		1C634DE730220C9C0092DB89 /* CredentialExchangeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2F30220C9C0092DB89 /* CredentialExchangeManager.swift */; };
+		1C634DE830220C9C0092DB89 /* CredentialExchangeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3030220C9C0092DB89 /* CredentialExchangeProvider.swift */; };
+		1C634DE930220C9C0092DB89 /* CredentialExchangeResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3130220C9C0092DB89 /* CredentialExchangeResult.swift */; };
+		1C634DEA30220C9C0092DB89 /* CredentialExchangeTester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3230220C9C0092DB89 /* CredentialExchangeTester.swift */; };
+		1C634DEB30220C9C0092DB89 /* ImportMergePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3330220C9C0092DB89 /* ImportMergePolicy.swift */; };
+		1C634DEC30220C9C0092DB89 /* VaultExportMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3430220C9C0092DB89 /* VaultExportMapper.swift */; };
+		1C634DED30220C9C0092DB89 /* VaultExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3530220C9C0092DB89 /* VaultExportService.swift */; };
+		1C634DEE30220C9C0092DB89 /* VaultImportCredential.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3630220C9C0092DB89 /* VaultImportCredential.swift */; };
+		1C634DEF30220C9C0092DB89 /* VaultImportRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3730220C9C0092DB89 /* VaultImportRecord.swift */; };
+		1C634DF030220C9C0092DB89 /* VaultImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3830220C9C0092DB89 /* VaultImportService.swift */; };
+		1C634DF130220C9C0092DB89 /* AddLoyaltyCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3C30220C9C0092DB89 /* AddLoyaltyCardView.swift */; };
+		1C634DF230220C9C0092DB89 /* AppQuickGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3D30220C9C0092DB89 /* AppQuickGuide.swift */; };
+		1C634DF330220C9C0092DB89 /* AppUnavailableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3E30220C9C0092DB89 /* AppUnavailableView.swift */; };
+		1C634DF430220C9C0092DB89 /* AttachmentImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D3F30220C9C0092DB89 /* AttachmentImporter.swift */; };
+		1C634DF530220C9C0092DB89 /* AttachmentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4030220C9C0092DB89 /* AttachmentRow.swift */; };
+		1C634DF630220C9C0092DB89 /* AudioPlayerRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4130220C9C0092DB89 /* AudioPlayerRow.swift */; };
+		1C634DF730220C9C0092DB89 /* AudioRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4230220C9C0092DB89 /* AudioRecorderView.swift */; };
+		1C634DF830220C9C0092DB89 /* BackgroundCustomizationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4330220C9C0092DB89 /* BackgroundCustomizationView.swift */; };
+		1C634DF930220C9C0092DB89 /* BackupRestore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4430220C9C0092DB89 /* BackupRestore.swift */; };
+		1C634DFA30220C9C0092DB89 /* BarcodeGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4530220C9C0092DB89 /* BarcodeGenerator.swift */; };
+		1C634DFB30220C9C0092DB89 /* CameraPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4630220C9C0092DB89 /* CameraPicker.swift */; };
+		1C634DFC30220C9C0092DB89 /* Dashboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4730220C9C0092DB89 /* Dashboard.swift */; };
+		1C634DFD30220C9C0092DB89 /* Detail_AttachmentList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4830220C9C0092DB89 /* Detail_AttachmentList.swift */; };
+		1C634DFE30220C9C0092DB89 /* Detail_ContextSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4930220C9C0092DB89 /* Detail_ContextSection.swift */; };
+		1C634DFF30220C9C0092DB89 /* Detail_MainInfoSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4A30220C9C0092DB89 /* Detail_MainInfoSection.swift */; };
+		1C634E0030220C9C0092DB89 /* Detail_QuickLookPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4B30220C9C0092DB89 /* Detail_QuickLookPreview.swift */; };
+		1C634E0130220C9C0092DB89 /* Detail_ResourcesSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4C30220C9C0092DB89 /* Detail_ResourcesSection.swift */; };
+		1C634E0230220C9C0092DB89 /* Detail_Share.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4D30220C9C0092DB89 /* Detail_Share.swift */; };
+		1C634E0330220C9C0092DB89 /* DisclaimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4E30220C9C0092DB89 /* DisclaimerView.swift */; };
+		1C634E0430220C9C0092DB89 /* DocumentAssetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D4F30220C9C0092DB89 /* DocumentAssetDetailView.swift */; };
+		1C634E0530220C9C0092DB89 /* DocumentAssetThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5030220C9C0092DB89 /* DocumentAssetThumbnail.swift */; };
+		1C634E0630220C9C0092DB89 /* DocumentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5130220C9C0092DB89 /* DocumentDetailView.swift */; };
+		1C634E0730220C9C0092DB89 /* DocumentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5230220C9C0092DB89 /* DocumentsView.swift */; };
+		1C634E0830220C9C0092DB89 /* DocumentViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5330220C9C0092DB89 /* DocumentViewerView.swift */; };
+		1C634E0930220C9C0092DB89 /* DueIconEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5430220C9C0092DB89 /* DueIconEffect.swift */; };
+		1C634E0A30220C9C0092DB89 /* DueIconEffectModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5530220C9C0092DB89 /* DueIconEffectModifier.swift */; };
+		1C634E0B30220C9C0092DB89 /* EditLoyaltyCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5630220C9C0092DB89 /* EditLoyaltyCardView.swift */; };
+		1C634E0C30220C9C0092DB89 /* ExportToCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5730220C9C0092DB89 /* ExportToCalendarView.swift */; };
+		1C634E0D30220C9C0092DB89 /* FAQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5830220C9C0092DB89 /* FAQView.swift */; };
+		1C634E0E30220C9C0092DB89 /* ImagePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5930220C9C0092DB89 /* ImagePreviewView.swift */; };
+		1C634E0F30220C9C0092DB89 /* ImportExportSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */; };
+		1C634E1030220C9C0092DB89 /* LocationPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5B30220C9C0092DB89 /* LocationPickerView.swift */; };
+		1C634E1130220C9C0092DB89 /* LoyaltyCardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5C30220C9C0092DB89 /* LoyaltyCardDetailView.swift */; };
+		1C634E1230220C9C0092DB89 /* NewTaskSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5D30220C9C0092DB89 /* NewTaskSheetView.swift */; };
+		1C634E1330220C9C0092DB89 /* NotificationSoundPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5E30220C9C0092DB89 /* NotificationSoundPickerView.swift */; };
+		1C634E1430220C9C0092DB89 /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5F30220C9C0092DB89 /* NotificationView.swift */; };
+		1C634E1530220C9C0092DB89 /* OtherSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */; };
+		1C634E1630220C9C0092DB89 /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6130220C9C0092DB89 /* OverviewView.swift */; };
+		1C634E1730220C9C0092DB89 /* PDFThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6230220C9C0092DB89 /* PDFThumbnail.swift */; };
+		1C634E1830220C9C0092DB89 /* RecentlyDeletedVaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6330220C9C0092DB89 /* RecentlyDeletedVaultView.swift */; };
+		1C634E1930220C9C0092DB89 /* RecentlyDeletedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6430220C9C0092DB89 /* RecentlyDeletedView.swift */; };
+		1C634E1A30220C9C0092DB89 /* ResetAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6530220C9C0092DB89 /* ResetAppView.swift */; };
+		1C634E1B30220C9C0092DB89 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6630220C9C0092DB89 /* SettingsView.swift */; };
+		1C634E1C30220C9C0092DB89 /* ShortList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6730220C9C0092DB89 /* ShortList.swift */; };
+		1C634E1D30220C9C0092DB89 /* StartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6830220C9C0092DB89 /* StartView.swift */; };
+		1C634E1E30220C9C0092DB89 /* TabBarCustomizationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6930220C9C0092DB89 /* TabBarCustomizationView.swift */; };
+		1C634E1F30220C9C0092DB89 /* TaskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6A30220C9C0092DB89 /* TaskApp.swift */; };
+		1C634E2030220C9C0092DB89 /* TaskBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6B30220C9C0092DB89 /* TaskBadgeView.swift */; };
+		1C634E2130220C9C0092DB89 /* TaskCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6C30220C9C0092DB89 /* TaskCalendarView.swift */; };
+		1C634E2230220C9C0092DB89 /* TaskDaySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6D30220C9C0092DB89 /* TaskDaySection.swift */; };
+		1C634E2330220C9C0092DB89 /* TaskDeadlineColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6E30220C9C0092DB89 /* TaskDeadlineColumn.swift */; };
+		1C634E2430220C9C0092DB89 /* TaskDetail_ScheduleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6F30220C9C0092DB89 /* TaskDetail_ScheduleSection.swift */; };
+		1C634E2530220C9C0092DB89 /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7030220C9C0092DB89 /* TaskDetailView.swift */; };
+		1C634E2630220C9C0092DB89 /* TaskIconContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7130220C9C0092DB89 /* TaskIconContent.swift */; };
+		1C634E2730220C9C0092DB89 /* TaskListAppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7230220C9C0092DB89 /* TaskListAppearanceView.swift */; };
+		1C634E2830220C9C0092DB89 /* TaskListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7330220C9C0092DB89 /* TaskListView.swift */; };
+		1C634E2930220C9C0092DB89 /* TaskMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7430220C9C0092DB89 /* TaskMapView.swift */; };
+		1C634E2A30220C9C0092DB89 /* TaskRowBaseLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7530220C9C0092DB89 /* TaskRowBaseLogic.swift */; };
+		1C634E2B30220C9C0092DB89 /* TaskRowContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7630220C9C0092DB89 /* TaskRowContent.swift */; };
+		1C634E2C30220C9C0092DB89 /* TaskTabIOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7730220C9C0092DB89 /* TaskTabIOS.swift */; };
+		1C634E2D30220C9C0092DB89 /* TripsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7830220C9C0092DB89 /* TripsView.swift */; };
+		1C634E2E30220C9C0092DB89 /* VaultDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7930220C9C0092DB89 /* VaultDetailView.swift */; };
+		1C634E2F30220C9C0092DB89 /* VaultEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7A30220C9C0092DB89 /* VaultEditView.swift */; };
+		1C634E3030220C9C0092DB89 /* VaultGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7B30220C9C0092DB89 /* VaultGateView.swift */; };
+		1C634E3130220C9C0092DB89 /* VaultLockCoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7C30220C9C0092DB89 /* VaultLockCoverView.swift */; };
+		1C634E3230220C9C0092DB89 /* VaultPasswordField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7D30220C9C0092DB89 /* VaultPasswordField.swift */; };
+		1C634E3330220C9C0092DB89 /* VaultRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7E30220C9C0092DB89 /* VaultRow.swift */; };
+		1C634E3430220C9C0092DB89 /* VaultSecureTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D7F30220C9C0092DB89 /* VaultSecureTextField.swift */; };
+		1C634E3530220C9C0092DB89 /* VaultSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8030220C9C0092DB89 /* VaultSettingsView.swift */; };
+		1C634E3630220C9C0092DB89 /* VaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8130220C9C0092DB89 /* VaultView.swift */; };
+		1C634E3730220C9C0092DB89 /* WalletAssetThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8230220C9C0092DB89 /* WalletAssetThumbnail.swift */; };
+		1C634E3830220C9C0092DB89 /* WalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8330220C9C0092DB89 /* WalletView.swift */; };
+		1C634E3930220C9C0092DB89 /* WeatherDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8430220C9C0092DB89 /* WeatherDayView.swift */; };
+		1C634E3A30220C9C0092DB89 /* WeatherForecastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */; };
+		1C634E3B30220C9C0092DB89 /* WeeklyTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */; };
+		1C634E3D30220D580092DB89 /* WalletAssetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */; };
 		1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */; };
 		1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -35,19 +210,188 @@
 
 /* Begin PBXFileReference section */
 		1C1C23002F7E983A00A77282 /* ForMemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ForMemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskIntent.swift; sourceTree = "<group>"; };
+		1C634CD530220C9C0092DB89 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		1C634CD630220C9C0092DB89 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
+		1C634CD730220C9C0092DB89 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
+		1C634CD830220C9C0092DB89 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		1C634CD930220C9C0092DB89 /* AppShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShortcuts.swift; sourceTree = "<group>"; };
+		1C634CDA30220C9C0092DB89 /* AppTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTab.swift; sourceTree = "<group>"; };
+		1C634CDB30220C9C0092DB89 /* AttachmentMaintenanceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentMaintenanceManager.swift; sourceTree = "<group>"; };
+		1C634CDC30220C9C0092DB89 /* AttachmentMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentMigration.swift; sourceTree = "<group>"; };
+		1C634CDD30220C9C0092DB89 /* CalendarExportEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarExportEngine.swift; sourceTree = "<group>"; };
+		1C634CDE30220C9C0092DB89 /* CalendarPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarPickerView.swift; sourceTree = "<group>"; };
+		1C634CDF30220C9C0092DB89 /* CloudKitResetManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitResetManager.swift; sourceTree = "<group>"; };
+		1C634CE030220C9C0092DB89 /* CloudSettingsSync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSettingsSync.swift; sourceTree = "<group>"; };
+		1C634CE130220C9C0092DB89 /* CredentialSavingRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialSavingRequest.swift; sourceTree = "<group>"; };
+		1C634CE230220C9C0092DB89 /* CSVImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImporter.swift; sourceTree = "<group>"; };
+		1C634CE330220C9C0092DB89 /* CSVTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVTask.swift; sourceTree = "<group>"; };
+		1C634CE430220C9C0092DB89 /* DebugTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugTools.swift; sourceTree = "<group>"; };
+		1C634CE530220C9C0092DB89 /* DeletedFingerprintStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedFingerprintStore.swift; sourceTree = "<group>"; };
+		1C634CE630220C9C0092DB89 /* DeletedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletedItem.swift; sourceTree = "<group>"; };
+		1C634CE730220C9C0092DB89 /* DeleteTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteTask.swift; sourceTree = "<group>"; };
+		1C634CE830220C9C0092DB89 /* DocumentAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentAsset.swift; sourceTree = "<group>"; };
+		1C634CE930220C9C0092DB89 /* DocumentAssetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentAssetStore.swift; sourceTree = "<group>"; };
+		1C634CEA30220C9C0092DB89 /* DocumentImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentImportService.swift; sourceTree = "<group>"; };
+		1C634CEB30220C9C0092DB89 /* Documents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Documents.swift; sourceTree = "<group>"; };
+		1C634CEC30220C9C0092DB89 /* DocumentScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScannerView.swift; sourceTree = "<group>"; };
+		1C634CED30220C9C0092DB89 /* FMTripDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FMTripDocument.swift; sourceTree = "<group>"; };
+		1C634CEE30220C9C0092DB89 /* ForMemoStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForMemoStorageManager.swift; sourceTree = "<group>"; };
+		1C634CEF30220C9C0092DB89 /* GetTasksIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTasksIntent.swift; sourceTree = "<group>"; };
+		1C634CF030220C9C0092DB89 /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
+		1C634CF130220C9C0092DB89 /* ICSExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICSExporter.swift; sourceTree = "<group>"; };
+		1C634CF230220C9C0092DB89 /* Import.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Import.swift; sourceTree = "<group>"; };
+		1C634CF330220C9C0092DB89 /* ImportCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportCalendar.swift; sourceTree = "<group>"; };
+		1C634CF430220C9C0092DB89 /* ImportCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportCard.swift; sourceTree = "<group>"; };
+		1C634CF530220C9C0092DB89 /* ImportExportCSV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExportCSV.swift; sourceTree = "<group>"; };
+		1C634CF630220C9C0092DB89 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		1C634CF730220C9C0092DB89 /* LaunchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchCoordinator.swift; sourceTree = "<group>"; };
+		1C634CF830220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyLoyaltyCardLogoStore.swift; sourceTree = "<group>"; };
+		1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyTaskRecovery.swift; sourceTree = "<group>"; };
+		1C634CFA30220C9C0092DB89 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		1C634CFB30220C9C0092DB89 /* LocationReminderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationReminderManager.swift; sourceTree = "<group>"; };
+		1C634CFC30220C9C0092DB89 /* LoyaltyCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoyaltyCard.swift; sourceTree = "<group>"; };
+		1C634CFD30220C9C0092DB89 /* ModelContext+SafeSave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelContext+SafeSave.swift"; sourceTree = "<group>"; };
+		1C634CFE30220C9C0092DB89 /* NavigationApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationApp.swift; sourceTree = "<group>"; };
+		1C634CFF30220C9C0092DB89 /* Notification+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Notification+Extensions.swift"; sourceTree = "<group>"; };
+		1C634D0030220C9C0092DB89 /* NotificationActionProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationActionProcessor.swift; sourceTree = "<group>"; };
+		1C634D0130220C9C0092DB89 /* NotificationLeadTime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationLeadTime.swift; sourceTree = "<group>"; };
+		1C634D0230220C9C0092DB89 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		1C634D0330220C9C0092DB89 /* PasswordGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasswordGenerator.swift; sourceTree = "<group>"; };
+		1C634D0430220C9C0092DB89 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		1C634D0530220C9C0092DB89 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1C634D0630220C9C0092DB89 /* RemindersAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersAccess.swift; sourceTree = "<group>"; };
+		1C634D0730220C9C0092DB89 /* ReminderScrubberControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderScrubberControl.swift; sourceTree = "<group>"; };
+		1C634D0830220C9C0092DB89 /* RowBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowBackground.swift; sourceTree = "<group>"; };
+		1C634D0930220C9C0092DB89 /* RowCardStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowCardStyle.swift; sourceTree = "<group>"; };
+		1C634D0A30220C9C0092DB89 /* SearchTasksIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTasksIntent.swift; sourceTree = "<group>"; };
+		1C634D0B30220C9C0092DB89 /* SecretValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecretValue.swift; sourceTree = "<group>"; };
+		1C634D0C30220C9C0092DB89 /* SecureClipboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureClipboard.swift; sourceTree = "<group>"; };
+		1C634D0D30220C9C0092DB89 /* SensitiveValues.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SensitiveValues.swift; sourceTree = "<group>"; };
+		1C634D0E30220C9C0092DB89 /* StoreMigrationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreMigrationManager.swift; sourceTree = "<group>"; };
+		1C634D0F30220C9C0092DB89 /* SurfaceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfaceSettings.swift; sourceTree = "<group>"; };
+		1C634D1030220C9C0092DB89 /* TaskAttachment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskAttachment.swift; sourceTree = "<group>"; };
+		1C634D1130220C9C0092DB89 /* TaskBadgePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskBadgePolicy.swift; sourceTree = "<group>"; };
+		1C634D1230220C9C0092DB89 /* TaskExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskExportService.swift; sourceTree = "<group>"; };
+		1C634D1330220C9C0092DB89 /* TaskRowAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowAppearance.swift; sourceTree = "<group>"; };
+		1C634D1430220C9C0092DB89 /* TaskRowBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowBorder.swift; sourceTree = "<group>"; };
+		1C634D1530220C9C0092DB89 /* TaskRowDisplayModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowDisplayModel.swift; sourceTree = "<group>"; };
+		1C634D1630220C9C0092DB89 /* TaskRowSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowSurface.swift; sourceTree = "<group>"; };
+		1C634D1730220C9C0092DB89 /* TaskTransferObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskTransferObject.swift; sourceTree = "<group>"; };
+		1C634D1830220C9C0092DB89 /* TodoTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoTask.swift; sourceTree = "<group>"; };
+		1C634D1930220C9C0092DB89 /* TripList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripList.swift; sourceTree = "<group>"; };
+		1C634D1A30220C9C0092DB89 /* VaultAutoFillManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultAutoFillManager.swift; sourceTree = "<group>"; };
+		1C634D1B30220C9C0092DB89 /* VaultBackupCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultBackupCrypto.swift; sourceTree = "<group>"; };
+		1C634D1C30220C9C0092DB89 /* VaultCredentialSavingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCredentialSavingManager.swift; sourceTree = "<group>"; };
+		1C634D1D30220C9C0092DB89 /* VaultCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultCrypto.swift; sourceTree = "<group>"; };
+		1C634D1E30220C9C0092DB89 /* VaultItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultItem.swift; sourceTree = "<group>"; };
+		1C634D1F30220C9C0092DB89 /* VaultLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultLock.swift; sourceTree = "<group>"; };
+		1C634D2030220C9C0092DB89 /* VaultManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultManager.swift; sourceTree = "<group>"; };
+		1C634D2130220C9C0092DB89 /* VaultSecret.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSecret.swift; sourceTree = "<group>"; };
+		1C634D2230220C9C0092DB89 /* WalletAsset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletAsset.swift; sourceTree = "<group>"; };
+		1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletAssetDetailView.swift; sourceTree = "<group>"; };
+		1C634D2430220C9C0092DB89 /* WalletAssetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletAssetStore.swift; sourceTree = "<group>"; };
+		1C634D2530220C9C0092DB89 /* WalletDeleteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDeleteService.swift; sourceTree = "<group>"; };
+		1C634D2630220C9C0092DB89 /* WalletImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletImportService.swift; sourceTree = "<group>"; };
+		1C634D2730220C9C0092DB89 /* WalletMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletMigrationService.swift; sourceTree = "<group>"; };
+		1C634D2830220C9C0092DB89 /* WalletViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletViewerView.swift; sourceTree = "<group>"; };
+		1C634D2930220C9C0092DB89 /* WeatherManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherManager.swift; sourceTree = "<group>"; };
+		1C634D2B30220C9C0092DB89 /* AppleCredentialExchangeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCredentialExchangeProvider.swift; sourceTree = "<group>"; };
+		1C634D2C30220C9C0092DB89 /* AppleCredentialExportMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCredentialExportMapper.swift; sourceTree = "<group>"; };
+		1C634D2D30220C9C0092DB89 /* AppleCredentialImportMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCredentialImportMapper.swift; sourceTree = "<group>"; };
+		1C634D2F30220C9C0092DB89 /* CredentialExchangeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialExchangeManager.swift; sourceTree = "<group>"; };
+		1C634D3030220C9C0092DB89 /* CredentialExchangeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialExchangeProvider.swift; sourceTree = "<group>"; };
+		1C634D3130220C9C0092DB89 /* CredentialExchangeResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialExchangeResult.swift; sourceTree = "<group>"; };
+		1C634D3230220C9C0092DB89 /* CredentialExchangeTester.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialExchangeTester.swift; sourceTree = "<group>"; };
+		1C634D3330220C9C0092DB89 /* ImportMergePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportMergePolicy.swift; sourceTree = "<group>"; };
+		1C634D3430220C9C0092DB89 /* VaultExportMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultExportMapper.swift; sourceTree = "<group>"; };
+		1C634D3530220C9C0092DB89 /* VaultExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultExportService.swift; sourceTree = "<group>"; };
+		1C634D3630220C9C0092DB89 /* VaultImportCredential.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultImportCredential.swift; sourceTree = "<group>"; };
+		1C634D3730220C9C0092DB89 /* VaultImportRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultImportRecord.swift; sourceTree = "<group>"; };
+		1C634D3830220C9C0092DB89 /* VaultImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultImportService.swift; sourceTree = "<group>"; };
+		1C634D3C30220C9C0092DB89 /* AddLoyaltyCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddLoyaltyCardView.swift; sourceTree = "<group>"; };
+		1C634D3D30220C9C0092DB89 /* AppQuickGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppQuickGuide.swift; sourceTree = "<group>"; };
+		1C634D3E30220C9C0092DB89 /* AppUnavailableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUnavailableView.swift; sourceTree = "<group>"; };
+		1C634D3F30220C9C0092DB89 /* AttachmentImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentImporter.swift; sourceTree = "<group>"; };
+		1C634D4030220C9C0092DB89 /* AttachmentRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentRow.swift; sourceTree = "<group>"; };
+		1C634D4130220C9C0092DB89 /* AudioPlayerRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerRow.swift; sourceTree = "<group>"; };
+		1C634D4230220C9C0092DB89 /* AudioRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderView.swift; sourceTree = "<group>"; };
+		1C634D4330220C9C0092DB89 /* BackgroundCustomizationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundCustomizationView.swift; sourceTree = "<group>"; };
+		1C634D4430220C9C0092DB89 /* BackupRestore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupRestore.swift; sourceTree = "<group>"; };
+		1C634D4530220C9C0092DB89 /* BarcodeGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeGenerator.swift; sourceTree = "<group>"; };
+		1C634D4630220C9C0092DB89 /* CameraPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPicker.swift; sourceTree = "<group>"; };
+		1C634D4730220C9C0092DB89 /* Dashboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dashboard.swift; sourceTree = "<group>"; };
+		1C634D4830220C9C0092DB89 /* Detail_AttachmentList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Detail_AttachmentList.swift; sourceTree = "<group>"; };
+		1C634D4930220C9C0092DB89 /* Detail_ContextSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Detail_ContextSection.swift; sourceTree = "<group>"; };
+		1C634D4A30220C9C0092DB89 /* Detail_MainInfoSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Detail_MainInfoSection.swift; sourceTree = "<group>"; };
+		1C634D4B30220C9C0092DB89 /* Detail_QuickLookPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Detail_QuickLookPreview.swift; sourceTree = "<group>"; };
+		1C634D4C30220C9C0092DB89 /* Detail_ResourcesSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Detail_ResourcesSection.swift; sourceTree = "<group>"; };
+		1C634D4D30220C9C0092DB89 /* Detail_Share.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Detail_Share.swift; sourceTree = "<group>"; };
+		1C634D4E30220C9C0092DB89 /* DisclaimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclaimerView.swift; sourceTree = "<group>"; };
+		1C634D4F30220C9C0092DB89 /* DocumentAssetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentAssetDetailView.swift; sourceTree = "<group>"; };
+		1C634D5030220C9C0092DB89 /* DocumentAssetThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentAssetThumbnail.swift; sourceTree = "<group>"; };
+		1C634D5130220C9C0092DB89 /* DocumentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentDetailView.swift; sourceTree = "<group>"; };
+		1C634D5230220C9C0092DB89 /* DocumentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentsView.swift; sourceTree = "<group>"; };
+		1C634D5330220C9C0092DB89 /* DocumentViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentViewerView.swift; sourceTree = "<group>"; };
+		1C634D5430220C9C0092DB89 /* DueIconEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DueIconEffect.swift; sourceTree = "<group>"; };
+		1C634D5530220C9C0092DB89 /* DueIconEffectModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DueIconEffectModifier.swift; sourceTree = "<group>"; };
+		1C634D5630220C9C0092DB89 /* EditLoyaltyCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditLoyaltyCardView.swift; sourceTree = "<group>"; };
+		1C634D5730220C9C0092DB89 /* ExportToCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportToCalendarView.swift; sourceTree = "<group>"; };
+		1C634D5830220C9C0092DB89 /* FAQView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FAQView.swift; sourceTree = "<group>"; };
+		1C634D5930220C9C0092DB89 /* ImagePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePreviewView.swift; sourceTree = "<group>"; };
+		1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExportSettingsView.swift; sourceTree = "<group>"; };
+		1C634D5B30220C9C0092DB89 /* LocationPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPickerView.swift; sourceTree = "<group>"; };
+		1C634D5C30220C9C0092DB89 /* LoyaltyCardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoyaltyCardDetailView.swift; sourceTree = "<group>"; };
+		1C634D5D30220C9C0092DB89 /* NewTaskSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTaskSheetView.swift; sourceTree = "<group>"; };
+		1C634D5E30220C9C0092DB89 /* NotificationSoundPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSoundPickerView.swift; sourceTree = "<group>"; };
+		1C634D5F30220C9C0092DB89 /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
+		1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtherSettingsView.swift; sourceTree = "<group>"; };
+		1C634D6130220C9C0092DB89 /* OverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewView.swift; sourceTree = "<group>"; };
+		1C634D6230220C9C0092DB89 /* PDFThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFThumbnail.swift; sourceTree = "<group>"; };
+		1C634D6330220C9C0092DB89 /* RecentlyDeletedVaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentlyDeletedVaultView.swift; sourceTree = "<group>"; };
+		1C634D6430220C9C0092DB89 /* RecentlyDeletedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentlyDeletedView.swift; sourceTree = "<group>"; };
+		1C634D6530220C9C0092DB89 /* ResetAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetAppView.swift; sourceTree = "<group>"; };
+		1C634D6630220C9C0092DB89 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		1C634D6730220C9C0092DB89 /* ShortList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortList.swift; sourceTree = "<group>"; };
+		1C634D6830220C9C0092DB89 /* StartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartView.swift; sourceTree = "<group>"; };
+		1C634D6930220C9C0092DB89 /* TabBarCustomizationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarCustomizationView.swift; sourceTree = "<group>"; };
+		1C634D6A30220C9C0092DB89 /* TaskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskApp.swift; sourceTree = "<group>"; };
+		1C634D6B30220C9C0092DB89 /* TaskBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskBadgeView.swift; sourceTree = "<group>"; };
+		1C634D6C30220C9C0092DB89 /* TaskCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCalendarView.swift; sourceTree = "<group>"; };
+		1C634D6D30220C9C0092DB89 /* TaskDaySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDaySection.swift; sourceTree = "<group>"; };
+		1C634D6E30220C9C0092DB89 /* TaskDeadlineColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDeadlineColumn.swift; sourceTree = "<group>"; };
+		1C634D6F30220C9C0092DB89 /* TaskDetail_ScheduleSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetail_ScheduleSection.swift; sourceTree = "<group>"; };
+		1C634D7030220C9C0092DB89 /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
+		1C634D7130220C9C0092DB89 /* TaskIconContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskIconContent.swift; sourceTree = "<group>"; };
+		1C634D7230220C9C0092DB89 /* TaskListAppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListAppearanceView.swift; sourceTree = "<group>"; };
+		1C634D7330220C9C0092DB89 /* TaskListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListView.swift; sourceTree = "<group>"; };
+		1C634D7430220C9C0092DB89 /* TaskMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskMapView.swift; sourceTree = "<group>"; };
+		1C634D7530220C9C0092DB89 /* TaskRowBaseLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowBaseLogic.swift; sourceTree = "<group>"; };
+		1C634D7630220C9C0092DB89 /* TaskRowContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRowContent.swift; sourceTree = "<group>"; };
+		1C634D7730220C9C0092DB89 /* TaskTabIOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskTabIOS.swift; sourceTree = "<group>"; };
+		1C634D7830220C9C0092DB89 /* TripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripsView.swift; sourceTree = "<group>"; };
+		1C634D7930220C9C0092DB89 /* VaultDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultDetailView.swift; sourceTree = "<group>"; };
+		1C634D7A30220C9C0092DB89 /* VaultEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultEditView.swift; sourceTree = "<group>"; };
+		1C634D7B30220C9C0092DB89 /* VaultGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultGateView.swift; sourceTree = "<group>"; };
+		1C634D7C30220C9C0092DB89 /* VaultLockCoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultLockCoverView.swift; sourceTree = "<group>"; };
+		1C634D7D30220C9C0092DB89 /* VaultPasswordField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultPasswordField.swift; sourceTree = "<group>"; };
+		1C634D7E30220C9C0092DB89 /* VaultRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultRow.swift; sourceTree = "<group>"; };
+		1C634D7F30220C9C0092DB89 /* VaultSecureTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSecureTextField.swift; sourceTree = "<group>"; };
+		1C634D8030220C9C0092DB89 /* VaultSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultSettingsView.swift; sourceTree = "<group>"; };
+		1C634D8130220C9C0092DB89 /* VaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultView.swift; sourceTree = "<group>"; };
+		1C634D8230220C9C0092DB89 /* WalletAssetThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletAssetThumbnail.swift; sourceTree = "<group>"; };
+		1C634D8330220C9C0092DB89 /* WalletView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletView.swift; sourceTree = "<group>"; };
+		1C634D8430220C9C0092DB89 /* WeatherDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDayView.swift; sourceTree = "<group>"; };
+		1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherForecastView.swift; sourceTree = "<group>"; };
+		1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyTasksView.swift; sourceTree = "<group>"; };
+		1C634D8830220C9C0092DB89 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1C634D8930220C9C0092DB89 /* ForMemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ForMemo.entitlements; sourceTree = "<group>"; };
+		1C634D8A30220C9C0092DB89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoCredentialProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1C1C230D2F7E983C00A77282 /* Exceptions for "ForMemo" folder in "ForMemo" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-				Model/WalletAssetDetailView.swift,
-			);
-			target = 1C1C22FF2F7E983A00A77282 /* ForMemo */;
-		};
 		1CF9848B3000EBA300E1D1A9 /* Exceptions for "ForMemoCredentialProvider" folder in "ForMemoCredentialProvider" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -58,14 +402,6 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		1C1C23022F7E983A00A77282 /* ForMemo */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				1C1C230D2F7E983C00A77282 /* Exceptions for "ForMemo" folder in "ForMemo" target */,
-			);
-			path = ForMemo;
-			sourceTree = "<group>";
-		};
 		1C1C23DB2F7E9A1E00A77282 /* Sound */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Sound;
@@ -100,7 +436,7 @@
 			isa = PBXGroup;
 			children = (
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
-				1C1C23022F7E983A00A77282 /* ForMemo */,
+				1C634D8B30220C9C0092DB89 /* ForMemo */,
 				1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */,
 				1CF9847A3000EBA300E1D1A9 /* Frameworks */,
 				1C1C23012F7E983A00A77282 /* Products */,
@@ -114,6 +450,246 @@
 				1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		1C634D2A30220C9C0092DB89 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */,
+				1C634CD530220C9C0092DB89 /* AppDelegate.swift */,
+				1C634CD630220C9C0092DB89 /* AppError.swift */,
+				1C634CD730220C9C0092DB89 /* AppLogger.swift */,
+				1C634CD830220C9C0092DB89 /* AppSettings.swift */,
+				1C634CD930220C9C0092DB89 /* AppShortcuts.swift */,
+				1C634CDA30220C9C0092DB89 /* AppTab.swift */,
+				1C634CDB30220C9C0092DB89 /* AttachmentMaintenanceManager.swift */,
+				1C634CDC30220C9C0092DB89 /* AttachmentMigration.swift */,
+				1C634CDD30220C9C0092DB89 /* CalendarExportEngine.swift */,
+				1C634CDE30220C9C0092DB89 /* CalendarPickerView.swift */,
+				1C634CDF30220C9C0092DB89 /* CloudKitResetManager.swift */,
+				1C634CE030220C9C0092DB89 /* CloudSettingsSync.swift */,
+				1C634CE130220C9C0092DB89 /* CredentialSavingRequest.swift */,
+				1C634CE230220C9C0092DB89 /* CSVImporter.swift */,
+				1C634CE330220C9C0092DB89 /* CSVTask.swift */,
+				1C634CE430220C9C0092DB89 /* DebugTools.swift */,
+				1C634CE530220C9C0092DB89 /* DeletedFingerprintStore.swift */,
+				1C634CE630220C9C0092DB89 /* DeletedItem.swift */,
+				1C634CE730220C9C0092DB89 /* DeleteTask.swift */,
+				1C634CE830220C9C0092DB89 /* DocumentAsset.swift */,
+				1C634CE930220C9C0092DB89 /* DocumentAssetStore.swift */,
+				1C634CEA30220C9C0092DB89 /* DocumentImportService.swift */,
+				1C634CEB30220C9C0092DB89 /* Documents.swift */,
+				1C634CEC30220C9C0092DB89 /* DocumentScannerView.swift */,
+				1C634CED30220C9C0092DB89 /* FMTripDocument.swift */,
+				1C634CEE30220C9C0092DB89 /* ForMemoStorageManager.swift */,
+				1C634CEF30220C9C0092DB89 /* GetTasksIntent.swift */,
+				1C634CF030220C9C0092DB89 /* Global.swift */,
+				1C634CF130220C9C0092DB89 /* ICSExporter.swift */,
+				1C634CF230220C9C0092DB89 /* Import.swift */,
+				1C634CF330220C9C0092DB89 /* ImportCalendar.swift */,
+				1C634CF430220C9C0092DB89 /* ImportCard.swift */,
+				1C634CF530220C9C0092DB89 /* ImportExportCSV.swift */,
+				1C634CF630220C9C0092DB89 /* InfoPlist.xcstrings */,
+				1C634CF730220C9C0092DB89 /* LaunchCoordinator.swift */,
+				1C634CF830220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift */,
+				1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */,
+				1C634CFA30220C9C0092DB89 /* Localizable.xcstrings */,
+				1C634CFB30220C9C0092DB89 /* LocationReminderManager.swift */,
+				1C634CFC30220C9C0092DB89 /* LoyaltyCard.swift */,
+				1C634CFD30220C9C0092DB89 /* ModelContext+SafeSave.swift */,
+				1C634CFE30220C9C0092DB89 /* NavigationApp.swift */,
+				1C634CFF30220C9C0092DB89 /* Notification+Extensions.swift */,
+				1C634D0030220C9C0092DB89 /* NotificationActionProcessor.swift */,
+				1C634D0130220C9C0092DB89 /* NotificationLeadTime.swift */,
+				1C634D0230220C9C0092DB89 /* NotificationManager.swift */,
+				1C634D0330220C9C0092DB89 /* PasswordGenerator.swift */,
+				1C634D0430220C9C0092DB89 /* Persistence.swift */,
+				1C634D0530220C9C0092DB89 /* PrivacyInfo.xcprivacy */,
+				1C634D0630220C9C0092DB89 /* RemindersAccess.swift */,
+				1C634D0730220C9C0092DB89 /* ReminderScrubberControl.swift */,
+				1C634D0830220C9C0092DB89 /* RowBackground.swift */,
+				1C634D0930220C9C0092DB89 /* RowCardStyle.swift */,
+				1C634D0A30220C9C0092DB89 /* SearchTasksIntent.swift */,
+				1C634D0B30220C9C0092DB89 /* SecretValue.swift */,
+				1C634D0C30220C9C0092DB89 /* SecureClipboard.swift */,
+				1C634D0D30220C9C0092DB89 /* SensitiveValues.swift */,
+				1C634D0E30220C9C0092DB89 /* StoreMigrationManager.swift */,
+				1C634D0F30220C9C0092DB89 /* SurfaceSettings.swift */,
+				1C634D1030220C9C0092DB89 /* TaskAttachment.swift */,
+				1C634D1130220C9C0092DB89 /* TaskBadgePolicy.swift */,
+				1C634D1230220C9C0092DB89 /* TaskExportService.swift */,
+				1C634D1330220C9C0092DB89 /* TaskRowAppearance.swift */,
+				1C634D1430220C9C0092DB89 /* TaskRowBorder.swift */,
+				1C634D1530220C9C0092DB89 /* TaskRowDisplayModel.swift */,
+				1C634D1630220C9C0092DB89 /* TaskRowSurface.swift */,
+				1C634D1730220C9C0092DB89 /* TaskTransferObject.swift */,
+				1C634D1830220C9C0092DB89 /* TodoTask.swift */,
+				1C634D1930220C9C0092DB89 /* TripList.swift */,
+				1C634D1A30220C9C0092DB89 /* VaultAutoFillManager.swift */,
+				1C634D1B30220C9C0092DB89 /* VaultBackupCrypto.swift */,
+				1C634D1C30220C9C0092DB89 /* VaultCredentialSavingManager.swift */,
+				1C634D1D30220C9C0092DB89 /* VaultCrypto.swift */,
+				1C634D1E30220C9C0092DB89 /* VaultItem.swift */,
+				1C634D1F30220C9C0092DB89 /* VaultLock.swift */,
+				1C634D2030220C9C0092DB89 /* VaultManager.swift */,
+				1C634D2130220C9C0092DB89 /* VaultSecret.swift */,
+				1C634D2230220C9C0092DB89 /* WalletAsset.swift */,
+				1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */,
+				1C634D2430220C9C0092DB89 /* WalletAssetStore.swift */,
+				1C634D2530220C9C0092DB89 /* WalletDeleteService.swift */,
+				1C634D2630220C9C0092DB89 /* WalletImportService.swift */,
+				1C634D2730220C9C0092DB89 /* WalletMigrationService.swift */,
+				1C634D2830220C9C0092DB89 /* WalletViewerView.swift */,
+				1C634D2930220C9C0092DB89 /* WeatherManager.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		1C634D2E30220C9C0092DB89 /* Apple */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D2B30220C9C0092DB89 /* AppleCredentialExchangeProvider.swift */,
+				1C634D2C30220C9C0092DB89 /* AppleCredentialExportMapper.swift */,
+				1C634D2D30220C9C0092DB89 /* AppleCredentialImportMapper.swift */,
+			);
+			path = Apple;
+			sourceTree = "<group>";
+		};
+		1C634D3930220C9C0092DB89 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D2F30220C9C0092DB89 /* CredentialExchangeManager.swift */,
+				1C634D3030220C9C0092DB89 /* CredentialExchangeProvider.swift */,
+				1C634D3130220C9C0092DB89 /* CredentialExchangeResult.swift */,
+				1C634D3230220C9C0092DB89 /* CredentialExchangeTester.swift */,
+				1C634D3330220C9C0092DB89 /* ImportMergePolicy.swift */,
+				1C634D3430220C9C0092DB89 /* VaultExportMapper.swift */,
+				1C634D3530220C9C0092DB89 /* VaultExportService.swift */,
+				1C634D3630220C9C0092DB89 /* VaultImportCredential.swift */,
+				1C634D3730220C9C0092DB89 /* VaultImportRecord.swift */,
+				1C634D3830220C9C0092DB89 /* VaultImportService.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		1C634D3A30220C9C0092DB89 /* CredentialExchange */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D2E30220C9C0092DB89 /* Apple */,
+				1C634D3930220C9C0092DB89 /* Core */,
+			);
+			path = CredentialExchange;
+			sourceTree = "<group>";
+		};
+		1C634D3B30220C9C0092DB89 /* Vault */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D3A30220C9C0092DB89 /* CredentialExchange */,
+			);
+			path = Vault;
+			sourceTree = "<group>";
+		};
+		1C634D8730220C9C0092DB89 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D3C30220C9C0092DB89 /* AddLoyaltyCardView.swift */,
+				1C634D3D30220C9C0092DB89 /* AppQuickGuide.swift */,
+				1C634D3E30220C9C0092DB89 /* AppUnavailableView.swift */,
+				1C634D3F30220C9C0092DB89 /* AttachmentImporter.swift */,
+				1C634D4030220C9C0092DB89 /* AttachmentRow.swift */,
+				1C634D4130220C9C0092DB89 /* AudioPlayerRow.swift */,
+				1C634D4230220C9C0092DB89 /* AudioRecorderView.swift */,
+				1C634D4330220C9C0092DB89 /* BackgroundCustomizationView.swift */,
+				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,
+				1C634D4530220C9C0092DB89 /* BarcodeGenerator.swift */,
+				1C634D4630220C9C0092DB89 /* CameraPicker.swift */,
+				1C634D4730220C9C0092DB89 /* Dashboard.swift */,
+				1C634D4830220C9C0092DB89 /* Detail_AttachmentList.swift */,
+				1C634D4930220C9C0092DB89 /* Detail_ContextSection.swift */,
+				1C634D4A30220C9C0092DB89 /* Detail_MainInfoSection.swift */,
+				1C634D4B30220C9C0092DB89 /* Detail_QuickLookPreview.swift */,
+				1C634D4C30220C9C0092DB89 /* Detail_ResourcesSection.swift */,
+				1C634D4D30220C9C0092DB89 /* Detail_Share.swift */,
+				1C634D4E30220C9C0092DB89 /* DisclaimerView.swift */,
+				1C634D4F30220C9C0092DB89 /* DocumentAssetDetailView.swift */,
+				1C634D5030220C9C0092DB89 /* DocumentAssetThumbnail.swift */,
+				1C634D5130220C9C0092DB89 /* DocumentDetailView.swift */,
+				1C634D5230220C9C0092DB89 /* DocumentsView.swift */,
+				1C634D5330220C9C0092DB89 /* DocumentViewerView.swift */,
+				1C634D5430220C9C0092DB89 /* DueIconEffect.swift */,
+				1C634D5530220C9C0092DB89 /* DueIconEffectModifier.swift */,
+				1C634D5630220C9C0092DB89 /* EditLoyaltyCardView.swift */,
+				1C634D5730220C9C0092DB89 /* ExportToCalendarView.swift */,
+				1C634D5830220C9C0092DB89 /* FAQView.swift */,
+				1C634D5930220C9C0092DB89 /* ImagePreviewView.swift */,
+				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
+				1C634D5B30220C9C0092DB89 /* LocationPickerView.swift */,
+				1C634D5C30220C9C0092DB89 /* LoyaltyCardDetailView.swift */,
+				1C634D5D30220C9C0092DB89 /* NewTaskSheetView.swift */,
+				1C634D5E30220C9C0092DB89 /* NotificationSoundPickerView.swift */,
+				1C634D5F30220C9C0092DB89 /* NotificationView.swift */,
+				1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */,
+				1C634D6130220C9C0092DB89 /* OverviewView.swift */,
+				1C634D6230220C9C0092DB89 /* PDFThumbnail.swift */,
+				1C634D6330220C9C0092DB89 /* RecentlyDeletedVaultView.swift */,
+				1C634D6430220C9C0092DB89 /* RecentlyDeletedView.swift */,
+				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
+				1C634D6630220C9C0092DB89 /* SettingsView.swift */,
+				1C634D6730220C9C0092DB89 /* ShortList.swift */,
+				1C634D6830220C9C0092DB89 /* StartView.swift */,
+				1C634D6930220C9C0092DB89 /* TabBarCustomizationView.swift */,
+				1C634D6A30220C9C0092DB89 /* TaskApp.swift */,
+				1C634D6B30220C9C0092DB89 /* TaskBadgeView.swift */,
+				1C634D6C30220C9C0092DB89 /* TaskCalendarView.swift */,
+				1C634D6D30220C9C0092DB89 /* TaskDaySection.swift */,
+				1C634D6E30220C9C0092DB89 /* TaskDeadlineColumn.swift */,
+				1C634D6F30220C9C0092DB89 /* TaskDetail_ScheduleSection.swift */,
+				1C634D7030220C9C0092DB89 /* TaskDetailView.swift */,
+				1C634D7130220C9C0092DB89 /* TaskIconContent.swift */,
+				1C634D7230220C9C0092DB89 /* TaskListAppearanceView.swift */,
+				1C634D7330220C9C0092DB89 /* TaskListView.swift */,
+				1C634D7430220C9C0092DB89 /* TaskMapView.swift */,
+				1C634D7530220C9C0092DB89 /* TaskRowBaseLogic.swift */,
+				1C634D7630220C9C0092DB89 /* TaskRowContent.swift */,
+				1C634D7730220C9C0092DB89 /* TaskTabIOS.swift */,
+				1C634D7830220C9C0092DB89 /* TripsView.swift */,
+				1C634D7930220C9C0092DB89 /* VaultDetailView.swift */,
+				1C634D7A30220C9C0092DB89 /* VaultEditView.swift */,
+				1C634D7B30220C9C0092DB89 /* VaultGateView.swift */,
+				1C634D7C30220C9C0092DB89 /* VaultLockCoverView.swift */,
+				1C634D7D30220C9C0092DB89 /* VaultPasswordField.swift */,
+				1C634D7E30220C9C0092DB89 /* VaultRow.swift */,
+				1C634D7F30220C9C0092DB89 /* VaultSecureTextField.swift */,
+				1C634D8030220C9C0092DB89 /* VaultSettingsView.swift */,
+				1C634D8130220C9C0092DB89 /* VaultView.swift */,
+				1C634D8230220C9C0092DB89 /* WalletAssetThumbnail.swift */,
+				1C634D8330220C9C0092DB89 /* WalletView.swift */,
+				1C634D8430220C9C0092DB89 /* WeatherDayView.swift */,
+				1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */,
+				1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		1C634D8B30220C9C0092DB89 /* ForMemo */ = {
+			isa = PBXGroup;
+			children = (
+				1C634E3C30220CAE0092DB89 /* Task */,
+				1C634D2A30220C9C0092DB89 /* Model */,
+				1C634D3B30220C9C0092DB89 /* Vault */,
+				1C634D8730220C9C0092DB89 /* Views */,
+				1C634D8830220C9C0092DB89 /* Assets.xcassets */,
+				1C634D8930220C9C0092DB89 /* ForMemo.entitlements */,
+				1C634D8A30220C9C0092DB89 /* Info.plist */,
+			);
+			path = ForMemo;
+			sourceTree = "<group>";
+		};
+		1C634E3C30220CAE0092DB89 /* Task */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Task;
 			sourceTree = "<group>";
 		};
 		1CF9847A3000EBA300E1D1A9 /* Frameworks */ = {
@@ -142,7 +718,6 @@
 				1CF984863000EBA300E1D1A9 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				1C1C23022F7E983A00A77282 /* ForMemo */,
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
 			);
 			name = ForMemo;
@@ -210,6 +785,10 @@
 		1C1C22FE2F7E983A00A77282 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				1C634D8C30220C9C0092DB89 /* InfoPlist.xcstrings in Resources */,
+				1C634D8D30220C9C0092DB89 /* Localizable.xcstrings in Resources */,
+				1C634D8E30220C9C0092DB89 /* PrivacyInfo.xcprivacy in Resources */,
+				1C634D8F30220C9C0092DB89 /* Assets.xcassets in Resources */,
 			);
 		};
 		1CF984773000EBA300E1D1A9 /* Resources */ = {
@@ -223,6 +802,177 @@
 		1C1C22FC2F7E983A00A77282 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				1C634D9130220C9C0092DB89 /* AddTaskIntent.swift in Sources */,
+				1C634D9230220C9C0092DB89 /* AppDelegate.swift in Sources */,
+				1C634D9330220C9C0092DB89 /* AppError.swift in Sources */,
+				1C634D9430220C9C0092DB89 /* AppLogger.swift in Sources */,
+				1C634D9530220C9C0092DB89 /* AppSettings.swift in Sources */,
+				1C634D9630220C9C0092DB89 /* AppShortcuts.swift in Sources */,
+				1C634D9730220C9C0092DB89 /* AppTab.swift in Sources */,
+				1C634D9830220C9C0092DB89 /* AttachmentMaintenanceManager.swift in Sources */,
+				1C634D9930220C9C0092DB89 /* AttachmentMigration.swift in Sources */,
+				1C634D9A30220C9C0092DB89 /* CalendarExportEngine.swift in Sources */,
+				1C634D9B30220C9C0092DB89 /* CalendarPickerView.swift in Sources */,
+				1C634D9C30220C9C0092DB89 /* CloudKitResetManager.swift in Sources */,
+				1C634D9D30220C9C0092DB89 /* CloudSettingsSync.swift in Sources */,
+				1C634D9E30220C9C0092DB89 /* CredentialSavingRequest.swift in Sources */,
+				1C634D9F30220C9C0092DB89 /* CSVImporter.swift in Sources */,
+				1C634DA030220C9C0092DB89 /* CSVTask.swift in Sources */,
+				1C634DA130220C9C0092DB89 /* DebugTools.swift in Sources */,
+				1C634DA230220C9C0092DB89 /* DeletedFingerprintStore.swift in Sources */,
+				1C634DA330220C9C0092DB89 /* DeletedItem.swift in Sources */,
+				1C634DA430220C9C0092DB89 /* DeleteTask.swift in Sources */,
+				1C634DA530220C9C0092DB89 /* DocumentAsset.swift in Sources */,
+				1C634DA630220C9C0092DB89 /* DocumentAssetStore.swift in Sources */,
+				1C634DA730220C9C0092DB89 /* DocumentImportService.swift in Sources */,
+				1C634DA830220C9C0092DB89 /* Documents.swift in Sources */,
+				1C634DA930220C9C0092DB89 /* DocumentScannerView.swift in Sources */,
+				1C634DAA30220C9C0092DB89 /* FMTripDocument.swift in Sources */,
+				1C634DAB30220C9C0092DB89 /* ForMemoStorageManager.swift in Sources */,
+				1C634DAC30220C9C0092DB89 /* GetTasksIntent.swift in Sources */,
+				1C634DAD30220C9C0092DB89 /* Global.swift in Sources */,
+				1C634DAE30220C9C0092DB89 /* ICSExporter.swift in Sources */,
+				1C634DAF30220C9C0092DB89 /* Import.swift in Sources */,
+				1C634DB030220C9C0092DB89 /* ImportCalendar.swift in Sources */,
+				1C634DB130220C9C0092DB89 /* ImportCard.swift in Sources */,
+				1C634DB230220C9C0092DB89 /* ImportExportCSV.swift in Sources */,
+				1C634DB330220C9C0092DB89 /* LaunchCoordinator.swift in Sources */,
+				1C634DB430220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift in Sources */,
+				1C634DB530220C9C0092DB89 /* LegacyTaskRecovery.swift in Sources */,
+				1C634DB630220C9C0092DB89 /* LocationReminderManager.swift in Sources */,
+				1C634DB730220C9C0092DB89 /* LoyaltyCard.swift in Sources */,
+				1C634DB830220C9C0092DB89 /* ModelContext+SafeSave.swift in Sources */,
+				1C634DB930220C9C0092DB89 /* NavigationApp.swift in Sources */,
+				1C634DBA30220C9C0092DB89 /* Notification+Extensions.swift in Sources */,
+				1C634DBB30220C9C0092DB89 /* NotificationActionProcessor.swift in Sources */,
+				1C634DBC30220C9C0092DB89 /* NotificationLeadTime.swift in Sources */,
+				1C634DBD30220C9C0092DB89 /* NotificationManager.swift in Sources */,
+				1C634DBE30220C9C0092DB89 /* PasswordGenerator.swift in Sources */,
+				1C634DBF30220C9C0092DB89 /* Persistence.swift in Sources */,
+				1C634DC030220C9C0092DB89 /* RemindersAccess.swift in Sources */,
+				1C634DC130220C9C0092DB89 /* ReminderScrubberControl.swift in Sources */,
+				1C634E3D30220D580092DB89 /* WalletAssetDetailView.swift in Sources */,
+				1C634DC230220C9C0092DB89 /* RowBackground.swift in Sources */,
+				1C634DC330220C9C0092DB89 /* RowCardStyle.swift in Sources */,
+				1C634DC430220C9C0092DB89 /* SearchTasksIntent.swift in Sources */,
+				1C634DC530220C9C0092DB89 /* SecretValue.swift in Sources */,
+				1C634DC630220C9C0092DB89 /* SecureClipboard.swift in Sources */,
+				1C634DC730220C9C0092DB89 /* SensitiveValues.swift in Sources */,
+				1C634DC830220C9C0092DB89 /* StoreMigrationManager.swift in Sources */,
+				1C634DC930220C9C0092DB89 /* SurfaceSettings.swift in Sources */,
+				1C634DCA30220C9C0092DB89 /* TaskAttachment.swift in Sources */,
+				1C634DCB30220C9C0092DB89 /* TaskBadgePolicy.swift in Sources */,
+				1C634DCC30220C9C0092DB89 /* TaskExportService.swift in Sources */,
+				1C634DCD30220C9C0092DB89 /* TaskRowAppearance.swift in Sources */,
+				1C634DCE30220C9C0092DB89 /* TaskRowBorder.swift in Sources */,
+				1C634DCF30220C9C0092DB89 /* TaskRowDisplayModel.swift in Sources */,
+				1C634DD030220C9C0092DB89 /* TaskRowSurface.swift in Sources */,
+				1C634DD130220C9C0092DB89 /* TaskTransferObject.swift in Sources */,
+				1C634DD230220C9C0092DB89 /* TodoTask.swift in Sources */,
+				1C634DD330220C9C0092DB89 /* TripList.swift in Sources */,
+				1C634DD430220C9C0092DB89 /* VaultAutoFillManager.swift in Sources */,
+				1C634DD530220C9C0092DB89 /* VaultBackupCrypto.swift in Sources */,
+				1C634DD630220C9C0092DB89 /* VaultCredentialSavingManager.swift in Sources */,
+				1C634DD730220C9C0092DB89 /* VaultCrypto.swift in Sources */,
+				1C634DD830220C9C0092DB89 /* VaultItem.swift in Sources */,
+				1C634DD930220C9C0092DB89 /* VaultLock.swift in Sources */,
+				1C634DDA30220C9C0092DB89 /* VaultManager.swift in Sources */,
+				1C634DDB30220C9C0092DB89 /* VaultSecret.swift in Sources */,
+				1C634DDC30220C9C0092DB89 /* WalletAsset.swift in Sources */,
+				1C634DDE30220C9C0092DB89 /* WalletAssetStore.swift in Sources */,
+				1C634DDF30220C9C0092DB89 /* WalletDeleteService.swift in Sources */,
+				1C634DE030220C9C0092DB89 /* WalletImportService.swift in Sources */,
+				1C634DE130220C9C0092DB89 /* WalletMigrationService.swift in Sources */,
+				1C634DE230220C9C0092DB89 /* WalletViewerView.swift in Sources */,
+				1C634DE330220C9C0092DB89 /* WeatherManager.swift in Sources */,
+				1C634DE430220C9C0092DB89 /* AppleCredentialExchangeProvider.swift in Sources */,
+				1C634DE530220C9C0092DB89 /* AppleCredentialExportMapper.swift in Sources */,
+				1C634DE630220C9C0092DB89 /* AppleCredentialImportMapper.swift in Sources */,
+				1C634DE730220C9C0092DB89 /* CredentialExchangeManager.swift in Sources */,
+				1C634DE830220C9C0092DB89 /* CredentialExchangeProvider.swift in Sources */,
+				1C634DE930220C9C0092DB89 /* CredentialExchangeResult.swift in Sources */,
+				1C634DEA30220C9C0092DB89 /* CredentialExchangeTester.swift in Sources */,
+				1C634DEB30220C9C0092DB89 /* ImportMergePolicy.swift in Sources */,
+				1C634DEC30220C9C0092DB89 /* VaultExportMapper.swift in Sources */,
+				1C634DED30220C9C0092DB89 /* VaultExportService.swift in Sources */,
+				1C634DEE30220C9C0092DB89 /* VaultImportCredential.swift in Sources */,
+				1C634DEF30220C9C0092DB89 /* VaultImportRecord.swift in Sources */,
+				1C634DF030220C9C0092DB89 /* VaultImportService.swift in Sources */,
+				1C634DF130220C9C0092DB89 /* AddLoyaltyCardView.swift in Sources */,
+				1C634DF230220C9C0092DB89 /* AppQuickGuide.swift in Sources */,
+				1C634DF330220C9C0092DB89 /* AppUnavailableView.swift in Sources */,
+				1C634DF430220C9C0092DB89 /* AttachmentImporter.swift in Sources */,
+				1C634DF530220C9C0092DB89 /* AttachmentRow.swift in Sources */,
+				1C634DF630220C9C0092DB89 /* AudioPlayerRow.swift in Sources */,
+				1C634DF730220C9C0092DB89 /* AudioRecorderView.swift in Sources */,
+				1C634DF830220C9C0092DB89 /* BackgroundCustomizationView.swift in Sources */,
+				1C634DF930220C9C0092DB89 /* BackupRestore.swift in Sources */,
+				1C634DFA30220C9C0092DB89 /* BarcodeGenerator.swift in Sources */,
+				1C634DFB30220C9C0092DB89 /* CameraPicker.swift in Sources */,
+				1C634DFC30220C9C0092DB89 /* Dashboard.swift in Sources */,
+				1C634DFD30220C9C0092DB89 /* Detail_AttachmentList.swift in Sources */,
+				1C634DFE30220C9C0092DB89 /* Detail_ContextSection.swift in Sources */,
+				1C634DFF30220C9C0092DB89 /* Detail_MainInfoSection.swift in Sources */,
+				1C634E0030220C9C0092DB89 /* Detail_QuickLookPreview.swift in Sources */,
+				1C634E0130220C9C0092DB89 /* Detail_ResourcesSection.swift in Sources */,
+				1C634E0230220C9C0092DB89 /* Detail_Share.swift in Sources */,
+				1C634E0330220C9C0092DB89 /* DisclaimerView.swift in Sources */,
+				1C634E0430220C9C0092DB89 /* DocumentAssetDetailView.swift in Sources */,
+				1C634E0530220C9C0092DB89 /* DocumentAssetThumbnail.swift in Sources */,
+				1C634E0630220C9C0092DB89 /* DocumentDetailView.swift in Sources */,
+				1C634E0730220C9C0092DB89 /* DocumentsView.swift in Sources */,
+				1C634E0830220C9C0092DB89 /* DocumentViewerView.swift in Sources */,
+				1C634E0930220C9C0092DB89 /* DueIconEffect.swift in Sources */,
+				1C634E0A30220C9C0092DB89 /* DueIconEffectModifier.swift in Sources */,
+				1C634E0B30220C9C0092DB89 /* EditLoyaltyCardView.swift in Sources */,
+				1C634E0C30220C9C0092DB89 /* ExportToCalendarView.swift in Sources */,
+				1C634E0D30220C9C0092DB89 /* FAQView.swift in Sources */,
+				1C634E0E30220C9C0092DB89 /* ImagePreviewView.swift in Sources */,
+				1C634E0F30220C9C0092DB89 /* ImportExportSettingsView.swift in Sources */,
+				1C634E1030220C9C0092DB89 /* LocationPickerView.swift in Sources */,
+				1C634E1130220C9C0092DB89 /* LoyaltyCardDetailView.swift in Sources */,
+				1C634E1230220C9C0092DB89 /* NewTaskSheetView.swift in Sources */,
+				1C634E1330220C9C0092DB89 /* NotificationSoundPickerView.swift in Sources */,
+				1C634E1430220C9C0092DB89 /* NotificationView.swift in Sources */,
+				1C634E1530220C9C0092DB89 /* OtherSettingsView.swift in Sources */,
+				1C634E1630220C9C0092DB89 /* OverviewView.swift in Sources */,
+				1C634E1730220C9C0092DB89 /* PDFThumbnail.swift in Sources */,
+				1C634E1830220C9C0092DB89 /* RecentlyDeletedVaultView.swift in Sources */,
+				1C634E1930220C9C0092DB89 /* RecentlyDeletedView.swift in Sources */,
+				1C634E1A30220C9C0092DB89 /* ResetAppView.swift in Sources */,
+				1C634E1B30220C9C0092DB89 /* SettingsView.swift in Sources */,
+				1C634E1C30220C9C0092DB89 /* ShortList.swift in Sources */,
+				1C634E1D30220C9C0092DB89 /* StartView.swift in Sources */,
+				1C634E1E30220C9C0092DB89 /* TabBarCustomizationView.swift in Sources */,
+				1C634E1F30220C9C0092DB89 /* TaskApp.swift in Sources */,
+				1C634E2030220C9C0092DB89 /* TaskBadgeView.swift in Sources */,
+				1C634E2130220C9C0092DB89 /* TaskCalendarView.swift in Sources */,
+				1C634E2230220C9C0092DB89 /* TaskDaySection.swift in Sources */,
+				1C634E2330220C9C0092DB89 /* TaskDeadlineColumn.swift in Sources */,
+				1C634E2430220C9C0092DB89 /* TaskDetail_ScheduleSection.swift in Sources */,
+				1C634E2530220C9C0092DB89 /* TaskDetailView.swift in Sources */,
+				1C634E2630220C9C0092DB89 /* TaskIconContent.swift in Sources */,
+				1C634E2730220C9C0092DB89 /* TaskListAppearanceView.swift in Sources */,
+				1C634E2830220C9C0092DB89 /* TaskListView.swift in Sources */,
+				1C634E2930220C9C0092DB89 /* TaskMapView.swift in Sources */,
+				1C634E2A30220C9C0092DB89 /* TaskRowBaseLogic.swift in Sources */,
+				1C634E2B30220C9C0092DB89 /* TaskRowContent.swift in Sources */,
+				1C634E2C30220C9C0092DB89 /* TaskTabIOS.swift in Sources */,
+				1C634E2D30220C9C0092DB89 /* TripsView.swift in Sources */,
+				1C634E2E30220C9C0092DB89 /* VaultDetailView.swift in Sources */,
+				1C634E2F30220C9C0092DB89 /* VaultEditView.swift in Sources */,
+				1C634E3030220C9C0092DB89 /* VaultGateView.swift in Sources */,
+				1C634E3130220C9C0092DB89 /* VaultLockCoverView.swift in Sources */,
+				1C634E3230220C9C0092DB89 /* VaultPasswordField.swift in Sources */,
+				1C634E3330220C9C0092DB89 /* VaultRow.swift in Sources */,
+				1C634E3430220C9C0092DB89 /* VaultSecureTextField.swift in Sources */,
+				1C634E3530220C9C0092DB89 /* VaultSettingsView.swift in Sources */,
+				1C634E3630220C9C0092DB89 /* VaultView.swift in Sources */,
+				1C634E3730220C9C0092DB89 /* WalletAssetThumbnail.swift in Sources */,
+				1C634E3830220C9C0092DB89 /* WalletView.swift in Sources */,
+				1C634E3930220C9C0092DB89 /* WeatherDayView.swift in Sources */,
+				1C634E3A30220C9C0092DB89 /* WeatherForecastView.swift in Sources */,
+				1C634E3B30220C9C0092DB89 /* WeeklyTasksView.swift in Sources */,
 			);
 		};
 		1CF984753000EBA300E1D1A9 /* Sources */ = {
