@@ -865,10 +865,26 @@ enum DebugLog {
         forensic("📊 ATTACHMENT DATABASE ANALYSIS")
         forensic("════════════════════════════════════════════")
 
-        let attachmentDescriptor = FetchDescriptor<TaskAttachment>()
-        result.attachments = (try? context.fetch(attachmentDescriptor)) ?? []
+        let taskDescriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate {
+                !$0.isCompleted
+            }
+        )
 
-        forensic("Database records: \(result.attachments.count)")
+        let activeTasks = (try? context.fetch(taskDescriptor)) ?? []
+
+        result.attachments = activeTasks.flatMap {
+            $0.attachments ?? []
+        }
+        
+        guard !result.attachments.isEmpty else {
+            forensic("Active tasks: \(activeTasks.count)")
+            forensic("Attachment records (active tasks): 0")
+            return result
+        }
+
+        forensic("Active tasks: \(activeTasks.count)")
+        forensic("Attachment records (active tasks): \(result.attachments.count)")
 
         if DiagnosticsOptions.attachmentIntegrity {
 

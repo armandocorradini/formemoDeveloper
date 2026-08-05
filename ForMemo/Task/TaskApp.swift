@@ -248,9 +248,9 @@ struct ForMemoApp: App {
                     
                     let context = container.mainContext
                     
-                    DebugLog.writeDatabaseSnapshot(
-                        context: context
-                    )
+//                    DebugLog.writeDatabaseSnapshot(
+//                        context: context
+//                    )
                     
                     // 1️⃣ Applica azioni notifiche
                     NotificationActionProcessor.shared.processAll(using: context)
@@ -311,9 +311,11 @@ struct ForMemoApp: App {
 
                 let context = self.container.mainContext
 
-                DebugLog.writeDatabaseSnapshot(
-                    context: context
-                )
+                if DiagnosticsOptions.attachmentDatabase {
+                    DebugLog.writeDatabaseSnapshot(
+                        context: context
+                    )
+                }
                 
                 NotificationActionProcessor.shared.processAll(
                     using: context

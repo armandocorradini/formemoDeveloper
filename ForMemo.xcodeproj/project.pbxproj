@@ -565,7 +565,7 @@
 		1C634D8B30220C9C0092DB89 /* ForMemo */ = {
 			isa = PBXGroup;
 			children = (
-				1C634E44302331E80092DB89 /* Core */,
+				1C8477673023782000C4FA34 /* Core */,
 				1C634E43302331530092DB89 /* Tips */,
 				1C634E4230232A130092DB89 /* Tab */,
 				1C634E3C30220CAE0092DB89 /* Task */,
@@ -736,13 +736,6 @@
 			path = Tips;
 			sourceTree = "<group>";
 		};
-		1C634E44302331E80092DB89 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
 		1C634E453023328B0092DB89 /* View */ = {
 			isa = PBXGroup;
 			children = (
@@ -754,6 +747,13 @@
 				1C634D6430220C9C0092DB89 /* RecentlyDeletedView.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		1C8477673023782000C4FA34 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Core;
 			sourceTree = "<group>";
 		};
 		1CF9847A3000EBA300E1D1A9 /* Frameworks */ = {

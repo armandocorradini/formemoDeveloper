@@ -19,16 +19,26 @@ enum WalletMigrationService {
             return
         }
         
-        // nessun logo legacy
-        guard let legacyPath = card.loyaltyLogoRelativePath,
-              !legacyPath.isEmpty else {
-            return
+        var imageData: Data?
+
+        // 1️⃣ Nuovo formato (se presente)
+        if let legacyPath = card.loyaltyLogoRelativePath,
+           !legacyPath.isEmpty {
+
+            imageData = LegacyLoyaltyCardLogoStore.loadLegacy(
+                relativePath: legacyPath
+            )
         }
-        
-        // file legacy assente
-        guard let imageData = LegacyLoyaltyCardLogoStore.loadLegacy(
-            relativePath: legacyPath
-        ) else {
+
+        // 2️⃣ Compatibilità con tutte le versioni precedenti
+        if imageData == nil {
+
+            imageData = LegacyLoyaltyCardLogoStore.loadLegacy(
+                relativePath: "\(card.id.uuidString).jpg"
+            )
+        }
+
+        guard let imageData else {
             return
         }
         
@@ -39,7 +49,7 @@ enum WalletMigrationService {
             in: context
         )
         
-        try context.save()
+
     }
     
     
@@ -64,6 +74,8 @@ enum WalletMigrationService {
                 in: context
             )
         }
+
+        try? context.save()
 
         UserDefaults.standard.set(
             true,
