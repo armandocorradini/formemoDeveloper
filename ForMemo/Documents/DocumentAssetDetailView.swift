@@ -25,12 +25,12 @@ struct DocumentAssetDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
 
-                ToolbarItem(placement: .topBarLeading) {
-
-                    Button("Close") {
-                        dismiss()
-                    }
-                }
+//                ToolbarItem(placement: .topBarLeading) {
+//
+//                    Button("Closex") {
+//                        dismiss()
+//                    }
+//                }
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
 

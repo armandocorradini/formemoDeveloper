@@ -19,7 +19,9 @@ struct DocumentDetailView: View {
     @State private var showingPDFImporter = false
     
     @State private var selectedAsset: DocumentAsset?
-    
+    private var isEditing: Bool {
+        document.modelContext != nil
+    }
     var body: some View {
         
         ZStack {
@@ -262,28 +264,32 @@ struct DocumentDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(String(localized: "Cancel")) {
-                        
-                        let isEmptyDocument = document.name
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                            .isEmpty
-                        && document.documentNumber
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                            .isEmpty
-                        && document.notes
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                            .isEmpty
-                        && document.storageLocation
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                            .isEmpty
-                        
-                        if isEmptyDocument {
-                            modelContext.delete(document)
-                            modelContext.safeSave(operation: "CancelDocument")
+                if !isEditing {
+
+                    ToolbarItem(placement: .topBarLeading) {
+
+                        Button(String(localized: "Cancel")) {
+
+                            let isEmptyDocument = document.name
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .isEmpty
+                            && document.documentNumber
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .isEmpty
+                            && document.notes
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .isEmpty
+                            && document.storageLocation
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                                .isEmpty
+
+                            if isEmptyDocument {
+                                modelContext.delete(document)
+                                modelContext.safeSave(operation: "CancelDocument")
+                            }
+
+                            dismiss()
                         }
-                        
-                        dismiss()
                     }
                 }
                 
@@ -296,7 +302,11 @@ struct DocumentDetailView: View {
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                         .isEmpty
                     
-                    Button(String(localized: "Save")) {
+                    Button(
+                        isEditing
+                        ? String(localized: "Done")
+                        : String(localized: "Save")
+                    ) {
                         
                         if document.modelContext == nil {
                             modelContext.insert(document)
@@ -380,11 +390,6 @@ struct DocumentDetailView: View {
                 Button(String(localized: "Import PDF")) {
                     showingPDFImporter = true
                 }
-
-                Button(
-                    String(localized: "Cancel"),
-                    role: .cancel
-                ) { }
 
             }
             .sheet(isPresented: $showingCamera) {

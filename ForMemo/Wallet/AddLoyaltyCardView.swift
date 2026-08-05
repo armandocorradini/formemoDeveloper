@@ -165,14 +165,7 @@ struct AddLoyaltyCardView: View {
                                         )
                                     }
                                     .buttonStyle(.plain)
-                                    .contextMenu {
-
-                                        Button(role: .destructive) {
-                                            galleryImages.remove(at: index)
-                                        } label: {
-                                            Label("Remove", systemImage: "trash")
-                                        }
-                                    }
+                                
                                 }
 
                                 Button {

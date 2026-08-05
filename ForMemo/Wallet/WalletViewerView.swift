@@ -56,24 +56,7 @@ struct WalletViewerView: View {
 
                             selectedAsset = asset
                         }
-                        .contextMenu {
-
-                            Button(
-                                role: .destructive
-                            ) {
-                                WalletImportService.delete(
-                                    asset,
-                                    from: modelContext
-                                )
-
-                            } label: {
-
-                                Label(
-                                    String(localized: "Delete"),
-                                    systemImage: "trash"
-                                )
-                            }
-                        }
+                     
                     }
 
                     if showsAddButton {

@@ -40,13 +40,6 @@ struct WalletAssetDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
 
-                ToolbarItem(placement: .topBarLeading) {
-
-                    Button("Close") {
-                        dismiss()
-                    }
-                }
-
                 ToolbarItemGroup(placement: .topBarTrailing) {
 
                     if let url = WalletAssetStore.fileURL(
@@ -54,7 +47,6 @@ struct WalletAssetDetailView: View {
                     ) {
 
                         ShareLink(item: url) {
-
                             Image(systemName: "square.and.arrow.up")
                         }
                     }
@@ -66,6 +58,10 @@ struct WalletAssetDetailView: View {
                     } label: {
 
                         Image(systemName: "trash")
+                    }
+                    
+                    Button("Done") {
+                        dismiss()
                     }
                 }
             }

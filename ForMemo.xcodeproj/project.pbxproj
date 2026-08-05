@@ -455,92 +455,29 @@
 		1C634D2A30220C9C0092DB89 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */,
 				1C634CD530220C9C0092DB89 /* AppDelegate.swift */,
 				1C634CD630220C9C0092DB89 /* AppError.swift */,
 				1C634CD730220C9C0092DB89 /* AppLogger.swift */,
 				1C634CD830220C9C0092DB89 /* AppSettings.swift */,
-				1C634CD930220C9C0092DB89 /* AppShortcuts.swift */,
-				1C634CDA30220C9C0092DB89 /* AppTab.swift */,
-				1C634CDB30220C9C0092DB89 /* AttachmentMaintenanceManager.swift */,
-				1C634CDC30220C9C0092DB89 /* AttachmentMigration.swift */,
-				1C634CDD30220C9C0092DB89 /* CalendarExportEngine.swift */,
-				1C634CDE30220C9C0092DB89 /* CalendarPickerView.swift */,
 				1C634CDF30220C9C0092DB89 /* CloudKitResetManager.swift */,
 				1C634CE030220C9C0092DB89 /* CloudSettingsSync.swift */,
-				1C634CE130220C9C0092DB89 /* CredentialSavingRequest.swift */,
 				1C634CE230220C9C0092DB89 /* CSVImporter.swift */,
-				1C634CE330220C9C0092DB89 /* CSVTask.swift */,
-				1C634CE430220C9C0092DB89 /* DebugTools.swift */,
 				1C634CE530220C9C0092DB89 /* DeletedFingerprintStore.swift */,
 				1C634CE630220C9C0092DB89 /* DeletedItem.swift */,
-				1C634CE730220C9C0092DB89 /* DeleteTask.swift */,
-				1C634CE830220C9C0092DB89 /* DocumentAsset.swift */,
-				1C634CE930220C9C0092DB89 /* DocumentAssetStore.swift */,
-				1C634CEA30220C9C0092DB89 /* DocumentImportService.swift */,
-				1C634CEB30220C9C0092DB89 /* Documents.swift */,
-				1C634CEC30220C9C0092DB89 /* DocumentScannerView.swift */,
 				1C634CED30220C9C0092DB89 /* FMTripDocument.swift */,
 				1C634CEE30220C9C0092DB89 /* ForMemoStorageManager.swift */,
-				1C634CEF30220C9C0092DB89 /* GetTasksIntent.swift */,
-				1C634CF030220C9C0092DB89 /* Global.swift */,
 				1C634CF130220C9C0092DB89 /* ICSExporter.swift */,
 				1C634CF230220C9C0092DB89 /* Import.swift */,
-				1C634CF330220C9C0092DB89 /* ImportCalendar.swift */,
-				1C634CF430220C9C0092DB89 /* ImportCard.swift */,
 				1C634CF530220C9C0092DB89 /* ImportExportCSV.swift */,
 				1C634CF630220C9C0092DB89 /* InfoPlist.xcstrings */,
 				1C634CF730220C9C0092DB89 /* LaunchCoordinator.swift */,
-				1C634CF830220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift */,
-				1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */,
 				1C634CFA30220C9C0092DB89 /* Localizable.xcstrings */,
-				1C634CFB30220C9C0092DB89 /* LocationReminderManager.swift */,
-				1C634CFC30220C9C0092DB89 /* LoyaltyCard.swift */,
 				1C634CFD30220C9C0092DB89 /* ModelContext+SafeSave.swift */,
-				1C634CFE30220C9C0092DB89 /* NavigationApp.swift */,
-				1C634CFF30220C9C0092DB89 /* Notification+Extensions.swift */,
-				1C634D0030220C9C0092DB89 /* NotificationActionProcessor.swift */,
-				1C634D0130220C9C0092DB89 /* NotificationLeadTime.swift */,
-				1C634D0230220C9C0092DB89 /* NotificationManager.swift */,
-				1C634D0330220C9C0092DB89 /* PasswordGenerator.swift */,
 				1C634D0430220C9C0092DB89 /* Persistence.swift */,
 				1C634D0530220C9C0092DB89 /* PrivacyInfo.xcprivacy */,
-				1C634D0630220C9C0092DB89 /* RemindersAccess.swift */,
-				1C634D0730220C9C0092DB89 /* ReminderScrubberControl.swift */,
-				1C634D0830220C9C0092DB89 /* RowBackground.swift */,
-				1C634D0930220C9C0092DB89 /* RowCardStyle.swift */,
-				1C634D0A30220C9C0092DB89 /* SearchTasksIntent.swift */,
-				1C634D0B30220C9C0092DB89 /* SecretValue.swift */,
-				1C634D0C30220C9C0092DB89 /* SecureClipboard.swift */,
-				1C634D0D30220C9C0092DB89 /* SensitiveValues.swift */,
 				1C634D0E30220C9C0092DB89 /* StoreMigrationManager.swift */,
 				1C634D0F30220C9C0092DB89 /* SurfaceSettings.swift */,
-				1C634D1030220C9C0092DB89 /* TaskAttachment.swift */,
-				1C634D1130220C9C0092DB89 /* TaskBadgePolicy.swift */,
-				1C634D1230220C9C0092DB89 /* TaskExportService.swift */,
-				1C634D1330220C9C0092DB89 /* TaskRowAppearance.swift */,
-				1C634D1430220C9C0092DB89 /* TaskRowBorder.swift */,
-				1C634D1530220C9C0092DB89 /* TaskRowDisplayModel.swift */,
-				1C634D1630220C9C0092DB89 /* TaskRowSurface.swift */,
-				1C634D1730220C9C0092DB89 /* TaskTransferObject.swift */,
-				1C634D1830220C9C0092DB89 /* TodoTask.swift */,
-				1C634D1930220C9C0092DB89 /* TripList.swift */,
-				1C634D1A30220C9C0092DB89 /* VaultAutoFillManager.swift */,
-				1C634D1B30220C9C0092DB89 /* VaultBackupCrypto.swift */,
-				1C634D1C30220C9C0092DB89 /* VaultCredentialSavingManager.swift */,
-				1C634D1D30220C9C0092DB89 /* VaultCrypto.swift */,
-				1C634D1E30220C9C0092DB89 /* VaultItem.swift */,
-				1C634D1F30220C9C0092DB89 /* VaultLock.swift */,
-				1C634D2030220C9C0092DB89 /* VaultManager.swift */,
-				1C634D2130220C9C0092DB89 /* VaultSecret.swift */,
-				1C634D2230220C9C0092DB89 /* WalletAsset.swift */,
-				1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */,
-				1C634D2430220C9C0092DB89 /* WalletAssetStore.swift */,
 				1C634D2530220C9C0092DB89 /* WalletDeleteService.swift */,
-				1C634D2630220C9C0092DB89 /* WalletImportService.swift */,
-				1C634D2730220C9C0092DB89 /* WalletMigrationService.swift */,
-				1C634D2830220C9C0092DB89 /* WalletViewerView.swift */,
-				1C634D2930220C9C0092DB89 /* WeatherManager.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -584,75 +521,14 @@
 		1C634D3B30220C9C0092DB89 /* Vault */ = {
 			isa = PBXGroup;
 			children = (
-				1C634D3A30220C9C0092DB89 /* CredentialExchange */,
-			);
-			path = Vault;
-			sourceTree = "<group>";
-		};
-		1C634D8730220C9C0092DB89 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				1C634D3C30220C9C0092DB89 /* AddLoyaltyCardView.swift */,
-				1C634D3D30220C9C0092DB89 /* AppQuickGuide.swift */,
-				1C634D3E30220C9C0092DB89 /* AppUnavailableView.swift */,
-				1C634D3F30220C9C0092DB89 /* AttachmentImporter.swift */,
-				1C634D4030220C9C0092DB89 /* AttachmentRow.swift */,
-				1C634D4130220C9C0092DB89 /* AudioPlayerRow.swift */,
-				1C634D4230220C9C0092DB89 /* AudioRecorderView.swift */,
-				1C634D4330220C9C0092DB89 /* BackgroundCustomizationView.swift */,
-				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,
-				1C634D4530220C9C0092DB89 /* BarcodeGenerator.swift */,
-				1C634D4630220C9C0092DB89 /* CameraPicker.swift */,
-				1C634D4730220C9C0092DB89 /* Dashboard.swift */,
-				1C634D4830220C9C0092DB89 /* Detail_AttachmentList.swift */,
-				1C634D4930220C9C0092DB89 /* Detail_ContextSection.swift */,
-				1C634D4A30220C9C0092DB89 /* Detail_MainInfoSection.swift */,
-				1C634D4B30220C9C0092DB89 /* Detail_QuickLookPreview.swift */,
-				1C634D4C30220C9C0092DB89 /* Detail_ResourcesSection.swift */,
-				1C634D4D30220C9C0092DB89 /* Detail_Share.swift */,
-				1C634D4E30220C9C0092DB89 /* DisclaimerView.swift */,
-				1C634D4F30220C9C0092DB89 /* DocumentAssetDetailView.swift */,
-				1C634D5030220C9C0092DB89 /* DocumentAssetThumbnail.swift */,
-				1C634D5130220C9C0092DB89 /* DocumentDetailView.swift */,
-				1C634D5230220C9C0092DB89 /* DocumentsView.swift */,
-				1C634D5330220C9C0092DB89 /* DocumentViewerView.swift */,
-				1C634D5430220C9C0092DB89 /* DueIconEffect.swift */,
-				1C634D5530220C9C0092DB89 /* DueIconEffectModifier.swift */,
-				1C634D5630220C9C0092DB89 /* EditLoyaltyCardView.swift */,
-				1C634D5730220C9C0092DB89 /* ExportToCalendarView.swift */,
-				1C634D5830220C9C0092DB89 /* FAQView.swift */,
-				1C634D5930220C9C0092DB89 /* ImagePreviewView.swift */,
-				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
-				1C634D5B30220C9C0092DB89 /* LocationPickerView.swift */,
-				1C634D5C30220C9C0092DB89 /* LoyaltyCardDetailView.swift */,
-				1C634D5D30220C9C0092DB89 /* NewTaskSheetView.swift */,
-				1C634D5E30220C9C0092DB89 /* NotificationSoundPickerView.swift */,
-				1C634D5F30220C9C0092DB89 /* NotificationView.swift */,
-				1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */,
-				1C634D6130220C9C0092DB89 /* OverviewView.swift */,
-				1C634D6230220C9C0092DB89 /* PDFThumbnail.swift */,
-				1C634D6330220C9C0092DB89 /* RecentlyDeletedVaultView.swift */,
-				1C634D6430220C9C0092DB89 /* RecentlyDeletedView.swift */,
-				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
-				1C634D6630220C9C0092DB89 /* SettingsView.swift */,
-				1C634D6730220C9C0092DB89 /* ShortList.swift */,
-				1C634D6830220C9C0092DB89 /* StartView.swift */,
-				1C634D6930220C9C0092DB89 /* TabBarCustomizationView.swift */,
-				1C634D6A30220C9C0092DB89 /* TaskApp.swift */,
-				1C634D6B30220C9C0092DB89 /* TaskBadgeView.swift */,
-				1C634D6C30220C9C0092DB89 /* TaskCalendarView.swift */,
-				1C634D6D30220C9C0092DB89 /* TaskDaySection.swift */,
-				1C634D6E30220C9C0092DB89 /* TaskDeadlineColumn.swift */,
-				1C634D6F30220C9C0092DB89 /* TaskDetail_ScheduleSection.swift */,
-				1C634D7030220C9C0092DB89 /* TaskDetailView.swift */,
-				1C634D7130220C9C0092DB89 /* TaskIconContent.swift */,
-				1C634D7230220C9C0092DB89 /* TaskListAppearanceView.swift */,
-				1C634D7330220C9C0092DB89 /* TaskListView.swift */,
-				1C634D7430220C9C0092DB89 /* TaskMapView.swift */,
-				1C634D7530220C9C0092DB89 /* TaskRowBaseLogic.swift */,
-				1C634D7630220C9C0092DB89 /* TaskRowContent.swift */,
-				1C634D7730220C9C0092DB89 /* TaskTabIOS.swift */,
-				1C634D7830220C9C0092DB89 /* TripsView.swift */,
+				1C634D1A30220C9C0092DB89 /* VaultAutoFillManager.swift */,
+				1C634D1B30220C9C0092DB89 /* VaultBackupCrypto.swift */,
+				1C634D1C30220C9C0092DB89 /* VaultCredentialSavingManager.swift */,
+				1C634D1D30220C9C0092DB89 /* VaultCrypto.swift */,
+				1C634D1E30220C9C0092DB89 /* VaultItem.swift */,
+				1C634D1F30220C9C0092DB89 /* VaultLock.swift */,
+				1C634D2030220C9C0092DB89 /* VaultManager.swift */,
+				1C634D2130220C9C0092DB89 /* VaultSecret.swift */,
 				1C634D7930220C9C0092DB89 /* VaultDetailView.swift */,
 				1C634D7A30220C9C0092DB89 /* VaultEditView.swift */,
 				1C634D7B30220C9C0092DB89 /* VaultGateView.swift */,
@@ -662,22 +538,45 @@
 				1C634D7F30220C9C0092DB89 /* VaultSecureTextField.swift */,
 				1C634D8030220C9C0092DB89 /* VaultSettingsView.swift */,
 				1C634D8130220C9C0092DB89 /* VaultView.swift */,
-				1C634D8230220C9C0092DB89 /* WalletAssetThumbnail.swift */,
-				1C634D8330220C9C0092DB89 /* WalletView.swift */,
-				1C634D8430220C9C0092DB89 /* WeatherDayView.swift */,
-				1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */,
-				1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */,
+				1C634D0330220C9C0092DB89 /* PasswordGenerator.swift */,
+				1C634D0B30220C9C0092DB89 /* SecretValue.swift */,
+				1C634D0C30220C9C0092DB89 /* SecureClipboard.swift */,
+				1C634D0D30220C9C0092DB89 /* SensitiveValues.swift */,
+				1C634CE130220C9C0092DB89 /* CredentialSavingRequest.swift */,
+				1C634D6330220C9C0092DB89 /* RecentlyDeletedVaultView.swift */,
+				1C634D3A30220C9C0092DB89 /* CredentialExchange */,
 			);
-			path = Views;
+			path = Vault;
+			sourceTree = "<group>";
+		};
+		1C634D8730220C9C0092DB89 /* OtherViews */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D3D30220C9C0092DB89 /* AppQuickGuide.swift */,
+				1C634D3E30220C9C0092DB89 /* AppUnavailableView.swift */,
+				1C634D4730220C9C0092DB89 /* Dashboard.swift */,
+				1C634D4E30220C9C0092DB89 /* DisclaimerView.swift */,
+				1C634D5830220C9C0092DB89 /* FAQView.swift */,
+				1C634D6830220C9C0092DB89 /* StartView.swift */,
+			);
+			path = OtherViews;
 			sourceTree = "<group>";
 		};
 		1C634D8B30220C9C0092DB89 /* ForMemo */ = {
 			isa = PBXGroup;
 			children = (
+				1C634E44302331E80092DB89 /* Core */,
+				1C634E43302331530092DB89 /* Tips */,
+				1C634E4230232A130092DB89 /* Tab */,
 				1C634E3C30220CAE0092DB89 /* Task */,
-				1C634D2A30220C9C0092DB89 /* Model */,
+				1C634E41302258620092DB89 /* Trips */,
+				1C634E3F302255FC0092DB89 /* Documents */,
 				1C634D3B30220C9C0092DB89 /* Vault */,
-				1C634D8730220C9C0092DB89 /* Views */,
+				1C634E3E3022556C0092DB89 /* Wallet */,
+				1C634D8730220C9C0092DB89 /* OtherViews */,
+				1C634E40302257D50092DB89 /* Weather */,
+				1C634E453023328B0092DB89 /* View */,
+				1C634D2A30220C9C0092DB89 /* Model */,
 				1C634D8830220C9C0092DB89 /* Assets.xcassets */,
 				1C634D8930220C9C0092DB89 /* ForMemo.entitlements */,
 				1C634D8A30220C9C0092DB89 /* Info.plist */,
@@ -688,8 +587,173 @@
 		1C634E3C30220CAE0092DB89 /* Task */ = {
 			isa = PBXGroup;
 			children = (
+				1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */,
+				1C634D3F30220C9C0092DB89 /* AttachmentImporter.swift */,
+				1C634CDB30220C9C0092DB89 /* AttachmentMaintenanceManager.swift */,
+				1C634CDC30220C9C0092DB89 /* AttachmentMigration.swift */,
+				1C634D4030220C9C0092DB89 /* AttachmentRow.swift */,
+				1C634D4130220C9C0092DB89 /* AudioPlayerRow.swift */,
+				1C634CE330220C9C0092DB89 /* CSVTask.swift */,
+				1C634CDD30220C9C0092DB89 /* CalendarExportEngine.swift */,
+				1C634CDE30220C9C0092DB89 /* CalendarPickerView.swift */,
+				1C634CE730220C9C0092DB89 /* DeleteTask.swift */,
+				1C634D4830220C9C0092DB89 /* Detail_AttachmentList.swift */,
+				1C634D4930220C9C0092DB89 /* Detail_ContextSection.swift */,
+				1C634D4A30220C9C0092DB89 /* Detail_MainInfoSection.swift */,
+				1C634D4B30220C9C0092DB89 /* Detail_QuickLookPreview.swift */,
+				1C634D4C30220C9C0092DB89 /* Detail_ResourcesSection.swift */,
+				1C634D4D30220C9C0092DB89 /* Detail_Share.swift */,
+				1C634D5730220C9C0092DB89 /* ExportToCalendarView.swift */,
+				1C634CEF30220C9C0092DB89 /* GetTasksIntent.swift */,
+				1C634CF330220C9C0092DB89 /* ImportCalendar.swift */,
+				1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */,
+				1C634D5B30220C9C0092DB89 /* LocationPickerView.swift */,
+				1C634CFB30220C9C0092DB89 /* LocationReminderManager.swift */,
+				1C634D5D30220C9C0092DB89 /* NewTaskSheetView.swift */,
+				1C634CFF30220C9C0092DB89 /* Notification+Extensions.swift */,
+				1C634D0030220C9C0092DB89 /* NotificationActionProcessor.swift */,
+				1C634D0130220C9C0092DB89 /* NotificationLeadTime.swift */,
+				1C634D0230220C9C0092DB89 /* NotificationManager.swift */,
+				1C634D5E30220C9C0092DB89 /* NotificationSoundPickerView.swift */,
+				1C634D5F30220C9C0092DB89 /* NotificationView.swift */,
+				1C634D0730220C9C0092DB89 /* ReminderScrubberControl.swift */,
+				1C634D0630220C9C0092DB89 /* RemindersAccess.swift */,
+				1C634D0830220C9C0092DB89 /* RowBackground.swift */,
+				1C634D0930220C9C0092DB89 /* RowCardStyle.swift */,
+				1C634D0A30220C9C0092DB89 /* SearchTasksIntent.swift */,
+				1C634D6A30220C9C0092DB89 /* TaskApp.swift */,
+				1C634D1030220C9C0092DB89 /* TaskAttachment.swift */,
+				1C634D1130220C9C0092DB89 /* TaskBadgePolicy.swift */,
+				1C634D6B30220C9C0092DB89 /* TaskBadgeView.swift */,
+				1C634D1230220C9C0092DB89 /* TaskExportService.swift */,
+				1C634D1330220C9C0092DB89 /* TaskRowAppearance.swift */,
+				1C634D6C30220C9C0092DB89 /* TaskCalendarView.swift */,
+				1C634D6D30220C9C0092DB89 /* TaskDaySection.swift */,
+				1C634D6E30220C9C0092DB89 /* TaskDeadlineColumn.swift */,
+				1C634D6F30220C9C0092DB89 /* TaskDetail_ScheduleSection.swift */,
+				1C634D7030220C9C0092DB89 /* TaskDetailView.swift */,
+				1C634D7130220C9C0092DB89 /* TaskIconContent.swift */,
+				1C634D7230220C9C0092DB89 /* TaskListAppearanceView.swift */,
+				1C634D7330220C9C0092DB89 /* TaskListView.swift */,
+				1C634D7430220C9C0092DB89 /* TaskMapView.swift */,
+				1C634D7530220C9C0092DB89 /* TaskRowBaseLogic.swift */,
+				1C634D1430220C9C0092DB89 /* TaskRowBorder.swift */,
+				1C634D1530220C9C0092DB89 /* TaskRowDisplayModel.swift */,
+				1C634D1630220C9C0092DB89 /* TaskRowSurface.swift */,
+				1C634D1730220C9C0092DB89 /* TaskTransferObject.swift */,
+				1C634D1830220C9C0092DB89 /* TodoTask.swift */,
+				1C634D7630220C9C0092DB89 /* TaskRowContent.swift */,
+				1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */,
+				1C634D4230220C9C0092DB89 /* AudioRecorderView.swift */,
+				1C634CD930220C9C0092DB89 /* AppShortcuts.swift */,
+				1C634D6730220C9C0092DB89 /* ShortList.swift */,
+				1C634D5430220C9C0092DB89 /* DueIconEffect.swift */,
+				1C634D5530220C9C0092DB89 /* DueIconEffectModifier.swift */,
 			);
 			path = Task;
+			sourceTree = "<group>";
+		};
+		1C634E3E3022556C0092DB89 /* Wallet */ = {
+			isa = PBXGroup;
+			children = (
+				1C634CF830220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift */,
+				1C634CFC30220C9C0092DB89 /* LoyaltyCard.swift */,
+				1C634D2230220C9C0092DB89 /* WalletAsset.swift */,
+				1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */,
+				1C634D2430220C9C0092DB89 /* WalletAssetStore.swift */,
+				1C634D2630220C9C0092DB89 /* WalletImportService.swift */,
+				1C634D2730220C9C0092DB89 /* WalletMigrationService.swift */,
+				1C634D2830220C9C0092DB89 /* WalletViewerView.swift */,
+				1C634D3C30220C9C0092DB89 /* AddLoyaltyCardView.swift */,
+				1C634D5630220C9C0092DB89 /* EditLoyaltyCardView.swift */,
+				1C634D8230220C9C0092DB89 /* WalletAssetThumbnail.swift */,
+				1C634D8330220C9C0092DB89 /* WalletView.swift */,
+				1C634D5C30220C9C0092DB89 /* LoyaltyCardDetailView.swift */,
+				1C634CF430220C9C0092DB89 /* ImportCard.swift */,
+				1C634D4530220C9C0092DB89 /* BarcodeGenerator.swift */,
+			);
+			path = Wallet;
+			sourceTree = "<group>";
+		};
+		1C634E3F302255FC0092DB89 /* Documents */ = {
+			isa = PBXGroup;
+			children = (
+				1C634CE830220C9C0092DB89 /* DocumentAsset.swift */,
+				1C634CE930220C9C0092DB89 /* DocumentAssetStore.swift */,
+				1C634CEA30220C9C0092DB89 /* DocumentImportService.swift */,
+				1C634CEB30220C9C0092DB89 /* Documents.swift */,
+				1C634CEC30220C9C0092DB89 /* DocumentScannerView.swift */,
+				1C634D4F30220C9C0092DB89 /* DocumentAssetDetailView.swift */,
+				1C634D5030220C9C0092DB89 /* DocumentAssetThumbnail.swift */,
+				1C634D5130220C9C0092DB89 /* DocumentDetailView.swift */,
+				1C634D5230220C9C0092DB89 /* DocumentsView.swift */,
+				1C634D5330220C9C0092DB89 /* DocumentViewerView.swift */,
+			);
+			path = Documents;
+			sourceTree = "<group>";
+		};
+		1C634E40302257D50092DB89 /* Weather */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D2930220C9C0092DB89 /* WeatherManager.swift */,
+				1C634D8430220C9C0092DB89 /* WeatherDayView.swift */,
+				1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */,
+			);
+			path = Weather;
+			sourceTree = "<group>";
+		};
+		1C634E41302258620092DB89 /* Trips */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D7830220C9C0092DB89 /* TripsView.swift */,
+				1C634D1930220C9C0092DB89 /* TripList.swift */,
+			);
+			path = Trips;
+			sourceTree = "<group>";
+		};
+		1C634E4230232A130092DB89 /* Tab */ = {
+			isa = PBXGroup;
+			children = (
+				1C634CDA30220C9C0092DB89 /* AppTab.swift */,
+				1C634D7730220C9C0092DB89 /* TaskTabIOS.swift */,
+				1C634D6930220C9C0092DB89 /* TabBarCustomizationView.swift */,
+			);
+			path = Tab;
+			sourceTree = "<group>";
+		};
+		1C634E43302331530092DB89 /* Tips */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */,
+				1C634D6130220C9C0092DB89 /* OverviewView.swift */,
+				1C634D6630220C9C0092DB89 /* SettingsView.swift */,
+				1C634D4330220C9C0092DB89 /* BackgroundCustomizationView.swift */,
+				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
+				1C634CE430220C9C0092DB89 /* DebugTools.swift */,
+				1C634CF030220C9C0092DB89 /* Global.swift */,
+				1C634CFE30220C9C0092DB89 /* NavigationApp.swift */,
+			);
+			path = Tips;
+			sourceTree = "<group>";
+		};
+		1C634E44302331E80092DB89 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		1C634E453023328B0092DB89 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,
+				1C634D4630220C9C0092DB89 /* CameraPicker.swift */,
+				1C634D5930220C9C0092DB89 /* ImagePreviewView.swift */,
+				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
+				1C634D6230220C9C0092DB89 /* PDFThumbnail.swift */,
+				1C634D6430220C9C0092DB89 /* RecentlyDeletedView.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 		1CF9847A3000EBA300E1D1A9 /* Frameworks */ = {

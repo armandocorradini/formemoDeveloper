@@ -22,7 +22,7 @@ struct DisclaimerView: View {
             //            .navigationTitle(LocalizedStringKey(disclaimer_title))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Close") {
+                    Button("Done") {
                         dismiss()
                     }
                 }
