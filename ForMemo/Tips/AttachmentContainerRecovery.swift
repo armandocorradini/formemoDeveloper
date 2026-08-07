@@ -102,6 +102,7 @@ enum AttachmentContainerRecovery {
                 result: &result
             )
 
+            removeDuplicateDirectoryIfEmpty(directory)
         }
 
         AppLogger.persistence.notice(
@@ -172,6 +173,41 @@ enum AttachmentContainerRecovery {
         }
     }
     
+    
+    private static func removeDuplicateDirectoryIfEmpty(
+        _ directory: URL
+    ) {
+
+        let fm = FileManager.default
+
+        guard
+            let items = try? fm.contentsOfDirectory(
+                at: directory,
+                includingPropertiesForKeys: nil,
+                options: [.skipsHiddenFiles]
+            ),
+            items.isEmpty
+        else {
+            return
+        }
+
+        do {
+            try fm.removeItem(at: directory)
+
+            AppLogger.persistence.notice(
+                "Asset Recovery: removed duplicate folder \(directory.lastPathComponent)"
+            )
+
+        } catch {
+
+            AppLogger.persistence.error(
+                "Asset Recovery: unable to remove \(directory.lastPathComponent)"
+            )
+        }
+    }
+    
+    
+    
     private static func recoverFiles(
         from source: URL,
         to destination: URL,
@@ -223,6 +259,12 @@ enum AttachmentContainerRecovery {
                 result.copied += 1
                 result.copiedFiles.append(file.lastPathComponent)
                 
+                guard fm.fileExists(atPath: destinationFile.path) else {
+                    continue
+                }
+
+                try? fm.removeItem(at: file)
+                
             } catch let error as NSError {
 
                 if error.domain == NSCocoaErrorDomain,
@@ -249,7 +291,20 @@ enum AttachmentContainerRecovery {
                 )
             }
         }
+        
+        if let remaining = try? fm.contentsOfDirectory(
+            at: source,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ),
+        remaining.isEmpty {
 
+            try? fm.removeItem(at: source)
+
+            AppLogger.persistence.notice(
+                "Asset Recovery: removed duplicate folder \(source.lastPathComponent)"
+            )
+        }
   
     }
     

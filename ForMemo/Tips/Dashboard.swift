@@ -246,7 +246,7 @@ struct Dashboard: View {
 
                             if !todayTasks.isEmpty {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    ForEach(Array(todayTasks.prefix(5)), id: \.persistentModelID) { task in
+                                    ForEach(todayTasks, id: \.persistentModelID) { task in
 
                                         let isOverdue = (task.deadLine ?? .now) < .now
 
@@ -429,7 +429,7 @@ struct Dashboard: View {
 
                                 if !tomorrowTasks.isEmpty {
                                     VStack(alignment: .leading, spacing: 6) {
-                                        ForEach(Array(tomorrowTasks.prefix(5)), id: \.persistentModelID) { task in
+                                        ForEach(Array(tomorrowTasks), id: \.persistentModelID) { task in
                                             Button {
                                                 selectedTask = task
                                             } label: {
