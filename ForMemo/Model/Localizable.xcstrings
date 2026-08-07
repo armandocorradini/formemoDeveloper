@@ -741,6 +741,16 @@
         }
       }
     },
+    "%lld duplicate asset folders detected.\n\n%@\n\nAutomatic recovery has been suspended because\nAsset Recovery Diagnostics is enabled.\n\nPress Repair to merge the folders." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld duplicate asset folders detected.\n\n%2$@\n\nAutomatic recovery has been suspended because\nAsset Recovery Diagnostics is enabled.\n\nPress Repair to merge the folders."
+          }
+        }
+      }
+    },
     "%lld hours before" : {
       "localizations" : {
         "de" : {
@@ -3436,6 +3446,12 @@
           }
         }
       }
+    },
+    "Asset Recovery" : {
+
+    },
+    "Asset Recovery Diagnostics" : {
+
     },
     "at %@" : {
       "localizations" : {
@@ -23132,6 +23148,9 @@
           }
         }
       }
+    },
+    "Repair" : {
+
     },
     "Repair Kit" : {
       "localizations" : {

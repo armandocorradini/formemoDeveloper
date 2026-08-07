@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct TaskTabView: View {
     
@@ -15,6 +16,10 @@ struct TaskTabView: View {
     @State private var previousTab = 0
     @State private var showSnoozeAlert = false
     @State private var showMorePopover = false
+    @State
+    private var recoveryResult: AssetRecoveryCoordinator.RecoveryCheckResult?
+    @State
+    private var recoveryCheckPerformed = false
     
     @State private var StartPath = NavigationPath()
     @State private var dashboardPath = NavigationPath()
@@ -28,7 +33,7 @@ struct TaskTabView: View {
     @State private var documentsPath = NavigationPath()
     @State private var weatherPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
-    
+
     
     var body: some View {
         rootLayout
@@ -121,6 +126,72 @@ struct TaskTabView: View {
             } message: {
                 Text("Snooze exceeds the deadline. No snooze notification will be scheduled. The deadline notification will still occur.")
             }
+        
+            .alert(item: $recoveryResult) { result in
+
+                Alert(
+
+                    title: Text("Asset Recovery"),
+
+                    message: Text(
+    """
+    \(result.duplicateFolders.count) duplicate asset folders detected.
+
+    \(result.duplicateFolders
+        .map { "• \($0)" }
+        .joined(separator: "\n"))
+
+    Automatic recovery has been suspended because
+    Asset Recovery Diagnostics is enabled.
+
+    Press Repair to merge the folders.
+    """
+),
+
+                    primaryButton: .default(
+                        Text("Repair")
+                    ) {
+
+                        _ = AssetRecoveryCoordinator.repairAll()
+
+                        recoveryResult = nil
+
+                    },
+
+                    secondaryButton: .cancel {
+
+                        recoveryResult = nil
+
+                    }
+
+                )
+
+            }
+        
+            .task {
+                
+                AppLogger.persistence.notice("TASKTAB .task STARTED")
+                
+                guard !recoveryCheckPerformed else {
+                    return
+                }
+
+                recoveryCheckPerformed = true
+
+                let result = AssetRecoveryCoordinator.launchRecoveryCheck()
+
+                guard DiagnosticsOptions.assetRecoveryDiagnostics else {
+                    return
+                }
+
+                guard result.needsRepair else {
+                    return
+                }
+
+                recoveryResult = result
+
+            }
+        
     }
     
     @ViewBuilder

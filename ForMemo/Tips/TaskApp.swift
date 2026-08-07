@@ -38,6 +38,7 @@ struct ForMemoApp: App {
     private var appSettings = AppSettings.shared
     
     
+    
     // MARK: - App Delegate
     
     @UIApplicationDelegateAdaptor(AppDelegate.self)

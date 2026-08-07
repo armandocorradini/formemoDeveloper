@@ -647,19 +647,23 @@ struct Dashboard: View {
         .navigationTitle("Dashboard")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-
-                Button {
-
-                    recoveryResult = AttachmentContainerRecovery.repairIfNeeded()
-                    showRecoveryAlert = true
-
-                } label: {
-
-                    Image(systemName: "wrench.and.screwdriver")
-
+            
+            if DiagnosticsOptions.assetRecoveryDiagnostics {
+                ToolbarItem(placement: .topBarTrailing) {
+                    
+                    Button {
+                        
+                        recoveryResult = AssetRecoveryCoordinator.repairAll()
+                        
+                        showRecoveryAlert = true
+                        
+                    } label: {
+                        
+                        Image(systemName: "wrench.and.screwdriver")
+                        
+                    }
+                    
                 }
-
             }
             ToolbarItem(placement: .topBarLeading) {
                 Menu {

@@ -32,6 +32,7 @@ let defaultBackColor2 = Color(uiColor: UIColor { trait in
             green: 0.38,
             blue: 1.00,
             alpha: 0.30
+            
         )
     }
 })
@@ -84,28 +85,14 @@ struct AppGlassBackground: View {
 
     var body: some View {
         ZStack {
-            
             LinearGradient(
-                colors: settings.diagnosticAttachmentFailure
-                ? [
-                    .red,
-                    .red.opacity(0.6)
-                ]
-                : [
+                colors: [
                     Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
                     Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-//            LinearGradient(
-//                colors: [
-//                    Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
-//                    Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
-//                ],
-//                startPoint: .topLeading,
-//                endPoint: .bottomTrailing
-//            )
             .ignoresSafeArea()
 
             Rectangle()

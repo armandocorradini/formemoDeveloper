@@ -207,6 +207,17 @@ enum DiagnosticsConfiguration {
         defaults.set(value, forKey: key)
     }
     
+    static var assetRecoveryDiagnostics: Bool {
+
+        bool(
+            "Diag.AssetRecovery",
+            default: false
+        )
+
+    }
+    
+    
+    
     static func values(
         for profile: DiagnosticsProfile
     ) -> (
@@ -383,13 +394,31 @@ enum DiagnosticsOptions {
     static var attachmentIntegrity: Bool {
         profile.settings.attachmentIntegrity
     }
+    static var assetRecoveryDiagnostics: Bool {
+
+        DiagnosticsConfiguration.assetRecoveryDiagnostics
+
+    }
 }
 
 enum DebugLog {
     
     private static let sessionID = String(UUID().uuidString.prefix(8))
     
-    private static let timestampFormatter = ISO8601DateFormatter()
+    private static let timestampFormatter: ISO8601DateFormatter = {
+
+        let formatter = ISO8601DateFormatter()
+
+        formatter.timeZone = .current
+        
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
+
+        return formatter
+
+    }()
     
     static var isEnabled: Bool {
         DiagnosticsConfiguration.currentProfile != .off
@@ -469,6 +498,7 @@ enum DebugLog {
         }
         
         write("🚀 APP LAUNCH")
+        write("🆔 Session: \(sessionID)")
         let device = UIDevice.current.model
         let system = UIDevice.current.systemVersion
 
@@ -555,6 +585,8 @@ enum DebugLog {
             DebugLog.write(
                 "☁️ iCloud account status: \(description)"
             )
+            
+            DebugLog.write("════════════════════════════════════════════")
         }
     }
     static func writeCloudKitEvent(_ message: String) {
@@ -1783,6 +1815,24 @@ struct ExportDiagnosticsView: View {
                         )
                     )
                     
+                    Toggle(
+                        "Asset Recovery Diagnostics",
+                        isOn: Binding(
+                            get: {
+                                DiagnosticsOptions.assetRecoveryDiagnostics
+                            },
+                            set: { newValue in
+
+                                DiagnosticsConfiguration.set(
+                                    newValue,
+                                    for: "Diag.AssetRecovery"
+                                )
+
+                            }
+                        )
+                    )
+                    
+                    
                     Button(role: .destructive) {
                         DebugLog.clear()
                         logExists = false
@@ -1802,7 +1852,7 @@ struct ExportDiagnosticsView: View {
                         DebugLog.write("")
                         DebugLog.write("════════════════════════════════════════════")
                         DebugLog.write("📋 MANUAL DIAGNOSTICS")
-                        DebugLog.write("Date: \(Date())")
+                        DebugLog.write("Manual diagnostics requested")
                         DebugLog.write("════════════════════════════════════════════")
                         DebugLog.write("════════════════════════════════════════════")
 

@@ -133,7 +133,7 @@ enum AttachmentContainerRecovery {
         )
     }
     
-    private static func attachmentDirectories(
+     static func attachmentDirectories(
         container: AssetContainer
     ) -> [URL]{
 
