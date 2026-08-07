@@ -46,11 +46,30 @@ extension TaskAttachment {
             let directory = containerURL
                 .appendingPathComponent("Documents", isDirectory: true)
                 .appendingPathComponent("TaskAttachments_Trash", isDirectory: true)
-            
+
+            let fm = FileManager.default
+
             if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(at: directory, withIntermediateDirectories: true)
+
+                AppLogger.persistence.notice(
+                    "Creating iCloud TaskAttachments directory"
+                )
+
+                do {
+                    try fm.createDirectory(
+                        at: directory,
+                        withIntermediateDirectories: true
+                    )
+                } catch {
+
+                    AppLogger.persistence.error(
+                        "Cannot create iCloud TaskAttachments directory: \(error.localizedDescription)"
+                    )
+
+                    return nil
+                }
             }
-            
+
             return directory
         }
         
@@ -87,10 +106,25 @@ extension TaskAttachment {
         ) else {
             return nil
         }
+
         let directory = containerURL
             .appendingPathComponent("Documents", isDirectory: true)
             .appendingPathComponent("TaskAttachments", isDirectory: true)
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        do {
+            try FileManager.default.createDirectory(
+                at: directory,
+                withIntermediateDirectories: true
+            )
+        } catch {
+
+            AppLogger.persistence.error(
+                "Unable to create TaskAttachments: \(error.localizedDescription)"
+            )
+
+            return nil
+        }
+
         return directory
     }
 
@@ -196,18 +230,23 @@ extension TaskAttachment {
             if fm.fileExists(atPath: cloud.path) {
                 
                 let values = try? cloud.resourceValues(forKeys: [
-                    .ubiquitousItemDownloadingStatusKey,
-                    .fileSizeKey
+                    .ubiquitousItemDownloadingStatusKey
                 ])
-                
+
                 let status = values?.ubiquitousItemDownloadingStatus
-                let size = values?.fileSize ?? 0
+
+                let realSize =
+                (
+                    try? fm.attributesOfItem(
+                        atPath: cloud.path
+                    )[.size] as? Int64
+                ) ?? 0
                 
                 DebugLog.write(
                 """
                 ☁️ Cloud file FOUND
                 status = \(String(describing: status))
-                size = \(size)
+                realSize = \(realSize)
                 """
                 )
                 
@@ -222,13 +261,17 @@ extension TaskAttachment {
                     return cloud
                 }
                 
-                if (status == .current || status == .downloaded),
-                   size > 0 {
-                    
+                if (
+                    status == .current ||
+                    status == .downloaded ||
+                    status == nil
+                ),
+                realSize > 0 {
+
                     DebugLog.write(
                         "☁️ Returning cloud URL"
                     )
-                    
+
                     return cloud
                 }
                 

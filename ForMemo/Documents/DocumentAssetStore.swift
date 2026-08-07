@@ -367,10 +367,41 @@ enum DocumentAssetStore {
         let relativePath = "\(UUID().uuidString).\(fileExtension)"
         let destinationURL = directory.appendingPathComponent(relativePath)
 
-        try data.write(
-            to: destinationURL,
-            options: .atomic
-        )
+        var coordinatorError: NSError?
+        var writeError: Error?
+
+        NSFileCoordinator().coordinate(
+            writingItemAt: destinationURL,
+            options: .forReplacing,
+            error: &coordinatorError
+        ) { coordinatedURL in
+
+            do {
+
+                try data.write(
+                    to: coordinatedURL,
+                    options: .atomic
+                )
+
+            } catch {
+
+                writeError = error
+
+            }
+
+        }
+
+        if let coordinatorError {
+
+            throw coordinatorError
+
+        }
+
+        if let writeError {
+
+            throw writeError
+
+        }
 
         return (
             relativePath,

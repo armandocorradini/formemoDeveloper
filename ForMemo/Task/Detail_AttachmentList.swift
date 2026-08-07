@@ -46,10 +46,32 @@ struct AttachmentList: View {
 
     @MainActor
     private func preloadThumbnails() async {
-        for attachment in uniqueAttachments where attachment.contentType.contains("image") {
-            guard imageCache[attachment.id] == nil else { continue }
+        for attachment in uniqueAttachments
+        where attachment.contentType.contains("image") {
 
-            if let thumbnail = await AttachmentThumbnailLoader.loadThumbnail(for: attachment) {
+            guard imageCache[attachment.id] == nil else {
+                continue
+            }
+
+            if let thumbnail =
+                await AttachmentThumbnailLoader.loadThumbnail(
+                    for: attachment
+                ) {
+
+                imageCache[attachment.id] = thumbnail
+                continue
+            }
+
+            // Retry dopo 1 secondo
+            try? await Task.sleep(
+                nanoseconds: 1_000_000_000
+            )
+
+            if let thumbnail =
+                await AttachmentThumbnailLoader.loadThumbnail(
+                    for: attachment
+                ) {
+
                 imageCache[attachment.id] = thumbnail
             }
         }
@@ -69,16 +91,23 @@ private enum AttachmentThumbnailLoader {
 
         for _ in 0..<40 {
             let exists = fm.fileExists(atPath: url.path)
+            
+            
             let values = try? url.resourceValues(forKeys: [
-                .ubiquitousItemDownloadingStatusKey,
-                .fileSizeKey
+                .ubiquitousItemDownloadingStatusKey
             ])
 
             let status = values?.ubiquitousItemDownloadingStatus
-            let size = values?.fileSize ?? 0
+
+            let realSize =
+            (
+                try? fm.attributesOfItem(
+                    atPath: url.path
+                )[.size] as? Int64
+            ) ?? 0
 
             if exists,
-               size > 0,
+               realSize > 0,
                (status == .current || status == .downloaded || status == nil) {
                 materialized = true
                 break

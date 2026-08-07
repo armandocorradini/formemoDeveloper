@@ -93,6 +93,8 @@ enum AttachmentMigration {
                 )
                 try fm.copyItem(at: fileURL, to: newURL)
                 
+                
+                
                 var uploadReady = false
                 for _ in 0..<20 {
                     if fm.fileExists(atPath: newURL.path) {

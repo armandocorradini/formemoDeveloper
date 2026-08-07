@@ -759,14 +759,37 @@ struct NewTaskSheetView: View {
     
     @MainActor
     private func saveAttachment(from url: URL) async {
-        
-        try? await AttachmentImporter.addAttachment(
-            from: url,
-            to: draftTask,
-            in: modelContext
-        )
+
+        let didStartAccessing = url.startAccessingSecurityScopedResource()
+
+        defer {
+            if didStartAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        do {
+
+            try await AttachmentImporter.addAttachment(
+                from: url,
+                to: draftTask,
+                in: modelContext
+            )
+
+            try modelContext.save()
+
+            NotificationCenter.default.post(
+                name: .attachmentsShouldRefresh,
+                object: nil
+            )
+
+        } catch {
+
+            AppLogger.persistence.error(
+                "Attachment import failed: \(error.localizedDescription)"
+            )
+        }
     }
-    
     @MainActor
     private func deleteAttachment(_ attachment: TaskAttachment) {
         

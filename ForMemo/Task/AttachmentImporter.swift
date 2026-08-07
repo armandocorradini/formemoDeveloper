@@ -107,7 +107,61 @@ final class AttachmentImporter {
             try fm.removeItem(at: destination)
         }
         
-        try fm.copyItem(at: originalURL, to: destination)
+        let coordinator = NSFileCoordinator()
+
+        var coordinationError: NSError?
+        var copyError: Error?
+
+        coordinator.coordinate(
+            readingItemAt: originalURL,
+            options: [],
+            writingItemAt: destination,
+            options: [],
+            error: &coordinationError
+        ) { coordinatedSource, coordinatedDestination in
+
+            do {
+                try fm.copyItem(
+                    at: coordinatedSource,
+                    to: coordinatedDestination
+                )
+            } catch {
+                copyError = error
+            }
+        }
+
+        if let coordinationError {
+            throw coordinationError
+        }
+
+        if let copyError {
+            throw copyError
+        }
+        
+        let ubiq = try? destination.resourceValues(forKeys: [
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey
+        ])
+
+        DebugLog.write("""
+        📤 COPY COMPLETED
+        path = \(destination.path)
+        exists = \(fm.fileExists(atPath: destination.path))
+        ubiquitous = \(String(describing: ubiq?.isUbiquitousItem))
+        status = \(String(describing: ubiq?.ubiquitousItemDownloadingStatus))
+        """)
+        
+        
+        
+        
+        let values = try? destination.resourceValues(forKeys: [
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey
+        ])
+
+        print("FILE:", destination.path)
+        print("UBIQUITOUS:", values?.isUbiquitousItem as Any)
+        print("STATUS:", values?.ubiquitousItemDownloadingStatus?.rawValue as Any)
         DebugLog.write("FILE APPENA SCRITTO = \(destination.path)")        // 🔥 Verify readable non-empty file
         
         let files = try fm.contentsOfDirectory(
@@ -144,6 +198,21 @@ final class AttachmentImporter {
             try Task.checkCancellation()
             try await Task.sleep(for: .milliseconds(80))
         }
+        
+        let finalValues = try? destination.resourceValues(forKeys: [
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey
+        ])
+
+        DebugLog.write("""
+        📤 BEFORE CONTEXT SAVE
+        exists = \(fm.fileExists(atPath: destination.path))
+        materialized = \(materialized)
+        readable = \(readable)
+        ubiquitous = \(String(describing: finalValues?.isUbiquitousItem))
+        status = \(String(describing: finalValues?.ubiquitousItemDownloadingStatus))
+        """)
+        
 
         guard materialized, readable else {
 

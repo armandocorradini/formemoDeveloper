@@ -110,9 +110,9 @@ struct ForMemoApp: App {
         Task { @MainActor in
             let context = sharedContainer.mainContext
 
-            AttachmentMigration.runIfNeeded(
-                context: context
-            )
+//            AttachmentMigration.runIfNeeded(
+//                context: context
+//            )
 
             WalletMigrationService.runIfNeeded(
                 context: context
@@ -311,11 +311,11 @@ struct ForMemoApp: App {
 
                 let context = self.container.mainContext
 
-                if DiagnosticsOptions.attachmentDatabase {
-                    DebugLog.writeDatabaseSnapshot(
-                        context: context
-                    )
-                }
+//                if DiagnosticsOptions.attachmentDatabase {
+//                    DebugLog.writeDatabaseSnapshot(
+//                        context: context
+//                    )
+//                }
                 
                 NotificationActionProcessor.shared.processAll(
                     using: context

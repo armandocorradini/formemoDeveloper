@@ -67,7 +67,17 @@ enum Persistence {
             selectedURL = legacyStoreURL
         }
 
-        AppLogger.persistence.debug("Selected SwiftData store: \(selectedURL.path)")
+        AppLogger.persistence.error("================================")
+        AppLogger.persistence.error("SELECTED STORE: \(selectedURL.path)")
+        AppLogger.persistence.error("EXISTS: \(FileManager.default.fileExists(atPath: selectedURL.path))")
+
+        if let attr = try? FileManager.default.attributesOfItem(atPath: selectedURL.path),
+           let size = attr[.size] as? NSNumber {
+
+            AppLogger.persistence.error("STORE SIZE: \(size.int64Value)")
+        }
+
+        AppLogger.persistence.error("================================")
 
         return selectedURL
     }

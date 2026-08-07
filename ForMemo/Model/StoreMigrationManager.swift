@@ -455,7 +455,26 @@ enum StoreMigrationManager {
         DebugLog.writeMigrationEvent("App Group empty: \(appGroupStoreIsEmpty())")
         DebugLog.writeMigrationEvent("Migration needed: \(migrationNeeded)")
         
-        
+        if let plan = migrationPlan() {
+
+            DebugLog.writeMigrationEvent(
+                "SOURCE STORE: \(plan.sourceDirectory.appendingPathComponent("local.store").path)"
+            )
+
+            DebugLog.writeMigrationEvent(
+                "DEST STORE: \(plan.destinationDirectory.appendingPathComponent("local.store").path)"
+            )
+
+            if let attr = try? FileManager.default.attributesOfItem(
+                atPath: plan.sourceDirectory.appendingPathComponent("local.store").path
+            ),
+               let size = attr[.size] as? NSNumber {
+
+                DebugLog.writeMigrationEvent(
+                    "SOURCE STORE SIZE: \(size.int64Value)"
+                )
+            }
+        }
         
         guard migrationNeeded else {
 
@@ -499,6 +518,7 @@ enum StoreMigrationManager {
 
         do {
             try executeMigrationPlan(plan)
+            DebugLog.writeMigrationEvent("Migration copy completed")
         } catch {
             migrationLogger.error("Migration execution failed: \(error.localizedDescription)")
             return
@@ -506,9 +526,20 @@ enum StoreMigrationManager {
 
         do {
             try writeMigrationMarker()
+            DebugLog.writeMigrationEvent("Migration marker written")
         } catch {
             migrationLogger.error("Unable to write migration marker: \(error.localizedDescription)")
             return
+        }
+        if let appGroup = appGroupStoreURL(),
+           let attr = try? FileManager.default.attributesOfItem(
+                atPath: appGroup.path
+           ),
+           let size = attr[.size] as? NSNumber {
+
+            DebugLog.writeMigrationEvent(
+                "DEST STORE SIZE: \(size.int64Value)"
+            )
         }
 
         migrationLogger.notice("Migration completed successfully")

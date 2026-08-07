@@ -3693,6 +3693,9 @@
         }
       }
     },
+    "Attachment Recovery" : {
+
+    },
     "Attachment storage" : {
       "localizations" : {
         "de" : {
@@ -22257,6 +22260,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registrando…"
+          }
+        }
+      }
+    },
+    "Recovery folders: %lld\n\nCopied: %lld\nSkipped: %lld\nErrors: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recovery folders: %1$lld\n\nCopied: %2$lld\nSkipped: %3$lld\nErrors: %4$lld"
           }
         }
       }

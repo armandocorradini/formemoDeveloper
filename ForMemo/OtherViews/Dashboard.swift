@@ -11,6 +11,9 @@ struct Dashboard: View {
     @State private var selectedLoyaltyCard: LoyaltyCard?
     @State private var selectedWeatherDate: Date?
     
+    @State private var recoveryResult: AttachmentRecoveryResult?
+    @State private var showRecoveryAlert = false
+    
     private static let activeTasksPredicate =
         #Predicate<TodoTask> { !$0.isCompleted }
 
@@ -617,11 +620,47 @@ struct Dashboard: View {
             .scrollContentBackground(.hidden)
             .background(Color.clear)
         }
+        .alert(
+            "Attachment Recovery",
+            isPresented: $showRecoveryAlert
+        ) {
+
+            Button("OK") { }
+
+        } message: {
+
+            if let result = recoveryResult {
+
+                Text("""
+                Recovery folders: \(result.folders)
+
+                Copied: \(result.copied)
+                Skipped: \(result.skipped)
+                Errors: \(result.errors)
+                """)
+
+            }
+
+        }
         .contentMargins(.bottom, 70, for: .scrollContent)
         .containerBackground(.clear, for: .navigation)
         .navigationTitle("Dashboard")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+
+                Button {
+
+                    recoveryResult = AttachmentContainerRecovery.repairIfNeeded()
+                    showRecoveryAlert = true
+
+                } label: {
+
+                    Image(systemName: "wrench.and.screwdriver")
+
+                }
+
+            }
             ToolbarItem(placement: .topBarLeading) {
                 Menu {
                     Toggle("Show Tomorrow", isOn: Bindable(settings).showDashboardTomorrow)

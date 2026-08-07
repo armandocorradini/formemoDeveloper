@@ -182,6 +182,7 @@
 		1C634E3A30220C9C0092DB89 /* WeatherForecastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */; };
 		1C634E3B30220C9C0092DB89 /* WeeklyTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */; };
 		1C634E3D30220D580092DB89 /* WalletAssetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */; };
+		1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */; };
 		1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */; };
 		1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -387,6 +388,7 @@
 		1C634D8830220C9C0092DB89 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1C634D8930220C9C0092DB89 /* ForMemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ForMemo.entitlements; sourceTree = "<group>"; };
 		1C634D8A30220C9C0092DB89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentContainerRecovery.swift; sourceTree = "<group>"; };
 		1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoCredentialProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -724,6 +726,7 @@
 		1C634E43302331530092DB89 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
+				1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */,
 				1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */,
 				1C634D6130220C9C0092DB89 /* OverviewView.swift */,
 				1C634D6630220C9C0092DB89 /* SettingsView.swift */,
@@ -984,6 +987,7 @@
 				1C634E0430220C9C0092DB89 /* DocumentAssetDetailView.swift in Sources */,
 				1C634E0530220C9C0092DB89 /* DocumentAssetThumbnail.swift in Sources */,
 				1C634E0630220C9C0092DB89 /* DocumentDetailView.swift in Sources */,
+				1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */,
 				1C634E0730220C9C0092DB89 /* DocumentsView.swift in Sources */,
 				1C634E0830220C9C0092DB89 /* DocumentViewerView.swift in Sources */,
 				1C634E0930220C9C0092DB89 /* DueIconEffect.swift in Sources */,
