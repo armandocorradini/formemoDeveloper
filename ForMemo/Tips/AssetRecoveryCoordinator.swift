@@ -37,26 +37,24 @@ enum AssetRecoveryCoordinator {
                     $0.lastPathComponent != container.rawValue
                 }
             
-            if duplicated {
+            let folders = AttachmentContainerRecovery
+                .attachmentDirectories(container: container)
+                .filter { directory in
 
-                result.duplicatedContainers.append(container)
+                    let name = directory.lastPathComponent
 
-                let folders = AttachmentContainerRecovery
-                    .attachmentDirectories(container: container)
-                    .filter { directory in
+                    return name != container.rawValue &&
+                           name != "\(container.rawValue)_Trash"
+                }
+                .map(\.lastPathComponent)
+                .sorted()
 
-                        let name = directory.lastPathComponent
-
-                        return name != container.rawValue
-                            && name != "\(container.rawValue)_Trash"
-
-                    }
-                    .map(\.lastPathComponent)
-                    .sorted()
-
-                result.duplicateFolders.append(contentsOf: folders)
-
+            guard !folders.isEmpty else {
+                continue
             }
+
+            result.duplicatedContainers.append(container)
+            result.duplicateFolders.append(contentsOf: folders)
             
         }
         

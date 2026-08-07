@@ -245,6 +245,8 @@ enum AttachmentContainerRecovery {
             if fm.fileExists(atPath: destinationFile.path) {
                 result.skipped += 1
                 result.skippedFiles.append(file.lastPathComponent)
+                try? fm.removeItem(at: file)
+                
                 continue
             }
 

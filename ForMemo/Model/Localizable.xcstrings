@@ -743,10 +743,34 @@
     },
     "%lld duplicate asset folders detected.\n\n%@\n\nAutomatic recovery has been suspended because\nAsset Recovery Diagnostics is enabled.\n\nPress Repair to merge the folders." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld doppelte Ressourcenordner gefunden.\n\n%2$@\n\nDie automatische Wiederherstellung wurde angehalten, da die Diagnose für die Ressourcenwiederherstellung aktiviert ist.\n\nTippe auf „Reparieren“, um die Ordner zusammenzuführen."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld duplicate asset folders detected.\n\n%2$@\n\nAutomatic recovery has been suspended because\nAsset Recovery Diagnostics is enabled.\n\nPress Repair to merge the folders."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se han detectado %1$lld carpetas de recursos duplicadas.\n\n%2$@\n\nLa recuperación automática se ha suspendido porque el diagnóstico de recuperación de recursos está activado.\n\nPulsa «Reparar» para combinar las carpetas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld dossiers de ressources en double détectés.\n\n%2$@\n\nLa récupération automatique est suspendue, car les diagnostics de récupération des ressources sont activés.\n\nTouchez Réparer pour fusionner les dossiers."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rilevate %1$lld cartelle di risorse duplicate.\n\n%2$@\n\nIl recupero automatico è stato sospeso perché la diagnostica del recupero risorse è attiva.\n\nTocca «Ripara» per unire le cartelle."
           }
         }
       }
@@ -3448,10 +3472,60 @@
       }
     },
     "Asset Recovery" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ressourcenwiederherstellung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperación de recursos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupération des ressources"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recupero risorse"
+          }
+        }
+      }
     },
     "Asset Recovery Diagnostics" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnose für Ressourcenwiederherstellung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnóstico de recuperación de recursos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnostics de récupération des ressources"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnostica recupero risorse"
+          }
+        }
+      }
     },
     "at %@" : {
       "localizations" : {
@@ -3710,7 +3784,32 @@
       }
     },
     "Attachment Recovery" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhangswiederherstellung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperación de archivos adjuntos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupération des pièces jointes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recupero allegati"
+          }
+        }
+      }
     },
     "Attachment storage" : {
       "localizations" : {
@@ -22282,10 +22381,34 @@
     },
     "Recovery folders: %lld\n\nCopied: %lld\nSkipped: %lld\nErrors: %lld" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellungsordner: %1$lld\n\nKopiert: %2$lld\nÜbersprungen: %3$lld\nFehler: %4$lld\n"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "Recovery folders: %1$lld\n\nCopied: %2$lld\nSkipped: %3$lld\nErrors: %4$lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carpetas de recuperación: %1$lld\n\nCopiados: %2$lld\nOmitidos: %3$lld\nErrores: %4$lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dossiers de récupération : %1$lld\n\nCopiés : %2$lld\n\nIgnorés : %3$lld\n\nErreurs : %4$lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cartelle di recupero: %1$lld\n\nCopiati: %2$lld\nSaltati: %3$lld\nErrori: %4$lld"
           }
         }
       }
@@ -23150,7 +23273,32 @@
       }
     },
     "Repair" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reparieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reparar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réparer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripara"
+          }
+        }
+      }
     },
     "Repair Kit" : {
       "localizations" : {
