@@ -31,12 +31,6 @@ enum AssetRecoveryCoordinator {
         
         for container in containers {
             
-            let duplicated = AttachmentContainerRecovery
-                .attachmentDirectories(container: container)
-                .contains {
-                    $0.lastPathComponent != container.rawValue
-                }
-            
             let folders = AttachmentContainerRecovery
                 .attachmentDirectories(container: container)
                 .filter { directory in
@@ -56,6 +50,29 @@ enum AssetRecoveryCoordinator {
             result.duplicatedContainers.append(container)
             result.duplicateFolders.append(contentsOf: folders)
             
+            SystemEventHistory.add(
+
+                SystemEvent(
+
+                    id: UUID(),
+
+                    sessionID: DebugLog.sessionID,
+
+                    date: Date(),
+
+                    category: .assetRecovery,
+
+                    event: .detected,
+
+                    result: .warning,
+
+                    details: "\(container.rawValue): \(folders.count) duplicate folder(s)"
+
+                )
+
+            )
+            
+            
         }
         
         return result
@@ -73,7 +90,8 @@ enum AssetRecoveryCoordinator {
         if result.duplicatedContainers.contains(.task) {
             
             _ = AttachmentContainerRecovery.repairIfNeeded(
-                container: .task
+                container: .task,
+                trigger: .automatic
             )
             
         }
@@ -81,7 +99,8 @@ enum AssetRecoveryCoordinator {
         if result.duplicatedContainers.contains(.wallet) {
             
             _ = AttachmentContainerRecovery.repairIfNeeded(
-                container: .wallet
+                container: .wallet,
+                trigger: .automatic
             )
             
         }
@@ -89,7 +108,8 @@ enum AssetRecoveryCoordinator {
         if result.duplicatedContainers.contains(.document) {
             
             _ = AttachmentContainerRecovery.repairIfNeeded(
-                container: .document
+                container: .document,
+                trigger: .automatic
             )
             
         }
@@ -199,15 +219,18 @@ enum AssetRecoveryCoordinator {
     static func repairAll() -> AttachmentRecoveryResult {
 
         let taskResult = AttachmentContainerRecovery.repairIfNeeded(
-            container: .task
+            container: .task,
+            trigger: .manual
         )
 
         _ = AttachmentContainerRecovery.repairIfNeeded(
-            container: .wallet
+            container: .wallet,
+            trigger: .manual
         )
 
         _ = AttachmentContainerRecovery.repairIfNeeded(
-            container: .document
+            container: .document,
+            trigger: .manual
         )
 
         return taskResult

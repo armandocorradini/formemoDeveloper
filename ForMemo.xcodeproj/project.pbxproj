@@ -184,6 +184,8 @@
 		1C634E3D30220D580092DB89 /* WalletAssetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */; };
 		1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */; };
 		1CED325B302619D600B16A50 /* AssetRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */; };
+		1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325C30268F8300B16A50 /* SystemEventHistory.swift */; };
+		1CED325F30276D7C00B16A50 /* RecoveryStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */; };
 		1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */; };
 		1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -391,6 +393,8 @@
 		1C634D8A30220C9C0092DB89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentContainerRecovery.swift; sourceTree = "<group>"; };
 		1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetRecoveryCoordinator.swift; sourceTree = "<group>"; };
+		1CED325C30268F8300B16A50 /* SystemEventHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemEventHistory.swift; sourceTree = "<group>"; };
+		1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryStatistics.swift; sourceTree = "<group>"; };
 		1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoCredentialProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -726,6 +730,8 @@
 		1C634E43302331530092DB89 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
+				1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */,
+				1CED325C30268F8300B16A50 /* SystemEventHistory.swift */,
 				1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */,
 				1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */,
 				1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */,
@@ -978,6 +984,7 @@
 				1C634DF730220C9C0092DB89 /* AudioRecorderView.swift in Sources */,
 				1C634DF830220C9C0092DB89 /* BackgroundCustomizationView.swift in Sources */,
 				1C634DF930220C9C0092DB89 /* BackupRestore.swift in Sources */,
+				1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */,
 				1C634DFA30220C9C0092DB89 /* BarcodeGenerator.swift in Sources */,
 				1C634DFB30220C9C0092DB89 /* CameraPicker.swift in Sources */,
 				1C634DFC30220C9C0092DB89 /* Dashboard.swift in Sources */,
@@ -1027,6 +1034,7 @@
 				1C634E2730220C9C0092DB89 /* TaskListAppearanceView.swift in Sources */,
 				1C634E2830220C9C0092DB89 /* TaskListView.swift in Sources */,
 				1C634E2930220C9C0092DB89 /* TaskMapView.swift in Sources */,
+				1CED325F30276D7C00B16A50 /* RecoveryStatistics.swift in Sources */,
 				1C634E2A30220C9C0092DB89 /* TaskRowBaseLogic.swift in Sources */,
 				1C634E2B30220C9C0092DB89 /* TaskRowContent.swift in Sources */,
 				1C634E2C30220C9C0092DB89 /* TaskTabView.swift in Sources */,

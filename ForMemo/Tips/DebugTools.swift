@@ -144,6 +144,7 @@ enum DebugTools {
             UserDefaults.standard.synchronize()
         }
     }
+
 }
 
 enum DiagnosticsProfile: String, CaseIterable, Identifiable {
@@ -403,7 +404,7 @@ enum DiagnosticsOptions {
 
 enum DebugLog {
     
-    private static let sessionID = String(UUID().uuidString.prefix(8))
+     static let sessionID = String(UUID().uuidString.prefix(8))
     
     private static let timestampFormatter: ISO8601DateFormatter = {
 
@@ -433,6 +434,19 @@ enum DebugLog {
             .appendingPathComponent("ForMemoDiagnostics.log")
     }
     
+    private static func sanitize(_ text: String) -> String {
+
+        text
+            .replacingOccurrences(
+                of: "iCloud~corradini~armando~",
+                with: "iCloud~***~***~"
+            )
+            .replacingOccurrences(
+                of: "iCloud.corradini.armando.",
+                with: "iCloud.***.***."
+            )
+    }
+    
     static func write(_ message: String) {
         
         let timestamp = timestampFormatter.string(from: Date())
@@ -440,7 +454,9 @@ enum DebugLog {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
         
-        let line = "[\(timestamp)] [v\(version) (\(build))] \(message)\n"
+        let sanitizedMessage = sanitize(message)
+
+        let line = "[\(timestamp)] [v\(version) (\(build))] \(sanitizedMessage)\n"
         
         if !FileManager.default.fileExists(atPath: logURL.path) {
             FileManager.default.createFile(
@@ -586,7 +602,7 @@ enum DebugLog {
                 "☁️ iCloud account status: \(description)"
             )
             
-            DebugLog.write("════════════════════════════════════════════")
+            DebugLog.write("══════════════════════════════════════════")
         }
     }
     static func writeCloudKitEvent(_ message: String) {
@@ -648,9 +664,9 @@ enum DebugLog {
         
         write("")
         write("")
-        write("════════════════════════════════════════════")
+        write("══════════════════════════════════════════")
         write("🔷 STORE MIGRATION DIAGNOSTICS")
-        write("════════════════════════════════════════════")
+        write("══════════════════════════════════════════")
 
         write("Current Store Exists: \(FileManager.default.fileExists(atPath: Persistence.diagnosticsCurrentStoreURL))")
 
@@ -675,7 +691,7 @@ enum DebugLog {
 
         write("App Group Store: \(StoreMigrationManager.diagnosticsAppGroupStoreExists ? "YES" : "NO")")
 
-        write("════════════════════════════════════════════")
+        write("══════════════════════════════════════════")
     }
     
     private static func writeAttachmentForensics(
@@ -690,7 +706,7 @@ enum DebugLog {
         forensic("📅 Snapshot: \(ISO8601DateFormatter().string(from: Date()))")
         forensic("📱 Version: \(version)")
         forensic("🔨 Build: \(build)")
-        forensic("════════════════════════════════════════════")
+        forensic("══════════════════════════════════════════")
         
     }
     
@@ -754,7 +770,7 @@ enum DebugLog {
 
         forensic("🟣 attachmentMigrationVersion: \(UserDefaults.standard.integer(forKey: "attachmentMigrationVersion"))")
 
-        forensic("════════════════════════════════════════════")
+        forensic("══════════════════════════════════════════")
     }
     
     
@@ -893,9 +909,9 @@ enum DebugLog {
         }
 
         forensic("")
-        forensic("════════════════════════════════════════════")
+        forensic("══════════════════════════════════════════")
         forensic("📊 ATTACHMENT DATABASE ANALYSIS")
-        forensic("════════════════════════════════════════════")
+        forensic("══════════════════════════════════════════")
 
         let taskDescriptor = FetchDescriptor<TodoTask>(
             predicate: #Predicate {
@@ -976,9 +992,9 @@ enum DebugLog {
 
             forensic("")
             forensic("")
-            forensic("════════════════════════════════════════════")
+            forensic("══════════════════════════════════════════")
             forensic("📈 ATTACHMENT SUMMARY")
-            forensic("════════════════════════════════════════════")
+            forensic("══════════════════════════════════════════")
 
             forensic("Records: \(result.attachments.count)")
             forensic("Resolved URLs: \(result.resolvedCount)")
@@ -988,7 +1004,7 @@ enum DebugLog {
             forensic("Trash: \(result.trashCount)")
             forensic("Missing: \(result.missingCount)")
             forensic("Nil URLs: \(result.nilURLCount)")
-            forensic("════════════════════════════════════════════")
+            forensic("══════════════════════════════════════════")
         }
 
         return result
@@ -1178,10 +1194,10 @@ enum DebugLog {
         }
 
         forensic("")
-        forensic("════════════════════════════════════════════")
+        forensic("══════════════════════════════════════════")
 
         write("📂 DATABASE ↔ FILESYSTEM CHECK")
-        write("════════════════════════════════════════════")
+        write("══════════════════════════════════════════")
 
         let databaseFiles = analysis.databaseFiles
 
@@ -1269,9 +1285,9 @@ enum DebugLog {
         }
 
         forensic("")
-        forensic("════════════════════════════════════════════")
+        forensic("══════════════════════════════════════════")
         forensic("📄 DOCUMENT ASSETS")
-        forensic("════════════════════════════════════════════")
+        forensic("══════════════════════════════════════════")
 
         forensic("Documents: \(analysis.documents)")
         forensic("Files: \(analysis.assets)")
@@ -1290,9 +1306,9 @@ enum DebugLog {
         }
 
         forensic("")
-        forensic("════════════════════════════════════════════")
+        forensic("══════════════════════════════════════════")
         forensic("💳 WALLET ASSETS")
-        forensic("════════════════════════════════════════════")
+        forensic("══════════════════════════════════════════")
 
         forensic("Cards: \(analysis.cards)")
         forensic("Tickets: \(analysis.tickets)")
@@ -1459,8 +1475,85 @@ enum DebugLog {
             context: context,
             environment: env
         )
+        writeSystemEventHistory()
     }
     
+    private static func writeSystemEventHistory() {
+
+
+
+        let formatter = ISO8601DateFormatter()
+        formatter.timeZone = .current
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
+        
+        let statisticsFormatter = DateFormatter()
+        statisticsFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        statisticsFormatter.locale = Locale(identifier: "en_US_POSIX")
+        statisticsFormatter.timeZone = .current
+
+        let totalEvents = SystemEventHistory.all().count
+        
+        
+        let events = SystemEventHistory.currentSession()
+        
+        write("")
+        write("══════════════════════════════════════════")
+        write("📊 RECOVERY STATISTICS")
+        write("══════════════════════════════════════════")
+        write("Automatic Recoveries : \(RecoveryStatistics.automaticRecoveries)")
+        write("Manual Recoveries    : \(RecoveryStatistics.manualRecoveries)")
+        write("Total Recoveries     : \(RecoveryStatistics.totalRecoveries)")
+        write("Last Trigger      : \(RecoveryStatistics.lastTrigger)")
+        if let lastRecovery = RecoveryStatistics.lastRecoveryDate {
+
+            write(
+                "Last Recovery     : \(statisticsFormatter.string(from: lastRecovery))"
+            )
+
+        } else {
+
+            write("Last Recovery     : Never")
+
+        }
+        
+        write("")
+        write("══════════════════════════════════════════")
+        write("📋 SYSTEM EVENT HISTORY")
+        write("Current Session Events: \(events.count)")
+        write("Stored Events: \(totalEvents)")
+        write("══════════════════════════════════════════")
+        
+        
+        
+        
+        guard !events.isEmpty else {
+            write("No events recorded during this session.")
+            return
+        }
+
+        for event in events {
+
+            write("")
+            write(formatter.string(from: event.date))
+            write("Session : \(event.sessionID)")
+            write("Category: \(event.category.rawValue)")
+            write("Event   : \(event.event.rawValue)")
+            write("Result  : \(event.result.rawValue)")
+
+            if let details = event.details,
+               !details.isEmpty {
+
+                write("Details : \(details)")
+
+            }
+
+            write("────────────────────────────────────────────")
+        }
+
+    }
     
     static func ensureLogFileExists() {
         
@@ -1847,14 +1940,14 @@ struct ExportDiagnosticsView: View {
                     
                     Button {
 
-                        DebugLog.write("════════════════════════════════════════════")
+                        DebugLog.write("══════════════════════════════════════════")
                         DebugLog.write("")
                         DebugLog.write("")
-                        DebugLog.write("════════════════════════════════════════════")
+                        DebugLog.write("══════════════════════════════════════════")
                         DebugLog.write("📋 MANUAL DIAGNOSTICS")
                         DebugLog.write("Manual diagnostics requested")
-                        DebugLog.write("════════════════════════════════════════════")
-                        DebugLog.write("════════════════════════════════════════════")
+                        DebugLog.write("══════════════════════════════════════════")
+                        DebugLog.write("══════════════════════════════════════════")
 
                         DebugLog.writeDatabaseSnapshot(
                             context: modelContext
@@ -1924,3 +2017,5 @@ private extension Bundle {
         infoDictionary?["CFBundleVersion"] as? String ?? "?"
     }
 }
+
+

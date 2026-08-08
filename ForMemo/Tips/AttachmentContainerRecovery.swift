@@ -49,10 +49,19 @@ enum AssetContainer: String {
 
 }
 
+enum RecoveryTrigger: String, Codable {
+
+    case automatic
+    case manual
+
+}
+
+
 enum AttachmentContainerRecovery {
 
     static func repairIfNeeded(
-        container: AssetContainer = .task
+        container: AssetContainer = .task,
+        trigger: RecoveryTrigger = .automatic
     ) -> AttachmentRecoveryResult {
 
         var result = AttachmentRecoveryResult()
@@ -91,8 +100,40 @@ enum AttachmentContainerRecovery {
         result.duplicateFolders = recoveryDirectories.map(\.lastPathComponent)
         
 
+        let startedAt = Date()
+        let recoveryID = String(UUID().uuidString.prefix(8))
+        SystemEventHistory.add(
 
-        // ⬇️ AGGIUNGI QUI
+            SystemEvent(
+
+                id: UUID(),
+
+                sessionID: DebugLog.sessionID,
+
+                date: Date(),
+
+                category: .assetRecovery,
+
+                event: .started,
+
+                result: .warning,
+
+                details:
+                    """
+                    Session ID: \(DebugLog.sessionID)
+                    
+                    Recovery ID: \(recoveryID)
+
+                    Trigger: \(trigger.rawValue)
+
+                    Container: \(container.rawValue)
+
+                    Duplicate folders: \(result.folders)
+                    """
+
+            )
+
+        )
 
         for directory in recoveryDirectories {
 
@@ -115,6 +156,52 @@ enum AttachmentContainerRecovery {
 
             ==========================
             """
+        )
+        let duration = Date().timeIntervalSince(startedAt)
+        
+        RecoveryStatistics.record(trigger: trigger)
+        
+        SystemEventHistory.add(
+
+            SystemEvent(
+
+                id: UUID(),
+
+                sessionID: DebugLog.sessionID,
+
+                date: Date(),
+
+                category: .assetRecovery,
+
+                event: .completed,
+
+                result: result.errors == 0 ? .success : .failure,
+
+                details:
+                    """
+                    Session ID: \(DebugLog.sessionID)
+                    
+                    Recovery ID: \(recoveryID)
+
+                    Trigger: \(trigger.rawValue)
+
+                    Container: \(container.rawValue)
+
+                    Duplicate folders: \(result.folders)
+
+                    Files scanned: \(result.scanned)
+
+                    Files copied: \(result.copied)
+
+                    Files skipped: \(result.skipped)
+
+                    Errors: \(result.errors)
+
+                    Duration: \(String(format: "%.3f", duration)) s
+                    """
+
+            )
+
         )
 
         return result
