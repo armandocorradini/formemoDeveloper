@@ -162,7 +162,7 @@ final class AttachmentImporter {
         print("FILE:", destination.path)
         print("UBIQUITOUS:", values?.isUbiquitousItem as Any)
         print("STATUS:", values?.ubiquitousItemDownloadingStatus?.rawValue as Any)
-        DebugLog.write("FILE APPENA SCRITTO = \(destination.path)")        // 🔥 Verify readable non-empty file
+        DebugLog.write("Attachment write completed")
         
         let files = try fm.contentsOfDirectory(
             at: directory,
@@ -172,7 +172,7 @@ final class AttachmentImporter {
         DebugLog.write("FILES SUBITO DOPO COPY = \(files.count)")
 
         for file in files {
-            DebugLog.write(file.lastPathComponent)
+            DebugLog.write("Imported attachment")
         }
         
         var readable = false
