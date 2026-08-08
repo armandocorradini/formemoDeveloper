@@ -146,9 +146,15 @@ extension TaskAttachment {
         DebugLog.write("════════════════════════════════════")
         DebugLog.write("RESOLVER START")
         DebugLog.write("relativePath = \(relativePath)")
-        DebugLog.write("attachmentsDirectory = \(attachmentsDirectory?.path ?? "nil")")
-        DebugLog.write("cloudDirectory = \(cloudAttachmentsDirectory()?.path ?? "nil")")
-        DebugLog.write("legacyDirectory = \(legacyAttachmentsDirectory()?.path ?? "nil")")
+        DebugLog.write(
+            "attachmentsDirectory = \(attachmentsDirectory == nil ? "Missing" : "Available")"
+        )
+        DebugLog.write(
+            "cloudDirectory = \(cloudAttachmentsDirectory() == nil ? "Unavailable" : "Available")"
+        )
+        DebugLog.write(
+            "legacyDirectory = \(legacyAttachmentsDirectory() == nil ? "Unavailable" : "Available")"
+        )
         DebugLog.write("════════════════════════════════════")
         
 
@@ -188,7 +194,7 @@ extension TaskAttachment {
             )
         }
 
-        // ===== Candidate paths =====
+        // ===== Candidate diagnostics =====
 
         if let cloudDir = cloudAttachmentsDirectory() {
 
@@ -196,11 +202,20 @@ extension TaskAttachment {
 
             DebugLog.write(
                 """
-                ☁️ Cloud candidate:
-                \(candidate.path)
+                ☁️ Cloud candidate
                 exists = \(fm.fileExists(atPath: candidate.path))
                 """
             )
+
+        } else {
+
+            DebugLog.write(
+                """
+                ☁️ Cloud candidate
+                directory = unavailable
+                """
+            )
+
         }
 
         if let legacyDir = legacyAttachmentsDirectory() {
@@ -209,11 +224,20 @@ extension TaskAttachment {
 
             DebugLog.write(
                 """
-                📂 Legacy candidate:
-                \(candidate.path)
+                📂 Legacy candidate
                 exists = \(fm.fileExists(atPath: candidate.path))
                 """
             )
+
+        } else {
+
+            DebugLog.write(
+                """
+                📂 Legacy candidate
+                directory = unavailable
+                """
+            )
+
         }
 
         // =====================================================
@@ -224,8 +248,10 @@ extension TaskAttachment {
             
             let cloud = cloudDir.appendingPathComponent(relativePath)
             
-            DebugLog.write("Cloud candidate = \(cloud.path)")
-            DebugLog.write("Cloud exists = \(fm.fileExists(atPath: cloud.path))")
+            let cloudExists = fm.fileExists(atPath: cloud.path)
+
+            DebugLog.write("☁️ Cloud candidate checked")
+            DebugLog.write("☁️ Cloud exists = \(cloudExists)")
             
             if fm.fileExists(atPath: cloud.path) {
                 
@@ -245,8 +271,8 @@ extension TaskAttachment {
                 DebugLog.write(
                 """
                 ☁️ Cloud file FOUND
-                status = \(String(describing: status))
-                realSize = \(realSize)
+                downloadStatus = \(String(describing: status))
+                size = \(realSize) bytes
                 """
                 )
                 
@@ -305,7 +331,7 @@ extension TaskAttachment {
                         )[.size] as? Int64) ?? 0
 
                     DebugLog.write(
-                        "📂 Legacy size = \(legacySize)"
+                        "📂 Legacy file size = \(legacySize) bytes"
                     )
 
                     guard legacySize > 0 else {

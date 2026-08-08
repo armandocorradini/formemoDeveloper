@@ -434,18 +434,7 @@ enum DebugLog {
             .appendingPathComponent("ForMemoDiagnostics.log")
     }
     
-    private static func sanitize(_ text: String) -> String {
 
-        text
-            .replacingOccurrences(
-                of: "iCloud~corradini~armando~",
-                with: "iCloud~***~***~"
-            )
-            .replacingOccurrences(
-                of: "iCloud.corradini.armando.",
-                with: "iCloud.***.***."
-            )
-    }
     
     static func write(_ message: String) {
         
@@ -454,7 +443,7 @@ enum DebugLog {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
         
-        let sanitizedMessage = sanitize(message)
+        let sanitizedMessage = DiagnosticsRedactor.redact(message)
 
         let line = "[\(timestamp)] [v\(version) (\(build))] \(sanitizedMessage)\n"
         
@@ -740,7 +729,7 @@ enum DebugLog {
     
     private static func writeAttachmentEnvironment(
         environment env: AttachmentEnvironment
-    ){
+    ) {
 
         guard isEnabled,
               DiagnosticsOptions.attachmentEnvironment else {
@@ -751,24 +740,58 @@ enum DebugLog {
         forensic("📁 DOCUMENTS: [redacted]")
 
         forensic("☁️ iCloud Available: \(env.cloudContainer == nil ? "NO" : "YES")")
-        forensic("☁️ iCloud Container: [redacted]")
-        forensic("☁️ Default Container: [redacted]")
 
-        forensic("☁️ Explicit == Default: \(env.cloudContainer?.path == env.defaultContainer?.path)")
+        forensic(
+            "☁️ iCloud Container: \(env.cloudContainer == nil ? "Unavailable" : "Available")"
+        )
 
-        forensic("☁️ Cloud Attachments: [redacted]")
-        forensic("☁️ Cloud Trash: [redacted]")
+        forensic(
+            "☁️ Default Container: \(env.defaultContainer == nil ? "Unavailable" : "Available")"
+        )
 
-        forensic("📂 Legacy Attachments: [redacted]")
-        forensic("🗑 Legacy Trash: [redacted]")
+        forensic(
+            "☁️ Explicit == Default: \(env.cloudContainer?.path == env.defaultContainer?.path)"
+        )
 
-        forensic("📎 TaskAttachment.attachmentsDirectory: [redacted]")
-        forensic("🗑 TaskAttachment.trashDirectory: [redacted]")
+        forensic(
+            "☁️ Cloud Attachments: \(env.cloudAttachments == nil ? "Missing" : "Available")"
+        )
 
-        forensic("📦 Bundle Identifier: \(Bundle.main.bundleIdentifier ?? "nil")")
+        forensic(
+            "☁️ Cloud Trash: \(env.cloudTrash == nil ? "Missing" : "Available")"
+        )
+
+        forensic(
+            "📂 Legacy Attachments: \(env.legacyAttachments == nil ? "Missing" : "Available")"
+        )
+
+        forensic(
+            "🗑 Legacy Trash: \(env.legacyTrash == nil ? "Missing" : "Available")"
+        )
+
+        forensic(
+            "📎 TaskAttachment.attachmentsDirectory: \(TaskAttachment.attachmentsDirectory == nil ? "Missing" : "Available")"
+        )
+
+        forensic(
+            "🗑 TaskAttachment.trashDirectory: \(TaskAttachment.trashDirectory == nil ? "Missing" : "Available")"
+        )
+
+        let bundleIdentifier = Bundle.main.bundleIdentifier ?? "Unknown"
+
+        let appIdentifier = bundleIdentifier
+            .split(separator: ".")
+            .last
+            .map(String.init)
+            ?? "Unknown"
+
+        forensic("📦 App Identifier: \(appIdentifier)")
+
         forensic("📱 Process Name: \(ProcessInfo.processInfo.processName)")
 
-        forensic("🟣 attachmentMigrationVersion: \(UserDefaults.standard.integer(forKey: "attachmentMigrationVersion"))")
+        forensic(
+            "🟣 attachmentMigrationVersion: \(UserDefaults.standard.integer(forKey: "attachmentMigrationVersion"))"
+        )
 
         forensic("══════════════════════════════════════════")
     }
@@ -938,18 +961,18 @@ enum DebugLog {
 
             for attachment in result.attachments {
 
-                let taskTitle = attachment.task?.title ?? "<no task>"
+                let taskID = attachment.task?.id.uuidString ?? "<no task>"
 
                 forensic("""
-        ═══════════════════════════════
-        ATTACHMENT RECORD
-        id           = \(attachment.id)
-        createdAt    = \(attachment.createdAt)
-        originalName = \(attachment.originalName)
-        relativePath = \(attachment.relativePath)
-        task         = \(taskTitle)
-        ═══════════════════════════════
-        """)
+                ═══════════════════════════════
+                ATTACHMENT RECORD
+                id           = \(attachment.id)
+                createdAt    = \(attachment.createdAt)
+                originalName = [File]
+                relativePath = \(attachment.relativePath)
+                taskID       = \(taskID)
+                ═══════════════════════════════
+                """)
             }
         }
 
@@ -976,15 +999,27 @@ enum DebugLog {
             }
 
             let path = fileURL.path
-            forensic("📎 resolved=\(path)")
 
             if path.hasPrefix(env.cloudAttachments?.path ?? "") {
+
+                forensic("📎 resolved = Cloud Attachments")
                 result.cloudCount += 1
+
             } else if path.hasPrefix(env.legacyAttachments?.path ?? "") {
+
+                forensic("📎 resolved = Legacy Attachments")
                 result.legacyCount += 1
+
             } else if path.hasPrefix(env.cloudTrash?.path ?? "") ||
                         path.hasPrefix(env.legacyTrash?.path ?? "") {
+
+                forensic("📎 resolved = Trash")
                 result.trashCount += 1
+
+            } else {
+
+                forensic("📎 resolved = Unknown")
+
             }
         }
 
@@ -1207,10 +1242,28 @@ enum DebugLog {
         write("════════════════════════════════════")
 
         write("attachmentsDirectory:")
-        write(TaskAttachment.attachmentsDirectory?.path ?? "nil")
+
+        if TaskAttachment.attachmentsDirectory != nil {
+
+            write("Available")
+
+        } else {
+
+            write("Missing")
+
+        }
 
         write("cloudAttachmentsDirectory:")
-        write(TaskAttachment.attachmentsDirectory?.path ?? "nil")
+
+        if TaskAttachment.attachmentsDirectory != nil {
+
+            write("Available")
+
+        } else {
+
+            write("Missing")
+
+        }
 
         if let dir = TaskAttachment.attachmentsDirectory {
 
@@ -1246,12 +1299,16 @@ enum DebugLog {
         write("Missing files: \(missingFiles.count)")
         write("Orphan files: \(orphanFiles.count)")
 
-        for file in missingFiles.sorted() {
-            write("❌ Missing: \(file)")
+        if !missingFiles.isEmpty {
+
+            write("❌ Missing Files: \(missingFiles.count)")
+
         }
 
-        for file in orphanFiles.sorted() {
-            write("⚠️ Orphan: \(file)")
+        if !orphanFiles.isEmpty {
+
+            write("⚠️ Orphan Files: \(orphanFiles.count)")
+
         }
 
         if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
@@ -1546,7 +1603,9 @@ enum DebugLog {
             if let details = event.details,
                !details.isEmpty {
 
-                write("Details : \(details)")
+                write(
+                    "Details : \(DiagnosticsRedactor.redact(details))"
+                )
 
             }
 

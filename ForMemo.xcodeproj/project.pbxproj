@@ -186,6 +186,7 @@
 		1CED325B302619D600B16A50 /* AssetRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */; };
 		1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325C30268F8300B16A50 /* SystemEventHistory.swift */; };
 		1CED325F30276D7C00B16A50 /* RecoveryStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */; };
+		1CED32613027760E00B16A50 /* DiagnosticsRedactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED32603027760400B16A50 /* DiagnosticsRedactor.swift */; };
 		1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */; };
 		1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -395,6 +396,7 @@
 		1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetRecoveryCoordinator.swift; sourceTree = "<group>"; };
 		1CED325C30268F8300B16A50 /* SystemEventHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemEventHistory.swift; sourceTree = "<group>"; };
 		1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryStatistics.swift; sourceTree = "<group>"; };
+		1CED32603027760400B16A50 /* DiagnosticsRedactor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsRedactor.swift; sourceTree = "<group>"; };
 		1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoCredentialProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -742,6 +744,7 @@
 				1C634D4330220C9C0092DB89 /* BackgroundCustomizationView.swift */,
 				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
 				1C634CE430220C9C0092DB89 /* DebugTools.swift */,
+				1CED32603027760400B16A50 /* DiagnosticsRedactor.swift */,
 				1C634CF030220C9C0092DB89 /* Global.swift */,
 				1C634CFE30220C9C0092DB89 /* NavigationApp.swift */,
 			);
@@ -912,6 +915,7 @@
 				1C634DB030220C9C0092DB89 /* ImportCalendar.swift in Sources */,
 				1C634DB130220C9C0092DB89 /* ImportCard.swift in Sources */,
 				1C634DB230220C9C0092DB89 /* ImportExportCSV.swift in Sources */,
+				1CED32613027760E00B16A50 /* DiagnosticsRedactor.swift in Sources */,
 				1C634DB330220C9C0092DB89 /* LaunchCoordinator.swift in Sources */,
 				1C634DB430220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift in Sources */,
 				1C634DB530220C9C0092DB89 /* LegacyTaskRecovery.swift in Sources */,
