@@ -171,9 +171,6 @@ final class AttachmentImporter {
 
         DebugLog.write("FILES SUBITO DOPO COPY = \(files.count)")
 
-        for file in files {
-            DebugLog.write("Imported attachment")
-        }
         
         var readable = false
         var materialized = false

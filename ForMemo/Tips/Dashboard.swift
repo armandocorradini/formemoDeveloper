@@ -14,11 +14,17 @@ struct Dashboard: View {
     @State private var recoveryResult: AttachmentRecoveryResult?
     @State private var showRecoveryAlert = false
     
+    @State private var recoveryCheck: AssetRecoveryCoordinator.RecoveryCheckResult?
+    @State private var showRecoveryConfirmation = false
+    
+    @State private var showNoRecoveryNeededAlert = false
+    
     private static let activeTasksPredicate =
         #Predicate<TodoTask> { !$0.isCompleted }
 
     @Query(filter: Self.activeTasksPredicate)
     private var activeTasks: [TodoTask]
+    
 
     @Query
     private var trips: [TripList]
@@ -622,6 +628,59 @@ struct Dashboard: View {
         }
         .alert(
             "Attachment Recovery",
+            isPresented: $showNoRecoveryNeededAlert
+        ) {
+
+            Button("OK") { }
+
+        } message: {
+
+            Text(
+                String(
+                    localized:
+                        "No duplicate asset folders were found."
+                )
+            )
+
+        }
+        .alert(
+            "Attachment Recovery",
+            isPresented: $showRecoveryConfirmation,
+            presenting: recoveryCheck
+        ) { check in
+
+            Button(
+                String(localized: "Repair")
+            ) {
+
+                recoveryResult = AssetRecoveryCoordinator.repairAll()
+
+                showRecoveryAlert = true
+
+            }
+
+            Button(
+                String(localized: "Cancel"),
+                role: .cancel
+            ) {
+            }
+
+        } message: { check in
+
+            Text(
+                """
+                \(check.duplicateFolders.count) duplicate asset folder(s) detected.
+
+                Automatic recovery has been suspended because Asset Recovery Diagnostics is enabled.
+
+                Press Repair to merge the folders.
+                """
+            )
+
+        }
+        
+        .alert(
+            "Attachment Recovery",
             isPresented: $showRecoveryAlert
         ) {
 
@@ -652,15 +711,23 @@ struct Dashboard: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     
                     Button {
-                        
-                        recoveryResult = AssetRecoveryCoordinator.repairAll()
-                        
-                        showRecoveryAlert = true
-                        
+
+                        let result = AssetRecoveryCoordinator.checkIfNeeded()
+
+                        guard result.needsRepair else {
+
+                            showNoRecoveryNeededAlert = true
+                            return
+
+                        }
+
+                        recoveryCheck = result
+                        showRecoveryConfirmation = true
+
                     } label: {
-                        
+
                         Image(systemName: "wrench.and.screwdriver")
-                        
+
                     }
                     
                 }
