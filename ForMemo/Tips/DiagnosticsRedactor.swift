@@ -4,6 +4,8 @@ import Foundation
 
 
 enum DiagnosticsRedactor {
+    
+
 
     // MARK: - Public
 
@@ -12,11 +14,27 @@ enum DiagnosticsRedactor {
         var result = text
 
         result = redactContainerIdentifiers(in: result)
-        result = redactUserPaths(in: result)
+        if result.contains("/Users/") ||
+           result.contains("/Library/") {
+
+            result = redactUserPaths(in: result)
+
+        }
+
         result = redactKnownLocations(in: result)
         result = redactBundleIdentifiers(in: result)
-        result = redactKnownFileNames(in: result)
-        result = redactTaskFields(in: result)
+        if result.contains(".") {
+
+            result = redactKnownFileNames(in: result)
+
+        }
+        if result.contains("Task") ||
+           result.contains("task") ||
+           result.contains("title") {
+
+            result = redactTaskFields(in: result)
+
+        }
         
                 
         return result

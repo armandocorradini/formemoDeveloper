@@ -142,8 +142,6 @@ enum AttachmentContainerRecovery {
                 to: mainDirectory,
                 result: &result
             )
-
-            removeDuplicateDirectoryIfEmpty(directory)
         }
 
         AppLogger.persistence.notice(
@@ -315,10 +313,6 @@ enum AttachmentContainerRecovery {
 
             result.scanned += 1
             
-            guard fm.fileExists(atPath: file.path) else {
-                continue
-            }
-            
             guard
                 let values = try? file.resourceValues(forKeys: [.isDirectoryKey]),
                 values.isDirectory != true
@@ -347,10 +341,7 @@ enum AttachmentContainerRecovery {
 
                 result.copied += 1
                 result.copiedFiles.append(file.lastPathComponent)
-                
-                guard fm.fileExists(atPath: destinationFile.path) else {
-                    continue
-                }
+
 
                 try? fm.removeItem(at: file)
                 

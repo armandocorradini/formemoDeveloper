@@ -411,7 +411,7 @@ enum DebugLog {
         let formatter = ISO8601DateFormatter()
 
         formatter.timeZone = .current
-        
+
         formatter.formatOptions = [
             .withInternetDateTime,
             .withFractionalSeconds
@@ -740,7 +740,6 @@ enum DebugLog {
         forensic("📁 DOCUMENTS: [redacted]")
 
         forensic("☁️ iCloud Available: \(env.cloudContainer == nil ? "NO" : "YES")")
-
         forensic(
             "☁️ iCloud Container: \(env.cloudContainer == nil ? "Unavailable" : "Available")"
         )
@@ -749,49 +748,28 @@ enum DebugLog {
             "☁️ Default Container: \(env.defaultContainer == nil ? "Unavailable" : "Available")"
         )
 
-        forensic(
-            "☁️ Explicit == Default: \(env.cloudContainer?.path == env.defaultContainer?.path)"
-        )
+        forensic("☁️ Explicit == Default: \(env.cloudContainer?.path == env.defaultContainer?.path)")
 
         forensic(
             "☁️ Cloud Attachments: \(env.cloudAttachments == nil ? "Missing" : "Available")"
         )
+        forensic("☁️ Cloud Trash: [redacted]")
 
-        forensic(
-            "☁️ Cloud Trash: \(env.cloudTrash == nil ? "Missing" : "Available")"
-        )
+        forensic("📂 Legacy Attachments: [redacted]")
+        forensic("🗑 Legacy Trash: [redacted]")
 
-        forensic(
-            "📂 Legacy Attachments: \(env.legacyAttachments == nil ? "Missing" : "Available")"
-        )
+        forensic("📎 TaskAttachment.attachmentsDirectory: [redacted]")
+        forensic("🗑 TaskAttachment.trashDirectory: [redacted]")
 
-        forensic(
-            "🗑 Legacy Trash: \(env.legacyTrash == nil ? "Missing" : "Available")"
-        )
+        let bundle = Bundle.main.bundleIdentifier ?? "Unknown"
 
-        forensic(
-            "📎 TaskAttachment.attachmentsDirectory: \(TaskAttachment.attachmentsDirectory == nil ? "Missing" : "Available")"
-        )
-
-        forensic(
-            "🗑 TaskAttachment.trashDirectory: \(TaskAttachment.trashDirectory == nil ? "Missing" : "Available")"
-        )
-
-        let bundleIdentifier = Bundle.main.bundleIdentifier ?? "Unknown"
-
-        let appIdentifier = bundleIdentifier
-            .split(separator: ".")
-            .last
-            .map(String.init)
+        let bundleName = bundle.split(separator: ".").last.map(String.init)
             ?? "Unknown"
 
-        forensic("📦 App Identifier: \(appIdentifier)")
-
+        forensic("📦 App Identifier: \(bundleName)")
         forensic("📱 Process Name: \(ProcessInfo.processInfo.processName)")
 
-        forensic(
-            "🟣 attachmentMigrationVersion: \(UserDefaults.standard.integer(forKey: "attachmentMigrationVersion"))"
-        )
+        forensic("🟣 attachmentMigrationVersion: \(UserDefaults.standard.integer(forKey: "attachmentMigrationVersion"))")
 
         forensic("══════════════════════════════════════════")
     }
@@ -1132,11 +1110,17 @@ enum DebugLog {
         let assets =
             (try? context.fetch(assetDescriptor)) ?? []
         
+        let assetsByCard = Dictionary(
+            grouping: assets
+        ) { asset in
+            asset.card?.persistentModelID
+        }
+        
+        
         for card in cards {
 
-            let cardAssets = assets.filter {
-                $0.card?.persistentModelID == card.persistentModelID
-            }
+            let cardAssets =
+                assetsByCard[card.persistentModelID] ?? []
 
             if cardAssets.filter({ $0.kind == .logo }).count > 1 {
                 result.duplicateLogoCards += 1
@@ -1265,31 +1249,24 @@ enum DebugLog {
 
         }
 
-        if let dir = TaskAttachment.attachmentsDirectory {
-
-            if let files = try? FileManager.default.contentsOfDirectory(
-                at: dir,
-                includingPropertiesForKeys: nil
-            ) {
-
-                write("Files found in attachmentsDirectory: \(files.count)")
-            } else {
-                write("Unable to enumerate attachmentsDirectory")
-            }
-        }
-
-        var filesystemFiles = Set<String>()
-
-        if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
-           let files = try? env.fm.contentsOfDirectory(
+        guard
+            let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+            let files = try? env.fm.contentsOfDirectory(
                 at: attachmentsDirectory,
-                includingPropertiesForKeys: nil
-           ) {
+                includingPropertiesForKeys: [.fileSizeKey]
+            )
+        else {
 
-            for file in files {
-                filesystemFiles.insert(file.lastPathComponent)
-            }
+            write("Unable to enumerate attachmentsDirectory")
+            return
+
         }
+        
+        
+        
+        write("Files found in attachmentsDirectory: \(files.count)")
+
+        let filesystemFiles = Set(files.map(\.lastPathComponent))
 
         let missingFiles = databaseFiles.subtracting(filesystemFiles)
         let orphanFiles = filesystemFiles.subtracting(databaseFiles)
@@ -1311,25 +1288,21 @@ enum DebugLog {
 
         }
 
-        if let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
-           let files = try? FileManager.default.contentsOfDirectory(
-                at: attachmentsDirectory,
-                includingPropertiesForKeys: [.fileSizeKey]
-           ) {
+        let totalSize = files.reduce(Int64.zero) { partial, url in
 
-            let totalSize = files.reduce(Int64(0)) { partial, url in
-                let size = (try? url.resourceValues(
-                    forKeys: [.fileSizeKey]
-                ).fileSize) ?? 0
+            let size = (try? url.resourceValues(
+                forKeys: [.fileSizeKey]
+            ).fileSize) ?? 0
 
-                return partial + Int64(size)
-            }
+            return partial + Int64(size)
 
-            let sizeMB = Double(totalSize) / 1_048_576
-
-            write("📎 Attachment Files: \(files.count)")
-            write("📎 Attachment Size: \(String(format: "%.1f", sizeMB)) MB")
         }
+
+        let sizeMB = Double(totalSize) / 1_048_576
+
+        write("📎 Attachment Files: \(files.count)")
+        write("📎 Attachment Size: \(String(format: "%.1f", sizeMB)) MB")
+        
     }
     
     private static func writeDocumentAssetsDiagnostics(
@@ -1551,10 +1524,13 @@ enum DebugLog {
         statisticsFormatter.locale = Locale(identifier: "en_US_POSIX")
         statisticsFormatter.timeZone = .current
 
-        let totalEvents = SystemEventHistory.all().count
-        
-        
-        let events = SystemEventHistory.currentSession()
+        let allEvents = SystemEventHistory.all()
+
+        let totalEvents = allEvents.count
+
+        let events = SystemEventHistory.currentSession(
+            from: allEvents
+        )
         
         write("")
         write("══════════════════════════════════════════")

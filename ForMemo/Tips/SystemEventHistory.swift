@@ -59,6 +59,17 @@ enum SystemEventHistory {
         }
 
     }
+    
+    static func currentSession(
+        from events: [SystemEvent]
+    ) -> [SystemEvent] {
+
+        events.filter {
+            $0.sessionID == DebugLog.sessionID
+        }
+
+    }
+    
 
     static func clear() {
 
