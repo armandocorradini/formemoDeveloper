@@ -78,6 +78,3 @@ enum ForMemoStorageManager {
 }
 
 
-
-//Quando implementerai gli allegati dei documenti (PDF, immagini, ecc.), basterà aggiungere una sola riga:
-//DocumentAttachmentStore.directoryURL

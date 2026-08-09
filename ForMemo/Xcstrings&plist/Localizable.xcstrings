@@ -742,7 +742,32 @@
       }
     },
     "%lld duplicate asset folder(s) detected.\n\nAutomatic recovery has been suspended because Asset Recovery Diagnostics is enabled.\n\nPress Repair to merge the folders." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld doppelte Asset-Ordner gefunden.\n\nDie automatische Wiederherstellung wurde angehalten, da die Diagnose der Asset-Wiederherstellung aktiviert ist.\n\nTippe auf „Reparieren“, um die Ordner zusammenzuführen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se han detectado %lld carpetas de recursos duplicadas.\n\nLa recuperación automática se ha suspendido porque los diagnósticos de recuperación de recursos están activados.\n\nPulsa Reparar para fusionar las carpetas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld dossiers d’assets en double détectés.\n\nLa récupération automatique a été suspendue car les diagnostics de récupération des assets sont activés.\n\nTouchez Réparer pour fusionner les dossiers."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld cartelle degli asset duplicate rilevate.\n\nIl recupero automatico è stato sospeso perché la diagnostica del recupero degli asset è attiva.\n\nTocca Ripara per unire le cartelle."
+          }
+        }
+      }
     },
     "%lld duplicate asset folders detected.\n\n%@\n\nAutomatic recovery has been suspended because\nAsset Recovery Diagnostics is enabled.\n\nPress Repair to merge the folders." : {
       "localizations" : {
@@ -13694,7 +13719,32 @@
       }
     },
     "From: %@" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Von: %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De : %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Da: %@"
+          }
+        }
+      }
     },
     "Fuel Card" : {
       "localizations" : {
@@ -19202,7 +19252,32 @@
       }
     },
     "No duplicate asset folders were found." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine doppelten Asset-Ordner gefunden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han detectado carpetas de recursos duplicadas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun dossier d’assets en double n’a été détecté."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non sono state rilevate cartelle degli asset duplicate."
+          }
+        }
+      }
     },
     "No location set" : {
       "localizations" : {
