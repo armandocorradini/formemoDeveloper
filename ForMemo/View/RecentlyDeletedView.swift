@@ -22,6 +22,14 @@ struct RecentlyDeletedView: View {
                     $0.taskID == item.taskID
                 }) == nil
             }
+            
+            if item.type == "documentAsset" {
+                return items.first(where: {
+                    $0.type == "document" &&
+                    $0.documentID == item.documentID
+                }) == nil
+            }
+            
             return true
         }
     }
@@ -63,6 +71,11 @@ var body: some View {
                             AttachmentPreviewView(
                                 relativePath: item.relativePath,
                                 trashFileName: item.trashFileName
+                            )
+                        } else if item.type == "documentAsset" {
+                            DocumentAssetPreviewView(
+                                trashFileName: item.trashFileName,
+                                kindRaw: item.documentAssetKindRaw
                             )
                         } else {
                             VStack {
@@ -183,6 +196,18 @@ var body: some View {
                                     context.delete(att)
                                 }
                             }
+                            if item.type == "document" {
+
+                                let relatedAssets = items.filter {
+                                    $0.type == "documentAsset" &&
+                                    $0.documentID == item.documentID
+                                }
+
+                                for asset in relatedAssets {
+                                    deleteFile(asset)
+                                    context.delete(asset)
+                                }
+                            }
 
                             deleteFile(item)          // 🔥 fondamentale
                             context.delete(item)
@@ -255,6 +280,19 @@ var body: some View {
                                         context.delete(att)
                                     }
                                 }
+                                if item.type == "document" {
+
+                                    let relatedAssets = items.filter {
+                                        $0.type == "documentAsset" &&
+                                        $0.documentID == item.documentID
+                                    }
+
+                                    for asset in relatedAssets {
+                                        deleteFile(asset)
+                                        context.delete(asset)
+                                    }
+                                }
+                                
 
                                 deleteFile(item)
                                 context.delete(item)
@@ -379,6 +417,46 @@ struct AttachmentPreviewView: View {
             Image(systemName: "doc")
                 .foregroundStyle(.secondary)
                 .frame(width: 36, height: 36)
+        }
+    }
+}
+
+struct DocumentAssetPreviewView: View {
+
+    let trashFileName: String?
+    let kindRaw: String?
+
+    var body: some View {
+
+        if let trashFileName,
+           let dir = DocumentAssetStore.trashDirectory,
+           let fileURL = try? FileManager.default
+                .contentsOfDirectory(
+                    at: dir,
+                    includingPropertiesForKeys: nil
+                )
+                .first(where: {
+                    $0.lastPathComponent == trashFileName
+                }),
+           let data = try? Data(contentsOf: fileURL),
+           let image = UIImage(data: data) {
+
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 36, height: 36)
+                .clipped()
+                .cornerRadius(6)
+
+        } else {
+
+            Image(
+                systemName: kindRaw == DocumentAssetKind.pdf.rawValue
+                    ? "doc.text"
+                    : "doc"
+            )
+            .foregroundStyle(.secondary)
+            .frame(width: 36, height: 36)
         }
     }
 }

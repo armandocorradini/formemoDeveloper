@@ -104,9 +104,20 @@ final class DocumentImportService {
         in context: ModelContext
     ) {
 
-        DocumentAssetStore.delete(
+        let trashFileName = DocumentAssetStore.moveToTrash(
             relativePath: asset.relativePath
         )
+
+        let item = DeletedItem(type: "documentAsset")
+
+        item.documentID = document.id
+        item.relativePath = asset.relativePath
+        item.trashFileName = trashFileName
+
+        item.documentAssetKindRaw = asset.kindRaw
+        item.documentPageIndex = asset.pageIndex
+
+        context.insert(item)
 
         document.assets?.removeAll {
             $0.id == asset.id

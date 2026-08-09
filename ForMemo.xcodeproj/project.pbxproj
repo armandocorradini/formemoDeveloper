@@ -473,7 +473,6 @@
 				1C634CE030220C9C0092DB89 /* CloudSettingsSync.swift */,
 				1C634CE230220C9C0092DB89 /* CSVImporter.swift */,
 				1C634CE530220C9C0092DB89 /* DeletedFingerprintStore.swift */,
-				1C634CE630220C9C0092DB89 /* DeletedItem.swift */,
 				1C634CED30220C9C0092DB89 /* FMTripDocument.swift */,
 				1C634CEE30220C9C0092DB89 /* ForMemoStorageManager.swift */,
 				1C634CF130220C9C0092DB89 /* ICSExporter.swift */,
@@ -759,6 +758,7 @@
 				1C634D5930220C9C0092DB89 /* ImagePreviewView.swift */,
 				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
 				1C634D6230220C9C0092DB89 /* PDFThumbnail.swift */,
+				1C634CE630220C9C0092DB89 /* DeletedItem.swift */,
 				1C634D6430220C9C0092DB89 /* RecentlyDeletedView.swift */,
 			);
 			path = View;

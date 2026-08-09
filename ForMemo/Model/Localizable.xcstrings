@@ -741,6 +741,9 @@
         }
       }
     },
+    "%lld duplicate asset folder(s) detected.\n\nAutomatic recovery has been suspended because Asset Recovery Diagnostics is enabled.\n\nPress Repair to merge the folders." : {
+
+    },
     "%lld duplicate asset folders detected.\n\n%@\n\nAutomatic recovery has been suspended because\nAsset Recovery Diagnostics is enabled.\n\nPress Repair to merge the folders." : {
       "localizations" : {
         "de" : {
@@ -19194,6 +19197,9 @@
           }
         }
       }
+    },
+    "No duplicate asset folders were found." : {
+
     },
     "No location set" : {
       "localizations" : {
