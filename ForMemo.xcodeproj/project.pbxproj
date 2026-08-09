@@ -576,6 +576,7 @@
 				1C8477673023782000C4FA34 /* Core */,
 				1C634E43302331530092DB89 /* Tips */,
 				1C634E4230232A130092DB89 /* Tab */,
+				1CC57C083028E8D400E9C79F /* Delete */,
 				1C634E3C30220CAE0092DB89 /* Task */,
 				1C634E41302258620092DB89 /* Trips */,
 				1C634E3F302255FC0092DB89 /* Documents */,
@@ -604,7 +605,6 @@
 				1C634CE330220C9C0092DB89 /* CSVTask.swift */,
 				1C634CDD30220C9C0092DB89 /* CalendarExportEngine.swift */,
 				1C634CDE30220C9C0092DB89 /* CalendarPickerView.swift */,
-				1C634CE730220C9C0092DB89 /* DeleteTask.swift */,
 				1C634D4830220C9C0092DB89 /* Detail_AttachmentList.swift */,
 				1C634D4930220C9C0092DB89 /* Detail_ContextSection.swift */,
 				1C634D4A30220C9C0092DB89 /* Detail_MainInfoSection.swift */,
@@ -758,8 +758,6 @@
 				1C634D5930220C9C0092DB89 /* ImagePreviewView.swift */,
 				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
 				1C634D6230220C9C0092DB89 /* PDFThumbnail.swift */,
-				1C634CE630220C9C0092DB89 /* DeletedItem.swift */,
-				1C634D6430220C9C0092DB89 /* RecentlyDeletedView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -769,6 +767,16 @@
 			children = (
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		1CC57C083028E8D400E9C79F /* Delete */ = {
+			isa = PBXGroup;
+			children = (
+				1C634CE730220C9C0092DB89 /* DeleteTask.swift */,
+				1C634CE630220C9C0092DB89 /* DeletedItem.swift */,
+				1C634D6430220C9C0092DB89 /* RecentlyDeletedView.swift */,
+			);
+			path = Delete;
 			sourceTree = "<group>";
 		};
 		1CF9847A3000EBA300E1D1A9 /* Frameworks */ = {

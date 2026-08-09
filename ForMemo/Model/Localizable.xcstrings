@@ -13693,6 +13693,9 @@
         }
       }
     },
+    "From: %@" : {
+
+    },
     "Fuel Card" : {
       "localizations" : {
         "de" : {

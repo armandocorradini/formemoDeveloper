@@ -17,7 +17,7 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
             item.fileName = attachment.originalName
             item.relativePath = attachment.relativePath
             item.trashFileName = trashName
-            
+            item.createdAt = attachment.createdAt
             context.insert(item)
         }
     }
@@ -41,6 +41,22 @@ func deleteLoyaltyCard(
         from: card,
         in: context
     )
+
+    for asset in card.assets ?? [] {
+
+        let trashFileName = WalletAssetStore.moveToTrash(
+            relativePath: asset.relativePath
+        )
+
+        let item = DeletedItem(type: "walletAsset")
+
+        item.loyaltyCardID = card.id
+        item.relativePath = asset.relativePath
+        item.trashFileName = trashFileName
+        item.createdAt = asset.createdAt
+
+        context.insert(item)
+    }
 
     context.delete(card)
 

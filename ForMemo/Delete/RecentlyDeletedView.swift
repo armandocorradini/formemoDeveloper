@@ -29,8 +29,16 @@ struct RecentlyDeletedView: View {
                     $0.documentID == item.documentID
                 }) == nil
             }
+        
+            if item.type == "walletAsset" {
+                return items.first(where: {
+                    $0.type == "loyaltycard" &&
+                    $0.loyaltyCardID == item.loyaltyCardID
+                }) == nil
+            }
             
             return true
+            
         }
     }
     
@@ -77,15 +85,21 @@ var body: some View {
                                 trashFileName: item.trashFileName,
                                 kindRaw: item.documentAssetKindRaw
                             )
-                        } else {
-                            VStack {
+                        } else if item.type == "walletAsset" {
+                            WalletAssetPreviewView(
+                                trashFileName: item.trashFileName
+                            )
+                        } else {                            VStack {
                                 if item.type == "trip" {
                                     Image(systemName: item.tripIcon ?? "suitcase.rolling")
                                         .symbolRenderingMode(.hierarchical)
                                         .foregroundStyle(.orange)
                                 } else if item.type == "loyaltycard" {
                                     
-                                    DeletedLoyaltyCardPreviewView(item: item)
+                                    DeletedLoyaltyCardPreviewView(
+                                        item: item,
+                                        items: items
+                                    )
                                 } else if item.type == "document" {
 
                                     DeletedDocumentPreviewView(
@@ -118,12 +132,23 @@ var body: some View {
                             Text(title(for: item))
                                 .lineLimit(1)
                             
-                            if item.type == "attachment" {
-                                Text("Deleted: \(item.deletedAt.formatted(date: .abbreviated, time: .shortened))")
+                            Text("Deleted: \(item.deletedAt.formatted(date:.abbreviated,time: .shortened))")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            
+                            if item.type == "walletAsset",
+                               let cardID = item.loyaltyCardID,
+                               let card = try? context.fetch(
+                                   FetchDescriptor<LoyaltyCard>(
+                                       predicate: #Predicate { $0.id == cardID }
+                                   )
+                               ).first,
+                               !card.storeName.isEmpty {
+
+                                Text("From: \(card.storeName)")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
                             }
-                            
                             
                             if item.type == "loyaltycard" {
                                 Text(
@@ -133,11 +158,8 @@ var body: some View {
                                 )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-
-                                Text("Deleted: \(item.deletedAt.formatted(date: .abbreviated, time: .shortened))")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
                             }
+                            
                             
                             if item.type == "task" {
                                 
@@ -153,10 +175,6 @@ var body: some View {
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
-                                
-                                Text("Deleted: \(item.deletedAt.formatted(date: .abbreviated, time: .shortened))")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -341,6 +359,18 @@ var body: some View {
                 relativePath: item.loyaltyBackRelativePath
             )
         }
+        
+        if item.type == "walletAsset",
+           let trashName = item.trashFileName,
+           let dir = WalletAssetStore.trashDirectory {
+
+            let url = dir.appendingPathComponent(trashName)
+
+            if FileManager.default.fileExists(atPath: url.path) {
+                try? FileManager.default.removeItem(at: url)
+            }
+        }
+        
         
         if item.type == "documentAsset",
            let trashName = item.trashFileName,
@@ -529,18 +559,51 @@ struct DeletedDocumentPreviewView: View {
         return image
     }
 }
+
+
 struct DeletedLoyaltyCardPreviewView: View {
 
     let item: DeletedItem
+    let items: [DeletedItem]
 
     var body: some View {
 
-        if let path = item.loyaltyLogoRelativePath,
-           let data = WalletAssetStore.loadData(
-               relativePath: path
-           ),
-           let image = UIImage(data: data) {
+        if let walletAsset = items.first(where: {
+            $0.type == "walletAsset" &&
+            $0.loyaltyCardID == item.loyaltyCardID &&
+            $0.relativePath == item.loyaltyLogoRelativePath
+        }),
+        let trashFileName = walletAsset.trashFileName,
+        let dir = WalletAssetStore.trashDirectory {
 
+            let url = dir.appendingPathComponent(trashFileName)
+
+            if let data = try? Data(contentsOf: url),
+               let image = UIImage(data: data) {
+
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 36, height: 36)
+                    .clipShape(
+                        RoundedRectangle(
+                            cornerRadius: 8,
+                            style: .continuous
+                        )
+                    )
+
+            } else {
+
+                fallbackIcon
+            }
+
+        } else if let path = item.loyaltyLogoRelativePath,
+                  let data = WalletAssetStore.loadData(
+                      relativePath: path
+                  ),
+                  let image = UIImage(data: data) {
+
+            // Compatibilità con i vecchi DeletedItem
             Image(uiImage: image)
                 .resizable()
                 .scaledToFill()
@@ -554,18 +617,59 @@ struct DeletedLoyaltyCardPreviewView: View {
 
         } else {
 
-            Image(
-                systemName: item.loyaltyItemType == "ticket"
+            fallbackIcon
+        }
+    }
+
+    private var fallbackIcon: some View {
+
+        Image(
+            systemName: item.loyaltyItemType == "ticket"
                 ? "ticket.fill"
                 : "creditcard"
-            )
-            .symbolRenderingMode(.hierarchical)
-            .foregroundStyle(
-                item.loyaltyItemType == "ticket"
+        )
+        .symbolRenderingMode(.hierarchical)
+        .foregroundStyle(
+            item.loyaltyItemType == "ticket"
                 ? .orange
                 : .blue
-            )
-            .frame(width: 36, height: 36)
+        )
+        .frame(width: 36, height: 36)
+    }
+}
+
+
+struct WalletAssetPreviewView: View {
+    
+    let trashFileName: String?
+
+    var body: some View {
+
+        if let trashFileName,
+           let dir = WalletAssetStore.trashDirectory,
+           let fileURL = try? FileManager.default
+               .contentsOfDirectory(
+                   at: dir,
+                   includingPropertiesForKeys: nil
+               )
+               .first(where: {
+                   $0.lastPathComponent == trashFileName
+               }),
+           let data = try? Data(contentsOf: fileURL),
+           let image = UIImage(data: data) {
+
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 36, height: 36)
+                .clipped()
+                .cornerRadius(6)
+
+        } else {
+
+            Image(systemName: "photo")
+                .foregroundStyle(.secondary)
+                .frame(width: 36, height: 36)
         }
     }
 }

@@ -256,11 +256,88 @@ extension DeletedItem {
                     task: task
                 )
                 
+                attachment.createdAt = createdAt ?? .now
+                
                 context.insert(attachment)
                 task.attachments?.append(attachment)
             }
         }
 
+        if type == "walletAsset",
+           let cardID = loyaltyCardID,
+           let relativePath,
+           let trashFileName {
+
+            let descriptor = FetchDescriptor<LoyaltyCard>(
+                predicate: #Predicate { $0.id == cardID }
+            )
+
+            guard let card = try? context.fetch(descriptor).first else {
+                AppLogger.persistence.error(
+                    "Wallet asset restore aborted: card not found."
+                )
+                return
+            }
+
+            guard WalletAssetStore.restoreFromTrash(
+                trashFileName: trashFileName,
+                relativePath: relativePath
+            ) else {
+                AppLogger.persistence.error(
+                    "Wallet asset restore failed: file could not be restored."
+                )
+                return
+            }
+
+            let kind: WalletAssetKind =
+                relativePath == loyaltyLogoRelativePath
+                ? .logo
+                : .gallery
+
+            let fileSize: Int64 = {
+                guard let url = WalletAssetStore.fileURL(
+                    relativePath: relativePath
+                ) else {
+                    return 0
+                }
+
+                return (try? url.resourceValues(
+                    forKeys: [.fileSizeKey]
+                ).fileSize).map(Int64.init) ?? 0
+            }()
+
+            let asset = WalletAsset(
+                kind: kind,
+                relativePath: relativePath,
+                fileSize: fileSize
+            )
+
+            asset.createdAt = createdAt ?? .now
+
+            asset.card = card
+
+            context.insert(asset)
+            
+            if kind == .logo {
+                card.loyaltyLogoRelativePath = relativePath
+            }
+            
+
+            if card.assets == nil {
+                card.assets = []
+            }
+
+            card.assets?.append(asset)
+
+            context.delete(self)
+
+            context.safeSave(
+                operation: "RestoreWalletAsset"
+            )
+
+            return
+        }
+        
         if type == "documentAsset",
            let documentID,
            let relativePath,
@@ -312,7 +389,6 @@ extension DeletedItem {
         if type == "loyaltycard" {
 
             if let existingID = loyaltyCardID {
-
                 let descriptor = FetchDescriptor<LoyaltyCard>()
 
                 if let cards = try? context.fetch(descriptor),
@@ -320,12 +396,6 @@ extension DeletedItem {
                     return
                 }
             }
-            print("=== RESTORE ===")
-            print("Logo:", loyaltyLogoRelativePath ?? "nil")
-            print("Front:", loyaltyFrontRelativePath ?? "nil")
-            print("Back:", loyaltyBackRelativePath ?? "nil")
-            
-            
 
             let card = LoyaltyCard(
                 id: loyaltyCardID ?? UUID(),
@@ -339,34 +409,78 @@ extension DeletedItem {
                 sortOrder: loyaltySortOrder ?? 0
             )
 
+            card.loyaltyLogoRelativePath = loyaltyLogoRelativePath
+
             context.insert(card)
+
             if card.assets == nil {
                 card.assets = []
             }
 
-            if let path = loyaltyLogoRelativePath {
-                let asset = WalletAsset(kind: .logo, relativePath: path, fileSize: 0)
-                asset.card = card
-                card.assets?.append(asset)
-                context.insert(asset)
+            let descriptor = FetchDescriptor<DeletedItem>()
+
+            let walletAssets =
+                (try? context.fetch(descriptor))?.filter {
+                    $0.type == "walletAsset" &&
+                    $0.loyaltyCardID == card.id
+                } ?? []
+
+            if !walletAssets.isEmpty {
+
+                for assetItem in walletAssets {
+                    assetItem.restore(in: context)
+                }
+
+            } else {
+
+                // Backward compatibility with older DeletedItem
+                // records created before WalletAsset-based restore.
+
+                if let path = loyaltyLogoRelativePath {
+
+                    let asset = WalletAsset(
+                        kind: .logo,
+                        relativePath: path,
+                        fileSize: 0
+                    )
+
+                    asset.card = card
+                    card.assets?.append(asset)
+                    context.insert(asset)
+                }
+
+                if let path = loyaltyFrontRelativePath {
+
+                    let asset = WalletAsset(
+                        kind: .gallery,
+                        relativePath: path,
+                        fileSize: 0
+                    )
+
+                    asset.card = card
+                    card.assets?.append(asset)
+                    context.insert(asset)
+                }
+
+                if let path = loyaltyBackRelativePath {
+
+                    let asset = WalletAsset(
+                        kind: .gallery,
+                        relativePath: path,
+                        fileSize: 0
+                    )
+
+                    asset.card = card
+                    card.assets?.append(asset)
+                    context.insert(asset)
+                }
             }
 
-            if let path = loyaltyFrontRelativePath {
-                let asset = WalletAsset(kind: .gallery, relativePath: path, fileSize: 0)
-                asset.card = card
-                card.assets?.append(asset)
-                context.insert(asset)
-            }
+            context.safeSave(
+                operation: "RestoreLoyaltyCard"
+            )
 
-            if let path = loyaltyBackRelativePath {
-                let asset = WalletAsset(kind: .gallery, relativePath: path, fileSize: 00)
-                asset.card = card
-                card.assets?.append(asset)
-                context.insert(asset)
-            }
-            
-            print("Restored assets:", card.assets?.count ?? 0)
-            
+            return
         }
 
         if type == "trip" {

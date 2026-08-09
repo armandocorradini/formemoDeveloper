@@ -112,7 +112,9 @@ extension LoyaltyCard {
 
     
     var galleryAssets: [WalletAsset] {
-        (assets ?? []).filter { $0.kind == .gallery }
+        (assets ?? [])
+            .filter { $0.kind == .gallery }
+            .sorted { $0.createdAt < $1.createdAt }
     }
     
     

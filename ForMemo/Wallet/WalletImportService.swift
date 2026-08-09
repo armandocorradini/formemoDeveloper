@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import UIKit
+import os
 
 @MainActor
 final class WalletImportService {
@@ -43,6 +44,10 @@ final class WalletImportService {
             context.insert(asset)
 
             card.assets?.append(asset)
+
+            if kind == .logo {
+                card.loyaltyLogoRelativePath = result.relativePath
+            }
         }
 
         context.safeSave(
@@ -109,7 +114,8 @@ final class WalletImportService {
             compressionQuality: compressionQuality
         )
     }
-    
+
+
     // MARK: - Delete
 
     static func delete(
@@ -117,9 +123,29 @@ final class WalletImportService {
         from context: ModelContext
     ) {
 
-        WalletAssetStore.delete(
+        guard let trashFileName = WalletAssetStore.moveToTrash(
             relativePath: asset.relativePath
-        )
+        ) else {
+            AppLogger.persistence.error(
+                "Unable to move WalletAsset to Trash: \(asset.relativePath)"
+            )
+            return
+        }
+
+        let deletedItem = DeletedItem(type: "walletAsset")
+
+        deletedItem.loyaltyCardID = asset.card?.id
+        deletedItem.fileName = URL(
+            fileURLWithPath: asset.relativePath
+        ).lastPathComponent
+        deletedItem.relativePath = asset.relativePath
+        deletedItem.trashFileName = trashFileName
+
+        if asset.kind == .logo {
+            deletedItem.loyaltyLogoRelativePath = asset.relativePath
+        }
+
+        context.insert(deletedItem)
 
         if let card = asset.card {
             card.assets?.removeAll {
@@ -135,8 +161,6 @@ final class WalletImportService {
 
         context.processPendingChanges()
     }
-    
-    
 }
 
 
