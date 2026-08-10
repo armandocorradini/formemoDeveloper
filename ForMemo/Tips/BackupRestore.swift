@@ -1334,29 +1334,33 @@ private enum BackupManager {
                 at: attachmentsDirectory,
                 withIntermediateDirectories: true
             )
+            
+            var createdAttachmentParents = Set<String>()
 
             for (relativePath, fileData) in archive.attachmentFiles {
 
                 let destinationURL = attachmentsDirectory
                     .appendingPathComponent(relativePath)
-                
-                let parent = destinationURL.deletingLastPathComponent()
 
-                try FileManager.default.createDirectory(
-                    at: parent,
-                    withIntermediateDirectories: true
-                )
+                let parent = destinationURL.deletingLastPathComponent()
+                let parentKey = parent.standardizedFileURL.path
+
+                if !createdAttachmentParents.contains(parentKey) {
+                    try FileManager.default.createDirectory(
+                        at: parent,
+                        withIntermediateDirectories: true
+                    )
+                    createdAttachmentParents.insert(parentKey)
+                }
 
                 let shouldWrite: Bool
 
                 if FileManager.default.fileExists(atPath: destinationURL.path) {
-
                     if let existingData = try? Data(contentsOf: destinationURL) {
                         shouldWrite = existingData != fileData
                     } else {
                         shouldWrite = true
                     }
-
                 } else {
                     shouldWrite = true
                 }
@@ -1367,7 +1371,6 @@ private enum BackupManager {
                         options: .atomic
                     )
                 }
-
             }
         }
 
@@ -1378,17 +1381,23 @@ private enum BackupManager {
                 withIntermediateDirectories: true
             )
 
+            var createdWalletParents = Set<String>()
+
             for (relativePath, fileData) in archive.loyaltyCardLogoFiles {
 
                 let destinationURL = walletDirectory
                     .appendingPathComponent(relativePath)
 
                 let parent = destinationURL.deletingLastPathComponent()
+                let parentKey = parent.standardizedFileURL.path
 
-                try FileManager.default.createDirectory(
-                    at: parent,
-                    withIntermediateDirectories: true
-                )
+                if !createdWalletParents.contains(parentKey) {
+                    try FileManager.default.createDirectory(
+                        at: parent,
+                        withIntermediateDirectories: true
+                    )
+                    createdWalletParents.insert(parentKey)
+                }
 
                 try fileData.write(
                     to: destinationURL,
@@ -1404,17 +1413,23 @@ private enum BackupManager {
                 withIntermediateDirectories: true
             )
 
+            var createdDocumentParents = Set<String>()
+
             for (relativePath, fileData) in archive.documentFiles {
 
                 let destinationURL = documentDirectory
                     .appendingPathComponent(relativePath)
 
                 let parent = destinationURL.deletingLastPathComponent()
+                let parentKey = parent.standardizedFileURL.path
 
-                try FileManager.default.createDirectory(
-                    at: parent,
-                    withIntermediateDirectories: true
-                )
+                if !createdDocumentParents.contains(parentKey) {
+                    try FileManager.default.createDirectory(
+                        at: parent,
+                        withIntermediateDirectories: true
+                    )
+                    createdDocumentParents.insert(parentKey)
+                }
 
                 try fileData.write(
                     to: destinationURL,

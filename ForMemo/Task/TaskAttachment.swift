@@ -90,12 +90,20 @@ extension TaskAttachment {
     }()
     
     private static func legacyAttachmentsDirectory() -> URL? {
-
         guard let directory = FileManager.default.urls(
             for: .documentDirectory,
             in: .userDomainMask
-        ).first?.appendingPathComponent("TaskAttachments", isDirectory: true) else { return nil }
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        ).first?.appendingPathComponent(
+            "TaskAttachments",
+            isDirectory: true
+        ) else {
+            return nil
+        }
+
+        guard FileManager.default.fileExists(atPath: directory.path) else {
+            return nil
+        }
+
         return directory
     }
 
@@ -107,25 +115,9 @@ extension TaskAttachment {
             return nil
         }
 
-        let directory = containerURL
+        return containerURL
             .appendingPathComponent("Documents", isDirectory: true)
             .appendingPathComponent("TaskAttachments", isDirectory: true)
-
-        do {
-            try FileManager.default.createDirectory(
-                at: directory,
-                withIntermediateDirectories: true
-            )
-        } catch {
-
-            AppLogger.persistence.error(
-                "Unable to create TaskAttachments: \(error.localizedDescription)"
-            )
-
-            return nil
-        }
-
-        return directory
     }
 
     private static func resolvedExistingURL(
@@ -549,6 +541,59 @@ extension TaskAttachment {
 
         return result
     }
+    
+    static func removeAllPhysicalFiles(
+        in directory: URL?
+    ) throws {
+
+        guard let directory else {
+            return
+        }
+
+        let fm = FileManager.default
+
+        guard fm.fileExists(atPath: directory.path) else {
+            return
+        }
+
+        let files = try fm.contentsOfDirectory(
+            at: directory,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        )
+
+        for fileURL in files {
+
+            let coordinator = NSFileCoordinator()
+            var coordinationError: NSError?
+            var deletionError: Error?
+
+            coordinator.coordinate(
+                writingItemAt: fileURL,
+                options: .forDeleting,
+                error: &coordinationError
+            ) { coordinatedURL in
+
+                do {
+                    if fm.fileExists(atPath: coordinatedURL.path) {
+                        try fm.removeItem(at: coordinatedURL)
+                    }
+                } catch {
+                    deletionError = error
+                }
+            }
+
+            if let coordinationError {
+                throw coordinationError
+            }
+
+            if let deletionError {
+                throw deletionError
+            }
+        }
+    }
+    
+    
 }
 
 

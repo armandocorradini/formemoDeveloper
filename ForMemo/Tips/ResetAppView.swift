@@ -124,12 +124,7 @@ struct ResetAppView: View {
             let attachments = try modelContext.fetch(FetchDescriptor<TaskAttachment>())
             
             for attachment in attachments {
-                
-                if let url = attachment.fileURL,
-                   fileManager.fileExists(atPath: url.path) {
-                    try? fileManager.removeItem(at: url)
-                }
-                
+
                 modelContext.delete(attachment)
             }
             
@@ -215,20 +210,14 @@ struct ResetAppView: View {
             try modelContext.save()
             
             // 🔴 Clean directory
-            if let directory = TaskAttachment.attachmentsDirectory,
-               let files = try? fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) {
-                for file in files {
-                    try? fileManager.removeItem(at: file)
-                }
-            }
+            try TaskAttachment.removeAllPhysicalFiles(
+                in: TaskAttachment.attachmentsDirectory
+            )
             
             // 🔴 Clean trash directory
-            if let trashDirectory = TaskAttachment.trashDirectory,
-               let trashFiles = try? fileManager.contentsOfDirectory(at: trashDirectory, includingPropertiesForKeys: nil) {
-                for file in trashFiles {
-                    try? fileManager.removeItem(at: file)
-                }
-            }
+            try TaskAttachment.removeAllPhysicalFiles(
+                in: TaskAttachment.trashDirectory
+            )
             
             if let walletDirectory = WalletAssetStore.assetsDirectory,
                let files = try? fileManager.contentsOfDirectory(
