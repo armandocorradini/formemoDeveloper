@@ -118,6 +118,20 @@ struct DocumentsView: View {
                                 .frame(width: 10, height: 10)
                         }
                         .padding(.vertical, 4)
+                        
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                deleteDocument(
+                                    document,
+                                    in: modelContext
+                                )
+                            } label: {
+                                Label(
+                                    "Delete",
+                                    systemImage: "trash"
+                                )
+                            }
+                        }
                     }
                     .listRowBackground(
                         Color(.systemBackground).opacity(0.3)
