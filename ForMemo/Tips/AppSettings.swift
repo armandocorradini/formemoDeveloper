@@ -57,7 +57,7 @@ final class AppSettings {
 
         surfaceMaterial = SurfaceMaterialStyle(
             rawValue: defaults.integer(forKey: "surfaceMaterial")
-        ) ?? .none
+        ) ?? .standard
         
         taskRowVerticalPadding = defaults.object(forKey: "taskRowVerticalPadding") as? Double ?? 0
         
@@ -534,7 +534,7 @@ final class AppSettings {
         selectedTaskRowStyle = 0
         surfaceCornerRadius = 22
         surfaceBorder = .hairline
-        surfaceMaterial = .none
+        surfaceMaterial = .standard
         taskRowVerticalPadding = 0
         
         dueIconEffectRaw = DueIconEffect.blink.rawValue

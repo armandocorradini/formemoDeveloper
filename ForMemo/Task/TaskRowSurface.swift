@@ -22,7 +22,7 @@ struct TaskRowSurface<S: InsettableShape>: View {
 
             switch materialStyle {
 
-            case .none:
+            case .standard:
 
                 EmptyView()
                 
@@ -111,7 +111,7 @@ struct TaskRowSurface<S: InsettableShape>: View {
 
     private var baseFillOpacity: Double {
         switch materialStyle {
-        case .none:
+        case .standard:
             return 1.0
         case .transparent:
             return 0.0
