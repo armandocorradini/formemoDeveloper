@@ -97,32 +97,82 @@ enum WalletAssetStore {
 
     // MARK: - Load
 
+    // MARK: - Load
+
     static func loadImage(
         relativePath: String
     ) -> UIImage? {
 
-        guard
-            let url = fileURL(relativePath: relativePath)
-        else {
+        guard let data = loadData(relativePath: relativePath) else {
             return nil
         }
 
-        return UIImage(contentsOfFile: url.path)
+        return UIImage(data: data)
     }
 
     static func loadData(
         relativePath: String
     ) -> Data? {
 
-        guard
-            let url = fileURL(relativePath: relativePath)
-        else {
+        guard let url = fileURL(relativePath: relativePath) else {
+            AppLogger.persistence.error(
+                "WalletAsset load failed: invalid URL for \(relativePath)"
+            )
             return nil
         }
 
-        return try? Data(contentsOf: url)
-    }
+        let fm = FileManager.default
 
+        // File già disponibile localmente.
+        if fm.fileExists(atPath: url.path) {
+            do {
+                return try Data(contentsOf: url)
+            } catch {
+                AppLogger.persistence.error(
+                    "WalletAsset load failed: \(relativePath) — \(error.localizedDescription)"
+                )
+                return nil
+            }
+        }
+
+        // Il file può essere presente in iCloud ma non ancora
+        // materializzato localmente.
+        let keys: Set<URLResourceKey> = [
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey,
+            .ubiquitousItemIsDownloadingKey,
+            .ubiquitousItemDownloadRequestedKey,
+            .ubiquitousItemDownloadingErrorKey
+        ]
+
+        if let values = try? url.resourceValues(forKeys: keys),
+           values.isUbiquitousItem == true {
+
+        
+
+            if values.ubiquitousItemDownloadingStatus == .notDownloaded {
+                do {
+                    try fm.startDownloadingUbiquitousItem(at: url)
+
+                    AppLogger.persistence.notice(
+                        "WalletAsset download requested: \(relativePath)"
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "WalletAsset download request failed: \(relativePath) — \(error.localizedDescription)"
+                    )
+                }
+            }
+
+            return nil
+        }
+
+        AppLogger.persistence.error(
+            "WalletAsset file not found: \(relativePath)"
+        )
+
+        return nil
+    }
     // MARK: - Exists
 
     static func exists(

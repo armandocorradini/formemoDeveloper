@@ -34,17 +34,18 @@ struct EditLoyaltyCardView: View {
             return previewLogoData
         }
 
-        if let asset = card.logoAsset {
-
-            return WalletAssetStore.loadData(
-                relativePath: asset.relativePath
-            )
+        if let asset = card.logoAsset,
+           let data = WalletAssetStore.loadData(
+               relativePath: asset.relativePath
+           ) {
+            return data
         }
 
-        if let relativePath = card.loyaltyLogoRelativePath {
-            return WalletAssetStore.loadData(
-                relativePath: relativePath
-            )
+        if let relativePath = card.loyaltyLogoRelativePath,
+           let data = WalletAssetStore.loadData(
+               relativePath: relativePath
+           ) {
+            return data
         }
 
         return nil

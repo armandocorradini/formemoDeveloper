@@ -1,6 +1,7 @@
 import SwiftUI
 
 import SwiftData
+import os
 
 struct LoyaltyCardDetailView: View {
 
@@ -50,25 +51,26 @@ struct LoyaltyCardDetailView: View {
         card.itemType == "ticket"
     }
 
+    
     private var logoData: Data? {
 
-        if let asset = card.logoAsset {
-
-            return WalletAssetStore.loadData(
-                relativePath: asset.relativePath
-            )
+        if let asset = card.logoAsset,
+           let data = WalletAssetStore.loadData(
+               relativePath: asset.relativePath
+           ) {
+            return data
         }
 
-        // Compatibilità con le versioni precedenti
-        if let relativePath = card.loyaltyLogoRelativePath {
-
-            return WalletAssetStore.loadData(
-                relativePath: relativePath
-            )
+        if let relativePath = card.loyaltyLogoRelativePath,
+           let data = WalletAssetStore.loadData(
+               relativePath: relativePath
+           ) {
+            return data
         }
 
         return nil
     }
+    
     private var galleryAssets: [WalletAsset] {
         card.galleryAssets
     }
@@ -281,7 +283,7 @@ struct LoyaltyCardDetailView: View {
 
                     VStack(alignment: .leading, spacing: 12) {
 
-                        Text("Images")
+                        Text("Gallery")
                             .font(.headline)
                             .padding(.horizontal)
 
@@ -299,11 +301,11 @@ struct LoyaltyCardDetailView: View {
                                         Image(uiImage: uiImage)
                                             .resizable()
                                             .scaledToFill()
-                                            .frame(width: 150, height: 95)
+                                            .frame(width: 140, height: 90)
                                             .clipped()
                                             .clipShape(
                                                 RoundedRectangle(
-                                                    cornerRadius: 16,
+                                                    cornerRadius: 12,
                                                     style: .continuous
                                                 )
                                             )
@@ -317,8 +319,18 @@ struct LoyaltyCardDetailView: View {
                                 }
                             }
                             .padding(.horizontal)
+                            .padding(.vertical, 4)
                         }
                     }
+                    .padding(.vertical, 4)
+                    .background(
+                        RoundedRectangle(
+                            cornerRadius: 16,
+                            style: .continuous
+                        )
+                        .fill(Color(.secondarySystemBackground))
+                    )
+                    .padding(.horizontal)
                 }
                 
                 
@@ -387,7 +399,9 @@ struct LoyaltyCardDetailView: View {
             do {
                 try modelContext.save()
             } catch {
-                print("Failed to update LoyaltyCard: \(error)")
+                AppLogger.persistence.error(
+                    "Failed to update LoyaltyCard: \(error.localizedDescription)"
+                )
             }
         }
         .navigationTitle(

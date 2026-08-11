@@ -135,32 +135,22 @@ struct WalletView: View {
                     List {
                         ForEach(filteredCards) { card in
 
-                            let logoData = {
-
-                                if let asset = card.logoAsset {
-
-                                    return WalletAssetStore.loadData(
-                                        relativePath: asset.relativePath
-                                    )
+                            let logoData: Data? = {
+                                if let asset = card.logoAsset,
+                                   let data = WalletAssetStore.loadData(
+                                       relativePath: asset.relativePath
+                                   ) {
+                                    return data
                                 }
 
-                                // Compatibilità con le versioni precedenti
-                                if let asset = card.logoAsset {
-
-                                    return WalletAssetStore.loadData(
-                                        relativePath: asset.relativePath
-                                    )
-                                }
-
-                                if let relativePath = card.loyaltyLogoRelativePath {
-
-                                    return WalletAssetStore.loadData(
-                                        relativePath: relativePath
-                                    )
+                                if let relativePath = card.loyaltyLogoRelativePath,
+                                   let data = WalletAssetStore.loadData(
+                                       relativePath: relativePath
+                                   ) {
+                                    return data
                                 }
 
                                 return nil
-
                             }()
 
                             NavigationLink(value: card) {

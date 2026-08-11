@@ -143,7 +143,7 @@ struct AddLoyaltyCardView: View {
                             }
                         }
                     }
-                    Section("Images") {
+                    Section("Gallery") {
 
                         ScrollView(.horizontal, showsIndicators: false) {
 
@@ -415,7 +415,7 @@ struct AddLoyaltyCardView: View {
                 request.preferBackgroundProcessing = true
 
                 guard let cgImage = uiImage.cgImage else {
-                    print("❌ Unable to create CGImage")
+
                     return
                 }
 
@@ -429,7 +429,6 @@ struct AddLoyaltyCardView: View {
                     try handler.perform([request])
                 } catch {
 
-                    print("📷 Ticket scan error:", error)
 
                     let detector = CIDetector(
                         ofType: CIDetectorTypeQRCode,
@@ -452,7 +451,6 @@ struct AddLoyaltyCardView: View {
 
                 guard let observation = request.results?.first else {
 
-                    print("❌ No barcode detected")
 
                     await MainActor.run {
                         selectedTicketImageItem = nil
@@ -467,13 +465,8 @@ struct AddLoyaltyCardView: View {
                     return
                 }
 
-                print("✅ Found:", observation.symbology.rawValue)
-                print("✅ Payload:", observation.payloadStringValue ?? "nil")
-
                 guard let payload = observation.payloadStringValue,
                       !payload.isEmpty else {
-
-                    print("❌ Barcode detected but payload is empty")
 
                     return
                 }
@@ -539,7 +532,7 @@ struct AddLoyaltyCardView: View {
     // MARK: - Save
 
     private func saveCard() {
-        print("======== SAVE CARD START ========")
+    
         let cleanedStore = storeName.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanedHolder = cardHolder.trimmingCharacters(in: .whitespacesAndNewlines)
         let cleanedBarcode = barcodeValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -737,10 +730,7 @@ private struct BarcodeScannerSheet: UIViewControllerRepresentable {
             DispatchQueue.main.async {
 
                 self.parent.barcodeValue = payload
-                
-                print(barcode.observation.symbology.rawValue)
-                
-                
+
                 self.parent.barcodeFormat = barcode.observation.symbology.rawValue
 
                 self.parent.dismiss()
