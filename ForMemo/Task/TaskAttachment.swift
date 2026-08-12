@@ -36,58 +36,23 @@ extension TaskAttachment {
         cloudAttachmentsDirectory() ?? legacyAttachmentsDirectory()
     }
     
-    static var trashDirectory: URL? = {
-        
+    static var trashDirectory: URL? {
         let fm = FileManager.default
-        
-        // 🔵 iCloud se disponibile
-        if let containerURL = fm.url(forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask") {
-            
-            let directory = containerURL
+
+        if let containerURL = fm.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) {
+            return containerURL
                 .appendingPathComponent("Documents", isDirectory: true)
                 .appendingPathComponent("TaskAttachments_Trash", isDirectory: true)
-
-            let fm = FileManager.default
-
-            if !fm.fileExists(atPath: directory.path) {
-
-                AppLogger.persistence.notice(
-                    "Creating iCloud TaskAttachments directory"
-                )
-
-                do {
-                    try fm.createDirectory(
-                        at: directory,
-                        withIntermediateDirectories: true
-                    )
-                } catch {
-
-                    AppLogger.persistence.error(
-                        "Cannot create iCloud TaskAttachments directory: \(error.localizedDescription)"
-                    )
-
-                    return nil
-                }
-            }
-
-            return directory
         }
-        
-        // 🟡 fallback locale
-        if let localURL = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
-            
-            let directory = localURL
-                .appendingPathComponent("TaskAttachments_Trash", isDirectory: true)
-            
-            if !fm.fileExists(atPath: directory.path) {
-                try? fm.createDirectory(at: directory, withIntermediateDirectories: true)
-            }
-            
-            return directory
-        }
-        
-        return nil
-    }()
+
+        return fm.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first?
+            .appendingPathComponent("TaskAttachments_Trash", isDirectory: true)
+    }
     
     private static func legacyAttachmentsDirectory() -> URL? {
         guard let directory = FileManager.default.urls(
@@ -118,6 +83,35 @@ extension TaskAttachment {
         return containerURL
             .appendingPathComponent("Documents", isDirectory: true)
             .appendingPathComponent("TaskAttachments", isDirectory: true)
+    }
+
+    private static func duplicateCloudAttachmentDirectories() -> [URL] {
+        guard let containerURL = FileManager.default.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) else {
+            return []
+        }
+
+        let fm = FileManager.default
+        let documents = containerURL.appendingPathComponent("Documents", isDirectory: true)
+        guard let items = try? fm.contentsOfDirectory(
+            at: documents,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return []
+        }
+
+        // CloudDocs may suffix a concurrently-created directory with a number.
+        // These are read-only fallback locations; imports always use the canonical
+        // TaskAttachments directory.
+        return items.filter { url in
+            guard (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true else {
+                return false
+            }
+            let name = url.lastPathComponent
+            return name.hasPrefix("TaskAttachments ")
+        }.sorted { $0.lastPathComponent < $1.lastPathComponent }
     }
 
     private static func resolvedExistingURL(
@@ -298,9 +292,28 @@ extension TaskAttachment {
                 )
             }
         }
+
+        // CloudDocs conflict directories (for example, TaskAttachments 2) can
+        // contain files referenced by already-synced SwiftData records. Resolve
+        // them without copying, moving, or deleting production data.
+        for duplicateDirectory in duplicateCloudAttachmentDirectories() {
+            let candidate = duplicateDirectory.appendingPathComponent(relativePath)
+            guard fm.fileExists(atPath: candidate.path) else {
+                continue
+            }
+
+            let status = try? candidate.resourceValues(
+                forKeys: [.ubiquitousItemDownloadingStatusKey]
+            ).ubiquitousItemDownloadingStatus
+            if status == .notDownloaded {
+                try? fm.startDownloadingUbiquitousItem(at: candidate)
+            }
+            return candidate
+        }
         // =====================================================
         // 2️⃣ Legacy
         // =====================================================
+
 
         if let legacy = legacyAttachmentsDirectory()?
             .appendingPathComponent(relativePath),
@@ -309,62 +322,6 @@ extension TaskAttachment {
             DebugLog.write(
                 "📂 Legacy file FOUND"
             )
-
-            if let cloudDirectory = cloudAttachmentsDirectory() {
-
-                let cloudURL = cloudDirectory
-                    .appendingPathComponent(relativePath)
-
-                if !fm.fileExists(atPath: cloudURL.path) {
-
-                    let legacySize =
-                        (try? fm.attributesOfItem(
-                            atPath: legacy.path
-                        )[.size] as? Int64) ?? 0
-
-                    DebugLog.write(
-                        "📂 Legacy file size = \(legacySize) bytes"
-                    )
-
-                    guard legacySize > 0 else {
-
-                        DebugLog.write(
-                            "📂 Legacy file empty"
-                        )
-
-                        return legacy
-                    }
-
-                    try? fm.createDirectory(
-                        at: cloudURL.deletingLastPathComponent(),
-                        withIntermediateDirectories: true
-                    )
-
-                    do {
-
-                        try fm.copyItem(
-                            at: legacy,
-                            to: cloudURL
-                        )
-
-                        try? fm.startDownloadingUbiquitousItem(
-                            at: cloudURL
-                        )
-
-                        DebugLog.write(
-                            "📂 Self-healing succeeded"
-                        )
-
-                        return cloudURL
-
-                    } catch {
-
-                        DebugLog.write(
-                            "📂 Self-healing failed: \(error)"
-                        )
-                    }
-                }
-            }
 
             return legacy
         }
@@ -556,41 +513,57 @@ extension TaskAttachment {
             return
         }
 
-        let files = try fm.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        )
+        func removeContents(of directory: URL) throws {
 
-        for fileURL in files {
+            let items = try fm.contentsOfDirectory(
+                at: directory,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: []
+            )
 
-            let coordinator = NSFileCoordinator()
-            var coordinationError: NSError?
-            var deletionError: Error?
+            for itemURL in items {
 
-            coordinator.coordinate(
-                writingItemAt: fileURL,
-                options: .forDeleting,
-                error: &coordinationError
-            ) { coordinatedURL in
+                let values = try itemURL.resourceValues(
+                    forKeys: [.isDirectoryKey]
+                )
 
-                do {
-                    if fm.fileExists(atPath: coordinatedURL.path) {
-                        try fm.removeItem(at: coordinatedURL)
+                if values.isDirectory == true {
+
+                    // Prima eliminiamo ricorsivamente il contenuto.
+                    try removeContents(of: itemURL)
+
+                }
+
+                let coordinator = NSFileCoordinator()
+                var coordinationError: NSError?
+                var deletionError: Error?
+
+                coordinator.coordinate(
+                    writingItemAt: itemURL,
+                    options: .forDeleting,
+                    error: &coordinationError
+                ) { coordinatedURL in
+
+                    do {
+                        if fm.fileExists(atPath: coordinatedURL.path) {
+                            try fm.removeItem(at: coordinatedURL)
+                        }
+                    } catch {
+                        deletionError = error
                     }
-                } catch {
-                    deletionError = error
+                }
+
+                if let coordinationError {
+                    throw coordinationError
+                }
+
+                if let deletionError {
+                    throw deletionError
                 }
             }
-
-            if let coordinationError {
-                throw coordinationError
-            }
-
-            if let deletionError {
-                throw deletionError
-            }
         }
+
+        try removeContents(of: directory)
     }
     
     

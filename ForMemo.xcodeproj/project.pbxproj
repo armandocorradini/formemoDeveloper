@@ -183,6 +183,7 @@
 		1C634E3B30220C9C0092DB89 /* WeeklyTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */; };
 		1C634E3D30220D580092DB89 /* WalletAssetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */; };
 		1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */; };
+		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CED325B302619D600B16A50 /* AssetRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */; };
 		1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325C30268F8300B16A50 /* SystemEventHistory.swift */; };
 		1CED325F30276D7C00B16A50 /* RecoveryStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */; };
@@ -393,6 +394,7 @@
 		1C634D8930220C9C0092DB89 /* ForMemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ForMemo.entitlements; sourceTree = "<group>"; };
 		1C634D8A30220C9C0092DB89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentContainerRecovery.swift; sourceTree = "<group>"; };
+		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
 		1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetRecoveryCoordinator.swift; sourceTree = "<group>"; };
 		1CED325C30268F8300B16A50 /* SystemEventHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemEventHistory.swift; sourceTree = "<group>"; };
 		1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryStatistics.swift; sourceTree = "<group>"; };
@@ -717,6 +719,8 @@
 		1C634E43302331530092DB89 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
+				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,
+				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
 				1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */,
 				1CED325C30268F8300B16A50 /* SystemEventHistory.swift */,
 				1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */,
@@ -733,8 +737,6 @@
 				1CED32603027760400B16A50 /* DiagnosticsRedactor.swift */,
 				1C634CF030220C9C0092DB89 /* Global.swift */,
 				1C634CFE30220C9C0092DB89 /* NavigationApp.swift */,
-				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
-				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,
 				1C634D4630220C9C0092DB89 /* CameraPicker.swift */,
 				1C634D5930220C9C0092DB89 /* ImagePreviewView.swift */,
 				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
@@ -753,6 +755,7 @@
 				1C634CE030220C9C0092DB89 /* CloudSettingsSync.swift */,
 				1C634CF730220C9C0092DB89 /* LaunchCoordinator.swift */,
 				1C634CFD30220C9C0092DB89 /* ModelContext+SafeSave.swift */,
+				1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */,
 				1C634D0430220C9C0092DB89 /* Persistence.swift */,
 				1C634CEE30220C9C0092DB89 /* ForMemoStorageManager.swift */,
 				1C634D0E30220C9C0092DB89 /* StoreMigrationManager.swift */,
@@ -902,6 +905,7 @@
 				1C634DA330220C9C0092DB89 /* DeletedItem.swift in Sources */,
 				1C634DA430220C9C0092DB89 /* DeleteTask.swift in Sources */,
 				1C634DA530220C9C0092DB89 /* DocumentAsset.swift in Sources */,
+				1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */,
 				1C634DA630220C9C0092DB89 /* DocumentAssetStore.swift in Sources */,
 				1C634DA730220C9C0092DB89 /* DocumentImportService.swift in Sources */,
 				1C634DA830220C9C0092DB89 /* Documents.swift in Sources */,

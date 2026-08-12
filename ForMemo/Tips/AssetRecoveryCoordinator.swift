@@ -144,24 +144,10 @@ enum AssetRecoveryCoordinator {
     static func recoverIfNeeded(
         diagnosticsEnabled: Bool
     ) -> RecoveryCheckResult {
-        
-        let result = checkIfNeeded()
-        
-        guard result.needsRepair else {
-            
-            return result
-            
-        }
-        
-        if diagnosticsEnabled {
-            
-            return result
-            
-        }
-        
-        performRecovery(for: result)
-        
-        return result
+        // A CloudDocs conflict can be transient. Automatic file mutation is not
+        // safe while iCloud is reconciling two devices, so this API is detect-only.
+        _ = diagnosticsEnabled
+        return checkIfNeeded()
     }
     
     static func recoverAutomaticallyIfNeeded() {
@@ -192,24 +178,6 @@ enum AssetRecoveryCoordinator {
         )
         
         
-        guard result.needsRepair else {
-
-            return result
-
-        }
-
-        if DiagnosticsOptions.assetRecoveryDiagnostics {
-
-            AppLogger.persistence.notice(
-                "Asset Recovery paused (diagnostics enabled)"
-            )
-
-            return result
-
-        }
-
-        performRecovery(for: result)
-
         return result
 
     }

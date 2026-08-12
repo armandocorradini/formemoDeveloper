@@ -8,60 +8,23 @@ enum WalletAssetStore {
     // MARK: - Directory
 
     private static let folderName = "WalletAssets"
-
+    private static let directoryLock = NSLock()
     static var assetsDirectory: URL? {
-
         let fm = FileManager.default
 
         if let containerURL = fm.url(
             forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
         ) {
-
-            let directory = containerURL
+            return containerURL
                 .appendingPathComponent("Documents", isDirectory: true)
                 .appendingPathComponent("WalletAssets", isDirectory: true)
-
-            if !fm.fileExists(atPath: directory.path) {
-                do {
-                    try fm.createDirectory(
-                        at: directory,
-                        withIntermediateDirectories: true
-                    )
-                } catch {
-                    AppLogger.persistence.error(
-                        "Unable to create WalletAssets directory: \(error.localizedDescription)"
-                    )
-                }
-            }
-
-            return directory
         }
 
-        if let localURL = fm.urls(
+        return fm.urls(
             for: .documentDirectory,
             in: .userDomainMask
-        ).first {
-
-            let directory = localURL
-                .appendingPathComponent("WalletAssets", isDirectory: true)
-
-            if !fm.fileExists(atPath: directory.path) {
-                do {
-                    try fm.createDirectory(
-                        at: directory,
-                        withIntermediateDirectories: true
-                    )
-                } catch {
-                    AppLogger.persistence.error(
-                        "Unable to create WalletAssets directory: \(error.localizedDescription)"
-                    )
-                }
-            }
-
-            return directory
-        }
-
-        return nil
+        ).first?
+            .appendingPathComponent("WalletAssets", isDirectory: true)
     }
 
     // MARK: - URL
@@ -69,9 +32,66 @@ enum WalletAssetStore {
     static func fileURL(
         relativePath: String
     ) -> URL? {
+        guard isSafeRelativePath(relativePath) else {
+            AppLogger.persistence.error("WalletAsset rejected unsafe relative path: \(relativePath)")
+            return nil
+        }
 
-        assetsDirectory?
-            .appendingPathComponent(relativePath)
+        let fm = FileManager.default
+
+        // The canonical directory is always preferred for new data. iCloud Drive
+        // may however resolve a concurrent directory creation as "WalletAssets 2".
+        // Existing production records retain only a file name, so reads must also
+        // consider those conflict directories without moving or deleting anything.
+        for directory in existingAssetDirectories() {
+            let candidate = directory.appendingPathComponent(relativePath)
+            if fm.fileExists(atPath: candidate.path) {
+                return candidate
+            }
+        }
+
+        return assetsDirectory?.appendingPathComponent(relativePath)
+    }
+
+    private static func isSafeRelativePath(_ relativePath: String) -> Bool {
+        !relativePath.isEmpty &&
+        !relativePath.contains("/") &&
+        !relativePath.contains("\\") &&
+        relativePath != "." &&
+        relativePath != ".."
+    }
+
+    private static func existingAssetDirectories() -> [URL] {
+        let fm = FileManager.default
+        var directories: [URL] = []
+
+        if let containerURL = fm.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) {
+            let documents = containerURL.appendingPathComponent("Documents", isDirectory: true)
+            if let items = try? fm.contentsOfDirectory(
+                at: documents,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            ) {
+                directories.append(contentsOf: items.filter { url in
+                    guard (try? url.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true else {
+                        return false
+                    }
+                    let name = url.lastPathComponent
+                    return name == folderName || name.hasPrefix("\(folderName) ")
+                }.sorted { $0.lastPathComponent < $1.lastPathComponent })
+            }
+        }
+
+        if let localURL = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let legacy = localURL.appendingPathComponent(folderName, isDirectory: true)
+            if fm.fileExists(atPath: legacy.path) {
+                directories.append(legacy)
+            }
+        }
+
+        return directories
     }
 
     // MARK: - Save Image
@@ -400,6 +420,15 @@ enum WalletAssetStore {
         guard let directory = assetsDirectory else {
             throw CocoaError(.fileNoSuchFile)
         }
+        
+        directoryLock.lock()
+        defer { directoryLock.unlock() }
+
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+        
 
         let relativePath = "\(UUID().uuidString).\(fileExtension)"
         let destinationURL = directory.appendingPathComponent(relativePath)
@@ -447,62 +476,23 @@ enum WalletAssetStore {
     }
     
     
-    static var trashDirectory: URL?  {
-
+    static var trashDirectory: URL? {
         let fm = FileManager.default
 
         if let containerURL = fm.url(
             forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
         ) {
-
-            let directory = containerURL
+            return containerURL
                 .appendingPathComponent("Documents", isDirectory: true)
                 .appendingPathComponent("WalletAssets_Trash", isDirectory: true)
-
-            if !fm.fileExists(atPath: directory.path) {
-                do {
-                    try fm.createDirectory(
-                        at: directory,
-                        withIntermediateDirectories: true
-                    )
-                } catch {
-                    AppLogger.persistence.error(
-                        "Unable to create WalletAssets directory: \(error.localizedDescription)"
-                    )
-                }
-            }
-
-            return directory
         }
 
-        if let localURL = fm.urls(
+        return fm.urls(
             for: .documentDirectory,
             in: .userDomainMask
-        ).first {
-
-            let directory = localURL
-                .appendingPathComponent("WalletAssets_Trash", isDirectory: true)
-
-            if !fm.fileExists(atPath: directory.path) {
-                do {
-                    try fm.createDirectory(
-                        at: directory,
-                        withIntermediateDirectories: true
-                    )
-                } catch {
-                    AppLogger.persistence.error(
-                        "Unable to create WalletAssets directory: \(error.localizedDescription)"
-                    )
-                }
-            }
-
-            return directory
-        }
-
-        return nil
+        ).first?
+            .appendingPathComponent("WalletAssets_Trash", isDirectory: true)
     }
     
     
 }
-
-

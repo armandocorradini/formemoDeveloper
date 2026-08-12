@@ -326,8 +326,6 @@ enum AttachmentContainerRecovery {
             if fm.fileExists(atPath: destinationFile.path) {
                 result.skipped += 1
                 result.skippedFiles.append(file.lastPathComponent)
-                try? fm.removeItem(at: file)
-                
                 continue
             }
 
@@ -341,9 +339,6 @@ enum AttachmentContainerRecovery {
 
                 result.copied += 1
                 result.copiedFiles.append(file.lastPathComponent)
-
-
-                try? fm.removeItem(at: file)
                 
             } catch let error as NSError {
 
@@ -372,23 +367,11 @@ enum AttachmentContainerRecovery {
             }
         }
         
-        if let remaining = try? fm.contentsOfDirectory(
-            at: source,
-            includingPropertiesForKeys: nil,
-            options: [.skipsHiddenFiles]
-        ),
-        remaining.isEmpty {
-
-            try? fm.removeItem(at: source)
-
-            AppLogger.persistence.notice(
-                "Asset Recovery: removed duplicate folder \(source.lastPathComponent)"
-            )
-        }
-  
+        // Never delete a duplicate iCloud directory or its source files here.
+        // CloudDocs can create these folders while resolving concurrent writes;
+        // deleting them during synchronization risks removing the only copy.
     }
     
     
 }
-
 

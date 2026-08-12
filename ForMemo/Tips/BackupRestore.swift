@@ -1225,16 +1225,15 @@ private enum BackupManager {
 
             for asset in document.assets ?? [] {
 
-                let dto = DocumentAssetTransferObject(asset: asset)
-                documentAssetPayload.append(dto)
-                
-                
                 guard
                     let url = asset.fileURL,
                     let data = try? Data(contentsOf: url)
                 else {
                     continue
                 }
+
+                let dto = DocumentAssetTransferObject(asset: asset)
+                documentAssetPayload.append(dto)
 
                 documentFilePayload[asset.relativePath] = data
             }
@@ -1244,7 +1243,10 @@ private enum BackupManager {
             version: BackupFormat.currentVersion,
             createdAt: .now,
             tasks: tasks.map {
-                TaskTransferObject(task: $0)
+                TaskTransferObject(
+                    task: $0,
+                    validAttachmentPaths: Set(attachmentPayload.keys)
+                )
             },
             loyaltyCards: loyaltyCards.map {
                 LoyaltyCardTransferObject(card: $0)
@@ -1471,6 +1473,9 @@ private enum BackupManager {
         if restoreDocuments && !archive.documentAssets.isEmpty {
 
             for dto in archive.documentAssets {
+                guard archive.documentFiles[dto.relativePath] != nil else {
+                    continue
+                }
 
                 let descriptor = FetchDescriptor<DocumentItem>(
                     predicate: #Predicate {
@@ -1561,10 +1566,19 @@ private enum BackupManager {
 
                 for assetDTO in cardDTO.assets {
 
+                    guard let imageData = archive.loyaltyCardLogoFiles[assetDTO.relativePath] else {
+                        continue
+                    }
+
+                    let result = try WalletAssetStore.save(
+                        data: imageData,
+                        fileExtension: "jpg"
+                    )
+
                     let asset = WalletAsset(
                         kind: assetDTO.kind,
-                        relativePath: assetDTO.relativePath,
-                        fileSize: 0
+                        relativePath: result.relativePath,
+                        fileSize: result.fileSize
                     )
 
                     asset.card = card
@@ -1617,23 +1631,33 @@ private enum BackupManager {
                 }
 
                 let todo = TodoTask(from: dto)
- 
-                // Insert task FIRST so SwiftData creates a stable object graph
+
+                // Keep only attachments whose physical file is present
+                // in the backup archive.
+                let validAttachments = (todo.attachments ?? []).filter { attachment in
+
+                    let relativePath = attachment.relativePath
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                    guard !relativePath.isEmpty else {
+                        return false
+                    }
+
+                    return archive.attachmentFiles[relativePath] != nil
+                }
+
+                todo.attachments = validAttachments
+
+                // Rebuild only valid attachment relationships.
+                for attachment in validAttachments {
+                    attachment.task = todo
+                }
+
+                // Insert task only after its attachment graph has been cleaned.
                 modelContext.insert(todo)
 
-                // Rebuild attachment relationships explicitly
-                if let restoredAttachments = todo.attachments {
-
-                    let validAttachments = restoredAttachments.filter {
-                        !$0.relativePath.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                    }
-
-                    todo.attachments = validAttachments
-
-                    for attachment in validAttachments {
-                        attachment.task = todo
-                        modelContext.insert(attachment)
-                    }
+                for attachment in validAttachments {
+                    modelContext.insert(attachment)
                 }
             }
         }

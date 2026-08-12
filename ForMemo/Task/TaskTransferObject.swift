@@ -250,9 +250,47 @@ extension TaskTransferObject {
             priority: task.priorityRaw
         )
     }
+    
+    
+    
+    init(
+        task: TodoTask,
+        validAttachmentPaths: Set<String>
+    ) {
+        self.init(
+            id: task.id,
+            title: task.title,
+            description: task.taskDescription,
+            deadline: task.deadLine,
+            reminderOffsetMinutes: task.reminderOffsetMinutes,
+            tag: task.mainTagRaw,
+            attachments: task.attachments?
+                .filter {
+                    validAttachmentPaths.contains(
+                        $0.relativePath.trimmingCharacters(in: .whitespacesAndNewlines)
+                    )
+                }
+                .map {
+                    AttachmentTransferObject(
+                        originalName: $0.originalName,
+                        relativePath: $0.relativePath,
+                        contentType: $0.contentType
+                    )
+                },
+            latitude: task.locationLatitude,
+            longitude: task.locationLongitude,
+            locationName: task.locationName,
+            recurrenceRule: task.recurrenceRule,
+            recurrenceInterval: task.recurrenceInterval,
+            locationReminderEnabled: task.locationReminderEnabled,
+            isCompleted: task.isCompleted,
+            createdAt: task.createdAt,
+            completedAt: task.completedAt,
+            snoozeUntil: task.snoozeUntil,
+            priority: task.priorityRaw
+        )
+    }
 }
-
-
 // MARK: - Mapping to TodoTask
 
 extension TodoTask {

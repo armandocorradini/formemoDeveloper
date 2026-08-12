@@ -93,23 +93,178 @@ struct ResetAppView: View {
     
     // 🔥 ENTRY POINT SICURO
     private func startDelete() {
-        
+
         guard !isDeleting else { return }
-        
+
         isDeleting = true
-        
+
         Task { @MainActor in
-            await deleteAllData()
-            
-            try? await Task.sleep(for: .milliseconds(300))
-            
-            dismiss()
+
+            do {
+                
+                try PersistenceOperationCoordinator.shared.begin(.reset)
+                let resetDirectories = resetDirectories()
+
+                try await deleteAllData(
+                    directories: resetDirectories
+                )
+
+                try verifyResetState()
+
+                try await PersistenceOperationCoordinator.shared.waitForSettlement(
+                    requireExport: true,
+                    directoriesThatMustBeEmpty: resetDirectories
+                )
+
+                PersistenceOperationCoordinator.shared.finish()
+
+                isDeleting = false
+                dismiss()
+
+            } catch {
+                PersistenceOperationCoordinator.shared.finish()
+
+                deletionMessage = error.localizedDescription
+                AppLogger.persistence.fault(
+                    "Reset did not complete: \(error.localizedDescription)"
+                )
+
+                isDeleting = false
+            }
         }
     }
     
+    @MainActor
+    private func verifyResetState() throws {
+
+        let taskCount = try modelContext.fetchCount(
+            FetchDescriptor<TodoTask>()
+        )
+
+        let attachmentCount = try modelContext.fetchCount(
+            FetchDescriptor<TaskAttachment>()
+        )
+
+        let vaultCount = try modelContext.fetchCount(
+            FetchDescriptor<VaultItem>()
+        )
+
+        let loyaltyCardCount = try modelContext.fetchCount(
+            FetchDescriptor<LoyaltyCard>()
+        )
+
+        let walletAssetCount = try modelContext.fetchCount(
+            FetchDescriptor<WalletAsset>()
+        )
+
+        let tripCount = try modelContext.fetchCount(
+            FetchDescriptor<TripList>()
+        )
+
+        let documentAssetCount = try modelContext.fetchCount(
+            FetchDescriptor<DocumentAsset>()
+        )
+
+        let documentCount = try modelContext.fetchCount(
+            FetchDescriptor<DocumentItem>()
+        )
+
+        let deletedItemCount = try modelContext.fetchCount(
+            FetchDescriptor<DeletedItem>()
+        )
+
+        guard
+            taskCount == 0,
+            attachmentCount == 0,
+            vaultCount == 0,
+            loyaltyCardCount == 0,
+            walletAssetCount == 0,
+            tripCount == 0,
+            documentAssetCount == 0,
+            documentCount == 0,
+            deletedItemCount == 0
+        else {
+            throw ResetVerificationError.storeNotEmpty
+        }
+    }
+
+    private enum ResetVerificationError: LocalizedError {
+        case storeNotEmpty
+
+        var errorDescription: String? {
+            switch self {
+            case .storeNotEmpty:
+                return "Reset could not be completed because local storage still contains data."
+            }
+        }
+    }
+
+    @MainActor
+    private func resetDirectories() -> [URL] {
+
+        let fileManager = FileManager.default
+        var directories: [URL] = []
+
+        if let containerURL = fileManager.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) {
+
+            let documentsURL = containerURL.appendingPathComponent(
+                "Documents",
+                isDirectory: true
+            )
+
+            let names = [
+                "TaskAttachments",
+                "TaskAttachments_Trash",
+                "DocumentAssets",
+                "DocumentAssets_Trash",
+                "WalletAssets",
+                "WalletAssets_Trash"
+            ]
+
+            for name in names {
+                directories.append(
+                    documentsURL.appendingPathComponent(
+                        name,
+                        isDirectory: true
+                    )
+                )
+            }
+
+        } else if let localDocumentsURL = fileManager.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        ).first {
+
+            let names = [
+                "TaskAttachments",
+                "TaskAttachments_Trash",
+                "DocumentAssets",
+                "DocumentAssets_Trash",
+                "WalletAssets",
+                "WalletAssets_Trash"
+            ]
+
+            for name in names {
+                directories.append(
+                    localDocumentsURL.appendingPathComponent(
+                        name,
+                        isDirectory: true
+                    )
+                )
+            }
+        }
+
+        return directories
+    }
+    
+    
     // 🔥 DELETE REALE
     @MainActor
-    private func deleteAllData() async {
+    private func deleteAllData(
+        directories: [URL]
+    ) async throws {
 
         let center = UNUserNotificationCenter.current()
         let fileManager = FileManager.default
@@ -150,17 +305,6 @@ struct ResetAppView: View {
 
             for card in loyaltyCards {
 
-                if let logo = card.logoAsset {
-                    WalletAssetStore.delete(
-                        relativePath: logo.relativePath
-                    )
-                }
-
-                for asset in card.galleryAssets {
-                    WalletAssetStore.delete(
-                        relativePath: asset.relativePath
-                    )
-                }
 
                 modelContext.delete(card)
             }
@@ -180,8 +324,18 @@ struct ResetAppView: View {
                 modelContext.delete(trip)
             }
 
-            // 🔴 Documents
-            let documents = try modelContext.fetch(FetchDescriptor<DocumentItem>())
+            // 🔴 Documents & Document Assets
+            let documentAssets = try modelContext.fetch(
+                FetchDescriptor<DocumentAsset>()
+            )
+
+            for asset in documentAssets {
+                modelContext.delete(asset)
+            }
+
+            let documents = try modelContext.fetch(
+                FetchDescriptor<DocumentItem>()
+            )
 
             for document in documents {
                 modelContext.delete(document)
@@ -193,41 +347,40 @@ struct ResetAppView: View {
             for item in deletedItems {
                 
                 // 🔥 remove trash files if present
-                if let trashFileName = item.trashFileName,
-                   let trashDir = TaskAttachment.trashDirectory {
-                    
-                    let trashURL = trashDir.appendingPathComponent(trashFileName)
-                    
-                    if fileManager.fileExists(atPath: trashURL.path) {
-                        try? fileManager.removeItem(at: trashURL)
+                
+                if let trashFileName = item.trashFileName {
+
+                    if let trashDir = directories.first(where: {
+                        $0.lastPathComponent == "TaskAttachments_Trash"
+                    }) {
+                        let trashURL = trashDir.appendingPathComponent(trashFileName)
+
+                        if fileManager.fileExists(atPath: trashURL.path) {
+                            try fileManager.removeItem(at: trashURL)
+                        }
+                    }
+
+                    if let trashDir = directories.first(where: {
+                        $0.lastPathComponent == "DocumentAssets_Trash"
+                    }) {
+                        let trashURL = trashDir.appendingPathComponent(trashFileName)
+
+                        if fileManager.fileExists(atPath: trashURL.path) {
+                            try fileManager.removeItem(at: trashURL)
+                        }
                     }
                 }
-                
                 modelContext.delete(item)
             }
             
             // 🔴 SAVE UNICO
             try modelContext.save()
-            
-            // 🔴 Clean directory
-            try TaskAttachment.removeAllPhysicalFiles(
-                in: TaskAttachment.attachmentsDirectory
-            )
-            
-            // 🔴 Clean trash directory
-            try TaskAttachment.removeAllPhysicalFiles(
-                in: TaskAttachment.trashDirectory
-            )
-            
-            if let walletDirectory = WalletAssetStore.assetsDirectory,
-               let files = try? fileManager.contentsOfDirectory(
-                    at: walletDirectory,
-                    includingPropertiesForKeys: nil
-               ) {
+      
 
-                for file in files {
-                    try? fileManager.removeItem(at: file)
-                }
+            for directory in directories {
+                try TaskAttachment.removeAllPhysicalFiles(
+                    in: directory
+                )
             }
             
             
@@ -241,10 +394,12 @@ struct ResetAppView: View {
             
         } catch {
             deletionMessage = "Error deleting data: \(error.localizedDescription)"
-            AppLogger.persistence.fault("Failed to delete data: \(error.localizedDescription)")
+            AppLogger.persistence.fault(
+                "Failed to delete data: \(error.localizedDescription)"
+            )
+            throw error
         }
-        
-        isDeleting = false
+    
         
         if let message = deletionMessage {
             print(message)
