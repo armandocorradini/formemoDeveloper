@@ -376,13 +376,28 @@ struct ResetAppView: View {
             // 🔴 SAVE UNICO
             try modelContext.save()
       
+            func removeDirectoryContents(_ directory: URL) throws {
+
+                let fileManager = FileManager.default
+
+                guard fileManager.fileExists(atPath: directory.path) else {
+                    return
+                }
+
+                let contents = try fileManager.contentsOfDirectory(
+                    at: directory,
+                    includingPropertiesForKeys: [.isDirectoryKey],
+                    options: []
+                )
+
+                for url in contents {
+                    try fileManager.removeItem(at: url)
+                }
+            }
 
             for directory in directories {
-                try TaskAttachment.removeAllPhysicalFiles(
-                    in: directory
-                )
+                try removeDirectoryContents(directory)
             }
-            
             
             // 🔴 Badge
             try await center.setBadgeCount(0)

@@ -825,7 +825,7 @@ private struct LoyaltyCardTransferObject: Codable {
     let sortOrder: Int
     let createdAt: Date
     let assets: [WalletAssetTransferObject]
-    
+
     enum CodingKeys: String, CodingKey {
         case id
         case storeName
@@ -851,10 +851,25 @@ private struct LoyaltyCardTransferObject: Codable {
         self.colorHex = card.colorHex
         self.sortOrder = card.sortOrder
         self.createdAt = card.createdAt
-        self.assets = (card.assets ?? []).map {
-            WalletAssetTransferObject(
-                kind: $0.kind,
-                relativePath: $0.relativePath
+
+        var exportedAssetPaths = Set<String>()
+
+        self.assets = (card.assets ?? []).compactMap { asset in
+
+            let relativePath = asset.relativePath
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !relativePath.isEmpty else {
+                return nil
+            }
+
+            guard exportedAssetPaths.insert(relativePath).inserted else {
+                return nil
+            }
+
+            return WalletAssetTransferObject(
+                kind: asset.kind,
+                relativePath: relativePath
             )
         }
     }
@@ -867,34 +882,52 @@ private struct LoyaltyCardTransferObject: Codable {
 
         id = try container.decode(UUID.self, forKey: .id)
         storeName = try container.decode(String.self, forKey: .storeName)
-        cardHolder = try container.decodeIfPresent(String.self, forKey: .cardHolder)
-        barcodeValue = try container.decode(String.self, forKey: .barcodeValue)
-        barcodeFormat = try container.decode(String.self, forKey: .barcodeFormat)
+        cardHolder = try container.decodeIfPresent(
+            String.self,
+            forKey: .cardHolder
+        )
+        barcodeValue = try container.decode(
+            String.self,
+            forKey: .barcodeValue
+        )
+        barcodeFormat = try container.decode(
+            String.self,
+            forKey: .barcodeFormat
+        )
         itemType = try container.decodeIfPresent(
             String.self,
             forKey: .itemType
         ) ?? "loyaltyCard"
-        notes = try container.decodeIfPresent(String.self, forKey: .notes)
-        colorHex = try container.decodeIfPresent(String.self, forKey: .colorHex)
+        notes = try container.decodeIfPresent(
+            String.self,
+            forKey: .notes
+        )
+        colorHex = try container.decodeIfPresent(
+            String.self,
+            forKey: .colorHex
+        )
 
         sortOrder = try container.decodeIfPresent(
             Int.self,
             forKey: .sortOrder
         ) ?? 0
 
-        createdAt = try container.decode(Date.self, forKey: .createdAt)
-        
+        createdAt = try container.decode(
+            Date.self,
+            forKey: .createdAt
+        )
+
         assets = try container.decodeIfPresent(
             [WalletAssetTransferObject].self,
             forKey: .assets
         ) ?? []
     }
-    
+
     struct WalletAssetTransferObject: Codable {
+
         let kind: WalletAssetKind
         let relativePath: String
     }
-
 }
 
 private struct DocumentTransferObject: Codable {
@@ -1142,6 +1175,7 @@ private enum BackupManager {
 
         var documentAssetPayload: [DocumentAssetTransferObject] = []
         var documentFilePayload: [String: Data] = [:]
+        var exportedDocumentAssetKeys = Set<String>()
 
         var settingsPayload: [String: Data] = [:]
 
@@ -1173,7 +1207,7 @@ private enum BackupManager {
             }
         }
 
-        if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
+        if !tasks.isEmpty {
             
             for task in tasks {
 
@@ -1190,17 +1224,8 @@ private enum BackupManager {
                         continue
                     }
 
-                    let fileURL = attachmentsDirectory
-                        .appendingPathComponent(relativePath)
-                    
-                    guard FileManager.default.fileExists(atPath: fileURL.path) else {
-                        continue
-                    }
-
-                    do {
-                        let data = try Data(contentsOf: fileURL)
+                    if let data = await attachment.loadDataAsync() {
                         attachmentPayload[relativePath] = data
-                    } catch {
                     }
                 }
             }
@@ -1210,9 +1235,42 @@ private enum BackupManager {
 
             for asset in card.assets ?? [] {
 
-                guard let data = WalletAssetStore.loadData(
+                guard let url = WalletAssetStore.fileURL(
                     relativePath: asset.relativePath
                 ) else {
+                    continue
+                }
+
+                let fileManager = FileManager.default
+
+                try? fileManager.startDownloadingUbiquitousItem(at: url)
+
+                for _ in 0..<40 {
+                    let exists = fileManager.fileExists(atPath: url.path)
+
+                    let values = try? url.resourceValues(
+                        forKeys: [.ubiquitousItemDownloadingStatusKey]
+                    )
+
+                    let status = values?.ubiquitousItemDownloadingStatus
+
+                    if exists &&
+                        (status == .current ||
+                         status == .downloaded ||
+                         status == nil) {
+                        break
+                    }
+
+                    try? await Task.sleep(
+                        nanoseconds: 200_000_000
+                    )
+                }
+
+                guard
+                    fileManager.fileExists(atPath: url.path),
+                    let data = try? Data(contentsOf: url),
+                    !data.isEmpty
+                else {
                     continue
                 }
 
@@ -1225,17 +1283,63 @@ private enum BackupManager {
 
             for asset in document.assets ?? [] {
 
+                let relativePath = asset.relativePath
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                guard !relativePath.isEmpty else {
+                    continue
+                }
+
+                let key = "\(document.id.uuidString)|\(relativePath)"
+
+                // Un file può comparire una sola volta per documento.
+                if exportedDocumentAssetKeys.contains(key) {
+                    continue
+                }
+
+                guard let url = asset.fileURL else {
+                    continue
+                }
+
+                let fileManager = FileManager.default
+
+                try? fileManager.startDownloadingUbiquitousItem(at: url)
+
+                for _ in 0..<40 {
+                    let exists = fileManager.fileExists(atPath: url.path)
+
+                    let values = try? url.resourceValues(
+                        forKeys: [.ubiquitousItemDownloadingStatusKey]
+                    )
+
+                    let status = values?.ubiquitousItemDownloadingStatus
+
+                    if exists &&
+                        (status == .current ||
+                         status == .downloaded ||
+                         status == nil) {
+                        break
+                    }
+
+                    try? await Task.sleep(
+                        nanoseconds: 200_000_000
+                    )
+                }
+
                 guard
-                    let url = asset.fileURL,
-                    let data = try? Data(contentsOf: url)
+                    fileManager.fileExists(atPath: url.path),
+                    let data = try? Data(contentsOf: url),
+                    !data.isEmpty
                 else {
                     continue
                 }
 
+                exportedDocumentAssetKeys.insert(key)
+
                 let dto = DocumentAssetTransferObject(asset: asset)
                 documentAssetPayload.append(dto)
 
-                documentFilePayload[asset.relativePath] = data
+                documentFilePayload[relativePath] = data
             }
         }
         
@@ -1330,7 +1434,8 @@ private enum BackupManager {
         restoreSettings: Bool
     ) async throws {
 
-        if let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
+        if restoreTasks,
+           let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
 
             try FileManager.default.createDirectory(
                 at: attachmentsDirectory,
@@ -1376,7 +1481,8 @@ private enum BackupManager {
             }
         }
 
-        if let walletDirectory = WalletAssetStore.assetsDirectory {
+        if restoreWalletCards,
+           let walletDirectory = WalletAssetStore.assetsDirectory {
 
             try FileManager.default.createDirectory(
                 at: walletDirectory,
@@ -1408,7 +1514,9 @@ private enum BackupManager {
             }
         }
 
-        if let documentDirectory = DocumentAssetStore.assetsDirectory {
+        if restoreDocuments,
+           let documentDirectory = DocumentAssetStore.assetsDirectory {
+            
 
             try FileManager.default.createDirectory(
                 at: documentDirectory,
@@ -1472,8 +1580,26 @@ private enum BackupManager {
 
         if restoreDocuments && !archive.documentAssets.isEmpty {
 
+            var restoredDocumentAssetKeys = Set<String>()
+
             for dto in archive.documentAssets {
-                guard archive.documentFiles[dto.relativePath] != nil else {
+
+                let relativePath = dto.relativePath
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                guard !relativePath.isEmpty else {
+                    continue
+                }
+
+                let key = "\(dto.documentID.uuidString)|\(relativePath)"
+
+                if restoredDocumentAssetKeys.contains(key) {
+                    continue
+                }
+
+                restoredDocumentAssetKeys.insert(key)
+
+                guard archive.documentFiles[relativePath] != nil else {
                     continue
                 }
 
@@ -1491,7 +1617,7 @@ private enum BackupManager {
                 }
 
                 let asset = DocumentAsset(
-                    relativePath: dto.relativePath,
+                    relativePath: relativePath,
                     kind: DocumentAssetKind(rawValue: dto.kindRaw) ?? .other,
                     pageIndex: dto.pageIndex,
                     fileSize: dto.fileSize,
@@ -1564,27 +1690,35 @@ private enum BackupManager {
 
                 modelContext.insert(card)
 
+                var restoredAssetPaths = Set<String>()
+
                 for assetDTO in cardDTO.assets {
 
-                    guard let imageData = archive.loyaltyCardLogoFiles[assetDTO.relativePath] else {
+                    let relativePath = assetDTO.relativePath
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                    guard !relativePath.isEmpty else {
                         continue
                     }
 
-                    let result = try WalletAssetStore.save(
-                        data: imageData,
-                        fileExtension: "jpg"
-                    )
+                    guard restoredAssetPaths.insert(relativePath).inserted else {
+                        continue
+                    }
+
+                    guard let imageData = archive.loyaltyCardLogoFiles[relativePath] else {
+                        continue
+                    }
 
                     let asset = WalletAsset(
                         kind: assetDTO.kind,
-                        relativePath: result.relativePath,
-                        fileSize: result.fileSize
+                        relativePath: relativePath,
+                        fileSize: Int64(imageData.count)
                     )
 
                     asset.card = card
 
                     if asset.kind == .logo {
-                        card.loyaltyLogoRelativePath = asset.relativePath
+                        card.loyaltyLogoRelativePath = relativePath
                     }
 
                     modelContext.insert(asset)
@@ -1609,6 +1743,7 @@ private enum BackupManager {
                         )
 
                         asset.card = card
+                        card.loyaltyLogoRelativePath = asset.relativePath
 
                         modelContext.insert(asset)
                     }

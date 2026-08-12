@@ -37,8 +37,6 @@ enum RecoveryStatistics {
 
     }
     
-    
-
     static func record(trigger: RecoveryTrigger) {
 
         switch trigger {
