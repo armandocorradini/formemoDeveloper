@@ -80,150 +80,75 @@ final class AttachmentImporter {
         )
     }
     
-    private static func copyToAttachmentsFolder(originalURL: URL) async throws -> URL {
+    private static func copyToAttachmentsFolder(
+        originalURL: URL
+    ) async throws -> URL {
 
         let fm = FileManager.default
 
-        guard let directory = TaskAttachment.attachmentsDirectory else {
-            throw NSError(
-                domain: "AttachmentImporter",
-                code: 1,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Attachments directory unavailable"
-                ]
-            )
-        }
-
-        try fm.createDirectory(
-            at: directory,
-            withIntermediateDirectories: true
-        )
+        let directory = try TaskAttachment.ensureAttachmentsDirectoryForWrite()
 
         let destination = directory.appendingPathComponent(
             "\(UUID().uuidString)-\(originalURL.lastPathComponent)"
         )
 
-        if fm.fileExists(atPath: destination.path) {
-            try fm.removeItem(at: destination)
-        }
-        
-        let coordinator = NSFileCoordinator()
-
-        var coordinationError: NSError?
-        var copyError: Error?
-
-        coordinator.coordinate(
-            readingItemAt: originalURL,
-            options: [],
-            writingItemAt: destination,
-            options: [],
-            error: &coordinationError
-        ) { coordinatedSource, coordinatedDestination in
-
-            do {
-                try fm.copyItem(
-                    at: coordinatedSource,
-                    to: coordinatedDestination
-                )
-            } catch {
-                copyError = error
-            }
-        }
-
-        if let coordinationError {
-            throw coordinationError
-        }
-
-        if let copyError {
-            throw copyError
-        }
-        
-        let ubiq = try? destination.resourceValues(forKeys: [
-            .isUbiquitousItemKey,
-            .ubiquitousItemDownloadingStatusKey
-        ])
-
-        DebugLog.write("""
-        📤 COPY COMPLETED
-        path = \(destination.path)
-        exists = \(fm.fileExists(atPath: destination.path))
-        ubiquitous = \(String(describing: ubiq?.isUbiquitousItem))
-        status = \(String(describing: ubiq?.ubiquitousItemDownloadingStatus))
-        """)
-        
-        
-        
-        
-        let values = try? destination.resourceValues(forKeys: [
-            .isUbiquitousItemKey,
-            .ubiquitousItemDownloadingStatusKey
-        ])
-
-        print("FILE:", destination.path)
-        print("UBIQUITOUS:", values?.isUbiquitousItem as Any)
-        print("STATUS:", values?.ubiquitousItemDownloadingStatus?.rawValue as Any)
-        DebugLog.write("Attachment write completed")
-        
-        let files = try fm.contentsOfDirectory(
-            at: directory,
-            includingPropertiesForKeys: nil
+        try fm.copyItem(
+            at: originalURL,
+            to: destination
         )
-
-        DebugLog.write("FILES SUBITO DOPO COPY = \(files.count)")
-
-        
-        var readable = false
-        var materialized = false
-
-        for _ in 0..<20 {
-
-            if fm.fileExists(atPath: destination.path) {
-
-                let size = (try? fm.attributesOfItem(
-                    atPath: destination.path
-                )[.size] as? Int64) ?? 0
-
-                if size > 0 &&
-                    fm.isReadableFile(atPath: destination.path) {
-
-                    materialized = true
-                    readable = true
-                    break
-                }
-            }
-
-            try Task.checkCancellation()
-            try await Task.sleep(for: .milliseconds(80))
-        }
-        
-        let finalValues = try? destination.resourceValues(forKeys: [
-            .isUbiquitousItemKey,
-            .ubiquitousItemDownloadingStatusKey
-        ])
-
-        DebugLog.write("""
-        📤 BEFORE CONTEXT SAVE
-        exists = \(fm.fileExists(atPath: destination.path))
-        materialized = \(materialized)
-        readable = \(readable)
-        ubiquitous = \(String(describing: finalValues?.isUbiquitousItem))
-        status = \(String(describing: finalValues?.ubiquitousItemDownloadingStatus))
-        """)
-        
-
-        guard materialized, readable else {
-
-            try? fm.removeItem(at: destination)
-
+        guard fm.fileExists(atPath: destination.path) else {
             throw NSError(
                 domain: "AttachmentImporter",
                 code: 2,
                 userInfo: [
-                    NSLocalizedDescriptionKey: "Attachment materialization failed"
+                    NSLocalizedDescriptionKey:
+                        "Attachment copy failed: destination file does not exist"
                 ]
             )
         }
-   
+
+        let attributes = try fm.attributesOfItem(
+            atPath: destination.path
+        )
+
+        let size =
+            (attributes[.size] as? NSNumber)?.int64Value ?? 0
+
+        guard size > 0 else {
+            try? fm.removeItem(at: destination)
+
+            throw NSError(
+                domain: "AttachmentImporter",
+                code: 3,
+                userInfo: [
+                    NSLocalizedDescriptionKey:
+                        "Attachment copy failed: destination file is empty"
+                ]
+            )
+        }
+
+        guard fm.isReadableFile(atPath: destination.path) else {
+            try? fm.removeItem(at: destination)
+
+            throw NSError(
+                domain: "AttachmentImporter",
+                code: 4,
+                userInfo: [
+                    NSLocalizedDescriptionKey:
+                        "Attachment copy failed: destination file is not readable"
+                ]
+            )
+        }
+
+        DebugLog.write("""
+        📤 ATTACHMENT COPY VERIFIED
+        source = \(originalURL.path)
+        destination = \(destination.path)
+        size = \(size)
+        exists = true
+        readable = true
+        """)
+
         return destination
     }
 }

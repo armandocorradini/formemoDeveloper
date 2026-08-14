@@ -1434,13 +1434,10 @@ private enum BackupManager {
         restoreSettings: Bool
     ) async throws {
 
-        if restoreTasks,
-           let attachmentsDirectory = TaskAttachment.attachmentsDirectory {
+        if restoreTasks {
 
-            try FileManager.default.createDirectory(
-                at: attachmentsDirectory,
-                withIntermediateDirectories: true
-            )
+            let attachmentsDirectory =
+                try TaskAttachment.ensureAttachmentsDirectoryForWrite()
             
             var createdAttachmentParents = Set<String>()
 
@@ -1481,13 +1478,13 @@ private enum BackupManager {
             }
         }
 
-        if restoreWalletCards,
-           let walletDirectory = WalletAssetStore.assetsDirectory {
+        if restoreWalletCards {
 
-            try FileManager.default.createDirectory(
-                at: walletDirectory,
-                withIntermediateDirectories: true
-            )
+            let walletDirectory =
+                try AssetDirectoryCoordinator
+                    .ensureCanonicalDirectory(
+                        for: .walletAssets
+                    )
 
             var createdWalletParents = Set<String>()
 
@@ -1514,14 +1511,13 @@ private enum BackupManager {
             }
         }
 
-        if restoreDocuments,
-           let documentDirectory = DocumentAssetStore.assetsDirectory {
-            
+        if restoreDocuments {
 
-            try FileManager.default.createDirectory(
-                at: documentDirectory,
-                withIntermediateDirectories: true
-            )
+            let documentDirectory =
+                try AssetDirectoryCoordinator
+                    .ensureCanonicalDirectory(
+                        for: .documentAssets
+                    )
 
             var createdDocumentParents = Set<String>()
 

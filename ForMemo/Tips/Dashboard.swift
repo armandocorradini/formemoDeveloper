@@ -252,85 +252,11 @@ struct Dashboard: View {
 
                             if !todayTasks.isEmpty {
                                 VStack(alignment: .leading, spacing: 6) {
+                                    
+                                    
                                     ForEach(todayTasks, id: \.persistentModelID) { task in
-
-                                        let isOverdue = (task.deadLine ?? .now) < .now
-
-                                        Button {
-                                            selectedTask = task
-                                        } label: {
-
-                                            HStack(spacing: 8) {
-
-                                                Group {
-                                                    if settings.highlightEnabled,
-                                                       task.priority == .critical {
-                                                        RoundedRectangle(cornerRadius: TaskRowTheme.highlightCornerRadius)
-                                                            .fill(Color(hex: settings.highlightColorHex) ?? .red)
-                                                            .frame(
-                                                                width: TaskRowMetrics.highlightBarWidth,
-                                                                height: TaskRowMetrics.highlightBarHeight - 12
-                                                            )
-                                                    } else {
-                                                        Color.clear
-                                                            .frame(
-                                                                width: TaskRowMetrics.highlightBarWidth,
-                                                                height: TaskRowMetrics.highlightBarHeight - 12
-                                                            )
-                                                    }
-                                                }
-
-                                                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                                                    .symbolRenderingMode(
-                                                        settings.iconStyle == .polychrome && task.mainTag != nil
-                                                        ? .palette
-                                                        : .monochrome
-                                                    )
-                                                    .foregroundStyle(
-                                                        settings.iconStyle == .polychrome
-                                                        ? task.iconColor
-                                                        : .primary,
-                                                        .primary
-                                                    )
-                                                    .opacity(0.9)
-                                                    .frame(width: 18)
-
-
-                                                if let deadline = task.deadLine {
-                                                    Text(
-                                                        deadline.formatted(
-                                                            .dateTime
-                                                                .hour()
-                                                                .minute()
-                                                        )
-                                                    )
-                                                    .monospacedDigit()
-                                                    .foregroundStyle(.secondary)
-                                                }
-
-                                                Text(task.title)
-                                                    .lineLimit(1)
-                                                    .foregroundStyle(.secondary)
-                                                    .overlay(alignment: .bottomLeading) {
-                                                        if isOverdue {
-                                                            Rectangle()
-                                                                .fill(.red)
-                                                                .frame(height: 1.5)
-                                                                .offset(y: 2)
-                                                        }
-                                                    }
-
-                                                if task.recurrenceRule != nil {
-                                                    Image(systemName: "arrow.triangle.2.circlepath")
-                                                        .font(.caption)
-                                                        .foregroundStyle(.blue)
-                                                }
-                                            }
-                                            .font(.subheadline)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
+                                        dashboardTaskRow(task)
+                                    }                                }
                                 .padding(.top, 4)
                             }
 
@@ -435,70 +361,8 @@ struct Dashboard: View {
 
                                 if !tomorrowTasks.isEmpty {
                                     VStack(alignment: .leading, spacing: 6) {
-                                        ForEach(Array(tomorrowTasks), id: \.persistentModelID) { task in
-                                            Button {
-                                                selectedTask = task
-                                            } label: {
-                                                HStack(spacing: 8) {
-
-                                                    Group {
-                                                        if settings.highlightEnabled,
-                                                           task.priority == .critical {
-                                                            RoundedRectangle(cornerRadius: TaskRowTheme.highlightCornerRadius)
-                                                                .fill(Color(hex: settings.highlightColorHex) ?? .red)
-                                                                .frame(
-                                                                    width: TaskRowMetrics.highlightBarWidth,
-                                                                    height: TaskRowMetrics.highlightBarHeight - 12
-                                                                )
-                                                        } else {
-                                                            Color.clear
-                                                                .frame(
-                                                                    width: TaskRowMetrics.highlightBarWidth,
-                                                                    height: TaskRowMetrics.highlightBarHeight - 12
-                                                                )
-                                                        }
-                                                    }
-
-                                                    Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                                                        .symbolRenderingMode(
-                                                            settings.iconStyle == .polychrome && task.mainTag != nil
-                                                            ? .palette
-                                                            : .monochrome
-                                                        )
-                                                        .foregroundStyle(
-                                                            settings.iconStyle == .polychrome
-                                                            ? task.iconColor
-                                                            : .primary,
-                                                            .primary
-                                                        )
-                                                        .opacity(0.9)
-                                                        .frame(width: 18)
-
-                                                    if let deadline = task.deadLine {
-                                                        Text(
-                                                            deadline.formatted(
-                                                                .dateTime
-                                                                    .hour()
-                                                                    .minute()
-                                                            )
-                                                        )
-                                                        .monospacedDigit()
-                                                        .foregroundStyle(.secondary)
-                                                    }
-
-                                                    Text(task.title)
-                                                        .lineLimit(1)
-                                                        .foregroundStyle(.secondary)
-
-                                                    if task.recurrenceRule != nil {
-                                                        Image(systemName: "arrow.triangle.2.circlepath")
-                                                            .font(.caption)
-                                                            .foregroundStyle(.blue)
-                                                    }
-                                                }
-                                                .font(.subheadline)
-                                            }
-                                            .buttonStyle(.plain)
+                                        ForEach(tomorrowTasks, id: \.persistentModelID) { task in
+                                            dashboardTaskRow(task)
                                         }
                                     }
                                     .padding(.top, 4)
@@ -653,7 +517,7 @@ struct Dashboard: View {
                 String(localized: "Repair")
             ) {
 
-                recoveryResult = AssetRecoveryCoordinator.repairAll()
+                recoveryResult = AssetRecoveryCoordinator.repairAll(context: modelContext)
 
                 showRecoveryAlert = true
 
@@ -747,6 +611,12 @@ struct Dashboard: View {
                     Image(systemName: "line.3.horizontal.button.angledtop.vertical.right")
                 }
             }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink("TEST ALLEGATI") {
+                    SimpleAttachmentTestView()
+                }
+            }
         }
         .navigationDestination(item: $selectedTask) { task in
             TaskDetailView(task: task)
@@ -760,13 +630,15 @@ struct Dashboard: View {
         .navigationDestination(item: $selectedLoyaltyCard) { card in
             LoyaltyCardDetailView(card: card)
         }
-        .navigationDestination(item: $selectedWeatherDate) { date in
+        .navigationDestination(item: $selectedWeatherDate) {
+            date in
             WeatherDayView(
                 date: date,
                 showsCloseButton: false,
                 cameFromForecast: false
             )
         }
+
         .task {
             await weatherManager.refreshIfNeeded()
         }
@@ -783,6 +655,96 @@ struct Dashboard: View {
         }
     }
 
+    
+    
+    @ViewBuilder
+    private func dashboardTaskRow(_ task: TodoTask) -> some View {
+        let isOverdue = (task.deadLine ?? .now) < .now
+
+        Button {
+            selectedTask = task
+        } label: {
+            HStack(spacing: 8) {
+
+                if settings.highlightEnabled,
+                   task.priority == .critical {
+                    RoundedRectangle(
+                        cornerRadius: TaskRowTheme.highlightCornerRadius
+                    )
+                    .fill(
+                        Color(hex: settings.highlightColorHex) ?? .red
+                    )
+                    .frame(
+                        width: TaskRowMetrics.highlightBarWidth,
+                        height: TaskRowMetrics.highlightBarHeight - 12
+                    )
+                } else {
+                    Color.clear
+                        .frame(
+                            width: TaskRowMetrics.highlightBarWidth,
+                            height: TaskRowMetrics.highlightBarHeight - 12
+                        )
+                }
+
+                Image(
+                    systemName: task.mainTag?.mainIcon ?? task.status.icon
+                )
+                .symbolRenderingMode(
+                    settings.iconStyle == .polychrome && task.mainTag != nil
+                        ? .palette
+                        : .monochrome
+                )
+                .foregroundStyle(
+                    settings.iconStyle == .polychrome
+                        ? task.iconColor
+                        : .primary,
+                    .primary
+                )
+                .opacity(0.9)
+                .frame(width: 18)
+
+                if let deadline = task.deadLine {
+                    Text(
+                        deadline.formatted(
+                            .dateTime
+                                .hour()
+                                .minute()
+                        )
+                    )
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                }
+
+                Text(task.title)
+                    .lineLimit(1)
+                    .foregroundStyle(.secondary)
+                    .overlay(alignment: .bottomLeading) {
+                        if isOverdue {
+                            Rectangle()
+                                .fill(.red)
+                                .frame(height: 1.5)
+                                .offset(y: 2)
+                        }
+                    }
+
+                if task.recurrenceRule != nil {
+                    Image(
+                        systemName: "arrow.triangle.2.circlepath"
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.blue)
+                }
+            }
+            .font(.subheadline)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    
+    
+    
+    
+    
     @ViewBuilder
     private func sectionCard(
         title: String,

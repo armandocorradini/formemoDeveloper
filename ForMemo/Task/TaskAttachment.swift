@@ -33,7 +33,17 @@ final class TaskAttachment {
 extension TaskAttachment {
     
     static var attachmentsDirectory: URL? {
-        cloudAttachmentsDirectory() ?? legacyAttachmentsDirectory()
+        do {
+            return try ensureAttachmentsDirectoryForWrite()
+        } catch {
+            return cloudAttachmentsDirectory() ?? legacyAttachmentsDirectory()
+        }
+    }
+    
+    static func ensureAttachmentsDirectoryForWrite() throws -> URL {
+        try AssetDirectoryCoordinator.ensureCanonicalDirectory(
+            for: .taskAttachments
+        )
     }
     
     static var trashDirectory: URL? {
@@ -226,70 +236,83 @@ extension TaskAttachment {
 
         }
 
+
         // =====================================================
         // 1️⃣ Cloud
         // =====================================================
 
         if let cloudDir = cloudAttachmentsDirectory() {
-            
+
             let cloud = cloudDir.appendingPathComponent(relativePath)
-            
-            let cloudExists = fm.fileExists(atPath: cloud.path)
 
-            DebugLog.write("☁️ Cloud candidate checked")
-            DebugLog.write("☁️ Cloud exists = \(cloudExists)")
-            
-            if fm.fileExists(atPath: cloud.path) {
-                
-                let values = try? cloud.resourceValues(forKeys: [
-                    .ubiquitousItemDownloadingStatusKey
-                ])
+            DebugLog.write("Cloud candidate = \(cloud.path)")
 
-                let status = values?.ubiquitousItemDownloadingStatus
+            let exists = fm.fileExists(atPath: cloud.path)
 
-                let realSize =
-                (
-                    try? fm.attributesOfItem(
-                        atPath: cloud.path
-                    )[.size] as? Int64
-                ) ?? 0
-                
-                DebugLog.write(
+            let values = try? cloud.resourceValues(forKeys: [
+                .isUbiquitousItemKey,
+                .ubiquitousItemIsDownloadingKey,
+                .ubiquitousItemDownloadingStatusKey,
+                .fileSizeKey
+            ])
+
+            let status = values?.ubiquitousItemDownloadingStatus
+            let isUbiquitous = values?.isUbiquitousItem ?? false
+            let isDownloading = values?.ubiquitousItemIsDownloading ?? false
+            let size = values?.fileSize ?? 0
+
+            DebugLog.write(
                 """
-                ☁️ Cloud file FOUND
-                downloadStatus = \(String(describing: status))
-                size = \(realSize) bytes
+                ☁️ Cloud candidate
+                exists = \(exists)
+                ubiquitous = \(isUbiquitous)
+                downloading = \(isDownloading)
+                status = \(String(describing: status))
+                size = \(size)
                 """
-                )
-                
-                if status == .notDownloaded {
-                    
-                    DebugLog.write(
-                        "☁️ Starting download..."
-                    )
-                    
-                    try? fm.startDownloadingUbiquitousItem(at: cloud)
-                    
-                    return cloud
-                }
-                
-                if (
-                    status == .current ||
-                    status == .downloaded ||
-                    status == nil
-                ),
-                realSize > 0 {
+            )
+
+            // Il record CloudKit può arrivare prima della
+            // materializzazione locale del file.
+            // In questo caso dobbiamo comunque richiedere il download.
+            if isUbiquitous || exists {
+
+                if !exists ||
+                    status == .notDownloaded{
 
                     DebugLog.write(
-                        "☁️ Returning cloud URL"
+                        "☁️ Requesting iCloud materialization"
                     )
+
+                    do {
+                        try fm.startDownloadingUbiquitousItem(at: cloud)
+                    } catch {
+                        DebugLog.write(
+                            "☁️ Materialization request failed: \(error.localizedDescription)"
+                        )
+                    }
 
                     return cloud
                 }
-                
-                DebugLog.write(
-                    "☁️ Cloud file exists but not usable"
-                )
+
+                if status == .current || status == .downloaded,
+                   size > 0 {
+
+                    DebugLog.write(
+                        "☁️ Returning materialized cloud URL"
+                    )
+
+                    return cloud
+                }
+
+                if exists, size > 0 {
+
+                    DebugLog.write(
+                        "☁️ Returning existing cloud URL"
+                    )
+
+                    return cloud
+                }
             }
         }
 

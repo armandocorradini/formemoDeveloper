@@ -3,7 +3,7 @@ import SwiftData
 import os
 
 struct TaskTabView: View {
-    
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(AppSettings.self) private var settings
 
@@ -152,7 +152,9 @@ struct TaskTabView: View {
                         Text("Repair")
                     ) {
 
-                        _ = AssetRecoveryCoordinator.repairAll()
+                        AssetRecoveryCoordinator.recoverAutomaticallyIfNeeded(
+                            context: modelContext
+                        )
 
                         recoveryResult = nil
 

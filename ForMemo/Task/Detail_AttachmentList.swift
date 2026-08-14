@@ -191,14 +191,18 @@ struct AttachmentRowView: View {
             Spacer()
 
             Button {
-                guard let url = attachment.fileURL else {
-                    return
+                Task {
+                    guard let url = await materializedURL(for: attachment) else {
+                        await MainActor.run {
+                            loadFailed = true
+                        }
+                        return
+                    }
+
+                    await MainActor.run {
+                        onPreview(url)
+                    }
                 }
-                let exists = FileManager.default.fileExists(atPath: url.path)
-                guard exists else {
-                    return
-                }
-                onPreview(url)
 
             } label: {
                 Image(systemName: "eye")
@@ -229,6 +233,44 @@ struct AttachmentRowView: View {
         }
     }
 
+    
+    private func materializedURL(for attachment: TaskAttachment) async -> URL? {
+        guard let url = attachment.fileURL else {
+            return nil
+        }
+
+        let fm = FileManager.default
+
+        try? fm.startDownloadingUbiquitousItem(at: url)
+
+        for _ in 0..<40 {
+            let exists = fm.fileExists(atPath: url.path)
+
+            let values = try? url.resourceValues(forKeys: [
+                .ubiquitousItemDownloadingStatusKey
+            ])
+
+            let status = values?.ubiquitousItemDownloadingStatus
+
+            let realSize =
+                (try? fm.attributesOfItem(
+                    atPath: url.path
+                )[.size] as? Int64) ?? 0
+
+            if exists,
+               realSize > 0,
+               (status == .current || status == .downloaded || status == nil) {
+                return url
+            }
+
+            try? await Task.sleep(nanoseconds: 250_000_000)
+        }
+
+        return nil
+    }
+    
+    
+    
     private var isImage: Bool {
         attachment.contentType.contains("image")
     }

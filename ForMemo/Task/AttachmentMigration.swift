@@ -39,29 +39,16 @@ enum AttachmentMigration {
     // MARK: - Migration
     
     private static func migrate(context: ModelContext) -> Bool {
-        
-        guard let iCloudDir = TaskAttachment.attachmentsDirectory else {
-            
-            return false
-        }
 
         guard let legacyDir = legacyDirectory else {
-
             return true
         }
 
-        guard FileManager.default.fileExists(atPath: legacyDir.path) else {
-
-            return true
-        }
         let fm = FileManager.default
 
-//        let attachmentsByRelativePath = Dictionary(
-//            uniqueKeysWithValues: attachments.map {
-//                ($0.relativePath, $0)
-//            }
-//        )
-        var allFilesMigrated = true
+        guard fm.fileExists(atPath: legacyDir.path) else {
+            return true
+        }
 
         guard let files = try? fm.contentsOfDirectory(
             at: legacyDir,
@@ -70,9 +57,20 @@ enum AttachmentMigration {
             return false
         }
 
-        if files.isEmpty {
+        guard !files.isEmpty else {
             return true
         }
+
+        let iCloudDir: URL
+
+        do {
+            iCloudDir =
+                try TaskAttachment.ensureAttachmentsDirectoryForWrite()
+        } catch {
+            return false
+        }
+
+        var allFilesMigrated = true
         
         for fileURL in files {
             let fileName = fileURL.lastPathComponent
@@ -87,14 +85,8 @@ enum AttachmentMigration {
                 continue
             }
             do {
-                try fm.createDirectory(
-                    at: iCloudDir,
-                    withIntermediateDirectories: true
-                )
                 try fm.copyItem(at: fileURL, to: newURL)
-                
-                
-                
+
                 var uploadReady = false
                 for _ in 0..<20 {
                     if fm.fileExists(atPath: newURL.path) {

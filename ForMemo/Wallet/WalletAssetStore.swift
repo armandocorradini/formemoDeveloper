@@ -9,22 +9,11 @@ enum WalletAssetStore {
 
     private static let folderName = "WalletAssets"
     private static let directoryLock = NSLock()
+    
     static var assetsDirectory: URL? {
-        let fm = FileManager.default
-
-        if let containerURL = fm.url(
-            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
-        ) {
-            return containerURL
-                .appendingPathComponent("Documents", isDirectory: true)
-                .appendingPathComponent("WalletAssets", isDirectory: true)
-        }
-
-        return fm.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first?
-            .appendingPathComponent("WalletAssets", isDirectory: true)
+        AssetDirectoryCoordinator.canonicalDirectory(
+            for: .walletAssets
+        )
     }
 
     // MARK: - URL
@@ -417,17 +406,13 @@ enum WalletAssetStore {
         fileExtension: String
     ) throws -> (relativePath: String, fileSize: Int64) {
 
-        guard let directory = assetsDirectory else {
-            throw CocoaError(.fileNoSuchFile)
-        }
-        
         directoryLock.lock()
         defer { directoryLock.unlock() }
 
-        try FileManager.default.createDirectory(
-            at: directory,
-            withIntermediateDirectories: true
-        )
+        let directory = try AssetDirectoryCoordinator
+            .ensureCanonicalDirectory(
+                for: .walletAssets
+            )
         
 
         let relativePath = "\(UUID().uuidString).\(fileExtension)"

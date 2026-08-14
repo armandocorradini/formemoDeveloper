@@ -22,5 +22,18 @@
         <string>remote-notification</string>
     </array>
 
+    <key>NSUbiquitousContainers</key>
+    <dict>
+        <key>iCloud.corradini.armando.NewTask</key>
+        <dict>
+            <key>NSUbiquitousContainerIsDocumentScopePublic</key>
+            <true/>
+            <key>NSUbiquitousContainerName</key>
+            <string>ForMemo</string>
+            <key>NSUbiquitousContainerSupportedFolderLevels</key>
+            <string>Any</string>
+        </dict>
+    </dict>
+
 </dict>
 </plist>

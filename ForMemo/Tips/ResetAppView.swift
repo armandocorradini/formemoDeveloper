@@ -116,7 +116,16 @@ struct ResetAppView: View {
                     directoriesThatMustBeEmpty: resetDirectories
                 )
 
+                try await purgePhysicalFilesUntilEmpty(
+                    directories: resetDirectories
+                )
+
+                try verifyPhysicalResetState(
+                    directories: resetDirectories
+                )
+
                 PersistenceOperationCoordinator.shared.finish()
+
 
                 isDeleting = false
                 dismiss()
@@ -190,15 +199,84 @@ struct ResetAppView: View {
 
     private enum ResetVerificationError: LocalizedError {
         case storeNotEmpty
+        case physicalStorageNotEmpty
 
         var errorDescription: String? {
             switch self {
             case .storeNotEmpty:
                 return "Reset could not be completed because local storage still contains data."
+
+            case .physicalStorageNotEmpty:
+                return "Reset could not be completed because physical storage still contains files."
             }
         }
     }
+    
+    @MainActor
+    private func verifyPhysicalResetState(
+        directories: [URL]
+    ) throws {
+        let fileManager = FileManager.default
 
+        for directory in directories {
+            guard fileManager.fileExists(atPath: directory.path) else {
+                continue
+            }
+
+            let contents = try fileManager.contentsOfDirectory(
+                at: directory,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: []
+            )
+
+            guard contents.isEmpty else {
+                throw ResetVerificationError.physicalStorageNotEmpty
+            }
+        }
+    }
+    
+    @MainActor
+    private func purgePhysicalFilesUntilEmpty(
+        directories: [URL]
+    ) async throws {
+        let fileManager = FileManager.default
+
+        for _ in 0..<5 {
+            for directory in directories {
+                try TaskAttachment.removeAllPhysicalFiles(
+                    in: directory
+                )
+            }
+
+            var hasRemainingContent = false
+
+            for directory in directories {
+                guard fileManager.fileExists(atPath: directory.path) else {
+                    continue
+                }
+
+                let contents = try fileManager.contentsOfDirectory(
+                    at: directory,
+                    includingPropertiesForKeys: [.isDirectoryKey],
+                    options: []
+                )
+
+                if !contents.isEmpty {
+                    hasRemainingContent = true
+                    break
+                }
+            }
+
+            if !hasRemainingContent {
+                return
+            }
+
+            try await Task.sleep(for: .milliseconds(500))
+        }
+
+        throw ResetVerificationError.physicalStorageNotEmpty
+    }
+    
     @MainActor
     private func resetDirectories() -> [URL] {
 
@@ -376,27 +454,10 @@ struct ResetAppView: View {
             // 🔴 SAVE UNICO
             try modelContext.save()
       
-            func removeDirectoryContents(_ directory: URL) throws {
-
-                let fileManager = FileManager.default
-
-                guard fileManager.fileExists(atPath: directory.path) else {
-                    return
-                }
-
-                let contents = try fileManager.contentsOfDirectory(
-                    at: directory,
-                    includingPropertiesForKeys: [.isDirectoryKey],
-                    options: []
-                )
-
-                for url in contents {
-                    try fileManager.removeItem(at: url)
-                }
-            }
-
             for directory in directories {
-                try removeDirectoryContents(directory)
+                try TaskAttachment.removeAllPhysicalFiles(
+                    in: directory
+                )
             }
             
             // 🔴 Badge

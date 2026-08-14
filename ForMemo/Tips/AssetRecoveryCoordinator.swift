@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import os
 
 enum AssetRecoveryCoordinator {
@@ -79,8 +80,60 @@ enum AssetRecoveryCoordinator {
         
     }
     
+    private static func validRelativePaths(
+        for container: AssetContainer,
+        context: ModelContext
+    ) -> Set<String> {
+
+        switch container {
+
+        case .task:
+            let assets = (try? context.fetch(
+                FetchDescriptor<TaskAttachment>()
+            )) ?? []
+
+            return Set(
+                assets
+                    .map(\.relativePath)
+                    .filter { !$0.isEmpty }
+                    .map {
+                        URL(fileURLWithPath: $0).lastPathComponent
+                    }
+            )
+
+        case .wallet:
+            let assets = (try? context.fetch(
+                FetchDescriptor<WalletAsset>()
+            )) ?? []
+
+            return Set(
+                assets
+                    .map(\.relativePath)
+                    .filter { !$0.isEmpty }
+                    .map {
+                        URL(fileURLWithPath: $0).lastPathComponent
+                    }
+            )
+
+        case .document:
+            let assets = (try? context.fetch(
+                FetchDescriptor<DocumentAsset>()
+            )) ?? []
+
+            return Set(
+                assets
+                    .map(\.relativePath)
+                    .filter { !$0.isEmpty }
+                    .map {
+                        URL(fileURLWithPath: $0).lastPathComponent
+                    }
+            )
+        }
+    }
+    
     private static func performRecovery(
-        for result: RecoveryCheckResult
+        for result: RecoveryCheckResult,
+        context: ModelContext
     ) {
         
         AppLogger.persistence.notice(
@@ -91,31 +144,38 @@ enum AssetRecoveryCoordinator {
             
             _ = AttachmentContainerRecovery.repairIfNeeded(
                 container: .task,
-                trigger: .automatic
+                trigger: .automatic,
+                validRelativePaths: validRelativePaths(
+                    for: .task,
+                    context: context
+                )
             )
-            
         }
         
         if result.duplicatedContainers.contains(.wallet) {
             
             _ = AttachmentContainerRecovery.repairIfNeeded(
                 container: .wallet,
-                trigger: .automatic
+                trigger: .automatic,
+                validRelativePaths: validRelativePaths(
+                    for: .wallet,
+                    context: context
+                )
             )
-            
         }
         
         if result.duplicatedContainers.contains(.document) {
             
             _ = AttachmentContainerRecovery.repairIfNeeded(
                 container: .document,
-                trigger: .automatic
+                trigger: .automatic,
+                validRelativePaths: validRelativePaths(
+                    for: .document,
+                    context: context
+                )
             )
-            
         }
-        
     }
-    
     
     
     static func checkIfNeeded() -> RecoveryCheckResult {
@@ -142,20 +202,36 @@ enum AssetRecoveryCoordinator {
     }
     
     static func recoverIfNeeded(
-        diagnosticsEnabled: Bool
+        diagnosticsEnabled: Bool,
+        context: ModelContext
     ) -> RecoveryCheckResult {
-        // A CloudDocs conflict can be transient. Automatic file mutation is not
-        // safe while iCloud is reconciling two devices, so this API is detect-only.
-        _ = diagnosticsEnabled
-        return checkIfNeeded()
-    }
-    
-    static func recoverAutomaticallyIfNeeded() {
         
-        _ = recoverIfNeeded(
-            diagnosticsEnabled: false
+        let result = checkIfNeeded()
+        
+        guard result.needsRepair else {
+            return result
+        }
+        
+        if diagnosticsEnabled {
+            return result
+        }
+        
+        performRecovery(
+            for: result,
+            context: context
         )
         
+        return result
+    }
+    
+    static func recoverAutomaticallyIfNeeded(
+        context: ModelContext
+    ) {
+        
+        _ = recoverIfNeeded(
+            diagnosticsEnabled: false,
+            context: context
+        )
     }
     
     
@@ -184,25 +260,38 @@ enum AssetRecoveryCoordinator {
     
     
     
-    static func repairAll() -> AttachmentRecoveryResult {
+    static func repairAll(
+        context: ModelContext
+    ) -> AttachmentRecoveryResult {
 
         let taskResult = AttachmentContainerRecovery.repairIfNeeded(
             container: .task,
-            trigger: .manual
+            trigger: .manual,
+            validRelativePaths: validRelativePaths(
+                for: .task,
+                context: context
+            )
         )
 
         _ = AttachmentContainerRecovery.repairIfNeeded(
             container: .wallet,
-            trigger: .manual
+            trigger: .manual,
+            validRelativePaths: validRelativePaths(
+                for: .wallet,
+                context: context
+            )
         )
 
         _ = AttachmentContainerRecovery.repairIfNeeded(
             container: .document,
-            trigger: .manual
+            trigger: .manual,
+            validRelativePaths: validRelativePaths(
+                for: .document,
+                context: context
+            )
         )
 
         return taskResult
-
     }
     
 }

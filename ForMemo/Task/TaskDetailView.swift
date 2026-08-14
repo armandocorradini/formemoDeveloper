@@ -484,9 +484,11 @@ struct TaskDetailView: View {
     @MainActor
     private func handleCloudKitUpdate() {
         
-        // ✅ SOLO UI
+        modelContext.processPendingChanges()
+        
+        refreshID = UUID()
+        
         preloadAttachments()
-
     }
     
     //MARK:preloadAttachments

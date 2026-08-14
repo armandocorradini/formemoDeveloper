@@ -288,7 +288,7 @@ struct ForMemoApp: App {
     // MARK: - 🔥 CLOUDKIT REALTIME (VERO)
     
     private func startRemoteChangeObserver() {
-        print("REMOTE CHANGE")
+      
         NotificationCenter.default.addObserver(
             forName: .NSPersistentStoreRemoteChange,
             object: nil,

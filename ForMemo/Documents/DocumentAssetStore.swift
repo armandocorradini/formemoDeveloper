@@ -8,24 +8,12 @@ enum DocumentAssetStore {
 
     private static let folderName = "DocumentAssets"
     private static let directoryLock = NSLock()
+    
     static var assetsDirectory: URL? {
-        let fm = FileManager.default
-
-        if let containerURL = fm.url(
-            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
-        ) {
-            return containerURL
-                .appendingPathComponent("Documents", isDirectory: true)
-                .appendingPathComponent("DocumentAssets", isDirectory: true)
-        }
-
-        return fm.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first?
-            .appendingPathComponent("DocumentAssets", isDirectory: true)
+        AssetDirectoryCoordinator.canonicalDirectory(
+            for: .documentAssets
+        )
     }
-
     // MARK: - URL
 
     static func fileURL(
@@ -375,17 +363,13 @@ enum DocumentAssetStore {
         fileExtension: String
     ) throws -> (relativePath: String, fileSize: Int64) {
 
-        guard let directory = assetsDirectory else {
-            throw CocoaError(.fileNoSuchFile)
-        }
-
         directoryLock.lock()
         defer { directoryLock.unlock() }
 
-        try FileManager.default.createDirectory(
-            at: directory,
-            withIntermediateDirectories: true
-        )
+        let directory = try AssetDirectoryCoordinator
+            .ensureCanonicalDirectory(
+                for: .documentAssets
+            )
         
         
         let relativePath = "\(UUID().uuidString).\(fileExtension)"

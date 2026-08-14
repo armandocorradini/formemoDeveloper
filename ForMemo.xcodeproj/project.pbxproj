@@ -184,6 +184,8 @@
 		1C634E3D30220D580092DB89 /* WalletAssetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */; };
 		1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */; };
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
+		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
+		1CC57C0F302F189800E9C79F /* SimpleAttachmentTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0E302F188E00E9C79F /* SimpleAttachmentTestView.swift */; };
 		1CED325B302619D600B16A50 /* AssetRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */; };
 		1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325C30268F8300B16A50 /* SystemEventHistory.swift */; };
 		1CED325F30276D7C00B16A50 /* RecoveryStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */; };
@@ -395,6 +397,8 @@
 		1C634D8A30220C9C0092DB89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentContainerRecovery.swift; sourceTree = "<group>"; };
 		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
+		1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDirectoryCoordinator.swift; sourceTree = "<group>"; };
+		1CC57C0E302F188E00E9C79F /* SimpleAttachmentTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleAttachmentTestView.swift; sourceTree = "<group>"; };
 		1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetRecoveryCoordinator.swift; sourceTree = "<group>"; };
 		1CED325C30268F8300B16A50 /* SystemEventHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemEventHistory.swift; sourceTree = "<group>"; };
 		1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryStatistics.swift; sourceTree = "<group>"; };
@@ -556,6 +560,7 @@
 		1C634D8B30220C9C0092DB89 /* ForMemo */ = {
 			isa = PBXGroup;
 			children = (
+				1CC57C0D302F188700E9C79F /* prova */,
 				1C8477673023782000C4FA34 /* Core */,
 				1C634E43302331530092DB89 /* Tips */,
 				1C634E4230232A130092DB89 /* Tab */,
@@ -719,6 +724,7 @@
 		1C634E43302331530092DB89 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
+				1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */,
 				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,
 				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
 				1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */,
@@ -731,7 +737,6 @@
 				1C634D6630220C9C0092DB89 /* SettingsView.swift */,
 				1C634D0F30220C9C0092DB89 /* SurfaceSettings.swift */,
 				1C634CD830220C9C0092DB89 /* AppSettings.swift */,
-				1C634D6A30220C9C0092DB89 /* TaskApp.swift */,
 				1C634D4330220C9C0092DB89 /* BackgroundCustomizationView.swift */,
 				1C634CE430220C9C0092DB89 /* DebugTools.swift */,
 				1CED32603027760400B16A50 /* DiagnosticsRedactor.swift */,
@@ -748,6 +753,7 @@
 		1C8477673023782000C4FA34 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				1C634D6A30220C9C0092DB89 /* TaskApp.swift */,
 				1C634CD530220C9C0092DB89 /* AppDelegate.swift */,
 				1C634CD630220C9C0092DB89 /* AppError.swift */,
 				1C634CD730220C9C0092DB89 /* AppLogger.swift */,
@@ -772,6 +778,14 @@
 				1C634CE530220C9C0092DB89 /* DeletedFingerprintStore.swift */,
 			);
 			path = Delete;
+			sourceTree = "<group>";
+		};
+		1CC57C0D302F188700E9C79F /* prova */ = {
+			isa = PBXGroup;
+			children = (
+				1CC57C0E302F188E00E9C79F /* SimpleAttachmentTestView.swift */,
+			);
+			path = prova;
 			sourceTree = "<group>";
 		};
 		1CF9847A3000EBA300E1D1A9 /* Frameworks */ = {
@@ -944,6 +958,7 @@
 				1C634DC730220C9C0092DB89 /* SensitiveValues.swift in Sources */,
 				1C634DC830220C9C0092DB89 /* StoreMigrationManager.swift in Sources */,
 				1C634DC930220C9C0092DB89 /* SurfaceSettings.swift in Sources */,
+				1CC57C0F302F189800E9C79F /* SimpleAttachmentTestView.swift in Sources */,
 				1C634DCA30220C9C0092DB89 /* TaskAttachment.swift in Sources */,
 				1C634DCB30220C9C0092DB89 /* TaskBadgePolicy.swift in Sources */,
 				1C634DCC30220C9C0092DB89 /* TaskExportService.swift in Sources */,
@@ -1053,6 +1068,7 @@
 				1C634E3130220C9C0092DB89 /* VaultLockCoverView.swift in Sources */,
 				1C634E3230220C9C0092DB89 /* VaultPasswordField.swift in Sources */,
 				1C634E3330220C9C0092DB89 /* VaultRow.swift in Sources */,
+				1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */,
 				1C634E3430220C9C0092DB89 /* VaultSecureTextField.swift in Sources */,
 				1C634E3530220C9C0092DB89 /* VaultSettingsView.swift in Sources */,
 				1C634E3630220C9C0092DB89 /* VaultView.swift in Sources */,
@@ -1088,7 +1104,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMPILER_INDEX_STORE_ENABLE = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 7L454SWB7H;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1143,7 +1159,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMPILER_INDEX_STORE_ENABLE = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 7L454SWB7H;
 				ENABLE_PREVIEWS = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -1328,7 +1344,7 @@
 				CODE_SIGN_ENTITLEMENTS = ForMemoCredentialProvider/ForMemoCredentialProvider.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 7L454SWB7H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ForMemoCredentialProvider/Info.plist;
@@ -1360,7 +1376,7 @@
 				CODE_SIGN_ENTITLEMENTS = ForMemoCredentialProvider/ForMemoCredentialProvider.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 7L454SWB7H;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ForMemoCredentialProvider/Info.plist;
