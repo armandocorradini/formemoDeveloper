@@ -612,11 +612,6 @@ struct Dashboard: View {
                 }
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink("TEST ALLEGATI") {
-                    SimpleAttachmentTestView()
-                }
-            }
         }
         .navigationDestination(item: $selectedTask) { task in
             TaskDetailView(task: task)

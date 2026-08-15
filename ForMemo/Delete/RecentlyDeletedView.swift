@@ -90,41 +90,41 @@ var body: some View {
                                 trashFileName: item.trashFileName
                             )
                         } else {                            VStack {
-                                if item.type == "trip" {
-                                    Image(systemName: item.tripIcon ?? "suitcase.rolling")
-                                        .symbolRenderingMode(.hierarchical)
-                                        .foregroundStyle(.orange)
-                                } else if item.type == "loyaltycard" {
-                                    
-                                    DeletedLoyaltyCardPreviewView(
-                                        item: item,
-                                        items: items
-                                    )
-                                } else if item.type == "document" {
-
-                                    DeletedDocumentPreviewView(
-                                        documentID: item.documentID,
-                                        items: items
-                                    )
+                            if item.type == "trip" {
+                                Image(systemName: item.tripIcon ?? "suitcase.rolling")
+                                    .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(.orange)
+                            } else if item.type == "loyaltycard" {
                                 
-                                } else if let raw = item.mainTagRaw,
-                                   let tag = TaskMainTag(rawValue: raw) {
-                                    Image(systemName: tag.mainIcon)
-                                        .symbolRenderingMode(.hierarchical)
-                                        .foregroundStyle(tag.color)
-                                } else {
-                                    Image(systemName: "checklist")
-                                        .symbolRenderingMode(.hierarchical)
-                                        .foregroundStyle(.blue)
-                                }
-
-//                                if let deadline = item.deadLine {
-//                                    Text(deadline.formatted(date: .numeric, time: .omitted))
-//                                        .font(.caption2)
-//                                        .foregroundStyle(.secondary)
-//                                }
+                                DeletedLoyaltyCardPreviewView(
+                                    item: item,
+                                    items: items
+                                )
+                            } else if item.type == "document" {
+                                
+                                DeletedDocumentPreviewView(
+                                    documentID: item.documentID,
+                                    items: items
+                                )
+                                
+                            } else if let raw = item.mainTagRaw,
+                                      let tag = TaskMainTag(rawValue: raw) {
+                                Image(systemName: tag.mainIcon)
+                                    .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(tag.color)
+                            } else {
+                                Image(systemName: "checklist")
+                                    .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(.blue)
                             }
-                            .frame(width: 36, height: 36)
+                            
+                            //                                if let deadline = item.deadLine {
+                            //                                    Text(deadline.formatted(date: .numeric, time: .omitted))
+                            //                                        .font(.caption2)
+                            //                                        .foregroundStyle(.secondary)
+                            //                                }
+                        }
+                        .frame(width: 36, height: 36)
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
@@ -132,19 +132,23 @@ var body: some View {
                             Text(title(for: item))
                                 .lineLimit(1)
                             
-                            Text("Deleted: \(item.deletedAt.formatted(date:.abbreviated,time: .shortened))")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            Text(typeLabel(for: item))
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            
+                            Text("Deleted: \(item.deletedAt.formatted(date: .abbreviated, time: .shortened))")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
                             
                             if item.type == "walletAsset",
                                let cardID = item.loyaltyCardID,
                                let card = try? context.fetch(
-                                   FetchDescriptor<LoyaltyCard>(
-                                       predicate: #Predicate { $0.id == cardID }
-                                   )
+                                FetchDescriptor<LoyaltyCard>(
+                                    predicate: #Predicate { $0.id == cardID }
+                                )
                                ).first,
                                !card.storeName.isEmpty {
-
+                                
                                 Text("From: \(card.storeName)")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
@@ -177,10 +181,71 @@ var body: some View {
                                 }
                             }
                         }
+                        
+                        Spacer()
+                        
+                        Menu {
+                            Button {
+                                item.restore(in: context)
+                                context.delete(item)
+                                context.safeSave(
+                                    operation: "RecentlyDeletedRestoreSingle"
+                                )
+                            } label: {
+                                Label(
+                                    "Restore",
+                                    systemImage: "arrow.uturn.backward"
+                                )
+                            }
+                            
+                            Button(role: .destructive) {
+                                if item.type == "task" {
+                                    
+                                    let relatedAttachments = items.filter {
+                                        $0.type == "attachment" &&
+                                        $0.taskID == item.taskID
+                                    }
+                                    
+                                    for att in relatedAttachments {
+                                        deleteFile(att)
+                                        context.delete(att)
+                                    }
+                                }
+                                
+                                if item.type == "document" {
+                                    
+                                    let relatedAssets = items.filter {
+                                        $0.type == "documentAsset" &&
+                                        $0.documentID == item.documentID
+                                    }
+                                    
+                                    for asset in relatedAssets {
+                                        deleteFile(asset)
+                                        context.delete(asset)
+                                    }
+                                }
+                                
+                                deleteFile(item)
+                                context.delete(item)
+                                
+                                context.safeSave(
+                                    operation: "RecentlyDeletedAction"
+                                )
+                            } label: {
+                                Label(
+                                    "Delete",
+                                    systemImage: "trash"
+                                )
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                    .padding(.vertical, 4)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+                .padding(.vertical, 4)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -383,6 +448,38 @@ var body: some View {
             }
         }
     }
+   
+    private func typeLabel(for item: DeletedItem) -> String {
+        switch item.type {
+        case "task":
+            return String(localized: "Activity")
+
+        case "attachment":
+            return String(localized: "Attachment")
+
+        case "document":
+            return String(localized: "Document")
+
+        case "documentAsset":
+            return String(localized: "Image/File")
+
+        case "loyaltycard":
+            return item.loyaltyItemType == "ticket"
+                ? String(localized: "Ticket")
+                : String(localized: "Loyalty Card")
+
+        case "walletAsset":
+            return String(localized: "Wallet Image")
+
+        case "trip":
+            return String(localized: "Trip")
+
+        default:
+            return String(localized: "Item")
+        }
+    }
+    
+    
     
     private func title(for item: DeletedItem) -> String {
 

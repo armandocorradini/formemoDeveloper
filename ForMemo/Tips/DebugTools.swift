@@ -837,18 +837,16 @@ enum DebugLog {
         var tickets = 0
 
         var logos = 0
-        var frontImages = 0
-        var backImages = 0
+        var galleryImages = 0
 
         var totalAssets = 0
         var orphanAssets = 0
 
         var filesWithoutRecord = 0
-
         var recordsWithoutFile = 0
-        var duplicateLogoCards = 0
-        var duplicateFrontCards = 0
-        var duplicateBackCards = 0
+
+        var duplicateLogoReferences = 0
+        var duplicateAssetReferences = 0
     }
     
     private static func makeAttachmentEnvironment() -> AttachmentEnvironment {
@@ -1122,12 +1120,17 @@ enum DebugLog {
             let cardAssets =
                 assetsByCard[card.persistentModelID] ?? []
 
-            if cardAssets.filter({ $0.kind == .logo }).count > 1 {
-                result.duplicateLogoCards += 1
+            let logoAssets = cardAssets.filter { $0.kind == .logo }
+  
+
+            let logoPaths = logoAssets.map(\.relativePath)
+            if Set(logoPaths).count != logoPaths.count {
+                result.duplicateLogoReferences += 1
             }
 
-            if cardAssets.filter({ $0.kind == .gallery }).count > 1 {
-                result.duplicateFrontCards += 1
+            let assetPaths = cardAssets.map(\.relativePath)
+            if Set(assetPaths).count != assetPaths.count {
+                result.duplicateAssetReferences += 1
             }
 
         }
@@ -1147,12 +1150,10 @@ enum DebugLog {
                 $0.kind == .logo
             }.count
 
-        result.frontImages =
+        result.galleryImages =
             assets.filter {
                 $0.kind == .gallery
             }.count
-
-        result.backImages = 0
 
         result.totalAssets = assets.count
 
@@ -1343,15 +1344,13 @@ enum DebugLog {
         forensic("Cards: \(analysis.cards)")
         forensic("Tickets: \(analysis.tickets)")
         forensic("Logo Images: \(analysis.logos)")
-        forensic("Front Images: \(analysis.frontImages)")
-        forensic("Back Images: \(analysis.backImages)")
+        forensic("Gallery Images: \(analysis.galleryImages)")
         forensic("Total Images: \(analysis.totalAssets)")
         forensic("Orphan Assets: \(analysis.orphanAssets)")
         forensic("Files without record: \(analysis.filesWithoutRecord)")
         forensic("Records without file: \(analysis.recordsWithoutFile)")
-        forensic("Duplicate Logo Cards: \(analysis.duplicateLogoCards)")
-        forensic("Duplicate Front Cards: \(analysis.duplicateFrontCards)")
-        forensic("Duplicate Back Cards: \(analysis.duplicateBackCards)")
+        forensic("Duplicate Logo References: \(analysis.duplicateLogoReferences)")
+        forensic("Duplicate Asset References: \(analysis.duplicateAssetReferences)")
     }
     
     private static func dumpDirectory(

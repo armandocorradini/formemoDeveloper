@@ -33,6 +33,7 @@ struct BackupRestoreView: View {
     @State private var backupPassword = ""
     @State private var backupPasswordConfirmation = ""
     @State private var showBackupPasswordPrompt = false
+    @State private var showVaultPasswordError = false
     @State private var showBackupCreationPasswordPrompt = false
     @State private var pendingRestoreArchive: BackupArchive?
 
@@ -429,8 +430,13 @@ struct BackupRestoreView: View {
                                             )
                                             isRestoringBackup = false
                                         } catch {
-                                            restoreError = error.localizedDescription
                                             isRestoringBackup = false
+
+                                            if case VaultBackupCryptoError.invalidPassword = error {
+                                                showVaultPasswordError = true
+                                            } else {
+                                                restoreError = error.localizedDescription
+                                            }
                                         }
                                     }
                                 } else {
@@ -550,6 +556,32 @@ struct BackupRestoreView: View {
         } message: {
             Text("Enter the password to unlock the backup.")
         }
+        .alert(
+            "Incorrect Password",
+            isPresented: $showVaultPasswordError
+        ) {
+            Button("Try Again") {
+                backupPassword = ""
+                showBackupPasswordPrompt = true
+            }
+
+            Button("Skip Vault") {
+                restoreWithoutVault()
+            }
+
+            Button("Cancel", role: .cancel) {
+                backupPassword = ""
+                pendingRestoreArchive = nil
+                pendingRestoreTasks = false
+                pendingRestoreWalletCards = false
+                pendingRestoreTripLists = false
+                pendingRestoreDocuments = false
+                pendingRestoreVault = false
+                pendingRestoreSettings = false
+            }
+        } message: {
+            Text("The password is incorrect. Enter the correct password to restore Vault, or continue without Vault.")
+        }
         .alert("Backup Password", isPresented: $showBackupCreationPasswordPrompt) {
             SecureField("Password", text: $backupPassword)
             SecureField("Confirm Password", text: $backupPasswordConfirmation)
@@ -591,6 +623,55 @@ struct BackupRestoreView: View {
         .navigationTitle("Backup & Restore")
         .navigationBarTitleDisplayMode(.inline)
     }
+    
+    
+    private func restoreWithoutVault() {
+        guard let archive = pendingRestoreArchive else {
+            return
+        }
+
+        let selectedTasks = pendingRestoreTasks
+        let selectedWalletCards = pendingRestoreWalletCards
+        let selectedTripLists = pendingRestoreTripLists
+        let selectedDocuments = pendingRestoreDocuments
+        let selectedSettings = pendingRestoreSettings
+
+        showVaultPasswordError = false
+        isRestoringBackup = true
+
+        Task {
+            defer {
+                pendingRestoreArchive = nil
+                pendingRestoreTasks = false
+                pendingRestoreWalletCards = false
+                pendingRestoreTripLists = false
+                pendingRestoreDocuments = false
+                pendingRestoreVault = false
+                pendingRestoreSettings = false
+                backupPassword = ""
+            }
+
+            do {
+                try await BackupManager.restoreArchive(
+                    archive,
+                    modelContext: modelContext,
+                    restoreTasks: selectedTasks,
+                    restoreWalletCards: selectedWalletCards,
+                    restoreTripLists: selectedTripLists,
+                    restoreDocuments: selectedDocuments,
+                    restoreVault: false,
+                    backupPassword: "",
+                    restoreSettings: selectedSettings
+                )
+
+                isRestoringBackup = false
+            } catch {
+                isRestoringBackup = false
+                restoreError = error.localizedDescription
+            }
+        }
+    }
+    
 }
 
 private struct RestoreArchiveSheetWrapper: Identifiable {

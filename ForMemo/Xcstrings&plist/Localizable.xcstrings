@@ -2223,6 +2223,9 @@
         }
       }
     },
+    "Activity" : {
+
+    },
     "Add" : {
       "localizations" : {
         "de" : {
@@ -2925,9 +2928,6 @@
           }
         }
       }
-    },
-    "Allegato" : {
-
     },
     "Amethyst" : {
       "localizations" : {
@@ -3722,6 +3722,9 @@
         }
       }
     },
+    "Attachment" : {
+
+    },
     "Attachment Analysis" : {
       "localizations" : {
         "de" : {
@@ -3861,9 +3864,6 @@
           }
         }
       }
-    },
-    "Attachment Test" : {
-
     },
     "Attachments" : {
       "localizations" : {
@@ -13085,9 +13085,6 @@
         }
       }
     },
-    "File riletto dal container" : {
-
-    },
     "File unavailable" : {
       "localizations" : {
         "de" : {
@@ -15536,6 +15533,9 @@
         }
       }
     },
+    "Image/File" : {
+
+    },
     "Images" : {
       "localizations" : {
         "de" : {
@@ -16204,6 +16204,9 @@
         }
       }
     },
+    "Incorrect Password" : {
+
+    },
     "Independent from iCloud Sync" : {
       "localizations" : {
         "de" : {
@@ -16287,9 +16290,6 @@
           }
         }
       }
-    },
-    "Inserisci foto" : {
-
     },
     "Instantly filter tasks by category, priority, due date period, overdue status or tasks without a deadline. Combine filters to focus only on what matters." : {
       "localizations" : {
@@ -26164,6 +26164,9 @@
         }
       }
     },
+    "Skip Vault" : {
+
+    },
     "Sky" : {
       "localizations" : {
         "de" : {
@@ -27091,9 +27094,6 @@
           }
         }
       }
-    },
-    "Stato" : {
-
     },
     "Stop" : {
       "localizations" : {
@@ -28933,9 +28933,6 @@
         }
       }
     },
-    "TEST ALLEGATI" : {
-
-    },
     "Text and selected attachments" : {
       "localizations" : {
         "de" : {
@@ -29495,6 +29492,9 @@
           }
         }
       }
+    },
+    "The password is incorrect. Enter the correct password to restore Vault, or continue without Vault." : {
+
     },
     "The selected image does not contain a readable barcode or QR code." : {
       "localizations" : {
@@ -31386,6 +31386,9 @@
         }
       }
     },
+    "Trip" : {
+
+    },
     "Trip Checklists" : {
       "localizations" : {
         "de" : {
@@ -31609,6 +31612,9 @@
           }
         }
       }
+    },
+    "Try Again" : {
+
     },
     "Try saying 'Hey Siri,' followed by:" : {
       "localizations" : {
@@ -32825,6 +32831,9 @@
           }
         }
       }
+    },
+    "Wallet Image" : {
+
     },
     "wallet_tab" : {
       "localizations" : {

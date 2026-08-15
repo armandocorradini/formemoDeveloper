@@ -42,23 +42,31 @@ enum AssetDirectoryCoordinator {
         for kind: AssetDirectoryKind
     ) -> URL? {
 
-        guard let containerURL = FileManager.default
-            .url(
-                forUbiquityContainerIdentifier: containerIdentifier
-            )
-        else {
-            return nil
+        let fm = FileManager.default
+
+        if let containerURL = fm.url(
+            forUbiquityContainerIdentifier: containerIdentifier
+        ) {
+            return containerURL
+                .appendingPathComponent(
+                    "Documents",
+                    isDirectory: true
+                )
+                .appendingPathComponent(
+                    kind.rawValue,
+                    isDirectory: true
+                )
         }
 
-        return containerURL
-            .appendingPathComponent(
-                "Documents",
-                isDirectory: true
-            )
-            .appendingPathComponent(
-                kind.rawValue,
-                isDirectory: true
-            )
+        return fm.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )
+        .first?
+        .appendingPathComponent(
+            kind.rawValue,
+            isDirectory: true
+        )
     }
     // MARK: - Existing directories
 
