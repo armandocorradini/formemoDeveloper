@@ -25,6 +25,15 @@ enum DocumentAssetStore {
         }
 
         let fm = FileManager.default
+
+        if let localDirectory = assetsDirectory {
+            let localURL = localDirectory.appendingPathComponent(relativePath)
+
+            if fm.fileExists(atPath: localURL.path) {
+                return localURL
+            }
+        }
+
         for directory in existingAssetDirectories() {
             let candidate = directory.appendingPathComponent(relativePath)
             if fm.fileExists(atPath: candidate.path) {
@@ -117,14 +126,13 @@ enum DocumentAssetStore {
         relativePath: String
     ) -> UIImage? {
 
-        guard
-            let url = fileURL(relativePath: relativePath)
-        else {
+        guard let data = loadData(relativePath: relativePath) else {
             return nil
         }
 
-        return UIImage(contentsOfFile: url.path)
+        return UIImage(data: data)
     }
+
 
     static func loadData(
         relativePath: String
@@ -136,8 +144,135 @@ enum DocumentAssetStore {
             return nil
         }
 
-        return try? Data(contentsOf: url)
+        let fm = FileManager.default
+
+        // 1. Local canonical asset.
+        if let localDirectory = assetsDirectory {
+            let localURL =
+                localDirectory.appendingPathComponent(relativePath)
+
+            if fm.fileExists(atPath: localURL.path),
+               let data = try? Data(contentsOf: localURL),
+               !data.isEmpty {
+                return data
+            }
+        }
+
+        // 2. iCloud asset.
+        let keys: Set<URLResourceKey> = [
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey,
+            .ubiquitousItemIsDownloadingKey
+        ]
+
+        if let values = try? url.resourceValues(forKeys: keys),
+           values.isUbiquitousItem == true {
+
+            if values.ubiquitousItemDownloadingStatus == .notDownloaded {
+                do {
+                    try fm.startDownloadingUbiquitousItem(at: url)
+
+                    AppLogger.persistence.notice(
+                        "DocumentAsset download requested: \(relativePath)"
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "DocumentAsset download request failed: \(relativePath) — \(error.localizedDescription)"
+                    )
+                }
+
+                return nil
+            }
+
+            guard
+                let data = try? Data(contentsOf: url),
+                !data.isEmpty
+            else {
+                return nil
+            }
+
+            if let localDirectory = assetsDirectory {
+                let localURL =
+                    localDirectory.appendingPathComponent(relativePath)
+
+                do {
+                    try fm.createDirectory(
+                        at: localDirectory,
+                        withIntermediateDirectories: true
+                    )
+
+                    if !fm.fileExists(atPath: localURL.path) {
+                        try data.write(
+                            to: localURL,
+                            options: .atomic
+                        )
+                    }
+
+                    if let localData = try? Data(contentsOf: localURL),
+                       !localData.isEmpty {
+
+                        AppLogger.persistence.notice(
+                            "DocumentAsset copied to local canonical: \(relativePath)"
+                        )
+
+                        return localData
+                    }
+
+                } catch {
+                    AppLogger.persistence.error(
+                        "DocumentAsset local backfill failed: \(error.localizedDescription)"
+                    )
+                }
+            }
+
+            return data
+        }
+
+        // 3. Existing local legacy/conflict asset.
+        if fm.fileExists(atPath: url.path),
+           let data = try? Data(contentsOf: url),
+           !data.isEmpty {
+
+            if let localDirectory = assetsDirectory {
+                let localURL =
+                    localDirectory.appendingPathComponent(relativePath)
+
+                do {
+                    try fm.createDirectory(
+                        at: localDirectory,
+                        withIntermediateDirectories: true
+                    )
+
+                    if !fm.fileExists(atPath: localURL.path) {
+                        try data.write(
+                            to: localURL,
+                            options: .atomic
+                        )
+                    }
+
+                    if let localData = try? Data(contentsOf: localURL),
+                       !localData.isEmpty {
+
+                        AppLogger.persistence.notice(
+                            "DocumentAsset legacy asset copied to local canonical: \(relativePath)"
+                        )
+
+                        return localData
+                    }
+
+                } catch {
+                    AppLogger.persistence.error(
+                        "DocumentAsset legacy backfill failed: \(error.localizedDescription)"
+                    )
+                }
+            }
+
+            return data
+        }
+
+        return nil
     }
+
 
     // MARK: - Exists
 

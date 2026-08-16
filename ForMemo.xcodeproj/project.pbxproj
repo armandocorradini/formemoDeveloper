@@ -751,6 +751,8 @@
 			isa = PBXGroup;
 			children = (
 				1C634D6A30220C9C0092DB89 /* TaskApp.swift */,
+				1C634D0430220C9C0092DB89 /* Persistence.swift */,
+				1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */,
 				1C634CD530220C9C0092DB89 /* AppDelegate.swift */,
 				1C634CD630220C9C0092DB89 /* AppError.swift */,
 				1C634CD730220C9C0092DB89 /* AppLogger.swift */,
@@ -758,8 +760,6 @@
 				1C634CE030220C9C0092DB89 /* CloudSettingsSync.swift */,
 				1C634CF730220C9C0092DB89 /* LaunchCoordinator.swift */,
 				1C634CFD30220C9C0092DB89 /* ModelContext+SafeSave.swift */,
-				1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */,
-				1C634D0430220C9C0092DB89 /* Persistence.swift */,
 				1C634CEE30220C9C0092DB89 /* ForMemoStorageManager.swift */,
 				1C634D0E30220C9C0092DB89 /* StoreMigrationManager.swift */,
 			);

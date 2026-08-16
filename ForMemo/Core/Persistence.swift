@@ -2,6 +2,9 @@ import SwiftData
 import SwiftUI
 import Foundation
 import os
+import CloudKit
+
+
 
 enum Persistence {
     private static let cloudKitContainerID =
@@ -17,6 +20,11 @@ enum Persistence {
     }
 
     private static let appGroupIdentifier = "group.corradini.armando.NewTask"
+    
+    private static var hasICloudIdentity: Bool {
+        FileManager.default.ubiquityIdentityToken != nil
+    }
+    
 
     private static func appGroupStoreURL() -> URL? {
         FileManager.default
@@ -124,15 +132,15 @@ enum Persistence {
                 : "SwiftData container initialization (Local)"
             )
 
-            // 🔥 SINGLE PERSISTENT STORE
-            // Local database is ALWAYS the source of truth.
-            // CloudKit only adds sync capabilities on top.
+            let useCloudKit =
+                cloudKitEnabled &&
+                hasICloudIdentity
 
             let configuration = ModelConfiguration(
                 schema: schema,
                 url: storeURL(),
                 cloudKitDatabase:
-                    cloudKitEnabled
+                    useCloudKit
                     ? .private(cloudKitContainerID)
                     : .none
             )

@@ -42,23 +42,7 @@ enum AssetDirectoryCoordinator {
         for kind: AssetDirectoryKind
     ) -> URL? {
 
-        let fm = FileManager.default
-
-        if let containerURL = fm.url(
-            forUbiquityContainerIdentifier: containerIdentifier
-        ) {
-            return containerURL
-                .appendingPathComponent(
-                    "Documents",
-                    isDirectory: true
-                )
-                .appendingPathComponent(
-                    kind.rawValue,
-                    isDirectory: true
-                )
-        }
-
-        return fm.urls(
+        FileManager.default.urls(
             for: .documentDirectory,
             in: .userDomainMask
         )
@@ -68,6 +52,8 @@ enum AssetDirectoryCoordinator {
             isDirectory: true
         )
     }
+    
+    
     // MARK: - Existing directories
 
     static func existingDirectories(
@@ -196,8 +182,6 @@ enum AssetDirectoryCoordinator {
     
     // MARK: - Write preparation
 
- 
-    
     static func ensureCanonicalDirectory(
         for kind: AssetDirectoryKind
     ) throws -> URL {
@@ -208,39 +192,31 @@ enum AssetDirectoryCoordinator {
         }
 
         guard let canonical = canonicalDirectory(for: kind) else {
-            throw AssetDirectoryError.iCloudContainerUnavailable
+            throw AssetDirectoryError.unableToCreate(
+                FileManager.default.urls(
+                    for: .documentDirectory,
+                    in: .userDomainMask
+                ).first?
+                    .appendingPathComponent(
+                        kind.rawValue,
+                        isDirectory: true
+                    )
+                    ?? URL(fileURLWithPath: "/")
+            )
         }
 
         let fm = FileManager.default
 
-        // 1. The canonical directory always wins.
-        // Conflicting directories are handled by diagnostics/recovery,
-        // not by the normal attachment write path.
         if fm.fileExists(atPath: canonical.path) {
             return canonical
         }
 
-        // 2. The canonical directory does not exist.
-        // Only in this case can a conflicting directory block creation.
-        let conflicts = existingCloudDirectories(for: kind).filter {
-            $0.standardizedFileURL.path != canonical.standardizedFileURL.path
-        }
-
-        if !conflicts.isEmpty {
-            throw AssetDirectoryError.directoryConflict(
-                kind: kind,
-                directories: conflicts
-            )
-        }
-
-        // 3. Create ONLY the canonical directory.
         do {
             try fm.createDirectory(
                 at: canonical,
                 withIntermediateDirectories: true
             )
         } catch {
-            // A concurrent/local creator may have won the race.
             if fm.fileExists(atPath: canonical.path) {
                 return canonical
             }
@@ -248,7 +224,6 @@ enum AssetDirectoryCoordinator {
             throw AssetDirectoryError.unableToCreate(canonical)
         }
 
-        // 4. Verify the canonical directory immediately.
         guard fm.fileExists(atPath: canonical.path) else {
             throw AssetDirectoryError.unableToCreate(canonical)
         }

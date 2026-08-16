@@ -236,8 +236,21 @@ extension TaskAttachment {
 
         }
 
-
+        // 1️⃣ Local canonical
         // =====================================================
+
+        if let localDir = attachmentsDirectory {
+            let local = localDir.appendingPathComponent(relativePath)
+
+            if fm.fileExists(atPath: local.path) {
+                DebugLog.write("📱 Local canonical file FOUND")
+                return local
+            }
+        }
+
+
+
+
         // 1️⃣ Cloud
         // =====================================================
 
@@ -299,8 +312,79 @@ extension TaskAttachment {
                    size > 0 {
 
                     DebugLog.write(
-                        "☁️ Returning materialized cloud URL"
+                        "☁️ Cloud asset materialized"
                     )
+
+                    if let localDir = attachmentsDirectory {
+
+                        let local = localDir.appendingPathComponent(
+                            relativePath
+                        )
+
+                        if !fm.fileExists(atPath: local.path) {
+
+                            do {
+                                try fm.createDirectory(
+                                    at: localDir,
+                                    withIntermediateDirectories: true
+                                )
+
+                                let coordinator = NSFileCoordinator()
+                                var coordinationError: NSError?
+                                var copyError: Error?
+
+                                coordinator.coordinate(
+                                    readingItemAt: cloud,
+                                    options: [],
+                                    writingItemAt: local,
+                                    options: .forReplacing,
+                                    error: &coordinationError
+                                ) { sourceURL, destinationURL in
+
+                                    do {
+                                        try fm.copyItem(
+                                            at: sourceURL,
+                                            to: destinationURL
+                                        )
+                                    } catch {
+                                        copyError = error
+                                    }
+                                }
+
+                                if let coordinationError {
+                                    throw coordinationError
+                                }
+
+                                if let copyError {
+                                    throw copyError
+                                }
+
+                                let localSize =
+                                    (try? fm.attributesOfItem(
+                                        atPath: local.path
+                                    )[.size] as? NSNumber)?.int64Value ?? 0
+
+                                if localSize > 0 {
+                                    DebugLog.write(
+                                        "📱 Cloud asset copied to local canonical"
+                                    )
+
+                                    return local
+                                }
+
+                            } catch {
+                                DebugLog.write(
+                                    "📱 Local asset copy failed: \(error.localizedDescription)"
+                                )
+                            }
+                        } else {
+                            DebugLog.write(
+                                "📱 Local canonical already contains asset"
+                            )
+
+                            return local
+                        }
+                    }
 
                     return cloud
                 }

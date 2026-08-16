@@ -28,6 +28,15 @@ enum WalletAssetStore {
 
         let fm = FileManager.default
 
+        if let localDirectory = assetsDirectory {
+            let localURL = localDirectory.appendingPathComponent(relativePath)
+
+            if fm.fileExists(atPath: localURL.path) {
+                return localURL
+            }
+        }
+
+
         // The canonical directory is always preferred for new data. iCloud Drive
         // may however resolve a concurrent directory creation as "WalletAssets 2".
         // Existing production records retain only a file name, so reads must also
@@ -132,56 +141,136 @@ enum WalletAssetStore {
 
         let fm = FileManager.default
 
-        // File già disponibile localmente.
-        if fm.fileExists(atPath: url.path) {
-            do {
-                return try Data(contentsOf: url)
-            } catch {
-                AppLogger.persistence.error(
-                    "WalletAsset load failed: \(relativePath) — \(error.localizedDescription)"
-                )
-                return nil
+        // Local canonical asset.
+        if let localDirectory = assetsDirectory {
+            let localURL = localDirectory.appendingPathComponent(relativePath)
+
+            if fm.fileExists(atPath: localURL.path),
+               let data = try? Data(contentsOf: localURL),
+               !data.isEmpty {
+                return data
             }
         }
 
-        // Il file può essere presente in iCloud ma non ancora
-        // materializzato localmente.
+        // Existing asset in a legacy/conflict directory.
+        if fm.fileExists(atPath: url.path),
+           let data = try? Data(contentsOf: url),
+           !data.isEmpty {
+
+            if let localDirectory = assetsDirectory {
+                let localURL =
+                    localDirectory.appendingPathComponent(relativePath)
+
+                do {
+                    try fm.createDirectory(
+                        at: localDirectory,
+                        withIntermediateDirectories: true
+                    )
+
+                    if !fm.fileExists(atPath: localURL.path) {
+                        try data.write(
+                            to: localURL,
+                            options: .atomic
+                        )
+                    }
+
+                    if let localData = try? Data(contentsOf: localURL),
+                       !localData.isEmpty {
+                        AppLogger.persistence.notice(
+                            "WalletAsset legacy asset copied to local canonical: \(relativePath)"
+                        )
+                        return localData
+                    }
+                } catch {
+                    AppLogger.persistence.error(
+                        "WalletAsset legacy backfill failed: \(error.localizedDescription)"
+                    )
+                }
+            }
+
+            return data
+        }
+        
+        
         let keys: Set<URLResourceKey> = [
             .isUbiquitousItemKey,
             .ubiquitousItemDownloadingStatusKey,
-            .ubiquitousItemIsDownloadingKey,
-            .ubiquitousItemDownloadRequestedKey,
-            .ubiquitousItemDownloadingErrorKey
+            .ubiquitousItemIsDownloadingKey
         ]
 
-        if let values = try? url.resourceValues(forKeys: keys),
-           values.isUbiquitousItem == true {
+        guard
+            let values = try? url.resourceValues(forKeys: keys),
+            values.isUbiquitousItem == true
+        else {
+            return nil
+        }
 
-        
+        if values.ubiquitousItemDownloadingStatus == .notDownloaded {
+            do {
+                try fm.startDownloadingUbiquitousItem(at: url)
 
-            if values.ubiquitousItemDownloadingStatus == .notDownloaded {
-                do {
-                    try fm.startDownloadingUbiquitousItem(at: url)
-
-                    AppLogger.persistence.notice(
-                        "WalletAsset download requested: \(relativePath)"
-                    )
-                } catch {
-                    AppLogger.persistence.error(
-                        "WalletAsset download request failed: \(relativePath) — \(error.localizedDescription)"
-                    )
-                }
+                AppLogger.persistence.notice(
+                    "WalletAsset download requested: \(relativePath)"
+                )
+            } catch {
+                AppLogger.persistence.error(
+                    "WalletAsset download request failed: \(relativePath) — \(error.localizedDescription)"
+                )
             }
 
             return nil
         }
 
-        AppLogger.persistence.error(
-            "WalletAsset file not found: \(relativePath)"
-        )
+        guard
+            let data = try? Data(contentsOf: url),
+            !data.isEmpty
+        else {
+            return nil
+        }
 
-        return nil
+        guard let localDirectory = assetsDirectory else {
+            return data
+        }
+
+        let localURL = localDirectory.appendingPathComponent(relativePath)
+
+        do {
+            try fm.createDirectory(
+                at: localDirectory,
+                withIntermediateDirectories: true
+            )
+
+            if !fm.fileExists(atPath: localURL.path) {
+                try data.write(
+                    to: localURL,
+                    options: .atomic
+                )
+            }
+
+            if
+                let localData = try? Data(contentsOf: localURL),
+                !localData.isEmpty
+            {
+                AppLogger.persistence.notice(
+                    "WalletAsset copied to local canonical: \(relativePath)"
+                )
+
+                return localData
+            }
+
+        } catch {
+            AppLogger.persistence.error(
+                "WalletAsset local backfill failed: \(error.localizedDescription)"
+            )
+        }
+
+        // Cloud data is still usable even if the local copy failed.
+        return data
     }
+    
+    
+    
+    
     // MARK: - Exists
 
     static func exists(

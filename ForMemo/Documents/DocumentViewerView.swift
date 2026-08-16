@@ -8,6 +8,8 @@ struct DocumentViewerView: View {
     @Environment(\.dismiss)
     private var dismiss
 
+    @State private var pdfData: Data?
+
     var body: some View {
 
         NavigationStack {
@@ -23,11 +25,9 @@ struct DocumentViewerView: View {
                         .background(.black)
 
                 } else if asset.isPDF,
-                          let url = DocumentAssetStore.fileURL(
-                            relativePath: asset.relativePath
-                          ) {
+                          let pdfData {
 
-                    PDFKitView(url: url)
+                    PDFKitView(data: pdfData)
 
                 } else {
 
@@ -47,16 +47,20 @@ struct DocumentViewerView: View {
                     }
                 }
             }
+            .task {
+                guard asset.isPDF else { return }
+
+                pdfData = DocumentAssetStore.loadData(
+                    relativePath: asset.relativePath
+                )
+            }
         }
     }
 }
 
-import SwiftUI
-import PDFKit
-
 struct PDFKitView: UIViewRepresentable {
 
-    let url: URL
+    let data: Data
 
     func makeUIView(context: Context) -> PDFView {
 
@@ -67,7 +71,7 @@ struct PDFKitView: UIViewRepresentable {
         pdfView.displayDirection = .vertical
         pdfView.usePageViewController(true)
 
-        pdfView.document = PDFDocument(url: url)
+        pdfView.document = PDFDocument(data: data)
 
         return pdfView
     }
