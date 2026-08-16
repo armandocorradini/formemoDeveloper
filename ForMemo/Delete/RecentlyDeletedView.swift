@@ -400,13 +400,11 @@ var body: some View {
 
         // Allegati Task
         if let trashName = item.trashFileName,
-           let dir = TaskAttachment.trashDirectory {
+           let url = TaskAttachment.trashFileURL(
+               trashFileName: trashName
+           ) {
 
-            let url = dir.appendingPathComponent(trashName)
-
-            if FileManager.default.fileExists(atPath: url.path) {
-                try? FileManager.default.removeItem(at: url)
-            }
+            try? FileManager.default.removeItem(at: url)
         }
 
         // Loyalty Card / Ticket
@@ -427,25 +425,21 @@ var body: some View {
         
         if item.type == "walletAsset",
            let trashName = item.trashFileName,
-           let dir = WalletAssetStore.trashDirectory {
+           let url = WalletAssetStore.trashFileURL(
+               trashFileName: trashName
+           ) {
 
-            let url = dir.appendingPathComponent(trashName)
-
-            if FileManager.default.fileExists(atPath: url.path) {
-                try? FileManager.default.removeItem(at: url)
-            }
+            try? FileManager.default.removeItem(at: url)
         }
         
         
         if item.type == "documentAsset",
            let trashName = item.trashFileName,
-           let dir = DocumentAssetStore.trashDirectory {
+           let url = DocumentAssetStore.trashFileURL(
+               trashFileName: trashName
+           ) {
 
-            let url = dir.appendingPathComponent(trashName)
-
-            if FileManager.default.fileExists(atPath: url.path) {
-                try? FileManager.default.removeItem(at: url)
-            }
+            try? FileManager.default.removeItem(at: url)
         }
     }
    
@@ -527,9 +521,9 @@ struct AttachmentPreviewView: View {
     
     var body: some View {
         if let trashFileName,
-           let dir = TaskAttachment.trashDirectory,
-           let fileURL = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)
-            .first(where: { $0.lastPathComponent == trashFileName }),
+           let fileURL = TaskAttachment.trashFileURL(
+               trashFileName: trashFileName
+           ),
            let data = try? Data(contentsOf: fileURL),
            let image = UIImage(data: data) {
             
@@ -556,15 +550,9 @@ struct DocumentAssetPreviewView: View {
     var body: some View {
 
         if let trashFileName,
-           let dir = DocumentAssetStore.trashDirectory,
-           let fileURL = try? FileManager.default
-                .contentsOfDirectory(
-                    at: dir,
-                    includingPropertiesForKeys: nil
-                )
-                .first(where: {
-                    $0.lastPathComponent == trashFileName
-                }),
+           let fileURL = DocumentAssetStore.trashFileURL(
+               trashFileName: trashFileName
+           ),
            let data = try? Data(contentsOf: fileURL),
            let image = UIImage(data: data) {
 
@@ -639,12 +627,12 @@ struct DeletedDocumentPreviewView: View {
 
         guard
             let trashName = asset?.trashFileName,
-            let dir = DocumentAssetStore.trashDirectory
+            let url = DocumentAssetStore.trashFileURL(
+                trashFileName: trashName
+            )
         else {
             return nil
         }
-
-        let url = dir.appendingPathComponent(trashName)
 
         guard
             let data = try? Data(contentsOf: url),
@@ -670,10 +658,10 @@ struct DeletedLoyaltyCardPreviewView: View {
             $0.loyaltyCardID == item.loyaltyCardID &&
             $0.relativePath == item.loyaltyLogoRelativePath
         }),
-        let trashFileName = walletAsset.trashFileName,
-        let dir = WalletAssetStore.trashDirectory {
-
-            let url = dir.appendingPathComponent(trashFileName)
+           let trashFileName = walletAsset.trashFileName,
+           let url = WalletAssetStore.trashFileURL(
+               trashFileName: trashFileName
+           ) {
 
             if let data = try? Data(contentsOf: url),
                let image = UIImage(data: data) {
@@ -743,15 +731,9 @@ struct WalletAssetPreviewView: View {
     var body: some View {
 
         if let trashFileName,
-           let dir = WalletAssetStore.trashDirectory,
-           let fileURL = try? FileManager.default
-               .contentsOfDirectory(
-                   at: dir,
-                   includingPropertiesForKeys: nil
-               )
-               .first(where: {
-                   $0.lastPathComponent == trashFileName
-               }),
+           let fileURL = WalletAssetStore.trashFileURL(
+               trashFileName: trashFileName
+           ),
            let data = try? Data(contentsOf: fileURL),
            let image = UIImage(data: data) {
 

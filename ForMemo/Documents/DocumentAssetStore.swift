@@ -383,8 +383,11 @@ enum DocumentAssetStore {
             return false
         }
 
-        let sourceURL =
-            trashDirectory.appendingPathComponent(trashFileName)
+        guard let sourceURL = trashFileURL(
+            trashFileName: trashFileName
+        ) else {
+            return false
+        }
 
         guard FileManager.default.fileExists(atPath: sourceURL.path) else {
             return false
@@ -554,22 +557,56 @@ enum DocumentAssetStore {
     
     
     static var trashDirectory: URL? {
-        let fm = FileManager.default
+        FileManager.default
+            .urls(
+                for: .documentDirectory,
+                in: .userDomainMask
+            )
+            .first?
+            .appendingPathComponent(
+                "DocumentAssets_Trash",
+                isDirectory: true
+            )
+    }
 
-        if let containerURL = fm.url(
-            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
-        ) {
-            return containerURL
-                .appendingPathComponent("Documents", isDirectory: true)
-                .appendingPathComponent("DocumentAssets_Trash", isDirectory: true)
+    private static func legacyCloudTrashDirectory() -> URL? {
+        guard let containerURL = FileManager.default.url(
+            forUbiquityContainerIdentifier:
+                "iCloud.corradini.armando.NewTask"
+        ) else {
+            return nil
         }
 
-        return fm.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        ).first?
-            .appendingPathComponent("DocumentAssets_Trash", isDirectory: true)
+        return containerURL
+            .appendingPathComponent(
+                "Documents",
+                isDirectory: true
+            )
+            .appendingPathComponent(
+                "DocumentAssets_Trash",
+                isDirectory: true
+            )
     }
-    
+
+    static func trashFileURL(
+        trashFileName: String
+    ) -> URL? {
+
+        let fm = FileManager.default
+
+        if let local = trashDirectory?
+            .appendingPathComponent(trashFileName),
+           fm.fileExists(atPath: local.path) {
+            return local
+        }
+
+        if let legacy = legacyCloudTrashDirectory()?
+            .appendingPathComponent(trashFileName),
+           fm.fileExists(atPath: legacy.path) {
+            return legacy
+        }
+
+        return nil
+    }
     
 }

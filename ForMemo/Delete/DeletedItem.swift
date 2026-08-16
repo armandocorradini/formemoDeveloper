@@ -168,7 +168,6 @@ extension DeletedItem {
            let relativePath,
            let fileName,
            let trashFileName,
-           let trashDir = TaskAttachment.trashDirectory,
            let attachmentsDir = TaskAttachment.attachmentsDirectory {
             
             let descriptor = FetchDescriptor<TodoTask>(
@@ -180,8 +179,9 @@ extension DeletedItem {
                 let fm = FileManager.default
                 var restoreSucceeded = false
                 // 🔥 Find file in trash
-                if let fileURL = try? fm.contentsOfDirectory(at: trashDir, includingPropertiesForKeys: nil)
-                    .first(where: { $0.lastPathComponent == trashFileName }) {
+                if let fileURL = TaskAttachment.trashFileURL(
+                    trashFileName: trashFileName
+                ) {
 
                     let destinationURL = attachmentsDir.appendingPathComponent(relativePath)
 

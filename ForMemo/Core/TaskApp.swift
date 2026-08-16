@@ -387,13 +387,33 @@ struct ForMemoApp: App {
             
             if deletedAt < cutoff {
                 
-                // 🔥 delete file if exists
-                if let trashName = item.trashFileName,
-                   let trashDir = TaskAttachment.trashDirectory {
-                    
-                    try? FileManager.default.removeItem(
-                        at: trashDir.appendingPathComponent(trashName)
-                    )
+                if let trashName = item.trashFileName {
+
+                    let trashURL: URL?
+
+                    switch item.type {
+                    case "attachment":
+                        trashURL = TaskAttachment.trashFileURL(
+                            trashFileName: trashName
+                        )
+
+                    case "walletAsset":
+                        trashURL = WalletAssetStore.trashFileURL(
+                            trashFileName: trashName
+                        )
+
+                    case "documentAsset":
+                        trashURL = DocumentAssetStore.trashFileURL(
+                            trashFileName: trashName
+                        )
+
+                    default:
+                        trashURL = nil
+                    }
+
+                    if let trashURL {
+                        try? FileManager.default.removeItem(at: trashURL)
+                    }
                 }
                 
                 context.delete(item)
