@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import UIKit
+import os
 
 @MainActor
 final class DocumentImportService {
@@ -104,9 +105,14 @@ final class DocumentImportService {
         in context: ModelContext
     ) {
 
-        let trashFileName = DocumentAssetStore.moveToTrash(
+        guard let trashFileName = DocumentAssetStore.moveToTrash(
             relativePath: asset.relativePath
-        )
+        ) else {
+            AppLogger.persistence.error(
+                "Document asset deletion aborted: asset could not be moved to Trash."
+            )
+            return
+        }
 
         let item = DeletedItem(type: "documentAsset")
 

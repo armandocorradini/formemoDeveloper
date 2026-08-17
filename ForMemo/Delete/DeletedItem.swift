@@ -113,7 +113,8 @@ extension DeletedItem {
 extension DeletedItem {
     
     @MainActor
-    func restore(in context: ModelContext) {
+    @discardableResult
+    func restore(in context: ModelContext) -> Bool {
         
         if type == "task" {
             
@@ -130,7 +131,7 @@ extension DeletedItem {
                     print("⚠️ Restore skipped: task already exists")
             #endif
 
-                    return
+                    return false
                 }
             }
             let task = TodoTask(
@@ -151,16 +152,18 @@ extension DeletedItem {
             
             context.insert(task)
             
-            guard let currentTaskID = taskID else { return }
+            guard let currentTaskID = taskID else { return false}
             
             let attachmentsDescriptor = FetchDescriptor<DeletedItem>()
             
             if let relatedAttachments = try? context.fetch(attachmentsDescriptor) {
                 for item in relatedAttachments where item.type == "attachment" && item.taskID == currentTaskID {
-                    item.restore(in: context)
-                    context.delete(item)
+                    if item.restore(in: context) {
+                        context.delete(item)
+                    }
                 }
             }
+            return true
         }
         
         if type == "attachment",
@@ -232,7 +235,7 @@ extension DeletedItem {
 
                     AppLogger.persistence.error("Restore aborted: attachment file was not restored.")
 
-                    return
+                    return false
 
                 }
                 let ext = (fileName as NSString).pathExtension.lowercased()
@@ -260,7 +263,9 @@ extension DeletedItem {
                 
                 context.insert(attachment)
                 task.attachments?.append(attachment)
+                return true
             }
+
         }
 
         if type == "walletAsset",
@@ -276,7 +281,7 @@ extension DeletedItem {
                 AppLogger.persistence.error(
                     "Wallet asset restore aborted: card not found."
                 )
-                return
+                return false
             }
 
             guard WalletAssetStore.restoreFromTrash(
@@ -286,7 +291,7 @@ extension DeletedItem {
                 AppLogger.persistence.error(
                     "Wallet asset restore failed: file could not be restored."
                 )
-                return
+                return false
             }
 
             let kind: WalletAssetKind =
@@ -317,25 +322,12 @@ extension DeletedItem {
             asset.card = card
 
             context.insert(asset)
-            
+
             if kind == .logo {
                 card.loyaltyLogoRelativePath = relativePath
             }
-            
 
-            if card.assets == nil {
-                card.assets = []
-            }
-
-            card.assets?.append(asset)
-
-            context.delete(self)
-
-            context.safeSave(
-                operation: "RestoreWalletAsset"
-            )
-
-            return
+            return true
         }
         
         if type == "documentAsset",
@@ -349,7 +341,7 @@ extension DeletedItem {
             )
 
             guard let document = try? context.fetch(descriptor).first else {
-                return
+                return false
             }
 
             guard
@@ -363,7 +355,7 @@ extension DeletedItem {
                     "Document asset restore failed."
                 )
 
-                return
+                return false
             }
 
             let kind =
@@ -383,6 +375,7 @@ extension DeletedItem {
             }
 
             document.assets?.append(asset)
+            return true
         }
         
         
@@ -393,7 +386,7 @@ extension DeletedItem {
 
                 if let cards = try? context.fetch(descriptor),
                    cards.contains(where: { $0.id == existingID }) {
-                    return
+                    return false
                 }
             }
 
@@ -428,7 +421,9 @@ extension DeletedItem {
             if !walletAssets.isEmpty {
 
                 for assetItem in walletAssets {
-                    assetItem.restore(in: context)
+                    if assetItem.restore(in: context) {
+                        context.delete(assetItem)
+                    }
                 }
 
             } else {
@@ -480,7 +475,7 @@ extension DeletedItem {
                 operation: "RestoreLoyaltyCard"
             )
 
-            return
+            return true
         }
 
         if type == "trip" {
@@ -491,7 +486,7 @@ extension DeletedItem {
 
                 if let trips = try? context.fetch(descriptor),
                    trips.contains(where: { $0.id == existingID }) {
-                    return
+                    return false
                 }
             }
 
@@ -525,7 +520,7 @@ extension DeletedItem {
 
                 if let documents = try? context.fetch(descriptor),
                    documents.contains(where: { $0.id == existingID }) {
-                    return
+                    return false
                 }
             }
 
@@ -546,7 +541,7 @@ extension DeletedItem {
 
             context.insert(document)
             
-            guard let currentDocumentID = documentID else { return }
+            guard let currentDocumentID = documentID else { return false }
 
             let descriptor = FetchDescriptor<DeletedItem>()
 
@@ -556,13 +551,17 @@ extension DeletedItem {
                 where item.type == "documentAsset"
                     && item.documentID == currentDocumentID {
 
-                    item.restore(in: context)
-                    context.delete(item)
+                    if item.restore(in: context) {
+                        context.delete(item)
+                    }
                 }
             }
+
+            return true
         }
 
         context.safeSave(operation: "DeletedItemRestore")
+        return false
     }
 }
 

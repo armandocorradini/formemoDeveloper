@@ -55,6 +55,10 @@ func deleteLoyaltyCard(
         item.trashFileName = trashFileName
         item.createdAt = asset.createdAt
 
+        if asset.kind == .logo {
+            item.loyaltyLogoRelativePath = asset.relativePath
+        }
+
         context.insert(item)
     }
 
@@ -95,10 +99,16 @@ func deleteDocument(
     
     for asset in document.sortedAssets {
 
-        let trashFileName =
+        guard let trashFileName =
             DocumentAssetStore.moveToTrash(
                 relativePath: asset.relativePath
             )
+        else {
+            AppLogger.persistence.error(
+                "Document asset deletion aborted: asset could not be moved to Trash."
+            )
+            continue
+        }
 
         let item = DeletedItem(type: "documentAsset")
 

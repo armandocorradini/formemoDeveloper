@@ -78,22 +78,35 @@ extension TaskAttachment {
             )
     }
 
+
+    
     static func trashFileURL(
         trashFileName: String
     ) -> URL? {
 
         let fm = FileManager.default
 
+        // 1. Canonical local Trash
         if let local = trashDirectory?
             .appendingPathComponent(trashFileName),
            fm.fileExists(atPath: local.path) {
             return local
         }
 
+        // 2. Canonical iCloud Trash
         if let legacy = legacyCloudTrashDirectory()?
             .appendingPathComponent(trashFileName),
            fm.fileExists(atPath: legacy.path) {
             return legacy
+        }
+
+        // 3. CloudDocs conflict Trash directories
+        for directory in duplicateCloudTrashDirectories() {
+            let candidate = directory.appendingPathComponent(trashFileName)
+
+            if fm.fileExists(atPath: candidate.path) {
+                return candidate
+            }
         }
 
         return nil
@@ -160,6 +173,47 @@ extension TaskAttachment {
         }.sorted { $0.lastPathComponent < $1.lastPathComponent }
     }
 
+    private static func duplicateCloudTrashDirectories() -> [URL] {
+        guard let containerURL = FileManager.default.url(
+            forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
+        ) else {
+            return []
+        }
+
+        let fm = FileManager.default
+        let documents = containerURL.appendingPathComponent(
+            "Documents",
+            isDirectory: true
+        )
+
+        guard let items = try? fm.contentsOfDirectory(
+            at: documents,
+            includingPropertiesForKeys: [.isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return []
+        }
+
+        return items.filter { url in
+            guard
+                (try? url.resourceValues(
+                    forKeys: [.isDirectoryKey]
+                ))?.isDirectory == true
+            else {
+                return false
+            }
+
+            return url.lastPathComponent.hasPrefix("TaskAttachments_Trash ")
+        }
+        .sorted {
+            $0.lastPathComponent < $1.lastPathComponent
+        }
+    }
+    
+    
+    
+    
+    
     private static func resolvedExistingURL(
         relativePath: String
     ) -> URL? {
@@ -473,16 +527,41 @@ extension TaskAttachment {
         // 3️⃣ Trash
         // =====================================================
 
-        if let trash = trashDirectory,
-           let recovered = try? fm.contentsOfDirectory(
-                at: trash,
+        var trashDirectories: [URL] = []
+
+        if let trashDirectory {
+            trashDirectories.append(trashDirectory)
+        }
+
+        if let legacyTrash = legacyCloudTrashDirectory() {
+            trashDirectories.append(legacyTrash)
+        }
+
+        trashDirectories.append(
+            contentsOf: duplicateCloudTrashDirectories()
+        )
+
+        for trashDirectory in trashDirectories {
+
+            guard let recovered = try? fm.contentsOfDirectory(
+                at: trashDirectory,
                 includingPropertiesForKeys: nil
-           ).first(where: {
+            ).first(where: {
                 $0.lastPathComponent.hasSuffix(relativePath)
-           }) {
+            }) else {
+                continue
+            }
 
             DebugLog.write(
-                "🗑 Recovered from Trash"
+                """
+                🗑 Recovered from Trash
+
+                Directory:
+                \(trashDirectory.path)
+
+                File:
+                \(recovered.lastPathComponent)
+                """
             )
 
             return recovered
@@ -596,6 +675,18 @@ extension TaskAttachment {
             return nil
         }
 
+        do {
+            try fm.createDirectory(
+                at: trashDir,
+                withIntermediateDirectories: true
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Unable to create TaskAttachments Trash directory: \(error.localizedDescription)"
+            )
+            return nil
+        }
+        
         // Nome unico per evitare collisioni
         let uniqueName = UUID().uuidString + "_" + sourceURL.lastPathComponent
         let destinationURL = trashDir.appendingPathComponent(uniqueName)

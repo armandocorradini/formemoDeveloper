@@ -328,6 +328,18 @@ enum WalletAssetStore {
             return nil
         }
 
+        do {
+            try FileManager.default.createDirectory(
+                at: trashDirectory,
+                withIntermediateDirectories: true
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Unable to create wallet asset trash directory: \(error.localizedDescription)"
+            )
+            return nil
+        }
+
         let trashFileName =
             UUID().uuidString + "-" + sourceURL.lastPathComponent
 
@@ -373,10 +385,7 @@ enum WalletAssetStore {
         relativePath: String
     ) -> Bool {
 
-        guard
-            let trashDirectory,
-            let assetsDirectory
-        else {
+        guard let assetsDirectory else {
             return false
         }
 
@@ -394,6 +403,18 @@ enum WalletAssetStore {
             assetsDirectory.appendingPathComponent(relativePath)
 
         do {
+            try FileManager.default.createDirectory(
+                at: destinationURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Wallet asset restore directory creation failed: \(error.localizedDescription)"
+            )
+            return false
+        }
+
+        do {
 
             if FileManager.default.fileExists(atPath: destinationURL.path) {
                 try FileManager.default.removeItem(at: destinationURL)
@@ -404,12 +425,27 @@ enum WalletAssetStore {
                 to: destinationURL
             )
 
+            guard FileManager.default.fileExists(
+                atPath: destinationURL.path
+            ) else {
+                return false
+            }
+
+            let restoredSize =
+                (try? FileManager.default.attributesOfItem(
+                    atPath: destinationURL.path
+                )[.size] as? NSNumber)?.int64Value ?? 0
+
+            guard restoredSize > 0 else {
+                return false
+            }
+
             return true
 
         } catch {
 
             AppLogger.persistence.error(
-                "Unable to restore document asset: \(error.localizedDescription)"
+                "Unable to restore wallet asset: \(error.localizedDescription)"
             )
 
             return false
@@ -554,12 +590,27 @@ enum WalletAssetStore {
     
     
     static var trashDirectory: URL? {
-        FileManager.default
-            .urls(
-                for: .documentDirectory,
-                in: .userDomainMask
+        guard let containerURL = FileManager.default.url(
+            forUbiquityContainerIdentifier:
+                "iCloud.corradini.armando.NewTask"
+        ) else {
+            return FileManager.default
+                .urls(
+                    for: .documentDirectory,
+                    in: .userDomainMask
+                )
+                .first?
+                .appendingPathComponent(
+                    "WalletAssets_Trash",
+                    isDirectory: true
+                )
+        }
+
+        return containerURL
+            .appendingPathComponent(
+                "Documents",
+                isDirectory: true
             )
-            .first?
             .appendingPathComponent(
                 "WalletAssets_Trash",
                 isDirectory: true

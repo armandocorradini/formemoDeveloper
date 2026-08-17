@@ -331,6 +331,18 @@ enum DocumentAssetStore {
             return nil
         }
 
+        do {
+            try FileManager.default.createDirectory(
+                at: trashDirectory,
+                withIntermediateDirectories: true
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Unable to create document asset trash directory: \(error.localizedDescription)"
+            )
+            return nil
+        }
+
         let trashFileName =
             UUID().uuidString + "-" + sourceURL.lastPathComponent
 
@@ -376,10 +388,7 @@ enum DocumentAssetStore {
         relativePath: String
     ) -> Bool {
 
-        guard
-            let trashDirectory,
-            let assetsDirectory
-        else {
+        guard let assetsDirectory else {
             return false
         }
 
@@ -397,15 +406,64 @@ enum DocumentAssetStore {
             assetsDirectory.appendingPathComponent(relativePath)
 
         do {
+            try FileManager.default.createDirectory(
+                at: destinationURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Document asset restore directory creation failed: \(error.localizedDescription)"
+            )
+            return false
+        }
+
+        do {
 
             if FileManager.default.fileExists(atPath: destinationURL.path) {
                 try FileManager.default.removeItem(at: destinationURL)
             }
 
-            try FileManager.default.moveItem(
-                at: sourceURL,
-                to: destinationURL
-            )
+            var coordinatorError: NSError?
+            var moveError: Error?
+
+            NSFileCoordinator().coordinate(
+                writingItemAt: destinationURL,
+                options: .forReplacing,
+                error: &coordinatorError
+            ) { coordinatedURL in
+
+                do {
+                    try FileManager.default.moveItem(
+                        at: sourceURL,
+                        to: coordinatedURL
+                    )
+                } catch {
+                    moveError = error
+                }
+            }
+
+            if let coordinatorError {
+                throw coordinatorError
+            }
+
+            if let moveError {
+                throw moveError
+            }
+
+            guard FileManager.default.fileExists(
+                atPath: destinationURL.path
+            ) else {
+                return false
+            }
+
+            let restoredSize =
+                (try? FileManager.default.attributesOfItem(
+                    atPath: destinationURL.path
+                )[.size] as? NSNumber)?.int64Value ?? 0
+
+            guard restoredSize > 0 else {
+                return false
+            }
 
             return true
 
@@ -557,12 +615,27 @@ enum DocumentAssetStore {
     
     
     static var trashDirectory: URL? {
-        FileManager.default
-            .urls(
-                for: .documentDirectory,
-                in: .userDomainMask
+        guard let containerURL = FileManager.default.url(
+            forUbiquityContainerIdentifier:
+                "iCloud.corradini.armando.NewTask"
+        ) else {
+            return FileManager.default
+                .urls(
+                    for: .documentDirectory,
+                    in: .userDomainMask
+                )
+                .first?
+                .appendingPathComponent(
+                    "DocumentAssets_Trash",
+                    isDirectory: true
+                )
+        }
+
+        return containerURL
+            .appendingPathComponent(
+                "Documents",
+                isDirectory: true
             )
-            .first?
             .appendingPathComponent(
                 "DocumentAssets_Trash",
                 isDirectory: true

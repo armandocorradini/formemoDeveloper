@@ -186,11 +186,12 @@ var body: some View {
                         
                         Menu {
                             Button {
-                                item.restore(in: context)
-                                context.delete(item)
-                                context.safeSave(
-                                    operation: "RecentlyDeletedRestoreSingle"
-                                )
+                                if item.restore(in: context) {
+                                    context.delete(item)
+                                    context.safeSave(
+                                        operation: "RecentlyDeletedRestoreSingle"
+                                    )
+                                }
                             } label: {
                                 Label(
                                     "Restore",
@@ -225,6 +226,7 @@ var body: some View {
                                     }
                                 }
                                 
+                                deleteRelatedWalletAssets(for: item)
                                 deleteFile(item)
                                 context.delete(item)
                                 
@@ -256,9 +258,10 @@ var body: some View {
                     .swipeActions (edge: .leading) {
                         
                         Button {
-                            item.restore(in: context)
-                            context.delete(item)
-                            context.safeSave(operation: "RecentlyDeletedRestoreSingle")
+                            if item.restore(in: context) {
+                                context.delete(item)
+                                context.safeSave(operation: "RecentlyDeletedRestoreSingle")
+                            }
                         } label: {
                             Label("Restore", systemImage: "arrow.uturn.backward")
                         }
@@ -292,7 +295,8 @@ var body: some View {
                                 }
                             }
 
-                            deleteFile(item)          // 🔥 fondamentale
+                            deleteRelatedWalletAssets(for: item)
+                            deleteFile(item)
                             context.delete(item)
                             
                             context.safeSave(operation: "RecentlyDeletedAction")      // 🔥 stabilità
@@ -335,12 +339,14 @@ var body: some View {
                                    restoredTaskIDs.contains(taskID) {
                                     continue
                                 }
-                                item.restore(in: context)
-                                if item.type == "task",
-                                   let taskID = item.taskID {
-                                    restoredTaskIDs.insert(taskID)
+                                if item.restore(in: context) {
+                                    if item.type == "task",
+                                       let taskID = item.taskID {
+                                        restoredTaskIDs.insert(taskID)
+                                    }
+
+                                    context.delete(item)
                                 }
-                                context.delete(item)
                             }
                         }
                         context.safeSave(operation: "RecentlyDeletedAction")
@@ -377,6 +383,7 @@ var body: some View {
                                 }
                                 
 
+                                deleteRelatedWalletAssets(for: item)
                                 deleteFile(item)
                                 context.delete(item)
                             }
@@ -395,6 +402,26 @@ var body: some View {
     }
 
     // MARK: - Helpers
+    
+    private func deleteRelatedWalletAssets(
+        for item: DeletedItem
+    ) {
+        guard item.type == "loyaltycard",
+              let cardID = item.loyaltyCardID
+        else {
+            return
+        }
+
+        let relatedAssets = items.filter {
+            $0.type == "walletAsset" &&
+            $0.loyaltyCardID == cardID
+        }
+
+        for asset in relatedAssets {
+            deleteFile(asset)
+            context.delete(asset)
+        }
+    }
     
     private func deleteFile(_ item: DeletedItem) {
 

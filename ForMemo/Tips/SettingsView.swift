@@ -967,8 +967,10 @@ Attivazione: \(triggerInfo)
             UIApplication.shared.open(url)
         }
     }
+
     @MainActor
     private func cleanupRecentlyDeleted() {
+
         DebugLog.writeAttachmentEvent("")
         DebugLog.writeAttachmentEvent("════════════════════════════════════")
         DebugLog.writeAttachmentEvent("SETTINGS CLEANUP START")
@@ -980,34 +982,65 @@ Attivazione: \(triggerInfo)
         ) else {
             return
         }
-        
+
         DebugLog.writeAttachmentEvent("Retention policy applied")
         DebugLog.writeAttachmentEvent("Cleanup cutoff calculated")
-        
+
         let descriptor = FetchDescriptor<DeletedItem>(
             predicate: #Predicate { $0.deletedAt <= cutoff }
         )
-        guard let items = try? modelContext.fetch(descriptor) else { return }
-        
-        DebugLog.writeAttachmentEvent("Expired deleted items detected")
-        
-        for item in items {
-            if let trashName = item.trashFileName,
-               let trashDir = TaskAttachment.trashDirectory {
-                let url = trashDir.appendingPathComponent(trashName)
 
-                DebugLog.writeAttachmentEvent("Deleting expired attachment")
-                DebugLog.writeAttachmentEvent("Removing expired trash attachment")
-                DebugLog.writeAttachmentEvent("Removing attachment from trash")
-                DebugLog.writeAttachmentEvent("Trash file removal requested")
-                
-                
-                try? FileManager.default.removeItem(at: url)
+        guard let items = try? modelContext.fetch(descriptor) else {
+            return
+        }
+
+        DebugLog.writeAttachmentEvent("Expired deleted items detected")
+
+        for item in items {
+
+            if let trashName = item.trashFileName {
+
+                let trashURL: URL?
+
+                switch item.type {
+
+                case "attachment":
+                    trashURL = TaskAttachment.trashFileURL(
+                        trashFileName: trashName
+                    )
+
+                case "walletAsset":
+                    trashURL = WalletAssetStore.trashFileURL(
+                        trashFileName: trashName
+                    )
+
+                case "documentAsset":
+                    trashURL = DocumentAssetStore.trashFileURL(
+                        trashFileName: trashName
+                    )
+
+                default:
+                    trashURL = nil
+                }
+
+                if let trashURL {
+                    DebugLog.writeAttachmentEvent(
+                        "Removing expired trash asset"
+                    )
+
+                    try? FileManager.default.removeItem(
+                        at: trashURL
+                    )
+                }
             }
+
             modelContext.delete(item)
         }
+
         try? modelContext.save()
     }
+
+
 
     private func updateVaultVisibility(to isVisible: Bool) {
         guard !isVisible else {
