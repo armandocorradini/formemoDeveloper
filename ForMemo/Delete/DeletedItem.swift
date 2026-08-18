@@ -361,20 +361,29 @@ extension DeletedItem {
             let kind =
                 DocumentAssetKind(rawValue: kindRaw) ?? .other
 
-            let asset = DocumentAsset(
-                relativePath: relativePath,
-                kind: kind,
-                pageIndex: documentPageIndex ?? 0,
-                document: document
-            )
-
-            context.insert(asset)
-
-            if document.assets == nil {
-                document.assets = []
+            // Do not recreate an asset that is already associated
+            // with this document.
+            let assetAlreadyExists = (document.assets ?? []).contains {
+                $0.relativePath.trimmingCharacters(in: .whitespacesAndNewlines)
+                    == relativePath.trimmingCharacters(in: .whitespacesAndNewlines)
             }
 
-            document.assets?.append(asset)
+            if !assetAlreadyExists {
+                let asset = DocumentAsset(
+                    relativePath: relativePath,
+                    kind: kind,
+                    pageIndex: documentPageIndex ?? 0,
+                    document: document
+                )
+
+                context.insert(asset)
+
+                if document.assets == nil {
+                    document.assets = []
+                }
+
+                document.assets?.append(asset)
+            }
             return true
         }
         

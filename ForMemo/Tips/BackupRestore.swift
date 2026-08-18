@@ -1693,6 +1693,15 @@ private enum BackupManager {
                     continue
                 }
 
+                let assetAlreadyExists = (document.assets ?? []).contains {
+                    $0.relativePath.trimmingCharacters(in: .whitespacesAndNewlines) == relativePath
+                }
+
+                guard !assetAlreadyExists else {
+                    continue
+                }
+
+
                 let asset = DocumentAsset(
                     relativePath: relativePath,
                     kind: DocumentAssetKind(rawValue: dto.kindRaw) ?? .other,

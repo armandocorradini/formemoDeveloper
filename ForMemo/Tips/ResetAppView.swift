@@ -276,13 +276,22 @@ struct ResetAppView: View {
 
         throw ResetVerificationError.physicalStorageNotEmpty
     }
-    
     @MainActor
     private func resetDirectories() -> [URL] {
 
         let fileManager = FileManager.default
+        let names = [
+            "TaskAttachments",
+            "TaskAttachments_Trash",
+            "DocumentAssets",
+            "DocumentAssets_Trash",
+            "WalletAssets",
+            "WalletAssets_Trash"
+        ]
+
         var directories: [URL] = []
 
+        // 1. Canonical iCloud container
         if let containerURL = fileManager.url(
             forUbiquityContainerIdentifier: "iCloud.corradini.armando.NewTask"
         ) {
@@ -292,15 +301,6 @@ struct ResetAppView: View {
                 isDirectory: true
             )
 
-            let names = [
-                "TaskAttachments",
-                "TaskAttachments_Trash",
-                "DocumentAssets",
-                "DocumentAssets_Trash",
-                "WalletAssets",
-                "WalletAssets_Trash"
-            ]
-
             for name in names {
                 directories.append(
                     documentsURL.appendingPathComponent(
@@ -309,20 +309,15 @@ struct ResetAppView: View {
                     )
                 )
             }
+        }
 
-        } else if let localDocumentsURL = fileManager.urls(
+        // 2. Local app Documents / legacy asset directories.
+        // These must also be purged when iCloud is available,
+        // because older asset files can still exist here.
+        if let localDocumentsURL = fileManager.urls(
             for: .documentDirectory,
             in: .userDomainMask
         ).first {
-
-            let names = [
-                "TaskAttachments",
-                "TaskAttachments_Trash",
-                "DocumentAssets",
-                "DocumentAssets_Trash",
-                "WalletAssets",
-                "WalletAssets_Trash"
-            ]
 
             for name in names {
                 directories.append(
@@ -334,10 +329,15 @@ struct ResetAppView: View {
             }
         }
 
-        return directories
+        // Deduplicate paths without changing ordering.
+        var seen = Set<String>()
+
+        return directories.filter {
+            seen.insert(
+                $0.standardizedFileURL.path
+            ).inserted
+        }
     }
-    
-    
     // 🔥 DELETE REALE
     @MainActor
     private func deleteAllData(
