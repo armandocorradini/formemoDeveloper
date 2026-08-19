@@ -9,11 +9,24 @@ struct VaultBackupPackage: Codable, Sendable {
     let wrappedVaultKey: Data
 }
 
-enum VaultBackupCryptoError: Error {
+enum VaultBackupCryptoError: LocalizedError {
     case invalidPassword
     case invalidPackage
     case keyWrappingFailed
     case keyUnwrappingFailed
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidPassword:
+            return String(localized: "The password you entered cannot unlock the Vault data contained in this backup. Check the password and try again, or leave Vault unselected. The other data in the backup can be restored normally.")
+        case .invalidPackage:
+            return String(localized: "The Vault backup package is invalid.")
+        case .keyWrappingFailed:
+            return String(localized: "Unable to protect the Vault encryption key.")
+        case .keyUnwrappingFailed:
+            return String(localized: "Unable to unlock the Vault encryption key.")
+        }
+    }
 }
 
 enum VaultBackupCrypto {

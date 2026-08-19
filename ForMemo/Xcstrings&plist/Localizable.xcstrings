@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "shouldTranslate" : false
     },
     "\nLocation: %@\n" : {
       "localizations" : {
@@ -33,10 +33,10 @@
       }
     },
     "…" : {
-
+      "shouldTranslate" : false
     },
     "/" : {
-
+      "shouldTranslate" : false
     },
     "%@" : {
       "localizations" : {
@@ -74,7 +74,8 @@
             "value" : "%1$@ (%2$@)"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%@ automatically uses your Apple ID and your personal iCloud account. No sign in or additional account is required." : {
       "localizations" : {
@@ -204,7 +205,8 @@
             "value" : "%1$lf, %2$lf"
           }
         }
-      }
+      },
+      "shouldTranslate" : false
     },
     "%lld" : {
       "localizations" : {
@@ -1062,7 +1064,7 @@
       }
     },
     "%lld°" : {
-
+      "shouldTranslate" : false
     },
     "• Change the main task icon style\n• Choose the days badge color\n• Show or hide attachments, location and priority icons\n• Preview changes before applying them" : {
       "localizations" : {
@@ -2165,7 +2167,7 @@
       }
     },
     "A-Z" : {
-
+      "shouldTranslate" : false
     },
     "Account and info" : {
       "localizations" : {
@@ -3464,7 +3466,7 @@
       }
     },
     "armando ♾️ corradini" : {
-
+      "shouldTranslate" : false
     },
     "Ask to Siri" : {
       "localizations" : {
@@ -13478,7 +13480,7 @@
       }
     },
     "ForMemo" : {
-
+      "shouldTranslate" : false
     },
     "ForMemo can automatically clear copied passwords from the clipboard after the interval selected in Vault settings. You can change this interval or disable automatic clearing at any time." : {
       "localizations" : {
@@ -13621,7 +13623,7 @@
       }
     },
     "formemo.app@gmail.com" : {
-
+      "shouldTranslate" : false
     },
     "from" : {
 
@@ -20222,7 +20224,7 @@
       }
     },
     "OK" : {
-
+      "shouldTranslate" : false
     },
     "Olive" : {
       "localizations" : {
@@ -21445,7 +21447,7 @@
       }
     },
     "PIN" : {
-
+      "shouldTranslate" : false
     },
     "Plain" : {
       "localizations" : {
@@ -29496,6 +29498,9 @@
     "The password is incorrect. Enter the correct password to restore Vault, or continue without Vault." : {
 
     },
+    "The password you entered cannot unlock the Vault data contained in this backup. Check the password and try again, or leave Vault unselected. The other data in the backup can be restored normally." : {
+
+    },
     "The selected image does not contain a readable barcode or QR code." : {
       "localizations" : {
         "de" : {
@@ -29649,6 +29654,9 @@
           }
         }
       }
+    },
+    "The Vault backup package is invalid." : {
+
     },
     "The Vault lets you securely store and organize personal credentials such as usernames, email addresses, websites, passwords, PINs, OTP secrets, notes, and custom secrets.\n\nYou can organize credentials into categories, mark them as favorites, generate strong passwords, keep track of password updates and expiry dates, and import credentials from compatible password managers." : {
       "localizations" : {
@@ -31813,6 +31821,12 @@
           }
         }
       }
+    },
+    "Unable to protect the Vault encryption key." : {
+
+    },
+    "Unable to unlock the Vault encryption key." : {
+
     },
     "Underline overdue tasks" : {
       "comment" : "A toggle to underline overdue tasks.",

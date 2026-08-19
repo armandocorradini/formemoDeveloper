@@ -42,27 +42,7 @@ enum AssetDirectoryCoordinator {
         for kind: AssetDirectoryKind
     ) -> URL? {
 
-        let fm = FileManager.default
-
-        // iCloud ON: iCloud container is the canonical asset location.
-        if fm.ubiquityIdentityToken != nil,
-           let containerURL = fm.url(
-               forUbiquityContainerIdentifier: containerIdentifier
-           ) {
-
-            return containerURL
-                .appendingPathComponent(
-                    "Documents",
-                    isDirectory: true
-                )
-                .appendingPathComponent(
-                    kind.rawValue,
-                    isDirectory: true
-                )
-        }
-
-        // iCloud OFF/unavailable: local Documents remains the fallback.
-        return fm.urls(
+        FileManager.default.urls(
             for: .documentDirectory,
             in: .userDomainMask
         )

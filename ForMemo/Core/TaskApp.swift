@@ -111,9 +111,9 @@ struct ForMemoApp: App {
         Task { @MainActor in
             let context = sharedContainer.mainContext
 
-//            AttachmentMigration.runIfNeeded(
-//                context: context
-//            )
+            AttachmentMigration.runIfNeeded(
+                context: context
+            )
 
             WalletMigrationService.runIfNeeded(
                 context: context

@@ -21,7 +21,7 @@ enum Persistence {
 
     private static let appGroupIdentifier = "group.corradini.armando.NewTask"
     
-    private static var hasICloudIdentity: Bool {
+    static var hasICloudIdentity: Bool {
         FileManager.default.ubiquityIdentityToken != nil
     }
     

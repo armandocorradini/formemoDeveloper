@@ -774,12 +774,6 @@ enum DebugLog {
         forensic("══════════════════════════════════════════")
     }
     
-    
-    
-    
-    
-    
-    
     private struct AttachmentEnvironment {
 
         let fm: FileManager
