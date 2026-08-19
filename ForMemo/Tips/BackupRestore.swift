@@ -1160,7 +1160,7 @@ private struct VaultItemTransferObject: Codable {
     let encryptedPIN: Data?
 
     let secrets: [VaultSecretTransferObject]
-    
+
     let createdAt: Date
     let modifiedAt: Date
 
@@ -1172,7 +1172,38 @@ private struct VaultItemTransferObject: Codable {
 
     let deletedAt: Date?
 
+    let requireBiometricEveryTime: Bool
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case syncIdentifier
+        case version
+        case title
+        case category
+        case favorite
+        case tags
+        case sortOrder
+        case icon
+        case color
+        case username
+        case email
+        case website
+        case notes
+        case encryptedPassword
+        case encryptedPIN
+        case secrets
+        case createdAt
+        case modifiedAt
+        case passwordUpdatedAt
+        case passwordExpiresAt
+        case lastViewedAt
+        case lastCopiedAt
+        case deletedAt
+        case requireBiometricEveryTime
+    }
+
     init(item: VaultItem) {
+
         id = item.id
         syncIdentifier = item.syncIdentifier
         version = item.version
@@ -1195,7 +1226,7 @@ private struct VaultItemTransferObject: Codable {
 
         encryptedPassword = item.encryptedPassword
         encryptedPIN = item.encryptedPIN
-        
+
         secrets = (item.secrets ?? []).map {
             VaultSecretTransferObject(secret: $0)
         }
@@ -1211,6 +1242,141 @@ private struct VaultItemTransferObject: Codable {
 
         deletedAt = item.deletedAt
 
+        requireBiometricEveryTime = item.requireBiometricEveryTime
+    }
+
+    init(from decoder: Decoder) throws {
+
+        let container = try decoder.container(
+            keyedBy: CodingKeys.self
+        )
+
+        id = try container.decode(
+            UUID.self,
+            forKey: .id
+        )
+
+        syncIdentifier = try container.decode(
+            UUID.self,
+            forKey: .syncIdentifier
+        )
+
+        version = try container.decode(
+            Int.self,
+            forKey: .version
+        )
+
+        title = try container.decode(
+            String.self,
+            forKey: .title
+        )
+
+        category = try container.decode(
+            VaultCategory.self,
+            forKey: .category
+        )
+
+        favorite = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .favorite
+        ) ?? false
+
+        tags = try container.decodeIfPresent(
+            [String].self,
+            forKey: .tags
+        ) ?? []
+
+        sortOrder = try container.decodeIfPresent(
+            Int.self,
+            forKey: .sortOrder
+        ) ?? 0
+
+        icon = try container.decodeIfPresent(
+            VaultIcon.self,
+            forKey: .icon
+        ) ?? .key
+
+        color = try container.decodeIfPresent(
+            VaultColor.self,
+            forKey: .color
+        ) ?? .blue
+
+        username = try container.decodeIfPresent(
+            String.self,
+            forKey: .username
+        ) ?? ""
+
+        email = try container.decodeIfPresent(
+            String.self,
+            forKey: .email
+        ) ?? ""
+
+        website = try container.decodeIfPresent(
+            String.self,
+            forKey: .website
+        ) ?? ""
+
+        notes = try container.decodeIfPresent(
+            String.self,
+            forKey: .notes
+        ) ?? ""
+
+        encryptedPassword = try container.decodeIfPresent(
+            Data.self,
+            forKey: .encryptedPassword
+        )
+
+        encryptedPIN = try container.decodeIfPresent(
+            Data.self,
+            forKey: .encryptedPIN
+        )
+
+        // VaultSecret was introduced after older backup formats.
+        // Older backups do not contain this key.
+        secrets = try container.decodeIfPresent(
+            [VaultSecretTransferObject].self,
+            forKey: .secrets
+        ) ?? []
+
+        createdAt = try container.decodeIfPresent(
+            Date.self,
+            forKey: .createdAt
+        ) ?? .now
+
+        modifiedAt = try container.decodeIfPresent(
+            Date.self,
+            forKey: .modifiedAt
+        ) ?? createdAt
+
+        passwordUpdatedAt = try container.decodeIfPresent(
+            Date.self,
+            forKey: .passwordUpdatedAt
+        )
+
+        passwordExpiresAt = try container.decodeIfPresent(
+            Date.self,
+            forKey: .passwordExpiresAt
+        )
+
+        lastViewedAt = try container.decodeIfPresent(
+            Date.self,
+            forKey: .lastViewedAt
+        )
+
+        lastCopiedAt = try container.decodeIfPresent(
+            Date.self,
+            forKey: .lastCopiedAt
+        )
+
+        deletedAt = try container.decodeIfPresent(
+            Date.self,
+            forKey: .deletedAt
+        )
+
+        requireBiometricEveryTime = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .requireBiometricEveryTime
+        ) ?? false
     }
 }
 
