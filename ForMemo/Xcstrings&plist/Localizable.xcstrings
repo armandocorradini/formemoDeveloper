@@ -2226,7 +2226,32 @@
       }
     },
     "Activity" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivität"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actividad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività"
+          }
+        }
+      }
     },
     "Add" : {
       "localizations" : {
@@ -3725,7 +3750,32 @@
       }
     },
     "Attachment" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhang"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivo adjunto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pièce jointe"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allegato"
+          }
+        }
+      }
     },
     "Attachment Analysis" : {
       "localizations" : {
@@ -4229,6 +4279,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Accesso iCloud automatico"
+          }
+        }
+      }
+    },
+    "Automatic Recoveries" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatische Wiederherstellungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperaciones automáticas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupérations automatiques"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperi automatici"
           }
         }
       }
@@ -13626,7 +13704,32 @@
       "shouldTranslate" : false
     },
     "from" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "von"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "de"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "da"
+          }
+        }
+      }
     },
     "From Calendar" : {
       "comment" : "A button to import events from the user's calendar.",
@@ -15536,7 +15639,32 @@
       }
     },
     "Image/File" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bild/Datei"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagen/Archivo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image/Fichier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immagine/File"
+          }
+        }
+      }
     },
     "Images" : {
       "localizations" : {
@@ -16207,7 +16335,32 @@
       }
     },
     "Incorrect Password" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Falsches Passwort"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contraseña incorrecta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mot de passe incorrect"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Password errata"
+          }
+        }
+      }
     },
     "Independent from iCloud Sync" : {
       "localizations" : {
@@ -17767,6 +17920,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gestisci le tue attività con facilità."
+          }
+        }
+      }
+    },
+    "Manual Recoveries" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manuelle Wiederherstellungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperaciones manuales"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récupérations manuelles"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperi manuali"
           }
         }
       }
@@ -20813,7 +20994,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El Resumen te ofrece una visión rápida de la información más importante. Muestra de un vistazo tus tareas, documentos, elementos de la Cartera, listas de viaje y otra información útil, ayudándote a conocer rápidamente el estado actual de tus datos."
+            "value" : "El Resumen te ofrece una visión rápida de la información más importante. Muestra de un vistazo tus tareas, documentos, elementos de la Caja fuerte, listas de viaje y otra información útil, ayudándote a conocer rápidamente el estado actual de tus datos."
           }
         },
         "fr" : {
@@ -23560,6 +23741,34 @@
         }
       }
     },
+    "Reset Recovery Statistics" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellungsstatistik zurücksetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer estadísticas de recuperación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialiser les statistiques de récupération"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reimposta statistiche di recupero"
+          }
+        }
+      }
+    },
     "Residence Permit" : {
       "localizations" : {
         "de" : {
@@ -26167,7 +26376,32 @@
       }
     },
     "Skip Vault" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tresor überspringen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Omitir la Caja fuerte"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignorer la Cassaforte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignora Cassaforte"
+          }
+        }
+      }
     },
     "Sky" : {
       "localizations" : {
@@ -29496,10 +29730,60 @@
       }
     },
     "The password is incorrect. Enter the correct password to restore Vault, or continue without Vault." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Passwort ist falsch. Gib das richtige Passwort ein, um den Tresor wiederherzustellen, oder fahre ohne Tresor fort."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La contraseña no es correcta. Introduce la contraseña correcta para restaurar la Caja fuerte o continúa sin la Caja fuerte."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le mot de passe est incorrect. Saisissez le mot de passe correct pour restaurer la Cassaforte ou continuez sans la Cassaforte."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La password non è corretta. Inserisci la password corretta per ripristinare la Cassaforte oppure continua senza Cassaforte."
+          }
+        }
+      }
     },
     "The password you entered cannot unlock the Vault data contained in this backup. Check the password and try again, or leave Vault unselected. The other data in the backup can be restored normally." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das eingegebene Passwort kann die Tresordaten in diesem Backup nicht entsperren. Überprüfe das Passwort und versuche es erneut oder lasse den Tresor abgewählt. Die anderen Daten im Backup können normal wiederhergestellt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La contraseña introducida no permite desbloquear los datos de la Caja fuerte incluidos en esta copia de seguridad. Comprueba la contraseña e inténtalo de nuevo, o deja la Caja fuerte sin seleccionar. El resto de los datos de la copia de seguridad se puede restaurar con normalidad."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le mot de passe saisi ne permet pas de déverrouiller les données de la Cassaforte contenues dans cette sauvegarde. Vérifiez le mot de passe et réessayez, ou laissez la Cassaforte désélectionnée. Les autres données de la sauvegarde peuvent être restaurées normalement."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La password inserita non consente di sbloccare i dati della Cassaforte contenuti in questo backup. Controlla la password e riprova, oppure lascia la Cassaforte non selezionata. Gli altri dati del backup possono essere ripristinati normalmente."
+          }
+        }
+      }
     },
     "The selected image does not contain a readable barcode or QR code." : {
       "localizations" : {
@@ -29656,7 +29940,32 @@
       }
     },
     "The Vault backup package is invalid." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Tresor-Backup-Paket ist ungültig."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El paquete de copia de seguridad de la Caja fuerte no es válido.\n"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le paquet de sauvegarde de la Cassaforte n’est pas valide."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il pacchetto di backup della Cassaforte non è valido."
+          }
+        }
+      }
     },
     "The Vault lets you securely store and organize personal credentials such as usernames, email addresses, websites, passwords, PINs, OTP secrets, notes, and custom secrets.\n\nYou can organize credentials into categories, mark them as favorites, generate strong passwords, keep track of password updates and expiry dates, and import credentials from compatible password managers." : {
       "localizations" : {
@@ -31142,6 +31451,34 @@
         }
       }
     },
+    "Total Recoveries" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellungen insgesamt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total de recuperaciones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total des récupérations"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuperi totali"
+          }
+        }
+      }
+    },
     "Towel" : {
       "localizations" : {
         "de" : {
@@ -31395,7 +31732,32 @@
       }
     },
     "Trip" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reise"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viaje"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voyage"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viaggio"
+          }
+        }
+      }
     },
     "Trip Checklists" : {
       "localizations" : {
@@ -31622,7 +31984,32 @@
       }
     },
     "Try Again" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut versuchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reintentar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova"
+          }
+        }
+      }
     },
     "Try saying 'Hey Siri,' followed by:" : {
       "localizations" : {
@@ -31823,10 +32210,60 @@
       }
     },
     "Unable to protect the Vault encryption key." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Verschlüsselungsschlüssel des Tresors konnte nicht geschützt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido proteger la clave de cifrado de la Caja fuerte."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de protéger la clé de chiffrement de la Cassaforte."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile proteggere la chiave di cifratura della Cassaforte."
+          }
+        }
+      }
     },
     "Unable to unlock the Vault encryption key." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Verschlüsselungsschlüssel des Tresors konnte nicht entsperrt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido desbloquear la clave de cifrado de la Caja fuerte."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de déverrouiller la clé de chiffrement de la Cassaforte."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile sbloccare la chiave di cifratura della Cassaforte."
+          }
+        }
+      }
     },
     "Underline overdue tasks" : {
       "comment" : "A toggle to underline overdue tasks.",
@@ -32847,7 +33284,32 @@
       }
     },
     "Wallet Image" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wallet-Bild"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagen del Wallet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image du portefeuille"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immagine del Wallet"
+          }
+        }
+      }
     },
     "wallet_tab" : {
       "localizations" : {

@@ -230,9 +230,10 @@ enum AttachmentContainerRecovery {
                 return false
             }
 
-            return url.lastPathComponent.hasPrefix(
-                container.rawValue
-            )
+            let name = url.lastPathComponent
+
+            return name.hasPrefix(container.rawValue) &&
+                   !name.hasPrefix("\(container.rawValue)_Trash")
         }
     }
     

@@ -9,7 +9,9 @@ enum ForMemoStorageManager {
         totalSize(
             of:
                 TaskAttachment.attachmentsDirectory,
-            WalletAssetStore.assetsDirectory
+                DocumentAssetStore.assetsDirectory,
+                WalletAssetStore.assetsDirectory,
+                loyaltyCardLogosDirectoryURL()
         )
     }
 
@@ -22,6 +24,13 @@ enum ForMemoStorageManager {
     }
 
     // MARK: - Private
+
+    private static func loyaltyCardLogosDirectoryURL() -> URL? {
+        FileManager.default
+            .urls(for: .documentDirectory, in: .userDomainMask)
+            .first?
+            .appendingPathComponent("LoyaltyCardLogos", isDirectory: true)
+    }
 
     private static func totalSize(
         of directories: URL?...
@@ -76,5 +85,3 @@ enum ForMemoStorageManager {
         return total
     }
 }
-
-

@@ -1,3 +1,4 @@
+
 import SwiftData
 import Foundation
 import os
@@ -379,24 +380,12 @@ extension TaskAttachment {
 
             // Il record CloudKit può arrivare prima della
             // materializzazione locale del file.
-            // In questo caso dobbiamo comunque richiedere il download.
+            // Il resolver deve solo risolvere l'URL.
+            // La richiesta di download è responsabilità di loadDataAsync().
             if isUbiquitous || exists {
 
                 if !exists ||
-                    status == .notDownloaded{
-
-                    DebugLog.write(
-                        "☁️ Requesting iCloud materialization"
-                    )
-
-                    do {
-                        try fm.startDownloadingUbiquitousItem(at: cloud)
-                    } catch {
-                        DebugLog.write(
-                            "☁️ Materialization request failed: \(error.localizedDescription)"
-                        )
-                    }
-
+                    status == .notDownloaded {
                     return cloud
                 }
 
@@ -501,12 +490,8 @@ extension TaskAttachment {
                 continue
             }
 
-            let status = try? candidate.resourceValues(
-                forKeys: [.ubiquitousItemDownloadingStatusKey]
-            ).ubiquitousItemDownloadingStatus
-            if status == .notDownloaded {
-                try? fm.startDownloadingUbiquitousItem(at: candidate)
-            }
+            // Il resolver non avvia il download.
+            // La richiesta di materializzazione è responsabilità di loadDataAsync().
             return candidate
         }
         // =====================================================

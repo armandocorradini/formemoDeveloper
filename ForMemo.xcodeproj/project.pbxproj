@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C3191D23036F7D2009ABE1E /* RemoteAssetCleanupCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */; };
 		1C634D8C30220C9C0092DB89 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1C634CF630220C9C0092DB89 /* InfoPlist.xcstrings */; };
 		1C634D8D30220C9C0092DB89 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1C634CFA30220C9C0092DB89 /* Localizable.xcstrings */; };
 		1C634D8E30220C9C0092DB89 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1C634D0530220C9C0092DB89 /* PrivacyInfo.xcprivacy */; };
@@ -217,6 +218,7 @@
 
 /* Begin PBXFileReference section */
 		1C1C23002F7E983A00A77282 /* ForMemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ForMemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteAssetCleanupCoordinator.swift; sourceTree = "<group>"; };
 		1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskIntent.swift; sourceTree = "<group>"; };
 		1C634CD530220C9C0092DB89 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1C634CD630220C9C0092DB89 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -725,6 +727,7 @@
 				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,
 				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
 				1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */,
+				1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */,
 				1CED325C30268F8300B16A50 /* SystemEventHistory.swift */,
 				1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */,
 				1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */,
@@ -905,6 +908,7 @@
 				1C634DA030220C9C0092DB89 /* CSVTask.swift in Sources */,
 				1C634DA130220C9C0092DB89 /* DebugTools.swift in Sources */,
 				1C634DA230220C9C0092DB89 /* DeletedFingerprintStore.swift in Sources */,
+				1C3191D23036F7D2009ABE1E /* RemoteAssetCleanupCoordinator.swift in Sources */,
 				1C634DA330220C9C0092DB89 /* DeletedItem.swift in Sources */,
 				1C634DA430220C9C0092DB89 /* DeleteTask.swift in Sources */,
 				1C634DA530220C9C0092DB89 /* DocumentAsset.swift in Sources */,

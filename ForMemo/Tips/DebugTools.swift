@@ -1953,7 +1953,6 @@ struct ExportDiagnosticsView: View {
                         )
                     )
                     
-                    
                     Button(role: .destructive) {
                         DebugLog.clear()
                         logExists = false
@@ -1965,6 +1964,35 @@ struct ExportDiagnosticsView: View {
                             systemImage: "trash"
                         )
                     }
+
+                    Button(role: .destructive) {
+                        RecoveryStatistics.reset()
+                        refreshID = UUID()
+                    } label: {
+                        Label(
+                            "Reset Recovery Statistics",
+                            systemImage: "arrow.counterclockwise"
+                        )
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        LabeledContent(
+                            "Automatic Recoveries",
+                            value: "\(RecoveryStatistics.automaticRecoveries)"
+                        )
+
+                        LabeledContent(
+                            "Manual Recoveries",
+                            value: "\(RecoveryStatistics.manualRecoveries)"
+                        )
+
+                        LabeledContent(
+                            "Total Recoveries",
+                            value: "\(RecoveryStatistics.totalRecoveries)"
+                        )
+                    }
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
                     
                     Button {
 

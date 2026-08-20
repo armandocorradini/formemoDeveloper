@@ -53,6 +53,7 @@ struct ForMemoApp: App {
     // MARK: - CloudKit Debounce
     
     private static var lastRemoteChange = Date.distantPast
+    private static var remoteAssetCleanupTask: Task<Void, Never>?
 
     
     
@@ -334,6 +335,12 @@ struct ForMemoApp: App {
 
                 let context = self.container.mainContext
 
+                // Local First: a remote deletion removes the SwiftData record,
+                // but does not automatically remove our separately managed
+                // local asset file. Reconcile physical assets only after the
+                // remote change has had time to settle.
+                Self.scheduleRemoteAssetCleanup(context: context)
+
 //                if DiagnosticsOptions.attachmentDatabase {
 //                    DebugLog.writeDatabaseSnapshot(
 //                        context: context
@@ -384,6 +391,34 @@ struct ForMemoApp: App {
         
         center.setBadgeCount(count)
     }
+    // MARK: - REMOTE ASSET CLEANUP
+
+    @MainActor
+    private static func scheduleRemoteAssetCleanup(
+        context: ModelContext
+    ) {
+        remoteAssetCleanupTask?.cancel()
+
+        remoteAssetCleanupTask = Task { @MainActor in
+            do {
+                // Let SwiftData finish applying the remote transaction(s)
+                // before calculating which physical files are orphaned.
+                try await Task.sleep(for: .seconds(2))
+                try Task.checkCancellation()
+
+                try RemoteAssetCleanupCoordinator.shared.cleanup(
+                    context: context
+                )
+            } catch is CancellationError {
+                // A newer remote change superseded this cleanup.
+            } catch {
+                AppLogger.persistence.error(
+                    "Remote asset cleanup failed: \(error.localizedDescription)"
+                )
+            }
+        }
+    }
+
     // MARK: - 🔥 CLEANUP RECENTLY DELETED
     @MainActor
     private func cleanupRecentlyDeleted(context: ModelContext) {
