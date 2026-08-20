@@ -291,7 +291,7 @@ struct OverviewView: View {
             AppGlassBackground()
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    storageSection
+//                    storageSection
                     tasksSection
                     documentsSection
                     walletSection
@@ -431,31 +431,31 @@ private extension OverviewView {
 
 // MARK: - Sezioni UI
 private extension OverviewView {
-    var storageSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Storage")
-                .font(.headline)
-                .foregroundStyle(.primary)
-            Divider()
-                .overlay(.white.opacity(0.12))
-            VStack(alignment: .leading, spacing: 10) {
-                LabeledContent("ForMemo") {
-                    Text(usedStorage)
-                }
-            }
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.regularMaterial)
-                .shadow(color: .black.opacity(0.10), radius: 12, y: 6)
-                .shadow(color: .white.opacity(0.08), radius: 1, y: -1)
-        )
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.white.opacity(0.10), lineWidth: 1)
-        }
-    }
+//    var storageSection: some View {
+////        VStack(alignment: .leading, spacing: 12) {
+////            Text("Storage")
+////                .font(.headline)
+////                .foregroundStyle(.primary)
+////            Divider()
+////                .overlay(.white.opacity(0.12))
+////            VStack(alignment: .leading, spacing: 10) {
+////                LabeledContent("ForMemo") {
+////                    Text(usedStorage)
+////                }
+////            }
+////        }
+////        .padding(16)
+////        .background(
+////            RoundedRectangle(cornerRadius: 16, style: .continuous)
+////                .fill(.regularMaterial)
+////                .shadow(color: .black.opacity(0.10), radius: 12, y: 6)
+////                .shadow(color: .white.opacity(0.08), radius: 1, y: -1)
+////        )
+////        .overlay {
+////            RoundedRectangle(cornerRadius: 16)
+////                .stroke(.white.opacity(0.10), lineWidth: 1)
+////        }
+//    }
 
     var tasksSection: some View {
         VStack(alignment: .leading, spacing: 12) {

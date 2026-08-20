@@ -13557,9 +13557,6 @@
         }
       }
     },
-    "ForMemo" : {
-      "shouldTranslate" : false
-    },
     "ForMemo can automatically clear copied passwords from the clipboard after the interval selected in Vault settings. You can change this interval or disable automatic clearing at any time." : {
       "localizations" : {
         "de" : {
