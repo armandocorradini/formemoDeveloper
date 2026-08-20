@@ -1680,7 +1680,7 @@ private enum BackupManager {
         backupPassword: String,
         restoreSettings: Bool
     ) async throws {
-
+        try PersistenceOperationCoordinator.shared.begin(.restore)
         if restoreTasks {
 
             let attachmentsDirectory =
@@ -2180,10 +2180,19 @@ private enum BackupManager {
 
         modelContext.processPendingChanges()
 
-        try modelContext.save()
-        
-        
-        // Force attachment refresh after restore
+        do {
+            try modelContext.save()
+
+            try await PersistenceOperationCoordinator.shared.waitForSettlement(
+                requireExport: Persistence.hasICloudIdentity
+            )
+        } catch {
+            PersistenceOperationCoordinator.shared.finish()
+            throw error
+        }
+
+        PersistenceOperationCoordinator.shared.finish()
+
         NotificationCenter.default.post(
             name: .taskDidChange,
             object: nil
