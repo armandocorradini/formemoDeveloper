@@ -238,6 +238,39 @@ extension DeletedItem {
                     return false
 
                 }
+                
+                // Best-effort recreation of the iCloud mirror.
+                if let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
+                    for: .taskAttachments
+                ) {
+                    do {
+                        try fm.createDirectory(
+                            at: cloudDirectory,
+                            withIntermediateDirectories: true
+                        )
+
+                        let cloudURL =
+                            cloudDirectory.appendingPathComponent(relativePath)
+
+                        if !fm.fileExists(atPath: cloudURL.path) {
+                            let localURL =
+                                attachmentsDir.appendingPathComponent(relativePath)
+
+                            try fm.copyItem(
+                                at: localURL,
+                                to: cloudURL
+                            )
+
+                            AppLogger.persistence.notice(
+                                "TaskAttachment cloud mirror restored: \(relativePath)"
+                            )
+                        }
+                    } catch {
+                        AppLogger.persistence.error(
+                            "Unable to restore TaskAttachment cloud mirror: \(error.localizedDescription)"
+                        )
+                    }
+                }
                 let ext = (fileName as NSString).pathExtension.lowercased()
 
                 let resolvedType: String

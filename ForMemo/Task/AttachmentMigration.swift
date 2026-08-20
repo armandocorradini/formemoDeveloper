@@ -62,6 +62,51 @@ enum AttachmentMigration {
         work.run()
     }
 
+    /// Synchronizes all existing local asset copies to iCloud.
+    ///
+    /// Unlike `runIfNeeded`, this method is intentionally repeatable and is
+    /// not gated by the migration version. It is safe to call whenever
+    /// iCloud becomes available again.
+    static func syncLocalAssetsToCloud(context: ModelContext) {
+        guard !isRunning else { return }
+        guard Persistence.hasICloudIdentity else { return }
+
+        let taskPaths = makeFileNameSet(
+            (try? context.fetch(
+                FetchDescriptor<TaskAttachment>()
+            ))?.map(\.relativePath) ?? []
+        )
+
+        let documentPaths = makeFileNameSet(
+            (try? context.fetch(
+                FetchDescriptor<DocumentAsset>()
+            ))?.map(\.relativePath) ?? []
+        )
+
+        let walletPaths = makeFileNameSet(
+            (try? context.fetch(
+                FetchDescriptor<WalletAsset>()
+            ))?.map(\.relativePath) ?? []
+        )
+
+        guard
+            !taskPaths.isEmpty ||
+            !documentPaths.isEmpty ||
+            !walletPaths.isEmpty
+        else {
+            return
+        }
+
+        isRunning = true
+        defer { isRunning = false }
+
+        MigrationWork(
+            taskPaths: taskPaths,
+            documentPaths: documentPaths,
+            walletPaths: walletPaths
+        ).run()
+    }
+
     // MARK: - Valid Paths
 
 
@@ -116,18 +161,19 @@ private struct MigrationWork {
             return
         }
 
-        guard let localDirectory = localLegacyDirectory(
+        // Local storage is now the persistent device copy.
+        // iCloud is a separate synchronization destination.
+        guard let localDirectory = AssetDirectoryCoordinator.localDirectory(
             for: kind
         ) else {
             return
         }
 
-        guard
-            let cloudDirectory = try? AssetDirectoryCoordinator
-                .ensureCanonicalDirectory(for: kind),
-            cloudDirectory.standardizedFileURL !=
-                localDirectory.standardizedFileURL
-        else {
+        // If iCloud is unavailable there is nothing to synchronize now.
+        // The local copy remains untouched and available offline.
+        guard let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
+            for: kind
+        ) else {
             return
         }
 
@@ -277,22 +323,6 @@ private struct MigrationWork {
     }
 
     // MARK: - Directories
-
-    private func localLegacyDirectory(
-        for kind: AssetDirectoryKind
-    ) -> URL? {
-
-        FileManager.default
-            .urls(
-                for: .documentDirectory,
-                in: .userDomainMask
-            )
-            .first?
-            .appendingPathComponent(
-                kind.rawValue,
-                isDirectory: true
-            )
-    }
 
     // MARK: - Copy
 

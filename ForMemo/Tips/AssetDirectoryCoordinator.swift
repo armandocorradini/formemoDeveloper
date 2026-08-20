@@ -36,6 +36,55 @@ enum AssetDirectoryCoordinator {
     private static let containerIdentifier =
         "iCloud.corradini.armando.NewTask"
 
+    // MARK: - Separate local / cloud directories
+
+    /// Returns the app-local Documents directory for the asset kind.
+    ///
+    /// This is independent of iCloud availability and is the local
+    /// persistent copy that will be used by the asset storage layer.
+    static func localDirectory(
+        for kind: AssetDirectoryKind
+    ) -> URL? {
+        FileManager.default.urls(
+            for: .documentDirectory,
+            in: .userDomainMask
+        )
+        .first?
+        .appendingPathComponent(
+            kind.rawValue,
+            isDirectory: true
+        )
+    }
+
+    /// Returns the iCloud Documents directory for the asset kind,
+    /// when the iCloud container is currently available.
+    ///
+    /// This method does not fall back to the local directory.
+    static func cloudDirectory(
+        for kind: AssetDirectoryKind
+    ) -> URL? {
+        let fm = FileManager.default
+
+        guard
+            fm.ubiquityIdentityToken != nil,
+            let containerURL = fm.url(
+                forUbiquityContainerIdentifier: containerIdentifier
+            )
+        else {
+            return nil
+        }
+
+        return containerURL
+            .appendingPathComponent(
+                "Documents",
+                isDirectory: true
+            )
+            .appendingPathComponent(
+                kind.rawValue,
+                isDirectory: true
+            )
+    }
+
     // MARK: - Canonical URL
 
     static func canonicalDirectory(

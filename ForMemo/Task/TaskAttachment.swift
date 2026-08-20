@@ -32,12 +32,14 @@ final class TaskAttachment {
 }
 extension TaskAttachment {
     
+    /// Local persistent asset directory.
+    ///
+    /// This is deliberately independent of iCloud availability. The resolver
+    /// uses this directory as its first local source; iCloud remains a
+    /// separate fallback/source until the storage write path is migrated.
     static var attachmentsDirectory: URL? {
-        do {
-            return try ensureAttachmentsDirectoryForWrite()
-        } catch {
-            return cloudAttachmentsDirectory() ?? legacyAttachmentsDirectory()
-        }
+        AssetDirectoryCoordinator.localDirectory(for: .taskAttachments)
+            ?? legacyAttachmentsDirectory()
     }
     
     static func ensureAttachmentsDirectoryForWrite() throws -> URL {
@@ -639,33 +641,21 @@ extension TaskAttachment {
     
     
     func deleteFileIfNeeded() -> String? {
-        guard let sourceURL = fileURL else { return nil }
+        guard
+            let attachmentsDirectory = Self.attachmentsDirectory,
+            !relativePath.isEmpty
+        else {
+            return nil
+        }
+
+        let sourceURL =
+            attachmentsDirectory.appendingPathComponent(relativePath)
 
         let fm = FileManager.default
 
         // Se il file non esiste già → nessuna azione
         guard fm.fileExists(atPath: sourceURL.path) else {
             return nil
-        }
-
-        // 🔵 Se iCloud → forzo download reale (evita placeholder)
-        if (try? sourceURL.resourceValues(forKeys: [.isUbiquitousItemKey]))?.isUbiquitousItem == true {
-            try? fm.startDownloadingUbiquitousItem(at: sourceURL)
-
-            // ⏳ wait briefly for real materialization
-            for _ in 0..<10 {
-                let status = try? sourceURL.resourceValues(
-                    forKeys: [.ubiquitousItemDownloadingStatusKey]
-                )
-
-                if status?.ubiquitousItemDownloadingStatus == .current {
-                    break
-                }
-
-                RunLoop.current.run(
-                    until: Date().addingTimeInterval(0.1)
-                )
-            }
         }
 
         guard let trashDir = Self.trashDirectory else {
@@ -732,6 +722,43 @@ extension TaskAttachment {
 
         return result
     }
+    
+    // MARK: - Delete Cloud Mirror
+
+    static func deleteCloudMirror(
+        relativePath: String
+    ) {
+        guard
+            let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
+                for: .taskAttachments
+            ),
+            !relativePath.isEmpty
+        else {
+            return
+        }
+
+        let cloudURL =
+            cloudDirectory.appendingPathComponent(relativePath)
+
+        let fm = FileManager.default
+
+        guard fm.fileExists(atPath: cloudURL.path) else {
+            return
+        }
+
+        do {
+            try fm.removeItem(at: cloudURL)
+
+            AppLogger.persistence.notice(
+                "TaskAttachment cloud mirror deleted: \(relativePath)"
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Unable to delete TaskAttachment cloud mirror: \(error.localizedDescription)"
+            )
+        }
+    }
+    
     
     static func removeAllPhysicalFiles(
         in directory: URL?

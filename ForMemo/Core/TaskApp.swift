@@ -99,7 +99,26 @@ struct ForMemoApp: App {
         )
 
         self.container = sharedContainer
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.NSUbiquityIdentityDidChange,
+            object: nil,
+            queue: .main
+        ) { _ in
+            Task { @MainActor in
+                guard Persistence.hasICloudIdentity else {
+                    return
+                }
 
+                AttachmentMigration.syncLocalAssetsToCloud(
+                    context: sharedContainer.mainContext
+                )
+
+                NotificationCenter.default.post(
+                    name: .attachmentsShouldRefresh,
+                    object: nil
+                )
+            }
+        }
         let appSettings = AppSettings.shared
 
         NotificationManager.shared.modelContainer = sharedContainer
@@ -158,6 +177,7 @@ struct ForMemoApp: App {
         
         // 6️⃣ CloudKit observer
         startRemoteChangeObserver()
+
     }
     
     
@@ -287,6 +307,8 @@ struct ForMemoApp: App {
     
     // MARK: - 🔥 CLOUDKIT REALTIME (VERO)
     
+    // MARK: - iCLOUD IDENTITY
+
     private func startRemoteChangeObserver() {
       
         NotificationCenter.default.addObserver(

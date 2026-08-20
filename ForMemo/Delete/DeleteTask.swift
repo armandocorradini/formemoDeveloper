@@ -12,6 +12,10 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
         for attachment in attachments {
             let trashName = attachment.deleteFileIfNeeded()
             
+            TaskAttachment.deleteCloudMirror(
+                relativePath: attachment.relativePath
+            )
+            
             let item = DeletedItem(type: "attachment")
             item.taskID = task.id
             item.fileName = attachment.originalName
@@ -48,6 +52,10 @@ func deleteLoyaltyCard(
             relativePath: asset.relativePath
         )
 
+        WalletAssetStore.deleteCloudMirror(
+            relativePath: asset.relativePath
+        )
+        
         let item = DeletedItem(type: "walletAsset")
 
         item.loyaltyCardID = card.id
@@ -110,6 +118,10 @@ func deleteDocument(
             continue
         }
 
+        DocumentAssetStore.deleteCloudMirror(
+            relativePath: asset.relativePath
+        )
+        
         let item = DeletedItem(type: "documentAsset")
 
         item.documentID = document.id

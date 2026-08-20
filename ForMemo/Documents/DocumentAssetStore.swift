@@ -9,8 +9,12 @@ enum DocumentAssetStore {
     private static let folderName = "DocumentAssets"
     private static let directoryLock = NSLock()
     
+    /// Local persistent asset directory.
+    ///
+    /// This directory is independent of iCloud availability and remains
+    /// available when iCloud is temporarily unavailable.
     static var assetsDirectory: URL? {
-        AssetDirectoryCoordinator.canonicalDirectory(
+        AssetDirectoryCoordinator.localDirectory(
             for: .documentAssets
         )
     }
@@ -315,6 +319,41 @@ enum DocumentAssetStore {
         }
     }
 
+    // MARK: - Delete Cloud Mirror
+
+    static func deleteCloudMirror(
+        relativePath: String
+    ) {
+        guard
+            let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
+                for: .documentAssets
+            ),
+            isSafeRelativePath(relativePath)
+        else {
+            return
+        }
+
+        let cloudURL =
+            cloudDirectory.appendingPathComponent(relativePath)
+
+        let fm = FileManager.default
+
+        guard fm.fileExists(atPath: cloudURL.path) else {
+            return
+        }
+
+        do {
+            try fm.removeItem(at: cloudURL)
+
+            AppLogger.persistence.notice(
+                "DocumentAsset cloud mirror deleted: \(relativePath)"
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Unable to delete DocumentAsset cloud mirror: \(error.localizedDescription)"
+            )
+        }
+    }
     
     // MARK: - Move to Trash
 
@@ -324,62 +363,53 @@ enum DocumentAssetStore {
     ) -> String? {
 
         guard
-            let sourceURL = fileURL(relativePath: relativePath),
-            FileManager.default.fileExists(atPath: sourceURL.path),
-            let trashDirectory
+            let assetsDirectory,
+            let trashDirectory,
+            isSafeRelativePath(relativePath)
         else {
             return nil
         }
 
-        do {
-            try FileManager.default.createDirectory(
-                at: trashDirectory,
-                withIntermediateDirectories: true
-            )
-        } catch {
-            AppLogger.persistence.error(
-                "Unable to create document asset trash directory: \(error.localizedDescription)"
-            )
+        let sourceURL =
+            assetsDirectory.appendingPathComponent(relativePath)
+
+        let fm = FileManager.default
+
+        guard fm.fileExists(atPath: sourceURL.path) else {
             return nil
         }
 
-        let trashFileName =
-            UUID().uuidString + "-" + sourceURL.lastPathComponent
-
-        let destinationURL =
-            trashDirectory.appendingPathComponent(trashFileName)
-
         do {
+            try fm.createDirectory(
+                at: trashDirectory,
+                withIntermediateDirectories: true
+            )
 
-            try FileManager.default.moveItem(
+            let trashFileName =
+                UUID().uuidString + "-" + sourceURL.lastPathComponent
+
+            let destinationURL =
+                trashDirectory.appendingPathComponent(trashFileName)
+
+            try fm.moveItem(
                 at: sourceURL,
                 to: destinationURL
             )
 
             AppLogger.persistence.notice(
-                """
-                📄 Document moved to Trash
-
-                Source:
-                \(sourceURL.path)
-
-                Destination:
-                \(destinationURL.path)
-                """
+                "DocumentAsset moved to local Trash: \(relativePath)"
             )
 
             return trashFileName
 
         } catch {
-
             AppLogger.persistence.error(
-                "Unable to move document asset to trash: \(error.localizedDescription)"
+                "Unable to move DocumentAsset to local Trash: \(error.localizedDescription)"
             )
 
             return nil
         }
     }
-    
     // MARK: - Restore From Trash
 
     @discardableResult
@@ -388,17 +418,19 @@ enum DocumentAssetStore {
         relativePath: String
     ) -> Bool {
 
-        guard let assetsDirectory else {
+        guard
+            let assetsDirectory,
+            let sourceURL = trashFileURL(
+                trashFileName: trashFileName
+            ),
+            isSafeRelativePath(relativePath)
+        else {
             return false
         }
 
-        guard let sourceURL = trashFileURL(
-            trashFileName: trashFileName
-        ) else {
-            return false
-        }
+        let fm = FileManager.default
 
-        guard FileManager.default.fileExists(atPath: sourceURL.path) else {
+        guard fm.fileExists(atPath: sourceURL.path) else {
             return false
         }
 
@@ -406,21 +438,13 @@ enum DocumentAssetStore {
             assetsDirectory.appendingPathComponent(relativePath)
 
         do {
-            try FileManager.default.createDirectory(
+            try fm.createDirectory(
                 at: destinationURL.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-        } catch {
-            AppLogger.persistence.error(
-                "Document asset restore directory creation failed: \(error.localizedDescription)"
-            )
-            return false
-        }
 
-        do {
-
-            if FileManager.default.fileExists(atPath: destinationURL.path) {
-                try FileManager.default.removeItem(at: destinationURL)
+            if fm.fileExists(atPath: destinationURL.path) {
+                try fm.removeItem(at: destinationURL)
             }
 
             var coordinatorError: NSError?
@@ -433,7 +457,7 @@ enum DocumentAssetStore {
             ) { coordinatedURL in
 
                 do {
-                    try FileManager.default.moveItem(
+                    try fm.moveItem(
                         at: sourceURL,
                         to: coordinatedURL
                     )
@@ -450,27 +474,52 @@ enum DocumentAssetStore {
                 throw moveError
             }
 
-            guard FileManager.default.fileExists(
-                atPath: destinationURL.path
-            ) else {
+            guard
+                fm.fileExists(atPath: destinationURL.path),
+                let restoredSize =
+                    try? fm.attributesOfItem(
+                        atPath: destinationURL.path
+                    )[.size] as? NSNumber,
+                restoredSize.int64Value > 0
+            else {
                 return false
             }
 
-            let restoredSize =
-                (try? FileManager.default.attributesOfItem(
-                    atPath: destinationURL.path
-                )[.size] as? NSNumber)?.int64Value ?? 0
+            // Best-effort recreation of the iCloud mirror.
+            if let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
+                for: .documentAssets
+            ) {
+                do {
+                    try fm.createDirectory(
+                        at: cloudDirectory,
+                        withIntermediateDirectories: true
+                    )
 
-            guard restoredSize > 0 else {
-                return false
+                    let cloudURL =
+                        cloudDirectory.appendingPathComponent(relativePath)
+
+                    if !fm.fileExists(atPath: cloudURL.path) {
+                        try fm.copyItem(
+                            at: destinationURL,
+                            to: cloudURL
+                        )
+
+                        AppLogger.persistence.notice(
+                            "DocumentAsset cloud mirror restored: \(relativePath)"
+                        )
+                    }
+                } catch {
+                    AppLogger.persistence.error(
+                        "Unable to restore DocumentAsset cloud mirror: \(error.localizedDescription)"
+                    )
+                }
             }
 
             return true
 
         } catch {
-
             AppLogger.persistence.error(
-                "Unable to restore document asset: \(error.localizedDescription)"
+                "Unable to restore DocumentAsset: \(error.localizedDescription)"
             )
 
             return false
@@ -562,12 +611,15 @@ enum DocumentAssetStore {
         directoryLock.lock()
         defer { directoryLock.unlock() }
 
-        let directory = try AssetDirectoryCoordinator
-            .ensureCanonicalDirectory(
-                for: .documentAssets
-            )
-        
-        
+        guard let directory = assetsDirectory else {
+            throw CocoaError(.fileNoSuchFile)
+        }
+
+        try FileManager.default.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+
         let relativePath = "\(UUID().uuidString).\(fileExtension)"
         let destinationURL = directory.appendingPathComponent(relativePath)
 
@@ -579,32 +631,91 @@ enum DocumentAssetStore {
             options: .forReplacing,
             error: &coordinatorError
         ) { coordinatedURL in
-
             do {
-
                 try data.write(
                     to: coordinatedURL,
                     options: .atomic
                 )
-
             } catch {
-
                 writeError = error
-
             }
-
         }
 
         if let coordinatorError {
-
             throw coordinatorError
-
         }
 
         if let writeError {
-
             throw writeError
+        }
 
+        // Local copy is mandatory. iCloud is a best-effort mirror.
+        if let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
+            for: .documentAssets
+        ) {
+            do {
+                let fm = FileManager.default
+                try fm.createDirectory(
+                    at: cloudDirectory,
+                    withIntermediateDirectories: true
+                )
+
+                let cloudURL = cloudDirectory.appendingPathComponent(relativePath)
+
+                if !fm.fileExists(atPath: cloudURL.path) {
+                    var cloudCoordinatorError: NSError?
+                    var cloudCopyError: Error?
+
+                    NSFileCoordinator().coordinate(
+                        writingItemAt: cloudURL,
+                        options: .forReplacing,
+                        error: &cloudCoordinatorError
+                    ) { coordinatedURL in
+                        do {
+                            try fm.copyItem(
+                                at: destinationURL,
+                                to: coordinatedURL
+                            )
+                        } catch {
+                            cloudCopyError = error
+                        }
+                    }
+
+                    if let cloudCoordinatorError {
+                        throw cloudCoordinatorError
+                    }
+                    if let cloudCopyError {
+                        throw cloudCopyError
+                    }
+
+                    let cloudSize =
+                        (try fm.attributesOfItem(atPath: cloudURL.path)[.size]
+                            as? NSNumber)?.int64Value ?? 0
+
+                    guard cloudSize == Int64(data.count) else {
+                        throw NSError(
+                            domain: "DocumentAssetStore",
+                            code: 5,
+                            userInfo: [
+                                NSLocalizedDescriptionKey:
+                                    "Cloud document asset mirror verification failed"
+                            ]
+                        )
+                    }
+
+                    AppLogger.persistence.notice(
+                        "DocumentAsset cloud mirror created: \(relativePath)"
+                    )
+                }
+            } catch {
+                AppLogger.persistence.error(
+                    "Unable to mirror document asset to iCloud: \(error.localizedDescription)"
+                )
+            }
+        } else {
+            AppLogger.persistence.notice(
+                "DocumentAsset cloud mirror skipped: iCloud unavailable — \(relativePath)"
+            )
         }
 
         return (
@@ -615,27 +726,12 @@ enum DocumentAssetStore {
     
     
     static var trashDirectory: URL? {
-        guard let containerURL = FileManager.default.url(
-            forUbiquityContainerIdentifier:
-                "iCloud.corradini.armando.NewTask"
-        ) else {
-            return FileManager.default
-                .urls(
-                    for: .documentDirectory,
-                    in: .userDomainMask
-                )
-                .first?
-                .appendingPathComponent(
-                    "DocumentAssets_Trash",
-                    isDirectory: true
-                )
-        }
-
-        return containerURL
-            .appendingPathComponent(
-                "Documents",
-                isDirectory: true
+        FileManager.default
+            .urls(
+                for: .documentDirectory,
+                in: .userDomainMask
             )
+            .first?
             .appendingPathComponent(
                 "DocumentAssets_Trash",
                 isDirectory: true

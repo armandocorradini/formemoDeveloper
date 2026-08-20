@@ -234,16 +234,12 @@ final class PersistenceOperationCoordinator {
             return
         }
 
-        // Event started before the operation but completed after it began.
+        // An export that started before the current operation
+        // must never satisfy the reset's export requirement.
         if let endDate = event.endDate,
            endDate >= operationStartedAt {
 
             activeCloudKitEvents.remove(event.identifier)
-
-            if event.isExport,
-               event.succeeded {
-                exportCompletedAfterStart = true
-            }
 
             if !event.succeeded {
                 cloudKitFailure =
