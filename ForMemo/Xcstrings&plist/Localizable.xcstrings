@@ -77,34 +77,6 @@
       },
       "shouldTranslate" : false
     },
-    "%@ automatically uses your Apple ID and your personal iCloud account. No sign in or additional account is required." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ verwendet automatisch deine Apple-ID und deinen persönlichen iCloud-Account. Es ist keine Anmeldung oder ein zusätzliches Konto erforderlich."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ utiliza automáticamente tu ID de Apple y tu cuenta personal de iCloud. No es necesario iniciar sesión ni crear una cuenta adicional."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ utilise automatiquement votre identifiant Apple et votre compte iCloud personnel. Aucune connexion ni compte supplémentaire n’est requis."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ utilizza automaticamente il tuo ID Apple e il tuo account iCloud personale. Non è richiesto alcun accesso o account aggiuntivo."
-          }
-        }
-      }
-    },
     "%@, %@" : {
       "localizations" : {
         "de" : {
@@ -13553,6 +13525,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Formato"
+          }
+        }
+      }
+    },
+    "ForMemo automatically uses your Apple ID and personal iCloud account when iCloud is available. No separate ForMemo account or sign-in is required." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo verwendet automatisch deine Apple-ID und deinen persönlichen iCloud-Account, wenn iCloud verfügbar ist. Du benötigst keinen separaten ForMemo-Account und keine zusätzliche Anmeldung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo utiliza automáticamente tu Cuenta de Apple y tu cuenta personal de iCloud cuando iCloud está disponible. No necesitas una cuenta de ForMemo ni iniciar sesión por separado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo utilise automatiquement votre identifiant Apple et votre compte iCloud personnel lorsque iCloud est disponible. Aucun compte ForMemo ni aucune connexion supplémentaire ne sont nécessaires."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo utilizza automaticamente il tuo Apple Account e il tuo account iCloud personale quando iCloud è disponibile. Non è richiesto alcun account ForMemo né alcun accesso aggiuntivo."
           }
         }
       }
@@ -36744,30 +36744,30 @@
         }
       }
     },
-    "Your tasks and attachments are stored only in your personal iCloud account. The developer does not run any server and cannot access your data." : {
+    "Your tasks and attachments are stored on your device and, when iCloud is enabled, synchronized with your personal iCloud account. The developer does not run any server and cannot access your data." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deine Aufgaben und Anhänge werden ausschließlich in deinem persönlichen iCloud-Konto gespeichert. Der Entwickler betreibt keine Server und hat keinen Zugriff auf deine Daten."
+            "value" : "Deine Aufgaben und Anhänge werden auf deinem Gerät gespeichert und, wenn iCloud aktiviert ist, mit deinem persönlichen iCloud-Account synchronisiert. Der Entwickler betreibt keine eigenen Server und kann nicht auf deine Daten zugreifen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tus tareas y adjuntos se almacenan exclusivamente en tu cuenta personal de iCloud. El desarrollador no gestiona ningún servidor y no tiene acceso a tus datos."
+            "value" : "Tus tareas y archivos adjuntos se almacenan en tu dispositivo y, cuando iCloud está activado, se sincronizan con tu cuenta personal de iCloud. El desarrollador no gestiona ningún servidor y no puede acceder a tus datos."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vos tâches et pièces jointes sont stockées uniquement sur votre compte iCloud personnel. Le développeur n'exploite aucun serveur et ne peut pas accéder à vos données."
+            "value" : "Vos tâches et vos pièces jointes sont stockées sur votre appareil et, lorsque iCloud est activé, synchronisées avec votre compte iCloud personnel. Le développeur n’exploite aucun serveur et ne peut pas accéder à vos données."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le tue attività e gli allegati sono memorizzati esclusivamente sul tuo account iCloud personale. Lo sviluppatore non gestisce alcun server e non può accedere ai tuoi dati."
+            "value" : "Le tue attività e i tuoi allegati sono archiviati sul dispositivo e, quando iCloud è attivo, sincronizzati con il tuo account iCloud personale. Lo sviluppatore non gestisce alcun server e non può accedere ai tuoi dati."
           }
         }
       }
