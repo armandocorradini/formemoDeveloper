@@ -146,14 +146,14 @@ struct AppQuickGuideView: View {
         
             .init(
                 title: String(localized:"Automatic iCloud Login"),
-                description: String(localized:"\(appName) automatically uses your Apple ID and your personal iCloud account. No sign in or additional account is required."),
+                description: String(localized:"ForMemo automatically uses your Apple ID and personal iCloud account when iCloud is available. No separate ForMemo account or sign-in is required."),
                 icon: "icloud",
                 tint: .cyan
             ),
         
             .init(
                 title: String(localized:"Your Data, Your Control"),
-                description: String(localized:"Your tasks and attachments are stored only in your personal iCloud account. The developer does not run any server and cannot access your data."),
+                description: String(localized:"Your tasks and attachments are stored on your device and, when iCloud is enabled, synchronized with your personal iCloud account. The developer does not run any server and cannot access your data."),
                 icon: "lock.shield",
                 tint: .indigo
             ),
