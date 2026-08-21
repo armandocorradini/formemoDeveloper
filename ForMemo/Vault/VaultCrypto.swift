@@ -185,6 +185,17 @@ enum VaultCrypto {
             throw VaultCryptoError.keychainError(status)
         }
     }
+    
+    static func installKey(_ key: SymmetricKey) throws {
+        let raw = key.withUnsafeBytes { Data($0) }
+
+        try saveKey(raw)
+        try saveKeyVersion(keyVersion)
+
+        cachedKey = key
+    }
+    
+    
 
     private static func saveKeyVersion(_ version: Int) throws {
         let data = Data(String(version).utf8)
@@ -253,6 +264,57 @@ enum VaultCrypto {
             vaultKey: rawKey,
             password: backupPassword
         )
+    }
+    
+    static func existingKey() throws -> SymmetricKey? {
+        if let cachedKey {
+            return cachedKey
+        }
+
+        if let key = try loadKey() {
+            cachedKey = key
+            return key
+        }
+
+        return nil
+    }
+
+    static func encrypt(
+        _ data: Data,
+        using key: SymmetricKey
+    ) throws -> Data {
+        let sealed = try AES.GCM.seal(data, using: key)
+
+        guard let combined = sealed.combined else {
+            throw VaultCryptoError.encryptionFailed
+        }
+
+        return combined
+    }
+
+    static func decrypt(
+        _ data: Data,
+        using key: SymmetricKey
+    ) throws -> Data {
+        do {
+            let sealed = try AES.GCM.SealedBox(combined: data)
+            return try AES.GCM.open(sealed, using: key)
+        } catch {
+            throw VaultCryptoError.decryptionFailed
+        }
+    }
+
+    static func reencrypt(
+        _ data: Data?,
+        from sourceKey: SymmetricKey,
+        to destinationKey: SymmetricKey
+    ) throws -> Data? {
+        guard let data, !data.isEmpty else {
+            return nil
+        }
+
+        let plaintext = try decrypt(data, using: sourceKey)
+        return try encrypt(plaintext, using: destinationKey)
     }
 
     /// Restores the master key from an authenticated password-protected package.

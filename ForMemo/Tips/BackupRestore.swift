@@ -1,4 +1,5 @@
 import SwiftUI
+import CryptoKit
 import SwiftData
 import UniformTypeIdentifiers
 
@@ -1681,6 +1682,8 @@ private enum BackupManager {
         restoreSettings: Bool
     ) async throws {
         try PersistenceOperationCoordinator.shared.begin(.restore)
+        var vaultKeyToInstall: SymmetricKey?
+        
         if restoreTasks {
 
             let attachmentsDirectory =
@@ -2050,109 +2053,186 @@ private enum BackupManager {
         }
 
         if restoreVault {
-            // Restore Vault encryption key from archive.vaultBackupPackage
 
             guard let vaultBackupPackage = archive.vaultBackupPackage else {
-                throw NSError(domain: "BackupManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Vault restore requested, but no Vault backup package was found in the archive."])
+                throw NSError(
+                    domain: "BackupManager",
+                    code: 1,
+                    userInfo: [
+                        NSLocalizedDescriptionKey:
+                            "Vault restore requested, but no Vault backup package was found in the archive."
+                    ]
+                )
             }
 
-            try VaultCrypto.importVaultKey(
-                vaultBackupPackage,
-                protecting: backupPassword
+            let backupKeyData = try VaultBackupCrypto.unwrapKey(
+                from: vaultBackupPackage,
+                password: backupPassword
             )
 
-            // Restore Vault items from archive.vaultItems
+            guard backupKeyData.count == 32 else {
+                throw VaultCryptoError.invalidData
+            }
+
+            let backupKey = SymmetricKey(data: backupKeyData)
+
+            let localKey = try VaultCrypto.existingKey()
+
+            let finalKey: SymmetricKey
+
+            if let localKey {
+                finalKey = localKey
+            } else {
+                finalKey = backupKey
+            }
+
+            if localKey == nil {
+                vaultKeyToInstall = finalKey
+            }
+
+            struct PreparedVaultSecret {
+                let encryptedLabel: Data?
+                let encryptedValue: Data?
+                let sortOrder: Int
+            }
+
+            struct PreparedVaultItem {
+                let dto: VaultItemTransferObject
+                let encryptedPassword: Data?
+                let encryptedPIN: Data?
+                let secrets: [PreparedVaultSecret]
+            }
+
+            var preparedVaultItems: [PreparedVaultItem] = []
+            preparedVaultItems.reserveCapacity(archive.vaultItems.count)
+
+            // 1. Prepare and validate the entire backup first.
             for dto in archive.vaultItems {
-                let descriptor = FetchDescriptor<VaultItem>(
-                    predicate: #Predicate { $0.id == dto.id }
+
+                let encryptedPassword = try VaultCrypto.reencrypt(
+                    dto.encryptedPassword,
+                    from: backupKey,
+                    to: finalKey
                 )
-                let existingItems = try? modelContext.fetch(descriptor)
-                if let existing = existingItems?.first {
-                    // Update all properties from dto, including deletedAt
-                    existing.title = dto.title
-                    existing.category = dto.category
-                    existing.favorite = dto.favorite
-                    existing.tags = dto.tags
-                    existing.sortOrder = dto.sortOrder
-                    existing.icon = dto.icon
-                    existing.color = dto.color
-                    existing.username = dto.username
-                    existing.email = dto.email
-                    existing.website = dto.website
-                    existing.notes = dto.notes
-                    existing.encryptedPassword = dto.encryptedPassword
-                    existing.encryptedPIN = dto.encryptedPIN
-                
-                    existing.secrets = []
 
-                    for dtoSecret in dto.secrets {
+                let encryptedPIN = try VaultCrypto.reencrypt(
+                    dto.encryptedPIN,
+                    from: backupKey,
+                    to: finalKey
+                )
 
-                        let secret = VaultSecret(
-                            encryptedLabel: dtoSecret.encryptedLabel,
-                            encryptedValue: dtoSecret.encryptedValue,
+                var preparedSecrets: [PreparedVaultSecret] = []
+                preparedSecrets.reserveCapacity(dto.secrets.count)
+
+                for dtoSecret in dto.secrets {
+
+                    let encryptedLabel = try VaultCrypto.reencrypt(
+                        dtoSecret.encryptedLabel,
+                        from: backupKey,
+                        to: finalKey
+                    )
+
+                    let encryptedValue = try VaultCrypto.reencrypt(
+                        dtoSecret.encryptedValue,
+                        from: backupKey,
+                        to: finalKey
+                    )
+
+                    preparedSecrets.append(
+                        PreparedVaultSecret(
+                            encryptedLabel: encryptedLabel,
+                            encryptedValue: encryptedValue,
                             sortOrder: dtoSecret.sortOrder
                         )
-                        modelContext.insert(secret)
-                        secret.vaultItem = existing
-                        existing.secrets?.append(secret)
-                    }
-                    
-                    
-                    existing.createdAt = dto.createdAt
-                    existing.modifiedAt = dto.modifiedAt
-                    existing.passwordUpdatedAt = dto.passwordUpdatedAt
-                    existing.passwordExpiresAt = dto.passwordExpiresAt
-                    existing.lastViewedAt = dto.lastViewedAt
-                    existing.lastCopiedAt = dto.lastCopiedAt
-                    existing.deletedAt = dto.deletedAt
+                    )
+                }
 
-                    existing.version = dto.version
-                    existing.syncIdentifier = dto.syncIdentifier
-                    // No need to insert, already present
+                preparedVaultItems.append(
+                    PreparedVaultItem(
+                        dto: dto,
+                        encryptedPassword: encryptedPassword,
+                        encryptedPIN: encryptedPIN,
+                        secrets: preparedSecrets
+                    )
+                )
+            }
+
+            // 2. Merge backup Vault into the existing local Vault.
+            // Local items not present in the backup are preserved.
+
+            for prepared in preparedVaultItems {
+
+                let dto = prepared.dto
+
+                let existingItems = try modelContext.fetch(
+                    FetchDescriptor<VaultItem>(
+                        predicate: #Predicate {
+                            $0.syncIdentifier == dto.syncIdentifier
+                        }
+                    )
+                )
+
+                let item: VaultItem
+
+                if let existing = existingItems.first {
+                    item = existing
                 } else {
-                    let item = VaultItem(
+                    item = VaultItem(
                         title: dto.title,
                         category: dto.category
                     )
-                    item.icon = dto.icon
-                    item.color = dto.color
-                    item.username = dto.username
-                    item.email = dto.email
-                    item.website = dto.website
-                    item.notes = dto.notes
+
                     item.id = dto.id
                     item.syncIdentifier = dto.syncIdentifier
-                    item.version = dto.version
-                    item.favorite = dto.favorite
-                    item.tags = dto.tags
-                    item.sortOrder = dto.sortOrder
-                    item.encryptedPassword = dto.encryptedPassword
-                    item.encryptedPIN = dto.encryptedPIN
-
-                    item.secrets = []
-
-                    for dtoSecret in dto.secrets {
-
-                        let secret = VaultSecret(
-                            encryptedLabel: dtoSecret.encryptedLabel,
-                            encryptedValue: dtoSecret.encryptedValue,
-                            sortOrder: dtoSecret.sortOrder
-                        )
-                        modelContext.insert(secret)
-                        secret.vaultItem = item
-                        item.secrets?.append(secret)
-                    }
-                    
-                    item.createdAt = dto.createdAt
-                    item.modifiedAt = dto.modifiedAt
-                    item.passwordUpdatedAt = dto.passwordUpdatedAt
-                    item.passwordExpiresAt = dto.passwordExpiresAt
-                    item.lastViewedAt = dto.lastViewedAt
-                    item.lastCopiedAt = dto.lastCopiedAt
-                    item.deletedAt = dto.deletedAt
-
-                    modelContext.insert(item)
                 }
+
+                item.version = dto.version
+                item.title = dto.title
+                item.category = dto.category
+                item.favorite = dto.favorite
+                item.tags = dto.tags
+                item.sortOrder = dto.sortOrder
+                item.icon = dto.icon
+                item.color = dto.color
+                item.username = dto.username
+                item.email = dto.email
+                item.website = dto.website
+                item.notes = dto.notes
+                item.encryptedPassword = prepared.encryptedPassword
+                item.encryptedPIN = prepared.encryptedPIN
+                item.createdAt = dto.createdAt
+                item.modifiedAt = dto.modifiedAt
+                item.passwordUpdatedAt = dto.passwordUpdatedAt
+                item.passwordExpiresAt = dto.passwordExpiresAt
+                item.lastViewedAt = dto.lastViewedAt
+                item.lastCopiedAt = dto.lastCopiedAt
+                item.deletedAt = dto.deletedAt
+                item.requireBiometricEveryTime = dto.requireBiometricEveryTime
+
+                // Replace only the secrets belonging to this restored item.
+                let existingSecrets = item.secrets ?? []
+
+                for secret in existingSecrets {
+                    modelContext.delete(secret)
+                }
+
+                item.secrets = []
+
+                for preparedSecret in prepared.secrets {
+
+                    let secret = VaultSecret(
+                        encryptedLabel: preparedSecret.encryptedLabel,
+                        encryptedValue: preparedSecret.encryptedValue,
+                        sortOrder: preparedSecret.sortOrder
+                    )
+
+                    modelContext.insert(secret)
+
+                    secret.vaultItem = item
+                    item.secrets?.append(secret)
+                }
+
+                modelContext.insert(item)
             }
         }
 
@@ -2183,10 +2263,14 @@ private enum BackupManager {
         do {
             try modelContext.save()
 
+            if let vaultKeyToInstall {
+                try VaultCrypto.installKey(vaultKeyToInstall)
+            }
+            
             try await PersistenceOperationCoordinator.shared.waitForSettlement(
                 requireExport: Persistence.hasICloudIdentity
             )
-        } catch {
+        }catch {
             PersistenceOperationCoordinator.shared.finish()
             throw error
         }
