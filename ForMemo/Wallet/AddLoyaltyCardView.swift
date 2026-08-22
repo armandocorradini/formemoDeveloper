@@ -554,20 +554,29 @@ struct AddLoyaltyCardView: View {
         var createdAssets: [WalletAsset] = []
 
         if let logoData {
+            do {
+                try WalletImportService.importLogo(
+                    logoData,
+                    into: card,
+                    in: modelContext
+                )
+            } catch {
+                modelContext.delete(card)
+                return
+            }
+        }
 
-            try! WalletImportService.importLogo(
-                logoData,
+        do {
+            try WalletImportService.importImages(
+                galleryImages,
+                kind: .gallery,
                 into: card,
                 in: modelContext
             )
+        } catch {
+            modelContext.delete(card)
+            return
         }
-
-        try! WalletImportService.importImages(
-            galleryImages,
-            kind: .gallery,
-            into: card,
-            in: modelContext
-        )
 
         createdAssets = card.assets ?? []
 
@@ -579,24 +588,36 @@ struct AddLoyaltyCardView: View {
 
         let cardID = card.id
 
-        let savedCards = try! modelContext.fetch(
+        guard let savedCards = try? modelContext.fetch(
             FetchDescriptor<LoyaltyCard>(
                 predicate: #Predicate<LoyaltyCard> { loyalty in
                     loyalty.id == cardID
                 }
             )
-        )
-        precondition(savedCards.count == 1, "LoyaltyCard was discarded by the local save")
+        ) else {
+            modelContext.delete(card)
+            return
+        }
+        guard savedCards.count == 1 else {
+            modelContext.delete(card)
+            return
+        }
 
-        let savedAssets = try! modelContext.fetch(FetchDescriptor<WalletAsset>())
+        guard let savedAssets = try? modelContext.fetch(
+            FetchDescriptor<WalletAsset>()
+        ) else {
+            modelContext.delete(card)
+            return
+        }
         let savedAssetIDs = Set(savedAssets.map(\.id))
-        precondition(
-            createdAssets.allSatisfy { asset in
-                savedAssetIDs.contains(asset.id)
-                    && savedAssets.first(where: { $0.id == asset.id })?.card?.id == card.id
-            },
-            "WalletAsset was discarded by the local save"
-        )
+        
+        guard createdAssets.allSatisfy({ asset in
+            savedAssetIDs.contains(asset.id)
+                && savedAssets.first(where: { $0.id == asset.id })?.card?.id == card.id
+        }) else {
+            modelContext.delete(card)
+            return
+        }
 
         dismiss()
     }

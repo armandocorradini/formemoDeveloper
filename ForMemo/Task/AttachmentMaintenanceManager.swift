@@ -18,11 +18,16 @@ final class AttachmentMaintenanceManager {
         retentionDays: Int
     ) throws {
         
-        let cutoff = Calendar.current.date(
+        guard let cutoff = Calendar.current.date(
             byAdding: .day,
             value: -retentionDays,
             to: .now
-        )!
+        ) else {
+            AppLogger.persistence.error(
+                "Attachment cleanup skipped: unable to calculate cutoff date."
+            )
+            return
+        }
         
         let descriptor = FetchDescriptor<TodoTask>(
             predicate: #Predicate {
