@@ -75,16 +75,16 @@ struct StartView: View {
                     
                     // Footer
                     VStack(spacing: 2) {
-                        Text("from")
-                            .font(.subheadline)
-                            .tracking(2)
-                            .foregroundStyle(.secondary)
+//                        Text("from")
+//                            .font(.subheadline)
+//                            .tracking(2)
+//                            .foregroundStyle(.secondary)
                         Text("armando ♾️ corradini")
                             .font(.system(.body, design: .serif))
                             .italic()
                         Text(appVersionString)
                             .font(.caption2)
-                            .foregroundStyle(.secondary.opacity(0.7))
+                            .foregroundStyle(.secondary.opacity(0.8))
                             .padding(.top, 4)
                     }
                     .padding(.bottom, 60)
