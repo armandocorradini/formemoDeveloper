@@ -629,16 +629,20 @@ struct TaskDetailView: View {
 
         case "google":
 
-            let googleURL = URL(
+            guard let googleURL = URL(
                 string: "comgooglemaps://?daddr=\(lat),\(lon)&directionsmode=driving"
-            )!
+            ) else {
+                return
+            }
 
             if UIApplication.shared.canOpenURL(googleURL) {
                 UIApplication.shared.open(googleURL)
             } else {
-                let fallbackURL = URL(
+                guard let fallbackURL = URL(
                     string: "https://www.google.com/maps/dir/?api=1&destination=\(lat),\(lon)"
-                )!
+                ) else {
+                    return
+                }
                 UIApplication.shared.open(fallbackURL)
             }
 
@@ -665,36 +669,44 @@ struct TaskDetailView: View {
                     title: "Apple Maps",
                     style: .default
                 ) { _ in
-                    let url = URL(
+                    guard let url = URL(
                         string: "http://maps.apple.com/?daddr=\(lat),\(lon)"
-                    )!
+                    ) else {
+                        return
+                    }
                     UIApplication.shared.open(url)
                 }
             )
 
-            if UIApplication.shared.canOpenURL(URL(string: "comgooglemaps://")!) {
+            if let googleMapsURL = URL(string: "comgooglemaps://"),
+               UIApplication.shared.canOpenURL(googleMapsURL) {
                 alert.addAction(
                     UIAlertAction(
                         title: "Google Maps",
                         style: .default
                     ) { _ in
-                        let googleURL = URL(
+                        guard let googleURL = URL(
                             string: "comgooglemaps://?daddr=\(lat),\(lon)&directionsmode=driving"
-                        )!
+                        ) else {
+                            return
+                        }
                         UIApplication.shared.open(googleURL)
                     }
                 )
             }
 
-            if UIApplication.shared.canOpenURL(URL(string: "waze://")!) {
+            if let wazeURL = URL(string: "waze://"),
+               UIApplication.shared.canOpenURL(wazeURL) {
                 alert.addAction(
                     UIAlertAction(
                         title: "Waze",
                         style: .default
                     ) { _ in
-                        let wazeURL = URL(
+                        guard let wazeURL = URL(
                             string: "waze://?ll=\(lat),\(lon)&navigate=yes"
-                        )!
+                        ) else {
+                            return
+                        }
                         UIApplication.shared.open(wazeURL)
                     }
                 )
@@ -716,9 +728,11 @@ struct TaskDetailView: View {
 
         default:
 
-            let url = URL(
+            guard let url = URL(
                 string: "http://maps.apple.com/?daddr=\(lat),\(lon)"
-            )!
+            ) else {
+                return
+            }
 
             UIApplication.shared.open(url)
         }
