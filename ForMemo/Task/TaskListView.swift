@@ -1410,7 +1410,7 @@ struct TodoSectionView: View {
 
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             Button {
-                withAnimation(.snappy(duration: 0.22)) {
+                withAnimation(.snappy(duration: 0.30, extraBounce: 0.02)) {
                     toggleCompleted(t)
                 }
             } label: {
@@ -1424,9 +1424,8 @@ struct TodoSectionView: View {
                 if confirmTaskDeletion {
                     taskPendingDeletion = t
                 } else {
-                    withAnimation(.easeOut(duration: 0.12)) {
+                    withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
                         deleteTask(t, in: modelContext)
-                        
                     }
 
                 }
@@ -1434,7 +1433,6 @@ struct TodoSectionView: View {
                 Label("Delete", systemImage: "trash")
             }
         }
-
         .contextMenu {
             Button(role: .destructive) {
                 if confirmTaskDeletion {
@@ -1453,13 +1451,11 @@ struct TodoSectionView: View {
             } label: {
                 Label("Delete", systemImage: "trash")
             }
-
             Button {
                 toggleCompleted(t)
             } label: {
                 Label("Complete", systemImage: "checkmark.circle")
             }
-
             Menu {
                 Button {
                     withAnimation(.snappy(duration: 0.22)) {
@@ -1739,7 +1735,7 @@ struct CompletedSectionView: View {
                 )
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
-                            withAnimation(.snappy(duration: 0.22)) {
+                            withAnimation(.snappy(duration: 0.30, extraBounce: 0.02)) {
                                 toggleCompleted(t)
                             }
                         } label: {
@@ -1752,7 +1748,7 @@ struct CompletedSectionView: View {
                             if confirmTaskDeletion {
                                 taskPendingDeletion = t
                             } else {
-                                withAnimation(.easeOut(duration: 0.12)) {
+                                withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
                                     deleteTask(t, in: modelContext)
                                 }
                             }
@@ -1765,7 +1761,7 @@ struct CompletedSectionView: View {
                             if confirmTaskDeletion {
                                 taskPendingDeletion = t
                             } else {
-                                withAnimation {
+                                withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
                                     deleteTask(t, in: modelContext)
                                 }
                             }
