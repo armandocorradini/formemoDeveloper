@@ -202,8 +202,7 @@ extension DeletedItem {
                 createdAt: noteCreatedAt ?? .now,
                 modifiedAt: noteModifiedAt ?? .now,
                 isPinned: noteIsPinned ?? false,
-                isArchived: noteIsArchived ?? false,
-                deletedAt: nil
+                isArchived: noteIsArchived ?? false
             )
 
             context.insert(note)

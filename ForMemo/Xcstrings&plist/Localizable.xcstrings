@@ -3126,6 +3126,15 @@
         }
       }
     },
+    "Archive" : {
+
+    },
+    "Archived" : {
+
+    },
+    "Archived %@" : {
+
+    },
     "Arctic" : {
       "localizations" : {
         "de" : {
@@ -8710,6 +8719,9 @@
           }
         }
       }
+    },
+    "Created %@" : {
+
     },
     "Created at" : {
       "localizations" : {
@@ -14781,6 +14793,9 @@
         }
       }
     },
+    "Hide Archived" : {
+
+    },
     "Hide Password" : {
       "localizations" : {
         "de" : {
@@ -19319,6 +19334,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessun allegato"
+          }
+        }
+      }
+    },
+    "No Background" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kein Hintergrund"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin fondo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun arrière-plan"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuno sfondo"
           }
         }
       }
@@ -25840,6 +25883,9 @@
         }
       }
     },
+    "Show Archived" : {
+
+    },
     "Show attachments icon" : {
       "localizations" : {
         "de" : {
@@ -32289,6 +32335,9 @@
           }
         }
       }
+    },
+    "Unarchive" : {
+
     },
     "Underline overdue tasks" : {
       "comment" : "A toggle to underline overdue tasks.",

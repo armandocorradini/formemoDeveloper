@@ -24,7 +24,7 @@ struct OverviewView: View {
 
     @Query private var documents: [DocumentItem]
     @Query private var documentAssets: [DocumentAsset]
-    
+    @Query private var notes: [Note]
     
     // 2. Separate le query per evitare filtri in memoria
     @Query(filter: #Predicate<LoyaltyCard> { $0.itemType == "ticket" })
@@ -294,6 +294,7 @@ struct OverviewView: View {
 //                    storageSection
                     tasksSection
                     documentsSection
+                    notesSection
                     walletSection
                     tripsSection
                     recentlyDeletedSection
@@ -536,7 +537,34 @@ private extension OverviewView {
                 .stroke(.white.opacity(0.10), lineWidth: 1)
         }
     }
+    var notesSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Notes")
+                .font(.headline)
+                .foregroundStyle(.primary)
 
+            Divider()
+                .overlay(.white.opacity(0.12))
+
+            VStack(alignment: .leading, spacing: 10) {
+                LabeledContent("Notes") {
+                    Text("\(notes.count)")
+                }
+            }
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.regularMaterial)
+                .shadow(color: .black.opacity(0.10), radius: 12, y: 6)
+                .shadow(color: .white.opacity(0.08), radius: 1, y: -1)
+        )
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(.white.opacity(0.10), lineWidth: 1)
+        }
+    }
+    
     var walletSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Wallet")

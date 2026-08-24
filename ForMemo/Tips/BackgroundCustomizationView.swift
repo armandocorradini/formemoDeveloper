@@ -30,6 +30,7 @@ struct BackgroundCustomizationView: View {
     }
 
     private let presets: [(String, Color, Color)] = [
+        
         ("Default", defaultBackColor1, defaultBackColor2),
         ("Custom", defaultBackColor1, defaultBackColor2),
         ("Graphite",
@@ -105,6 +106,7 @@ struct BackgroundCustomizationView: View {
         ("Sunflower", Color(red: 0.95, green: 0.70, blue: 0.10), Color(red: 1.00, green: 0.90, blue: 0.35)),
 
         ("Sunset", Color(red: 1.00, green: 0.70, blue: 0.55), Color(red: 1.00, green: 0.82, blue: 0.78)),
+        ("No Background", .clear, .clear),
         
     ]
 
@@ -113,19 +115,24 @@ struct BackgroundCustomizationView: View {
         let color2Hex = settings.backgroundColor2Hex
         ZStack {
 
-            LinearGradient(
-                colors: [
-                    Color(hex: color1Hex) ?? defaultBackColor1,
-                    Color(hex: color2Hex) ?? defaultBackColor2
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-
-            Rectangle()
-                .fill(.ultraThinMaterial)
+            if settings.backgroundStyle == .system {
+                Color(.systemBackground)
+                    .ignoresSafeArea()
+            } else {
+                LinearGradient(
+                    colors: [
+                        Color(hex: color1Hex) ?? defaultBackColor1,
+                        Color(hex: color2Hex) ?? defaultBackColor2
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
                 .ignoresSafeArea()
+
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+                    .ignoresSafeArea()
+            }
 
             Form {
 
@@ -137,17 +144,27 @@ struct BackgroundCustomizationView: View {
 
                             let selectedColor1 = Color(hex: color1Hex) ?? defaultBackColor1
                             let selectedColor2 = Color(hex: color2Hex) ?? defaultBackColor2
+                            
+                            let isNoBackground = settings.backgroundStyle == .system
 
                             let isDefault =
+                                settings.backgroundStyle == .gradient &&
                                 selectedColor1.toHex() == defaultBackColor1.toHex() &&
                                 selectedColor2.toHex() == defaultBackColor2.toHex()
 
-                            let matchesPreset = presets.dropFirst(2).contains {
-                                color1Hex == ($0.1.toHex() ?? "") &&
-                                color2Hex == ($0.2.toHex() ?? "")
-                            }
+                            let matchesPreset =
+                                settings.backgroundStyle == .gradient &&
+                                presets.contains {
+                                    $0.0 != "No Background" &&
+                                    $0.0 != "Custom" &&
+                                    color1Hex == ($0.1.toHex() ?? "") &&
+                                    color2Hex == ($0.2.toHex() ?? "")
+                                }
 
-                            let shouldShowCustom = !isDefault && !matchesPreset
+                            let shouldShowCustom =
+                                !isNoBackground &&
+                                !isDefault &&
+                                !matchesPreset
 
                             let visiblePresets = presets.filter {
                                 shouldShowCustom || $0.0 != "Custom"
@@ -159,6 +176,14 @@ struct BackgroundCustomizationView: View {
                                 let localizedName = localizedPresetName(preset.0)
 
                                 let isSelected: Bool = {
+
+                                    if preset.0 == "No Background" {
+                                        return isNoBackground
+                                    }
+
+                                    guard settings.backgroundStyle == .gradient else {
+                                        return false
+                                    }
 
                                     if preset.0 == "Default" {
                                         return isDefault
@@ -173,11 +198,17 @@ struct BackgroundCustomizationView: View {
                                 }()
 
                                 Button {
-                                    settings.backgroundColor1Hex =
-                                        preset.1.toHex() ?? settings.backgroundColor1Hex
+                                    if preset.0 == "No Background" {
+                                        settings.backgroundStyle = .system
+                                    } else {
+                                        settings.backgroundStyle = .gradient
 
-                                    settings.backgroundColor2Hex =
-                                        preset.2.toHex() ?? settings.backgroundColor2Hex
+                                        settings.backgroundColor1Hex =
+                                            preset.1.toHex() ?? settings.backgroundColor1Hex
+
+                                        settings.backgroundColor2Hex =
+                                            preset.2.toHex() ?? settings.backgroundColor2Hex
+                                    }
                                 } label: {
 
                                     VStack(spacing: 6) {
@@ -212,8 +243,12 @@ struct BackgroundCustomizationView: View {
                                         .overlay {
                                             RoundedRectangle(cornerRadius: 22)
                                                 .stroke(
-                                                    isSelected ? Color.accentColor : Color.clear,
-                                                    lineWidth: 3
+                                                    isSelected
+                                                        ? Color.accentColor
+                                                        : (preset.0 == "No Background"
+                                                            ? Color.primary.opacity(0.28)
+                                                            : Color.clear),
+                                                    lineWidth: isSelected ? 3 : 1
                                                 )
                                         }
 
@@ -224,6 +259,7 @@ struct BackgroundCustomizationView: View {
                                     }
                                 }
                                 .buttonStyle(.plain)
+                                .contentShape(Rectangle())
                             }
                         }
                         .padding(.horizontal, 4)
@@ -296,6 +332,8 @@ struct BackgroundCustomizationView: View {
         case "Custom": return String(localized: "Custom")
         case "Titanium": return String(localized: "Titanium")
         case "Graphite": return String(localized: "Graphite")
+        case "No Background": return String(localized: "No Background")
+            
         default:
             return key
         }

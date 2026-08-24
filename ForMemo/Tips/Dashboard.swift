@@ -10,6 +10,7 @@ struct Dashboard: View {
     @State private var selectedDocument: DocumentItem?
     @State private var selectedLoyaltyCard: LoyaltyCard?
     @State private var selectedWeatherDate: Date?
+    @State private var selectedNote: Note?
     
     @State private var recoveryResult: AttachmentRecoveryResult?
     @State private var showRecoveryAlert = false
@@ -34,6 +35,9 @@ struct Dashboard: View {
 
     @Query
     private var loyaltyCards: [LoyaltyCard]
+    
+    @Query
+    private var notes: [Note]
 
     private let weatherManager = WeatherManager.shared
 
@@ -41,6 +45,7 @@ struct Dashboard: View {
         case trip(TripList)
         case document(DocumentItem)
         case loyaltyCard(LoyaltyCard)
+        case note(Note)
     }
 
     private struct ContinueItem: Identifiable {
@@ -108,9 +113,22 @@ struct Dashboard: View {
                 destination: .loyaltyCard(card)
             )
         }
+        let noteItems: [ContinueItem] = notes.compactMap { note in
+            guard let lastOpenedAt = note.lastOpenedAt else { return nil }
 
+            return ContinueItem(
+                id: "note-\(note.id)",
+                title: note.title.isEmpty
+                    ? String(localized: "Untitled")
+                    : note.title,
+                systemImage: "note.text",
+                logoData: nil,
+                lastOpenedAt: lastOpenedAt,
+                destination: .note(note)
+            )
+        }
         return Array(
-            (tripItems + documentItems + cardItems)
+            ((tripItems + documentItems + cardItems + noteItems))
                 .sorted { $0.lastOpenedAt > $1.lastOpenedAt }
                 .prefix(3)
         )
@@ -175,6 +193,8 @@ struct Dashboard: View {
             document.lastOpenedAt = nil
         case .loyaltyCard(let card):
             card.lastOpenedAt = nil
+        case .note(let note):
+            note.lastOpenedAt = nil
         }
 
         try? modelContext.save()
@@ -425,6 +445,32 @@ struct Dashboard: View {
                                                 Label("Hide", systemImage: "eye.slash")
                                             }
                                         }
+                                    case .note(let note):
+                                        Button {
+                                            selectedNote = note
+                                        } label: {
+                                            sectionCard(
+                                                title: item.title,
+                                                systemImage: item.systemImage,
+                                                logoData: item.logoData
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label("Hide", systemImage: "eye.slash")
+                                            }
+                                            .tint(.gray)
+                                        }
+                                        .contextMenu {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label("Hide", systemImage: "eye.slash")
+                                            }
+                                        }
                                     case .document(let document):
                                         Button {
                                             selectedDocument = document
@@ -624,6 +670,9 @@ struct Dashboard: View {
         }
         .navigationDestination(item: $selectedLoyaltyCard) { card in
             LoyaltyCardDetailView(card: card)
+        }
+        .navigationDestination(item: $selectedNote) { note in
+            NoteEditorView(note: note)
         }
         .navigationDestination(item: $selectedWeatherDate) {
             date in

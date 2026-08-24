@@ -1,6 +1,11 @@
 import SwiftUI
 import Observation
 
+enum AppBackgroundStyle: String, Codable {
+    case system
+    case gradient
+}
+
 @Observable
 @MainActor
 final class AppSettings {
@@ -87,6 +92,12 @@ final class AppSettings {
         showDashboardContinue = defaults.object(forKey: "showDashboardContinue") as? Bool ?? true
         siriAutoReminderEnabled = defaults.object(forKey: "siriAutoReminderEnabled") as? Bool ?? true
         navigationAppID = defaults.string(forKey: "navigationApp") ?? "apple"
+        backgroundStyle = AppBackgroundStyle(
+            rawValue: defaults.string(forKey: "backgroundStyle") ?? ""
+        ) ?? .gradient
+
+        backgroundColor1Hex = defaults.string(forKey: "backgroundColor1Hex") ?? (defaultBackColor1.toHex() ?? "")
+        backgroundColor2Hex = defaults.string(forKey: "backgroundColor2Hex") ?? (defaultBackColor2.toHex() ?? "")
         backgroundColor1Hex = defaults.string(forKey: "backgroundColor1Hex") ?? (defaultBackColor1.toHex() ?? "")
         backgroundColor2Hex = defaults.string(forKey: "backgroundColor2Hex") ?? (defaultBackColor2.toHex() ?? "")
         badgeMode = defaults.object(forKey: "badgeMode") as? Int ?? 1
@@ -386,6 +397,14 @@ final class AppSettings {
             navigationAppID = newValue.id
         }
     }
+    var backgroundStyle: AppBackgroundStyle {
+        didSet {
+            UserDefaults.standard.set(
+                backgroundStyle.rawValue,
+                forKey: "backgroundStyle"
+            )
+        }
+    }
     
     var backgroundColor1Hex: String {
         didSet {
@@ -551,6 +570,7 @@ final class AppSettings {
         showDashboardContinue = true
         siriAutoReminderEnabled = true
         navigationAppID = "apple"
+        backgroundStyle = .gradient
         backgroundColor1Hex = defaultBackColor1.toHex() ?? ""
         backgroundColor2Hex = defaultBackColor2.toHex() ?? ""
         badgeMode = 1

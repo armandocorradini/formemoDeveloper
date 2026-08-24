@@ -47,6 +47,17 @@ struct NoteEditorView: View {
                 .fontWeight(.semibold)
             }
         }
+        .onAppear {
+            note.lastOpenedAt = .now
+
+            do {
+                try modelContext.save()
+            } catch {
+                AppLogger.persistence.error(
+                    "Failed to save Note lastOpenedAt: \(error.localizedDescription)"
+                )
+            }
+        }
     }
 
     private var titleField: some View {

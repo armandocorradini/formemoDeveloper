@@ -84,20 +84,27 @@ struct AppGlassBackground: View {
     @Bindable var settings = AppSettings.shared
 
     var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [
-                    Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
-                    Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+        Group {
+            if settings.backgroundStyle == .system {
+                Color(.systemBackground)
+                    .ignoresSafeArea()
+            } else {
+                ZStack {
+                    LinearGradient(
+                        colors: [
+                            Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
+                            Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .ignoresSafeArea()
 
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .ignoresSafeArea()
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .ignoresSafeArea()
+                }
+            }
         }
     }
 }

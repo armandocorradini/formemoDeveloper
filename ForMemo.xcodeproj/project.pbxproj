@@ -730,6 +730,7 @@
 		1C634E43302331530092DB89 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
+				1C634CD830220C9C0092DB89 /* AppSettings.swift */,
 				1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */,
 				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,
 				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
@@ -743,7 +744,6 @@
 				1C634D6130220C9C0092DB89 /* OverviewView.swift */,
 				1C634D6630220C9C0092DB89 /* SettingsView.swift */,
 				1C634D0F30220C9C0092DB89 /* SurfaceSettings.swift */,
-				1C634CD830220C9C0092DB89 /* AppSettings.swift */,
 				1C634D4330220C9C0092DB89 /* BackgroundCustomizationView.swift */,
 				1C634CE430220C9C0092DB89 /* DebugTools.swift */,
 				1CED32603027760400B16A50 /* DiagnosticsRedactor.swift */,
