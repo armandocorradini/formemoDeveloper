@@ -128,6 +128,9 @@ private struct NoteTextView: UIViewRepresentable {
         )
 
         textView.delegate = context.coordinator
+        context.coordinator.attachTextView(textView)
+        textView.inputAccessoryView =
+            context.coordinator.makeFormattingToolbar()
 
         // Rich-text editing.
         textView.isEditable = true
@@ -241,6 +244,417 @@ private struct NoteTextView: UIViewRepresentable {
         ) {
             self.text = text
             super.init()
+        }
+
+        // MARK: - Minimal keyboard formatting bar
+
+        private weak var textView: UITextView?
+
+        func attachTextView(_ textView: UITextView) {
+            self.textView = textView
+        }
+
+        func makeFormattingToolbar() -> UIView {
+            let container = UIView(
+                frame: CGRect(
+                    x: 0,
+                    y: 0,
+                    width: 0,
+                    height: 48
+                )
+            )
+
+            container.backgroundColor =
+                .secondarySystemBackground
+
+            let stack = UIStackView()
+            stack.axis = .horizontal
+            stack.alignment = .center
+            stack.distribution = .equalSpacing
+            stack.spacing = 8
+            stack.translatesAutoresizingMaskIntoConstraints = false
+
+            let bold = makeButton(
+                title: "B",
+                action: #selector(toggleBold)
+            )
+
+            let italic = makeButton(
+                title: "I",
+                action: #selector(toggleItalic)
+            )
+
+            let underline = makeButton(
+                title: "U",
+                action: #selector(toggleUnderline)
+            )
+
+            let bullet = makeButton(
+                image: "list.bullet",
+                action: #selector(toggleBulletList)
+            )
+
+            let dashList = makeButton(
+                image: "list.bullet",
+                action: #selector(toggleDashList)
+            )
+
+            let numbered = makeButton(
+                image: "list.number",
+                action: #selector(toggleNumberedList)
+            )
+            
+            [
+                bold,
+                italic,
+                underline,
+                bullet,
+                dashList,
+                numbered
+                
+            ].forEach {
+                stack.addArrangedSubview($0)
+            }
+
+            container.addSubview(stack)
+
+            NSLayoutConstraint.activate([
+                stack.leadingAnchor.constraint(
+                    equalTo: container.leadingAnchor,
+                    constant: 16
+                ),
+                stack.trailingAnchor.constraint(
+                    equalTo: container.trailingAnchor,
+                    constant: -16
+                ),
+                stack.topAnchor.constraint(
+                    equalTo: container.topAnchor
+                ),
+                stack.bottomAnchor.constraint(
+                    equalTo: container.bottomAnchor
+                )
+            ])
+
+            return container
+        }
+
+        private func makeButton(
+            title: String,
+            action: Selector
+        ) -> UIButton {
+            let button = UIButton(type: .system)
+
+            var configuration =
+                UIButton.Configuration.plain()
+
+            configuration.contentInsets =
+                NSDirectionalEdgeInsets(
+                    top: 4,
+                    leading: 8,
+                    bottom: 4,
+                    trailing: 8
+                )
+
+            button.configuration = configuration
+            button.setTitle(
+                title,
+                for: .normal
+            )
+            button.titleLabel?.font =
+                .systemFont(
+                    ofSize: 17,
+                    weight: .semibold
+                )
+
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.addTarget(
+                self,
+                action: action,
+                for: .touchUpInside
+            )
+
+            NSLayoutConstraint.activate([
+                button.widthAnchor.constraint(
+                    greaterThanOrEqualToConstant: 40
+                ),
+                button.heightAnchor.constraint(
+                    equalToConstant: 40
+                )
+            ])
+
+            return button
+        }
+
+        private func makeButton(
+            image: String,
+            action: Selector
+        ) -> UIButton {
+            let button = UIButton(type: .system)
+
+            var configuration =
+                UIButton.Configuration.plain()
+
+            configuration.contentInsets =
+                NSDirectionalEdgeInsets(
+                    top: 4,
+                    leading: 8,
+                    bottom: 4,
+                    trailing: 8
+                )
+
+            button.configuration = configuration
+            button.setImage(
+                UIImage(systemName: image),
+                for: .normal
+            )
+
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.addTarget(
+                self,
+                action: action,
+                for: .touchUpInside
+            )
+
+            NSLayoutConstraint.activate([
+                button.widthAnchor.constraint(
+                    equalToConstant: 44
+                ),
+                button.heightAnchor.constraint(
+                    equalToConstant: 40
+                )
+            ])
+
+            return button
+        }
+
+        @objc private func toggleBold() {
+            toggleFontTrait(.traitBold)
+        }
+
+        @objc private func toggleItalic() {
+            toggleFontTrait(.traitItalic)
+        }
+
+        @objc private func toggleDashList() {
+            toggleList(markerFormat: .hyphen)
+        }
+        
+        private func toggleFontTrait(
+            _ trait: UIFontDescriptor.SymbolicTraits
+        ) {
+            guard let textView,
+                  textView.selectedRange.length > 0
+            else {
+                return
+            }
+
+            let range = textView.selectedRange
+            let storage = textView.textStorage
+
+            storage.beginEditing()
+            storage.enumerateAttribute(
+                .font,
+                in: range,
+                options: []
+            ) { value, subrange, _ in
+                let font =
+                    (value as? UIFont)
+                    ?? textView.font
+                    ?? UIFont.preferredFont(
+                        forTextStyle: .body
+                    )
+
+                var traits = font.fontDescriptor.symbolicTraits
+
+                if traits.contains(trait) {
+                    traits.remove(trait)
+                } else {
+                    traits.insert(trait)
+                }
+
+                let newFont =
+                    font.fontDescriptor
+                        .withSymbolicTraits(traits)
+                        .map {
+                            UIFont(
+                                descriptor: $0,
+                                size: font.pointSize
+                            )
+                        } ?? font
+
+                storage.addAttribute(
+                    .font,
+                    value: newFont,
+                    range: subrange
+                )
+            }
+            storage.endEditing()
+
+            textView.selectedRange = range
+            syncText(from: textView)
+        }
+
+        @objc private func toggleUnderline() {
+            guard let textView,
+                  textView.selectedRange.length > 0
+            else {
+                return
+            }
+
+            let range = textView.selectedRange
+            let storage = textView.textStorage
+
+            storage.beginEditing()
+            storage.enumerateAttribute(
+                .underlineStyle,
+                in: range,
+                options: []
+            ) { value, subrange, _ in
+                let current =
+                    (value as? NSNumber)?.intValue ?? 0
+
+                storage.addAttribute(
+                    .underlineStyle,
+                    value: current == 0
+                        ? NSUnderlineStyle.single.rawValue
+                        : 0,
+                    range: subrange
+                )
+            }
+            storage.endEditing()
+
+            textView.selectedRange = range
+            syncText(from: textView)
+        }
+
+        @objc private func toggleBulletList() {
+            toggleList(markerFormat: .disc)
+        }
+
+        @objc private func toggleNumberedList() {
+            toggleList(markerFormat: .decimal)
+        }
+
+        @objc private func removeList() {
+            guard let textView,
+                  textView.selectedRange.length > 0,
+                  let attributedText = textView.attributedText
+            else {
+                return
+            }
+
+            let selection = textView.selectedRange
+            let paragraphRange =
+                (attributedText.string as NSString)
+                    .paragraphRange(for: selection)
+
+            let storage = textView.textStorage
+
+            storage.beginEditing()
+            storage.enumerateAttribute(
+                .paragraphStyle,
+                in: paragraphRange,
+                options: []
+            ) { value, subrange, _ in
+                let source =
+                    (value as? NSParagraphStyle)
+                    ?? NSParagraphStyle.default
+
+                let style =
+                    source.mutableCopy()
+                    as? NSMutableParagraphStyle
+                    ?? NSMutableParagraphStyle()
+
+                // Remove only list formatting; preserve alignment,
+                // spacing and the other paragraph attributes.
+                style.textLists = []
+
+                storage.addAttribute(
+                    .paragraphStyle,
+                    value: style.copy(),
+                    range: subrange
+                )
+            }
+            storage.endEditing()
+
+            textView.selectedRange = selection
+            syncText(from: textView)
+        }
+
+        private func toggleList(
+            markerFormat: NSTextList.MarkerFormat
+        ) {
+            guard let textView,
+                  textView.selectedRange.length > 0,
+                  let attributedText = textView.attributedText
+            else {
+                return
+            }
+
+            let selection = textView.selectedRange
+            let paragraphRange =
+                (attributedText.string as NSString)
+                    .paragraphRange(for: selection)
+
+            let storage = textView.textStorage
+
+            storage.beginEditing()
+            storage.enumerateAttribute(
+                .paragraphStyle,
+                in: paragraphRange,
+                options: []
+            ) { value, subrange, _ in
+                let source =
+                    (value as? NSParagraphStyle)
+                    ?? NSParagraphStyle.default
+
+                let style =
+                    source.mutableCopy()
+                    as? NSMutableParagraphStyle
+                    ?? NSMutableParagraphStyle()
+
+                let isActive = style.textLists.contains {
+                    $0.markerFormat == markerFormat
+                }
+
+                if isActive {
+                    style.textLists = []
+                    style.headIndent = 0
+                    style.firstLineHeadIndent = 0
+                } else {
+                    style.textLists = [
+                        NSTextList(
+                            markerFormat: markerFormat,
+                            options: 0
+                        )
+                    ]
+                    style.headIndent = 20
+                    style.firstLineHeadIndent = 0
+                }
+
+                storage.addAttribute(
+                    .paragraphStyle,
+                    value: style.copy(),
+                    range: subrange
+                )
+            }
+            storage.endEditing()
+
+            textView.selectedRange = selection
+            syncText(from: textView)
+        }
+
+        private func syncText(
+            from textView: UITextView
+        ) {
+            guard let attributedText =
+                textView.attributedText
+            else {
+                return
+            }
+
+            text.wrappedValue =
+                AttributedString(attributedText)
         }
 
         func textViewDidChange(

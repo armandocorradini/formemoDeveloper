@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct NoteListView: View {
     @Environment(\.modelContext) private var modelContext
@@ -37,6 +38,20 @@ struct NoteListView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                .contextMenu {
+                    Button(role: .destructive) {
+                        if let index = sortedNotes.firstIndex(
+                            where: { $0.id == note.id }
+                        ) {
+                            deleteNotes(at: IndexSet(integer: index))
+                        }
+                    } label: {
+                        Label(
+                            String(localized: "Delete"),
+                            systemImage: "trash"
+                        )
+                    }
+                }
             }
             .onDelete(perform: deleteNotes)
         }
@@ -48,7 +63,9 @@ struct NoteListView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel(String(localized: "New Note"))
+                .accessibilityLabel(
+                    String(localized: "New Note")
+                )
             }
         }
         .navigationDestination(item: $newNote) { note in
@@ -65,7 +82,28 @@ struct NoteListView: View {
 
     private func deleteNotes(at offsets: IndexSet) {
         for index in offsets {
-            modelContext.delete(sortedNotes[index])
+            let note = sortedNotes[index]
+
+            let deletedItem = DeletedItem(type: "note")
+
+            deletedItem.noteID = note.id
+            deletedItem.title = note.title
+            deletedItem.noteContent = note.content
+            deletedItem.noteCreatedAt = note.createdAt
+            deletedItem.noteModifiedAt = note.modifiedAt
+            deletedItem.noteIsPinned = note.isPinned
+            deletedItem.noteIsArchived = note.isArchived
+
+            modelContext.insert(deletedItem)
+            modelContext.delete(note)
+        }
+
+        do {
+            try modelContext.save()
+        } catch {
+            AppLogger.persistence.error(
+                "Failed to move Note to Recently Deleted: \(error.localizedDescription)"
+            )
         }
     }
 }

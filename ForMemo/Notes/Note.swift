@@ -1,16 +1,15 @@
 import Foundation
 import SwiftData
 
-
 @Model
 final class Note {
-    var id: UUID = UUID()
-    var title: String = ""
-    var content: Data = Data()
-    var createdAt: Date = Date()
-    var modifiedAt: Date = Date()
-    var isPinned: Bool = false
-    var isArchived: Bool = false
+    var id: UUID
+    var title: String
+    var content: Data
+    var createdAt: Date
+    var modifiedAt: Date
+    var isPinned: Bool
+    var isArchived: Bool
 
     init(
         id: UUID = UUID(),
@@ -19,7 +18,8 @@ final class Note {
         createdAt: Date = .now,
         modifiedAt: Date = .now,
         isPinned: Bool = false,
-        isArchived: Bool = false
+        isArchived: Bool = false,
+        deletedAt: Date? = nil
     ) {
         self.id = id
         self.title = title

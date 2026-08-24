@@ -495,6 +495,9 @@ var body: some View {
         case "trip":
             return String(localized: "Trip")
 
+        case "note":
+            return String(localized: "Note")
+
         default:
             return String(localized: "Item")
         }
@@ -525,6 +528,10 @@ var body: some View {
 
         case "trip":
             return item.tripName ?? "Trip"
+            
+        case "note":
+            return item.title ?? String(localized: "Untitled")
+            
         case "document":
             return item.documentName ?? "Document"
 

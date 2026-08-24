@@ -91,6 +91,14 @@ final class DeletedItem {
     var documentAssetKindRaw: String?
     var documentPageIndex: Int?
     
+    // NOTE
+    var noteID: UUID?
+    var noteContent: Data?
+    var noteCreatedAt: Date?
+    var noteModifiedAt: Date?
+    var noteIsPinned: Bool?
+    var noteIsArchived: Bool?
+    
     init(type: String) {
         self.type = type
     }
@@ -165,6 +173,44 @@ extension DeletedItem {
             }
             return true
         }
+        
+        // MARK: - Note
+
+        if type == "note" {
+            
+            guard let noteID else {
+                return false
+            }
+
+            // Do not create a duplicate if the Note already exists.
+            let descriptor = FetchDescriptor<Note>(
+                predicate: #Predicate { $0.id == noteID }
+            )
+
+            if let existing = try? context.fetch(descriptor),
+               !existing.isEmpty {
+#if DEBUG
+                print("⚠️ Restore skipped: note already exists")
+#endif
+                return false
+            }
+
+            let note = Note(
+                id: noteID,
+                title: title ?? "",
+                content: noteContent ?? Data(),
+                createdAt: noteCreatedAt ?? .now,
+                modifiedAt: noteModifiedAt ?? .now,
+                isPinned: noteIsPinned ?? false,
+                isArchived: noteIsArchived ?? false,
+                deletedAt: nil
+            )
+
+            context.insert(note)
+
+            return true
+        }
+        
         
         if type == "attachment",
            let taskID,
