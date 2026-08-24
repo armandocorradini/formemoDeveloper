@@ -18943,6 +18943,9 @@
         }
       }
     },
+    "New Note" : {
+
+    },
     "New Section" : {
       "localizations" : {
         "de" : {
@@ -20032,6 +20035,9 @@
           }
         }
       }
+    },
+    "Note" : {
+
     },
     "Notes" : {
       "localizations" : {
@@ -32405,6 +32411,9 @@
           }
         }
       }
+    },
+    "Untitled" : {
+
     },
     "Upcoming" : {
       "localizations" : {

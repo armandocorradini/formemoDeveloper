@@ -33,7 +33,7 @@ struct TaskTabView: View {
     @State private var documentsPath = NavigationPath()
     @State private var weatherPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
-
+    @State private var notesPath = NavigationPath()
     
     var body: some View {
         rootLayout
@@ -350,6 +350,10 @@ struct TaskTabView: View {
             NavigationStack(path: $documentsPath) {
                 DocumentsView()
             }
+        case 12:
+            NavigationStack(path: $notesPath) {
+                NoteListView()
+            }
         case 9:
             NavigationStack(path: $weatherPath) {
                 WeatherForecastView()
@@ -548,6 +552,10 @@ struct TaskTabView: View {
         case 2:
             if !settingsPath.isEmpty {
                 settingsPath = NavigationPath()
+            }
+        case 12:
+            if !notesPath.isEmpty {
+                notesPath = NavigationPath()
             }
             
         default:

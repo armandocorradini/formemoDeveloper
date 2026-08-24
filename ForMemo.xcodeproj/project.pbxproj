@@ -183,6 +183,9 @@
 		1C634E3A30220C9C0092DB89 /* WeatherForecastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */; };
 		1C634E3B30220C9C0092DB89 /* WeeklyTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */; };
 		1C634E3D30220D580092DB89 /* WalletAssetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */; };
+		1C8225E1303B50B600B77EC7 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E0303B50A000B77EC7 /* Note.swift */; };
+		1C8225E3303B535500B77EC7 /* NoteListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E2303B531F00B77EC7 /* NoteListView.swift */; };
+		1C8225E5303B555000B77EC7 /* NoteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */; };
 		1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */; };
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
@@ -396,6 +399,9 @@
 		1C634D8830220C9C0092DB89 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1C634D8930220C9C0092DB89 /* ForMemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ForMemo.entitlements; sourceTree = "<group>"; };
 		1C634D8A30220C9C0092DB89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1C8225E0303B50A000B77EC7 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		1C8225E2303B531F00B77EC7 /* NoteListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteListView.swift; sourceTree = "<group>"; };
+		1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorView.swift; sourceTree = "<group>"; };
 		1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentContainerRecovery.swift; sourceTree = "<group>"; };
 		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
 		1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDirectoryCoordinator.swift; sourceTree = "<group>"; };
@@ -564,6 +570,7 @@
 				1C634E43302331530092DB89 /* Tips */,
 				1C634E4230232A130092DB89 /* Tab */,
 				1CC57C083028E8D400E9C79F /* Delete */,
+				1C8225DF303B509100B77EC7 /* Notes */,
 				1C634E3C30220CAE0092DB89 /* Task */,
 				1C634E41302258620092DB89 /* Trips */,
 				1C634E3F302255FC0092DB89 /* Documents */,
@@ -750,6 +757,16 @@
 			path = Tips;
 			sourceTree = "<group>";
 		};
+		1C8225DF303B509100B77EC7 /* Notes */ = {
+			isa = PBXGroup;
+			children = (
+				1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */,
+				1C8225E2303B531F00B77EC7 /* NoteListView.swift */,
+				1C8225E0303B50A000B77EC7 /* Note.swift */,
+			);
+			path = Notes;
+			sourceTree = "<group>";
+		};
 		1C8477673023782000C4FA34 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -903,6 +920,7 @@
 				1C634D9B30220C9C0092DB89 /* CalendarPickerView.swift in Sources */,
 				1C634D9C30220C9C0092DB89 /* CloudKitResetManager.swift in Sources */,
 				1C634D9D30220C9C0092DB89 /* CloudSettingsSync.swift in Sources */,
+				1C8225E5303B555000B77EC7 /* NoteEditorView.swift in Sources */,
 				1C634D9E30220C9C0092DB89 /* CredentialSavingRequest.swift in Sources */,
 				1C634D9F30220C9C0092DB89 /* CSVImporter.swift in Sources */,
 				1C634DA030220C9C0092DB89 /* CSVTask.swift in Sources */,
@@ -985,6 +1003,7 @@
 				1C634DEA30220C9C0092DB89 /* CredentialExchangeTester.swift in Sources */,
 				1C634DEB30220C9C0092DB89 /* ImportMergePolicy.swift in Sources */,
 				1C634DEC30220C9C0092DB89 /* VaultExportMapper.swift in Sources */,
+				1C8225E1303B50B600B77EC7 /* Note.swift in Sources */,
 				1C634DED30220C9C0092DB89 /* VaultExportService.swift in Sources */,
 				1C634DEE30220C9C0092DB89 /* VaultImportCredential.swift in Sources */,
 				1C634DEF30220C9C0092DB89 /* VaultImportRecord.swift in Sources */,
@@ -1043,6 +1062,7 @@
 				1C634E2130220C9C0092DB89 /* TaskCalendarView.swift in Sources */,
 				1C634E2230220C9C0092DB89 /* TaskDaySection.swift in Sources */,
 				1C634E2330220C9C0092DB89 /* TaskDeadlineColumn.swift in Sources */,
+				1C8225E3303B535500B77EC7 /* NoteListView.swift in Sources */,
 				1C634E2430220C9C0092DB89 /* TaskDetail_ScheduleSection.swift in Sources */,
 				1C634E2530220C9C0092DB89 /* TaskDetailView.swift in Sources */,
 				1C634E2630220C9C0092DB89 /* TaskIconContent.swift in Sources */,

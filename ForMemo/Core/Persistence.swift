@@ -112,7 +112,8 @@ enum Persistence {
         DocumentItem.self,
         DocumentAsset.self,
         VaultItem.self,
-        VaultSecret.self
+        VaultSecret.self,
+        Note.self
     ])
 
     static func makeModelContainer(
