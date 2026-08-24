@@ -14,8 +14,11 @@ struct BackupRestoreView: View {
     private var tripLists: [TripList]
     @Query(sort: \DocumentItem.createdAt, order: .forward)
     private var documents: [DocumentItem]
+    @Query(sort: \Note.createdAt, order: .forward)
+    private var notes: [Note]
     @Query(sort: \VaultItem.title, order: .forward)
     private var vaultItems: [VaultItem]
+    
     @State private var isCreatingBackup = false
     @State private var isRestoringBackup = false
     @State private var showRestoreConfirmation = false
@@ -27,6 +30,7 @@ struct BackupRestoreView: View {
     @State private var restoreArchive: BackupArchive?
     @State private var restoreTasks = false
     @State private var restoreWalletCards = false
+    @State private var restoreNotes = false
     @State private var restoreTripLists = false
     @State private var restoreDocuments = false
     @State private var restoreVault = false
@@ -40,6 +44,7 @@ struct BackupRestoreView: View {
 
     @State private var pendingRestoreTasks = false
     @State private var pendingRestoreWalletCards = false
+    @State private var pendingRestoreNotes = false
     @State private var pendingRestoreTripLists = false
     @State private var pendingRestoreDocuments = false
     @State private var pendingRestoreVault = false
@@ -65,9 +70,7 @@ struct BackupRestoreView: View {
 //                                .foregroundStyle(.blue)
 //                        }
 
-                        Text(
-                            "Backups are stored independently from iCloud sync. You can use them to safely migrate all your ForMemo data to another device."
-                        )
+                        Text("Backups are stored independently from iCloud sync. You can use them to safely migrate all your ForMemo data to another device.")
                         .font(.caption)
                         .foregroundStyle(.primary)
                     }
@@ -95,6 +98,7 @@ struct BackupRestoreView: View {
                                     isCreatingBackup = true
                                     let url = try await BackupManager.createBackup(
                                         tasks: tasks,
+                                        notes: notes,
                                         loyaltyCards: loyaltyCards,
                                         tripLists: tripLists,
                                         documents: documents,
@@ -306,10 +310,16 @@ struct BackupRestoreView: View {
                 restoreArchive = newValue?.archive
             }
         )) { wrapper in
-            
 
             let archive = wrapper.archive
-            let hasSelection = restoreTasks || restoreWalletCards || restoreTripLists || restoreDocuments || restoreVault || restoreSettings
+            let hasSelection =
+                restoreTasks ||
+                restoreNotes ||
+                restoreWalletCards ||
+                restoreTripLists ||
+                restoreDocuments ||
+                restoreVault ||
+                restoreSettings
 
             NavigationStack {
                 ZStack {
@@ -318,6 +328,9 @@ struct BackupRestoreView: View {
                         Section("Backup Contents") {
 
                             Text("Tasks: \(archive.tasks.count)")
+                            
+                            Text("Notes: \(archive.notes.count)")
+                            
                             Text("Cards & Tickets: \(archive.loyaltyCards.count)")
 
                             if !archive.tripLists.isEmpty {
@@ -341,6 +354,13 @@ struct BackupRestoreView: View {
                         Section("Restore") {
 
                             Toggle("Tasks", isOn: $restoreTasks)
+                            
+                            if !archive.notes.isEmpty {
+                                Toggle(
+                                    "Notes",
+                                    isOn: $restoreNotes
+                                )
+                            }
 
                             Toggle(
                                 "Cards & Tickets",
@@ -395,6 +415,7 @@ struct BackupRestoreView: View {
                                 if !restoreVault {
                                     // No vault restore, no password required
                                     let selectedTasks = restoreTasks
+                                    let selectedNotes = restoreNotes
                                     let selectedWalletCards = restoreWalletCards
                                     let selectedTripLists = restoreTripLists
                                     let selectedDocuments = restoreDocuments
@@ -422,6 +443,7 @@ struct BackupRestoreView: View {
                                                 archive,
                                                 modelContext: modelContext,
                                                 restoreTasks: selectedTasks,
+                                                restoreNotes: selectedNotes,
                                                 restoreWalletCards: selectedWalletCards,
                                                 restoreTripLists: selectedTripLists,
                                                 restoreDocuments: selectedDocuments,
@@ -496,6 +518,7 @@ struct BackupRestoreView: View {
             }
             Button("Restore") {
                 let selectedTasks = pendingRestoreTasks
+                let selectedNotes = pendingRestoreNotes
                 let selectedWalletCards = pendingRestoreWalletCards
                 let selectedTripLists = pendingRestoreTripLists
                 let selectedDocuments = pendingRestoreDocuments
@@ -538,6 +561,7 @@ struct BackupRestoreView: View {
                             archive,
                             modelContext: modelContext,
                             restoreTasks: selectedTasks,
+                            restoreNotes: selectedNotes,
                             restoreWalletCards: selectedWalletCards,
                             restoreTripLists: selectedTripLists,
                             restoreDocuments: selectedDocuments,
@@ -598,6 +622,7 @@ struct BackupRestoreView: View {
                         isCreatingBackup = true
                         let url = try await BackupManager.createBackup(
                             tasks: tasks,
+                            notes: notes,
                             loyaltyCards: loyaltyCards,
                             tripLists: tripLists,
                             documents: documents,
@@ -632,7 +657,9 @@ struct BackupRestoreView: View {
         }
 
         let selectedTasks = pendingRestoreTasks
+        let selectedNotes = pendingRestoreNotes
         let selectedWalletCards = pendingRestoreWalletCards
+        let selectedVault = pendingRestoreVault
         let selectedTripLists = pendingRestoreTripLists
         let selectedDocuments = pendingRestoreDocuments
         let selectedSettings = pendingRestoreSettings
@@ -657,10 +684,11 @@ struct BackupRestoreView: View {
                     archive,
                     modelContext: modelContext,
                     restoreTasks: selectedTasks,
+                    restoreNotes: selectedNotes,
                     restoreWalletCards: selectedWalletCards,
                     restoreTripLists: selectedTripLists,
                     restoreDocuments: selectedDocuments,
-                    restoreVault: false,
+                    restoreVault: selectedVault,
                     backupPassword: "",
                     restoreSettings: selectedSettings
                 )
@@ -716,6 +744,7 @@ private struct BackupArchive: Codable {
         case version
         case createdAt
         case tasks
+        case notes
         case loyaltyCards
         case tripLists
         case documents
@@ -731,6 +760,7 @@ private struct BackupArchive: Codable {
     let version: Int
     let createdAt: Date
     let tasks: [TaskTransferObject]
+    let notes: [NoteTransferObject]
     let loyaltyCards: [LoyaltyCardTransferObject]
     let tripLists: [TripListTransferObject]
     let documents: [DocumentTransferObject]
@@ -747,6 +777,7 @@ private struct BackupArchive: Codable {
         version: Int,
         createdAt: Date,
         tasks: [TaskTransferObject],
+        notes: [NoteTransferObject],
         loyaltyCards: [LoyaltyCardTransferObject],
         tripLists: [TripListTransferObject],
         documents: [DocumentTransferObject],
@@ -761,6 +792,7 @@ private struct BackupArchive: Codable {
         self.version = version
         self.createdAt = createdAt
         self.tasks = tasks
+        self.notes = notes
         self.loyaltyCards = loyaltyCards
         self.tripLists = tripLists
         self.documents = documents
@@ -793,6 +825,10 @@ private struct BackupArchive: Codable {
         loyaltyCards = try container.decodeIfPresent(
             [LoyaltyCardTransferObject].self,
             forKey: .loyaltyCards
+        ) ?? []
+        notes = try container.decodeIfPresent(
+            [NoteTransferObject].self,
+            forKey: .notes
         ) ?? []
         tripLists = try container.decodeIfPresent(
             [TripListTransferObject].self,
@@ -849,6 +885,10 @@ private struct BackupArchive: Codable {
 
         try container.encode(encodedTasks, forKey: .tasks)
         try container.encode(
+            notes,
+            forKey: .notes
+        )
+        try container.encode(
             loyaltyCards,
             forKey: .loyaltyCards
         )
@@ -891,6 +931,30 @@ private struct BackupArchive: Codable {
             settings,
             forKey: .settings
         )
+    }
+}
+
+private struct NoteTransferObject: Codable {
+    let id: UUID
+    let title: String
+    let content: Data
+    let createdAt: Date
+    let modifiedAt: Date
+    let isPinned: Bool
+    let isArchived: Bool
+    let archivedAt: Date?
+    let lastOpenedAt: Date?
+
+    init(note: Note) {
+        self.id = note.id
+        self.title = note.title
+        self.content = note.content
+        self.createdAt = note.createdAt
+        self.modifiedAt = note.modifiedAt
+        self.isPinned = note.isPinned
+        self.isArchived = note.isArchived
+        self.archivedAt = note.archivedAt
+        self.lastOpenedAt = note.lastOpenedAt
     }
 }
 
@@ -1411,6 +1475,7 @@ private enum BackupManager {
 
     static func createBackup(
         tasks: [TodoTask],
+        notes: [Note],
         loyaltyCards: [LoyaltyCard],
         tripLists: [TripList],
         documents: [DocumentItem],
@@ -1600,6 +1665,9 @@ private enum BackupManager {
                     validAttachmentPaths: Set(attachmentPayload.keys)
                 )
             },
+            notes: notes.map {
+                NoteTransferObject(note: $0)
+            },
             loyaltyCards: loyaltyCards.map {
                 LoyaltyCardTransferObject(card: $0)
             },
@@ -1674,6 +1742,7 @@ private enum BackupManager {
         _ archive: BackupArchive,
         modelContext: ModelContext,
         restoreTasks: Bool,
+        restoreNotes: Bool,
         restoreWalletCards: Bool,
         restoreTripLists: Bool,
         restoreDocuments: Bool,
@@ -1683,7 +1752,35 @@ private enum BackupManager {
     ) async throws {
         try PersistenceOperationCoordinator.shared.begin(.restore)
         var vaultKeyToInstall: SymmetricKey?
-        
+        if restoreNotes {
+            for noteData in archive.notes {
+                let existingNote = try modelContext.fetch(
+                    FetchDescriptor<Note>(
+                        predicate: #Predicate { note in
+                            note.id == noteData.id
+                        }
+                    )
+                ).first
+
+                guard existingNote == nil else {
+                    continue
+                }
+
+                let note = Note(
+                    id: noteData.id,
+                    title: noteData.title,
+                    content: noteData.content,
+                    createdAt: noteData.createdAt,
+                    modifiedAt: noteData.modifiedAt,
+                    isPinned: noteData.isPinned,
+                    isArchived: noteData.isArchived,
+                    archivedAt: noteData.archivedAt,
+                    lastOpenedAt: noteData.lastOpenedAt
+                )
+
+                modelContext.insert(note)
+            }
+        }
         if restoreTasks {
 
             let attachmentsDirectory =

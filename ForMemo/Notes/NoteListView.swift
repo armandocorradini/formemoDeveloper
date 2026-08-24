@@ -31,7 +31,10 @@ struct NoteListView: View {
     }
 
     var body: some View {
-        List {
+        ZStack {
+            AppGlassBackground()
+
+            List {
             Section {
                 ForEach(activeNotes) { note in
                     NavigationLink {
@@ -124,7 +127,7 @@ struct NoteListView: View {
                                 .foregroundStyle(.secondary)
                             }                        }
                     }
-                    .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
                             unarchive(note)
                         } label: {
@@ -172,13 +175,18 @@ struct NoteListView: View {
             }
         }
     }
+            .scrollContentBackground(.hidden)
+                .background(Color.clear)
+                .contentMargins(.bottom, 70, for: .scrollContent)
+                .listStyle(.insetGrouped)
+            }
         .navigationTitle(String(localized: "Notes"))
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showArchived.toggle()
                 } label: {
-                    Image(systemName: showArchived ? "eye" : "eye.slash")
+                    Image(systemName: showArchived ? "eye.slash" : "eye")
                 }
                 .accessibilityLabel(
                     showArchived
@@ -191,7 +199,11 @@ struct NoteListView: View {
                 Button {
                     createNote()
                 } label: {
-                    Image(systemName: "plus")
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundStyle(.green)
+                        .font(.title2)
+                        //.padding(.trailing, 1)
+
                 }
                 .accessibilityLabel(
                     String(localized: "New Note")

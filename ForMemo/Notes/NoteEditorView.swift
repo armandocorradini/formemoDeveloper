@@ -3,11 +3,7 @@ import SwiftData
 import UIKit
 import os
 
-/// Native iOS 26+ rich-text note editor.
-///
-/// The editor deliberately contains no custom formatting toolbar and no
-/// custom formatting controller. UITextView/TextKit 2 owns editing,
-/// selection, caret, undo, copy/paste and the native iOS formatting UI.
+
 struct NoteEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -24,16 +20,20 @@ struct NoteEditorView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            titleField
-
-            Divider()
-
-            NoteTextView(text: $text)
-                .frame(
-                    maxWidth: .infinity,
-                    maxHeight: .infinity
-                )
+        ZStack {
+            AppGlassBackground()
+            
+            VStack(spacing: 0) {
+                titleField
+                
+                Divider()
+                
+                NoteTextView(text: $text)
+                    .frame(
+                        maxWidth: .infinity,
+                        maxHeight: .infinity
+                    )
+            }
         }
         .navigationTitle(String(localized: "Note"))
         .navigationBarTitleDisplayMode(.inline)
