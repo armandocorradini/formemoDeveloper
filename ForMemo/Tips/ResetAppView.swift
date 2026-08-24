@@ -178,6 +178,10 @@ struct ResetAppView: View {
             FetchDescriptor<DocumentItem>()
         )
 
+        let noteCount = try modelContext.fetchCount(
+            FetchDescriptor<Note>()
+        )
+        
         let deletedItemCount = try modelContext.fetchCount(
             FetchDescriptor<DeletedItem>()
         )
@@ -191,6 +195,7 @@ struct ResetAppView: View {
             tripCount == 0,
             documentAssetCount == 0,
             documentCount == 0,
+            noteCount == 0,
             deletedItemCount == 0
         else {
             throw ResetVerificationError.storeNotEmpty
@@ -417,6 +422,15 @@ struct ResetAppView: View {
 
             for document in documents {
                 modelContext.delete(document)
+            }
+            
+            // 🔴 Notes
+            let notes = try modelContext.fetch(
+                FetchDescriptor<Note>()
+            )
+
+            for note in notes {
+                modelContext.delete(note)
             }
             
             // 🔴 Recently Deleted

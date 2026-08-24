@@ -50,6 +50,21 @@ struct BackupRestoreView: View {
     @State private var pendingRestoreVault = false
     @State private var pendingRestoreSettings = false
     
+    private var allRestoreOptionsSelected: Bool {
+        guard let archive = restoreArchive else {
+            return false
+        }
+
+        return restoreTasks &&
+            (archive.notes.isEmpty || restoreNotes) &&
+            (archive.loyaltyCards.isEmpty || restoreWalletCards) &&
+            (archive.tripLists.isEmpty || restoreTripLists) &&
+            (archive.documents.isEmpty || restoreDocuments) &&
+            (archive.vaultItems.isEmpty || restoreVault) &&
+            (archive.settings.isEmpty || restoreSettings)
+    }
+    
+    
     var body: some View {
 
         ZStack {
@@ -353,6 +368,46 @@ struct BackupRestoreView: View {
 
                         Section("Restore") {
 
+                            Toggle(
+                                "Select All",
+                                isOn: Binding(
+                                    get: {
+                                        allRestoreOptionsSelected
+                                    },
+                                    set: { newValue in
+                                        guard let archive = restoreArchive else {
+                                            return
+                                        }
+
+                                        restoreTasks = newValue
+
+                                        if !archive.notes.isEmpty {
+                                            restoreNotes = newValue
+                                        }
+
+                                        if !archive.loyaltyCards.isEmpty {
+                                            restoreWalletCards = newValue
+                                        }
+
+                                        if !archive.tripLists.isEmpty {
+                                            restoreTripLists = newValue
+                                        }
+
+                                        if !archive.documents.isEmpty {
+                                            restoreDocuments = newValue
+                                        }
+
+                                        if !archive.vaultItems.isEmpty {
+                                            restoreVault = newValue
+                                        }
+
+                                        if !archive.settings.isEmpty {
+                                            restoreSettings = newValue
+                                        }
+                                    }
+                                )
+                            )
+                            
                             Toggle("Tasks", isOn: $restoreTasks)
                             
                             if !archive.notes.isEmpty {
@@ -467,6 +522,7 @@ struct BackupRestoreView: View {
                                     pendingRestoreArchive = restoreArchive
 
                                     pendingRestoreTasks = restoreTasks
+                                    pendingRestoreNotes = restoreNotes
                                     pendingRestoreWalletCards = restoreWalletCards
                                     pendingRestoreTripLists = restoreTripLists
                                     pendingRestoreDocuments = restoreDocuments
@@ -541,6 +597,7 @@ struct BackupRestoreView: View {
                     pendingRestoreArchive = nil
 
                     pendingRestoreTasks = false
+                    pendingRestoreNotes = false
                     pendingRestoreWalletCards = false
                     pendingRestoreTripLists = false
                     pendingRestoreDocuments = false
@@ -598,6 +655,7 @@ struct BackupRestoreView: View {
                 backupPassword = ""
                 pendingRestoreArchive = nil
                 pendingRestoreTasks = false
+                pendingRestoreNotes = false
                 pendingRestoreWalletCards = false
                 pendingRestoreTripLists = false
                 pendingRestoreDocuments = false
