@@ -46,6 +46,7 @@ struct NoteEditorView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .contentMargins(.bottom, 70, for: .scrollContent)
+        .scrollDismissesKeyboard(.immediately)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
@@ -392,7 +393,7 @@ private struct NoteTextView: UIViewRepresentable {
             let button = UIButton(type: .system)
 
             var configuration =
-                UIButton.Configuration.plain()
+                UIButton.Configuration.tinted()
 
             configuration.contentInsets =
                 NSDirectionalEdgeInsets(
@@ -420,6 +421,9 @@ private struct NoteTextView: UIViewRepresentable {
                 for: .touchUpInside
             )
 
+            button.showsMenuAsPrimaryAction = false
+            button.isUserInteractionEnabled = true
+            
             NSLayoutConstraint.activate([
                 button.widthAnchor.constraint(
                     greaterThanOrEqualToConstant: 40
@@ -439,7 +443,7 @@ private struct NoteTextView: UIViewRepresentable {
             let button = UIButton(type: .system)
 
             var configuration =
-                UIButton.Configuration.plain()
+                UIButton.Configuration.tinted()
 
             configuration.contentInsets =
                 NSDirectionalEdgeInsets(
@@ -584,16 +588,30 @@ private struct NoteTextView: UIViewRepresentable {
 
         @objc private func removeList() {
             guard let textView,
-                  textView.selectedRange.length > 0,
                   let attributedText = textView.attributedText
             else {
                 return
             }
 
             let selection = textView.selectedRange
-            let paragraphRange =
-                (attributedText.string as NSString)
+
+            let paragraphRange: NSRange
+
+            if selection.length == 0 {
+                paragraphRange = (attributedText.string as NSString)
+                    .paragraphRange(
+                        for: NSRange(
+                            location: min(
+                                selection.location,
+                                attributedText.length
+                            ),
+                            length: 0
+                        )
+                    )
+            } else {
+                paragraphRange = (attributedText.string as NSString)
                     .paragraphRange(for: selection)
+            }
 
             let storage = textView.textStorage
 
@@ -632,20 +650,37 @@ private struct NoteTextView: UIViewRepresentable {
             markerFormat: NSTextList.MarkerFormat
         ) {
             guard let textView,
-                  textView.selectedRange.length > 0,
                   let attributedText = textView.attributedText
             else {
                 return
             }
 
             let selection = textView.selectedRange
-            let paragraphRange =
-                (attributedText.string as NSString)
+
+            let paragraphRange: NSRange
+
+            if selection.length == 0 {
+                let location = min(
+                    selection.location,
+                    attributedText.length
+                )
+
+                paragraphRange = (attributedText.string as NSString)
+                    .paragraphRange(
+                        for: NSRange(
+                            location: location,
+                            length: 0
+                        )
+                    )
+            } else {
+                paragraphRange = (attributedText.string as NSString)
                     .paragraphRange(for: selection)
+            }
 
             let storage = textView.textStorage
 
             storage.beginEditing()
+
             storage.enumerateAttribute(
                 .paragraphStyle,
                 in: paragraphRange,
@@ -675,6 +710,7 @@ private struct NoteTextView: UIViewRepresentable {
                             options: 0
                         )
                     ]
+
                     style.headIndent = 20
                     style.firstLineHeadIndent = 0
                 }
@@ -685,9 +721,12 @@ private struct NoteTextView: UIViewRepresentable {
                     range: subrange
                 )
             }
+
             storage.endEditing()
 
             textView.selectedRange = selection
+            textView.typingAttributes = textView.typingAttributes
+
             syncText(from: textView)
         }
 
