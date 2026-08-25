@@ -12,18 +12,6 @@ struct NoteEditorView: View {
 
     @State private var title: String
     @State private var text: AttributedString
-    @State private var showUnsavedChangesAlert = false
-    
-    private var hasUnsavedChanges: Bool {
-        let currentTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        guard let currentContent = try? JSONEncoder().encode(text) else {
-            return false
-        }
-
-        return currentTitle != note.title ||
-               currentContent != note.content
-    }
 
     init(note: Note) {
         self.note = note
@@ -50,36 +38,13 @@ struct NoteEditorView: View {
         .navigationTitle(String(localized: "Note"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .interactiveDismissDisabled(hasUnsavedChanges)
-        .alert(
-            String(localized: "Unsaved Changes"),
-            isPresented: $showUnsavedChangesAlert
-        ) {
-            Button(String(localized: "Save")) {
-                save()
-            }
-
-            Button(String(localized: "Discard"), role: .destructive) {
-                dismiss()
-            }
-
-            Button(String(localized: "Cancel"), role: .cancel) {
-            }
-        } message: {
-            Text(String(localized: "Save changes?"))
-        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
-                    if hasUnsavedChanges {
-                        showUnsavedChangesAlert = true
-                    } else {
-                        dismiss()
-                    }
+                    save()
                 } label: {
                     Image(systemName: "chevron.backward")
                 }
-                .accessibilityLabel(String(localized: "Back"))
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -101,6 +66,9 @@ struct NoteEditorView: View {
                     "Failed to save Note lastOpenedAt: \(error.localizedDescription)"
                 )
             }
+        }
+        .onDisappear {
+            save()
         }
     }
 
