@@ -15,12 +15,13 @@ enum AppTab: Int, CaseIterable, Identifiable {
     case map = 5
     case settings = 2
     case notes = 12
+    case recentlyDeleted = 13
 
     // Preserves the current tab bar and More menu order for existing users.
     static let defaultOrder: [AppTab] = [
         .dashboard, .tasks, .calendar, .wallet,
         .start, .vault, .trips, .documents,
-        .notes, .today, .forecast, .map, .settings
+        .notes, .recentlyDeleted, .today, .forecast, .map, .settings
     ]
 
     var id: Int { rawValue }
@@ -40,6 +41,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .map: "map"
         case .settings: "gear"
         case .notes: "note.text"
+        case .recentlyDeleted: "trash"
         }
     }
 
@@ -61,6 +63,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .map: String(localized: "map_tab")
         case .settings: String(localized: "settings_tab")
         case .notes: String(localized: "Notes")
+        case .recentlyDeleted: String(localized: "Recently Deleted")
         }
     }
 

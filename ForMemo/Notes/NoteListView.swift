@@ -9,10 +9,32 @@ struct NoteListView: View {
 
     @State private var newNote: Note?
     @State private var showArchived = false
+    @State private var searchText = ""
 
+    private func matchesSearch(_ note: Note) -> Bool {
+        guard !searchText.isEmpty else {
+            return true
+        }
+
+        if note.title.localizedCaseInsensitiveContains(searchText) {
+            return true
+        }
+
+        guard let attributedString = try? JSONDecoder().decode(
+            AttributedString.self,
+            from: note.content
+        ) else {
+            return false
+        }
+
+        return String(attributedString.characters)
+            .localizedCaseInsensitiveContains(searchText)
+    }
+    
     private var activeNotes: [Note] {
         notes
             .filter { !$0.isArchived }
+            .filter(matchesSearch)
             .sorted {
                 if $0.isPinned != $1.isPinned {
                     return $0.isPinned && !$1.isPinned
@@ -25,6 +47,7 @@ struct NoteListView: View {
     private var archivedNotes: [Note] {
         notes
             .filter { $0.isArchived }
+            .filter(matchesSearch)
             .sorted {
                 $0.modifiedAt > $1.modifiedAt
             }
@@ -35,6 +58,16 @@ struct NoteListView: View {
             AppGlassBackground()
 
             List {
+                if activeNotes.isEmpty &&
+                   (!showArchived || archivedNotes.isEmpty) {
+                    ContentUnavailableView(
+                        String(localized: "No Notes"),
+                        systemImage: "note.text",
+                        description: Text(
+                            String(localized: "Create a note to get started.")
+                        )
+                    )
+                } else {
             Section {
                 ForEach(activeNotes) { note in
                     NavigationLink {
@@ -95,84 +128,86 @@ struct NoteListView: View {
                 
                 .onDelete(perform: deleteNotes)
             }
-        if showArchived && !archivedNotes.isEmpty {
-            Section {
-                ForEach(archivedNotes) { note in
-                    NavigationLink {
-                        NoteEditorView(note: note)
-                    } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(
-                                note.title.isEmpty
-                                ? String(localized: "Untitled")
-                                : note.title
-                            )
-                            .font(.headline)
-
-                            Text(
-                                String(
-                                    localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .shortened))"
-                                )
-                            )
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-
-                            if let archivedAt = note.archivedAt {
-                                Text(
-                                    String(
-                                        localized: "Archived \(archivedAt.formatted(date: .abbreviated, time: .shortened))"
-                                    )
-                                )
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            }                        }
-                    }
-                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                        Button {
-                            unarchive(note)
-                        } label: {
-                            Label(
-                                String(localized: "Unarchive"),
-                                systemImage: "archivebox"
-                            )
+                    if showArchived && !archivedNotes.isEmpty {
+                        Section {
+                            ForEach(archivedNotes) { note in
+                                NavigationLink {
+                                    NoteEditorView(note: note)
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(
+                                            note.title.isEmpty
+                                            ? String(localized: "Untitled")
+                                            : note.title
+                                        )
+                                        .font(.headline)
+                                        
+                                        Text(
+                                            String(
+                                                localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .shortened))"
+                                            )
+                                        )
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        
+                                        if let archivedAt = note.archivedAt {
+                                            Text(
+                                                String(
+                                                    localized: "Archived \(archivedAt.formatted(date: .abbreviated, time: .shortened))"
+                                                )
+                                            )
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        }                        }
+                                }
+                                
+                                .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                    Button {
+                                        unarchive(note)
+                                    } label: {
+                                        Label(
+                                            String(localized: "Unarchive"),
+                                            systemImage: "archivebox"
+                                        )
+                                    }
+                                    .tint(.orange)
+                                }
+                                
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        deleteArchivedNote(note)
+                                    } label: {
+                                        Label(
+                                            String(localized: "Delete"),
+                                            systemImage: "trash"
+                                        )
+                                    }
+                                }
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        deleteArchivedNote(note)
+                                    } label: {
+                                        Label(
+                                            String(localized: "Delete"),
+                                            systemImage: "trash"
+                                        )
+                                    }
+                                    Button {
+                                        unarchive(note)
+                                    } label: {
+                                        Label(
+                                            String(localized: "Unarchive"),
+                                            systemImage: "archivebox"
+                                        )
+                                    }
+                                    
+                                    
+                                }
+                            }
+                        } header: {
+                            Text("Archived")
                         }
-                        .tint(.orange)
                     }
-
-                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                        Button(role: .destructive) {
-                            deleteArchivedNote(note)
-                        } label: {
-                            Label(
-                                String(localized: "Delete"),
-                                systemImage: "trash"
-                            )
-                        }
-                    }
-                    .contextMenu {
-                        Button(role: .destructive) {
-                            deleteArchivedNote(note)
-                        } label: {
-                            Label(
-                                String(localized: "Delete"),
-                                systemImage: "trash"
-                            )
-                        }
-                        Button {
-                            unarchive(note)
-                        } label: {
-                            Label(
-                                String(localized: "Unarchive"),
-                                systemImage: "archivebox"
-                            )
-                        }
-
-
-                    }
-                }
-            } header: {
-                Text("Archived")
-            }
         }
     }
             .scrollContentBackground(.hidden)
@@ -181,6 +216,12 @@ struct NoteListView: View {
                 .listStyle(.insetGrouped)
             }
         .navigationTitle(String(localized: "Notes"))
+        .navigationBarTitleDisplayMode(.inline)
+        .searchable(
+            text: $searchText,
+            placement: .navigationBarDrawer(displayMode: .automatic),
+            prompt: String(localized: "Search Notes")
+        )
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

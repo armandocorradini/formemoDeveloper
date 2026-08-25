@@ -363,7 +363,10 @@ struct TaskTabView: View {
             NavigationStack(path: $settingsPath) {
                 SettingsView()
             }
-            
+        case 13:
+            NavigationStack {
+                RecentlyDeletedView()
+            }
         default:
             NavigationStack(path: $StartPath) {
                 StartView()
@@ -557,6 +560,8 @@ struct TaskTabView: View {
             if !notesPath.isEmpty {
                 notesPath = NavigationPath()
             }
+        case 13:
+            break
             
         default:
             break
