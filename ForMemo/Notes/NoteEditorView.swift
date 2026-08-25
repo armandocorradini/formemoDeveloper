@@ -4,6 +4,7 @@ import UIKit
 import os
 
 
+
 struct NoteEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -12,9 +13,14 @@ struct NoteEditorView: View {
 
     @State private var title: String
     @State private var text: AttributedString
+    private let onSaveReady: (@escaping () -> Void) -> Void
 
-    init(note: Note) {
+    init(
+        note: Note,
+        onSaveReady: @escaping (@escaping () -> Void) -> Void = { _ in }
+    ) {
         self.note = note
+        self.onSaveReady = onSaveReady
         _title = State(initialValue: note.title)
         _text = State(initialValue: Self.decodeContent(note.content))
     }
@@ -27,6 +33,7 @@ struct NoteEditorView: View {
                 titleField
                 
                 Divider()
+                    .overlay(Color.primary.opacity(0.25))
                 
                 NoteTextView(text: $text)
                     .frame(
@@ -38,13 +45,17 @@ struct NoteEditorView: View {
         .navigationTitle(String(localized: "Note"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .contentMargins(.bottom, 70, for: .scrollContent)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     save()
                 } label: {
                     Image(systemName: "chevron.backward")
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
 
             ToolbarItem(placement: .topBarTrailing) {
@@ -66,9 +77,18 @@ struct NoteEditorView: View {
                     "Failed to save Note lastOpenedAt: \(error.localizedDescription)"
                 )
             }
+            onSaveReady {
+                print("NOTE CALLBACK SAVE")
+                save(dismissAfterSave: false)
+            }
+        }
+        .onChange(of: title) { _, newTitle in
+            note.title = newTitle.trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
         }
         .onDisappear {
-            save()
+            // Saving is handled explicitly by Back, Save and tab changes.
         }
     }
 
@@ -84,16 +104,20 @@ struct NoteEditorView: View {
         .padding(.bottom, 10)
     }
 
-    private func save() {
+    private func save(dismissAfterSave: Bool = true) {
         note.title = title.trimmingCharacters(
             in: .whitespacesAndNewlines
         )
 
         do {
+
             note.content = try JSONEncoder().encode(text)
             note.modifiedAt = .now
             try modelContext.save()
-            dismiss()
+
+            if dismissAfterSave {
+                dismiss()
+            }
         } catch {
             AppLogger.persistence.error(
                 "Failed to save Note: \(error.localizedDescription)"

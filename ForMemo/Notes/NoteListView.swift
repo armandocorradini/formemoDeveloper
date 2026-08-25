@@ -4,12 +4,19 @@ import os
 
 struct NoteListView: View {
     @Environment(\.modelContext) private var modelContext
-
+    let onEditorSave: (@escaping () -> Void) -> Void
+    
     @Query private var notes: [Note]
 
     @State private var newNote: Note?
     @State private var showArchived = false
     @State private var searchText = ""
+    
+    init(
+        onEditorSave: @escaping (@escaping () -> Void) -> Void = { _ in }
+    ) {
+        self.onEditorSave = onEditorSave
+    }
 
     private func matchesSearch(_ note: Note) -> Bool {
         guard !searchText.isEmpty else {
@@ -71,7 +78,7 @@ struct NoteListView: View {
             Section {
                 ForEach(activeNotes) { note in
                     NavigationLink {
-                        NoteEditorView(note: note)
+                        editorView(for: note)
                     } label: {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(
@@ -132,7 +139,7 @@ struct NoteListView: View {
                         Section {
                             ForEach(archivedNotes) { note in
                                 NavigationLink {
-                                    NoteEditorView(note: note)
+                                    editorView(for: note)
                                 } label: {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(
@@ -252,9 +259,17 @@ struct NoteListView: View {
             }
         }
         .navigationDestination(item: $newNote) { note in
-            NoteEditorView(note: note)
+            editorView(for: note)
         }
     }
+
+@ViewBuilder
+private func editorView(for note: Note) -> some View {
+    NoteEditorView(
+        note: note,
+        onSaveReady: onEditorSave
+    )
+}
 
     private func createNote() {
         let note = Note()

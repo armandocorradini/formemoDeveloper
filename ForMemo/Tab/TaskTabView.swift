@@ -34,6 +34,7 @@ struct TaskTabView: View {
     @State private var weatherPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
     @State private var notesPath = NavigationPath()
+    @State private var saveCurrentNote: (() -> Void)?
     
     var body: some View {
         rootLayout
@@ -352,9 +353,10 @@ struct TaskTabView: View {
             }
         case 12:
             NavigationStack(path: $notesPath) {
-                NoteListView()
-            }
-        case 9:
+                NoteListView { save in
+                    saveCurrentNote = save
+                }
+            }        case 9:
             NavigationStack(path: $weatherPath) {
                 WeatherForecastView()
             }
@@ -451,12 +453,16 @@ struct TaskTabView: View {
         Button {
             
             if selectedTab != tag {
+                if selectedTab == 12 {
+                    saveCurrentNote?()
+                    saveCurrentNote = nil
+                    notesPath = NavigationPath()
+                }
+
                 withAnimation(nil) {
                     selectedTab = tag
                 }
-                resetTab(tag)
 
-            } else {
                 resetTab(tag)
             }
             
