@@ -54,6 +54,9 @@ struct OtherSettingsView: View {
 
                         Text(String(localized: "Documents"))
                             .tag(8)
+                        
+                        Text(String(localized: "Notes"))
+                            .tag(12)
                     }
                     .pickerStyle(.navigationLink)
                   

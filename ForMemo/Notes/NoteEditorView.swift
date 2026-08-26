@@ -112,6 +112,31 @@ struct NoteEditorView: View {
 
         do {
 
+            let saveText = NSAttributedString(text)
+
+            saveText.enumerateAttribute(
+                .paragraphStyle,
+                in: NSRange(
+                    location: 0,
+                    length: saveText.length
+                ),
+                options: []
+            ) { value, range, _ in
+
+//                let style = value as? NSParagraphStyle
+//                let list = style?.textLists.last
+
+//                AppLogger.persistence.debug(
+//                    """
+//                    SAVE LIST DEBUG:
+//                    range=\(NSStringFromRange(range))
+//                    text=\(saveText.attributedSubstring(from: range).string.replacingOccurrences(of: "\n", with: "\\n"))
+//                    list=\(list == nil ? "nil" : "YES")
+//                    listID=\(list.map { ObjectIdentifier($0).hashValue } ?? 0)
+//                    """
+//                )
+            }
+            
             note.content = try JSONEncoder().encode(text)
             note.modifiedAt = .now
             try modelContext.save()
@@ -134,16 +159,80 @@ struct NoteEditorView: View {
         }
 
         do {
-            return try JSONDecoder().decode(
+            let decoded = try JSONDecoder().decode(
                 AttributedString.self,
                 from: data
             )
-        } catch {
+
+            return normalizeListContinuity(decoded)
+        }catch {
             AppLogger.persistence.error(
                 "Failed to decode Note AttributedString: \(error.localizedDescription)"
             )
             return AttributedString()
         }
+    }
+    
+    private static func normalizeListContinuity(
+        _ attributedString: AttributedString
+    ) -> AttributedString {
+        let source = NSAttributedString(attributedString)
+
+        guard source.length > 0 else {
+            return attributedString
+        }
+
+        let result = NSMutableAttributedString(
+            attributedString: source
+        )
+
+        var activeList: NSTextList?
+        var previousWasNumberedList = false
+
+        result.enumerateAttribute(
+            .paragraphStyle,
+            in: NSRange(location: 0, length: result.length),
+            options: []
+        ) { value, range, _ in
+
+            let sourceStyle =
+                (value as? NSParagraphStyle)
+                ?? NSParagraphStyle.default
+
+            let lists = sourceStyle.textLists
+
+            guard let currentList = lists.last,
+                  currentList.markerFormat == .decimal
+            else {
+                activeList = nil
+                previousWasNumberedList = false
+                return
+            }
+
+            let style =
+                sourceStyle.mutableCopy()
+                as? NSMutableParagraphStyle
+                ?? NSMutableParagraphStyle()
+
+            if previousWasNumberedList,
+               let activeList {
+
+                style.textLists = [activeList]
+            } else {
+                activeList = currentList
+                style.textLists = [currentList]
+            }
+
+            result.addAttribute(
+                .paragraphStyle,
+                value: style.copy(),
+                range: range
+            )
+
+            previousWasNumberedList = true
+        }
+
+        return AttributedString(result)
     }
 }
 
@@ -222,6 +311,7 @@ private struct NoteTextView: UIViewRepresentable {
         textView.textStorage.setAttributedString(initialContent)
         textView.textStorage.endEditing()
 
+        
         /*
          Important:
          - no typingAttributes
@@ -681,11 +771,17 @@ private struct NoteTextView: UIViewRepresentable {
 
             storage.beginEditing()
 
+            let list = NSTextList(
+                markerFormat: markerFormat,
+                options: 0
+            )
+
             storage.enumerateAttribute(
                 .paragraphStyle,
                 in: paragraphRange,
                 options: []
             ) { value, subrange, _ in
+
                 let source =
                     (value as? NSParagraphStyle)
                     ?? NSParagraphStyle.default
@@ -704,13 +800,7 @@ private struct NoteTextView: UIViewRepresentable {
                     style.headIndent = 0
                     style.firstLineHeadIndent = 0
                 } else {
-                    style.textLists = [
-                        NSTextList(
-                            markerFormat: markerFormat,
-                            options: 0
-                        )
-                    ]
-
+                    style.textLists = [list]
                     style.headIndent = 20
                     style.firstLineHeadIndent = 0
                 }
@@ -758,6 +848,7 @@ private struct NoteTextView: UIViewRepresentable {
              Selection, caret position, formatting state and typing
              attributes are deliberately not synchronized through SwiftUI.
             */
+            
             text.wrappedValue =
                 AttributedString(attributedText)
         }

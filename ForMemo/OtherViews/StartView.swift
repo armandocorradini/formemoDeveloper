@@ -60,7 +60,7 @@ struct StartView: View {
                         .foregroundStyle(.cyan, .blue)
                         .rotationEffect(.degrees(isAnimating ? 360 : 0))
                         .animation(
-                            .linear(duration: 0.7),
+                            .linear(duration: 0.9),
                             value: isAnimating
                         )
                         .onReceive(
