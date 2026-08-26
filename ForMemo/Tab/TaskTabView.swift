@@ -47,6 +47,27 @@ struct TaskTabView: View {
                         name: Notification.Name("StartStartIconRotationFast"),
                         object: nil
                     )
+
+                    // Wait exactly for the single rotation to complete.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        guard selectedTab == 0 else {
+                            return
+                        }
+
+                        withAnimation(.easeInOut(duration: 0.18)) {
+                            if settings.startupTab == -1 {
+                                let hasContent =
+                                    !tasks.isEmpty ||
+                                    !documents.isEmpty ||
+                                    !cards.isEmpty ||
+                                    !trips.isEmpty
+
+                                selectedTab = hasContent ? 10 : 1
+                            } else {
+                                selectedTab = settings.startupTab
+                            }
+                        }
+                    }
                 }
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.8) {

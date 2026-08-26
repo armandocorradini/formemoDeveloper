@@ -489,10 +489,6 @@ struct ResetAppView: View {
             )
             throw error
         }
-    
-        
-        if let message = deletionMessage {
-            print(message)
-        }
+
     }
 }

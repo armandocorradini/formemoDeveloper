@@ -78,18 +78,7 @@ struct WeatherForecastView: View {
         return VStack(spacing: 4) {
 
             if let weather = weatherManager.weather(for: Date()) {
-// #if DEBUG
-// let _ = {
-//     if let weather = weatherManager.weather(for: Date()) {
-//         print("☀️ daily weatherCode:", weather.weatherCode)
-//     }
-//     return 0
-// }()
-// #endif
 
-// #if DEBUG
-// let _ = print("🌤️ currentWeatherSymbol:", currentWeatherSymbol)
-// #endif
                 Image(systemName: weatherManager.representativeSymbol(for: weather.date))
                     .symbolRenderingMode(.multicolor)
                     .font(.system(size: 40))

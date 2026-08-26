@@ -58,12 +58,17 @@ struct StartView: View {
                         .frame(width: 180, height: 180)
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(.cyan, .blue)
-                        .symbolEffect(.rotate.clockwise, options: .repeat(1).speed(2), value: isAnimating)
-                        .symbolEffect(.pulse, options: .repeat(nil).speed(0.3), value: isAnimating)
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                isAnimating = true
-                            }
+                        .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                        .animation(
+                            .linear(duration: 0.7),
+                            value: isAnimating
+                        )
+                        .onReceive(
+                            NotificationCenter.default.publisher(
+                                for: Notification.Name("StartStartIconRotationFast")
+                            )
+                        ) { _ in
+                            isAnimating = true
                         }
                         .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
                     

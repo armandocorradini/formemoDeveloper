@@ -247,8 +247,8 @@ enum DiagnosticsConfiguration {
 
             return (
                 true,
-                true,
-                true,
+                false,
+                false,
                 false,
                 false,
                 false
@@ -305,8 +305,8 @@ enum DiagnosticsConfiguration {
         case .standard:
 
             set(true,  for: "Diag.General")
-            set(true,  for: "Diag.Migration")
-            set(true,  for: "Diag.Environment")
+            set(false,  for: "Diag.Migration")
+            set(false,  for: "Diag.Environment")
             set(false, for: "Diag.Database")
             set(false, for: "Diag.Filesystem")
             set(false, for: "Diag.Integrity")

@@ -1193,7 +1193,7 @@ struct TodoSectionView: View {
             )
         }
         groupedTasksCache = result
-//        print("📦 rebuildGroups end")
+
     }
 
     private var groupedTasksByDay: [GroupedSection] {

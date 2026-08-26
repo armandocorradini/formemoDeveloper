@@ -85,12 +85,7 @@ extension LoyaltyCard {
         item.loyaltyColorHex = card.colorHex
 
         item.loyaltySortOrder = card.sortOrder
-        
-        
-        print("=== DELETE CARD ===")
-        print("Assets:", card.assets?.count ?? 0)
-        print("Logo:", card.logoAsset?.relativePath ?? "nil")
-        print("Gallery:", card.galleryAssets.count)
+
         item.loyaltyLogoRelativePath =
             card.logoAsset?.relativePath
             ?? card.loyaltyLogoRelativePath
