@@ -821,8 +821,6 @@ Attivazione: \(triggerInfo)
                         Button(role: .destructive) {
                             DebugTools.resetPreferences()
                             
-                            print("🧹 Preferences reset")
-                            
                             UIApplication.shared.perform(#selector(NSXPCConnection.suspend))
                             
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {

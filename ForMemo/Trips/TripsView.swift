@@ -556,7 +556,7 @@ struct TravelKitListView: View {
                                         }
                                         
                                         editingCategory.icon = selectedIcon
-                                        print("Trip category updated:", trimmedName)
+
                                     } else {
                                         // Ensure unique trip type name
                                         let baseName = trimmedName
@@ -611,7 +611,6 @@ struct TravelKitListView: View {
                                             modelContext.insert(category)
                                         }
 
-                                        print("Trip category created:", finalName)
                                     }
                                     
                                     try modelContext.save()
@@ -721,7 +720,7 @@ struct TravelKitListView: View {
                 contentType: .fmtrip,
                 defaultFilename: categoryToExport.map { localizedTripText($0.name) } ?? "ForMemo-Checklists"
             ) { _ in
-                print("📦 export completed")
+               
                 exportDocument = nil
                 categoryToExport = nil
             }

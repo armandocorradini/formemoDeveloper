@@ -206,15 +206,10 @@ struct TaskListView: View {
 
                         Button("Delete", role: .destructive) {
 
-                            print("🗑️ ALERT DELETE PRESSED")
-
                             guard let task = taskPendingDeletion else {
-                                print("🗑️ taskPendingDeletion NIL")
                                 taskPendingDeletion = nil
                                 return
                             }
-
-                            print("🗑️ deleting \(task.title)")
 
                             withAnimation {
                                 deleteTask(task, in: modelContext)

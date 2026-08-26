@@ -79,7 +79,7 @@ struct NoteEditorView: View {
                 )
             }
             onSaveReady {
-                print("NOTE CALLBACK SAVE")
+
                 save(dismissAfterSave: false)
             }
         }

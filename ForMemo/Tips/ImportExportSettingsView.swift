@@ -355,10 +355,6 @@ struct CSVImportView: View {
                                     isPresented = false
                                 }
                                 
-#if DEBUG
-                                print(result.message)
-#endif
-                                
                             } catch {
 #if DEBUG
                                 print("CSV import error:", error.localizedDescription)
