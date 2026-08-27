@@ -388,7 +388,9 @@ struct TaskTabView: View {
             }
         case 13:
             NavigationStack {
-                RecentlyDeletedView()
+                RecentlyDeletedView(onClose: {
+                    selectedTab = previousTab
+                })
             }
         default:
             NavigationStack(path: $StartPath) {

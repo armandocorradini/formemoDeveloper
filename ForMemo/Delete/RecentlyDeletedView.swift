@@ -3,7 +3,13 @@ import SwiftData
 
 struct RecentlyDeletedView: View {
     
-    @Environment(\.dismiss) private var dismiss
+    var onClose: (() -> Void)? = nil
+    @Environment(\.dismiss) var dismiss
+
+    init(onClose: (() -> Void)? = nil) {
+        self.onClose = onClose
+    }
+
     @Environment(\.modelContext) private var context
     
     @Query(sort: \DeletedItem.deletedAt, order: .reverse)
@@ -315,11 +321,14 @@ var body: some View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
-                    dismiss()
+                    if let onClose {
+                        onClose()
+                    } else {
+                        dismiss()
+                    }
                 } label: {
                     Image(systemName: "xmark")
-                }
-            }
+                }            }
             
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

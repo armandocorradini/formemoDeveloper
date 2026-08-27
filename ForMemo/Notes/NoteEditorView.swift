@@ -3,8 +3,6 @@ import SwiftData
 import UIKit
 import os
 
-
-
 struct NoteEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -241,6 +239,59 @@ struct NoteEditorView: View {
 private struct NoteTextView: UIViewRepresentable {
     @Binding var text: AttributedString
 
+    
+    private func styledContent(
+        from attributedString: AttributedString,
+        textView: UITextView
+    ) -> NSAttributedString {
+        let result = NSMutableAttributedString(
+            attributedString: NSAttributedString(attributedString)
+        )
+
+        guard result.length > 0 else {
+            return result
+        }
+
+        let fullRange = NSRange(
+            location: 0,
+            length: result.length
+        )
+
+        result.enumerateAttribute(
+            .font,
+            in: fullRange,
+            options: []
+        ) { value, range, _ in
+            if value == nil {
+                result.addAttribute(
+                    .font,
+                    value: textView.font
+                        ?? UIFont.preferredFont(forTextStyle: .body),
+                    range: range
+                )
+            }
+        }
+
+        result.enumerateAttribute(
+            .foregroundColor,
+            in: fullRange,
+            options: []
+        ) { value, range, _ in
+            if value == nil {
+                result.addAttribute(
+                    .foregroundColor,
+                    value: textView.textColor
+                        ?? UIColor.label,
+                    range: range
+                )
+            }
+        }
+
+        return result
+    }
+    
+    
+    
     func makeCoordinator() -> Coordinator {
         Coordinator(text: $text)
     }
@@ -305,7 +356,14 @@ private struct NoteTextView: UIViewRepresentable {
         textView.spellCheckingType = .default
 
         // Initial attributed content.
-        let initialContent = NSAttributedString(text)
+        // If the stored content has no explicit font/color,
+        // apply the editor's standard appearance.
+
+        let initialContent = styledContent(
+            from: text,
+            textView: textView
+        )
+            
 
         textView.textStorage.beginEditing()
         textView.textStorage.setAttributedString(initialContent)
@@ -343,7 +401,10 @@ private struct NoteTextView: UIViewRepresentable {
             return
         }
 
-        let incoming = NSAttributedString(text)
+        let incoming = styledContent(
+            from: text,
+            textView: textView
+        )
 
         guard !textView.attributedText.isEqual(
             to: incoming

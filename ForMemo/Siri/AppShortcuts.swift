@@ -92,6 +92,64 @@ struct AppShortcuts: AppShortcutsProvider {
             shortTitle: LocalizedStringResource("Search Tasks"),
             systemImageName: "magnifyingglass"
         )
+        
+        AppShortcut(
+            intent: AddNoteIntent(),
+            phrases: [
+                // English
+                AppShortcutPhrase("Write a note in \(.applicationName)"),
+                AppShortcutPhrase("Write in \(.applicationName)"),
+                AppShortcutPhrase("Add a note to \(.applicationName)"),
+                AppShortcutPhrase("Note in \(.applicationName)"),
+                AppShortcutPhrase("Note \(.applicationName)"),
+                AppShortcutPhrase("Take a note in \(.applicationName)"),
+                AppShortcutPhrase("Take a note with \(.applicationName)"),
+                AppShortcutPhrase("Memo in \(.applicationName)"),
+
+                // Italiano
+                AppShortcutPhrase("Scrivi nota in \(.applicationName)"),
+                AppShortcutPhrase("Scrivi in \(.applicationName)"),
+                AppShortcutPhrase("Aggiungi nota a \(.applicationName)"),
+                AppShortcutPhrase("Nota in \(.applicationName)"),
+                AppShortcutPhrase("Nota \(.applicationName)"),
+                AppShortcutPhrase("Annota in \(.applicationName)"),
+                AppShortcutPhrase("Annota con \(.applicationName)"),
+                AppShortcutPhrase("Memo in \(.applicationName)"),
+
+                // Deutsch
+                AppShortcutPhrase("Schreibe eine Notiz in \(.applicationName)"),
+                AppShortcutPhrase("Schreibe in \(.applicationName)"),
+                AppShortcutPhrase("Füge eine Notiz zu \(.applicationName) hinzu"),
+                AppShortcutPhrase("Notiz in \(.applicationName)"),
+                AppShortcutPhrase("Notiz \(.applicationName)"),
+                AppShortcutPhrase("Notiere in \(.applicationName)"),
+                AppShortcutPhrase("Notiere mit \(.applicationName)"),
+                AppShortcutPhrase("Memo in \(.applicationName)"),
+
+                // Français
+                AppShortcutPhrase("Écris une note dans \(.applicationName)"),
+                AppShortcutPhrase("Écris dans \(.applicationName)"),
+                AppShortcutPhrase("Ajoute une note à \(.applicationName)"),
+                AppShortcutPhrase("Note dans \(.applicationName)"),
+                AppShortcutPhrase("Note \(.applicationName)"),
+                AppShortcutPhrase("Prends une note dans \(.applicationName)"),
+                AppShortcutPhrase("Prends une note avec \(.applicationName)"),
+                AppShortcutPhrase("Mémo dans \(.applicationName)"),
+
+                // Español (España)
+                AppShortcutPhrase("Escribe una nota en \(.applicationName)"),
+                AppShortcutPhrase("Escribe en \(.applicationName)"),
+                AppShortcutPhrase("Añade una nota a \(.applicationName)"),
+                AppShortcutPhrase("Nota en \(.applicationName)"),
+                AppShortcutPhrase("Nota \(.applicationName)"),
+                AppShortcutPhrase("Toma una nota en \(.applicationName)"),
+                AppShortcutPhrase("Toma una nota con \(.applicationName)"),
+                AppShortcutPhrase("Nota en \(.applicationName)")
+            ],
+            shortTitle: LocalizedStringResource("Add Note"),
+            systemImageName: "note.text.badge.plus"
+        )
+        
     }
     
     static var shortcutTileColor: ShortcutTileColor = .blue

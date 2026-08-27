@@ -186,6 +186,7 @@
 		1C8225E1303B50B600B77EC7 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E0303B50A000B77EC7 /* Note.swift */; };
 		1C8225E3303B535500B77EC7 /* NoteListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E2303B531F00B77EC7 /* NoteListView.swift */; };
 		1C8225E5303B555000B77EC7 /* NoteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */; };
+		1C8225ED303F2C8100B77EC7 /* AddNoteIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225EB303F2C7D00B77EC7 /* AddNoteIntent.swift */; };
 		1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */; };
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
@@ -402,6 +403,7 @@
 		1C8225E0303B50A000B77EC7 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
 		1C8225E2303B531F00B77EC7 /* NoteListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteListView.swift; sourceTree = "<group>"; };
 		1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorView.swift; sourceTree = "<group>"; };
+		1C8225EB303F2C7D00B77EC7 /* AddNoteIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNoteIntent.swift; sourceTree = "<group>"; };
 		1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentContainerRecovery.swift; sourceTree = "<group>"; };
 		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
 		1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDirectoryCoordinator.swift; sourceTree = "<group>"; };
@@ -566,6 +568,7 @@
 		1C634D8B30220C9C0092DB89 /* ForMemo */ = {
 			isa = PBXGroup;
 			children = (
+				1C8225EC303F2C8100B77EC7 /* Siri */,
 				1C8477673023782000C4FA34 /* Core */,
 				1C634E43302331530092DB89 /* Tips */,
 				1C634E4230232A130092DB89 /* Tab */,
@@ -591,7 +594,6 @@
 			children = (
 				1C634D1030220C9C0092DB89 /* TaskAttachment.swift */,
 				1C634D1830220C9C0092DB89 /* TodoTask.swift */,
-				1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */,
 				1C634D3F30220C9C0092DB89 /* AttachmentImporter.swift */,
 				1C634CDB30220C9C0092DB89 /* AttachmentMaintenanceManager.swift */,
 				1C634CDC30220C9C0092DB89 /* AttachmentMigration.swift */,
@@ -607,7 +609,6 @@
 				1C634D4C30220C9C0092DB89 /* Detail_ResourcesSection.swift */,
 				1C634D4D30220C9C0092DB89 /* Detail_Share.swift */,
 				1C634D5730220C9C0092DB89 /* ExportToCalendarView.swift */,
-				1C634CEF30220C9C0092DB89 /* GetTasksIntent.swift */,
 				1C634CF330220C9C0092DB89 /* ImportCalendar.swift */,
 				1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */,
 				1C634D5B30220C9C0092DB89 /* LocationPickerView.swift */,
@@ -623,7 +624,6 @@
 				1C634D0630220C9C0092DB89 /* RemindersAccess.swift */,
 				1C634D0830220C9C0092DB89 /* RowBackground.swift */,
 				1C634D0930220C9C0092DB89 /* RowCardStyle.swift */,
-				1C634D0A30220C9C0092DB89 /* SearchTasksIntent.swift */,
 				1C634D1130220C9C0092DB89 /* TaskBadgePolicy.swift */,
 				1C634D6B30220C9C0092DB89 /* TaskBadgeView.swift */,
 				1C634D1230220C9C0092DB89 /* TaskExportService.swift */,
@@ -645,8 +645,6 @@
 				1C634D7630220C9C0092DB89 /* TaskRowContent.swift */,
 				1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */,
 				1C634D4230220C9C0092DB89 /* AudioRecorderView.swift */,
-				1C634CD930220C9C0092DB89 /* AppShortcuts.swift */,
-				1C634D6730220C9C0092DB89 /* ShortList.swift */,
 				1C634D5430220C9C0092DB89 /* DueIconEffect.swift */,
 				1C634D5530220C9C0092DB89 /* DueIconEffectModifier.swift */,
 				1C634CE230220C9C0092DB89 /* CSVImporter.swift */,
@@ -765,6 +763,19 @@
 				1C8225E0303B50A000B77EC7 /* Note.swift */,
 			);
 			path = Notes;
+			sourceTree = "<group>";
+		};
+		1C8225EC303F2C8100B77EC7 /* Siri */ = {
+			isa = PBXGroup;
+			children = (
+				1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */,
+				1C8225EB303F2C7D00B77EC7 /* AddNoteIntent.swift */,
+				1C634CEF30220C9C0092DB89 /* GetTasksIntent.swift */,
+				1C634D0A30220C9C0092DB89 /* SearchTasksIntent.swift */,
+				1C634D6730220C9C0092DB89 /* ShortList.swift */,
+				1C634CD930220C9C0092DB89 /* AppShortcuts.swift */,
+			);
+			path = Siri;
 			sourceTree = "<group>";
 		};
 		1C8477673023782000C4FA34 /* Core */ = {
@@ -1009,6 +1020,7 @@
 				1C634DEF30220C9C0092DB89 /* VaultImportRecord.swift in Sources */,
 				1C634DF030220C9C0092DB89 /* VaultImportService.swift in Sources */,
 				1C634DF130220C9C0092DB89 /* AddLoyaltyCardView.swift in Sources */,
+				1C8225ED303F2C8100B77EC7 /* AddNoteIntent.swift in Sources */,
 				1C634DF230220C9C0092DB89 /* AppQuickGuide.swift in Sources */,
 				1CED325B302619D600B16A50 /* AssetRecoveryCoordinator.swift in Sources */,
 				1C634DF330220C9C0092DB89 /* AppUnavailableView.swift in Sources */,

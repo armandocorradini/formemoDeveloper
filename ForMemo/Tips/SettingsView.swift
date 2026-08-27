@@ -27,6 +27,7 @@ struct SettingsView: View {
     private var settings
 
     
+    
 #if DEBUG
     @State private var hasTestData: Bool = false
     @State private var areTestTasksCompleted: Bool = false
@@ -899,9 +900,7 @@ Attivazione: \(triggerInfo)
                 RemindersImportView()
             }
             .fullScreenCover(isPresented: $showRecentlyDeleted) {
-                NavigationStack {
-                    RecentlyDeletedView()
-                }
+                RecentlyDeletedView()
             }
             .id(backgroundColor1Hex + backgroundColor2Hex)
             .alert("Disable AutoFill first", isPresented: $showAutoFillDisableAlert) {
