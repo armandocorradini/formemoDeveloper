@@ -146,7 +146,7 @@ struct AppShortcuts: AppShortcutsProvider {
                 AppShortcutPhrase("Toma una nota con \(.applicationName)"),
                 AppShortcutPhrase("Nota en \(.applicationName)")
             ],
-            shortTitle: LocalizedStringResource("Add Note"),
+            shortTitle: LocalizedStringResource("Note ForMemo"),
             systemImageName: "note.text.badge.plus"
         )
         

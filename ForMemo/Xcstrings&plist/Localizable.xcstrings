@@ -17821,31 +17821,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Liste"
+            "value" : "Aufgaben"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "List"
+            "value" : "Tasks"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lista"
+            "value" : "Tareas"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Liste"
+            "value" : "Tâches"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lista"
+            "value" : "Attività"
           }
         }
       }
@@ -20643,6 +20643,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nota %@"
+          }
+        }
+      }
+    },
+    "Note ForMemo" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notiz ForMemo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota ForMemo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note ForMemo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note ForMemo"
           }
         }
       }
@@ -30686,6 +30714,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’attività '%1$@' scade tra %2$lld ora(e)"
+          }
+        }
+      }
+    },
+    "The text to save in the new note." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Text, der in der neuen Notiz gespeichert werden soll."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El texto que se guardará en la nueva nota."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le texte à enregistrer dans la nouvelle note."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il testo da salvare nella nuova nota."
           }
         }
       }

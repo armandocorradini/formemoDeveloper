@@ -19,9 +19,9 @@ enum AppTab: Int, CaseIterable, Identifiable {
 
     // Preserves the current tab bar and More menu order for existing users.
     static let defaultOrder: [AppTab] = [
-        .dashboard, .tasks, .calendar, .wallet,
+        .dashboard, .tasks, .notes, .wallet,
         .start, .vault, .trips, .documents,
-        .notes, .recentlyDeleted, .today, .forecast, .map, .settings
+         .calendar, .today,  .map,  .forecast, .recentlyDeleted, .settings
     ]
 
     var id: Int { rawValue }

@@ -19,6 +19,7 @@ struct AddNoteIntent: AppIntent {
 
     @Parameter(
         title: "Note",
+        description: "The text to save in the new note.",
         requestValueDialog: IntentDialog(
             "What do you want to write in the note?"
         )
