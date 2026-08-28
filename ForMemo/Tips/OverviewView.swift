@@ -25,6 +25,13 @@ struct OverviewView: View {
     @Query private var documents: [DocumentItem]
     @Query private var documentAssets: [DocumentAsset]
     @Query private var notes: [Note]
+    private var activeNotesCount: Int {
+        notes.filter { !$0.isArchived }.count
+    }
+
+    private var archivedNotesCount: Int {
+        notes.filter { $0.isArchived }.count
+    }
     
     // 2. Separate le query per evitare filtri in memoria
     @Query(filter: #Predicate<LoyaltyCard> { $0.itemType == "ticket" })
@@ -548,7 +555,11 @@ private extension OverviewView {
 
             VStack(alignment: .leading, spacing: 10) {
                 LabeledContent("Notes") {
-                    Text("\(notes.count)")
+                    Text("\(activeNotesCount)")
+                }
+
+                LabeledContent("Archived") {
+                    Text("\(archivedNotesCount)")
                 }
             }
         }

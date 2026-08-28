@@ -187,6 +187,9 @@
 		1C8225E3303B535500B77EC7 /* NoteListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E2303B531F00B77EC7 /* NoteListView.swift */; };
 		1C8225E5303B555000B77EC7 /* NoteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */; };
 		1C8225ED303F2C8100B77EC7 /* AddNoteIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225EB303F2C7D00B77EC7 /* AddNoteIntent.swift */; };
+		1C8225EF3040934A00B77EC7 /* NoteImportHandoff.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225EE3040934700B77EC7 /* NoteImportHandoff.swift */; };
+		1C8225F13040936800B77EC7 /* NoteImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225F03040936700B77EC7 /* NoteImportService.swift */; };
+		1C8226003040960600B77EC7 /* ForMemoShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */; };
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
@@ -199,6 +202,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1C8225FE3040960600B77EC7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1C1C22F82F7E983A00A77282 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1C8225F53040960600B77EC7;
+			remoteInfo = ForMemoShareExtension;
+		};
 		1CF984853000EBA300E1D1A9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1C1C22F82F7E983A00A77282 /* Project object */;
@@ -214,6 +224,7 @@
 			dstPath = "";
 			dstSubfolder = PlugIns;
 			files = (
+				1C8226003040960600B77EC7 /* ForMemoShareExtension.appex in Embed Foundation Extensions */,
 				1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -404,6 +415,9 @@
 		1C8225E2303B531F00B77EC7 /* NoteListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteListView.swift; sourceTree = "<group>"; };
 		1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorView.swift; sourceTree = "<group>"; };
 		1C8225EB303F2C7D00B77EC7 /* AddNoteIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNoteIntent.swift; sourceTree = "<group>"; };
+		1C8225EE3040934700B77EC7 /* NoteImportHandoff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteImportHandoff.swift; sourceTree = "<group>"; };
+		1C8225F03040936700B77EC7 /* NoteImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteImportService.swift; sourceTree = "<group>"; };
+		1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentContainerRecovery.swift; sourceTree = "<group>"; };
 		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
 		1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDirectoryCoordinator.swift; sourceTree = "<group>"; };
@@ -416,6 +430,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1C8226013040960600B77EC7 /* Exceptions for "ForMemoShareExtension" folder in "ForMemoShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1C8225F53040960600B77EC7 /* ForMemoShareExtension */;
+		};
 		1CF9848B3000EBA300E1D1A9 /* Exceptions for "ForMemoCredentialProvider" folder in "ForMemoCredentialProvider" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -431,6 +452,14 @@
 			path = Sound;
 			sourceTree = "<group>";
 		};
+		1C8225F73040960600B77EC7 /* ForMemoShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1C8226013040960600B77EC7 /* Exceptions for "ForMemoShareExtension" folder in "ForMemoShareExtension" target */,
+			);
+			path = ForMemoShareExtension;
+			sourceTree = "<group>";
+		};
 		1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -443,6 +472,11 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		1C1C22FD2F7E983A00A77282 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		1C8225F33040960600B77EC7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -462,6 +496,7 @@
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
 				1C634D8B30220C9C0092DB89 /* ForMemo */,
 				1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */,
+				1C8225F73040960600B77EC7 /* ForMemoShareExtension */,
 				1CF9847A3000EBA300E1D1A9 /* Frameworks */,
 				1C1C23012F7E983A00A77282 /* Products */,
 			);
@@ -472,6 +507,7 @@
 			children = (
 				1C1C23002F7E983A00A77282 /* ForMemo.app */,
 				1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */,
+				1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -758,6 +794,8 @@
 		1C8225DF303B509100B77EC7 /* Notes */ = {
 			isa = PBXGroup;
 			children = (
+				1C8225F03040936700B77EC7 /* NoteImportService.swift */,
+				1C8225EE3040934700B77EC7 /* NoteImportHandoff.swift */,
 				1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */,
 				1C8225E2303B531F00B77EC7 /* NoteListView.swift */,
 				1C8225E0303B50A000B77EC7 /* Note.swift */,
@@ -832,6 +870,7 @@
 			);
 			dependencies = (
 				1CF984863000EBA300E1D1A9 /* PBXTargetDependency */,
+				1C8225FF3040960600B77EC7 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
@@ -840,6 +879,24 @@
 			productName = ForMemo;
 			productReference = 1C1C23002F7E983A00A77282 /* ForMemo.app */;
 			productType = "com.apple.product-type.application";
+		};
+		1C8225F53040960600B77EC7 /* ForMemoShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1C8226023040960600B77EC7 /* Build configuration list for PBXNativeTarget "ForMemoShareExtension" */;
+			buildPhases = (
+				1C8225F23040960600B77EC7 /* Sources */,
+				1C8225F33040960600B77EC7 /* Frameworks */,
+				1C8225F43040960600B77EC7 /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				1C8225F73040960600B77EC7 /* ForMemoShareExtension */,
+			);
+			name = ForMemoShareExtension;
+			productName = ForMemoShareExtension;
+			productReference = 1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 		1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */ = {
 			isa = PBXNativeTarget;
@@ -872,6 +929,9 @@
 					1C1C22FF2F7E983A00A77282 = {
 						CreatedOnToolsVersion = 26.4;
 					};
+					1C8225F53040960600B77EC7 = {
+						CreatedOnToolsVersion = 26.6;
+					};
 					1CF984783000EBA300E1D1A9 = {
 						CreatedOnToolsVersion = 26.6;
 					};
@@ -893,6 +953,7 @@
 			targets = (
 				1C1C22FF2F7E983A00A77282 /* ForMemo */,
 				1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */,
+				1C8225F53040960600B77EC7 /* ForMemoShareExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -905,6 +966,11 @@
 				1C634D8D30220C9C0092DB89 /* Localizable.xcstrings in Resources */,
 				1C634D8E30220C9C0092DB89 /* PrivacyInfo.xcprivacy in Resources */,
 				1C634D8F30220C9C0092DB89 /* Assets.xcassets in Resources */,
+			);
+		};
+		1C8225F43040960600B77EC7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
 			);
 		};
 		1CF984773000EBA300E1D1A9 /* Resources */ = {
@@ -1000,6 +1066,7 @@
 				1C634DDB30220C9C0092DB89 /* VaultSecret.swift in Sources */,
 				1C634DDC30220C9C0092DB89 /* WalletAsset.swift in Sources */,
 				1C634DDE30220C9C0092DB89 /* WalletAssetStore.swift in Sources */,
+				1C8225EF3040934A00B77EC7 /* NoteImportHandoff.swift in Sources */,
 				1C634DDF30220C9C0092DB89 /* WalletDeleteService.swift in Sources */,
 				1C634DE030220C9C0092DB89 /* WalletImportService.swift in Sources */,
 				1C634DE130220C9C0092DB89 /* WalletMigrationService.swift in Sources */,
@@ -1033,6 +1100,7 @@
 				1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */,
 				1C634DFA30220C9C0092DB89 /* BarcodeGenerator.swift in Sources */,
 				1C634DFB30220C9C0092DB89 /* CameraPicker.swift in Sources */,
+				1C8225F13040936800B77EC7 /* NoteImportService.swift in Sources */,
 				1C634DFC30220C9C0092DB89 /* Dashboard.swift in Sources */,
 				1C634DFD30220C9C0092DB89 /* Detail_AttachmentList.swift in Sources */,
 				1C634DFE30220C9C0092DB89 /* Detail_ContextSection.swift in Sources */,
@@ -1103,6 +1171,11 @@
 				1C634E3B30220C9C0092DB89 /* WeeklyTasksView.swift in Sources */,
 			);
 		};
+		1C8225F23040960600B77EC7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 		1CF984753000EBA300E1D1A9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
@@ -1111,6 +1184,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		1C8225FF3040960600B77EC7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1C8225F53040960600B77EC7 /* ForMemoShareExtension */;
+			targetProxy = 1C8225FE3040960600B77EC7 /* PBXContainerItemProxy */;
+		};
 		1CF984863000EBA300E1D1A9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */;
@@ -1361,6 +1439,70 @@
 			};
 			name = Release;
 		};
+		1C8226033040960600B77EC7 /* Debug configuration for PBXNativeTarget "ForMemoShareExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = ForMemoShareExtension/ForMemoShareExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 7L454SWB7H;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ForMemoShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ForMemoShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.2;
+				PRODUCT_BUNDLE_IDENTIFIER = corradini.armando.NewTask.ForMemoShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1C8226043040960600B77EC7 /* Release configuration for PBXNativeTarget "ForMemoShareExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_ENTITLEMENTS = ForMemoShareExtension/ForMemoShareExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 7L454SWB7H;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ForMemoShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ForMemoShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.2;
+				PRODUCT_BUNDLE_IDENTIFIER = corradini.armando.NewTask.ForMemoShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		1CF984893000EBA300E1D1A9 /* Debug configuration for PBXNativeTarget "ForMemoCredentialProvider" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1441,6 +1583,14 @@
 			buildConfigurations = (
 				1C1C230F2F7E983C00A77282 /* Debug configuration for PBXNativeTarget "ForMemo" */,
 				1C1C23102F7E983C00A77282 /* Release configuration for PBXNativeTarget "ForMemo" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		1C8226023040960600B77EC7 /* Build configuration list for PBXNativeTarget "ForMemoShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1C8226033040960600B77EC7 /* Debug configuration for PBXNativeTarget "ForMemoShareExtension" */,
+				1C8226043040960600B77EC7 /* Release configuration for PBXNativeTarget "ForMemoShareExtension" */,
 			);
 			defaultConfigurationName = Release;
 		};

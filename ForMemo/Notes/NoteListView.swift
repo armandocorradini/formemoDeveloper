@@ -11,6 +11,7 @@ struct NoteListView: View {
     @State private var newNote: Note?
     @State private var showArchived = false
     @State private var searchText = ""
+
     
     init(
         onEditorSave: @escaping (@escaping () -> Void) -> Void = { _ in }
@@ -277,6 +278,7 @@ private func editorView(for note: Note) -> some View {
         modelContext.insert(note)
         newNote = note
     }
+    
     private func archive(_ note: Note) {
         note.isArchived = true
         note.archivedAt = .now

@@ -269,6 +269,10 @@ struct ForMemoApp: App {
                     LocationReminderManager.shared.requestPermissionIfNeeded()
                     
                     let context = container.mainContext
+
+                    NoteImportService.importPendingNote(
+                        in: context
+                    )
                     
 //                    DebugLog.writeDatabaseSnapshot(
 //                        context: context

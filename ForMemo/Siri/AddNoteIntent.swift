@@ -147,16 +147,41 @@ struct AddNoteIntent: AppIntent {
             return (title, content)
         }
 
-        // No punctuation: first 30 characters become the title.
+        // No punctuation: use up to 20 characters,
+        // but never split a word.
         let titleLength = min(
-            30,
+            20,
             cleanedText.count
         )
 
-        let titleEnd = cleanedText.index(
+        let tentativeEnd = cleanedText.index(
             cleanedText.startIndex,
             offsetBy: titleLength
         )
+
+        let titleEnd: String.Index
+
+        if tentativeEnd == cleanedText.endIndex {
+            titleEnd = tentativeEnd
+        } else if let whitespaceIndex = cleanedText[
+            cleanedText.startIndex..<tentativeEnd
+        ].lastIndex(where: {
+            $0.isWhitespace
+        }) {
+            titleEnd = whitespaceIndex
+        } else {
+            // The first word itself reaches beyond the limit.
+            // Keep the whole word rather than truncating it.
+            if let nextWhitespace = cleanedText[
+                tentativeEnd..<cleanedText.endIndex
+            ].firstIndex(where: {
+                $0.isWhitespace
+            }) {
+                titleEnd = nextWhitespace
+            } else {
+                titleEnd = cleanedText.endIndex
+            }
+        }
 
         let title = String(
             cleanedText[..<titleEnd]

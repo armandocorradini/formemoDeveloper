@@ -45,6 +45,18 @@ struct ShortList: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
+                            
+                            Divider()
+                            
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(String(localized: "Note \(appName)"))
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                
+                                Text(String(localized: "Create a new note instantly using Siri."))
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         .padding(.vertical, 8)
                     } header: {

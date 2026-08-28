@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import UIKit
+import UniformTypeIdentifiers
 import os
 
 struct NoteEditorView: View {
@@ -11,6 +12,7 @@ struct NoteEditorView: View {
 
     @State private var title: String
     @State private var text: AttributedString
+    @State private var showShareSheet = false
     private let onSaveReady: (@escaping () -> Void) -> Void
 
     init(
@@ -57,7 +59,17 @@ struct NoteEditorView: View {
                 .buttonStyle(.plain)
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Button {
+                    showShareSheet = true
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Share Note"))
+
                 Button {
                     save()
                 } label: {
@@ -88,6 +100,12 @@ struct NoteEditorView: View {
         }
         .onDisappear {
             // Saving is handled explicitly by Back, Save and tab changes.
+        }
+        .sheet(isPresented: $showShareSheet) {
+            NoteShareSheet(
+                title: title.trimmingCharacters(in: .whitespacesAndNewlines),
+                text: text
+            )
         }
     }
 
@@ -947,3 +965,465 @@ private struct NoteTextView: UIViewRepresentable {
         }
     }
 }
+
+
+// MARK: - System share sheet
+
+private struct NoteShareSheet: UIViewControllerRepresentable {
+    let title: String
+    let text: AttributedString
+
+    func makeUIViewController(
+        context: Context
+    ) -> UIActivityViewController {
+        let shareItem = NoteShareItemSource(
+            title: title,
+            text: text
+        )
+
+        return UIActivityViewController(
+            activityItems: [shareItem],
+            applicationActivities: nil
+        )
+    }
+
+    func updateUIViewController(
+        _ uiViewController: UIActivityViewController,
+        context: Context
+    ) {
+        // The share controller is created once for each presentation.
+    }
+}
+
+private final class NoteShareItemSource: NSObject, UIActivityItemSource {
+    private let title: String
+    private let attributedText: NSAttributedString
+    private let plainText: String
+    private let whatsappText: String
+    private let markdownURL: URL
+
+    init(title: String, text: AttributedString) {
+        self.title = title
+        self.attributedText = NSAttributedString(text)
+        self.plainText = self.attributedText.string
+        self.whatsappText = NoteWhatsAppExporter.text(
+            attributedString: self.attributedText
+        )
+
+        let markdown = NoteMarkdownExporter.markdown(
+            title: title,
+            attributedString: self.attributedText
+        )
+
+        let directory = FileManager.default.temporaryDirectory
+        let filename = "ForMemo-\(UUID().uuidString).md"
+        let url = directory.appendingPathComponent(filename)
+
+        do {
+            try markdown.write(
+                to: url,
+                atomically: true,
+                encoding: .utf8
+            )
+        } catch {
+            /*
+             The file is created in the temporary directory. If writing
+             fails, the URL remains valid but contains no document. The
+             normal text representations remain available to other
+             activities.
+             */
+            try? Data().write(to: url)
+        }
+
+        self.markdownURL = url
+        super.init()
+    }
+
+    deinit {
+        try? FileManager.default.removeItem(at: markdownURL)
+    }
+
+    func activityViewControllerPlaceholderItem(
+        _ activityViewController: UIActivityViewController
+    ) -> Any {
+        /*
+         Placeholder is deliberately the attributed string. The actual
+         item is selected after UIKit knows the destination activity.
+         */
+        attributedText
+    }
+
+    func activityViewController(
+        _ activityViewController: UIActivityViewController,
+        itemForActivityType activityType: UIActivity.ActivityType?
+    ) -> Any? {
+        let identifier = activityType?.rawValue ?? ""
+
+        /*
+         iOS 26 Notes has a documented Markdown import path. On iPhone/iPad
+         Apple instructs users to share a .md file from Files to Notes;
+         Notes converts Markdown into rich text while preserving supported
+         formatting. Therefore Notes must receive the .md FILE, not an
+         NSAttributedString, HTML Data or RTF Data.
+         */
+        if identifier == "com.apple.mobilenotes.SharingExtension" ||
+            identifier == "com.apple.Notes.SharingExtension" {
+            return markdownURL
+        }
+
+        /*
+         Mail already preserves the native attributed representation in
+         the tested configuration. Keep that path unchanged.
+         */
+        if activityType == .mail {
+            return attributedText
+        }
+
+        /*
+         WhatsApp's iOS Share Extension accepts text rather than native
+         rich text. Give it WhatsApp's own inline/list formatting syntax.
+         The declared type remains plain text, so WhatsApp receives a
+         normal message body and can interpret its formatting itself.
+         */
+        if identifier == "net.whatsapp.WhatsApp.ShareExtension" {
+            return whatsappText
+        }
+
+        /*
+         All other text-oriented destinations keep the existing plain-text
+         behavior unchanged.
+         */
+        return plainText
+    }
+
+    func activityViewController(
+        _ activityViewController: UIActivityViewController,
+        dataTypeIdentifierForActivityType activityType: UIActivity.ActivityType?
+    ) -> String {
+        let identifier = activityType?.rawValue ?? ""
+
+        if identifier == "com.apple.mobilenotes.SharingExtension" ||
+            identifier == "com.apple.Notes.SharingExtension" {
+            return UTType(filenameExtension: "md")?.identifier
+                ?? "net.daringfireball.markdown"
+        }
+
+        if activityType == .mail {
+            return UTType.rtf.identifier
+        }
+
+        return UTType.utf8PlainText.identifier
+    }
+
+    func activityViewController(
+        _ activityViewController: UIActivityViewController,
+        subjectForActivityType activityType: UIActivity.ActivityType?
+    ) -> String {
+        title.isEmpty ? String(localized: "Note") : title
+    }
+}
+
+private enum NoteWhatsAppExporter {
+    static func text(
+        attributedString: NSAttributedString
+    ) -> String {
+        let source = attributedString.string as NSString
+
+        guard source.length > 0 else {
+            return ""
+        }
+
+        var output = ""
+        var counters: [ObjectIdentifier: Int] = [:]
+        var previousListID: ObjectIdentifier?
+        var paragraphLocation = 0
+
+        while paragraphLocation < source.length {
+            let paragraphRange = source.paragraphRange(
+                for: NSRange(
+                    location: paragraphLocation,
+                    length: 0
+                )
+            )
+
+            let style =
+                attributedString.attribute(
+                    .paragraphStyle,
+                    at: paragraphRange.location,
+                    effectiveRange: nil
+                ) as? NSParagraphStyle
+
+            let list = style?.textLists.last
+
+            let content = formatInline(
+                attributedString,
+                range: paragraphRange
+            )
+
+            if let list {
+                let id = ObjectIdentifier(list)
+
+                if previousListID != id {
+                    counters[id] = 1
+                } else {
+                    counters[id, default: 0] += 1
+                }
+
+                previousListID = id
+
+                switch list.markerFormat {
+                case .decimal:
+                    output += "\(counters[id, default: 1]). "
+                case .hyphen:
+                    output += "- "
+                case .disc:
+                    output += "* "
+                default:
+                    output += "- "
+                }
+            } else {
+                previousListID = nil
+            }
+
+            output += content + "\n"
+
+            let nextLocation =
+                paragraphRange.location + paragraphRange.length
+
+            if nextLocation <= paragraphLocation {
+                break
+            }
+
+            paragraphLocation = nextLocation
+        }
+
+        return output.trimmingCharacters(in: .newlines) + "\n"
+    }
+
+    private static func formatInline(
+        _ string: NSAttributedString,
+        range: NSRange
+    ) -> String {
+        var result = ""
+
+        string.enumerateAttributes(
+            in: range,
+            options: []
+        ) { attributes, subrange, _ in
+            let raw = string
+                .attributedSubstring(from: subrange)
+                .string
+                .replacingOccurrences(of: "\n", with: "")
+
+            guard !raw.isEmpty else {
+                return
+            }
+
+            let escaped = escapeWhatsApp(raw)
+
+            let font = attributes[.font] as? UIFont
+            let traits = font?.fontDescriptor.symbolicTraits ?? []
+
+            let bold = traits.contains(.traitBold)
+            let italic = traits.contains(.traitItalic)
+
+            switch (bold, italic) {
+            case (true, true):
+                result += "*_\(escaped)_*"
+            case (true, false):
+                result += "*\(escaped)*"
+            case (false, true):
+                result += "_\(escaped)_"
+            default:
+                result += escaped
+            }
+        }
+
+        return result
+    }
+
+    private static func escapeWhatsApp(
+        _ text: String
+    ) -> String {
+        var result = text
+
+        /*
+         Escape only characters that could otherwise be interpreted as
+         WhatsApp formatting. This is applied before our own formatting
+         markers are added.
+         */
+        result = result.replacingOccurrences(
+            of: "\\",
+            with: "\\\\"
+        )
+
+        for character in ["*", "_", "~"] {
+            result = result.replacingOccurrences(
+                of: character,
+                with: "\\" + character
+            )
+        }
+
+        return result
+    }
+}
+
+
+private enum NoteMarkdownExporter {
+    static func markdown(
+        title: String,
+        attributedString: NSAttributedString
+    ) -> String {
+        var output = ""
+
+        if !title.isEmpty {
+            output += "# \(escapeMarkdown(title))\n\n"
+        }
+
+        _ = NSRange(
+            location: 0,
+            length: attributedString.length
+        )
+
+        var listCounters: [ObjectIdentifier: Int] = [:]
+        var previousListID: ObjectIdentifier?
+
+        /*
+         NSAttributedString does not provide enumerateSubstrings.
+         Enumerate paragraph ranges through NSString, while keeping
+         the original NSAttributedString attributes intact.
+         */
+        let sourceNSString = attributedString.string as NSString
+        var paragraphLocation = 0
+
+        while paragraphLocation < sourceNSString.length {
+            let paragraphRange = sourceNSString.paragraphRange(
+                for: NSRange(
+                    location: paragraphLocation,
+                    length: 0
+                )
+            )
+
+            let style =
+                attributedString.attribute(
+                    .paragraphStyle,
+                    at: paragraphRange.location,
+                    effectiveRange: nil
+                ) as? NSParagraphStyle
+
+            let list = style?.textLists.last
+
+            let paragraphText =
+                attributedString
+                    .attributedSubstring(from: paragraphRange)
+                    .string
+                    .trimmingCharacters(in: .newlines)
+
+            let formatted = formatInline(
+                attributedString,
+                range: paragraphRange
+            )
+
+            let listPrefix: String
+
+            if let list {
+                let id = ObjectIdentifier(list)
+
+                if previousListID != id {
+                    listCounters[id] = 1
+                } else {
+                    listCounters[id, default: 0] += 1
+                }
+
+                previousListID = id
+
+                switch list.markerFormat {
+                case .decimal:
+                    listPrefix = "\(listCounters[id, default: 1]). "
+                case .hyphen:
+                    listPrefix = "- "
+                case .disc:
+                    listPrefix = "* "
+                default:
+                    listPrefix = "* "
+                }
+            } else {
+                previousListID = nil
+                listPrefix = ""
+            }
+
+            if !paragraphText.isEmpty {
+                output += listPrefix + formatted + "\n"
+            } else {
+                output += "\n"
+            }
+
+            let nextLocation = paragraphRange.location + paragraphRange.length
+
+            if nextLocation <= paragraphLocation {
+                break
+            }
+
+            paragraphLocation = nextLocation
+        }
+
+        return output.trimmingCharacters(in: .newlines) + "\n"
+    }
+
+    private static func formatInline(
+        _ string: NSAttributedString,
+        range: NSRange
+    ) -> String {
+        var result = ""
+
+        string.enumerateAttributes(
+            in: range,
+            options: []
+        ) { attributes, subrange, _ in
+            let raw = string
+                .attributedSubstring(from: subrange)
+                .string
+                .replacingOccurrences(of: "\n", with: "")
+
+            guard !raw.isEmpty else {
+                return
+            }
+
+            let escaped = escapeMarkdown(raw)
+
+            let font = attributes[.font] as? UIFont
+            let traits = font?.fontDescriptor.symbolicTraits ?? []
+
+            let bold = traits.contains(.traitBold)
+            let italic = traits.contains(.traitItalic)
+
+            switch (bold, italic) {
+            case (true, true):
+                result += "***\(escaped)***"
+            case (true, false):
+                result += "**\(escaped)**"
+            case (false, true):
+                result += "*\(escaped)*"
+            default:
+                result += escaped
+            }
+        }
+
+        return result
+    }
+
+    private static func escapeMarkdown(_ text: String) -> String {
+        var result = text
+
+        for character in ["\\", "`", "*", "_", "[", "]"] {
+            result = result.replacingOccurrences(
+                of: character,
+                with: "\\" + character
+            )
+        }
+
+        return result
+    }
+}
+
+

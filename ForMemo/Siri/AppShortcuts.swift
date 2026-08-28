@@ -107,7 +107,7 @@ struct AppShortcuts: AppShortcutsProvider {
                 AppShortcutPhrase("Memo in \(.applicationName)"),
 
                 // Italiano
-                AppShortcutPhrase("Scrivi nota in \(.applicationName)"),
+//                AppShortcutPhrase("Scrivi nota in \(.applicationName)"),
                 AppShortcutPhrase("Scrivi in \(.applicationName)"),
                 AppShortcutPhrase("Aggiungi nota a \(.applicationName)"),
                 AppShortcutPhrase("Nota in \(.applicationName)"),
