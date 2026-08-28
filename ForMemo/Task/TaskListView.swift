@@ -559,7 +559,7 @@ struct EmptySectionView: View {
                                 .padding(.trailing, -6)
                                 .foregroundStyle(.primary)
                             VStack(alignment: .leading){
-                                Text("switch your list view.")
+                                Text("switch your task view.")
 
                             }}
 

@@ -13891,34 +13891,6 @@
         }
       }
     },
-    "Forecast" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vorhersage"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meteo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prévisions"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Previsioni"
-          }
-        }
-      }
-    },
     "Forest" : {
       "localizations" : {
         "de" : {
@@ -20670,7 +20642,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Note ForMemo"
+            "value" : "Nota ForMemo"
           }
         }
       }
@@ -29006,30 +28978,30 @@
         }
       }
     },
-    "switch your list view." : {
+    "switch your task view." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Listenansicht ändern."
+            "value" : "Aufgabenansicht wechseln."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "cambiar la vista de la lista."
+            "value" : "Cambia la vista de tus tareas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "changer l'affichage de la liste."
+            "value" : "Changez l’affichage de vos tâches."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "cambia la visualizzazione della lista."
+            "value" : "Cambia la visualizzazione delle tue attività."
           }
         }
       }
@@ -34338,6 +34310,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Debole"
+          }
+        }
+      }
+    },
+    "Weather" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wetter"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiempo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Météo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meteo"
           }
         }
       }

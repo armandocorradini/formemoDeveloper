@@ -59,7 +59,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
             settings.taskWeekDays == 1
                 ? String(localized: "today_tab")
                 : String(localized: "\(settings.taskWeekDays) days_tab")
-        case .forecast: String(localized: "Forecast")
+        case .forecast: String(localized: "Weather")
         case .map: String(localized: "map_tab")
         case .settings: String(localized: "settings_tab")
         case .notes: String(localized: "Notes")
