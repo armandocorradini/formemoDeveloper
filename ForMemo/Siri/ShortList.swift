@@ -61,10 +61,10 @@ struct ShortList: View {
                         .padding(.vertical, 8)
                     } header: {
                         VStack(alignment: .leading, spacing: 16) {
-                            VStack(spacing: 12) {
+                            VStack(spacing: 8) {
                                 Image(systemName: "waveform.circle.fill")
                                     .symbolRenderingMode(.hierarchical)
-                                    .font(.system(size: 64))
+                                    .font(.system(size: 44))
                                     .foregroundStyle(.blue)
                             }
                             .frame(maxWidth: .infinity)

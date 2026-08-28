@@ -29,22 +29,36 @@ struct AppQuickGuideView: View {
             title: String(localized: "Use Siri Shortcuts"),
             description: String(localized:
                 """
-                Control \(appName) with Siri using three simple commands:
+                Control \(appName) with four simple commands:
 
                 • New \(appName)
-                Create a new task using natural language.
+                Create a new task.
 
                 • Search \(appName)
                 Find tasks by keyword.
 
                 • Check \(appName)
-                Hear tasks planned for today, tomorrow, weekends, weeks or specific dates.
+                Hear planned tasks.
+
+                • Note \(appName)
+                Create a new note.
                 """
-                               ),
+            ),
             icon: "waveform.circle",
             tint: .teal
         ),
-        
+        .init(
+            title: String(localized: "Tasks"),
+            description: String(localized: "Create and manage your tasks with due dates, priorities, categories, reminders, recurring schedules, locations and attachments. Quickly complete, edit, archive or delete tasks, and use filters to focus on what matters."),
+            icon: "checklist",
+            tint: .blue
+        ),
+        .init(
+            title: String(localized: "Notes"),
+            description: String(localized: "Create and organize notes with rich text formatting. Add bold, italic and underlined text, and use bullet, dash and numbered lists. Share notes with other apps and import notes from Apple Notes."),
+            icon: "note.text",
+            tint: .green
+        ),
         .init(
             title: String(localized:"Dashboard"),
             description: String(localized:"The Dashboard automatically highlights what needs your attention first. View overdue tasks, tasks due today, upcoming activities, weather forecasts and recently opened items from Wallet, Documents and Trip Lists in one place."),
