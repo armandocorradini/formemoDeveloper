@@ -25,7 +25,7 @@ struct FAQView: View {
         FAQSection(title: String(localized: "General"), items: [
             FAQItem(
                 question: String(localized:"What features does this app offer?"),
-                answer: String(localized:"ForMemo lets you create, organize, and manage tasks in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards and tickets, with barcode and QR code scanning and quick access to your saved items.\n\nYou can create and manage Trip Lists (packing lists) for your travels, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, cards, tickets, trips, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking.")
+                answer: String(localized:"ForMemo lets you create, organize, and manage tasks and notes in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards and tickets, with barcode and QR code scanning and quick access to your saved items.\n\nYou can create and manage Trip Lists (packing lists) for your travels, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, cards, tickets, trips, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking.")
             ),
             FAQItem(
                 question: String(localized:"What is the Dashboard?"),
@@ -268,6 +268,41 @@ struct FAQView: View {
                 answer: String(localized:"Yes. If enabled in Settings, Siri can automatically add reminders based on the task deadline.")
             )
         ]),
+        // MARK: - NOTES
+        FAQSection(title: String(localized: "Notes"), items: [
+            FAQItem(
+                question: String(localized:"What are Notes?"),
+                answer: String(localized:"Notes lets you create, edit, organize, and store personal notes separately from your tasks. Notes are designed for information that does not need to be managed as a task.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I format text in a note?"),
+                answer: String(localized:"Yes. Notes supports bold, italic, and underlined text, as well as bulleted, dash, and numbered lists.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I share a note?"),
+                answer: String(localized:"Yes. You can share notes with other apps using the system sharing features.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I import notes?"),
+                answer: String(localized:"Yes. Notes can be imported from Apple Notes using the supported import feature.")
+            ),
+            FAQItem(
+                question: String(localized:"Are Notes included in backups?"),
+                answer: String(localized:"Yes. Notes are included in supported backups and can be restored together with other compatible data.")
+            ),
+            FAQItem(
+                question: String(localized:"Are Notes synchronized with iCloud?"),
+                answer: String(localized:"Yes. Notes are synchronized through the user's iCloud account when iCloud synchronization is enabled.")
+            ),
+            FAQItem(
+                question: String(localized:"Are Notes included in backups?"),
+                answer: String(localized:"Yes. Notes are included in ForMemo backups together with their title, content, creation and modification dates, pinned and archived status, and related dates. Notes can also be restored selectively from a backup.")
+            ),
+            FAQItem(
+                question: String(localized:"Can I use Notes with Siri?"),
+                answer: String(localized:"Yes. You can use Siri with the “Note ForMemo” command to create a new note.")
+            )
+        ]),
 
         // MARK: - ATTACHMENTS / COMPLETED TASKS
         FAQSection(title: String(localized: "Completed Tasks & Attachments"), items: [
@@ -434,11 +469,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Does the app support backup and restore?"),
-                answer: String(localized:"Yes. ForMemo allows you to create complete backups that can include tasks, reminders, attachments, cards, tickets and logos, trip lists, documents, Vault data, app settings, and related information. You can restore everything later or transfer your data to another compatible device.")
+                answer: String(localized:"Yes. ForMemo allows you to create complete backups that can include tasks, notes, reminders, attachments, cards, tickets and logos, trip lists, documents, Vault data, app settings, and related information. You can restore everything later or transfer your data to another compatible device.")
             ),
             FAQItem(
                 question: String(localized:"What is included in a backup?"),
-                answer: String(localized:"Backups can include tasks, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets and logos, trip lists, documents, Vault data, and app settings. Backups are independent of iCloud synchronization and can be used to transfer your data to another compatible device.")
+                answer: String(localized:"Backups can include tasks, notes, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets and logos, trip lists, documents, Vault data, and app settings. Backups are independent of iCloud synchronization and can be used to transfer your data to another compatible device.")
             ),
             FAQItem(
                 question: String(localized:"Are attachments included in backups?"),
