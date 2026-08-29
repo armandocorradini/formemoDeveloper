@@ -11681,6 +11681,9 @@
         }
       }
     },
+    "Don’t Save" : {
+
+    },
     "Done" : {
       "localizations" : {
         "de" : {
@@ -18799,6 +18802,9 @@
         }
       }
     },
+    "Modified %@" : {
+
+    },
     "Monochrome" : {
       "localizations" : {
         "de" : {
@@ -25053,6 +25059,9 @@
           }
         }
       }
+    },
+    "Save changes?" : {
+
     },
     "Saved Locations" : {
       "comment" : "A title for a list of saved locations.",
@@ -37745,6 +37754,9 @@
           }
         }
       }
+    },
+    "You have unsaved changes." : {
+
     },
     "You’ll receive a notification %lld day(s) before the deadline and another at the time it’s due. You can choose below whether the app badge updates at the deadline or already with the global notification." : {
       "comment" : "A footnote under the notification picker that explains how the badge works.",

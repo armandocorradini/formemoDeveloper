@@ -3,8 +3,8 @@ import SwiftData
 import os
 
 struct NoteListView: View {
+    @ObservedObject var noteEditorCoordinator: NoteEditorCoordinator
     @Environment(\.modelContext) private var modelContext
-    let onEditorSave: (@escaping () -> Void) -> Void
     
     @Query private var notes: [Note]
 
@@ -12,12 +12,6 @@ struct NoteListView: View {
     @State private var showArchived = false
     @State private var searchText = ""
 
-    
-    init(
-        onEditorSave: @escaping (@escaping () -> Void) -> Void = { _ in }
-    ) {
-        self.onEditorSave = onEditorSave
-    }
 
     private func matchesSearch(_ note: Note) -> Bool {
         guard !searchText.isEmpty else {
@@ -91,7 +85,15 @@ struct NoteListView: View {
                             
                             Text(
                                 String(
-                                    localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .shortened))"
+                                    localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .complete))"
+                                )
+                            )
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                            Text(
+                                String(
+                                    localized: "Modified \(note.modifiedAt.formatted(date: .abbreviated, time: .complete))"
                                 )
                             )
                             .font(.caption)
@@ -152,7 +154,15 @@ struct NoteListView: View {
                                         
                                         Text(
                                             String(
-                                                localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .shortened))"
+                                                localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .complete))"
+                                            )
+                                        )
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        
+                                        Text(
+                                            String(
+                                                localized: "Modified \(note.modifiedAt.formatted(date: .abbreviated, time: .complete))"
                                             )
                                         )
                                         .font(.caption)
@@ -161,7 +171,7 @@ struct NoteListView: View {
                                         if let archivedAt = note.archivedAt {
                                             Text(
                                                 String(
-                                                    localized: "Archived \(archivedAt.formatted(date: .abbreviated, time: .shortened))"
+                                                    localized: "Archived \(archivedAt.formatted(date: .abbreviated, time: .complete))"
                                                 )
                                             )
                                             .font(.caption)
@@ -268,7 +278,7 @@ struct NoteListView: View {
 private func editorView(for note: Note) -> some View {
     NoteEditorView(
         note: note,
-        onSaveReady: onEditorSave
+        noteEditorCoordinator: noteEditorCoordinator
     )
 }
 

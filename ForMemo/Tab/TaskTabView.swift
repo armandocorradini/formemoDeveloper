@@ -34,7 +34,9 @@ struct TaskTabView: View {
     @State private var weatherPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
     @State private var notesPath = NavigationPath()
-    @State private var saveCurrentNote: (() -> Void)?
+    @StateObject private var noteEditorCoordinator = NoteEditorCoordinator()
+    @State private var showNoteUnsavedChangesAlert = false
+    @State private var pendingNoteTab: Int?
     
     var body: some View {
         rootLayout
@@ -190,6 +192,44 @@ struct TaskTabView: View {
 
                 )
 
+            }
+            .alert(
+                String(localized: "Save changes?"),
+                isPresented: $showNoteUnsavedChangesAlert
+            ) {
+                Button(String(localized: "Save")) {
+                    noteEditorCoordinator.save?()
+                    noteEditorCoordinator.reset()
+
+                    if let pendingNoteTab {
+                        withAnimation(nil) {
+                            selectedTab = pendingNoteTab
+                        }
+                        resetTab(pendingNoteTab)
+                    }
+
+                    self.pendingNoteTab = nil
+                }
+
+                Button(String(localized: "Don’t Save"), role: .destructive) {
+                    noteEditorCoordinator.discard?()
+                    noteEditorCoordinator.reset()
+
+                    if let pendingNoteTab {
+                        withAnimation(nil) {
+                            selectedTab = pendingNoteTab
+                        }
+                        resetTab(pendingNoteTab)
+                    }
+
+                    self.pendingNoteTab = nil
+                }
+
+                Button(String(localized: "Cancel"), role: .cancel) {
+                    pendingNoteTab = nil
+                }
+            } message: {
+                Text(String(localized: "You have unsaved changes."))
             }
         
             .task {
@@ -374,10 +414,10 @@ struct TaskTabView: View {
             }
         case 12:
             NavigationStack(path: $notesPath) {
-                NoteListView { save in
-                    saveCurrentNote = save
-                }
-            }        case 9:
+                NoteListView(noteEditorCoordinator: noteEditorCoordinator)
+                    .environmentObject(noteEditorCoordinator)
+            }
+        case 9:
             NavigationStack(path: $weatherPath) {
                 WeatherForecastView()
             }
@@ -467,6 +507,22 @@ struct TaskTabView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
+    private func selectTab(_ tag: Int) {
+        if selectedTab == 12,
+           tag != 12,
+           noteEditorCoordinator.isDirty {
+            pendingNoteTab = tag
+            showNoteUnsavedChangesAlert = true
+            return
+        }
+
+        withAnimation(nil) {
+            selectedTab = tag
+        }
+
+        resetTab(tag)
+    }
+
     private func tabItem(
         _ icon: String,
         _ title: String,
@@ -476,17 +532,7 @@ struct TaskTabView: View {
         Button {
             
             if selectedTab != tag {
-                if selectedTab == 12 {
-                    saveCurrentNote?()
-                    saveCurrentNote = nil
-                    notesPath = NavigationPath()
-                }
-
-                withAnimation(nil) {
-                    selectedTab = tag
-                }
-
-                resetTab(tag)
+                selectTab(tag)
             }
             
         } label: {

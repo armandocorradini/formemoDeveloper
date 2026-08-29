@@ -3,26 +3,50 @@ import SwiftData
 import UIKit
 import UniformTypeIdentifiers
 import os
+import Combine
+
+@MainActor
+final class NoteEditorCoordinator: ObservableObject {
+    @Published var isDirty = false
+
+    var save: (() -> Void)?
+    var discard: (() -> Void)?
+
+    func reset() {
+        isDirty = false
+        save = nil
+        discard = nil
+    }
+}
+
 
 struct NoteEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    let noteEditorCoordinator: NoteEditorCoordinator?
 
     @Bindable private var note: Note
 
     @State private var title: String
     @State private var text: AttributedString
+    @State private var initialTitle: String
+    @State private var initialText: AttributedString
     @State private var showShareSheet = false
-    private let onSaveReady: (@escaping () -> Void) -> Void
+
 
     init(
         note: Note,
-        onSaveReady: @escaping (@escaping () -> Void) -> Void = { _ in }
+        noteEditorCoordinator: NoteEditorCoordinator? = nil
     ) {
+        self.noteEditorCoordinator = noteEditorCoordinator
         self.note = note
-        self.onSaveReady = onSaveReady
+
+        let decodedText = Self.decodeContent(note.content)
+
         _title = State(initialValue: note.title)
-        _text = State(initialValue: Self.decodeContent(note.content))
+        _text = State(initialValue: decodedText)
+        _initialTitle = State(initialValue: note.title)
+        _initialText = State(initialValue: decodedText)
     }
 
     var body: some View {
@@ -50,11 +74,10 @@ struct NoteEditorView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
-                    save()
+                    dismiss()
                 } label: {
-                    Image(systemName: "chevron.backward")
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                    Text("Cancel")
+                        .frame(minWidth: 80)
                 }
                 .buttonStyle(.plain)
             }
@@ -78,28 +101,30 @@ struct NoteEditorView: View {
                 .fontWeight(.semibold)
             }
         }
-        .onAppear {
-            note.lastOpenedAt = .now
-
-            do {
-                try modelContext.save()
-            } catch {
-                AppLogger.persistence.error(
-                    "Failed to save Note lastOpenedAt: \(error.localizedDescription)"
-                )
-            }
-            onSaveReady {
-
-                save(dismissAfterSave: false)
-            }
+        .onChange(of: title) { _, _ in
+            noteEditorCoordinator?.isDirty =
+                title.trimmingCharacters(in: .whitespacesAndNewlines) !=
+                initialTitle.trimmingCharacters(in: .whitespacesAndNewlines) ||
+                text != initialText
         }
-        .onChange(of: title) { _, newTitle in
-            note.title = newTitle.trimmingCharacters(
-                in: .whitespacesAndNewlines
-            )
+
+        .onChange(of: text) { _, _ in
+            noteEditorCoordinator?.isDirty =
+                title.trimmingCharacters(in: .whitespacesAndNewlines) !=
+                initialTitle.trimmingCharacters(in: .whitespacesAndNewlines) ||
+                text != initialText
         }
         .onDisappear {
-            // Saving is handled explicitly by Back, Save and tab changes.
+            // Saving is handled explicitly by Save.
+        }
+        .onAppear {
+            noteEditorCoordinator?.save = {
+                save(dismissAfterSave: false)
+            }
+
+            noteEditorCoordinator?.discard = {
+                dismiss()
+            }
         }
         .sheet(isPresented: $showShareSheet) {
             NoteShareSheet(
@@ -122,40 +147,19 @@ struct NoteEditorView: View {
     }
 
     private func save(dismissAfterSave: Bool = true) {
-        note.title = title.trimmingCharacters(
-            in: .whitespacesAndNewlines
-        )
-
         do {
+            let newTitle = title.trimmingCharacters(
+                in: .whitespacesAndNewlines
+            )
+            let newContent = try JSONEncoder().encode(text)
 
-            let saveText = NSAttributedString(text)
-
-            saveText.enumerateAttribute(
-                .paragraphStyle,
-                in: NSRange(
-                    location: 0,
-                    length: saveText.length
-                ),
-                options: []
-            ) { value, range, _ in
-
-//                let style = value as? NSParagraphStyle
-//                let list = style?.textLists.last
-
-//                AppLogger.persistence.debug(
-//                    """
-//                    SAVE LIST DEBUG:
-//                    range=\(NSStringFromRange(range))
-//                    text=\(saveText.attributedSubstring(from: range).string.replacingOccurrences(of: "\n", with: "\\n"))
-//                    list=\(list == nil ? "nil" : "YES")
-//                    listID=\(list.map { ObjectIdentifier($0).hashValue } ?? 0)
-//                    """
-//                )
-            }
-            
-            note.content = try JSONEncoder().encode(text)
+            note.title = newTitle
+            note.content = newContent
             note.modifiedAt = .now
+
             try modelContext.save()
+
+            noteEditorCoordinator?.reset()
 
             if dismissAfterSave {
                 dismiss()
@@ -921,13 +925,6 @@ private struct NoteTextView: UIViewRepresentable {
                 return
             }
 
-            /*
-             Synchronize only the document.
-
-             Selection, caret position, formatting state and typing
-             attributes are deliberately not synchronized through SwiftUI.
-            */
-            
             text.wrappedValue =
                 AttributedString(attributedText)
         }
