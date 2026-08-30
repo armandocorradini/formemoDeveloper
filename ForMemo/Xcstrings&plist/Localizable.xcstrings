@@ -8762,30 +8762,30 @@
         }
       }
     },
-    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, cards and tickets, documents, attachments and app settings." : {
+    "Create a complete backup of tasks, notes, trip checklists, reminders, recurrence rules, tags, priorities, locations, cards and tickets, documents, attachments, Vault items and app settings." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstellen Sie ein vollständiges Backup Ihrer Aufgaben, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Standorte, Karten und Tickets, Dokumente, Anhänge und App-Einstellungen."
+            "value" : "Erstelle ein vollständiges Backup deiner Aufgaben, Notizen, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Orte, Karten und Tickets, Dokumente, Anhänge, Tresoreinträge und App-Einstellungen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea una copia de seguridad completa de tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, ubicaciones, tarjetas y tickets, documentos, archivos adjuntos y ajustes de la aplicación"
+            "value" : "Crea una copia de seguridad completa de tus tareas, notas, listas de comprobación de viajes, recordatorios, reglas de repetición, etiquetas, prioridades, ubicaciones, tarjetas y billetes, documentos, archivos adjuntos, elementos de la Caja fuerte y ajustes de la app."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez une sauvegarde complète des tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, emplacements, cartes et tickets, documents, pièces jointes et paramètres de l’application."
+            "value" : "Créez une sauvegarde complète de vos tâches, notes, listes de contrôle de voyage, rappels, règles de récurrence, tags, priorités, emplacements, cartes et billets, documents, pièces jointes, éléments de la Cassaforte et réglages de l’app."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea un backup completo di attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, posizioni, carte e tickets, documenti, allegati e impostazioni dell’app."
+            "value" : "Crea un backup completo delle tue attività, note, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, luoghi, carte e biglietti, documenti, allegati, elementi della Cassaforte e impostazioni dell’app."
           }
         }
       }
@@ -29864,30 +29864,30 @@
         }
       }
     },
-    "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, cards and tickets, documents and attachments are included in the backup archive." : {
+    "Tasks, notes, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, cards and tickets, documents, attachments and Vault items are included in the backup archive." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aufgaben, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, Schlummerstatus, Standorte, Karten und Tickets, Dokumente und Anhänge sind im Backup-Archiv enthalten."
+            "value" : "Aufgaben, Notizen, Reise-Checklisten, Erinnerungen, Wiederholungsregeln, Tags, Prioritäten, der Status der Schlummerfunktion, Orte, Karten und Tickets, Dokumente, Anhänge und Tresoreinträge sind im Backup-Archiv enthalten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las tareas, listas de viaje, recordatorios, reglas de recurrencia, etiquetas, prioridades, estado de aplazamiento, ubicaciones, tarjetas y tickets, documentos y archivos adjuntos están incluidos en el archivo de copia de seguridad."
+            "value" : "Las tareas, notas, listas de comprobación de viajes, recordatorios, reglas de repetición, etiquetas, prioridades, estado de aplazamiento, ubicaciones, tarjetas y billetes, documentos, archivos adjuntos y elementos de la Caja fuerte se incluyen en el archivo de copia de seguridad."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les tâches, listes de voyage, rappels, règles de récurrence, étiquettes, priorités, état de report, emplacements, cartes et tickets, documents et pièces jointes sont inclus dans l’archive de sauvegarde."
+            "value" : "Les tâches, notes, listes de contrôle de voyage, rappels, règles de récurrence, tags, priorités, état de répétition différée, emplacements, cartes et billets, documents, pièces jointes et éléments de la Cassaforte sont inclus dans l’archive de sauvegarde."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Attività, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, stato di posticipo, posizioni, carte e tickets, documenti e allegati sono inclusi nell’archivio di backup."
+            "value" : "Attività, note, checklist di viaggio, promemoria, regole di ricorrenza, tag, priorità, stato della posticipazione, luoghi, carte e biglietti, documenti, allegati ed elementi della Cassaforte sono inclusi nell’archivio di backup."
           }
         }
       }

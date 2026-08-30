@@ -148,10 +148,9 @@ struct BackupRestoreView: View {
 
                                 Text("Create Backup")
                                     .foregroundStyle(.blue)
-
-                                Text(
-                                    "Create a complete backup of tasks, trip checklists, reminders, recurrence rules, tags, priorities, locations, cards and tickets, documents, attachments and app settings."
-                                )
+                                    Text(
+                                        "Create a complete backup of tasks, notes, trip checklists, reminders, recurrence rules, tags, priorities, locations, cards and tickets, documents, attachments, Vault items and app settings."
+                                    )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                             }
@@ -203,7 +202,7 @@ struct BackupRestoreView: View {
                                 Text("Backup includes")
 
                                 Text(
-                                    "Tasks, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, cards and tickets, documents and attachments are included in the backup archive."
+                                    "Tasks, notes, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, cards and tickets, documents, attachments and Vault items are included in the backup archive."
                                 )
                                 
                                 .foregroundStyle(.secondary)
