@@ -169,7 +169,7 @@ struct VaultView: View {
                             .font(.headline)
 
                         Text(
-                            "\(activeItems.count) \(String(localized: "items"))"
+                            "\(activeItems.count) items"
                         )
                         .font(.caption2)
                         .foregroundStyle(.secondary)

@@ -164,7 +164,7 @@ struct DocumentsView: View {
                             .font(.headline)
 
                         Text(
-                            "\(documents.count) \(String(localized: "documents"))"
+                            "\(documents.count) documents"
                         )
                         .font(.caption2)
                         .foregroundStyle(.secondary)

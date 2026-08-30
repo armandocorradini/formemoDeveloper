@@ -346,7 +346,7 @@ struct TravelKitListView: View {
                             .font(.headline)
 
                         Text(
-                            "\(categories.count) \(String(localized: "lists"))"
+                            "\(categories.count) lists"
                         )
                         .font(.caption2)
                         .foregroundStyle(.secondary)

@@ -162,7 +162,7 @@ struct RecentlyDeletedVaultView: View {
                         .font(.headline)
 
                     Text(
-                        "\(items.count) \(String(localized: "items"))"
+                        "\(items.count) items"
                     )
                     .font(.caption2)
                     .foregroundStyle(.secondary)

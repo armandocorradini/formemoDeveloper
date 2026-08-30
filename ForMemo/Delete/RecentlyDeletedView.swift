@@ -325,7 +325,7 @@ var body: some View {
                         .font(.headline)
 
                     Text(
-                        "\(visibleItems.count) \(String(localized: "items"))"
+                        "\(visibleItems.count) items"
                     )
                     .font(.caption2)
                     .foregroundStyle(.secondary)
