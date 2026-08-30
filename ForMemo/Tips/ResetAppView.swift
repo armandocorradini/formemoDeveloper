@@ -31,7 +31,7 @@ struct ResetAppView: View {
                             .foregroundStyle(.red)
                     }
                     
-                    Text("This will permanently delete all your tasks, attachments, trip checklists, cards, tickets, and data from this device. This action cannot be undone.")
+                    Text("This will permanently erase all your data from this app and iCloud, including tasks, notes, documents, attachments, trips, cards, tickets, and vault items. Your data will also be removed from any other devices. This action cannot be undone.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }

@@ -77,7 +77,8 @@ struct NoteEditorView: View {
                     dismiss()
                 } label: {
                     Text("Cancel")
-                        .frame(minWidth: 80)
+                        .fixedSize()
+                        .padding(.horizontal, 8)
                 }
                 .buttonStyle(.plain)
             }

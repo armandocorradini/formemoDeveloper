@@ -3210,30 +3210,30 @@
         }
       }
     },
-    "Archived %@" : {
+    "Archived  %@" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Archiviert%@"
+            "value" : "Archiviert %@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Archivada%@"
+            "value" : "Archivada %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Archivé%@"
+            "value" : "Archivé %@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Archiviate%@"
+            "value" : "Archiviata %@"
           }
         }
       }
@@ -18838,7 +18838,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modificado %@"
+            "value" : "Modificada %@"
           }
         },
         "fr" : {
@@ -18850,7 +18850,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modificato %@"
+            "value" : "Modificata %@"
           }
         }
       }
@@ -30592,6 +30592,34 @@
         }
       }
     },
+    "The password is incorrect. Enter the correct password to restore Vault." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le mot de passe est incorrect. Saisissez le mot de passe correct pour restaurer le contenu de la Cassette."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La contraseña no es correcta. Introduce la contraseña correcta para restaurar la Caja fuerte."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le mot de passe est incorrect. Saisissez le mot de passe correct pour restaurer le contenu de la Cassette."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La password non è corretta. Inserisci la password corretta per ripristinare la Cassaforte."
+          }
+        }
+      }
+    },
     "The password you entered cannot unlock the Vault data contained in this backup. Check the password and try again, or leave Vault unselected. The other data in the backup can be restored normally." : {
       "localizations" : {
         "de" : {
@@ -31372,30 +31400,30 @@
         }
       }
     },
-    "This will permanently delete all your tasks, attachments, trip checklists, cards, tickets, and data from this device. This action cannot be undone." : {
+    "This will permanently erase all your data from this app and iCloud, including tasks, notes, documents, attachments, trips, cards, tickets, and vault items. Your data will also be removed from any other devices. This action cannot be undone." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dadurch werden alle Ihre Aufgaben, Anhänge, Reise-Checklisten, Karten, Tickets und Daten dauerhaft von diesem Gerät gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
+            "value" : "Dieser Vorgang löscht dauerhaft alle deine Daten aus dieser App und aus iCloud, einschließlich Aufgaben, Notizen, Dokumenten, Anhängen, Reisen, Karten, Tickets und Tresoreinträgen. Deine Daten werden auch von allen anderen Geräten entfernt. Dieser Vorgang kann nicht rückgängig gemacht werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esto eliminará permanentemente todas tus tareas, archivos adjuntos, listas de viaje, tarjetas, tickets y datos de este dispositivo. Esta acción no se puede deshacer."
+            "value" : "Esta operación eliminará permanentemente todos tus datos de esta app y de iCloud, incluidas tareas, notas, documentos, archivos adjuntos, viajes, tarjetas, billetes y elementos de la caja fuerte. Tus datos también se eliminarán de cualquier otro dispositivo. Esta operación no se puede deshacer."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette action supprimera définitivement toutes vos tâches, pièces jointes, listes de voyage, cartes, tickets et données de cet appareil. Cette action est irréversible."
+            "value" : "Cette opération effacera définitivement toutes vos données de cette app et d’iCloud, notamment vos tâches, notes, documents, pièces jointes, voyages, cartes, billets et éléments du coffre-fort. Vos données seront également supprimées de tout autre appareil. Cette opération ne peut pas être annulée."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa operazione eliminerà definitivamente tutte le tue attività, gli allegati, le checklist di viaggio, le carte, i tickets e i dati da questo dispositivo. Questa azione non può essere annullata."
+            "value" : "Questa operazione eliminerà definitivamente tutti i tuoi dati da questa app e da iCloud, inclusi attività, note, documenti, allegati, viaggi, carte, biglietti ed elementi della cassaforte. I tuoi dati verranno rimossi anche da eventuali altri dispositivi. Questa operazione non può essere annullata."
           }
         }
       }
@@ -33804,6 +33832,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cassaforte bloccata"
+          }
+        }
+      }
+    },
+    "Vault restore requested, but no Vault backup package was found in the archive." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Wiederherstellung des Tresors wurde angefordert, aber im Archiv wurde keine Tresorsicherung gefunden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha solicitado restaurar la Caja fuerte, pero no se ha encontrado ninguna copia de seguridad de la Caja fuerte en el archivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La restauration de la Cassaforte a été demandée, mais aucune sauvegarde de la Cassaforte n’a été trouvée dans l’archive."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "È stato richiesto il ripristino della Cassaforte, ma nell’archivio non è stata trovata alcuna copia di backup della Cassaforte."
           }
         }
       }

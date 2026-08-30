@@ -64,6 +64,15 @@ struct BackupRestoreView: View {
             (archive.settings.isEmpty || restoreSettings)
     }
     
+    private var hasPendingNonVaultRestore: Bool {
+        pendingRestoreTasks ||
+        pendingRestoreNotes ||
+        pendingRestoreWalletCards ||
+        pendingRestoreTripLists ||
+        pendingRestoreDocuments ||
+        pendingRestoreSettings
+    }
+    
     
     var body: some View {
 
@@ -304,6 +313,30 @@ struct BackupRestoreView: View {
 
                         let archive = try await BackupManager.loadBackupArchive(from: url)
 
+                        await MainActor.run {
+                            restoreTasks = false
+                            restoreWalletCards = false
+                            restoreNotes = false
+                            restoreTripLists = false
+                            restoreDocuments = false
+                            restoreVault = false
+                            restoreSettings = false
+
+                            pendingRestoreArchive = nil
+                            pendingRestoreTasks = false
+                            pendingRestoreWalletCards = false
+                            pendingRestoreNotes = false
+                            pendingRestoreTripLists = false
+                            pendingRestoreDocuments = false
+                            pendingRestoreVault = false
+                            pendingRestoreSettings = false
+
+                            backupPassword = ""
+
+                            restoreArchive = archive
+                        }
+                        
+                        
                         await MainActor.run {
                             restoreArchive = archive
                         }
@@ -592,28 +625,19 @@ struct BackupRestoreView: View {
                 showBackupPasswordPrompt = false
 
                 Task {
-                    
-                    defer {
-                    pendingRestoreArchive = nil
-
-                    pendingRestoreTasks = false
-                    pendingRestoreNotes = false
-                    pendingRestoreWalletCards = false
-                    pendingRestoreTripLists = false
-                    pendingRestoreDocuments = false
-                    pendingRestoreVault = false
-                    pendingRestoreSettings = false
-
-                    backupPassword = ""
-                }
                     do {
-                        isRestoringBackup = true
                         guard let archive = archiveToRestore else {
-                            isRestoringBackup = false
                             backupPassword = ""
                             return
                         }
-                                
+
+                        try BackupManager.validateVaultBackupPassword(
+                            in: archive,
+                            password: backupPassword
+                        )
+
+                        isRestoringBackup = true
+
                         try await BackupManager.restoreArchive(
                             archive,
                             modelContext: modelContext,
@@ -629,9 +653,13 @@ struct BackupRestoreView: View {
                         isRestoringBackup = false
                         
                     } catch {
-                        restoreError = error.localizedDescription
                         isRestoringBackup = false
-                        
+
+                        if case VaultBackupCryptoError.invalidPassword = error {
+                            showVaultPasswordError = true
+                        } else {
+                            restoreError = error.localizedDescription
+                        }
                     }
                 }
             }
@@ -644,11 +672,17 @@ struct BackupRestoreView: View {
         ) {
             Button("Try Again") {
                 backupPassword = ""
-                showBackupPasswordPrompt = true
+                showVaultPasswordError = false
+
+                DispatchQueue.main.async {
+                    showBackupPasswordPrompt = true
+                }
             }
 
-            Button("Skip Vault") {
-                restoreWithoutVault()
+            if hasPendingNonVaultRestore {
+                Button("Skip Vault") {
+                    restoreWithoutVault()
+                }
             }
 
             Button("Cancel", role: .cancel) {
@@ -663,7 +697,11 @@ struct BackupRestoreView: View {
                 pendingRestoreSettings = false
             }
         } message: {
-            Text("The password is incorrect. Enter the correct password to restore Vault, or continue without Vault.")
+            if hasPendingNonVaultRestore {
+                Text("The password is incorrect. Enter the correct password to restore Vault, or continue without Vault.")
+            } else {
+                Text("The password is incorrect. Enter the correct password to restore Vault.")
+            }
         }
         .alert("Backup Password", isPresented: $showBackupCreationPasswordPrompt) {
             SecureField("Password", text: $backupPassword)
@@ -713,11 +751,26 @@ struct BackupRestoreView: View {
         guard let archive = pendingRestoreArchive else {
             return
         }
+        
+        guard hasPendingNonVaultRestore else {
+            showVaultPasswordError = false
+            backupPassword = ""
+            pendingRestoreArchive = nil
+            pendingRestoreTasks = false
+            pendingRestoreWalletCards = false
+            pendingRestoreNotes = false
+            pendingRestoreTripLists = false
+            pendingRestoreDocuments = false
+            pendingRestoreVault = false
+            pendingRestoreSettings = false
+            return
+        }
+        
 
         let selectedTasks = pendingRestoreTasks
         let selectedNotes = pendingRestoreNotes
         let selectedWalletCards = pendingRestoreWalletCards
-        let selectedVault = pendingRestoreVault
+        let selectedVault = false
         let selectedTripLists = pendingRestoreTripLists
         let selectedDocuments = pendingRestoreDocuments
         let selectedSettings = pendingRestoreSettings
@@ -1762,6 +1815,31 @@ private enum BackupManager {
         return url
     }
 
+    
+    static func validateVaultBackupPassword(
+        in archive: BackupArchive,
+        password: String
+    ) throws {
+        guard let vaultBackupPackage = archive.vaultBackupPackage else {
+            throw NSError(
+                domain: "BackupManager",
+                code: 1,
+                userInfo: [
+                    NSLocalizedDescriptionKey:
+                        String(localized: "Vault restore requested, but no Vault backup package was found in the archive.")
+                ]
+            )
+        }
+
+        let keyData = try VaultBackupCrypto.unwrapKey(
+            from: vaultBackupPackage,
+            password: password
+        )
+
+        guard keyData.count == 32 else {
+            throw VaultCryptoError.invalidData
+        }
+    }
     static func loadBackupArchive(from url: URL) async throws -> BackupArchive {
 
         let data = try await Task.detached(priority: .userInitiated) {
@@ -1809,7 +1887,53 @@ private enum BackupManager {
         restoreSettings: Bool
     ) async throws {
         try PersistenceOperationCoordinator.shared.begin(.restore)
+        
+        defer {
+            PersistenceOperationCoordinator.shared.finish()
+        }
+        
         var vaultKeyToInstall: SymmetricKey?
+        
+        var backupVaultKey: SymmetricKey?
+        var finalVaultKey: SymmetricKey?
+
+        if restoreVault {
+            guard let vaultBackupPackage = archive.vaultBackupPackage else {
+                throw NSError(
+                    domain: "BackupManager",
+                    code: 1,
+                    userInfo: [
+                        NSLocalizedDescriptionKey:
+                            String(localized: "Vault restore requested, but no Vault backup package was found in the archive.")
+                    ]
+                )
+            }
+
+            let backupKeyData = try VaultBackupCrypto.unwrapKey(
+                from: vaultBackupPackage,
+                password: backupPassword
+            )
+
+            guard backupKeyData.count == 32 else {
+                throw VaultCryptoError.invalidData
+            }
+
+            let backupKey = SymmetricKey(data: backupKeyData)
+            let localKey = try VaultCrypto.existingKey()
+
+            let finalKey: SymmetricKey
+
+            if let localKey {
+                finalKey = localKey
+            } else {
+                finalKey = backupKey
+                vaultKeyToInstall = finalKey
+            }
+
+            backupVaultKey = backupKey
+            finalVaultKey = finalKey
+        }
+        
         if restoreNotes {
             for noteData in archive.notes {
                 let existingNote = try modelContext.fetch(
@@ -2209,42 +2333,6 @@ private enum BackupManager {
 
         if restoreVault {
 
-            guard let vaultBackupPackage = archive.vaultBackupPackage else {
-                throw NSError(
-                    domain: "BackupManager",
-                    code: 1,
-                    userInfo: [
-                        NSLocalizedDescriptionKey:
-                            "Vault restore requested, but no Vault backup package was found in the archive."
-                    ]
-                )
-            }
-
-            let backupKeyData = try VaultBackupCrypto.unwrapKey(
-                from: vaultBackupPackage,
-                password: backupPassword
-            )
-
-            guard backupKeyData.count == 32 else {
-                throw VaultCryptoError.invalidData
-            }
-
-            let backupKey = SymmetricKey(data: backupKeyData)
-
-            let localKey = try VaultCrypto.existingKey()
-
-            let finalKey: SymmetricKey
-
-            if let localKey {
-                finalKey = localKey
-            } else {
-                finalKey = backupKey
-            }
-
-            if localKey == nil {
-                vaultKeyToInstall = finalKey
-            }
-
             struct PreparedVaultSecret {
                 let encryptedLabel: Data?
                 let encryptedValue: Data?
@@ -2263,6 +2351,11 @@ private enum BackupManager {
 
             // 1. Prepare and validate the entire backup first.
             for dto in archive.vaultItems {
+
+                guard let backupKey = backupVaultKey,
+                      let finalKey = finalVaultKey else {
+                    throw VaultCryptoError.invalidData
+                }
 
                 let encryptedPassword = try VaultCrypto.reencrypt(
                     dto.encryptedPassword,
@@ -2415,27 +2508,21 @@ private enum BackupManager {
 
         modelContext.processPendingChanges()
 
-        do {
-            try modelContext.save()
+        try modelContext.save()
 
-            if let vaultKeyToInstall {
-                try VaultCrypto.installKey(vaultKeyToInstall)
-            }
-            
-            try await PersistenceOperationCoordinator.shared.waitForSettlement(
-                requireExport: Persistence.hasICloudIdentity
-            )
-        }catch {
-            PersistenceOperationCoordinator.shared.finish()
-            throw error
+        if let vaultKeyToInstall {
+            try VaultCrypto.installKey(vaultKeyToInstall)
         }
 
-        PersistenceOperationCoordinator.shared.finish()
+        try await PersistenceOperationCoordinator.shared.waitForSettlement(
+            requireExport: Persistence.hasICloudIdentity
+        )
 
         NotificationCenter.default.post(
             name: .taskDidChange,
             object: nil
         )
+        
     }
 }
 

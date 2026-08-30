@@ -82,10 +82,10 @@ struct NoteListView: View {
                                 : note.title
                             )
                             .font(.headline)
-                            
+                            .padding(.bottom)
                             Text(
                                 String(
-                                    localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .complete))"
+                                    localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .shortened))"
                                 )
                             )
                             .font(.caption)
@@ -93,7 +93,7 @@ struct NoteListView: View {
 
                             Text(
                                 String(
-                                    localized: "Modified \(note.modifiedAt.formatted(date: .abbreviated, time: .complete))"
+                                    localized: "Modified \(note.modifiedAt.formatted(date: .abbreviated, time: .shortened))"
                                 )
                             )
                             .font(.caption)
@@ -151,10 +151,11 @@ struct NoteListView: View {
                                             : note.title
                                         )
                                         .font(.headline)
+                                        .padding(.bottom)
                                         
                                         Text(
                                             String(
-                                                localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .complete))"
+                                                localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .shortened))"
                                             )
                                         )
                                         .font(.caption)
@@ -162,7 +163,7 @@ struct NoteListView: View {
                                         
                                         Text(
                                             String(
-                                                localized: "Modified \(note.modifiedAt.formatted(date: .abbreviated, time: .complete))"
+                                                localized: "Modified \(note.modifiedAt.formatted(date: .abbreviated, time: .shortened))"
                                             )
                                         )
                                         .font(.caption)
@@ -171,7 +172,7 @@ struct NoteListView: View {
                                         if let archivedAt = note.archivedAt {
                                             Text(
                                                 String(
-                                                    localized: "Archived \(archivedAt.formatted(date: .abbreviated, time: .complete))"
+                                                    localized: "Archived  \(archivedAt.formatted(date: .abbreviated, time: .shortened))"
                                                 )
                                             )
                                             .font(.caption)
