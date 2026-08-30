@@ -99,6 +99,10 @@ struct ResetAppView: View {
         isDeleting = true
 
         Task { @MainActor in
+            
+            defer {
+                isDeleting = false
+            }
 
             do {
                 

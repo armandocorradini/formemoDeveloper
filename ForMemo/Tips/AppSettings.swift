@@ -510,12 +510,6 @@ final class AppSettings {
         }
     }
 
-//    var vaultRequireFaceID: Bool {
-//        didSet {
-//            UserDefaults.standard.set(vaultRequireFaceID, forKey: "vaultRequireFaceID")
-//        }
-//    }
-
     var vaultAutoHidePasswords: Bool {
         didSet {
             UserDefaults.standard.set(vaultAutoHidePasswords, forKey: "vaultAutoHidePasswords")
