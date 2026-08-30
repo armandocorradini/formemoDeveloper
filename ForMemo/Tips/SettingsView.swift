@@ -5,7 +5,6 @@ import SwiftData
 import CoreData
 import CoreLocation
 
-
 enum SoundPickerContext: Identifiable {
     case task
     case location
@@ -25,8 +24,6 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppSettings.self)
     private var settings
-
-    
     
 #if DEBUG
     @State private var hasTestData: Bool = false
@@ -71,13 +68,10 @@ struct SettingsView: View {
     @AppStorage("locationNotificationSoundName")
     private var locationNotificationSoundName: String = ""
 
-
-
     private var locationRadius: Int {
         get { settings.locationRadius }
         set { settings.locationRadius = newValue }
     }
-    
     
     private var backgroundColor1Hex: String {
         settings.backgroundColor1Hex
@@ -86,7 +80,6 @@ struct SettingsView: View {
     private var backgroundColor2Hex: String {
         settings.backgroundColor2Hex
     }
-    
     @State private var showLocationPermissionAlert = false
     @State private var showAutoFillDisableAlert = false
     @State private var showImportReminders = false
@@ -134,7 +127,6 @@ struct SettingsView: View {
                         .sheet(isPresented: $showDisclaimer) {
                             DisclaimerView()
                         }
-                        
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
@@ -900,7 +892,9 @@ Attivazione: \(triggerInfo)
                 RemindersImportView()
             }
             .fullScreenCover(isPresented: $showRecentlyDeleted) {
-                RecentlyDeletedView()
+                NavigationStack {
+                    RecentlyDeletedView()
+                }
             }
             .id(backgroundColor1Hex + backgroundColor2Hex)
             .alert("Disable AutoFill first", isPresented: $showAutoFillDisableAlert) {

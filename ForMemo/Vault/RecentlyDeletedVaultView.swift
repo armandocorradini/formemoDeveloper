@@ -156,18 +156,18 @@ struct RecentlyDeletedVaultView: View {
         .navigationBarTitleDisplayMode(.inline)
         .contentMargins(.bottom, 70, for: .scrollContent)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 1) {
+                    Text("Recently Deleted")
+                        .font(.headline)
 
-//            ToolbarItem(placement: .topBarLeading) {
-//
-//                Button {
-//
-//                    dismiss()
-//
-//                } label: {
-//
-//                    Image(systemName: "xmark")
-//                }
-//            }
+                    Text(
+                        "\(items.count) \(String(localized: "items"))"
+                    )
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
 
                 Menu {

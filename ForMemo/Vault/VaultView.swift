@@ -163,7 +163,18 @@ struct VaultView: View {
                 )
             )
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        Text("Vault")
+                            .font(.headline)
 
+                        Text(
+                            "\(activeItems.count) \(String(localized: "items"))"
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    }
+                }
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink {
                         VaultSettingsView()

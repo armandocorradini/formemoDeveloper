@@ -305,6 +305,40 @@
         }
       }
     },
+    "%lld active • %lld archived" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld aktiv • %2$lld archiviert"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld active • %2$lld archived"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld aktiv • %2$lld archiviert"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld actives • %2$lld archivées"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld attive • %2$lld archiviate"
+          }
+        }
+      }
+    },
     "%lld attachment" : {
       "localizations" : {
         "de" : {
@@ -8357,7 +8391,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Conferma eliminazione"
+            "value" : "Conferma eliminazione attività"
           }
         }
       }
@@ -11344,6 +11378,9 @@
           }
         }
       }
+    },
+    "documents" : {
+
     },
     "Documents" : {
       "localizations" : {
@@ -17849,6 +17886,9 @@
           }
         }
       }
+    },
+    "lists" : {
+
     },
     "Lists" : {
       "localizations" : {

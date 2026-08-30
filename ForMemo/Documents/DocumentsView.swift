@@ -158,6 +158,19 @@ struct DocumentsView: View {
                 prompt: Text("Search documents")
             )
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        Text("Documents")
+                            .font(.headline)
+
+                        Text(
+                            "\(documents.count) \(String(localized: "documents"))"
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         newDocument = DocumentItem(name: "")

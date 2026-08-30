@@ -7,6 +7,14 @@ struct NoteListView: View {
     @Environment(\.modelContext) private var modelContext
     
     @Query private var notes: [Note]
+    
+    private var activeNoteCount: Int {
+        notes.filter { !$0.isArchived }.count
+    }
+
+    private var archivedNoteCount: Int {
+        notes.filter { $0.isArchived }.count
+    }
 
     @State private var newNote: Note?
     @State private var showArchived = false
@@ -242,6 +250,18 @@ struct NoteListView: View {
             prompt: String(localized: "Search Notes")
         )
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 1) {
+                    Text("Notes")
+                        .font(.headline)
+
+                    Text(
+                        "\(activeNoteCount) active • \(archivedNoteCount) archived"
+                    )
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showArchived.toggle()

@@ -340,6 +340,18 @@ struct TravelKitListView: View {
                 }
             }
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        Text("Trips")
+                            .font(.headline)
+
+                        Text(
+                            "\(categories.count) \(String(localized: "lists"))"
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button {

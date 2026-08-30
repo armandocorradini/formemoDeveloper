@@ -319,6 +319,18 @@ var body: some View {
         .navigationTitle("Recently Deleted")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 1) {
+                    Text("Recently Deleted")
+                        .font(.headline)
+
+                    Text(
+                        "\(visibleItems.count) \(String(localized: "items"))"
+                    )
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                }
+            }
             ToolbarItem(placement: .topBarLeading) {
                 Button {
                     if let onClose {
