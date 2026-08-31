@@ -65,7 +65,7 @@ struct NoteListView: View {
     
 
 
-    private func rowColor(for note: Note, opacity: Double = 0.30) -> Color {
+    private func rowColor(for note: Note, opacity: Double = 0.50) -> Color {
         switch note.color {
         case "red":
             return .red.opacity(opacity)
@@ -210,7 +210,7 @@ struct NoteListView: View {
                                             .foregroundStyle(.secondary)
                                         }                        }
                                 }
-                                .listRowBackground(rowColor(for: note, opacity: 0.15))
+                                .listRowBackground(rowColor(for: note, opacity: 0.25))
                                 .swipeActions(edge: .leading, allowsFullSwipe: true) {
                                     Button {
                                         unarchive(note)

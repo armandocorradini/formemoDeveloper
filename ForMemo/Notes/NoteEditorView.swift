@@ -52,7 +52,6 @@ struct NoteEditorView: View {
         _selectedColor = State(initialValue: note.color)
         _initialColor = State(initialValue: note.color)
     }
-
     var body: some View {
         ZStack {
             AppGlassBackground()
@@ -63,9 +62,8 @@ struct NoteEditorView: View {
                 
                 titleField
                     .background(
-                        selectedNoteColor().opacity(0.30)
+                        selectedNoteColor().opacity(0.50)
                     )
-
                 
                 Divider()
                     .overlay(Color.primary.opacity(0.50))

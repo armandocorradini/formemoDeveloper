@@ -51,19 +51,19 @@ struct RecentlyDeletedView: View {
     private func noteRowColor(for item: DeletedItem) -> Color {
         switch item.noteColor {
         case "red":
-            return .red.opacity(0.15)
+            return .red.opacity(0.25)
         case "orange":
-            return .orange.opacity(0.15)
+            return .orange.opacity(0.25)
         case "yellow":
-            return .yellow.opacity(0.15)
+            return .yellow.opacity(0.25)
         case "green":
-            return .green.opacity(0.15)
+            return .green.opacity(0.25)
         case "blue":
-            return .blue.opacity(0.15)
+            return .blue.opacity(0.25)
         case "purple":
-            return .purple.opacity(0.15)
+            return .purple.opacity(0.25)
         case "pink":
-            return .pink.opacity(0.15)
+            return .pink.opacity(0.25)
         default:
             return Color(.secondarySystemBackground)
         }
