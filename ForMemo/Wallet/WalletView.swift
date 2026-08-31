@@ -339,51 +339,48 @@ struct WalletView: View {
                 }
 
                 ToolbarItem(placement: .topBarLeading) {
+                    HStack(spacing: 0) {
+                        Picker("Filter", selection: $walletFilter) {
+                            Label("All", systemImage: "square.on.square")
+                                .tag("all")
+                            Label("Cards", systemImage: "creditcard")
+                                .tag("cards")
+                            Label("Tickets", systemImage: "ticket")
+                                .tag("tickets")
+                        }
+                        .pickerStyle(.menu)
+                        .labelStyle(.iconOnly)
+                        .labelsHidden()
 
-                    Picker("Filter", selection: $walletFilter) {
-                        Label("All", systemImage: "square.on.square")
-                            .tag("all")
+                        Picker(
+                            "Order",
+                            selection: Binding(
+                                get: { walletSortMode },
+                                set: { newValue in
+                                    guard newValue != walletSortMode else { return }
 
-                        Label("Cards", systemImage: "creditcard")
-                            .tag("cards")
-
-                        Label("Tickets", systemImage: "ticket")
-                            .tag("tickets")
-                    }
-                    .pickerStyle(.menu)
-                }
-
-                ToolbarItem(placement: .topBarLeading) {
-
-                    Picker(
-                        "Order",
-                        selection: Binding(
-                            get: { walletSortMode },
-                            set: { newValue in
-
-                                guard newValue != walletSortMode else { return }
-
-                                if newValue == "custom" {
-                                    pendingSortMode = newValue
-                                    showCustomSortInfo = true
-                                } else {
-                                    walletSortMode = newValue
+                                    if newValue == "custom" {
+                                        pendingSortMode = newValue
+                                        showCustomSortInfo = true
+                                    } else {
+                                        walletSortMode = newValue
+                                    }
                                 }
-                            }
-                        )
-                    ) {
-                        Section(String(localized: "Sorting")) { }
-                        Label("A-Z", systemImage: "textformat.abc")
-                            .tag("alphabetical")
+                            )
+                        ) {
+                            Section(String(localized: "Sorting")) { }
 
-                        Label("Custom", systemImage: "line.3.horizontal")
-                            .tag("custom")
+                            Label("A-Z", systemImage: "textformat.abc")
+                                .tag("alphabetical")
+
+                            Label("Custom", systemImage: "line.3.horizontal")
+                                .tag("custom")
+                        }
+                        .pickerStyle(.menu)
+                        .labelStyle(.iconOnly)
+                        .labelsHidden()
                     }
-                    .labelStyle(.iconOnly)
-                    .pickerStyle(.menu)
-                    .labelsHidden()
                 }
-
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

@@ -68,8 +68,7 @@ struct NoteListView: View {
             AppGlassBackground()
 
             List {
-                if activeNotes.isEmpty &&
-                   (!showArchived || archivedNotes.isEmpty) {
+                if notes.isEmpty {
                     ContentUnavailableView(
                         String(localized: "No Notes"),
                         systemImage: "note.text",
@@ -242,7 +241,10 @@ struct NoteListView: View {
                 .contentMargins(.bottom, 70, for: .scrollContent)
                 .listStyle(.insetGrouped)
             }
-        .navigationTitle(String(localized: "Notes"))
+     .navigationTitle(String(localized: "Notes"))
+     .navigationSubtitle(
+         "\(activeNoteCount) active • \(archivedNoteCount) archived"
+     )
         .navigationBarTitleDisplayMode(.inline)
         .searchable(
             text: $searchText,
@@ -250,19 +252,7 @@ struct NoteListView: View {
             prompt: String(localized: "Search Notes")
         )
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                VStack(spacing: 1) {
-                    Text("Notes")
-                        .font(.headline)
-
-                    Text(
-                        "\(activeNoteCount) active • \(archivedNoteCount) archived"
-                    )
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                }
-            }
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .topBarLeading) {
                 Button {
                     showArchived.toggle()
                 } label: {
