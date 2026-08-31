@@ -3739,6 +3739,7 @@
       }
     },
     "Archived  %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3765,6 +3766,9 @@
           }
         }
       }
+    },
+    "Archived %@" : {
+
     },
     "Arctic" : {
       "localizations" : {

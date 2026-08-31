@@ -19,7 +19,9 @@ struct NoteListView: View {
     @State private var newNote: Note?
     @State private var showArchived = false
     @State private var searchText = ""
-
+    
+    private static let numberedListMarkerFormat =
+        NSTextList.MarkerFormat(rawValue: "{decimal}.")
 
     private func matchesSearch(_ note: Note) -> Bool {
         guard !searchText.isEmpty else {
@@ -40,6 +42,118 @@ struct NoteListView: View {
         return String(attributedString.characters)
             .localizedCaseInsensitiveContains(searchText)
     }
+    
+    private func previewAttributedString(
+        _ attributedString: AttributedString
+    ) -> AttributedString {
+        let source = NSAttributedString(attributedString)
+        let result = NSMutableAttributedString(attributedString: source)
+
+        let string = source.string as NSString
+
+        var paragraphRanges: [NSRange] = []
+
+        var paragraphLocation = 0
+
+        while paragraphLocation < string.length {
+            let paragraphRange = string.paragraphRange(
+                for: NSRange(
+                    location: paragraphLocation,
+                    length: 0
+                )
+            )
+
+            paragraphRanges.append(paragraphRange)
+
+            let nextLocation =
+                paragraphRange.location + paragraphRange.length
+
+            if nextLocation <= paragraphLocation {
+                break
+            }
+
+            paragraphLocation = nextLocation
+        }
+
+        var counters: [ObjectIdentifier: Int] = [:]
+        var markers: [NSRange: String] = [:]
+        var previousListID: ObjectIdentifier?
+
+        // Prima calcoliamo i marker nell'ordine corretto.
+        for paragraphRange in paragraphRanges {
+
+            let style = source.attribute(
+                .paragraphStyle,
+                at: paragraphRange.location,
+                effectiveRange: nil
+            ) as? NSParagraphStyle
+
+            guard let list = style?.textLists.last else {
+                previousListID = nil
+                continue
+            }
+
+            let id = ObjectIdentifier(list)
+
+            if previousListID != id {
+                counters[id] = 1
+            } else {
+                counters[id, default: 0] += 1
+            }
+
+            previousListID = id
+
+            switch list.markerFormat {
+            case .decimal:
+                markers[paragraphRange] =
+                    "\(counters[id, default: 1]). "
+
+            case let format where format == Self.numberedListMarkerFormat:
+                markers[paragraphRange] =
+                    "\(counters[id, default: 1]). "
+
+            case .hyphen:
+                markers[paragraphRange] = "- "
+
+            case .disc:
+                markers[paragraphRange] = "• "
+
+            default:
+                markers[paragraphRange] = "• "
+            }
+        }
+
+        // Poi inseriamo i marker dal fondo verso l'inizio,
+        // così le posizioni originali rimangono valide.
+        for paragraphRange in paragraphRanges.reversed() {
+
+            guard let marker = markers[paragraphRange] else {
+                continue
+            }
+
+            let attributes: [NSAttributedString.Key: Any]
+
+            if paragraphRange.location < source.length {
+                attributes = source.attributes(
+                    at: paragraphRange.location,
+                    effectiveRange: nil
+                )
+            } else {
+                attributes = [:]
+            }
+
+            result.insert(
+                NSAttributedString(
+                    string: marker,
+                    attributes: attributes
+                ),
+                at: paragraphRange.location
+            )
+        }
+
+        return AttributedString(result)
+    }
+    
     
     private var activeNotes: [Note] {
         notes
@@ -108,29 +222,45 @@ struct NoteListView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(
                                 note.title.isEmpty
-                                ? String(localized: "Untitled")
-                                : note.title
+                                    ? String(localized: "Untitled")
+                                    : note.title
                             )
-                            .font(.headline)
-                            .padding(.bottom)
-                            Text(
-                                String(
-                                    localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .shortened))"
-                                )
-                            )
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .padding(.bottom, 2)
 
-                            Text(
-                                String(
-                                    localized: "Modified \(note.modifiedAt.formatted(date: .abbreviated, time: .shortened))"
-                                )
-                            )
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            if let attributedString = try? JSONDecoder().decode(
+                                AttributedString.self,
+                                from: note.content
+                            ) {
+                                Text(previewAttributedString(attributedString))
+                                    .font(.body)
+                                    .lineLimit(2)
+                            }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(
+                            rowColor(for: note)
+                        )
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: 16,
+                                style: .continuous
+                            )
+                        )
                     }
-                    .listRowBackground(rowColor(for: note))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(
+                        EdgeInsets(
+                            top: 6,
+                            leading: 0,
+                            bottom: 6,
+                            trailing: 0
+                        )
+                    )
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
                             archive(note)
@@ -178,39 +308,44 @@ struct NoteListView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(
                                             note.title.isEmpty
-                                            ? String(localized: "Untitled")
-                                            : note.title
+                                                ? String(localized: "Untitled")
+                                                : note.title
                                         )
-                                        .font(.headline)
+                                        .font(.title3)
                                         .padding(.bottom, 4)
-                                        
-                                        Text(
-                                            String(
-                                                localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .shortened))"
-                                            )
+
+                                        if let attributedString = try? JSONDecoder().decode(
+                                            AttributedString.self,
+                                            from: note.content
+                                        ) {
+                                            Text(previewAttributedString(attributedString))
+                                                .font(.body)
+                                                .lineLimit(2)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 12)
+                                    .background(
+                                        rowColor(for: note, opacity: 0.25)
+                                    )
+                                    .clipShape(
+                                        RoundedRectangle(
+                                            cornerRadius: 16,
+                                            style: .continuous
                                         )
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        
-                                        Text(
-                                            String(
-                                                localized: "Modified \(note.modifiedAt.formatted(date: .abbreviated, time: .shortened))"
-                                            )
-                                        )
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        
-                                        if let archivedAt = note.archivedAt {
-                                            Text(
-                                                String(
-                                                    localized: "Archived  \(archivedAt.formatted(date: .abbreviated, time: .shortened))"
-                                                )
-                                            )
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        }                        }
+                                    )
                                 }
-                                .listRowBackground(rowColor(for: note, opacity: 0.25))
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(
+                                    EdgeInsets(
+                                        top: 6,
+                                        leading: 0,
+                                        bottom: 6,
+                                        trailing: 0
+                                    )
+                                )
                                 .swipeActions(edge: .leading, allowsFullSwipe: true) {
                                     Button {
                                         unarchive(note)

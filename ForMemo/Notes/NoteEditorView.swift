@@ -52,11 +52,50 @@ struct NoteEditorView: View {
         _selectedColor = State(initialValue: note.color)
         _initialColor = State(initialValue: note.color)
     }
+    
+    private var metadataView: some View {
+        VStack(alignment: .center, spacing: 2) {
+            Text(
+                String(
+                    localized: "Created \(note.createdAt.formatted(date: .abbreviated, time: .shortened))"
+                )
+            )
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+
+            if note.modifiedAt != note.createdAt {
+                Text(
+                    String(
+                        localized: "Modified \(note.modifiedAt.formatted(date: .abbreviated, time: .shortened))"
+                    )
+                )
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            }
+
+            if let archivedAt = note.archivedAt {
+                Text(
+                    String(
+                        localized: "Archived \(archivedAt.formatted(date: .abbreviated, time: .shortened))"
+                    )
+                )
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 6)
+    }
+    
     var body: some View {
         ZStack {
             AppGlassBackground()
             
             VStack(spacing: 0) {
+                metadataView
+
+                Divider()
                 colorPicker
                 Divider()
                 
@@ -75,9 +114,10 @@ struct NoteEditorView: View {
                     )
             }
         }
+
+        .navigationBarBackButtonHidden(true)
         .navigationTitle(String(localized: "Note"))
         .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
         .contentMargins(.bottom, 70, for: .scrollContent)
         .scrollDismissesKeyboard(.immediately)
         .toolbar {
@@ -91,7 +131,6 @@ struct NoteEditorView: View {
                 }
                 .buttonStyle(.plain)
             }
-
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Button {
                     showShareSheet = true
@@ -168,15 +207,8 @@ struct NoteEditorView: View {
         .padding(.top, 14)
         .padding(.bottom, 10)
     }
-    
     private var colorPicker: some View {
         HStack(spacing: 14) {
-//            Text("Color")
-//                .font(.caption)
-//                .foregroundStyle(.secondary)
-//
-//            Spacer()
-
             Button {
                 selectedColor = nil
             } label: {
@@ -331,7 +363,8 @@ struct NoteEditorView: View {
             let lists = sourceStyle.textLists
 
             guard let currentList = lists.last,
-                  currentList.markerFormat == .decimal
+                  currentList.markerFormat == .decimal ||
+                  currentList.markerFormat == NSTextList.MarkerFormat(rawValue: "{decimal}.")
             else {
                 activeList = nil
                 previousWasNumberedList = false
@@ -963,8 +996,13 @@ private struct NoteTextView: UIViewRepresentable {
 
             storage.beginEditing()
 
+            let effectiveMarkerFormat: NSTextList.MarkerFormat =
+                markerFormat == .decimal
+                    ? NSTextList.MarkerFormat(rawValue: "{decimal}.")
+                    : markerFormat
+
             let list = NSTextList(
-                markerFormat: markerFormat,
+                markerFormat: effectiveMarkerFormat,
                 options: 0
             )
 
@@ -983,8 +1021,13 @@ private struct NoteTextView: UIViewRepresentable {
                     as? NSMutableParagraphStyle
                     ?? NSMutableParagraphStyle()
 
-                let isActive = style.textLists.contains {
-                    $0.markerFormat == markerFormat
+                let isActive = style.textLists.contains { list in
+                    if markerFormat == .decimal {
+                        return list.markerFormat == .decimal ||
+                               list.markerFormat == effectiveMarkerFormat
+                    }
+
+                    return list.markerFormat == markerFormat
                 }
 
                 if isActive {
