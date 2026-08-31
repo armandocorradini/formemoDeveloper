@@ -32,8 +32,10 @@ struct NoteEditorView: View {
     @State private var initialTitle: String
     @State private var initialText: AttributedString
     @State private var showShareSheet = false
-
-
+    @State private var selectedColor: String?
+    @State private var initialColor: String?
+    @FocusState private var titleIsFocused: Bool
+    
     init(
         note: Note,
         noteEditorCoordinator: NoteEditorCoordinator? = nil
@@ -47,6 +49,8 @@ struct NoteEditorView: View {
         _text = State(initialValue: decodedText)
         _initialTitle = State(initialValue: note.title)
         _initialText = State(initialValue: decodedText)
+        _selectedColor = State(initialValue: note.color)
+        _initialColor = State(initialValue: note.color)
     }
 
     var body: some View {
@@ -54,10 +58,17 @@ struct NoteEditorView: View {
             AppGlassBackground()
             
             VStack(spacing: 0) {
+                colorPicker
+                Divider()
+                
                 titleField
+                    .background(
+                        selectedNoteColor().opacity(0.30)
+                    )
+
                 
                 Divider()
-                    .overlay(Color.primary.opacity(0.25))
+                    .overlay(Color.primary.opacity(0.50))
                 
                 NoteTextView(text: $text)
                     .frame(
@@ -106,14 +117,23 @@ struct NoteEditorView: View {
             noteEditorCoordinator?.isDirty =
                 title.trimmingCharacters(in: .whitespacesAndNewlines) !=
                 initialTitle.trimmingCharacters(in: .whitespacesAndNewlines) ||
-                text != initialText
+                text != initialText ||
+            selectedColor != initialColor
         }
 
         .onChange(of: text) { _, _ in
             noteEditorCoordinator?.isDirty =
                 title.trimmingCharacters(in: .whitespacesAndNewlines) !=
                 initialTitle.trimmingCharacters(in: .whitespacesAndNewlines) ||
-                text != initialText
+                text != initialText ||
+            selectedColor != initialColor
+        }
+        .onChange(of: selectedColor) { _, _ in
+            noteEditorCoordinator?.isDirty =
+                title.trimmingCharacters(in: .whitespacesAndNewlines) !=
+                initialTitle.trimmingCharacters(in: .whitespacesAndNewlines) ||
+                text != initialText ||
+                selectedColor != initialColor
         }
         .onDisappear {
             // Saving is handled explicitly by Save.
@@ -126,8 +146,11 @@ struct NoteEditorView: View {
             noteEditorCoordinator?.discard = {
                 dismiss()
             }
-        }
-        .sheet(isPresented: $showShareSheet) {
+
+            if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                titleIsFocused = true
+            }
+        }        .sheet(isPresented: $showShareSheet) {
             NoteShareSheet(
                 title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                 text: text
@@ -142,11 +165,97 @@ struct NoteEditorView: View {
         )
         .font(.title2.weight(.semibold))
         .textFieldStyle(.plain)
+        .focused($titleIsFocused)
         .padding(.horizontal, 20)
         .padding(.top, 14)
         .padding(.bottom, 10)
     }
+    
+    private var colorPicker: some View {
+        HStack(spacing: 14) {
+//            Text("Color")
+//                .font(.caption)
+//                .foregroundStyle(.secondary)
+//
+//            Spacer()
 
+            Button {
+                selectedColor = nil
+            } label: {
+                Circle()
+                    .fill(.clear)
+                    .frame(width: 22, height: 22)
+                    .overlay {
+                        Circle()
+                            .stroke(
+                                Color.secondary.opacity(0.5),
+                                lineWidth: 1
+                            )
+                    }
+                    .overlay {
+                        Image(systemName: "xmark")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+            }
+
+            ForEach(
+                ["red", "orange", "yellow", "green", "blue", "purple", "pink"],
+                id: \.self
+            ) { color in
+                Button {
+                    selectedColor = color
+                } label: {
+                    Circle()
+                        .fill(noteColor(for: color))
+                        .frame(width: 22, height: 22)
+                        .overlay {
+                            if selectedColor == color {
+                                Circle()
+                                    .stroke(
+                                        Color.primary,
+                                        lineWidth: 2
+                                    )
+                            }
+                        }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 25)
+        .padding(.bottom, 10)
+        .padding(.top, 10)
+    }
+
+    private func selectedNoteColor() -> Color {
+        guard let selectedColor else {
+            return .clear
+        }
+
+        return noteColor(for: selectedColor)
+    }
+    
+    private func noteColor(for value: String) -> Color {
+        switch value {
+        case "red":
+            .red
+        case "orange":
+            .orange
+        case "yellow":
+            .yellow
+        case "green":
+            .green
+        case "blue":
+            .blue
+        case "purple":
+            .purple
+        case "pink":
+            .pink
+        default:
+            .clear
+        }
+    }
+    
     private func save(dismissAfterSave: Bool = true) {
         do {
             let newTitle = title.trimmingCharacters(
@@ -156,6 +265,7 @@ struct NoteEditorView: View {
 
             note.title = newTitle
             note.content = newContent
+            note.color = selectedColor
             note.modifiedAt = .now
 
             try modelContext.save()

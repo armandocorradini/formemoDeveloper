@@ -62,7 +62,30 @@ struct NoteListView: View {
                 $0.modifiedAt > $1.modifiedAt
             }
     }
+    
 
+
+    private func rowColor(for note: Note, opacity: Double = 0.30) -> Color {
+        switch note.color {
+        case "red":
+            return .red.opacity(opacity)
+        case "orange":
+            return .orange.opacity(opacity)
+        case "yellow":
+            return .yellow.opacity(opacity)
+        case "green":
+            return .green.opacity(opacity)
+        case "blue":
+            return .blue.opacity(opacity)
+        case "purple":
+            return .purple.opacity(opacity)
+        case "pink":
+            return .pink.opacity(opacity)
+        default:
+            return Color(uiColor: .systemBackground)
+        }
+    }
+    
     var body: some View {
         ZStack {
             AppGlassBackground()
@@ -107,6 +130,7 @@ struct NoteListView: View {
                             .foregroundStyle(.secondary)
                         }
                     }
+                    .listRowBackground(rowColor(for: note))
                     .swipeActions(edge: .leading, allowsFullSwipe: true) {
                         Button {
                             archive(note)
@@ -158,7 +182,7 @@ struct NoteListView: View {
                                             : note.title
                                         )
                                         .font(.headline)
-                                        .padding(.bottom)
+                                        .padding(.bottom, 4)
                                         
                                         Text(
                                             String(
@@ -186,7 +210,7 @@ struct NoteListView: View {
                                             .foregroundStyle(.secondary)
                                         }                        }
                                 }
-                                
+                                .listRowBackground(rowColor(for: note, opacity: 0.16))
                                 .swipeActions(edge: .leading, allowsFullSwipe: true) {
                                     Button {
                                         unarchive(note)

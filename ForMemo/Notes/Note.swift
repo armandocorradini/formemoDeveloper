@@ -10,6 +10,7 @@ final class Note {
     var modifiedAt: Date = Date()
     var isPinned: Bool = false
     var isArchived: Bool = false
+    var color: String? = nil
     var archivedAt: Date? = nil
     var lastOpenedAt: Date?
 
