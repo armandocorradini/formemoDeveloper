@@ -98,6 +98,7 @@ final class DeletedItem {
     var noteModifiedAt: Date?
     var noteIsPinned: Bool?
     var noteIsArchived: Bool?
+    var noteColor: String?
     
     init(type: String) {
         self.type = type
@@ -202,7 +203,8 @@ extension DeletedItem {
                 createdAt: noteCreatedAt ?? .now,
                 modifiedAt: noteModifiedAt ?? .now,
                 isPinned: noteIsPinned ?? false,
-                isArchived: noteIsArchived ?? false
+                isArchived: noteIsArchived ?? false,
+                color: noteColor,
             )
 
             context.insert(note)

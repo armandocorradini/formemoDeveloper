@@ -48,6 +48,27 @@ struct RecentlyDeletedView: View {
         }
     }
     
+    private func noteRowColor(for item: DeletedItem) -> Color {
+        switch item.noteColor {
+        case "red":
+            return .red.opacity(0.15)
+        case "orange":
+            return .orange.opacity(0.15)
+        case "yellow":
+            return .yellow.opacity(0.15)
+        case "green":
+            return .green.opacity(0.15)
+        case "blue":
+            return .blue.opacity(0.15)
+        case "purple":
+            return .purple.opacity(0.15)
+        case "pink":
+            return .pink.opacity(0.15)
+        default:
+            return Color(.secondarySystemBackground)
+        }
+    }
+    
 var body: some View {
     ZStack {
         AppGlassBackground()
@@ -258,7 +279,9 @@ var body: some View {
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .background(
-                        Color(.secondarySystemBackground)
+                        item.type == "note"
+                            ? noteRowColor(for: item)
+                            : Color(.secondarySystemBackground)
                     )
 
                     .swipeActions (edge: .leading) {

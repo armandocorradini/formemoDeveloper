@@ -22,6 +22,7 @@ final class Note {
         modifiedAt: Date = Date(),
         isPinned: Bool = false,
         isArchived: Bool = false,
+        color: String? = nil,
         archivedAt: Date? = nil,
         lastOpenedAt: Date? = nil
     ) {
@@ -32,6 +33,7 @@ final class Note {
         self.modifiedAt = modifiedAt
         self.isPinned = isPinned
         self.isArchived = isArchived
+        self.color = color
         self.archivedAt = archivedAt
         self.lastOpenedAt = lastOpenedAt
     }

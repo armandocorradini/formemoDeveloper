@@ -210,7 +210,7 @@ struct NoteListView: View {
                                             .foregroundStyle(.secondary)
                                         }                        }
                                 }
-                                .listRowBackground(rowColor(for: note, opacity: 0.16))
+                                .listRowBackground(rowColor(for: note, opacity: 0.15))
                                 .swipeActions(edge: .leading, allowsFullSwipe: true) {
                                     Button {
                                         unarchive(note)
@@ -362,6 +362,7 @@ private func editorView(for note: Note) -> some View {
             deletedItem.noteModifiedAt = note.modifiedAt
             deletedItem.noteIsPinned = note.isPinned
             deletedItem.noteIsArchived = note.isArchived
+            deletedItem.noteColor = note.color
 
             modelContext.insert(deletedItem)
             modelContext.delete(note)
@@ -387,6 +388,7 @@ private func editorView(for note: Note) -> some View {
         deletedItem.noteModifiedAt = note.modifiedAt
         deletedItem.noteIsPinned = note.isPinned
         deletedItem.noteIsArchived = note.isArchived
+        deletedItem.noteColor = note.color
 
         modelContext.insert(deletedItem)
         modelContext.delete(note)

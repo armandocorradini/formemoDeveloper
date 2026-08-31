@@ -1052,6 +1052,7 @@ private struct NoteTransferObject: Codable {
     let modifiedAt: Date
     let isPinned: Bool
     let isArchived: Bool
+    let color: String?
     let archivedAt: Date?
     let lastOpenedAt: Date?
 
@@ -1063,6 +1064,7 @@ private struct NoteTransferObject: Codable {
         self.modifiedAt = note.modifiedAt
         self.isPinned = note.isPinned
         self.isArchived = note.isArchived
+        self.color = note.color
         self.archivedAt = note.archivedAt
         self.lastOpenedAt = note.lastOpenedAt
     }
@@ -1955,6 +1957,7 @@ private enum BackupManager {
                     modifiedAt: noteData.modifiedAt,
                     isPinned: noteData.isPinned,
                     isArchived: noteData.isArchived,
+                    color: noteData.color,
                     archivedAt: noteData.archivedAt,
                     lastOpenedAt: noteData.lastOpenedAt
                 )
