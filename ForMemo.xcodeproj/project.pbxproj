@@ -191,6 +191,7 @@
 		1C8225F13040936800B77EC7 /* NoteImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225F03040936700B77EC7 /* NoteImportService.swift */; };
 		1C8226003040960600B77EC7 /* ForMemoShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */; };
+		1CC0DE7C30477A9F001EB9C2 /* AttachmentDiagnosticService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC0DE7B30477A96001EB9C2 /* AttachmentDiagnosticService.swift */; };
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
 		1CED325B302619D600B16A50 /* AssetRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */; };
@@ -419,6 +420,7 @@
 		1C8225F03040936700B77EC7 /* NoteImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteImportService.swift; sourceTree = "<group>"; };
 		1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentContainerRecovery.swift; sourceTree = "<group>"; };
+		1CC0DE7B30477A96001EB9C2 /* AttachmentDiagnosticService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentDiagnosticService.swift; sourceTree = "<group>"; };
 		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
 		1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDirectoryCoordinator.swift; sourceTree = "<group>"; };
 		1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetRecoveryCoordinator.swift; sourceTree = "<group>"; };
@@ -819,6 +821,7 @@
 		1C8477673023782000C4FA34 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				1CC0DE7B30477A96001EB9C2 /* AttachmentDiagnosticService.swift */,
 				1C634D6A30220C9C0092DB89 /* TaskApp.swift */,
 				1C634D0430220C9C0092DB89 /* Persistence.swift */,
 				1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */,
@@ -995,6 +998,7 @@
 				1C634D9930220C9C0092DB89 /* AttachmentMigration.swift in Sources */,
 				1C634D9A30220C9C0092DB89 /* CalendarExportEngine.swift in Sources */,
 				1C634D9B30220C9C0092DB89 /* CalendarPickerView.swift in Sources */,
+				1CC0DE7C30477A9F001EB9C2 /* AttachmentDiagnosticService.swift in Sources */,
 				1C634D9C30220C9C0092DB89 /* CloudKitResetManager.swift in Sources */,
 				1C634D9D30220C9C0092DB89 /* CloudSettingsSync.swift in Sources */,
 				1C8225E5303B555000B77EC7 /* NoteEditorView.swift in Sources */,

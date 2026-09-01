@@ -130,7 +130,7 @@ struct ForMemoApp: App {
         
         Task { @MainActor in
             let context = sharedContainer.mainContext
-
+            AttachmentDiagnosticService.update(using: context)
             AttachmentMigration.runIfNeeded(
                 context: context
             )
