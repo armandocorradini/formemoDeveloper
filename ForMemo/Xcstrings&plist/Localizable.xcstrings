@@ -9993,34 +9993,6 @@
         }
       }
     },
-    "Customize List" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Liste anpassen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personaliza lista"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personnaliser la liste"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personalizza Lista"
-          }
-        }
-      }
-    },
     "Customize Tab Bar" : {
       "localizations" : {
         "de" : {
@@ -10045,6 +10017,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Personalizza la barra delle tab"
+          }
+        }
+      }
+    },
+    "Customize Task List" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgabenliste anpassen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizar la lista de tareas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personnaliser la liste des tâches"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizza elenco attività"
           }
         }
       }
