@@ -48,24 +48,15 @@ struct RecentlyDeletedView: View {
         }
     }
     
-    private func noteRowColor(for item: DeletedItem) -> Color {
-        switch item.noteColor {
-        case "red":
-            return .red.opacity(0.25)
-        case "orange":
-            return .orange.opacity(0.25)
-        case "yellow":
-            return .yellow.opacity(0.25)
-        case "green":
-            return .green.opacity(0.25)
-        case "blue":
-            return .blue.opacity(0.25)
-        case "purple":
-            return .purple.opacity(0.25)
-        case "pink":
-            return .pink.opacity(0.25)
-        default:
-            return Color(.secondarySystemBackground)
+    private func noteColor(for color: String?) -> Color? {
+        switch color {
+        case "red": return .red
+        case "orange": return .orange
+        case "yellow": return .yellow
+        case "green": return .green
+        case "blue": return .blue
+        case "purple": return .purple
+        default: return nil
         }
     }
     
@@ -278,11 +269,24 @@ var body: some View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        item.type == "note"
-                            ? noteRowColor(for: item)
-                            : Color(.secondarySystemBackground)
-                    )
+                    .overlay(alignment: .leading) {
+                        if item.type == "note",
+                           let color = noteColor(for: item.noteColor) {
+                            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                .fill(color)
+                                .frame(width: 5)
+                                .padding(.vertical, 6)
+                        }
+                    }
+                    .overlay(alignment: .leading) {
+                        if item.type == "note",
+                           let color = noteColor(for: item.noteColor) {
+                            RoundedRectangle(cornerRadius: 3, style: .continuous)
+                                .fill(color)
+                                .frame(width: 5)
+                                .padding(.vertical, 6)
+                        }
+                    }
 
                     .swipeActions (edge: .leading) {
                         

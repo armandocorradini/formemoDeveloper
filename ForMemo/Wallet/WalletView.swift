@@ -243,6 +243,7 @@ struct WalletView: View {
                                 .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
+                            .navigationLinkIndicatorVisibility(.hidden)
                             .listRowBackground(
 
                                 Color(.systemBackground)

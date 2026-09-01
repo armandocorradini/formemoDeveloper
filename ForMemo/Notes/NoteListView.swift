@@ -179,7 +179,7 @@ struct NoteListView: View {
     
 
 
-    private func rowColor(for note: Note, opacity: Double = 0.50) -> Color {
+    private func rowColor(for note: Note, opacity: Double = 1.0) -> Color {
         switch note.color {
         case "red":
             return .red.opacity(opacity)
@@ -219,31 +219,43 @@ struct NoteListView: View {
                     NavigationLink {
                         editorView(for: note)
                     } label: {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(
-                                note.title.isEmpty
-                                    ? String(localized: "Untitled")
-                                    : note.title
-                            )
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                            .padding(.bottom, 2)
+                        HStack(spacing: 12) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(rowColor(for: note))
+                                .frame(width: 5)
 
-                            if let attributedString = try? JSONDecoder().decode(
-                                AttributedString.self,
-                                from: note.content
-                            ) {
-                                Text(previewAttributedString(attributedString))
-                                    .font(.body)
-                                    .lineLimit(2)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(
+                                    note.title.isEmpty
+                                        ? String(localized: "Untitled")
+                                        : note.title
+                                )
+                                .font(.title3)
+                                .fontWeight(.semibold)
+                                .padding(.bottom, 10)
+
+                                if let attributedString = try? JSONDecoder().decode(
+                                    AttributedString.self,
+                                    from: note.content
+                                ) {
+                                    Text(previewAttributedString(attributedString))
+                                        .font(.caption)
+                                        .lineLimit(2)
+                                }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
-                        .background(
-                            rowColor(for: note)
+                        .background(Color(uiColor: .systemBackground))
+                        .clipShape(
+                            RoundedRectangle(
+                                cornerRadius: 16,
+                                style: .continuous
+                            )
                         )
+
                         .clipShape(
                             RoundedRectangle(
                                 cornerRadius: 16,
@@ -251,7 +263,9 @@ struct NoteListView: View {
                             )
                         )
                     }
+                    .buttonStyle(.plain)
                     .listRowBackground(Color.clear)
+                    .navigationLinkIndicatorVisibility(.hidden)
                     .listRowSeparator(.hidden)
                     .listRowInsets(
                         EdgeInsets(
@@ -305,30 +319,39 @@ struct NoteListView: View {
                                 NavigationLink {
                                     editorView(for: note)
                                 } label: {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(
-                                            note.title.isEmpty
-                                                ? String(localized: "Untitled")
-                                                : note.title
-                                        )
-                                        .font(.title3)
-                                        .padding(.bottom, 4)
-
-                                        if let attributedString = try? JSONDecoder().decode(
-                                            AttributedString.self,
-                                            from: note.content
-                                        ) {
-                                            Text(previewAttributedString(attributedString))
-                                                .font(.body)
-                                                .lineLimit(2)
+                                    HStack(spacing: 12) {
+                                        if note.color != nil {
+                                            RoundedRectangle(cornerRadius: 3)
+                                                .fill(rowColor(for: note, opacity: 0.50))
+                                                .frame(width: 5)
                                         }
+
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(
+                                                note.title.isEmpty
+                                                    ? String(localized: "Untitled")
+                                                    : note.title
+                                            )
+                                            .font(.title3)
+                                            .fontWeight(.semibold)
+                                            .padding(.bottom, 10)
+                                            
+
+                                            if let attributedString = try? JSONDecoder().decode(
+                                                AttributedString.self,
+                                                from: note.content
+                                            ) {
+                                                Text(previewAttributedString(attributedString))
+                                                    .font(.caption)
+                                                    .lineLimit(2)
+                                            }
+                                        }
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
-                                    .background(
-                                        rowColor(for: note, opacity: 0.25)
-                                    )
+                                    .background(Color(uiColor: .systemBackground))
                                     .clipShape(
                                         RoundedRectangle(
                                             cornerRadius: 16,
@@ -336,6 +359,8 @@ struct NoteListView: View {
                                         )
                                     )
                                 }
+                                .buttonStyle(.plain)
+                                .navigationLinkIndicatorVisibility(.hidden)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(

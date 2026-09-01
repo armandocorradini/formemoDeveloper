@@ -100,18 +100,32 @@ struct NoteEditorView: View {
                 Divider()
                 
                 titleField
-                    .background(
-                        selectedNoteColor().opacity(0.50)
-                    )
+                    .padding(.leading, 20)
+                    .overlay(alignment: .leading) {
+                        if selectedColor != nil {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(selectedNoteColor())
+                                .frame(width: 5, height: 44)
+                                .offset(x: 12)
+                        }
+                    }
                 
                 Divider()
                     .overlay(Color.primary.opacity(0.50))
                 
                 NoteTextView(text: $text)
-                    .frame(
-                        maxWidth: .infinity,
-                        maxHeight: .infinity
-                    )
+                    .padding(.leading, 30)
+                    
+                    .overlay(alignment: .leading) {
+                        if selectedColor != nil {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(selectedNoteColor())
+                                .frame(width: 5)
+                                .offset(x: 12)
+                        }
+                    }
+                    .padding(.top, 3)
+                    .padding(.bottom, 75)
             }
         }
 
@@ -230,7 +244,14 @@ struct NoteEditorView: View {
             }
 
             ForEach(
-                ["red", "orange", "yellow", "green", "blue", "purple", "pink"],
+                [
+                    "green",
+                    "blue",
+                    "yellow",
+                    "orange",
+                    "purple",
+                    "red"
+                ],
                 id: \.self
             ) { color in
                 Button {
@@ -430,7 +451,7 @@ private struct NoteTextView: UIViewRepresentable {
                 result.addAttribute(
                     .font,
                     value: textView.font
-                        ?? UIFont.preferredFont(forTextStyle: .body),
+                        ?? UIFont.preferredFont(forTextStyle: .subheadline),
                     range: range
                 )
             }
@@ -495,7 +516,7 @@ private struct NoteTextView: UIViewRepresentable {
         textView.backgroundColor = .clear
 
         textView.font = UIFont.preferredFont(
-            forTextStyle: .body
+            forTextStyle: .headline
         )
 
         // Layout.
@@ -827,7 +848,7 @@ private struct NoteTextView: UIViewRepresentable {
                     (value as? UIFont)
                     ?? textView.font
                     ?? UIFont.preferredFont(
-                        forTextStyle: .body
+                        forTextStyle: .headline
                     )
 
                 var traits = font.fontDescriptor.symbolicTraits

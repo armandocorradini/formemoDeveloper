@@ -133,6 +133,8 @@ struct DocumentsView: View {
                             }
                         }
                     }
+                    .buttonStyle(.plain)
+                    .navigationLinkIndicatorVisibility(.hidden)
                     .listRowBackground(
                         Color(.systemBackground).opacity(0.3)
                     )

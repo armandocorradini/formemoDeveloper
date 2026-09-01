@@ -216,6 +216,7 @@ struct TravelKitListView: View {
                             }
                         }
                     }
+                    .navigationLinkIndicatorVisibility(.hidden)
                     .listRowBackground(
                         Color(.systemBackground).opacity(0.3)
                     )
