@@ -248,7 +248,7 @@ struct NoteListView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 12)
-                        .background(Color(uiColor: .systemBackground))
+                        .background(Color(.systemBackground).opacity(0.3))
                         .clipShape(
                             RoundedRectangle(
                                 cornerRadius: 16,
@@ -351,7 +351,7 @@ struct NoteListView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
-                                    .background(Color(uiColor: .systemBackground))
+                                    .background(Color(.systemBackground).opacity(0.3))
                                     .clipShape(
                                         RoundedRectangle(
                                             cornerRadius: 16,
