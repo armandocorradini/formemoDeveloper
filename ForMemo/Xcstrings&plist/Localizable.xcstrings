@@ -21287,6 +21287,34 @@
         }
       }
     },
+    "Notes can be reordered with drag and drop. Selecting Automatic restores the current automatic order." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notizen können per Drag & Drop neu angeordnet werden. Wählen Sie Automatisch, um die aktuelle automatische Reihenfolge wiederherzustellen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes reordenar las notas mediante arrastrar y soltar. Selecciona Automático para restablecer el orden automático actual."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les notes peuvent être réorganisées par glisser-déposer. Sélectionnez Automatique pour rétablir l’ordre automatique actuel."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi riordinare le note tramite trascinamento. Seleziona Automatico per ripristinare l’ordine automatico attuale."
+          }
+        }
+      }
+    },
     "Notes lets you create, edit, organize, and store personal notes separately from your tasks. Notes are designed for information that does not need to be managed as a task." : {
       "localizations" : {
         "de" : {

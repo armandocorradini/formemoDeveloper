@@ -99,6 +99,7 @@ final class DeletedItem {
     var noteIsPinned: Bool?
     var noteIsArchived: Bool?
     var noteColor: String?
+    var noteSortOrder: Int?
     
     init(type: String) {
         self.type = type
@@ -205,6 +206,7 @@ extension DeletedItem {
                 isPinned: noteIsPinned ?? false,
                 isArchived: noteIsArchived ?? false,
                 color: noteColor,
+                sortOrder: noteSortOrder ?? 0
             )
 
             context.insert(note)

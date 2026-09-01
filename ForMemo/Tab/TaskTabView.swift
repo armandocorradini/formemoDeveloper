@@ -520,7 +520,9 @@ struct TaskTabView: View {
             selectedTab = tag
         }
 
-        resetTab(tag)
+        Task {
+            resetTab(tag)
+        }
     }
 
     private func tabItem(

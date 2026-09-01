@@ -13,6 +13,7 @@ final class Note {
     var color: String? = nil
     var archivedAt: Date? = nil
     var lastOpenedAt: Date?
+    var sortOrder: Int = 0
 
     init(
         id: UUID = UUID(),
@@ -24,7 +25,9 @@ final class Note {
         isArchived: Bool = false,
         color: String? = nil,
         archivedAt: Date? = nil,
-        lastOpenedAt: Date? = nil
+        lastOpenedAt: Date? = nil,
+        sortOrder: Int = 0
+        
     ) {
         self.id = id
         self.title = title
@@ -36,5 +39,6 @@ final class Note {
         self.color = color
         self.archivedAt = archivedAt
         self.lastOpenedAt = lastOpenedAt
+        self.sortOrder = sortOrder
     }
 }

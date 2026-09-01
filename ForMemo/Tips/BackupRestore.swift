@@ -1055,6 +1055,21 @@ private struct NoteTransferObject: Codable {
     let color: String?
     let archivedAt: Date?
     let lastOpenedAt: Date?
+    let sortOrder: Int
+    
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case content
+        case createdAt
+        case modifiedAt
+        case isPinned
+        case isArchived
+        case color
+        case archivedAt
+        case lastOpenedAt
+        case sortOrder
+    }
 
     init(note: Note) {
         self.id = note.id
@@ -1067,6 +1082,23 @@ private struct NoteTransferObject: Codable {
         self.color = note.color
         self.archivedAt = note.archivedAt
         self.lastOpenedAt = note.lastOpenedAt
+        self.sortOrder = note.sortOrder
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(UUID.self, forKey: .id)
+        title = try container.decode(String.self, forKey: .title)
+        content = try container.decode(Data.self, forKey: .content)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        modifiedAt = try container.decode(Date.self, forKey: .modifiedAt)
+        isPinned = try container.decode(Bool.self, forKey: .isPinned)
+        isArchived = try container.decode(Bool.self, forKey: .isArchived)
+        color = try container.decodeIfPresent(String.self, forKey: .color)
+        archivedAt = try container.decodeIfPresent(Date.self, forKey: .archivedAt)
+        lastOpenedAt = try container.decodeIfPresent(Date.self, forKey: .lastOpenedAt)
+        sortOrder = try container.decodeIfPresent(Int.self, forKey: .sortOrder) ?? 0
     }
 }
 
@@ -1959,7 +1991,8 @@ private enum BackupManager {
                     isArchived: noteData.isArchived,
                     color: noteData.color,
                     archivedAt: noteData.archivedAt,
-                    lastOpenedAt: noteData.lastOpenedAt
+                    lastOpenedAt: noteData.lastOpenedAt,
+                    sortOrder: noteData.sortOrder
                 )
 
                 modelContext.insert(note)
