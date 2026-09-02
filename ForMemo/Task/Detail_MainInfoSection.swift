@@ -107,7 +107,7 @@ import SwiftData
                 {
                     VStack(alignment: .leading) {
                         HStack {
-                            Text("Completed")
+                            Text("Toggle_Completed")
 
                             if task.recurrenceRule != nil {
                                 Image(systemName: "arrow.triangle.2.circlepath")
