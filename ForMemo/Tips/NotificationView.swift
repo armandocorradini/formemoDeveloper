@@ -274,7 +274,7 @@ struct NotificationView: View {
         }
 
         let absolute = date.formatted(
-            date: .abbreviated,
+            date: .complete,
             time: .shortened
         )
 
@@ -321,6 +321,7 @@ struct NotificationView: View {
             .dateTime
                 .day()
                 .month(.abbreviated)
+                .year()
                 .hour()
                 .minute()
         )
@@ -348,6 +349,7 @@ struct NotificationView: View {
             .dateTime
                 .day()
                 .month(.abbreviated)
+                .year()
                 .hour()
                 .minute()
         )
@@ -375,6 +377,7 @@ struct NotificationView: View {
             .dateTime
                 .day()
                 .month(.abbreviated)
+                .year()
                 .hour()
                 .minute()
         )

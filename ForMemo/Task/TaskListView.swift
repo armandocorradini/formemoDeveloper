@@ -1551,6 +1551,52 @@ struct TodoSectionView: View {
                     Label("Snooze", systemImage: "timer")
                 }
             }
+            Menu {
+                Button {
+                    do {
+                        _ = try TaskDuplicationService.duplicate(
+                            t,
+                            using: modelContext,
+                            includingAttachments: false
+                        )
+
+                        NotificationCenter.default.post(
+                            name: .taskDidChange,
+                            object: nil
+                        )
+                    } catch {
+                        AppLogger.persistence.error(
+                            "Task duplication failed: \(error.localizedDescription)"
+                        )
+                    }
+                } label: {
+                    Label("Task", systemImage: "text.badge.checkmark")
+                }
+
+                Button {
+                    do {
+                        _ = try TaskDuplicationService.duplicate(
+                            t,
+                            using: modelContext,
+                            includingAttachments: true
+                        )
+
+                        NotificationCenter.default.post(
+                            name: .taskDidChange,
+                            object: nil
+                        )
+                    } catch {
+                        AppLogger.persistence.error(
+                            "Task duplication failed: \(error.localizedDescription)"
+                        )
+                    }
+                } label: {
+                    Label("Task & Attachments", systemImage: "rectangle.and.paperclip")
+                }
+            } label: {
+                Label("Duplicate", systemImage: "plus.square.on.square")
+            }
+            
         }
     }
 

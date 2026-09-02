@@ -192,6 +192,7 @@
 		1C8226003040960600B77EC7 /* ForMemoShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1C84776930248A4700C4FA34 /* AttachmentContainerRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */; };
 		1CC0DE7C30477A9F001EB9C2 /* AttachmentDiagnosticService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC0DE7B30477A96001EB9C2 /* AttachmentDiagnosticService.swift */; };
+		1CC0DE7E30483D4F001EB9C2 /* TaskDuplicationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */; };
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
 		1CED325B302619D600B16A50 /* AssetRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */; };
@@ -421,6 +422,7 @@
 		1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentContainerRecovery.swift; sourceTree = "<group>"; };
 		1CC0DE7B30477A96001EB9C2 /* AttachmentDiagnosticService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttachmentDiagnosticService.swift; sourceTree = "<group>"; };
+		1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDuplicationService.swift; sourceTree = "<group>"; };
 		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
 		1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDirectoryCoordinator.swift; sourceTree = "<group>"; };
 		1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetRecoveryCoordinator.swift; sourceTree = "<group>"; };
@@ -630,6 +632,7 @@
 		1C634E3C30220CAE0092DB89 /* Task */ = {
 			isa = PBXGroup;
 			children = (
+				1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */,
 				1C634D1030220C9C0092DB89 /* TaskAttachment.swift */,
 				1C634D1830220C9C0092DB89 /* TodoTask.swift */,
 				1C634D3F30220C9C0092DB89 /* AttachmentImporter.swift */,
@@ -657,7 +660,6 @@
 				1C634D0130220C9C0092DB89 /* NotificationLeadTime.swift */,
 				1C634D0230220C9C0092DB89 /* NotificationManager.swift */,
 				1C634D5E30220C9C0092DB89 /* NotificationSoundPickerView.swift */,
-				1C634D5F30220C9C0092DB89 /* NotificationView.swift */,
 				1C634D0730220C9C0092DB89 /* ReminderScrubberControl.swift */,
 				1C634D0630220C9C0092DB89 /* RemindersAccess.swift */,
 				1C634D0830220C9C0092DB89 /* RowBackground.swift */,
@@ -767,6 +769,7 @@
 			isa = PBXGroup;
 			children = (
 				1C634CD830220C9C0092DB89 /* AppSettings.swift */,
+				1C634D5F30220C9C0092DB89 /* NotificationView.swift */,
 				1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */,
 				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,
 				1C634D6530220C9C0092DB89 /* ResetAppView.swift */,
@@ -1049,6 +1052,7 @@
 				1C634DC630220C9C0092DB89 /* SecureClipboard.swift in Sources */,
 				1C634DC730220C9C0092DB89 /* SensitiveValues.swift in Sources */,
 				1C634DC830220C9C0092DB89 /* StoreMigrationManager.swift in Sources */,
+				1CC0DE7E30483D4F001EB9C2 /* TaskDuplicationService.swift in Sources */,
 				1C634DC930220C9C0092DB89 /* SurfaceSettings.swift in Sources */,
 				1C634DCA30220C9C0092DB89 /* TaskAttachment.swift in Sources */,
 				1C634DCB30220C9C0092DB89 /* TaskBadgePolicy.swift in Sources */,
