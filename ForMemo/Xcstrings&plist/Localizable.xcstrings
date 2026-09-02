@@ -6364,6 +6364,34 @@
         }
       }
     },
+    "Can I duplicate a task?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich eine Aufgabe duplizieren?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo duplicar una tarea?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je dupliquer une tâche ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso duplicare un’attività?"
+          }
+        }
+      }
+    },
     "Can I filter tasks without a deadline?" : {
       "localizations" : {
         "de" : {
@@ -9489,30 +9517,30 @@
         }
       }
     },
-    "Create and manage your tasks with due dates, priorities, categories, reminders, recurring schedules, locations and attachments. Quickly complete, edit, archive or delete tasks, and use filters to focus on what matters." : {
+    "Create and manage your tasks with due dates, priorities, categories, reminders, recurring schedules, locations and attachments. Quickly complete, edit,duplicate, archive or delete tasks, and use filters to focus on what matters." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstellen und verwalten Sie Ihre Aufgaben mit Fälligkeiten, Prioritäten, Kategorien, Erinnerungen, wiederkehrenden Aufgaben, Orten und Anhängen. Erledigen, bearbeiten, archivieren oder löschen Sie Aufgaben schnell und verwenden Sie Filter, um sich auf das Wesentliche zu konzentrieren."
+            "value" : "Erstellen und verwalten Sie Ihre Aufgaben mit Fälligkeitsterminen, Prioritäten, Kategorien, Erinnerungen, Wiederholungen, Orten und Anhängen. Erledigen, bearbeiten, duplizieren, archivieren oder löschen Sie Aufgaben schnell und verwenden Sie Filter, um sich auf das Wesentliche zu konzentrieren."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea y gestiona tus tareas con fechas de vencimiento, prioridades, categorías, recordatorios, tareas recurrentes, ubicaciones y archivos adjuntos. Completa, edita, archiva o elimina tareas rápidamente y usa los filtros para centrarte en lo que importa."
+            "value" : "Crea y gestiona tus tareas con fechas de vencimiento, prioridades, categorías, recordatorios, repeticiones, ubicaciones y archivos adjuntos. Completa, edita, duplica, archiva o elimina tareas rápidamente y utiliza los filtros para centrarte en lo que importa."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez et gérez vos tâches avec des échéances, des priorités, des catégories, des rappels, des tâches récurrentes, des lieux et des pièces jointes. Marquez rapidement les tâches comme terminées, modifiez-les, archivez-les ou supprimez-les, et utilisez les filtres pour vous concentrer sur l’essentiel."
+            "value" : "Créez et gérez vos tâches avec des dates d’échéance, des priorités, des catégories, des rappels, des répétitions, des lieux et des pièces jointes. Marquez rapidement les tâches comme terminées, modifiez-les, dupliquez-les, archivez-les ou supprimez-les, et utilisez les filtres pour vous concentrer sur l’essentiel."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea e gestisci le tue attività con scadenze, priorità, categorie, promemoria, attività ricorrenti, luoghi e allegati. Completa, modifica, archivia o elimina rapidamente le attività e usa i filtri per concentrarti su ciò che conta."
+            "value" : "Crea e gestisci le tue attività con scadenze, priorità, categorie, promemoria, ripetizioni, luoghi e allegati. Completa, modifica, duplica, archivia o elimina rapidamente le attività e usa i filtri per concentrarti su ciò che conta."
           }
         }
       }
@@ -37992,6 +38020,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Puoi scegliere l’evidenziazione in Personalizzazione > Aspetto regolando il colore oppure disattivarla in Elementi visibili."
+          }
+        }
+      }
+    },
+    "Yes. You can duplicate an existing task to quickly create a new task based on it. The duplicated task can then be edited independently." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Sie können eine bestehende Aufgabe duplizieren, um schnell eine neue Aufgabe auf ihrer Grundlage zu erstellen. Die duplizierte Aufgabe kann anschließend unabhängig bearbeitet werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Puedes duplicar una tarea existente para crear rápidamente una nueva a partir de ella. Después, puedes editar la tarea duplicada de forma independiente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Vous pouvez dupliquer une tâche existante pour créer rapidement une nouvelle tâche à partir de celle-ci. La tâche dupliquée peut ensuite être modifiée indépendamment."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Puoi duplicare un’attività esistente per crearne rapidamente una nuova. L’attività duplicata può quindi essere modificata indipendentemente."
           }
         }
       }

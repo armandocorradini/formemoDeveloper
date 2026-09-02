@@ -49,7 +49,7 @@ struct AppQuickGuideView: View {
         ),
         .init(
             title: String(localized: "Tasks"),
-            description: String(localized: "Create and manage your tasks with due dates, priorities, categories, reminders, recurring schedules, locations and attachments. Quickly complete, edit, archive or delete tasks, and use filters to focus on what matters."),
+            description: String(localized: "Create and manage your tasks with due dates, priorities, categories, reminders, recurring schedules, locations and attachments. Quickly complete, edit,duplicate, archive or delete tasks, and use filters to focus on what matters."),
             icon: "checklist",
             tint: .blue
         ),

@@ -40,6 +40,10 @@ struct FAQView: View {
                 answer: String(localized:"You can create tasks manually or with Siri. When using Siri, you are guided step by step: first what to add, then when, and finally which reminder to set. The app saves the task using the information you provide.")
             ),
             FAQItem(
+                question: String(localized:"Can I duplicate a task?"),
+                answer: String(localized:"Yes. You can duplicate an existing task to quickly create a new task based on it. The duplicated task can then be edited independently.")
+            ),
+            FAQItem(
                 question: String(localized:"How are tags assigned automatically?"),
                 answer: String(localized:"This feature applies only to tasks created with Siri. The app analyzes the task title using a multilingual keyword system. Each category has its own keywords, and the best match is applied automatically.")
             ),
