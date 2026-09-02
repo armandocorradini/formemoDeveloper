@@ -35,6 +35,7 @@ struct VaultPasswordField: View {
                             SecureField(String(localized: "Password"), text: $password)
                         }
                     }
+                    .padding(.vertical, 4)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
                     

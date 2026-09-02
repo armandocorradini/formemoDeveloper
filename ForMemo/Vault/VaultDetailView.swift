@@ -84,6 +84,7 @@ struct VaultDetailView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(showingPassword ? decryptedPassword : "••••••••••")
                         .font(.body.monospaced())
+                        .padding(.vertical, 4)
                         .textSelection(.enabled)
 
                     Button(showingPassword ? "Hide Password" : "Show Password") {

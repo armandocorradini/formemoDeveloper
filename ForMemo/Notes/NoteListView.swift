@@ -303,7 +303,7 @@ struct NoteListView: View {
                                             ? String(localized: "Untitled")
                                             : note.title
                                         )
-                                        .font(.title3)
+                                        .font(.headline)
                                         .fontWeight(.semibold)
                                         .padding(.bottom, 10)
                                         
@@ -312,7 +312,8 @@ struct NoteListView: View {
                                             from: note.content
                                         ) {
                                             Text(previewAttributedString(attributedString))
-                                                .font(.caption)
+                                                .font(.system(size: 8))
+                                                .fontWeight(.light)
                                                 .lineLimit(2)
                                         }
                                     }
@@ -409,7 +410,7 @@ struct NoteListView: View {
                                                 ? String(localized: "Untitled")
                                                 : note.title
                                             )
-                                            .font(.title3)
+                                            .font(.headline)
                                             .fontWeight(.semibold)
                                             .padding(.bottom, 10)
                                             
@@ -419,7 +420,8 @@ struct NoteListView: View {
                                                 from: note.content
                                             ) {
                                                 Text(previewAttributedString(attributedString))
-                                                    .font(.caption)
+                                                    .font(.system(size: 8))
+                                                    .fontWeight(.light)
                                                     .lineLimit(2)
                                             }
                                         }
