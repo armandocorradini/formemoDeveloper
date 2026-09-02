@@ -24,7 +24,8 @@ struct NoteEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     let noteEditorCoordinator: NoteEditorCoordinator?
-
+    let isNew: Bool
+    
     @Bindable private var note: Note
 
     @State private var title: String
@@ -38,10 +39,12 @@ struct NoteEditorView: View {
     
     init(
         note: Note,
-        noteEditorCoordinator: NoteEditorCoordinator? = nil
+        noteEditorCoordinator: NoteEditorCoordinator? = nil,
+        isNew: Bool = false
     ) {
         self.noteEditorCoordinator = noteEditorCoordinator
         self.note = note
+        self.isNew = isNew
 
         let decodedText = Self.decodeContent(note.content)
 
@@ -319,6 +322,9 @@ struct NoteEditorView: View {
             note.color = selectedColor
             note.modifiedAt = .now
 
+            if isNew {
+                modelContext.insert(note)
+            }
             try modelContext.save()
 
             noteEditorCoordinator?.reset()

@@ -514,18 +514,7 @@ struct NoteListView: View {
         )
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                HStack(spacing: 0) {
-                    Button {
-                        showArchived.toggle()
-                    } label: {
-                        Image(systemName: showArchived ? "eye.slash" : "eye")
-                    }
-                    .accessibilityLabel(
-                        showArchived
-                        ? String(localized: "Hide Archived")
-                        : String(localized: "Show Archived")
-                    )
-                    
+
                     Picker(
                         "Order",
                         selection: Binding(
@@ -559,24 +548,40 @@ struct NoteListView: View {
                     .pickerStyle(.menu)
                     .labelStyle(.iconOnly)
                     .labelsHidden()
-                }
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    createNote()
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(.green)
-                        .font(.title2)
+                HStack(spacing: 5) {
+                    Button {
+                        showArchived.toggle()
+                    } label: {
+                        Image(systemName: showArchived ? "eye.slash" : "eye")
+                    }
+                    .accessibilityLabel(
+                        showArchived
+                        ? String(localized: "Hide Archived")
+                        : String(localized: "Show Archived")
+                    )
+                    
+                    Button {
+                        createNote()
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.title2)
+                    }
+                    .accessibilityLabel(
+                        String(localized: "New Note")
+                    )
                 }
-                .accessibilityLabel(
-                    String(localized: "New Note")
-                )
             }
         }
         .navigationDestination(item: $newNote) { note in
-            editorView(for: note)
+            NoteEditorView(
+                note: note,
+                noteEditorCoordinator: noteEditorCoordinator,
+                isNew: true
+            )
         }
         .confirmationDialog(
             String(localized: "Custom Order"),
@@ -611,7 +616,6 @@ struct NoteListView: View {
     private func createNote() {
         let note = Note()
         
-        modelContext.insert(note)
         newNote = note
     }
     
