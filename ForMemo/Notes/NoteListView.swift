@@ -313,7 +313,6 @@ struct NoteListView: View {
                                         ) {
                                             Text(previewAttributedString(attributedString))
                                                 .font(.system(size: 8))
-                                                .fontWeight(.light)
                                                 .lineLimit(2)
                                         }
                                     }
@@ -421,7 +420,6 @@ struct NoteListView: View {
                                             ) {
                                                 Text(previewAttributedString(attributedString))
                                                     .font(.system(size: 8))
-                                                    .fontWeight(.light)
                                                     .lineLimit(2)
                                             }
                                         }

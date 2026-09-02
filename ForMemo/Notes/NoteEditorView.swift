@@ -19,7 +19,6 @@ final class NoteEditorCoordinator: ObservableObject {
     }
 }
 
-
 struct NoteEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -128,7 +127,7 @@ struct NoteEditorView: View {
                         }
                     }
                     .padding(.top, 3)
-                    .padding(.bottom, 75)
+                    .padding(.bottom, 35)
             }
         }
 
@@ -521,9 +520,14 @@ private struct NoteTextView: UIViewRepresentable {
         textView.tintColor = .tintColor
         textView.backgroundColor = .clear
 
-        textView.font = UIFont.preferredFont(
-            forTextStyle: .headline
+        let baseFont = UIFont.preferredFont(
+            forTextStyle: .body
         )
+        textView.font = baseFont
+        textView.typingAttributes = [
+            .font: baseFont,
+            .foregroundColor: UIColor.label
+        ]
 
         // Layout.
         textView.textContainerInset = UIEdgeInsets(
@@ -843,6 +847,24 @@ private struct NoteTextView: UIViewRepresentable {
 
             let range = textView.selectedRange
             let storage = textView.textStorage
+            var allSelectedRunsHaveTrait = true
+
+            storage.enumerateAttribute(
+                .font,
+                in: range,
+                options: []
+            ) { value, _, _ in
+                let font =
+                    (value as? UIFont)
+                    ?? textView.font
+                    ?? UIFont.preferredFont(forTextStyle: .body)
+
+                if !font.fontDescriptor.symbolicTraits.contains(trait) {
+                    allSelectedRunsHaveTrait = false
+                }
+            }
+
+            let shouldAddTrait = !allSelectedRunsHaveTrait
 
             storage.beginEditing()
             storage.enumerateAttribute(
@@ -853,16 +875,14 @@ private struct NoteTextView: UIViewRepresentable {
                 let font =
                     (value as? UIFont)
                     ?? textView.font
-                    ?? UIFont.preferredFont(
-                        forTextStyle: .headline
-                    )
+                    ?? UIFont.preferredFont(forTextStyle: .body)
 
                 var traits = font.fontDescriptor.symbolicTraits
 
-                if traits.contains(trait) {
-                    traits.remove(trait)
-                } else {
+                if shouldAddTrait {
                     traits.insert(trait)
+                } else {
+                    traits.remove(trait)
                 }
 
                 let newFont =
@@ -884,6 +904,28 @@ private struct NoteTextView: UIViewRepresentable {
             storage.endEditing()
 
             textView.selectedRange = range
+
+            var typingAttributes = textView.typingAttributes
+            let typingFont =
+                (typingAttributes[.font] as? UIFont)
+                ?? textView.font
+                ?? UIFont.preferredFont(forTextStyle: .body)
+
+            var typingTraits = typingFont.fontDescriptor.symbolicTraits
+            if shouldAddTrait {
+                typingTraits.insert(trait)
+            } else {
+                typingTraits.remove(trait)
+            }
+
+            if let descriptor = typingFont.fontDescriptor.withSymbolicTraits(typingTraits) {
+                typingAttributes[.font] = UIFont(
+                    descriptor: descriptor,
+                    size: typingFont.pointSize
+                )
+                textView.typingAttributes = typingAttributes
+            }
+
             syncText(from: textView)
         }
 
@@ -1597,9 +1639,6 @@ private enum NoteMarkdownExporter {
                 with: "\\" + character
             )
         }
-
         return result
     }
 }
-
-
