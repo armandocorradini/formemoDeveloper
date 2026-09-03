@@ -60,7 +60,7 @@ struct TaskRowContent: View, Equatable, TaskRowBaseLogic {
     }
     
     @ViewBuilder
-    private func futureYearIndicator() -> some View {
+    private func recurrenceAndYearIndicator() -> some View {
         if let futureYearText {
             HStack(spacing: 3) {
                 Image(
@@ -75,6 +75,10 @@ struct TaskRowContent: View, Equatable, TaskRowBaseLogic {
                     .font(.system(size: 9, weight: .semibold))
                     .foregroundStyle(.secondary)
             }
+        } else if model.recurrenceRule != nil {
+            Image(systemName: "arrow.triangle.2.circlepath")
+                .font(.caption)
+                .foregroundStyle(.blue)
         }
     }
 
@@ -491,7 +495,7 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                         .lineLimit(2)
                     
-                    futureYearIndicator()
+                    recurrenceAndYearIndicator()
                 }
 
                 HStack(spacing: 8) {
@@ -549,7 +553,7 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                         .lineLimit(2)
 
-                    futureYearIndicator()
+                    recurrenceAndYearIndicator()
                 }
 
                 HStack(spacing: 8) {
@@ -607,7 +611,7 @@ extension TaskRowContent {
                         .lineLimit(2)
                  
 
-                    futureYearIndicator()
+                    recurrenceAndYearIndicator()
                 }
 
                 if model.reminderOffsetMinutes != nil {
@@ -661,7 +665,7 @@ extension TaskRowContent {
                         }
                         .strikethrough(model.isCompleted)
                     
-                    futureYearIndicator()
+                    recurrenceAndYearIndicator()
                 }
 
                 
@@ -724,7 +728,7 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                         .lineLimit(2)
                     
-                    futureYearIndicator()
+                    recurrenceAndYearIndicator()
                 }
                 
                 if let deadline = model.deadLine {
@@ -832,7 +836,7 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                         .lineLimit(2)
 
-                    futureYearIndicator()
+                    recurrenceAndYearIndicator()
                 }
             }
 
@@ -880,7 +884,7 @@ extension TaskRowContent {
                         .strikethrough(model.isCompleted)
                         .lineLimit(2)
 
-                    futureYearIndicator()
+                    recurrenceAndYearIndicator()
                 }
             }
 
@@ -974,7 +978,7 @@ extension TaskRowContent {
                             .tracking(-0.2)
                             .lineLimit(2)
 
-                        futureYearIndicator()
+                        recurrenceAndYearIndicator()
                     }
 
                     Spacer()

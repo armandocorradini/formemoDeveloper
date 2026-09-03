@@ -51,6 +51,7 @@ struct Dashboard: View {
     private struct ContinueItem: Identifiable {
         let id: String
         let title: String
+        let type: String
         let systemImage: String?
         let logoData: Data?
         let lastOpenedAt: Date
@@ -65,6 +66,7 @@ struct Dashboard: View {
             return ContinueItem(
                 id: "trip-\(trip.id)",
                 title: trip.name,
+                type: String(localized: "Trips"),
                 systemImage: trip.icon,
                 logoData: nil,
                 lastOpenedAt: lastOpenedAt,
@@ -78,6 +80,7 @@ struct Dashboard: View {
             return ContinueItem(
                 id: "document-\(document.id)",
                 title: document.name,
+                type: String(localized: "Documents"),
                 systemImage: document.documentType.systemImage,
                 logoData: nil,
                 lastOpenedAt: lastOpenedAt,
@@ -91,6 +94,7 @@ struct Dashboard: View {
             return ContinueItem(
                 id: "card-\(card.id)",
                 title: card.storeName,
+                type: String(localized: "Wallet"),
                 systemImage: nil,
                 logoData: {
 
@@ -121,6 +125,7 @@ struct Dashboard: View {
                 title: note.title.isEmpty
                     ? String(localized: "Untitled")
                     : note.title,
+                type: String(localized: "Notes"),
                 systemImage: "note.text",
                 logoData: nil,
                 lastOpenedAt: lastOpenedAt,
@@ -206,16 +211,19 @@ struct Dashboard: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // Section 1: Oggi
+
+                    // MARK: - Oggi
+
                     Button {
                         NotificationCenter.default.post(
                             name: Notification.Name("DashboardOpenList"),
                             object: nil
                         )
                     } label: {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 0) {
 
+                            // Header Oggi
+                            HStack(alignment: .top) {
                                 Text("Today")
                                     .font(.largeTitle.bold())
 
@@ -225,28 +233,36 @@ struct Dashboard: View {
                                    let weather = weatherManager.weather(for: Date()) {
 
                                     VStack(alignment: .trailing, spacing: 4) {
-
                                         Button {
                                             selectedWeatherDate = .now
                                         } label: {
                                             Image(
-                                                systemName: weatherManager.representativeSymbol(for: Date())
+                                                systemName:
+                                                    weatherManager.representativeSymbol(for: Date())
                                             )
                                             .symbolRenderingMode(.multicolor)
-                                            .saturation(colorScheme == .light ? 1.25 : 1.0)
-                                            .brightness(colorScheme == .light ? -0.2 : 0.0)
+                                            .saturation(
+                                                colorScheme == .light ? 1.25 : 1.0
+                                            )
+                                            .brightness(
+                                                colorScheme == .light ? -0.2 : 0.0
+                                            )
                                             .font(.title.weight(.medium))
                                         }
                                         .buttonStyle(.plain)
 
                                         HStack(spacing: 4) {
-
                                             Text("\(weather.minTemperature)°")
                                                 .foregroundStyle(
                                                     weather.minTemperature >= 35 ? .red :
                                                     weather.minTemperature >= 30 ? .orange :
-                                                    weather.minTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
-                                                    .primary.opacity(0.75)
+                                                    weather.minTemperature <= 0
+                                                        ? Color(
+                                                            red: 0.65,
+                                                            green: 0.88,
+                                                            blue: 1.00
+                                                        )
+                                                        : .primary.opacity(0.75)
                                                 )
 
                                             Text("/")
@@ -256,8 +272,13 @@ struct Dashboard: View {
                                                 .foregroundStyle(
                                                     weather.maxTemperature >= 35 ? .red :
                                                     weather.maxTemperature >= 30 ? .orange :
-                                                    weather.maxTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
-                                                    .primary
+                                                    weather.maxTemperature <= 0
+                                                        ? Color(
+                                                            red: 0.65,
+                                                            green: 0.88,
+                                                            blue: 1.00
+                                                        )
+                                                        : .primary
                                                 )
                                         }
                                         .font(.caption)
@@ -266,261 +287,262 @@ struct Dashboard: View {
                             }
                             .foregroundStyle(.primary)
 
-                            Text("^[\(todayTasksCount) tasks to complete](inflect: true)")
-                                .font(.title3)
-                                .foregroundStyle(.primary)
+                            // Numero attività
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text("\(todayTasksCount)")
+                                    .font(.system(size: 58, weight: .bold, design: .rounded))
 
+                                Text(todayTasksCount == 1
+                                     ? "task to complete"
+                                     : "tasks to complete")
+                                    .font(.title3)
+                                    .foregroundStyle(.primary.opacity(0.9))
+                            }
+                            .padding(.top, 8)
+
+                            // Attività
                             if !todayTasks.isEmpty {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    
-                                    
-                                    ForEach(todayTasks, id: \.persistentModelID) { task in
+                                    ForEach(
+                                        todayTasks,
+                                        id: \.persistentModelID
+                                    ) { task in
                                         dashboardTaskRow(task)
-                                    }                                }
-                                .padding(.top, 4)
+                                    }
+                                }
+                                .padding(.top, 8)
                             }
 
                             if overduePreviousDaysCount > 0 {
-                                Text("\(overduePreviousDaysCount) overdue from previous days")
-
-                                    .font(.subheadline)
-
-                                    .foregroundStyle(.secondary)
+                                Text(
+                                    "\(overduePreviousDaysCount) overdue from previous days"
+                                )
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 6)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(20)
                         .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(.regularMaterial)
-                                .shadow(
-                                    color: .black.opacity(0.10),
-                                    radius: 14,
-                                    y: 7
-                                )
-                                .shadow(
-                                    color: .white.opacity(0.08),
-                                    radius: 1,
-                                    y: -1
-                                )
+                            RoundedRectangle(
+                                cornerRadius: 18,
+                                style: .continuous
+                            )
+                            .fill(.regularMaterial)
                         )
                         .overlay {
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(.white.opacity(0.10), lineWidth: 1)
+                            RoundedRectangle(
+                                cornerRadius: 18,
+                                style: .continuous
+                            )
+                            .stroke(
+                                .white.opacity(0.10),
+                                lineWidth: 1
+                            )
                         }
                     }
                     .buttonStyle(.plain)
 
-                    // Show Tomorrow section only if enabled and there are tomorrow tasks
-                    if settings.showDashboardTomorrow && tomorrowTasksCount > 0 {
+
+                    // MARK: - Domani
+
+                    if settings.showDashboardTomorrow &&
+                       tomorrowTasksCount > 0 {
+
                         Button {
                             NotificationCenter.default.post(
                                 name: Notification.Name("DashboardOpenList"),
                                 object: nil
                             )
                         } label: {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 10) {
 
+                                HStack(alignment: .firstTextBaseline) {
                                     Text("Tomorrow")
                                         .font(.title3.weight(.semibold))
-                                        .foregroundStyle(.primary)
 
                                     Spacer()
 
                                     if settings.showWeatherForecast,
                                        let tomorrowWeather = weatherManager.weather(
-                                            for: Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+                                           for: Calendar.current.date(
+                                               byAdding: .day,
+                                               value: 1,
+                                               to: Date()
+                                           ) ?? Date()
                                        ) {
 
-                                        VStack(alignment: .trailing, spacing: 4) {
-
-                                            Button {
-                                                selectedWeatherDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
-                                            } label: {
-                                                Image(
-                                                    systemName: weatherManager.representativeSymbol(
-                                                        for: Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+                                        HStack(spacing: 5) {
+                                            Image(
+                                                systemName:
+                                                    weatherManager.representativeSymbol(
+                                                        for: Calendar.current.date(
+                                                            byAdding: .day,
+                                                            value: 1,
+                                                            to: Date()
+                                                        ) ?? Date()
                                                     )
-                                                )
-                                                .symbolRenderingMode(.multicolor)
-                                                .saturation(colorScheme == .light ? 1.25 : 1.0)
-                                                .brightness(colorScheme == .light ? -0.2 : 0.0)
-                                                .font(.subheadline.weight(.medium))
-                                            }
-                                            .buttonStyle(.plain)
+                                            )
+                                            .symbolRenderingMode(.multicolor)
+                                            .font(.subheadline)
 
-                                            HStack(spacing: 4) {
+                                            Text("\(tomorrowWeather.minTemperature)°")
+                                                .foregroundStyle(.secondary)
 
-                                                Text("\(tomorrowWeather.minTemperature)°")
-                                                    .foregroundStyle(
-                                                        tomorrowWeather.minTemperature >= 35 ? .red :
-                                                        tomorrowWeather.minTemperature >= 30 ? .orange :
-                                                        tomorrowWeather.minTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
-                                                        .primary.opacity(0.75)
-                                                    )
+                                            Text("/")
+                                                .foregroundStyle(.secondary)
 
-                                                Text("/")
-                                                    .foregroundStyle(.secondary)
-
-                                                Text("\(tomorrowWeather.maxTemperature)°")
-                                                    .foregroundStyle(
-                                                        tomorrowWeather.maxTemperature >= 35 ? .red :
-                                                        tomorrowWeather.maxTemperature >= 30 ? .orange :
-                                                        tomorrowWeather.maxTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
-                                                        .primary
-                                                    )
-                                            }
-                                            .font(.caption2)
+                                            Text("\(tomorrowWeather.maxTemperature)°")
                                         }
+                                        .font(.caption)
                                     }
                                 }
 
-                                Text("^[\(tomorrowTasksCount) tasks scheduled](inflect: true)")
-                                    .foregroundStyle(.primary)
+                                Text(
+                                    "^[\(tomorrowTasksCount) tasks scheduled](inflect: true)"
+                                )
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
 
                                 if !tomorrowTasks.isEmpty {
                                     VStack(alignment: .leading, spacing: 6) {
-                                        ForEach(tomorrowTasks, id: \.persistentModelID) { task in
+                                        ForEach(
+                                            tomorrowTasks,
+                                            id: \.persistentModelID
+                                        ) { task in
                                             dashboardTaskRow(task)
                                         }
                                     }
-                                    .padding(.top, 4)
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(18)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .fill(.regularMaterial)
-                                    .shadow(
-                                        color: .black.opacity(0.10),
-                                        radius: 12,
-                                        y: 6
-                                    )
-                            )
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(.white.opacity(0.10), lineWidth: 1)
-                            }
+                            .padding(.horizontal, 4)
                         }
                         .buttonStyle(.plain)
                     }
 
-                    // Show Continue section only if enabled and there are items
-                    if settings.showDashboardContinue && !continueItems.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Label("Recent", systemImage: "clock.arrow.trianglehead.clockwise.rotate.90.path.dotted")
-                                .font(.headline)
-                                .foregroundStyle(.primary)
+                    Divider()
+                        .overlay(.white.opacity(0.3))
+                    // MARK: - Recenti
 
-                            VStack(spacing: 8) {
+                    if settings.showDashboardContinue &&
+                       !continueItems.isEmpty {
+
+                        VStack(alignment: .leading, spacing: 12) {
+
+                            HStack {
+                                Label(
+                                    "Recent",
+                                    systemImage:
+                                        "clock.arrow.trianglehead.clockwise.rotate.90.path.dotted"
+                                )
+                                .font(.headline)
+                            }
+
+                            LazyVGrid(
+                                columns: Array(
+                                    repeating: GridItem(.flexible(), spacing: 8),
+                                    count: min(continueItems.count, 3)
+                                ),
+                                spacing: 8
+                            ) {
                                 ForEach(continueItems) { item in
+
                                     switch item.destination {
+
                                     case .trip(let trip):
                                         Button {
                                             selectedTrip = trip
                                         } label: {
                                             sectionCard(
                                                 title: item.title,
+                                                type: item.type,
                                                 systemImage: item.systemImage,
                                                 logoData: item.logoData,
                                                 isCompleted: isTripComplete(trip),
-                                                remainingItems: remainingTripItems(for: trip)
+                                                remainingItems:
+                                                    remainingTripItems(for: trip)
                                             )
                                         }
                                         .buttonStyle(.plain)
-                                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                            Button {
-                                                hide(item)
-                                            } label: {
-                                                Label("Hide", systemImage: "eye.slash")
-                                            }
-                                            .tint(.gray)
-                                        }
                                         .contextMenu {
                                             Button {
                                                 hide(item)
                                             } label: {
-                                                Label("Hide", systemImage: "eye.slash")
+                                                Label(
+                                                    "Hide",
+                                                    systemImage: "eye.slash"
+                                                )
                                             }
                                         }
+
                                     case .note(let note):
                                         Button {
                                             selectedNote = note
                                         } label: {
                                             sectionCard(
                                                 title: item.title,
+                                                type: item.type,
                                                 systemImage: item.systemImage,
                                                 logoData: item.logoData
                                             )
                                         }
                                         .buttonStyle(.plain)
-                                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                            Button {
-                                                hide(item)
-                                            } label: {
-                                                Label("Hide", systemImage: "eye.slash")
-                                            }
-                                            .tint(.gray)
-                                        }
                                         .contextMenu {
                                             Button {
                                                 hide(item)
                                             } label: {
-                                                Label("Hide", systemImage: "eye.slash")
+                                                Label(
+                                                    "Hide",
+                                                    systemImage: "eye.slash"
+                                                )
                                             }
                                         }
+
                                     case .document(let document):
                                         Button {
                                             selectedDocument = document
                                         } label: {
                                             sectionCard(
                                                 title: item.title,
+                                                type: item.type,
                                                 systemImage: item.systemImage,
                                                 logoData: item.logoData
                                             )
                                         }
                                         .buttonStyle(.plain)
-                                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                            Button {
-                                                hide(item)
-                                            } label: {
-                                                Label("Hide", systemImage: "eye.slash")
-                                            }
-                                            .tint(.gray)
-                                        }
                                         .contextMenu {
                                             Button {
                                                 hide(item)
                                             } label: {
-                                                Label("Hide", systemImage: "eye.slash")
+                                                Label(
+                                                    "Hide",
+                                                    systemImage: "eye.slash"
+                                                )
                                             }
                                         }
+
                                     case .loyaltyCard(let card):
                                         Button {
                                             selectedLoyaltyCard = card
                                         } label: {
                                             sectionCard(
                                                 title: item.title,
+                                                type: item.type,
                                                 systemImage: item.systemImage,
                                                 logoData: item.logoData
                                             )
                                         }
                                         .buttonStyle(.plain)
-                                        .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                            Button {
-                                                hide(item)
-                                            } label: {
-                                                Label("Hide", systemImage: "eye.slash")
-                                            }
-                                            .tint(.gray)
-                                        }
                                         .contextMenu {
                                             Button {
                                                 hide(item)
                                             } label: {
-                                                Label("Hide", systemImage: "eye.slash")
+                                                Label(
+                                                    "Hide",
+                                                    systemImage: "eye.slash"
+                                                )
                                             }
                                         }
                                     }
@@ -528,8 +550,6 @@ struct Dashboard: View {
                             }
                         }
                     }
-
-
                 }
                 .padding()
             }
@@ -784,20 +804,30 @@ struct Dashboard: View {
         .buttonStyle(.plain)
     }
     
-    
-    
-    
-    
-    
     @ViewBuilder
     private func sectionCard(
         title: String,
+        type: String,
         systemImage: String?,
         logoData: Data?,
         isCompleted: Bool = false,
         remainingItems: Int? = nil
     ) -> some View {
-        HStack(spacing: 16) {
+
+        VStack(alignment: .center, spacing: 0) {
+
+            // Categoria
+            Text(type)
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .tracking(0.5)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity)
+                .frame(height: 18)
+
+            Spacer(minLength: 0)
+
+            // Immagine / icona
             Group {
                 if let logoData,
                    let uiImage = UIImage(data: logoData) {
@@ -805,53 +835,69 @@ struct Dashboard: View {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 24, height: 24)
+                        .frame(width: 40, height: 40)
                         .clipShape(
-                            RoundedRectangle(cornerRadius: 6)
+                            RoundedRectangle(
+                                cornerRadius: 8,
+                                style: .continuous
+                            )
                         )
 
                 } else if let systemImage {
 
                     Image(systemName: systemImage)
-                        .font(.body)
+                        .font(.title2)
                         .foregroundStyle(.tint)
-                        .frame(width: 28)
+                        .frame(width: 40, height: 40)
                 }
             }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.subheadline)
-                    .foregroundStyle(isCompleted ? .green : .primary)
+            .frame(width: 40, height: 40)
+
+            Spacer(minLength: 0)
+
+            // Area titolo + dettaglio
+            VStack(alignment: .center, spacing: 2) {
 
                 if let remainingItems {
-                    Text("\(remainingItems) \(String(localized: "remaining"))")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        "\(remainingItems) \(String(localized: "remaining"))"
+                    )
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
                 }
+
+                Text(title)
+                    .font(.footnote)
+                    .foregroundStyle(
+                        isCompleted ? .green : .primary
+                    )
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .bottom)
             }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 28, alignment: .bottom)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
+        .frame(height: 112)
+        .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.regularMaterial)
-                .shadow(
-                    color: .black.opacity(0.10),
-                    radius: 12,
-                    y: 6
-                )
-                .shadow(
-                    color: .white.opacity(0.08),
-                    radius: 1,
-                    y: -1
-                )
+            RoundedRectangle(
+                cornerRadius: 16,
+                style: .continuous
+            )
+            .fill(.regularMaterial)
         )
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.white.opacity(0.10), lineWidth: 1)
+            RoundedRectangle(
+                cornerRadius: 16,
+                style: .continuous
+            )
+            .stroke(
+                .white.opacity(0.10),
+                lineWidth: 1
+            )
         }
     }
 

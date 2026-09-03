@@ -192,6 +192,9 @@ struct NoteEditorView: View {
             // Saving is handled explicitly by Save.
         }
         .onAppear {
+            note.lastOpenedAt = .now
+            try? modelContext.save()
+
             noteEditorCoordinator?.save = {
                 save(dismissAfterSave: false)
             }
@@ -203,7 +206,8 @@ struct NoteEditorView: View {
             if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 titleIsFocused = true
             }
-        }        .sheet(isPresented: $showShareSheet) {
+        }
+        .sheet(isPresented: $showShareSheet) {
             NoteShareSheet(
                 title: title.trimmingCharacters(in: .whitespacesAndNewlines),
                 text: text
