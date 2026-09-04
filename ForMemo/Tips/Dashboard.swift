@@ -11,6 +11,8 @@ struct Dashboard: View {
     @State private var selectedLoyaltyCard: LoyaltyCard?
     @State private var selectedWeatherDate: Date?
     @State private var selectedNote: Note?
+    @State private var recentWalletLogos: [String: Data] = [:]
+    
     
     @State private var recoveryResult: AttachmentRecoveryResult?
     @State private var showRecoveryAlert = false
@@ -53,7 +55,7 @@ struct Dashboard: View {
         let title: String
         let type: String
         let systemImage: String?
-        let logoData: Data?
+        let logoRelativePath: String?
         let lastOpenedAt: Date
         let destination: ContinueDestination
     }
@@ -68,7 +70,7 @@ struct Dashboard: View {
                 title: trip.name,
                 type: String(localized: "Trips"),
                 systemImage: trip.icon,
-                logoData: nil,
+                logoRelativePath: nil,
                 lastOpenedAt: lastOpenedAt,
                 destination: .trip(trip)
             )
@@ -82,7 +84,7 @@ struct Dashboard: View {
                 title: document.name,
                 type: String(localized: "Documents"),
                 systemImage: document.documentType.systemImage,
-                logoData: nil,
+                logoRelativePath: nil,
                 lastOpenedAt: lastOpenedAt,
                 destination: .document(document)
             )
@@ -96,23 +98,9 @@ struct Dashboard: View {
                 title: card.storeName,
                 type: String(localized: "Wallet"),
                 systemImage: nil,
-                logoData: {
-
-                    if let relativePath = card.logoAsset?.relativePath {
-                        return WalletAssetStore.loadData(
-                            relativePath: relativePath
-                        )
-                    }
-
-                    if let relativePath = card.loyaltyLogoRelativePath {
-                        return WalletAssetStore.loadData(
-                            relativePath: relativePath
-                        )
-                    }
-
-                    return nil
-
-                }(),
+                logoRelativePath:
+                    card.logoAsset?.relativePath
+                    ?? card.loyaltyLogoRelativePath,
                 lastOpenedAt: lastOpenedAt,
                 destination: .loyaltyCard(card)
             )
@@ -127,7 +115,7 @@ struct Dashboard: View {
                     : note.title,
                 type: String(localized: "Notes"),
                 systemImage: "note.text",
-                logoData: nil,
+                logoRelativePath: nil,
                 lastOpenedAt: lastOpenedAt,
                 destination: .note(note)
             )
@@ -298,7 +286,7 @@ struct Dashboard: View {
                                     .font(.title3)
                                     .foregroundStyle(.primary.opacity(0.9))
                             }
-                            .padding(.top, 8)
+                            .padding(.top, 2)
 
                             // Attività
                             if !todayTasks.isEmpty {
@@ -310,7 +298,7 @@ struct Dashboard: View {
                                         dashboardTaskRow(task)
                                     }
                                 }
-                                .padding(.top, 8)
+                                .padding(.top, 4)
                             }
 
                             if overduePreviousDaysCount > 0 {
@@ -459,7 +447,7 @@ struct Dashboard: View {
                                                 title: item.title,
                                                 type: item.type,
                                                 systemImage: item.systemImage,
-                                                logoData: item.logoData,
+                                                logoData: nil,
                                                 isCompleted: isTripComplete(trip),
                                                 remainingItems:
                                                     remainingTripItems(for: trip)
@@ -485,7 +473,7 @@ struct Dashboard: View {
                                                 title: item.title,
                                                 type: item.type,
                                                 systemImage: item.systemImage,
-                                                logoData: item.logoData
+                                                logoData: nil,
                                             )
                                         }
                                         .buttonStyle(.plain)
@@ -508,7 +496,7 @@ struct Dashboard: View {
                                                 title: item.title,
                                                 type: item.type,
                                                 systemImage: item.systemImage,
-                                                logoData: item.logoData
+                                                logoData: nil,
                                             )
                                         }
                                         .buttonStyle(.plain)
@@ -531,10 +519,25 @@ struct Dashboard: View {
                                                 title: item.title,
                                                 type: item.type,
                                                 systemImage: item.systemImage,
-                                                logoData: item.logoData
+                                                logoData: recentWalletLogos[item.id]
                                             )
                                         }
                                         .buttonStyle(.plain)
+                                        .task(id: item.id) {
+                                            guard let relativePath = item.logoRelativePath else {
+                                                return
+                                            }
+
+                                            let data = WalletAssetStore.loadData(
+                                                relativePath: relativePath
+                                            )
+
+                                            guard !Task.isCancelled, let data else {
+                                                return
+                                            }
+
+                                            recentWalletLogos[item.id] = data
+                                        }
                                         .contextMenu {
                                             Button {
                                                 hide(item)
@@ -544,8 +547,7 @@ struct Dashboard: View {
                                                     systemImage: "eye.slash"
                                                 )
                                             }
-                                        }
-                                    }
+                                        }                                    }
                                 }
                             }
                         }
@@ -874,10 +876,11 @@ struct Dashboard: View {
                     )
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .bottom)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 28, alignment: .bottom)
+            .frame(minHeight: 36, alignment: .bottom)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 112)

@@ -768,6 +768,7 @@
 		1C634E43302331530092DB89 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
+				1C634D4730220C9C0092DB89 /* Dashboard.swift */,
 				1C634CD830220C9C0092DB89 /* AppSettings.swift */,
 				1C634D5F30220C9C0092DB89 /* NotificationView.swift */,
 				1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */,
@@ -778,7 +779,6 @@
 				1CED325C30268F8300B16A50 /* SystemEventHistory.swift */,
 				1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */,
 				1C84776830248A4400C4FA34 /* AttachmentContainerRecovery.swift */,
-				1C634D4730220C9C0092DB89 /* Dashboard.swift */,
 				1C634D6130220C9C0092DB89 /* OverviewView.swift */,
 				1C634D6630220C9C0092DB89 /* SettingsView.swift */,
 				1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */,

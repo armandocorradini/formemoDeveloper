@@ -1194,6 +1194,7 @@ private struct NoteTextView: UIViewRepresentable {
 private struct NoteShareSheet: UIViewControllerRepresentable {
     let title: String
     let text: AttributedString
+    
 
     func makeUIViewController(
         context: Context
@@ -1223,17 +1224,53 @@ private final class NoteShareItemSource: NSObject, UIActivityItemSource {
     private let plainText: String
     private let whatsappText: String
     private let markdownURL: URL
+    private let sharedAttributedText: NSAttributedString
+    private let mailHTML: String
 
-    init(title: String, text: AttributedString) {
+    init(
+        title: String,
+        text: AttributedString
+    ) {
         self.title = title
         self.attributedText = NSAttributedString(text)
-        self.plainText = self.attributedText.string
+
+        let trimmedTitle = title.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
+
+        if trimmedTitle.isEmpty {
+            self.sharedAttributedText = self.attributedText
+        } else if self.attributedText.length == 0 {
+            self.sharedAttributedText = NSAttributedString(
+                string: trimmedTitle
+            )
+        } else {
+            let mutable = NSMutableAttributedString(
+                string: trimmedTitle
+            )
+
+            mutable.append(
+                NSAttributedString(string: "\n\n")
+            )
+
+            mutable.append(self.attributedText)
+            self.sharedAttributedText = mutable
+        }
+
+        self.plainText = self.sharedAttributedText.string
+
         self.whatsappText = NoteWhatsAppExporter.text(
+            title: trimmedTitle,
+            attributedString: self.attributedText
+        )
+
+        self.mailHTML = NoteMailHTMLExporter.html(
+            title: trimmedTitle,
             attributedString: self.attributedText
         )
 
         let markdown = NoteMarkdownExporter.markdown(
-            title: title,
+            title: trimmedTitle,
             attributedString: self.attributedText
         )
 
@@ -1258,6 +1295,7 @@ private final class NoteShareItemSource: NSObject, UIActivityItemSource {
         }
 
         self.markdownURL = url
+
         super.init()
     }
 
@@ -1268,11 +1306,7 @@ private final class NoteShareItemSource: NSObject, UIActivityItemSource {
     func activityViewControllerPlaceholderItem(
         _ activityViewController: UIActivityViewController
     ) -> Any {
-        /*
-         Placeholder is deliberately the attributed string. The actual
-         item is selected after UIKit knows the destination activity.
-         */
-        attributedText
+        sharedAttributedText
     }
 
     func activityViewController(
@@ -1282,11 +1316,8 @@ private final class NoteShareItemSource: NSObject, UIActivityItemSource {
         let identifier = activityType?.rawValue ?? ""
 
         /*
-         iOS 26 Notes has a documented Markdown import path. On iPhone/iPad
-         Apple instructs users to share a .md file from Files to Notes;
-         Notes converts Markdown into rich text while preserving supported
-         formatting. Therefore Notes must receive the .md FILE, not an
-         NSAttributedString, HTML Data or RTF Data.
+         iOS 26 Notes receives the Markdown file so that Notes can
+         import the document as rich text.
          */
         if identifier == "com.apple.mobilenotes.SharingExtension" ||
             identifier == "com.apple.Notes.SharingExtension" {
@@ -1294,26 +1325,24 @@ private final class NoteShareItemSource: NSObject, UIActivityItemSource {
         }
 
         /*
-         Mail already preserves the native attributed representation in
-         the tested configuration. Keep that path unchanged.
+         Mail receives HTML. This avoids forcing the colors from the
+         editor's attributed string into Mail and lets Mail render
+         correctly in light and dark appearance.
          */
         if activityType == .mail {
-            return attributedText
+            return mailHTML
         }
 
         /*
-         WhatsApp's iOS Share Extension accepts text rather than native
-         rich text. Give it WhatsApp's own inline/list formatting syntax.
-         The declared type remains plain text, so WhatsApp receives a
-         normal message body and can interpret its formatting itself.
+         WhatsApp receives its own formatted plain-text representation.
          */
         if identifier == "net.whatsapp.WhatsApp.ShareExtension" {
             return whatsappText
         }
 
         /*
-         All other text-oriented destinations keep the existing plain-text
-         behavior unchanged.
+         All other text-oriented destinations keep the existing
+         plain-text behavior.
          */
         return plainText
     }
@@ -1331,7 +1360,7 @@ private final class NoteShareItemSource: NSObject, UIActivityItemSource {
         }
 
         if activityType == .mail {
-            return UTType.rtf.identifier
+            return UTType.html.identifier
         }
 
         return UTType.utf8PlainText.identifier
@@ -1345,18 +1374,268 @@ private final class NoteShareItemSource: NSObject, UIActivityItemSource {
     }
 }
 
+private enum NoteMailHTMLExporter {
+    static func html(
+        title: String,
+        attributedString: NSAttributedString
+    ) -> String {
+
+        var output = """
+        <html>
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+        :root {
+            color-scheme: light dark;
+        }
+
+        body {
+            margin: 0;
+            padding: 0 16px;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            font-size: 17px;
+            line-height: 1.35;
+            color: CanvasText;
+            background-color: transparent;
+        }
+
+        .title {
+            margin: 0 0 16px 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+            font-size: 22px;
+            line-height: 1.2;
+            font-weight: 600;
+            color: CanvasText;
+        }
+
+        p,
+        ul,
+        ol,
+        li {
+            color: CanvasText;
+        }
+
+        p {
+            margin: 0 0 8px 0;
+        }
+
+        ul,
+        ol {
+            margin: 0 0 8px 0;
+            padding-left: 24px;
+        }
+
+        li {
+            margin: 0;
+            padding: 0;
+        }
+        </style>
+        </head>
+        <body>
+        """
+
+        if !title.isEmpty {
+            output += """
+            <div class="title">\(escapeHTML(title))</div>
+            """
+        }
+
+        let source = attributedString.string as NSString
+        var paragraphLocation = 0
+        var openList: String?
+
+        while paragraphLocation < source.length {
+            let paragraphRange = source.paragraphRange(
+                for: NSRange(
+                    location: paragraphLocation,
+                    length: 0
+                )
+            )
+
+            let style =
+                attributedString.attribute(
+                    .paragraphStyle,
+                    at: paragraphRange.location,
+                    effectiveRange: nil
+                ) as? NSParagraphStyle
+
+            let list = style?.textLists.last
+
+            let paragraphText = attributedString
+                .attributedSubstring(from: paragraphRange)
+                .string
+                .trimmingCharacters(in: .newlines)
+
+            let formatted = formatInline(
+                attributedString,
+                range: paragraphRange
+            )
+
+            if let list {
+                let listTag: String
+
+                switch list.markerFormat {
+                case .decimal:
+                    listTag = "ol"
+                default:
+                    listTag = "ul"
+                }
+
+                if openList != listTag {
+                    if openList != nil {
+                        output += "</\(openList!)>"
+                    }
+
+                    output += "<\(listTag)>"
+                    openList = listTag
+                }
+
+                /*
+                 Ignore empty list paragraphs. This prevents an empty
+                 paragraph in the source note from creating a large
+                 unwanted gap between list items.
+                 */
+                if !paragraphText.isEmpty {
+                    output += "<li>\(formatted)</li>"
+                }
+            } else {
+                if let openList {
+                    output += "</\(openList)>"
+                }
+                openList = nil
+
+                if paragraphText.isEmpty {
+                    output += "<p><br></p>"
+                } else {
+                    output += "<p>\(formatted)</p>"
+                }
+            }
+
+            let nextLocation =
+                paragraphRange.location + paragraphRange.length
+
+            if nextLocation <= paragraphLocation {
+                break
+            }
+
+            paragraphLocation = nextLocation
+        }
+
+        if let openList {
+            output += "</\(openList)>"
+        }
+
+        output += """
+        </body>
+        </html>
+        """
+
+        return output
+    }
+
+
+    private static func formatInline(
+        _ string: NSAttributedString,
+        range: NSRange
+    ) -> String {
+        var result = ""
+
+        string.enumerateAttributes(
+            in: range,
+            options: []
+        ) { attributes, subrange, _ in
+            let raw = string
+                .attributedSubstring(from: subrange)
+                .string
+                .replacingOccurrences(of: "\n", with: "")
+
+            guard !raw.isEmpty else {
+                return
+            }
+
+            var formatted = escapeHTML(raw)
+
+            let font = attributes[.font] as? UIFont
+            let traits = font?.fontDescriptor.symbolicTraits ?? []
+
+            let bold = traits.contains(.traitBold)
+            let italic = traits.contains(.traitItalic)
+
+            let underlineValue =
+                (attributes[.underlineStyle] as? NSNumber)?.intValue ?? 0
+
+            let underline = underlineValue != 0
+
+            if underline {
+                formatted = "<u>\(formatted)</u>"
+            }
+
+            if italic {
+                formatted = "<em>\(formatted)</em>"
+            }
+
+            if bold {
+                formatted = "<strong>\(formatted)</strong>"
+            }
+
+            result += formatted
+        }
+
+        return result
+    }
+
+    private static func escapeHTML(
+        _ text: String
+    ) -> String {
+        var result = text
+
+        result = result.replacingOccurrences(
+            of: "&",
+            with: "&amp;"
+        )
+
+        result = result.replacingOccurrences(
+            of: "<",
+            with: "&lt;"
+        )
+
+        result = result.replacingOccurrences(
+            of: ">",
+            with: "&gt;"
+        )
+
+        result = result.replacingOccurrences(
+            of: "\"",
+            with: "&quot;"
+        )
+
+        return result
+    }
+}
+
 private enum NoteWhatsAppExporter {
     static func text(
+        title: String,
         attributedString: NSAttributedString
     ) -> String {
         let source = attributedString.string as NSString
 
-        guard source.length > 0 else {
-            return ""
-        }
+        let trimmedTitle = title.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
 
         var output = ""
+
+        if !trimmedTitle.isEmpty {
+            output += "*\(escapeWhatsApp(trimmedTitle))*\n\n"
+        }
+
+        guard source.length > 0 else {
+            return output.trimmingCharacters(in: .newlines) + "\n"
+        }
+
         var counters: [ObjectIdentifier: Int] = [:]
+    
         var previousListID: ObjectIdentifier?
         var paragraphLocation = 0
 
