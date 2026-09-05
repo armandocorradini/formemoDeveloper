@@ -450,8 +450,9 @@ struct Dashboard: View {
                                                 logoData: nil,
                                                 isCompleted: isTripComplete(trip),
                                                 remainingItems:
-                                                    remainingTripItems(for: trip)
-                                            )
+                                                    remainingTripItems(for: trip),
+                                                iconColor: dashboardTripIconColors(for: trip.icon).0,
+                                                iconSecondaryColor: dashboardTripIconColors(for: trip.icon).1                                          )
                                         }
                                         .buttonStyle(.plain)
                                         .contextMenu {
@@ -474,6 +475,7 @@ struct Dashboard: View {
                                                 type: item.type,
                                                 systemImage: item.systemImage,
                                                 logoData: nil,
+                                                iconColor: noteColor(for: note.color)
                                             )
                                         }
                                         .buttonStyle(.plain)
@@ -492,11 +494,15 @@ struct Dashboard: View {
                                         Button {
                                             selectedDocument = document
                                         } label: {
+                                            let documentIconColors = dashboardDocumentIconColors(for: document)
+
                                             sectionCard(
                                                 title: item.title,
                                                 type: item.type,
                                                 systemImage: item.systemImage,
                                                 logoData: nil,
+                                                iconColor: documentIconColors.0,
+                                                iconSecondaryColor: documentIconColors.1
                                             )
                                         }
                                         .buttonStyle(.plain)
@@ -806,6 +812,68 @@ struct Dashboard: View {
         .buttonStyle(.plain)
     }
     
+    private func noteColor(for value: String?) -> Color? {
+        switch value {
+        case "red":
+            .red
+        case "orange":
+            .orange
+        case "yellow":
+            .yellow
+        case "green":
+            .green
+        case "blue":
+            .blue
+        case "purple":
+            .purple
+        case "pink":
+            .pink
+        default:
+            nil
+        }
+    }
+    
+    private func dashboardTripIconColors(for icon: String) -> (Color, Color) {
+        switch icon {
+        case "airplane.path.dotted": return (.blue, .primary)
+        case "car.2": return (.mint, .blue)
+        case "motorcycle": return (.orange, .red)
+        case "bicycle": return (.green, .mint)
+        case "tram": return (.indigo, .blue)
+        case "ferry": return (.cyan, .blue)
+        case "bus": return (.purple, .pink)
+        case "sailboat": return (.teal, .cyan)
+        case "figure", "figure.hiking": return (.green, .orange)
+        case "tent.2": return (.brown, .green)
+        case "backpack": return (.green, .brown)
+        case "suitcase.rolling.and.suitcase": return (.blue, .cyan)
+        case "camera": return (.purple, .pink)
+        case "beach.umbrella": return (.yellow, .orange)
+        case "snowflake": return (.cyan, .white)
+        case "mountain.2": return (.brown, .green)
+        case "water.waves": return (.blue, .primary)
+        case "drop": return (.teal, .blue)
+        case "globe.europe.africa": return (.green, .blue)
+        default: return (.blue, .cyan)
+        }
+    }
+    
+    private func dashboardDocumentIconColors(for document: DocumentItem) -> (Color, Color) {
+        switch document.documentType {
+        case .idCard: return (.indigo, .blue)
+        case .passport: return (.blue, .cyan)
+        case .drivingLicence: return (.orange, .yellow)
+        case .healthCard: return (.red, .pink)
+        case .carInsurance: return (.green, .mint)
+        case .motorbikeInsurance: return (.mint, .blue)
+        case .homeInsurance: return (.teal, .green)
+        case .lifeInsurance: return (.pink, .red)
+        case .medicalCertificate: return (.cyan, .teal)
+        case .vaccinationCertificate: return (.green, .mint)
+        default: return (.accentColor, .secondary)
+        }
+    }
+    
     @ViewBuilder
     private func sectionCard(
         title: String,
@@ -813,7 +881,9 @@ struct Dashboard: View {
         systemImage: String?,
         logoData: Data?,
         isCompleted: Bool = false,
-        remainingItems: Int? = nil
+        remainingItems: Int? = nil,
+        iconColor: Color? = nil,
+        iconSecondaryColor: Color? = nil
     ) -> some View {
 
         VStack(alignment: .center, spacing: 0) {
@@ -848,8 +918,14 @@ struct Dashboard: View {
                 } else if let systemImage {
 
                     Image(systemName: systemImage)
-                        .font(.title2)
-                        .foregroundStyle(.tint)
+                        .font(.system(size: 30))
+                        .symbolRenderingMode(
+                            iconSecondaryColor != nil ? .palette : .monochrome
+                        )
+                        .foregroundStyle(
+                            iconColor ?? Color.accentColor,
+                            iconSecondaryColor ?? Color.accentColor
+                        )
                         .frame(width: 40, height: 40)
                 }
             }
@@ -868,9 +944,9 @@ struct Dashboard: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                 }
-
+                // titolo sotto immagine card recenti
                 Text(title)
-                    .font(.footnote)
+                    .font(.caption2)
                     .foregroundStyle(
                         isCompleted ? .green : .primary
                     )

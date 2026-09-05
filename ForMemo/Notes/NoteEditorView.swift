@@ -34,6 +34,7 @@ struct NoteEditorView: View {
     @State private var showShareSheet = false
     @State private var selectedColor: String?
     @State private var initialColor: String?
+    @State private var textHeight: CGFloat = 0
     @FocusState private var titleIsFocused: Bool
     
     init(
@@ -110,19 +111,25 @@ struct NoteEditorView: View {
                                 .frame(width: 5, height: 44)
                                 .offset(x: 12)
                         }
+//                        let textView = UITextView(usingTextLayoutManager: true)
                     }
                 
                 Divider()
                     .overlay(Color.primary.opacity(0.50))
                 
-                NoteTextView(text: $text)
-                    .padding(.leading, 30)
+                NoteTextView(
+                    text: $text,
+                    onTextHeightChange: { height in
+                        textHeight = height
+                    }
+                )
+                  .padding(.leading, 30)
                     
-                    .overlay(alignment: .leading) {
+                    .overlay(alignment: .topLeading) {
                         if selectedColor != nil {
                             RoundedRectangle(cornerRadius: 2)
                                 .fill(selectedNoteColor())
-                                .frame(width: 5)
+                                .frame(width: 5, height: max(textHeight + 24,  12))
                                 .offset(x: 12)
                         }
                     }
@@ -432,7 +439,7 @@ struct NoteEditorView: View {
 
 private struct NoteTextView: UIViewRepresentable {
     @Binding var text: AttributedString
-
+    var onTextHeightChange: ((CGFloat) -> Void)?
     
     private func styledContent(
         from attributedString: AttributedString,
@@ -487,9 +494,11 @@ private struct NoteTextView: UIViewRepresentable {
     
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text)
+        Coordinator(
+            text: $text,
+            onTextHeightChange: onTextHeightChange
+        )
     }
-
     @MainActor
     func makeUIView(
         context: Context
@@ -588,7 +597,17 @@ private struct NoteTextView: UIViewRepresentable {
         context: Context
     ) {
         context.coordinator.text = $text
+        
+        if let textLayoutManager = textView.textLayoutManager {
+            textLayoutManager.ensureLayout(for: textView.bounds)
 
+            let textHeight =
+                textLayoutManager.usageBoundsForTextContainer.height
+
+            DispatchQueue.main.async {
+                self.onTextHeightChange?(textHeight)
+            }
+        }
         /*
          While editing, UITextView is the source of truth.
 
@@ -631,16 +650,20 @@ private struct NoteTextView: UIViewRepresentable {
             location: location,
             length: selectedLength
         )
+        
     }
 
     @MainActor
     final class Coordinator: NSObject, UITextViewDelegate {
         var text: Binding<AttributedString>
+        var onTextHeightChange: ((CGFloat) -> Void)?
 
         init(
-            text: Binding<AttributedString>
+            text: Binding<AttributedString>,
+            onTextHeightChange: ((CGFloat) -> Void)?
         ) {
             self.text = text
+            self.onTextHeightChange = onTextHeightChange
             super.init()
         }
 
@@ -1152,6 +1175,13 @@ private struct NoteTextView: UIViewRepresentable {
 
             text.wrappedValue =
                 AttributedString(attributedText)
+
+            if let textLayoutManager = textView.textLayoutManager {
+                let textHeight =
+                    textLayoutManager.usageBoundsForTextContainer.height
+
+                onTextHeightChange?(textHeight)
+            }
         }
 
         func textViewDidChangeSelection(
