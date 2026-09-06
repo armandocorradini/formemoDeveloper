@@ -47,21 +47,6 @@ final class ShareViewController: UIViewController {
     private func readNote(
         from providers: [NSItemProvider]
     ) async throws -> ImportedNotePayload {
-        
-        print("FORMEMO_SHARE_EXTENSION_READNOTE")
-        
-        print("========== FORMEMO SHARE EXTENSION ==========")
-
-        for (index, provider) in providers.enumerated() {
-            print("PROVIDER \(index)")
-            print("TYPES:")
-            
-            for type in provider.registeredTypeIdentifiers {
-                print("  \(type)")
-            }
-        }
-
-        print("=============================================")
 
         // Preferiamo RTF: è la rappresentazione più utile
         // per conservare la formattazione di Apple Notes.

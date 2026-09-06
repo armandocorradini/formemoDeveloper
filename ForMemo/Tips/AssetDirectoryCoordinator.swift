@@ -246,50 +246,7 @@ enum AssetDirectoryCoordinator {
             $0.lastPathComponent < $1.lastPathComponent
         }
     }
-    
-    static func validatedFileURL(
-        relativePath: String,
-        in directory: URL
-    ) throws -> URL {
 
-        let trimmedPath = relativePath
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-
-        guard !trimmedPath.isEmpty else {
-            throw CocoaError(.fileReadInvalidFileName)
-        }
-
-        guard
-            !trimmedPath.contains("/"),
-            !trimmedPath.contains("\\"),
-            trimmedPath != ".",
-            trimmedPath != ".."
-        else {
-            throw CocoaError(.fileReadInvalidFileName)
-        }
-
-        let directoryURL = directory.standardizedFileURL
-        let fileURL = directory
-            .appendingPathComponent(trimmedPath)
-            .standardizedFileURL
-
-        let directoryPath =
-            directoryURL.resolvingSymlinksInPath().path
-        let filePath =
-            fileURL.resolvingSymlinksInPath().path
-
-        let allowedPrefix =
-            directoryPath.hasSuffix("/")
-            ? directoryPath
-            : directoryPath + "/"
-
-        guard filePath.hasPrefix(allowedPrefix) else {
-            throw CocoaError(.fileReadInvalidFileName)
-        }
-
-        return fileURL
-    }
-    
     // MARK: - Write preparation
 
     static func ensureCanonicalDirectory(
