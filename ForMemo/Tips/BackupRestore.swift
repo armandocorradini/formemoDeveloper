@@ -2007,8 +2007,10 @@ private enum BackupManager {
 
             for (relativePath, fileData) in archive.attachmentFiles {
 
-                let destinationURL = attachmentsDirectory
-                    .appendingPathComponent(relativePath)
+                let destinationURL = try AssetDirectoryCoordinator.validatedFileURL(
+                    relativePath: relativePath,
+                    in: attachmentsDirectory
+                )
 
                 let parent = destinationURL.deletingLastPathComponent()
                 let parentKey = parent.standardizedFileURL.path
@@ -2054,8 +2056,10 @@ private enum BackupManager {
 
             for (relativePath, fileData) in archive.loyaltyCardLogoFiles {
 
-                let destinationURL = walletDirectory
-                    .appendingPathComponent(relativePath)
+                let destinationURL = try AssetDirectoryCoordinator.validatedFileURL(
+                    relativePath: relativePath,
+                    in: walletDirectory
+                )
 
                 let parent = destinationURL.deletingLastPathComponent()
                 let parentKey = parent.standardizedFileURL.path
@@ -2087,8 +2091,10 @@ private enum BackupManager {
 
             for (relativePath, fileData) in archive.documentFiles {
 
-                let destinationURL = documentDirectory
-                    .appendingPathComponent(relativePath)
+                let destinationURL = try AssetDirectoryCoordinator.validatedFileURL(
+                    relativePath: relativePath,
+                    in: documentDirectory
+                )
 
                 let parent = destinationURL.deletingLastPathComponent()
                 let parentKey = parent.standardizedFileURL.path

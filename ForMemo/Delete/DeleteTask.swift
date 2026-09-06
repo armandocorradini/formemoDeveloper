@@ -10,8 +10,13 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
 
     if let attachments = task.attachments {
         for attachment in attachments {
-            let trashName = attachment.deleteFileIfNeeded()
-            
+            guard let trashName = attachment.deleteFileIfNeeded() else {
+                AppLogger.persistence.error(
+                    "Task attachment deletion aborted: attachment could not be moved to Trash."
+                )
+                return
+            }
+
             TaskAttachment.deleteCloudMirror(
                 relativePath: attachment.relativePath
             )
@@ -48,9 +53,14 @@ func deleteLoyaltyCard(
 
     for asset in card.assets ?? [] {
 
-        let trashFileName = WalletAssetStore.moveToTrash(
+        guard let trashFileName = WalletAssetStore.moveToTrash(
             relativePath: asset.relativePath
-        )
+        ) else {
+            AppLogger.persistence.error(
+                "Wallet asset deletion aborted: asset could not be moved to Trash."
+            )
+            return
+        }
 
         WalletAssetStore.deleteCloudMirror(
             relativePath: asset.relativePath
@@ -115,7 +125,7 @@ func deleteDocument(
             AppLogger.persistence.error(
                 "Document asset deletion aborted: asset could not be moved to Trash."
             )
-            continue
+            return
         }
 
         DocumentAssetStore.deleteCloudMirror(
