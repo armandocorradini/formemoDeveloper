@@ -5,22 +5,17 @@ import os
 @MainActor
 
 func deleteTask(_ task: TodoTask, in context: ModelContext) {
-    
+
     TodoTask.createDeletedTaskRecord(from: task, in: context)
 
     if let attachments = task.attachments {
         for attachment in attachments {
-            guard let trashName = attachment.deleteFileIfNeeded() else {
-                AppLogger.persistence.error(
-                    "Task attachment deletion aborted: attachment could not be moved to Trash."
-                )
-                return
-            }
+            let trashName = attachment.deleteFileIfNeeded()
 
             TaskAttachment.deleteCloudMirror(
                 relativePath: attachment.relativePath
             )
-            
+
             let item = DeletedItem(type: "attachment")
             item.taskID = task.id
             item.fileName = attachment.originalName
@@ -31,12 +26,12 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
         }
     }
 
-    
+
     DeletedFingerprintStore.markDeleted(task)
     context.delete(task)
 
     context.safeSave(operation: "DeleteTask")
-    
+
     NotificationManager.shared.refresh()
 }
 
@@ -53,19 +48,14 @@ func deleteLoyaltyCard(
 
     for asset in card.assets ?? [] {
 
-        guard let trashFileName = WalletAssetStore.moveToTrash(
+        let trashFileName = WalletAssetStore.moveToTrash(
             relativePath: asset.relativePath
-        ) else {
-            AppLogger.persistence.error(
-                "Wallet asset deletion aborted: asset could not be moved to Trash."
-            )
-            return
-        }
+        )
 
         WalletAssetStore.deleteCloudMirror(
             relativePath: asset.relativePath
         )
-        
+
         let item = DeletedItem(type: "walletAsset")
 
         item.loyaltyCardID = card.id
@@ -114,7 +104,7 @@ func deleteDocument(
         from: document,
         in: context
     )
-    
+
     for asset in document.sortedAssets {
 
         guard let trashFileName =
@@ -125,13 +115,13 @@ func deleteDocument(
             AppLogger.persistence.error(
                 "Document asset deletion aborted: asset could not be moved to Trash."
             )
-            return
+            continue
         }
 
         DocumentAssetStore.deleteCloudMirror(
             relativePath: asset.relativePath
         )
-        
+
         let item = DeletedItem(type: "documentAsset")
 
         item.documentID = document.id
