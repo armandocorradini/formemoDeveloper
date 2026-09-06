@@ -182,7 +182,7 @@ struct WalletView: View {
                                             )
                                         }
                                     }
-                                    .frame(width: 56, height: 56)
+                                    .frame(width: 52, height: 52)
                                     .background(
                                         RoundedRectangle(
                                             cornerRadius: 16,
@@ -219,11 +219,11 @@ struct WalletView: View {
                                         Text(card.storeName)
                                             .font(.headline)
 
-                                        Text(
-                                            card.itemType == "ticket"
-                                            ? "Ticket"
-                                            : "Loyalty Card"
-                                        )
+//                                        Text(
+//                                            card.itemType == "ticket"
+//                                            ? "Ticket"
+//                                            : "Loyalty Card"
+//                                        )
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
 
@@ -238,19 +238,38 @@ struct WalletView: View {
                                     }
 
                                     Spacer(minLength: 0)
+                                    
+                                    ZStack {
+                                        Circle()
+                                            .stroke(
+                                                walletChevronColor(for: card),
+                                                lineWidth: 2
+                                            )
+                                            .frame(width: 42, height: 42)
+
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 17, weight: .semibold))
+                                            .foregroundStyle(.primary)
+                                    }
                                 }
+                                .padding(.vertical, 4)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .contentShape(Rectangle())
+
                             }
                             .buttonStyle(.plain)
                             .navigationLinkIndicatorVisibility(.hidden)
-                            .listRowBackground(
+                            .listRowSeparator(.visible, edges: .bottom)
+                            .listRowSeparatorTint(.secondary.opacity(0.38))
+//                            .listRowBackground(
+//
+//                                Color(.systemBackground)
+//
+//                                    .opacity(colorScheme == .dark ? 0.3 : 0.26)
 
-                                Color(.systemBackground)
-
-                                    .opacity(colorScheme == .dark ? 0.3 : 0.26)
-
-                            )
+                                    .listRowBackground(Color.clear)
+                                
+//                            )
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
 
                                 Button {
@@ -271,22 +290,16 @@ struct WalletView: View {
                                 }
                             }
                             .contextMenu {
+                                Button {
+                                    editingCard = card
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
 
-                                if sizeClass == .regular {
-
-                                    Button {
-                                        editingCard = card
-                                    } label: {
-                                        Label("Edit", systemImage: "pencil")
-                                    }
-
-                                    Button(role: .destructive) {
-
-                                        deleteCard(card)
-
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
+                                Button(role: .destructive) {
+                                    deleteCard(card)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
                                 }
                             }
                             .moveDisabled(
@@ -302,8 +315,9 @@ struct WalletView: View {
                         .onDelete(perform: deleteCards)
                     }
                     .contentMargins(.bottom, 70, for: .scrollContent)
-                    .contentMargins(.top, 10, for: .scrollContent)
+                    .contentMargins(.top, 0, for: .scrollContent)
                     .listStyle(.insetGrouped)
+                    .listRowSpacing(0)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
                     .searchable(
@@ -504,6 +518,18 @@ struct WalletView: View {
              (blue * 114)) / 1000
 
         return brightness > 0.68
+    }
+    
+    
+    
+    
+    
+    private func walletChevronColor(for card: LoyaltyCard) -> Color {
+        guard let colorHex = card.colorHex else {
+            return .blue
+        }
+
+        return Color(hex: colorHex) ?? .blue
     }
     
     

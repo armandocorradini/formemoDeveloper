@@ -275,9 +275,6 @@ struct AddLoyaltyCardView: View {
                         } label: {
                             Label("Scan Barcode, QR Code or Ticket", systemImage: "qrcode.viewfinder")
                         }
-
-                        if itemType == "ticket" {
-
                             PhotosPicker(
                                 selection: $selectedTicketImageItem,
                                 matching: .images
@@ -287,7 +284,6 @@ struct AddLoyaltyCardView: View {
                                     systemImage: "photo.badge.magnifyingglass"
                                 )
                             }
-                        }
                     }
 
                     Section(
@@ -404,14 +400,6 @@ struct AddLoyaltyCardView: View {
                 }
 
                 let request = VNDetectBarcodesRequest()
-                request.revision = VNDetectBarcodesRequestRevision3
-                request.symbologies = [
-                    .qr,
-                    .ean13,
-                    .code128,
-                    .pdf417,
-                    .aztec
-                ]
                 request.preferBackgroundProcessing = true
 
                 guard let cgImage = uiImage.cgImage else {
@@ -428,24 +416,6 @@ struct AddLoyaltyCardView: View {
                 do {
                     try handler.perform([request])
                 } catch {
-
-
-                    let detector = CIDetector(
-                        ofType: CIDetectorTypeQRCode,
-                        context: nil,
-                        options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]
-                    )
-
-                    if let ciImage = CIImage(image: uiImage),
-                       let features = detector?.features(in: ciImage) as? [CIQRCodeFeature],
-                       let message = features.first?.messageString {
-
-                        await MainActor.run {
-                            barcodeValue = message
-                            barcodeFormat = "qr"
-                        }
-                    }
-
                     return
                 }
 
@@ -666,7 +636,7 @@ private struct ImagePlaceholder: View {
 
 // MARK: - Barcode Scanner
 
-private struct BarcodeScannerSheet: UIViewControllerRepresentable {
+ struct BarcodeScannerSheet: UIViewControllerRepresentable {
 
     @Environment(\.dismiss)
     private var dismiss

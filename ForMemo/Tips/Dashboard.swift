@@ -475,7 +475,8 @@ struct Dashboard: View {
                                                 type: item.type,
                                                 systemImage: item.systemImage,
                                                 logoData: nil,
-                                                iconColor: noteColor(for: note.color)
+                                                iconColor: .primary,
+                                                iconSecondaryColor: note.color != nil ? noteColor(for: note.color) : nil ?? Color(uiColor: .systemBackground)
                                             )
                                         }
                                         .buttonStyle(.plain)
@@ -923,8 +924,8 @@ struct Dashboard: View {
                             iconSecondaryColor != nil ? .palette : .monochrome
                         )
                         .foregroundStyle(
-                            iconColor ?? Color.accentColor,
-                            iconSecondaryColor ?? Color.accentColor
+                            iconColor ?? .primary,
+                            iconSecondaryColor ?? .primary
                         )
                         .frame(width: 40, height: 40)
                 }

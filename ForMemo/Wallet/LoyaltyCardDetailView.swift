@@ -355,7 +355,7 @@ struct LoyaltyCardDetailView: View {
                         RoundedRectangle(cornerRadius: 22, style: .continuous)
                             .fill(Color(.secondarySystemBackground))
                     )
-                    .frame(width: 150)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
                 }
 

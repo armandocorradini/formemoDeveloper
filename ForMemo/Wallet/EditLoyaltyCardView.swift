@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 import PhotosUI
-
+import Vision
 import CoreGraphics
 import AVFoundation
 
@@ -19,6 +19,7 @@ struct EditLoyaltyCardView: View {
     @State private var previewLogoData: Data?
     @State private var capturedImage: UIImage?
     @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var showScanner = false
 
     @State private var viewingImage: UIImage?
     @State private var showImageViewer = false
@@ -27,6 +28,7 @@ struct EditLoyaltyCardView: View {
     
     @State private var showingPhotoPicker = false
     @State private var selectedPhotos: [PhotosPickerItem] = []
+    @State private var selectedBarcodePhotoItem: PhotosPickerItem?
     
     private var currentLogoData: Data? {
 
@@ -245,6 +247,25 @@ struct EditLoyaltyCardView: View {
                     )
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    
+                    Button {
+                        showScanner = true
+                    } label: {
+                        Label(
+                            "Scan Barcode, QR Code or Ticket",
+                            systemImage: "qrcode.viewfinder"
+                        )
+                    }
+                    
+                    PhotosPicker(
+                        selection: $selectedBarcodePhotoItem,
+                        matching: .images
+                    ) {
+                        Label(
+                            "Import from Photo",
+                            systemImage: "photo.badge.magnifyingglass"
+                        )
+                    }
                 }
 
                 Section {
@@ -358,7 +379,32 @@ struct EditLoyaltyCardView: View {
                     modelContext.processPendingChanges()
                 }
             }
-                
+            .onChange(of: selectedBarcodePhotoItem) { _, newItem in
+                guard let newItem else {
+                    return
+                }
+
+                Task {
+                    guard let data = try? await newItem.loadTransferable(type: Data.self) else {
+                        return
+                    }
+
+                    do {
+                        if let result = try detectBarcode(in: data) {
+                            await MainActor.run {
+                                card.barcodeValue = result.0
+                                card.barcodeFormat = result.1
+                                selectedBarcodePhotoItem = nil
+                            }
+                        }
+                    } catch {
+                        assertionFailure(
+                            "Failed to detect barcode from photo: \(error)"
+                        )
+                    }
+                }
+            }
+
             .onChange(of: capturedImage) { _, newImage in
 
                 guard let newImage else {
@@ -450,13 +496,16 @@ struct EditLoyaltyCardView: View {
                         viewingImage = nil
                     }                        .toolbar {
 
-
                         }
                 }
             }
-                
-                
-            }
+        }
+    }
+        .sheet(isPresented: $showScanner) {
+            BarcodeScannerSheet(
+                barcodeValue: $card.barcodeValue,
+                barcodeFormat: $card.barcodeFormat
+            )
         }
         
         
@@ -526,8 +575,35 @@ struct EditLoyaltyCardView: View {
         }
     }
  
-    
-    
+    private func detectBarcode(in data: Data) throws -> (String, String)? {
+        guard let image = UIImage(data: data),
+              let cgImage = image.cgImage else {
+            return nil
+        }
+
+        let request = VNDetectBarcodesRequest()
+
+        let handler = VNImageRequestHandler(
+            cgImage: cgImage,
+            orientation: CGImagePropertyOrientation(
+                rawValue: UInt32(image.imageOrientation.rawValue)
+            ) ?? .up,
+            options: [:]
+        )
+
+        try handler.perform([request])
+
+        guard let observation = request.results?.first,
+              let payload = observation.payloadStringValue,
+              !payload.isEmpty else {
+            return nil
+        }
+
+        return (
+            payload,
+            observation.symbology.rawValue
+        )
+    }
     // MARK: - Save
 
     private func saveChanges() {

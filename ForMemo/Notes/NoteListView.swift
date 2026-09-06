@@ -331,30 +331,36 @@ struct NoteListView: View {
                                     )
                                 )
                                 .contextMenu {
-                                    if noteSortMode != "custom" {
-                                        Button {
-                                            archive(note)
-                                        } label: {
-                                            Label(
-                                                String(localized: "Archive"),
-                                                systemImage: "archivebox"
-                                            )
-                                        }
-                                        
-                                        Button(role: .destructive) {
-                                            if let index = activeNotes.firstIndex(
-                                                where: { $0.id == note.id }
-                                            ) {
-                                                deleteNotes(at: IndexSet(integer: index))
-                                            }
-                                        } label: {
-                                            Label(
-                                                String(localized: "Delete"),
-                                                systemImage: "trash"
-                                            )
-                                        }
+                                    Button {
+                                        archive(note)
+                                    } label: {
+                                        Label(
+                                            String(localized: "Archive"),
+                                            systemImage: "archivebox"
+                                        )
                                     }
-                                    
+
+                                    Button(role: .destructive) {
+                                        if let index = activeNotes.firstIndex(
+                                            where: { $0.id == note.id }
+                                        ) {
+                                            deleteNotes(at: IndexSet(integer: index))
+                                        }
+                                    } label: {
+                                        Label(
+                                            String(localized: "Delete"),
+                                            systemImage: "trash"
+                                        )
+                                    }
+
+                                    Button {
+                                        duplicate(note)
+                                    } label: {
+                                        Label(
+                                            String(localized: "Duplicate"),
+                                            systemImage: "plus.square.on.square"
+                                        )
+                                    }
                                 }
                                 
                             }
@@ -535,7 +541,7 @@ struct NoteListView: View {
                         
                         Label(
                             String(localized: "Automatic"),
-                            systemImage: "arrow.up.arrow.down"
+                            systemImage: "arrow.down.to.line.square"
                         )
                         .tag("automatic")
                         
@@ -617,6 +623,33 @@ struct NoteListView: View {
         let note = Note()
         
         newNote = note
+    }
+    
+    private func duplicate(_ note: Note) {
+        let duplicatedNote = Note(
+            title: note.title,
+            content: note.content,
+            createdAt: .now,
+            modifiedAt: .now,
+            isPinned: note.isPinned,
+            isArchived: false,
+            color: note.color,
+            archivedAt: nil,
+            lastOpenedAt: nil
+        )
+
+        duplicatedNote.sortOrder = (notes.map(\.sortOrder).max() ?? 0) + 1
+
+        modelContext.insert(duplicatedNote)
+
+        do {
+            try modelContext.save()
+        } catch {
+            AppLogger.persistence.error(
+                "Failed to duplicate Note: \(error.localizedDescription)"
+            )
+            modelContext.delete(duplicatedNote)
+        }
     }
     
     private func archive(_ note: Note) {

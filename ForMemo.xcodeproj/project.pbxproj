@@ -788,8 +788,8 @@
 				1CED32603027760400B16A50 /* DiagnosticsRedactor.swift */,
 				1C634CF030220C9C0092DB89 /* Global.swift */,
 				1C634CFE30220C9C0092DB89 /* NavigationApp.swift */,
-				1C634D4630220C9C0092DB89 /* CameraPicker.swift */,
 				1C634D5930220C9C0092DB89 /* ImagePreviewView.swift */,
+				1C634D4630220C9C0092DB89 /* CameraPicker.swift */,
 				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
 				1C634D6230220C9C0092DB89 /* PDFThumbnail.swift */,
 			);
