@@ -116,7 +116,7 @@ struct ResetAppView: View {
                 try verifyResetState()
 
                 try await PersistenceOperationCoordinator.shared.waitForSettlement(
-                    requireExport: Persistence.hasICloudIdentity,
+                    requireExport: false,
                     directoriesThatMustBeEmpty: resetDirectories
                 )
 
