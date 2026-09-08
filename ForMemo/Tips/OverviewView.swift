@@ -655,13 +655,13 @@ private extension OverviewView {
     
     var tripsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Trip Lists")
+            Text("Checklists")
                 .font(.headline)
                 .foregroundStyle(.primary)
             Divider()
                 .overlay(.white.opacity(0.12))
             VStack(alignment: .leading, spacing: 10) {
-                LabeledContent("Lists") { Text("\(trips.count)") }
+                LabeledContent("Checklists") { Text("\(trips.count)") }
                 LabeledContent("In progress") { Text("\(tripsInProgressCount)") }
                 LabeledContent("Completed") { Text("\(tripsCompletedCount)") }
                 LabeledContent("Not started") { Text("\(tripsNotStartedCount)") }

@@ -109,7 +109,7 @@ var body: some View {
                             )
                         } else {                            VStack {
                             if item.type == "trip" {
-                                Image(systemName: item.tripIcon ?? "suitcase.rolling")
+                                Image(systemName: item.tripIcon ?? "list.bullet.clipboard")
                                     .symbolRenderingMode(.hierarchical)
                                     .foregroundStyle(.orange)
                             } else if item.type == "loyaltycard" {
@@ -541,7 +541,7 @@ var body: some View {
             return String(localized: "Wallet Image")
 
         case "trip":
-            return String(localized: "Trip")
+            return String(localized: "Checklist")
 
         case "note":
             return String(localized: "Note")
@@ -575,7 +575,7 @@ var body: some View {
                 : "Unnamed Loyalty Card"
 
         case "trip":
-            return item.tripName ?? "Trip"
+            return item.tripName ?? "Checklist"
             
         case "note":
             return item.title ?? String(localized: "Untitled")

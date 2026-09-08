@@ -34,7 +34,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .wallet: "wallet.bifold"
         case .start: "info"
         case .vault: "key.shield"
-        case .trips: "suitcase.rolling"
+        case .trips: "list.bullet.clipboard"
         case .documents: "doc.text"
         case .today: "calendar.day.timeline.right"
         case .forecast: "cloud.sun"
@@ -53,7 +53,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .wallet: String(localized: "wallet_tab")
         case .start: String(localized: "Start_tab")
         case .vault: String(localized: "Vault")
-        case .trips: String(localized: "Trips")
+        case .trips: String(localized: "Checklists")
         case .documents: String(localized: "Documents")
         case .today:
             settings.taskWeekDays == 1

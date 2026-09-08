@@ -68,7 +68,7 @@ struct Dashboard: View {
             return ContinueItem(
                 id: "trip-\(trip.id)",
                 title: trip.name,
-                type: String(localized: "Trips"),
+                type: String(localized: "Checklists"),
                 systemImage: trip.icon,
                 logoRelativePath: nil,
                 lastOpenedAt: lastOpenedAt,
@@ -692,7 +692,7 @@ struct Dashboard: View {
             TaskDetailView(task: task)
         }
         .navigationDestination(item: $selectedTrip) { trip in
-            TripChecklistView(category: trip)
+            ChecklistView(category: trip)
         }
         .navigationDestination(item: $selectedDocument) { document in
             DocumentDetailView(document: document)

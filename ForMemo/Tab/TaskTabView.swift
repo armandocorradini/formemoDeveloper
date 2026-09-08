@@ -405,7 +405,7 @@ struct TaskTabView: View {
             
         case 7:
             NavigationStack(path: $TripsPath) {
-                TravelKitListView()
+                ChecklistListView()
             }
             
         case 8:

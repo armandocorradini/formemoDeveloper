@@ -16,6 +16,7 @@ nonisolated struct FMTripPayload: Codable, Sendable {
     var name: String
     var icon: String
     var systemTemplate: String
+    var checklistType: String?
     var sections: [FMTripSection]
 }
 

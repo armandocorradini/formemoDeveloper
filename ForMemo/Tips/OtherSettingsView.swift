@@ -49,7 +49,7 @@ struct OtherSettingsView: View {
                         Text(String(localized: "Wallet"))
                             .tag(6)
 
-                        Text("Trips")
+                        Text("Checklists")
                             .tag(7)
 
                         Text(String(localized: "Documents"))

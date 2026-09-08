@@ -25,15 +25,15 @@ struct FAQView: View {
         FAQSection(title: String(localized: "General"), items: [
             FAQItem(
                 question: String(localized:"What features does this app offer?"),
-                answer: String(localized:"ForMemo lets you create, organize, and manage tasks and notes in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards and tickets, with barcode and QR code scanning and quick access to your saved items.\n\nYou can create and manage Trip Lists (packing lists) for your travels, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, cards, tickets, trips, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking.")
+                answer: String(localized:"ForMemo lets you create, organize, and manage tasks and notes in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards and tickets, with barcode and QR code scanning and quick access to your saved items.\n\nYou can create and manage Checklists, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, cards, tickets, checklists, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking.")
             ),
             FAQItem(
                 question: String(localized:"What is the Dashboard?"),
-                answer: String(localized:"The Dashboard gives you a quick overview of what needs your attention. It highlights overdue tasks, tasks due today, upcoming activities, weather forecasts, and recently opened items from Wallet, Documents, and Trip Lists, helping you access important information from a single screen.")
+                answer: String(localized:"The Dashboard gives you a quick overview of what needs your attention. It highlights overdue tasks, tasks due today, upcoming activities, weather forecasts, and recently opened items from Wallet, Documents, and Checklists, helping you access important information from a single screen.")
             ),
             FAQItem(
                 question: String(localized:"What is the Overview?"),
-                answer: String(localized:"Overview gives you a quick summary of the information that matters most. It provides an at-a-glance view of your tasks, documents, Wallet items, trip lists, and other useful information, helping you quickly understand the current status of your data.")
+                answer: String(localized:"Overview gives you a quick summary of the information that matters most. It provides an at-a-glance view of your tasks, documents, Wallet items, Checklists, and other useful information, helping you quickly understand the current status of your data.")
             ),
             FAQItem(
                 question: String(localized:"How does task creation work?"),
@@ -52,8 +52,8 @@ struct FAQView: View {
                 answer: String(localized:"Most features work offline. Weather forecasts, cloud synchronization, and some online services require an internet connection.")
             ),
             FAQItem(
-                question: String(localized:"Can I organize travel packing lists?"),
-                answer: String(localized:"Yes. The Trips section lets you create and manage packing lists for your travels.")
+                question: String(localized:"Can I organize checklists?"),
+                answer: String(localized:"Yes. The Checklists section lets you create and manage checklists organized into sections. They can be used for travel, projects, work, home, events, personal activities and other needs.")
             ),
             FAQItem(
                 question: String(localized:"How do recurring tasks work?"),
@@ -344,8 +344,8 @@ struct FAQView: View {
             )
         ]),
 
-        // MARK: - DOCUMENTS & TRIPS
-        FAQSection(title: String(localized: "Documents & Trips"), items: [
+        // MARK: - DOCUMENTS & checklists
+        FAQSection(title: String(localized: "Documents & Checklists"), items: [
             FAQItem(
                 question: String(localized:"What is the Documents section?"),
                 answer: String(localized:"The Documents section helps you keep track of important documents and their expiration dates. You can store document details, issue dates, expiry dates, notes, and receive reminders before a document expires.")
@@ -359,12 +359,12 @@ struct FAQView: View {
                 answer: String(localized:"Yes. You can enable a reminder and choose how many days before the expiration date you want to be notified.")
             ),
             FAQItem(
-                question: String(localized:"What are Trip Lists?"),
-                answer: String(localized:"Trip Lists help you organize everything you need to take with you on your travels. You can create them from scratch or start from a template, organize them into sections, and mark items as completed as you prepare them.")
+                question: String(localized:"What are Checklists?"),
+                answer: String(localized:"Checklists help you organize tasks and items into sections. They can be used for travel, projects, work, home, events, personal activities and other needs. You can create them from scratch or start from a template, organize them into sections, and mark items as completed as you prepare them.")
             ),
             FAQItem(
-                question: String(localized:"Are Trip Lists synchronized and backed up?"),
-                answer: String(localized:"Yes. Trip Lists, sections, items and templates are synchronized with iCloud if enabled and included in manual backups.")
+                question: String(localized:"Are Checklists synchronized and backed up?"),
+                answer: String(localized:"Yes. Checklists, sections, items and templates are synchronized with iCloud if enabled and included in manual backups.")
             )
         ]),
         // MARK: - VAULT & AUTOFILL
@@ -403,7 +403,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized: "Can I restore only Vault data from a backup?"),
-                answer: String(localized: "Yes. During restore, you can select the Vault independently from other data categories, such as tasks, cards, documents, trip lists, and settings.")
+                answer: String(localized: "Yes. During restore, you can select the Vault independently from other data categories, such as tasks, cards, documents, checklists, and settings.")
             ),
             FAQItem(
                 question: String(localized: "Can I recover a forgotten Vault backup password?"),
@@ -473,19 +473,19 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Does the app support backup and restore?"),
-                answer: String(localized:"Yes. ForMemo allows you to create complete backups that can include tasks, notes, reminders, attachments, cards, tickets and logos, trip lists, documents, Vault data, app settings, and related information. You can restore everything later or transfer your data to another compatible device.")
+                answer: String(localized:"Yes. ForMemo allows you to create complete backups that can include tasks, notes, reminders, attachments, cards, tickets and logos, checklists, documents, Vault data, app settings, and related information. You can restore everything later or transfer your data to another compatible device.")
             ),
             FAQItem(
                 question: String(localized:"What is included in a backup?"),
-                answer: String(localized:"Backups can include tasks, notes, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets and logos, trip lists, documents, Vault data, and app settings. Backups are independent of iCloud synchronization and can be used to transfer your data to another compatible device.")
+                answer: String(localized:"Backups can include tasks, notes, reminders, recurrence rules, tags, priorities, locations, attachments, cards, tickets and logos, checklists, documents, Vault data, and app settings. Backups are independent of iCloud synchronization and can be used to transfer your data to another compatible device.")
             ),
             FAQItem(
                 question: String(localized:"Are attachments included in backups?"),
                 answer: String(localized:"Yes. Complete backups include task attachments such as images, documents, scans, and audio recordings.")
             ),
             FAQItem(
-                question: String(localized:"Are trip lists included in backups?"),
-                answer: String(localized:"Yes. Trip lists, sections, items and templates are included in backups.")
+                question: String(localized:"Are checklists included in backups?"),
+                answer: String(localized:"Yes. Checklists, sections, items and templates are included in backups.")
             ),
             FAQItem(
                 question: String(localized:"Are documents included in backups?"),
@@ -493,11 +493,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Can I restore backups on another device?"),
-                answer: String(localized:"Yes. You can import a backup file on another compatible device to restore your tasks, cards, tickets, attachments, trips, documents, and related data.")
+                answer: String(localized:"Yes. You can import a backup file on another compatible device to restore your tasks, cards, tickets, attachments, checklists, documents, and related data.")
             ),
             FAQItem(
                 question: String(localized:"Can I restore only specific data from a backup?"),
-                answer: String(localized:"Yes. During restore, you can choose which sections to restore, such as tasks, cards, tickets, trip lists, documents, and app settings. This allows you to recover only the data you need without restoring everything.")
+                answer: String(localized:"Yes. During restore, you can choose which sections to restore, such as tasks, cards, tickets, Checklists, documents, and app settings. This allows you to recover only the data you need without restoring everything.")
             ),
             FAQItem(
                 question: String(localized:"Can I transfer my data to another device?"),

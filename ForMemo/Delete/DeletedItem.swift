@@ -65,9 +65,11 @@ final class DeletedItem {
     var tripNotes: String?
 
     var tripSystemTemplate: String?
+    var tripChecklistType: String?
     var tripSortOrder: Int?
 
     var tripSectionsData: Data?
+    
 
     // DOCUMENT
     var documentID: UUID?
@@ -588,12 +590,17 @@ extension DeletedItem {
                 )
             ) ?? []
 
+            let restoredChecklistType =
+                tripChecklistType
+                ?? (tripSystemTemplate?.isEmpty == false ? "travel" : "custom")
+
             let trip = TripList(
                 name: tripName ?? "",
                 icon: tripIcon ?? "suitcase.rolling",
                 colorHex: tripColorHex ?? "",
                 notes: tripNotes ?? "",
                 systemTemplate: tripSystemTemplate ?? "",
+                checklistType: restoredChecklistType,
                 sortOrder: tripSortOrder ?? 0,
                 sections: sections
             )

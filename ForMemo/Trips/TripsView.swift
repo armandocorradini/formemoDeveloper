@@ -1,8 +1,6 @@
 import SwiftUI
-
 import SwiftData
 import UniformTypeIdentifiers
-
 import Observation
 
 @Observable
@@ -13,12 +11,9 @@ final class TripClipboard {
     var copiedSection: TripSectionData?
 }
 
-
-
-
 // MARK: - Main View
 
-struct TravelKitListView: View {
+struct ChecklistListView: View {
     
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -28,7 +23,7 @@ struct TravelKitListView: View {
     
     @State private var showNewCategoryAlert = false
     @State private var newCategoryName = ""
-    @State private var selectedIcon = "suitcase.rolling.and.suitcase"
+    @State private var selectedIcon = "list.bullet.clipboard"
     @State private var showNewCategorySheet = false
     @State private var editingCategory: TripList?
     @State private var isEditingCategory = false
@@ -78,12 +73,12 @@ struct TravelKitListView: View {
                     
                     ContentUnavailableView {
                         Label(
-                            String(localized: "No Trip Types"),
-                            systemImage: "suitcase.rolling.and.suitcase"
+                            String(localized: "No Checklists"),
+                            systemImage: "list.bullet.clipboard"
                         )
                     } description: {
                         Text(
-                            String(localized: "Tap + to start with a template or create your own trip type")
+                            String(localized: "Tap + to start with a template or create your own checklist")
                         )
                     }
                     .frame(maxWidth: .infinity)
@@ -94,7 +89,7 @@ struct TravelKitListView: View {
                 ForEach(visibleCategories) { category in
                     
                     NavigationLink {
-                        TripChecklistView(category: category)
+                        ChecklistView(category: category)
                     } label: {
                         
                         HStack(spacing: 14) {
@@ -146,21 +141,9 @@ struct TravelKitListView: View {
                                     candidateName = baseName + " \(suffix)"
                                 }
 
-                                let duplicated = TripList(
-                                    name: candidateName,
-                                    icon: category.icon,
-                                    systemTemplate: category.systemTemplate,
-                                    sections: category.sections.map { section in
-                                        TripSectionData(
-                                            title: section.title,
-                                            items: section.items.map {
-                                                TripItemData(
-                                                    title: $0.title,
-                                                    isChecked: $0.isChecked
-                                                )
-                                            }
-                                        )
-                                    }
+                                let duplicated = duplicateTripList(
+                                    category,
+                                    name: candidateName
                                 )
 
                                 duplicated.sortOrder = (categories.map(\.sortOrder).max() ?? 0) + 1
@@ -211,21 +194,9 @@ struct TravelKitListView: View {
                                     candidateName = baseName + " \(suffix)"
                                 }
 
-                                let duplicated = TripList(
-                                    name: candidateName,
-                                    icon: category.icon,
-                                    systemTemplate: category.systemTemplate,
-                                    sections: category.sections.map { section in
-                                        TripSectionData(
-                                            title: section.title,
-                                            items: section.items.map {
-                                                TripItemData(
-                                                    title: $0.title,
-                                                    isChecked: $0.isChecked
-                                                )
-                                            }
-                                        )
-                                    }
+                                let duplicated = duplicateTripList(
+                                    category,
+                                    name: candidateName
                                 )
 
                                 duplicated.sortOrder = (categories.map(\.sortOrder).max() ?? 0) + 1
@@ -282,16 +253,20 @@ struct TravelKitListView: View {
 //            .onAppear {
 //                preloadTripLocalizationKeys()
 //            }
-            .navigationTitle(String(localized: "Trips"))
+            .navigationTitle(String(localized: "Checklists"))
             .navigationBarTitleDisplayMode(.inline)
             .searchable(
                 text: $searchText,
                 placement: .navigationBarDrawer(displayMode: .automatic),
-                prompt: Text("Search trips")
+                prompt: Text("Search checklists")
             )
             .task {
                 // Backfill old categories created before templates existed.
                 for category in categories {
+                    
+                    if category.checklistType.isEmpty {
+                        category.checklistType = category.systemTemplate.isEmpty ? "custom" : "travel"
+                    }
                     
                     if category.systemTemplate.isEmpty {
                         
@@ -376,7 +351,35 @@ struct TravelKitListView: View {
                             into: category,
                             newSections: TripTemplates.makePhotographySections()
                         )
-                        
+                    case "project":
+                        TripTemplates.mergeSections(
+                            into: category,
+                            newSections: TripTemplates.makeProjectSections()
+                        )
+
+                    case "work":
+                        TripTemplates.mergeSections(
+                            into: category,
+                            newSections: TripTemplates.makeWorkSections()
+                        )
+
+                    case "home":
+                        TripTemplates.mergeSections(
+                            into: category,
+                            newSections: TripTemplates.makeHomeSections()
+                        )
+
+                    case "event":
+                        TripTemplates.mergeSections(
+                            into: category,
+                            newSections: TripTemplates.makeEventSections()
+                        )
+
+                    case "personal":
+                        TripTemplates.mergeSections(
+                            into: category,
+                            newSections: TripTemplates.makePersonalSections()
+                        )
                     default:
                         break
                     }
@@ -385,7 +388,7 @@ struct TravelKitListView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     VStack(spacing: 1) {
-                        Text("Trips")
+                        Text("Checklists")
                             .font(.headline)
 
                         Text(
@@ -420,7 +423,7 @@ struct TravelKitListView: View {
                         editingCategory = nil
                         isEditingCategory = false
                         newCategoryName = ""
-                        selectedIcon = "suitcase.rolling.and.suitcase"
+                        selectedIcon = "list.bullet.clipboard"
                         showNewCategorySheet = true
                     } label: {
                         Image(systemName:
@@ -439,7 +442,7 @@ struct TravelKitListView: View {
                         
                         VStack(alignment: .leading, spacing: 24) {
 
-                            Text(String(localized: "Start with a template or create your own trip type"))
+                            Text(String(localized: "Start with a template or create your own checklist"))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
 
@@ -460,8 +463,8 @@ struct TravelKitListView: View {
                                             name: finalName,
                                             icon: template.icon,
                                             systemTemplate: template.systemTemplate,
-                                            sections: template.sections.map { section in
-                                                TripSectionData(
+                                            checklistType: template.checklistType,
+                                            sections: template.sections.map { section in                                                TripSectionData(
                                                     title: section.title,
                                                     items: section.items.map {
                                                         TripItemData(title: $0.title)
@@ -489,7 +492,7 @@ struct TravelKitListView: View {
                             
                             VStack(alignment: .leading, spacing: 10) {
                                 
-                                Text(String(localized: "Trip Name"))
+                                Text(String(localized: "Checklist Name"))
                                     .font(.headline)
                                 
                                 TextField(String(localized: "Name"), text: $newCategoryName)
@@ -554,8 +557,8 @@ struct TravelKitListView: View {
                     }
                     .navigationTitle(
                         isEditingCategory
-                        ? String(localized: "Edit Trip Type")
-                        : String(localized: "New Trip Type")
+                        ? String(localized: "Edit Checklist")
+                        : String(localized: "New Checklist")
                     )
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
@@ -564,7 +567,7 @@ struct TravelKitListView: View {
                             
                             Button(String(localized: "Cancel")) {
                                 newCategoryName = ""
-                                selectedIcon = "suitcase.rolling.and.suitcase"
+                                selectedIcon = "list.bullet.clipboard"
                                 editingCategory = nil
                                 isEditingCategory = false
                                 showNewCategorySheet = false
@@ -626,40 +629,8 @@ struct TravelKitListView: View {
                                         let category = TripList(
                                             name: finalName,
                                             icon: selectedIcon,
-                                            sections: TripTemplates.makeBaseSections()
-                                        )
-
-                                        TripTemplates.mergeSections(
-                                            into: category,
-                                            newSections: TripTemplates.makeTravelSections()
-                                        )
-                                        TripTemplates.mergeSections(
-                                            into: category,
-                                            newSections: TripTemplates.makeCarSections()
-                                        )
-                                        TripTemplates.mergeSections(
-                                            into: category,
-                                            newSections: TripTemplates.makeMotorbikeSections()
-                                        )
-                                        TripTemplates.mergeSections(
-                                            into: category,
-                                            newSections: TripTemplates.makeCamperSections()
-                                        )
-                                        TripTemplates.mergeSections(
-                                            into: category,
-                                            newSections: TripTemplates.makeBicycleSections()
-                                        )
-                                        TripTemplates.mergeSections(
-                                            into: category,
-                                            newSections: TripTemplates.makeBoatSections()
-                                        )
-                                        TripTemplates.mergeSections(
-                                            into: category,
-                                            newSections: TripTemplates.makeHikingSections()
-                                        )
-                                        TripTemplates.mergeSections(
-                                            into: category,
-                                            newSections: TripTemplates.makePhotographySections()
+                                            checklistType: "custom",
+                                            sections: []
                                         )
 
                                         withAnimation {
@@ -674,7 +645,7 @@ struct TravelKitListView: View {
                                 }
                                 
                                 newCategoryName = ""
-                                selectedIcon = "suitcase.rolling.and.suitcase"
+                                selectedIcon = "list.bullet.clipboard"
                                 editingCategory = nil
                                 isEditingCategory = false
                                 showNewCategorySheet = false
@@ -718,6 +689,7 @@ struct TravelKitListView: View {
                                         name: category.name,
                                         icon: category.icon,
                                         systemTemplate: category.systemTemplate,
+                                        checklistType: category.checklistType,
                                         sections: category.sections.map {
                                             FMTripSection(
                                                 title: $0.title,
@@ -801,10 +773,15 @@ private func importFMTrip(from url: URL) {
 
             await MainActor.run {
                 for payload in collection.lists {
+                    let importedChecklistType =
+                        payload.checklistType
+                        ?? (payload.systemTemplate.isEmpty ? "custom" : "travel")
+
                     let trip = TripList(
                         name: payload.name,
                         icon: payload.icon,
                         systemTemplate: payload.systemTemplate,
+                        checklistType: importedChecklistType,
                         sections: payload.sections.map {
                             TripSectionData(
                                 title: $0.title,
@@ -836,6 +813,7 @@ private func makeExportAllDocument(includeChecks: Bool) -> FMTripDocument {
             name: category.name,
             icon: category.icon,
             systemTemplate: category.systemTemplate,
+            checklistType: category.checklistType,
             sections: category.sections.map {
                 FMTripSection(
                     title: $0.title,
@@ -856,12 +834,68 @@ private func makeExportAllDocument(includeChecks: Bool) -> FMTripDocument {
 }
 }
 
+
+private func duplicateTripList(
+    _ source: TripList,
+    name: String
+) -> TripList {
+    var duplicatedSections: [TripSectionData] = []
+
+    for sourceSection in source.sections {
+        var duplicatedItems: [TripItemData] = []
+
+        for sourceItem in sourceSection.items {
+            var item = TripItemData(
+                title: sourceItem.title,
+                isChecked: sourceItem.isChecked,
+                notes: sourceItem.notes,
+                quantity: sourceItem.quantity,
+                isImportant: sourceItem.isImportant,
+                url: sourceItem.url,
+                dueDate: sourceItem.dueDate,
+                locationName: sourceItem.locationName,
+                sortOrder: sourceItem.sortOrder,
+                isTemplateLocked: sourceItem.isTemplateLocked
+            )
+
+            item.createdAt = sourceItem.createdAt
+            item.updatedAt = sourceItem.updatedAt
+            duplicatedItems.append(item)
+        }
+
+        var section = TripSectionData(
+            title: sourceSection.title,
+            isCollapsed: sourceSection.isCollapsed,
+            icon: sourceSection.icon,
+            notes: sourceSection.notes,
+            sortOrder: sourceSection.sortOrder,
+            items: duplicatedItems
+        )
+
+        section.createdAt = sourceSection.createdAt
+        section.updatedAt = sourceSection.updatedAt
+        duplicatedSections.append(section)
+    }
+
+    let duplicated = TripList(
+        name: name,
+        icon: source.icon,
+        colorHex: source.colorHex,
+        notes: source.notes,
+        systemTemplate: source.systemTemplate,
+        checklistType: source.checklistType,
+        sortOrder: source.sortOrder,
+        sections: duplicatedSections
+    )
+
+    return duplicated
+}
 // MARK: - Checklist View
 
 import SwiftData
 import SwiftUI
 
-struct TripChecklistView: View {
+struct ChecklistView: View {
     
     @Environment(\.modelContext) private var modelContext
     @Bindable var category: TripList
@@ -1281,7 +1315,23 @@ enum TripTemplates {
         "mountain.2",
         "water.waves",
         "drop",
-        "globe.europe.africa"
+        "globe.europe.africa",
+        "list.bullet.clipboard",
+        "briefcase",
+        "house",
+        "calendar",
+        "person",
+        "folder",
+        "hammer",
+        "wrench.and.screwdriver",
+        "cart",
+        "gift",
+        "star",
+        "flag",
+        "target",
+        "building.2",
+        "graduationcap",
+        "sportscourt"
     ]
     
     static let featuredCategories: [TripList] = [
@@ -1365,12 +1415,242 @@ enum TripTemplates {
             icon: "drop",
             systemTemplate: "lake",
             sections: makeLakeSections()
+        ),
+        TripList(
+            name: "Project",
+            icon: "target",
+            systemTemplate: "project",
+            checklistType: "custom",
+            sections: makeProjectSections()
+        ),
+        TripList(
+            name: "Work",
+            icon: "briefcase",
+            systemTemplate: "work",
+            checklistType: "custom",
+            sections: makeWorkSections()
+        ),
+        TripList(
+            name: "Home",
+            icon: "house",
+            systemTemplate: "home",
+            checklistType: "custom",
+            sections: makeHomeSections()
+        ),
+        TripList(
+            name: "Event",
+            icon: "calendar",
+            systemTemplate: "event",
+            checklistType: "custom",
+            sections: makeEventSections()
+        ),
+        TripList(
+            name: "Personal",
+            icon: "person",
+            systemTemplate: "personal",
+            checklistType: "custom",
+            sections: makePersonalSections()
         )
     ]
 
     static var allCategories: [TripList] {
         featuredCategories + additionalCategories
     }
+    
+    
+    static func makeProjectSections() -> [TripSectionData] {
+        [
+            TripSectionData(
+                title: "Planning",
+                items: [
+                    TripItemData(title: "Define objectives"),
+                    TripItemData(title: "Set deadline"),
+                    TripItemData(title: "Create milestones"),
+                    TripItemData(title: "Break down tasks"),
+                    TripItemData(title: "Identify dependencies"),
+                    TripItemData(title: "Assign responsibilities"),
+                    TripItemData(title: "Estimate resources")
+                ]
+            ),
+            TripSectionData(
+                title: "Execution",
+                items: [
+                    TripItemData(title: "Start project"),
+                    TripItemData(title: "Review progress"),
+                    TripItemData(title: "Check milestones"),
+                    TripItemData(title: "Resolve blockers"),
+                    TripItemData(title: "Update priorities"),
+                    TripItemData(title: "Review deadlines")
+                ]
+            ),
+            TripSectionData(
+                title: "Finalization",
+                items: [
+                    TripItemData(title: "Complete remaining tasks"),
+                    TripItemData(title: "Review results"),
+                    TripItemData(title: "Finalize deliverables"),
+                    TripItemData(title: "Archive documents"),
+                    TripItemData(title: "Record lessons learned"),
+                    TripItemData(title: "Close project")
+                ]
+            )
+        ]
+    }
+
+    static func makeWorkSections() -> [TripSectionData] {
+        [
+            TripSectionData(
+                title: "Preparation",
+                items: [
+                    TripItemData(title: "Review agenda"),
+                    TripItemData(title: "Prepare documents"),
+                    TripItemData(title: "Check deadlines"),
+                    TripItemData(title: "Review priorities"),
+                    TripItemData(title: "Prepare meetings"),
+                    TripItemData(title: "Check pending requests")
+                ]
+            ),
+            TripSectionData(
+                title: "Tasks",
+                items: [
+                    TripItemData(title: "Priority tasks"),
+                    TripItemData(title: "Follow-ups"),
+                    TripItemData(title: "Pending items"),
+                    TripItemData(title: "Emails to send"),
+                    TripItemData(title: "Calls to make"),
+                    TripItemData(title: "Documents to review"),
+                    TripItemData(title: "Tasks to delegate")
+                ]
+            ),
+            TripSectionData(
+                title: "Follow-up",
+                items: [
+                    TripItemData(title: "Send updates"),
+                    TripItemData(title: "Schedule follow-ups"),
+                    TripItemData(title: "Confirm pending items"),
+                    TripItemData(title: "Update stakeholders"),
+                    TripItemData(title: "Review open tasks"),
+                    TripItemData(title: "Archive completed work")
+                ]
+            )
+        ]
+    }
+
+    static func makeHomeSections() -> [TripSectionData] {
+        [
+            TripSectionData(
+                title: "Planning",
+                items: [
+                    TripItemData(title: "Make a plan"),
+                    TripItemData(title: "Check supplies"),
+                    TripItemData(title: "Prepare tools"),
+                    TripItemData(title: "Set priorities"),
+                    TripItemData(title: "Set deadlines"),
+                    TripItemData(title: "Organize materials")
+                ]
+            ),
+            TripSectionData(
+                title: "Tasks",
+                items: [
+                    TripItemData(title: "Cleaning"),
+                    TripItemData(title: "Shopping"),
+                    TripItemData(title: "Maintenance"),
+                    TripItemData(title: "Repairs"),
+                    TripItemData(title: "Organizing"),
+                    TripItemData(title: "Laundry"),
+                    TripItemData(title: "Other tasks")
+                ]
+            ),
+            TripSectionData(
+                title: "Final Checks",
+                items: [
+                    TripItemData(title: "Review completed tasks"),
+                    TripItemData(title: "Clean up"),
+                    TripItemData(title: "Put everything away"),
+                    TripItemData(title: "Check remaining tasks"),
+                    TripItemData(title: "Plan next steps")
+                ]
+            )
+        ]
+    }
+
+    static func makeEventSections() -> [TripSectionData] {
+        [
+            TripSectionData(
+                title: "Planning",
+                items: [
+                    TripItemData(title: "Set date and time"),
+                    TripItemData(title: "Choose location"),
+                    TripItemData(title: "Create guest list"),
+                    TripItemData(title: "Set budget"),
+                    TripItemData(title: "Plan activities"),
+                    TripItemData(title: "Define schedule")
+                ]
+            ),
+            TripSectionData(
+                title: "Preparation",
+                items: [
+                    TripItemData(title: "Send invitations"),
+                    TripItemData(title: "Prepare materials"),
+                    TripItemData(title: "Arrange catering"),
+                    TripItemData(title: "Confirm arrangements"),
+                    TripItemData(title: "Prepare the location"),
+                    TripItemData(title: "Check guest responses"),
+                    TripItemData(title: "Prepare final details")
+                ]
+            ),
+            TripSectionData(
+                title: "Event Day",
+                items: [
+                    TripItemData(title: "Final check"),
+                    TripItemData(title: "Welcome guests"),
+                    TripItemData(title: "Follow the schedule"),
+                    TripItemData(title: "Complete event"),
+                    TripItemData(title: "Clean up"),
+                    TripItemData(title: "Review remaining tasks")
+                ]
+            )
+        ]
+    }
+
+    static func makePersonalSections() -> [TripSectionData] {
+        [
+            TripSectionData(
+                title: "Planning",
+                items: [
+                    TripItemData(title: "Define goals"),
+                    TripItemData(title: "Set priorities"),
+                    TripItemData(title: "Set deadlines"),
+                    TripItemData(title: "Make a plan"),
+                    TripItemData(title: "Define next steps"),
+                    TripItemData(title: "Set reminders")
+                ]
+            ),
+            TripSectionData(
+                title: "Tasks",
+                items: [
+                    TripItemData(title: "Important tasks"),
+                    TripItemData(title: "Things to do"),
+                    TripItemData(title: "Errands"),
+                    TripItemData(title: "Calls"),
+                    TripItemData(title: "Appointments"),
+                    TripItemData(title: "Follow-ups"),
+                    TripItemData(title: "Personal projects")
+                ]
+            ),
+            TripSectionData(
+                title: "Review",
+                items: [
+                    TripItemData(title: "Review progress"),
+                    TripItemData(title: "Complete remaining tasks"),
+                    TripItemData(title: "Adjust priorities"),
+                    TripItemData(title: "Review deadlines"),
+                    TripItemData(title: "Archive completed items")
+                ]
+            )
+        ]
+    }
+    
     
     static func makeBaseSections() -> [TripSectionData] {
         [
@@ -1669,6 +1949,22 @@ private func tripIconColors(for icon: String) -> (Color, Color) {
     case "water.waves": return (.blue, .primary)
     case "drop": return (.teal, .blue)
     case "globe.europe.africa": return (.green, .blue)
+    case "list.bullet.clipboard": return (.indigo, .blue)
+    case "briefcase": return (.purple, .blue)
+    case "house": return (.orange, .red)
+    case "calendar": return (.red, .orange)
+    case "person": return (.teal, .blue)
+    case "folder": return (.yellow, .orange)
+    case "hammer": return (.orange, .brown)
+    case "wrench.and.screwdriver": return (.gray, .blue)
+    case "cart": return (.green, .teal)
+    case "gift": return (.pink, .purple)
+    case "star": return (.yellow, .orange)
+    case "flag": return (.red, .orange)
+    case "target": return (.red, .pink)
+    case "building.2": return (.blue, .indigo)
+    case "graduationcap": return (.purple, .indigo)
+    case "sportscourt": return (.green, .blue)
     default: return (.blue, .cyan)
     }
 }
@@ -1747,11 +2043,11 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Motorbike Gear")
     _ = String(localized: "Name")
     _ = String(localized: "New Section")
-    _ = String(localized: "New Trip Type")
-    _ = String(localized: "No Trip Types")
-    _ = String(localized: "Tap + to start with a template or create your own trip type")
+    _ = String(localized: "New Checklist")
+    _ = String(localized: "No Checklists")
+    _ = String(localized: "Tap + to start with a template or create your own checklists")
     _ = String(localized: "Edit")
-    _ = String(localized: "Edit Trip Type")
+    _ = String(localized: "Edit Checklist")
     _ = String(localized: "Save")
     _ = String(localized: "Pajamas")
     _ = String(localized: "Passport")
@@ -1770,13 +2066,13 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "T-Shirts")
     _ = String(localized: "Technology")
     _ = String(localized: "Templates")
-    _ = String(localized: "Start with a template or create your own trip type")
+    _ = String(localized: "Start with a template or create your own checklist")
     _ = String(localized: "Tickets")
     _ = String(localized: "Toothbrush")
     _ = String(localized: "Trail Snacks")
     _ = String(localized: "Travel")
     _ = String(localized: "Travel Pillow")
-    _ = String(localized: "Trip Name")
+    _ = String(localized: "Checklist Name")
     _ = String(localized: "Tripod")
     _ = String(localized: "Water Bottle")
     _ = String(localized: "Water Hose")
@@ -1844,7 +2140,7 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Fishing Gear")
     _ = String(localized: "Insect Repellent")
     _ = String(localized: "Cooler Bag")
-    _ = String(localized: "Search trips")
+    _ = String(localized: "Search checklists")
     _ = String(localized: "items")
     _ = String(localized: "Delete")
     _ = String(localized: "Cancel")

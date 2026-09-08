@@ -61,7 +61,7 @@ struct AppQuickGuideView: View {
         ),
         .init(
             title: String(localized:"Dashboard"),
-            description: String(localized:"The Dashboard automatically highlights what needs your attention first. View overdue tasks, tasks due today, upcoming activities, weather forecasts and recently opened items from Wallet, Documents and Trip Lists in one place."),
+            description: String(localized:"The Dashboard automatically highlights what needs your attention first. View overdue tasks, tasks due today, upcoming activities, weather forecasts and recently opened items from Wallet, Documents and Checklists in one place."),
             icon: "house",
             tint: .blue
         ),
@@ -135,12 +135,12 @@ struct AppQuickGuideView: View {
             tint: .orange
         ),
 
-        .init(
-            title: String(localized:"Trip Lists"),
-            description: String(localized:"Create and manage travel packing lists organized into sections."),
-            icon: "suitcase.rolling",
-            tint: .mint
-        ),
+            .init(
+                title: String(localized:"Checklists"),
+                description: String(localized:"Create and manage checklists organized into sections."),
+                icon: "list.bullet.clipboard",
+                tint: .mint
+            ),
         
             .init(
                 title: String(localized:"Selective Sharing"),
@@ -240,7 +240,7 @@ struct AppQuickGuideView: View {
         ),
             .init(
                 title: String(localized: "Overview"),
-                description: String(localized: "See an at-a-glance summary of your tasks, documents, Wallet items, trip lists, and Vault data to quickly understand what needs your attention."),
+                description: String(localized: "See an at-a-glance summary of your tasks, documents, Wallet items, Checklists, and Vault data to quickly understand what needs your attention."),
                 icon: "rectangle.3.group",
                 tint: .teal
             ),
@@ -294,7 +294,7 @@ struct AppQuickGuideView: View {
 
         .init(
             title: String(localized:"Backup & Restore"),
-            description: String(localized:"Create complete backups including tasks, reminders, attachments, cards, tickets, trip lists, documents, Vault items, and app settings. Vault data in a backup requires a password for restoration. Restore everything or only selected sections on the same or another device."),
+            description: String(localized:"Create complete backups including tasks, reminders, attachments, cards, tickets, Checklists, documents, Vault items, and app settings. Vault data in a backup requires a password for restoration. Restore everything or only selected sections on the same or another device."),
             icon: "externaldrive.badge.timemachine",
             tint: .indigo
         ),

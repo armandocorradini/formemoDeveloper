@@ -15,7 +15,7 @@ final class TripList {
     var notes: String = ""
     
     var systemTemplate: String = ""
-    
+    var checklistType: String = "travel"
     var sortOrder: Int = 0
     
     var createdAt: Date = Date()
@@ -53,6 +53,7 @@ final class TripList {
         colorHex: String = "",
         notes: String = "",
         systemTemplate: String = "",
+        checklistType: String = "travel",
         sortOrder: Int = 0,
         sections: [TripSectionData] = []
     ) {
@@ -61,6 +62,7 @@ final class TripList {
         self.colorHex = colorHex
         self.notes = notes
         self.systemTemplate = systemTemplate
+        self.checklistType = checklistType
         self.sortOrder = sortOrder
         self.sectionsData = try? JSONEncoder().encode(sections)
     }
@@ -86,6 +88,8 @@ extension TripList {
 
         item.tripSystemTemplate = trip.systemTemplate
         item.tripSortOrder = trip.sortOrder
+        
+        item.tripChecklistType = trip.checklistType
 
         item.tripSectionsData = try? JSONEncoder().encode(
             trip.sections

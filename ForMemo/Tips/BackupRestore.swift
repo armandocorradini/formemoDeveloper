@@ -149,7 +149,7 @@ struct BackupRestoreView: View {
                                 Text("Create Backup")
                                     .foregroundStyle(.blue)
                                     Text(
-                                        "Create a complete backup of tasks, notes, trip checklists, reminders, recurrence rules, tags, priorities, locations, cards and tickets, documents, attachments, Vault items and app settings."
+                                        "Create a complete backup of tasks, notes, checklists, reminders, recurrence rules, tags, priorities, locations, cards and tickets, documents, attachments, Vault items and app settings."
                                     )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -202,7 +202,7 @@ struct BackupRestoreView: View {
                                 Text("Backup includes")
 
                                 Text(
-                                    "Tasks, notes, trip checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, cards and tickets, documents, attachments and Vault items are included in the backup archive."
+                                    "Tasks, notes, checklists, reminders, recurrence rules, tags, priorities, snooze state, locations, cards and tickets, documents, attachments and Vault items are included in the backup archive."
                                 )
                                 
                                 .foregroundStyle(.secondary)
@@ -381,7 +381,7 @@ struct BackupRestoreView: View {
                             Text("Cards & Tickets: \(archive.loyaltyCards.count)")
 
                             if !archive.tripLists.isEmpty {
-                                Text("Trip Checklists: \(archive.tripLists.count)")
+                                Text("Checklists: \(archive.tripLists.count)")
                             }
 
                             if !archive.documents.isEmpty {
@@ -456,7 +456,7 @@ struct BackupRestoreView: View {
 
                             if !archive.tripLists.isEmpty {
                                 Toggle(
-                                    "Trip Checklists",
+                                    "Checklists",
                                     isOn: $restoreTripLists
                                 )
                             }
@@ -1596,6 +1596,7 @@ private struct TripListTransferObject: Codable {
     let colorHex: String
     let notes: String
     let systemTemplate: String
+    let checklistType: String?
     let sortOrder: Int
     let createdAt: Date
     let updatedAt: Date
@@ -1608,6 +1609,7 @@ private struct TripListTransferObject: Codable {
         self.colorHex = tripList.colorHex
         self.notes = tripList.notes
         self.systemTemplate = tripList.systemTemplate
+        self.checklistType = tripList.checklistType
         self.sortOrder = tripList.sortOrder
         self.createdAt = tripList.createdAt
         self.updatedAt = tripList.updatedAt
@@ -2213,12 +2215,17 @@ private enum BackupManager {
                     continue
                 }
 
+                let restoredChecklistType =
+                    tripDTO.checklistType
+                    ?? (tripDTO.systemTemplate.isEmpty ? "custom" : "travel")
+
                 let trip = TripList(
                     name: tripDTO.name,
                     icon: tripDTO.icon,
                     colorHex: tripDTO.colorHex,
                     notes: tripDTO.notes,
                     systemTemplate: tripDTO.systemTemplate,
+                    checklistType: restoredChecklistType,
                     sortOrder: tripDTO.sortOrder,
                     sections: tripDTO.sections
                 )
