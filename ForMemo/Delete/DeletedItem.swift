@@ -601,6 +601,7 @@ extension DeletedItem {
             trip.id = tripID ?? UUID()
 
             context.insert(trip)
+            return true
         }
 
         if type == "document" {

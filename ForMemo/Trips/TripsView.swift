@@ -134,26 +134,68 @@ struct TravelKitListView: View {
                         }
                         .padding(.vertical, 4)
                         .contextMenu {
+                            Button {
+                                let baseName = category.name
+                                var candidateName = baseName + " 2"
+                                var suffix = 2
 
-                            if sizeClass == .regular {
-
-                                Button {
-                                    editingCategory = category
-                                    newCategoryName = localizedTripText(category.name)
-                                    selectedIcon = category.icon
-                                    isEditingCategory = true
-                                    showNewCategorySheet = true
-                                } label: {
-                                    Label(String(localized: "Edit"), systemImage: "pencil")
+                                while categories.contains(where: {
+                                    localizedTripText($0.name) == localizedTripText(candidateName)
+                                }) {
+                                    suffix += 1
+                                    candidateName = baseName + " \(suffix)"
                                 }
 
-                                Button(role: .destructive) {
-                                    withAnimation {
-                                        deleteTrip(category, in: modelContext)
+                                let duplicated = TripList(
+                                    name: candidateName,
+                                    icon: category.icon,
+                                    systemTemplate: category.systemTemplate,
+                                    sections: category.sections.map { section in
+                                        TripSectionData(
+                                            title: section.title,
+                                            items: section.items.map {
+                                                TripItemData(
+                                                    title: $0.title,
+                                                    isChecked: $0.isChecked
+                                                )
+                                            }
+                                        )
                                     }
-                                } label: {
-                                    Label(String(localized: "Delete"), systemImage: "trash")
+                                )
+
+                                duplicated.sortOrder = (categories.map(\.sortOrder).max() ?? 0) + 1
+
+                                modelContext.insert(duplicated)
+                                try? modelContext.save()
+                            } label: {
+                                Label(
+                                    String(localized: "Duplicate"),
+                                    systemImage: "plus.square.on.square"
+                                )
+                            }
+
+                            Button {
+                                editingCategory = category
+                                newCategoryName = localizedTripText(category.name)
+                                selectedIcon = category.icon
+                                isEditingCategory = true
+                                showNewCategorySheet = true
+                            } label: {
+                                Label(
+                                    String(localized: "Edit"),
+                                    systemImage: "pencil"
+                                )
+                            }
+
+                            Button(role: .destructive) {
+                                withAnimation {
+                                    deleteTrip(category, in: modelContext)
                                 }
+                            } label: {
+                                Label(
+                                    String(localized: "Delete"),
+                                    systemImage: "trash"
+                                )
                             }
                         }
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
