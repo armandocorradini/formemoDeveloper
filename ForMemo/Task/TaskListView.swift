@@ -1451,49 +1451,11 @@ struct TodoSectionView: View {
             } label: {
                 Label("Complete", systemImage: "checkmark.circle")
             }
-            Menu {
-                Button {
-                    withAnimation(.snappy(duration: 0.22)) {
-                        postpone(t, byHours: 1)
-                    }
-                } label: {
-                    Label("+1 hour", systemImage: "clock.badge")
-                }
-
-                Button {
-                    withAnimation(.snappy(duration: 0.22)) {
-                        postpone(t, byHours: 3)
-                    }
-                } label: {
-                    Label("+3 hours", systemImage: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                }
-
-                Button {
-                    withAnimation(.snappy(duration: 0.22)) {
-                        postpone(t, byDays: 1)
-                    }
-                } label: {
-                    Label("+1 day", systemImage: "sun.max")
-                }
-
-                Button {
-                    withAnimation(.snappy(duration: 0.22)) {
-                        postpone(t, byDays: 2)
-                    }
-                } label: {
-                    Label("+2 days", systemImage: "calendar")
-                }
-
-                Button {
-                    withAnimation(.snappy(duration: 0.22)) {
-                        postpone(t, byDays: 3)
-                    }
-                } label: {
-                    Label("+3 days", systemImage: "calendar.badge.clock")
-                }
-            } label: {
-                Label("Reschedule", systemImage: "clock")
-            }
+            
+            
+            TaskRescheduleMenu(task: t)
+            
+            
             if let deadline = t.deadLine,
 
                 deadline < Date() {
@@ -1609,34 +1571,6 @@ struct TodoSectionView: View {
         } catch {
             AppLogger.persistence.fault("Failed to save context: \(error)")
         }
-    }
-
-    @MainActor
-    private func postpone(_ task: TodoTask, byHours hours: Int) {
-
-        let baseDate = task.deadLine ?? Date()
-        let newDate = Calendar.current.date(byAdding: .hour, value: hours, to: baseDate) ?? baseDate
-
-        postpone(task, to: newDate)
-    }
-
-    @MainActor
-    private func postpone(_ task: TodoTask, byDays days: Int) {
-
-        let baseDate = task.deadLine ?? Date()
-        let newDate = Calendar.current.date(byAdding: .day, value: days, to: baseDate) ?? baseDate
-
-        postpone(task, to: newDate)
-    }
-
-    @MainActor
-    private func postpone(_ task: TodoTask, to newDate: Date) {
-
-        task.deadLine = newDate
-
-        persistChanges()
-
-        NotificationManager.shared.refresh(force: false)
     }
 
     @MainActor
