@@ -2140,12 +2140,26 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Fishing Gear")
     _ = String(localized: "Insect Repellent")
     _ = String(localized: "Cooler Bag")
+    
+    
     // Generic checklist templates
+
     _ = String(localized: "Project")
     _ = String(localized: "Work")
     _ = String(localized: "Home")
     _ = String(localized: "Event")
     _ = String(localized: "Personal")
+
+    // Section titles
+    _ = String(localized: "Planning")
+    _ = String(localized: "Execution")
+    _ = String(localized: "Finalization")
+    _ = String(localized: "Preparation")
+    _ = String(localized: "Tasks")
+    _ = String(localized: "Follow-up")
+    _ = String(localized: "Final Checks")
+    _ = String(localized: "Event Day")
+    _ = String(localized: "Review")
 
     // Project
     _ = String(localized: "Define objectives")
@@ -2172,6 +2186,7 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Review agenda")
     _ = String(localized: "Prepare documents")
     _ = String(localized: "Check deadlines")
+    _ = String(localized: "Review priorities")
     _ = String(localized: "Prepare meetings")
     _ = String(localized: "Check pending requests")
     _ = String(localized: "Priority tasks")
@@ -2192,6 +2207,8 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Make a plan")
     _ = String(localized: "Check supplies")
     _ = String(localized: "Prepare tools")
+    _ = String(localized: "Set priorities")
+    _ = String(localized: "Set deadlines")
     _ = String(localized: "Organize materials")
     _ = String(localized: "Cleaning")
     _ = String(localized: "Shopping")
@@ -2200,7 +2217,6 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Organizing")
     _ = String(localized: "Laundry")
     _ = String(localized: "Other tasks")
-    _ = String(localized: "Final Checks")
     _ = String(localized: "Review completed tasks")
     _ = String(localized: "Clean up")
     _ = String(localized: "Put everything away")
@@ -2221,29 +2237,38 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Prepare the location")
     _ = String(localized: "Check guest responses")
     _ = String(localized: "Prepare final details")
-    _ = String(localized: "Event Day")
     _ = String(localized: "Final check")
     _ = String(localized: "Welcome guests")
     _ = String(localized: "Follow the schedule")
     _ = String(localized: "Complete event")
+    _ = String(localized: "Clean up")
+    _ = String(localized: "Review remaining tasks")
 
     // Personal
     _ = String(localized: "Define goals")
+    _ = String(localized: "Set priorities")
+    _ = String(localized: "Set deadlines")
+    _ = String(localized: "Make a plan")
+    _ = String(localized: "Define next steps")
     _ = String(localized: "Set reminders")
     _ = String(localized: "Important tasks")
     _ = String(localized: "Things to do")
     _ = String(localized: "Errands")
     _ = String(localized: "Calls")
     _ = String(localized: "Appointments")
+    _ = String(localized: "Follow-ups")
     _ = String(localized: "Personal projects")
-    _ = String(localized: "Review")
+    _ = String(localized: "Review progress")
+    _ = String(localized: "Complete remaining tasks")
     _ = String(localized: "Adjust priorities")
+    _ = String(localized: "Review deadlines")
     _ = String(localized: "Archive completed items")
+
+    // Checklist UI
     _ = String(localized: "Search checklists")
     _ = String(localized: "items")
     _ = String(localized: "Delete")
     _ = String(localized: "Cancel")
     _ = String(localized: "Collapse All Sections")
     _ = String(localized: "Expand All Sections")
-    _ = String(localized: "Towel")
 }
