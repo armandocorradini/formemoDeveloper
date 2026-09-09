@@ -250,9 +250,7 @@ struct ChecklistListView: View {
             .contentMargins(.bottom, 70, for: .scrollContent)
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
-//            .onAppear {
-//                preloadTripLocalizationKeys()
-//            }
+
             .navigationTitle(String(localized: "Checklists"))
             .navigationBarTitleDisplayMode(.inline)
             .searchable(
@@ -905,9 +903,57 @@ struct ChecklistView: View {
     @State private var editingSectionID: UUID?
     @State private var sectionTitleDraft = ""
     @State private var showRenameSectionAlert = false
-    @FocusState private var isEditingTextField: Bool
+
+    @FocusState private var editingItemID: UUID?
+    @State private var newlyCreatedItemID: UUID?
+    @State private var newItemDraft: String = ""
     @State private var areAllSectionsCollapsed = false
     @State private var showResetChecksConfirmation = false
+    
+    @ViewBuilder
+    private func newItemDraftRow(
+        for section: Binding<TripSectionData>
+    ) -> some View {
+        if newlyCreatedItemID != nil {
+            HStack {
+                Image(systemName: "circle")
+                    .foregroundStyle(.secondary)
+                    .font(.title3)
+
+                TextField(
+                    String(localized: "Item"),
+                    text: $newItemDraft
+                )
+                .textFieldStyle(.plain)
+                .focused(
+                    $editingItemID,
+                    equals: newlyCreatedItemID
+                )
+                .onSubmit {
+                    let title = newItemDraft
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                    guard !title.isEmpty else {
+                        newlyCreatedItemID = nil
+                        newItemDraft = ""
+                        editingItemID = nil
+                        return
+                    }
+
+                    let newItem = TripItemData(title: title)
+                    section.wrappedValue.items.append(newItem)
+
+                    newlyCreatedItemID = nil
+                    newItemDraft = ""
+                    editingItemID = nil
+                }
+            }
+            .listRowBackground(
+                Color(.systemBackground).opacity(0.3)
+            )
+        }
+    }
+    
     
     var body: some View {
         ZStack {
@@ -918,6 +964,7 @@ struct ChecklistView: View {
             ForEach($category.sections) { $section in
                 Section {
                     if !section.isCollapsed {
+
                         ForEach(Array(section.items.enumerated()), id: \.element.id) { itemIndex, _ in
                             let itemBinding = $section.items[itemIndex]
                             HStack {
@@ -943,12 +990,32 @@ struct ChecklistView: View {
                                     text: bindingForLocalizedTripText(itemBinding.title)
                                 )
                                 .textFieldStyle(.plain)
-                                .focused($isEditingTextField)
+                                .focused(
+                                    $editingItemID,
+                                    equals: itemBinding.id
+                                )
+                                .onChange(of: editingItemID) { _, newFocusID in
+                                    guard
+                                        newFocusID != newlyCreatedItemID,
+                                        let newItemID = newlyCreatedItemID
+                                    else {
+                                        return
+                                    }
+
+                                    if let index = section.items.firstIndex(where: { $0.id == newItemID }),
+                                       section.items[index].title
+                                           .trimmingCharacters(in: .whitespacesAndNewlines)
+                                           .isEmpty {
+                                        section.items.remove(at: index)
+                                    }
+
+                                    newlyCreatedItemID = nil
+                                }
                                 .strikethrough(itemBinding.isChecked.wrappedValue)
                                 .foregroundStyle(
                                     itemBinding.isChecked.wrappedValue
-                                    ? AnyShapeStyle(.secondary)
-                                    : AnyShapeStyle(.primary)
+                                        ? AnyShapeStyle(.secondary)
+                                        : AnyShapeStyle(.primary)
                                 )
                             }
                             .listRowBackground(
@@ -962,17 +1029,24 @@ struct ChecklistView: View {
                                 }
                             }
                         }
+                        
+                        
                         .onDelete { indexSet in
                             section.items.remove(atOffsets: indexSet)
                         }
                         .onMove { source, destination in
                             section.items.move(fromOffsets: source, toOffset: destination)
                         }
-
+                        newItemDraftRow(for: $section)
+                        
                         Button {
-                            section.items.append(
-                                TripItemData(title: String(localized: "New Item"))
-                            )
+                            newItemDraft = ""
+                            let newItemID = UUID()
+                            newlyCreatedItemID = newItemID
+
+                            DispatchQueue.main.async {
+                                editingItemID = newItemID
+                            }
                         } label: {
                             Label(String(localized: "Add Item"), systemImage: "plus")
                         }
@@ -1030,7 +1104,7 @@ struct ChecklistView: View {
                         }
 
                         Button {
-                            isEditingTextField = false
+                            editingItemID = nil
 
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                                 withAnimation(.easeInOut(duration: 0.2)) {
@@ -1086,6 +1160,7 @@ struct ChecklistView: View {
             category.lastOpenedAt = Date()
             try? modelContext.save()
         }
+
         .navigationTitle(localizedTripText(category.name))
         .scrollDismissesKeyboard(.immediately)
         .toolbar {

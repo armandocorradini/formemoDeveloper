@@ -21561,6 +21561,7 @@
       }
     },
     "New Item" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -33404,7 +33405,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Template"
+            "value" : "Modelli"
           }
         }
       }
