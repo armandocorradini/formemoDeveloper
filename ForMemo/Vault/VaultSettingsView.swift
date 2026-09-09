@@ -48,7 +48,11 @@ struct VaultSettingsView: View {
                         refreshAutoFillStatus()
                     }
 
-                    if autoFillEnabled != true {
+                    if autoFillEnabled == true {
+                        Text("To disable AutoFill, go to Settings > General > AutoFill & Passwords, then turn off ForMemo.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
                         Text("To use AutoFill, go to Settings > General > AutoFill & Passwords, then turn on ForMemo.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)

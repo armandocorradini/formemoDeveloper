@@ -35115,6 +35115,34 @@
         }
       }
     },
+    "To disable AutoFill, go to Settings > General > AutoFill & Passwords, then turn off ForMemo." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deaktiviere das automatische Ausfüllen: Öffne Einstellungen > Allgemein > Automatisches Ausfüllen und Passwörter und deaktiviere ForMemo."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para desactivar Autorrelleno, ve a Ajustes > General > Autorrelleno y contraseñas y desactiva ForMemo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactiver le remplissage automatique : accédez à Réglages > Général > Remplissage automatique et mots de passe, puis désactivez ForMemo."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per disattivare AutoFill, vai in Impostazioni > Generali > AutoFill e password, quindi disattiva ForMemo."
+          }
+        }
+      }
+    },
     "To do" : {
       "localizations" : {
         "de" : {
