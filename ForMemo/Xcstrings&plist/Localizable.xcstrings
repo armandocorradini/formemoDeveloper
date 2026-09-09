@@ -5519,7 +5519,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les sauvegardes peuvent inclure les tâches, notes, rappels, règles de récurrence, tags, priorités, lieux, pièces jointes, cartes, billets et logos, checklists, documents, données du Coffre-fort et réglages de l’app. Les sauvegardes sont indépendantes de la synchronisation iCloud et peuvent être utilisées pour transférer vos données vers un autre appareil compatible."
+            "value" : "Les sauvegardes peuvent inclure les tâches, notes, rappels, règles de récurrence, tags, priorités, lieux, pièces jointes, cartes, billets et logos, listes de contrôle, documents, données du Coffre-fort et réglages de l’app. Les sauvegardes sont indépendantes de la synchronisation iCloud et peuvent être utilisées pour transférer vos données vers un autre appareil compatible."
           }
         },
         "it" : {
@@ -6869,7 +6869,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "v¿Puedo abrir aplicaciones de navegación desde una tarea?"
+            "value" : "¿Puedo abrir aplicaciones de navegación desde una tarea?"
           }
         },
         "fr" : {
@@ -21560,35 +21560,6 @@
         }
       }
     },
-    "New Item" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Neues Element"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuevo elemento"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nouvel élément"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuovo elemento"
-          }
-        }
-      }
-    },
     "New Note" : {
       "localizations" : {
         "de" : {
@@ -31231,7 +31202,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importa checklist"
+            "value" : "Ordinamento"
           }
         }
       }
@@ -40779,7 +40750,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Vous pouvez importer un fichier de sauvegarde sur un autre appareil compatible pour restaurer vos tâches, cartes, billets, pièces jointes, checklists, documents et données associées."
+            "value" : "Oui. Vous pouvez importer un fichier de sauvegarde sur un autre appareil compatible pour restaurer vos tâches, cartes, billets, pièces jointes, listes de contrôle, documents et données associées."
           }
         },
         "it" : {
@@ -40857,7 +40828,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes escanear rápidamente códigos de barras y códigos QR utilizando la cámara del dispositivo y guardar tarjetas y tickets directamente en la Wallet. Los tickets también pueden importarse desde imágenes que contengan códigos compatibles."
+            "value" : "Sí. Puedes escanear rápidamente códigos de barras y códigos QR utilizando la cámara del dispositivo y guardar tarjetas y entradas directamente en Wallet. Los tickets también pueden importarse desde imágenes que contengan códigos compatibles."
           }
         },
         "fr" : {
@@ -40869,7 +40840,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare attività, carte, tickets, allegati, viaggi, documenti e dati correlati."
+            "value" : "Sì. Puoi scansionare rapidamente codici a barre e codici QR utilizzando la fotocamera del dispositivo e salvare direttamente le tessere e i biglietti nel Wallet. I biglietti possono anche essere importati da immagini contenenti codici supportati."
           }
         }
       }
@@ -41139,7 +41110,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Puede previsualizar la información de diagnóstico exacta antes de exportarla."
+            "value" : "Puedes previsualizar la información de diagnóstico exacta antes de exportarla."
           }
         },
         "fr" : {
