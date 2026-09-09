@@ -17,7 +17,7 @@ struct ChecklistListView: View {
     
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var sizeClass
-    
+
     @Query(sort: \TripList.sortOrder)
     private var categories: [TripList]
     
@@ -896,6 +896,7 @@ import SwiftUI
 struct ChecklistView: View {
     
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @Bindable var category: TripList
     
     @State private var newSectionTitle = ""
@@ -906,6 +907,7 @@ struct ChecklistView: View {
 
     @FocusState private var editingItemID: UUID?
     @State private var newlyCreatedItemID: UUID?
+    @State private var newlyCreatedItemSectionID: UUID?
     @State private var newItemDraft: String = ""
     @State private var areAllSectionsCollapsed = false
     @State private var showResetChecksConfirmation = false
@@ -914,7 +916,7 @@ struct ChecklistView: View {
     private func newItemDraftRow(
         for section: Binding<TripSectionData>
     ) -> some View {
-        if newlyCreatedItemID != nil {
+        if newlyCreatedItemSectionID == section.wrappedValue.id {
             HStack {
                 Image(systemName: "circle")
                     .foregroundStyle(.secondary)
@@ -925,25 +927,47 @@ struct ChecklistView: View {
                     text: $newItemDraft
                 )
                 .textFieldStyle(.plain)
-                .focused(
-                    $editingItemID,
-                    equals: newlyCreatedItemID
-                )
+                .focused($editingItemID, equals: newlyCreatedItemID)
+                .onChange(of: newItemDraft) { _, newValue in
+                    let title = newValue
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                    if title.isEmpty {
+                        if let itemIndex = section.wrappedValue.items.firstIndex(
+                            where: { $0.id == newlyCreatedItemID }
+                        ) {
+                            section.wrappedValue.items.remove(at: itemIndex)
+                            try? modelContext.save()
+                        }
+                        return
+                    }
+
+                    if let itemIndex = section.wrappedValue.items.firstIndex(
+                        where: { $0.id == newlyCreatedItemID }
+                    ) {
+                        section.wrappedValue.items[itemIndex].title = newValue
+                    } else {
+                        let newItem = TripItemData(title: newValue)
+                        newlyCreatedItemID = newItem.id
+                        section.wrappedValue.items.append(newItem)
+                    }
+
+                    try? modelContext.save()
+                }
                 .onSubmit {
                     let title = newItemDraft
                         .trimmingCharacters(in: .whitespacesAndNewlines)
 
                     guard !title.isEmpty else {
                         newlyCreatedItemID = nil
+                        newlyCreatedItemSectionID = nil
                         newItemDraft = ""
                         editingItemID = nil
                         return
                     }
 
-                    let newItem = TripItemData(title: title)
-                    section.wrappedValue.items.append(newItem)
-
                     newlyCreatedItemID = nil
+                    newlyCreatedItemSectionID = nil
                     newItemDraft = ""
                     editingItemID = nil
                 }
@@ -953,6 +977,32 @@ struct ChecklistView: View {
             )
         }
     }
+    
+    
+    private func cleanupNewItem() {
+        guard
+            let newItemID = newlyCreatedItemID,
+            let sectionID = newlyCreatedItemSectionID,
+            let sectionIndex = category.sections.firstIndex(where: { $0.id == sectionID }),
+            let itemIndex = category.sections[sectionIndex].items.firstIndex(where: { $0.id == newItemID })
+        else {
+            return
+        }
+
+        let title = category.sections[sectionIndex].items[itemIndex].title
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if title.isEmpty {
+            category.sections[sectionIndex].items.remove(at: itemIndex)
+            try? modelContext.save()
+        }
+
+        newlyCreatedItemID = nil
+        newlyCreatedItemSectionID = nil
+        newItemDraft = ""
+        editingItemID = nil
+    }
+    
     
     
     var body: some View {
@@ -967,82 +1017,69 @@ struct ChecklistView: View {
 
                         ForEach(Array(section.items.enumerated()), id: \.element.id) { itemIndex, _ in
                             let itemBinding = $section.items[itemIndex]
-                            HStack {
-                                Button {
-                                    itemBinding.isChecked.wrappedValue.toggle()
-                                } label: {
-                                    Image(
-                                        systemName: itemBinding.isChecked.wrappedValue
-                                        ? "checkmark.circle"
-                                        : "circle"
+
+                            if itemBinding.wrappedValue.id != newlyCreatedItemID {
+                                HStack {
+                                    Button {
+                                        itemBinding.isChecked.wrappedValue.toggle()
+                                    } label: {
+                                        Image(
+                                            systemName: itemBinding.isChecked.wrappedValue
+                                            ? "checkmark.circle"
+                                            : "circle"
+                                        )
+                                        .foregroundStyle(
+                                            itemBinding.isChecked.wrappedValue
+                                            ? AnyShapeStyle(.green)
+                                            : AnyShapeStyle(.secondary)
+                                        )
+                                        .font(.title3)
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    TextField(
+                                        String(localized: "Item"),
+                                        text: bindingForLocalizedTripText(itemBinding.title)
                                     )
+                                    .textFieldStyle(.plain)
+                                    .focused(
+                                        $editingItemID,
+                                        equals: itemBinding.id
+                                    )
+                                    .strikethrough(itemBinding.isChecked.wrappedValue)
                                     .foregroundStyle(
                                         itemBinding.isChecked.wrappedValue
-                                        ? AnyShapeStyle(.green)
-                                        : AnyShapeStyle(.secondary)
-                                    )
-                                    .font(.title3)
-                                }
-                                .buttonStyle(.plain)
-
-                                TextField(
-                                    String(localized: "Item"),
-                                    text: bindingForLocalizedTripText(itemBinding.title)
-                                )
-                                .textFieldStyle(.plain)
-                                .focused(
-                                    $editingItemID,
-                                    equals: itemBinding.id
-                                )
-                                .onChange(of: editingItemID) { _, newFocusID in
-                                    guard
-                                        newFocusID != newlyCreatedItemID,
-                                        let newItemID = newlyCreatedItemID
-                                    else {
-                                        return
-                                    }
-
-                                    if let index = section.items.firstIndex(where: { $0.id == newItemID }),
-                                       section.items[index].title
-                                           .trimmingCharacters(in: .whitespacesAndNewlines)
-                                           .isEmpty {
-                                        section.items.remove(at: index)
-                                    }
-
-                                    newlyCreatedItemID = nil
-                                }
-                                .strikethrough(itemBinding.isChecked.wrappedValue)
-                                .foregroundStyle(
-                                    itemBinding.isChecked.wrappedValue
                                         ? AnyShapeStyle(.secondary)
                                         : AnyShapeStyle(.primary)
+                                    )
+                                }
+                                .listRowBackground(
+                                    Color(.systemBackground).opacity(0.3)
                                 )
-                            }
-                            .listRowBackground(
-                                Color(.systemBackground).opacity(0.3)
-                            )
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    section.items.remove(at: itemIndex)
-                                } label: {
-                                    Label(String(localized: "Delete"), systemImage: "trash")
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        section.items.remove(at: itemIndex)
+                                    } label: {
+                                        Label(String(localized: "Delete"), systemImage: "trash")
+                                    }
                                 }
                             }
                         }
-                        
-                        
                         .onDelete { indexSet in
                             section.items.remove(atOffsets: indexSet)
                         }
                         .onMove { source, destination in
                             section.items.move(fromOffsets: source, toOffset: destination)
                         }
+
                         newItemDraftRow(for: $section)
                         
                         Button {
-                            newItemDraft = ""
                             let newItemID = UUID()
+
                             newlyCreatedItemID = newItemID
+                            newlyCreatedItemSectionID = section.id
+                            newItemDraft = ""
 
                             DispatchQueue.main.async {
                                 editingItemID = newItemID
@@ -1174,79 +1211,81 @@ struct ChecklistView: View {
                 }
             }
             ToolbarItem(placement: .topBarLeading) {
-                Menu {
-                    if TripClipboard.shared.copiedSection != nil {
-
-                        Button {
-
-                            guard let copied = TripClipboard.shared.copiedSection
-                            else { return }
-
-                            var newTitle = copied.title
-                            var suffix = 2
-
-                            while category.sections.contains(where: {
-                                localizedTripText($0.title) ==
-                                localizedTripText(newTitle)
-                            }) {
-
-                                newTitle = "\(copied.title) \(suffix)"
-                                suffix += 1
-                            }
-
-                            category.sections.append(
-                                TripSectionData(
-                                    title: newTitle,
-                                    items: copied.items.map {
-                                        TripItemData(
-                                            title: $0.title,
-                                            isChecked: false
-                                        )
-                                    }
+                    
+                    Menu {
+                        if TripClipboard.shared.copiedSection != nil {
+                            
+                            Button {
+                                
+                                guard let copied = TripClipboard.shared.copiedSection
+                                else { return }
+                                
+                                var newTitle = copied.title
+                                var suffix = 2
+                                
+                                while category.sections.contains(where: {
+                                    localizedTripText($0.title) ==
+                                    localizedTripText(newTitle)
+                                }) {
+                                    
+                                    newTitle = "\(copied.title) \(suffix)"
+                                    suffix += 1
+                                }
+                                
+                                category.sections.append(
+                                    TripSectionData(
+                                        title: newTitle,
+                                        items: copied.items.map {
+                                            TripItemData(
+                                                title: $0.title,
+                                                isChecked: false
+                                            )
+                                        }
+                                    )
                                 )
-                            )
-
-                            try? modelContext.save()
-
+                                
+                                try? modelContext.save()
+                                
+                            } label: {
+                                Label(
+                                    String(localized: "Paste Section"),
+                                    systemImage: "doc.on.clipboard"
+                                )
+                            }
+                            
+                            Divider()
+                        }
+                        Button {
+                            showResetChecksConfirmation = true
+                        } label: {
+                            Label(String(localized: "Reset Checks"), systemImage: "arrow.counterclockwise")
+                        }
+                        
+                        Button {
+                            let shouldCollapse = category.sections.contains { !$0.isCollapsed }
+                            
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                for index in category.sections.indices {
+                                    category.sections[index].isCollapsed = shouldCollapse
+                                }
+                            }
+                            
+                            areAllSectionsCollapsed = shouldCollapse
                         } label: {
                             Label(
-                                String(localized: "Paste Section"),
-                                systemImage: "doc.on.clipboard"
-                            )
-                        }
-
-                        Divider()
-                    }
-                    Button {
-                        showResetChecksConfirmation = true
-                    } label: {
-                        Label(String(localized: "Reset Checks"), systemImage: "arrow.counterclockwise")
-                    }
-
-                    Button {
-                        let shouldCollapse = category.sections.contains { !$0.isCollapsed }
-
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            for index in category.sections.indices {
-                                category.sections[index].isCollapsed = shouldCollapse
-                            }
-                        }
-
-                        areAllSectionsCollapsed = shouldCollapse
-                    } label: {
-                        Label(
-                            category.sections.contains { !$0.isCollapsed }
+                                category.sections.contains { !$0.isCollapsed }
                                 ? String(localized: "Collapse All Sections")
                                 : String(localized: "Expand All Sections"),
-                            systemImage: category.sections.contains { !$0.isCollapsed }
+                                systemImage: category.sections.contains { !$0.isCollapsed }
                                 ? "arrow.up.left.and.arrow.down.right"
                                 : "arrow.down.right.and.arrow.up.left"
-                        )
+                            )
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
                     }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
                 }
-            }
+        
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showNewSectionAlert = true
@@ -1276,6 +1315,12 @@ struct ChecklistView: View {
                         items: []
                     )
                 )
+
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("Failed to save new checklist section:", error)
+                }
 
                 newSectionTitle = ""
             }
