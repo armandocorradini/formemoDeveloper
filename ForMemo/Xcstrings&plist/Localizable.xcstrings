@@ -3569,7 +3569,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Amethyst"
+            "value" : "Amatista"
           }
         },
         "fr" : {
@@ -4143,7 +4143,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le checklist sono incluse nei backup?"
+            "value" : "Le checklist sono sincronizzate e incluse nei backup?"
           }
         }
       }
@@ -7765,7 +7765,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Carbon"
+            "value" : "Carbono"
           }
         },
         "fr" : {
@@ -8565,7 +8565,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "e checklist ti aiutano a organizzare attività ed elementi in sezioni. Puoi utilizzarle per viaggi, progetti, lavoro, casa, eventi, attività personali e molto altro. Puoi crearle da zero o partire da un modello, organizzarle in sezioni e contrassegnare gli elementi come completati man mano che li prepari."
+            "value" : "Checklist ti aiutano a organizzare attività ed elementi in sezioni. Puoi utilizzarle per viaggi, progetti, lavoro, casa, eventi, attività personali e molto altro. Puoi crearle da zero o partire da un modello, organizzarle in sezioni e contrassegnare gli elementi come completati man mano che li prepari."
           }
         }
       }
@@ -22885,7 +22885,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Notas te permite crear, editar, organizar y almacenar notas personales por separado de tus tareas. Notas está pensado para información que no necesita gestionarse como una tarea."
+            "value" : "Notas te permite crear, editar, organizar y almacenar notas personales por separado de tus tareas. Notas está pensada para información que no necesita gestionarse como una tarea."
           }
         },
         "fr" : {
@@ -22897,7 +22897,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Note ti permette di creare, modificare, organizzare e archiviare note personali separatamente dalle tue attività. Note è pensato per le informazioni che non devono essere gestite come attività."
+            "value" : "Note ti permette di creare, modificare, organizzare e archiviare note personali separatamente dalle tue attività. Note è pensata per le informazioni che non devono essere gestite come attività."
           }
         }
       }
@@ -27826,7 +27826,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rose"
+            "value" : "Rosa"
           }
         },
         "fr" : {
@@ -28022,7 +28022,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sand"
+            "value" : "Arena"
           }
         },
         "fr" : {
@@ -40632,7 +40632,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes elegir el color para resaltar tareas con prioridad crítica en Configuración."
+            "value" : "Sí. Puedes elegir el color para resaltar tareas con prioridad crítica en Ajustes."
           }
         },
         "fr" : {
@@ -40644,7 +40644,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Puoi scegliere il colore per evidenziare i task con priorità critica nelle Impostazioni."
+            "value" : "Sì. Puoi scegliere il colore per evidenziare le attività con priorità critica nelle Impostazioni."
           }
         }
       }
