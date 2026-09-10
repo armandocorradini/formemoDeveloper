@@ -35138,7 +35138,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Per disattivare AutoFill, vai in Impostazioni > Generali > AutoFill e password, quindi disattiva ForMemo."
+            "value" : "Per disattivare Inserimento automatico, vai in Impostazioni > Generali > Inserimento automatico e password, quindi disattiva ForMemo."
           }
         }
       }
