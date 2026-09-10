@@ -5672,34 +5672,6 @@
         }
       }
     },
-    "Barcode Value" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Barcode-Wert"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Valor del código de barras"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Valeur du code-barres"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Valore codice a barre"
-          }
-        }
-      }
-    },
     "Bathroom" : {
       "localizations" : {
         "de" : {
@@ -9268,6 +9240,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Formato codice"
+          }
+        }
+      }
+    },
+    "Code Value" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Codewert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valor del código"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valeur du code"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valore del codice"
           }
         }
       }
@@ -15893,34 +15893,6 @@
         }
       }
     },
-    "Format" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Format"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Formato"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Format"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Formato"
-          }
-        }
-      }
-    },
     "ForMemo automatically uses your Apple ID and personal iCloud account when iCloud is available. No separate ForMemo account or sign-in is required." : {
       "localizations" : {
         "de" : {
@@ -18258,6 +18230,34 @@
         }
       }
     },
+    "Import Code from Photo" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Code aus Foto importieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar código desde una foto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importer le code depuis une photo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importa codice da una foto"
+          }
+        }
+      }
+    },
     "Import Credentials" : {
       "localizations" : {
         "de" : {
@@ -18340,34 +18340,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Importa da Calendario"
-          }
-        }
-      }
-    },
-    "Import from Photo" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aus Foto importieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importar desde una foto"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importer depuis une photo"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importa da foto"
           }
         }
       }
@@ -18544,34 +18516,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Importa attività da Apple Promemoria, Calendario o file CSV. Evita duplicati e tieni tutto in un unico posto.\n\nNota: gli allegati non sono inclusi nelle importazioni."
-          }
-        }
-      }
-    },
-    "Import Ticket from Photo" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ticket aus Foto importieren"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importar ticket desde una foto"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importer un ticket depuis une photo"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Importa ticket da foto"
           }
         }
       }
@@ -28153,30 +28097,30 @@
         }
       }
     },
-    "Scan Barcode, QR Code or Ticket" : {
+    "Scan Code" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Barcode oder QR-Code scannen oder Ticket"
+            "value" : "Code scannen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escanear código de barras o código QR o ticket"
+            "value" : "Escanear código"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scanner un code-barres ou un code QR ou un ticket"
+            "value" : "Scanner un code"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scansiona codice a barre o codice QR o  ticket"
+            "value" : "Scansiona codice"
           }
         }
       }

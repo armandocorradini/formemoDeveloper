@@ -233,26 +233,28 @@ struct EditLoyaltyCardView: View {
                     TextField(
                         isTicket
                         ? String(localized: "Ticket Code")
-                        : String(localized: "Barcode Value"),
+                        : String(localized: "Code Value"),
                         text: $card.barcodeValue
                     )
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
-
-                    TextField(
-                        isTicket
-                        ? String(localized: "Code Format")
-                        : String(localized: "Format"),
-                        text: $card.barcodeFormat
-                    )
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
+                    .font(.body.monospaced())
+                    if !card.barcodeValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        LabeledContent(
+                            isTicket
+                            ? String(localized: "Code Format")
+                            : String(localized: "Code Format")
+                        ) {
+                            Text(card.barcodeFormat)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                     
                     Button {
                         showScanner = true
                     } label: {
                         Label(
-                            "Scan Barcode, QR Code or Ticket",
+                            "Scan Code",
                             systemImage: "qrcode.viewfinder"
                         )
                     }
@@ -262,7 +264,7 @@ struct EditLoyaltyCardView: View {
                         matching: .images
                     ) {
                         Label(
-                            "Import from Photo",
+                            "Import Code from Photo",
                             systemImage: "photo.badge.magnifyingglass"
                         )
                     }
@@ -299,9 +301,9 @@ struct EditLoyaltyCardView: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
+                        saveChanges()
                         dismiss()
                     }
-               
                 }
             }
             .onAppear {
@@ -399,7 +401,7 @@ struct EditLoyaltyCardView: View {
                         }
                     } catch {
                         assertionFailure(
-                            "Failed to detect barcode from photo: \(error)"
+                            "Failed to detect Code from photo: \(error)"
                         )
                     }
                 }
@@ -620,8 +622,6 @@ struct EditLoyaltyCardView: View {
         modelContext.safeSave(
             operation: "SaveLoyaltyCard"
         )
-
-        dismiss()
     }
     
     private func presentCamera(

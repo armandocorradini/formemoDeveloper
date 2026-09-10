@@ -266,7 +266,7 @@ struct LoyaltyCardDetailView: View {
                     Text(
                         isTicket
                         ? String(localized: "Ticket Code")
-                        : String(localized: "Barcode Value")
+                        : String(localized: "Code Value")
                     )
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)

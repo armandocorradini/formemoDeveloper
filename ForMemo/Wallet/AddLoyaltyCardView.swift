@@ -254,33 +254,35 @@ struct AddLoyaltyCardView: View {
                         TextField(
                             itemType == "ticket"
                             ? String(localized: "Ticket Code")
-                            : String(localized: "Barcode Value"),
+                            : String(localized: "Code Value"),
                             text: $barcodeValue
                         )
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .font(.body.monospaced())
 
-                        LabeledContent(
-                            itemType == "ticket"
-                            ? String(localized: "Code Format")
-                            : String(localized: "Format")
-                        ) {
-                            Text(barcodeFormat)
-                                .foregroundStyle(.secondary)
+                        if !barcodeValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            LabeledContent(
+                                itemType == "ticket"
+                                ? String(localized: "Code Format")
+                                : String(localized: "Code Format")
+                            ) {
+                                Text(barcodeFormat)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
 
                         Button {
                             showScanner = true
                         } label: {
-                            Label("Scan Barcode, QR Code or Ticket", systemImage: "qrcode.viewfinder")
+                            Label("Scan Code", systemImage: "qrcode.viewfinder")
                         }
                             PhotosPicker(
                                 selection: $selectedTicketImageItem,
                                 matching: .images
                             ) {
                                 Label(
-                                    "Import Ticket from Photo",
+                                    "Import Code from Photo",
                                     systemImage: "photo.badge.magnifyingglass"
                                 )
                             }
