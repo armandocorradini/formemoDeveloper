@@ -784,19 +784,19 @@ private extension AddTaskIntent {
         
         .home: [
             // EN
-            "home","house","clean","cleaning","groceries","shopping","cook","kitchen","laundry","bills","repair","maintenance",
+            "home","house","clean","cleaning","cook","kitchen","laundry","bills","repair","maintenance",
             "rent","mortgage","utilities","electricity","water","gas","internet","wifi","furniture","garden","plants","tools",
             "vacuum","dishwasher","fridge","oven","bedroom","bathroom",
             
             // IT
-            "casa","pulizie","spesa","cucinare","lavatrice","bollette","riparare","manutenzione",
+            "casa","pulizie","cucinare","lavatrice","bollette","riparare","manutenzione",
             "affitto","mutuo","utenze","luce","acqua","gas","internet","wifi","mobili","giardino","piante",
             "aspirapolvere","lavastoviglie","frigo","forno",
             
             // FR / ES / DE
-            "maison","ménage","courses","cuisine","factures",
-            "casa","limpieza","compras","cocinar","facturas",
-            "haus","putzen","einkaufen","kochen","rechnungen"
+            "maison","ménage","cuisine","factures",
+            "casa","limpieza","cocinar","facturas",
+            "haus","putzen","kochen","rechnungen"
         ],
         
         .family: [
@@ -861,15 +861,89 @@ private extension AddTaskIntent {
             "perro","gato","animal","veterinario",
             "hund","katze","tier","tierarzt"
         ],
-        
+        .friends: [
+            // EN
+            "friend","friends","buddy","buddies","bestfriend","bestfriends",
+            "friendship","hangout","hangout with friends","meet friends",
+
+            // IT
+            "amico","amici","amica","amiche","amicizia",
+            "uscire con amici","vedere amici","incontrare amici",
+
+            // FR
+            "ami","amis","amie","amies","amitié",
+
+            // ES
+            "amigo","amigos","amiga","amigas","amistad",
+
+            // DE
+            "freund","freunde","freundin","freundinnen","freundschaft"
+        ],
+
+        .finance: [
+            // EN
+            "finance","finances","money","bank","banking","payment","payments",
+            "pay","paid","salary","income","expense","expenses","tax","taxes",
+            "bill","bills","budget","savings","saving","investment","investments",
+            "transfer","mortgage","loan","credit","debit","account",
+
+            // IT
+            "finanza","finanze","soldi","banca","pagamento","pagamenti",
+            "pagare","pagato","stipendio","reddito","spesa","spese",
+            "tassa","tasse","risparmio","risparmi","investimento","investimenti",
+            "bonifico","mutuo","prestito","credito","debito","conto",
+
+            // FR
+            "finance","finances","argent","banque","paiement","payer",
+            "salaire","revenu","dépense","dépenses","impôt","impôts",
+            "épargne","investissement","virement","prêt","crédit","débit","compte",
+
+            // ES
+            "finanza","finanzas","dinero","banco","pago","pagos","pagar",
+            "salario","ingreso","gasto","gastos","impuesto","impuestos",
+            "ahorro","inversión","transferencia","préstamo","crédito","débito","cuenta",
+
+            // DE
+            "finanz","finanzen","geld","bank","zahlung","zahlungen","bezahlen",
+            "gehalt","einkommen","ausgabe","ausgaben","steuer","steuern",
+            "ersparnis","spargeld","investition","investitionen","überweisung",
+            "darlehen","kredit","lastschrift","konto"
+        ],
+
+        .errands: [
+            // EN
+            "errand","errands","appointment","post office","pharmacy",
+            "dry cleaning","laundry","pick up","pickup","drop off","delivery",
+            "shopping","groceries","store","shop","return","returns",
+
+            // IT
+            "commissione","commissioni","posta","ufficio postale","farmacia",
+            "lavanderia","ritirare","ritiro","consegna","spesa","spese",
+            "negozio","comprare","acquistare","reso","resi",
+
+            // FR
+            "course","courses","commission","commissions","poste","pharmacie",
+            "pressing","retirer","retrait","livraison","magasin","achat","achats",
+            "retour","retours",
+
+            // ES
+            "recado","recados","correo","oficina de correos","farmacia",
+            "lavandería","recoger","recogida","entrega","tienda","compra","compras",
+            "devolución","devoluciones",
+
+            // DE
+            "erledigung","erledigungen","post","postamt","apotheke",
+            "reinigung","abholen","abholung","lieferung","geschäft","einkauf",
+            "einkäufe","rückgabe","rückgaben"
+        ],
         .freetime: [
             // EN
-            "movie","cinema","music","concert","game","sport","hobby","relax","party","dinner","friends",
+            "movie","cinema","music","concert","game","sport","hobby","relax","party","dinner",
             "bar","restaurant","drink","beer","wine","festival","event","show","netflix","tv","series","gaming",
             "weekend","outing","fun","club",
             
             // IT
-            "film","cinema","musica","concerto","gioco","sport","hobby","relax","festa","cena","amici",
+            "film","cinema","musica","concerto","gioco","sport","hobby","relax","festa","cena",
             "bar","ristorante","bere","birra","vino","evento","serie","tv","weekend",
             
             // FR / ES / DE

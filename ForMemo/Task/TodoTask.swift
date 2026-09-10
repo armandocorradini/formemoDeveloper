@@ -128,7 +128,8 @@ enum TaskStatus {
 }
 
 enum TaskMainTag: String, CaseIterable, Identifiable, Codable {
-    case family, freetime, health, home, pet, transport, travel, work
+    case family, friends, freetime, health, home, pet, transport, travel, work, finance, errands
+
     var id: String { rawValue }
 }
 
@@ -240,6 +241,9 @@ extension TaskMainTag {
         case .transport: return "tag.transport"
         case .home:      return "tag.home"
         case .freetime:  return "tag.freetime"
+        case .friends:   return "tag.friends"
+        case .finance:   return "tag.finance"
+        case .errands:   return "tag.errands"
         }
     }
     
@@ -253,6 +257,9 @@ extension TaskMainTag {
         case .transport: return "car.2"
         case .home:      return "house"
         case .freetime:  return "bubbles.and.sparkles"
+        case .friends:   return "person.2"
+        case .finance:   return "banknote"
+        case .errands:   return "duffle.bag"
         }
     }
     
@@ -266,6 +273,9 @@ extension TaskMainTag {
         case .transport: return .teal
         case .home:      return .brown
         case .freetime:  return .green
+        case .friends:   return .indigo
+        case .finance:   return .yellow
+        case .errands:   return .purple
         }
     }
 }

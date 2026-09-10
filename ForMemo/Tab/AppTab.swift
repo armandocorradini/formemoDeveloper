@@ -28,7 +28,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
 
     var icon: String {
         switch self {
-        case .dashboard: "house"
+        case .dashboard: "rectangle.grid.3x1"
         case .tasks: "checklist"
         case .calendar: "calendar"
         case .wallet: "wallet.bifold"
