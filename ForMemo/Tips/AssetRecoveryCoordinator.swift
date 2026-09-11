@@ -246,7 +246,7 @@ enum AssetRecoveryCoordinator {
             """
             Asset Recovery
 
-            needsRepair: \(result.needsRepair)
+            needsRepair: ♦️ \(result.needsRepair)
 
             folders:
             \(result.duplicateFolders.joined(separator: "\n"))

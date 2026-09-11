@@ -63,6 +63,9 @@ struct SettingsView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var soundPickerContext: SoundPickerContext?
     @State private var showDisclaimer = false
+    
+    @State private var showOpenSourceLicenses = false
+    
     @AppStorage("notificationSoundName")
     private var notificationSoundName: String = ""
     @AppStorage("locationNotificationSoundName")
@@ -126,6 +129,20 @@ struct SettingsView: View {
                         }
                         .sheet(isPresented: $showDisclaimer) {
                             DisclaimerView()
+                        }
+                        Button {
+                            showOpenSourceLicenses = true
+                        } label: {
+                            Label {
+                                Text("Open Source Licenses")
+                            } icon: {
+                                Image(systemName: "scroll")
+                                    .foregroundStyle(.blue)
+                            }
+                        }
+                        .tint(.primary)
+                        .sheet(isPresented: $showOpenSourceLicenses) {
+                            OpenSourceLicensesView()
                         }
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
@@ -304,10 +321,10 @@ struct SettingsView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("Weather Forecast")
                                         
-                                        Text("Weather data provided by Open-Meteo")
+                                        Link("Weather data provided by Open-Meteo",
+                                             destination: URL(string: "https://open-meteo.com/")!)
                                             .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
+                                            .foregroundStyle(.secondary)                                    }
                                 } icon: {
                                     Image(systemName: "cloud.sun")
                                         .foregroundStyle(.blue)

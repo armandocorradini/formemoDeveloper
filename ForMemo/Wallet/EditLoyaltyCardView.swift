@@ -1,8 +1,6 @@
 import SwiftUI
 import SwiftData
 import PhotosUI
-import Vision
-import CoreGraphics
 import AVFoundation
 
 struct EditLoyaltyCardView: View {
@@ -392,12 +390,12 @@ struct EditLoyaltyCardView: View {
                     }
 
                     do {
-                        if let result = try detectBarcode(in: data) {
-                            await MainActor.run {
-                                card.barcodeValue = result.0
-                                card.barcodeFormat = result.1
-                                selectedBarcodePhotoItem = nil
-                            }
+                        let result = try BarcodePhotoDetector.detect(in: data)
+
+                        await MainActor.run {
+                            card.barcodeValue = result.value
+                            card.barcodeFormat = result.format
+                            selectedBarcodePhotoItem = nil
                         }
                     } catch {
                         assertionFailure(
@@ -577,35 +575,7 @@ struct EditLoyaltyCardView: View {
         }
     }
  
-    private func detectBarcode(in data: Data) throws -> (String, String)? {
-        guard let image = UIImage(data: data),
-              let cgImage = image.cgImage else {
-            return nil
-        }
 
-        let request = VNDetectBarcodesRequest()
-
-        let handler = VNImageRequestHandler(
-            cgImage: cgImage,
-            orientation: CGImagePropertyOrientation(
-                rawValue: UInt32(image.imageOrientation.rawValue)
-            ) ?? .up,
-            options: [:]
-        )
-
-        try handler.perform([request])
-
-        guard let observation = request.results?.first,
-              let payload = observation.payloadStringValue,
-              !payload.isEmpty else {
-            return nil
-        }
-
-        return (
-            payload,
-            observation.symbology.rawValue
-        )
-    }
     // MARK: - Save
 
     private func saveChanges() {

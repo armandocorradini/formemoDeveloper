@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		1C3191D23036F7D2009ABE1E /* RemoteAssetCleanupCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */; };
 		1C62D169304FDC9E00E97C02 /* TaskRescheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */; };
+		1C62D16D3053E5C800E97C02 /* BarcodePhotoDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D16C3053E5C200E97C02 /* BarcodePhotoDetector.swift */; };
+		1C62D1703054230500E97C02 /* ZXingCpp in Frameworks */ = {isa = PBXBuildFile; productRef = 1C62D16F3054230500E97C02 /* ZXingCpp */; };
+		1C62D173305423C100E97C02 /* OpenSourceLicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D172305423A600E97C02 /* OpenSourceLicensesView.swift */; };
 		1C634D8C30220C9C0092DB89 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1C634CF630220C9C0092DB89 /* InfoPlist.xcstrings */; };
 		1C634D8D30220C9C0092DB89 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1C634CFA30220C9C0092DB89 /* Localizable.xcstrings */; };
 		1C634D8E30220C9C0092DB89 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1C634D0530220C9C0092DB89 /* PrivacyInfo.xcprivacy */; };
@@ -238,6 +241,8 @@
 		1C1C23002F7E983A00A77282 /* ForMemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ForMemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteAssetCleanupCoordinator.swift; sourceTree = "<group>"; };
 		1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRescheduler.swift; sourceTree = "<group>"; };
+		1C62D16C3053E5C200E97C02 /* BarcodePhotoDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodePhotoDetector.swift; sourceTree = "<group>"; };
+		1C62D172305423A600E97C02 /* OpenSourceLicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSourceLicensesView.swift; sourceTree = "<group>"; };
 		1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskIntent.swift; sourceTree = "<group>"; };
 		1C634CD530220C9C0092DB89 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		1C634CD630220C9C0092DB89 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -480,6 +485,7 @@
 		1C1C22FD2F7E983A00A77282 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				1C62D1703054230500E97C02 /* ZXingCpp in Frameworks */,
 			);
 		};
 		1C8225F33040960600B77EC7 /* Frameworks */ = {
@@ -516,6 +522,14 @@
 				1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		1C62D1713054239600E97C02 /* Licenses */ = {
+			isa = PBXGroup;
+			children = (
+				1C62D172305423A600E97C02 /* OpenSourceLicensesView.swift */,
+			);
+			path = Licenses;
 			sourceTree = "<group>";
 		};
 		1C634D2A30220C9C0092DB89 /* Xcstrings&plist */ = {
@@ -610,6 +624,7 @@
 		1C634D8B30220C9C0092DB89 /* ForMemo */ = {
 			isa = PBXGroup;
 			children = (
+				1C62D1713054239600E97C02 /* Licenses */,
 				1C8477673023782000C4FA34 /* Core */,
 				1C8225EC303F2C8100B77EC7 /* Siri */,
 				1C634E43302331530092DB89 /* Tips */,
@@ -701,6 +716,7 @@
 		1C634E3E3022556C0092DB89 /* Wallet */ = {
 			isa = PBXGroup;
 			children = (
+				1C62D16C3053E5C200E97C02 /* BarcodePhotoDetector.swift */,
 				1C634CF830220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift */,
 				1C634CFC30220C9C0092DB89 /* LoyaltyCard.swift */,
 				1C634D2230220C9C0092DB89 /* WalletAsset.swift */,
@@ -712,10 +728,10 @@
 				1C634D3C30220C9C0092DB89 /* AddLoyaltyCardView.swift */,
 				1C634D5630220C9C0092DB89 /* EditLoyaltyCardView.swift */,
 				1C634D8230220C9C0092DB89 /* WalletAssetThumbnail.swift */,
+				1C634CF430220C9C0092DB89 /* ImportCard.swift */,
 				1C634D2530220C9C0092DB89 /* WalletDeleteService.swift */,
 				1C634D8330220C9C0092DB89 /* WalletView.swift */,
 				1C634D5C30220C9C0092DB89 /* LoyaltyCardDetailView.swift */,
-				1C634CF430220C9C0092DB89 /* ImportCard.swift */,
 				1C634D4530220C9C0092DB89 /* BarcodeGenerator.swift */,
 			);
 			path = Wallet;
@@ -885,6 +901,9 @@
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
 			);
 			name = ForMemo;
+			packageProductDependencies = (
+				1C62D16F3054230500E97C02 /* ZXingCpp */,
+			);
 			productName = ForMemo;
 			productReference = 1C1C23002F7E983A00A77282 /* ForMemo.app */;
 			productType = "com.apple.product-type.application";
@@ -955,6 +974,9 @@
 			);
 			mainGroup = 1C1C22F72F7E983A00A77282;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				1C62D16E30541F6300E97C02 /* XCRemoteSwiftPackageReference "zxing-cpp" */,
+			);
 			preferredProjectObjectVersion = 100;
 			productRefGroup = 1C1C23012F7E983A00A77282 /* Products */;
 			projectDirPath = "";
@@ -1052,6 +1074,7 @@
 				1C634DC330220C9C0092DB89 /* RowCardStyle.swift in Sources */,
 				1C634DC430220C9C0092DB89 /* SearchTasksIntent.swift in Sources */,
 				1C634DC530220C9C0092DB89 /* SecretValue.swift in Sources */,
+				1C62D173305423C100E97C02 /* OpenSourceLicensesView.swift in Sources */,
 				1C634DC630220C9C0092DB89 /* SecureClipboard.swift in Sources */,
 				1C634DC730220C9C0092DB89 /* SensitiveValues.swift in Sources */,
 				1C634DC830220C9C0092DB89 /* StoreMigrationManager.swift in Sources */,
@@ -1108,6 +1131,7 @@
 				1C634DF730220C9C0092DB89 /* AudioRecorderView.swift in Sources */,
 				1C634DF830220C9C0092DB89 /* BackgroundCustomizationView.swift in Sources */,
 				1C634DF930220C9C0092DB89 /* BackupRestore.swift in Sources */,
+				1C62D16D3053E5C800E97C02 /* BarcodePhotoDetector.swift in Sources */,
 				1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */,
 				1C634DFA30220C9C0092DB89 /* BarcodeGenerator.swift in Sources */,
 				1C634DFB30220C9C0092DB89 /* CameraPicker.swift in Sources */,
@@ -1615,6 +1639,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1C62D16E30541F6300E97C02 /* XCRemoteSwiftPackageReference "zxing-cpp" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/zxing-cpp/zxing-cpp";
+			requirement = {
+				kind = exactVersion;
+				version = 3.1.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1C62D16F3054230500E97C02 /* ZXingCpp */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1C62D16E30541F6300E97C02 /* XCRemoteSwiftPackageReference "zxing-cpp" */;
+			productName = ZXingCpp;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1C1C22F82F7E983A00A77282 /* Project object */;
 }

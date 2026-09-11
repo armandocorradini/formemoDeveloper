@@ -220,16 +220,8 @@ struct LoyaltyCardDetailView: View {
                                 format: card.barcodeFormat
                             )
                             .frame(
-                                maxWidth: isQRCode ? 220 : 320
-                            )
-                            .frame(
-                                width: isQRCode ? 220 : nil,
-                                height: isQRCode ? 220 : 92
-                            )
-                            .scaleEffect(
-                                x: 1,
-                                y: isQRCode ? 1 : 1.22,
-                                anchor: .center
+                                maxWidth: 320,
+                                maxHeight: 220
                             )
                             .padding(.horizontal, 20)
                             .padding(.vertical, 16)

@@ -1,10 +1,9 @@
 import SwiftUI
 import SwiftData
-import VisionKit
-import Vision
 import PhotosUI
 import UIKit
 import AVFoundation
+import ZXingCpp
 
 struct AddLoyaltyCardView: View {
 
@@ -389,63 +388,29 @@ struct AddLoyaltyCardView: View {
             }
         }
         .onChange(of: selectedTicketImageItem) { _, newItem in
-
             guard let newItem else {
                 return
             }
 
             Task {
-
-                guard let data = try? await newItem.loadTransferable(type: Data.self),
-                      let uiImage = UIImage(data: data) else {
+                guard let data = try? await newItem.loadTransferable(type: Data.self) else {
                     return
                 }
-
-                let request = VNDetectBarcodesRequest()
-                request.preferBackgroundProcessing = true
-
-                guard let cgImage = uiImage.cgImage else {
-
-                    return
-                }
-
-                let handler = VNImageRequestHandler(
-                    cgImage: cgImage,
-                    orientation: CGImagePropertyOrientation(uiImage.imageOrientation),
-                    options: [:]
-                )
 
                 do {
-                    try handler.perform([request])
-                } catch {
-                    return
-                }
-
-                guard let observation = request.results?.first else {
-
+                    let result = try BarcodePhotoDetector.detect(in: data)
 
                     await MainActor.run {
+                        barcodeValue = result.value
+                        barcodeFormat = result.format
                         selectedTicketImageItem = nil
                     }
 
-                    try? await Task.sleep(for: .milliseconds(700))
-
+                } catch {
                     await MainActor.run {
+                        selectedTicketImageItem = nil
                         showNoCodeFoundAlert = true
                     }
-
-                    return
-                }
-
-                guard let payload = observation.payloadStringValue,
-                      !payload.isEmpty else {
-
-                    return
-                }
-
-                await MainActor.run {
-                    barcodeValue = payload
-                    barcodeFormat = observation.symbology.rawValue
                 }
             }
         }
@@ -638,7 +603,9 @@ private struct ImagePlaceholder: View {
 
 // MARK: - Barcode Scanner
 
- struct BarcodeScannerSheet: UIViewControllerRepresentable {
+// MARK: - Barcode Scanner
+
+struct BarcodeScannerSheet: UIViewControllerRepresentable {
 
     @Environment(\.dismiss)
     private var dismiss
@@ -646,107 +613,243 @@ private struct ImagePlaceholder: View {
     @Binding var barcodeValue: String
     @Binding var barcodeFormat: String
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
     func makeUIViewController(
         context: Context
-    ) -> DataScannerViewController {
+    ) -> ZXingBarcodeScannerViewController {
 
-        let controller = DataScannerViewController(
-            recognizedDataTypes: [.barcode()],
-            qualityLevel: .balanced,
-            recognizesMultipleItems: false,
-            isHighFrameRateTrackingEnabled: true,
-            isPinchToZoomEnabled: true,
-            isGuidanceEnabled: true,
-            isHighlightingEnabled: true
-        )
+        let controller = ZXingBarcodeScannerViewController()
 
-        controller.delegate = context.coordinator
-
-        try? controller.startScanning()
+        controller.onBarcodeDetected = { value, format in
+            DispatchQueue.main.async {
+                barcodeValue = value
+                barcodeFormat = format
+                dismiss()
+            }
+        }
 
         return controller
     }
 
     func updateUIViewController(
-        _ uiViewController: DataScannerViewController,
+        _ uiViewController: ZXingBarcodeScannerViewController,
         context: Context
     ) {
-
-    }
-
-    final class Coordinator:
-        NSObject,
-        DataScannerViewControllerDelegate {
-
-        let parent: BarcodeScannerSheet
-
-        init(_ parent: BarcodeScannerSheet) {
-            self.parent = parent
-        }
-
-        func dataScanner(
-            _ dataScanner: DataScannerViewController,
-            didAdd addedItems: [RecognizedItem],
-            allItems: [RecognizedItem]
-        ) {
-
-            guard let first = addedItems.first else {
-                return
-            }
-
-            handle(first)
-        }
-
-        func dataScanner(
-            _ dataScanner: DataScannerViewController,
-            didTapOn item: RecognizedItem
-        ) {
-
-            handle(item)
-        }
-
-        private func handle(_ item: RecognizedItem) {
-
-            guard case .barcode(let barcode) = item else {
-                return
-            }
-
-            guard let payload = barcode.payloadStringValue,
-                  !payload.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                return
-            }
-
-            DispatchQueue.main.async {
-
-                self.parent.barcodeValue = payload
-
-                self.parent.barcodeFormat = barcode.observation.symbology.rawValue
-
-                self.parent.dismiss()
-            }
-        }
     }
 }
 
 
-private extension CGImagePropertyOrientation {
+// MARK: - ZXing Camera Scanner
 
-    init(_ orientation: UIImage.Orientation) {
+final class ZXingBarcodeScannerViewController:
+    UIViewController,
+    AVCaptureVideoDataOutputSampleBufferDelegate {
 
-        switch orientation {
-        case .up: self = .up
-        case .down: self = .down
-        case .left: self = .left
-        case .right: self = .right
-        case .upMirrored: self = .upMirrored
-        case .downMirrored: self = .downMirrored
-        case .leftMirrored: self = .leftMirrored
-        case .rightMirrored: self = .rightMirrored
-        @unknown default: self = .up
+    private let captureSession = AVCaptureSession()
+    private let sessionQueue = DispatchQueue(
+        label: "com.formemo.barcode-scanner.session"
+    )
+    private let videoOutputQueue = DispatchQueue(
+        label: "com.formemo.barcode-scanner.video"
+    )
+
+    private var previewLayer: AVCaptureVideoPreviewLayer?
+    private var reader: ZXIBarcodeReader?
+
+    private var isProcessingFrame = false
+    private var hasDetectedBarcode = false
+
+    var onBarcodeDetected: ((String, String) -> Void)?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.backgroundColor = .black
+
+        let options = ZXIReaderOptions()
+        options.tryHarder = true
+        options.tryRotate = true
+        options.tryInvert = true
+        options.tryDownscale = true
+        options.maxNumberOfSymbols = 1
+
+        reader = ZXIBarcodeReader(options: options)
+
+        sessionQueue.async { [weak self] in
+            self?.configureSession()
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        previewLayer?.frame = view.bounds
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+
+            if self.captureSession.isRunning {
+                self.captureSession.stopRunning()
+            }
+        }
+    }
+
+    private func configureSession() {
+
+        guard AVCaptureDevice.authorizationStatus(for: .video) == .authorized else {
+            return
+        }
+
+        captureSession.beginConfiguration()
+
+        captureSession.sessionPreset = .high
+
+        guard let device = AVCaptureDevice.default(
+            .builtInWideAngleCamera,
+            for: .video,
+            position: .back
+        ),
+        let input = try? AVCaptureDeviceInput(device: device),
+        captureSession.canAddInput(input) else {
+            captureSession.commitConfiguration()
+            return
+        }
+
+        captureSession.addInput(input)
+
+        let output = AVCaptureVideoDataOutput()
+
+        output.videoSettings = [
+            kCVPixelBufferPixelFormatTypeKey as String:
+                kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+        ]
+
+        output.alwaysDiscardsLateVideoFrames = true
+        output.setSampleBufferDelegate(
+            self,
+            queue: videoOutputQueue
+        )
+
+        guard captureSession.canAddOutput(output) else {
+            captureSession.commitConfiguration()
+            return
+        }
+
+        captureSession.addOutput(output)
+
+        captureSession.commitConfiguration()
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+
+            let layer = AVCaptureVideoPreviewLayer(
+                session: self.captureSession
+            )
+
+            layer.videoGravity = .resizeAspectFill
+            layer.frame = self.view.bounds
+
+            self.view.layer.insertSublayer(
+                layer,
+                at: 0
+            )
+
+            self.previewLayer = layer
+        }
+
+        captureSession.startRunning()
+    }
+
+    func captureOutput(
+        _ output: AVCaptureOutput,
+        didOutput sampleBuffer: CMSampleBuffer,
+        from connection: AVCaptureConnection
+    ) {
+
+        guard !hasDetectedBarcode,
+              !isProcessingFrame,
+              let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
+              let reader else {
+            return
+        }
+
+        isProcessingFrame = true
+
+        defer {
+            isProcessingFrame = false
+        }
+
+        let results: [ZXIResult]
+
+        do {
+            results = try reader.read(pixelBuffer)
+        } catch {
+            return
+        }
+
+        guard let result = results.first else {
+            return
+        }
+
+        let value = result.text.trimmingCharacters(
+            in: CharacterSet.whitespacesAndNewlines
+        )
+
+        guard !value.isEmpty else {
+            return
+        }
+
+        hasDetectedBarcode = true
+
+        let format = formatName(
+            for: result.format
+        )
+
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+
+            if self.captureSession.isRunning {
+                self.captureSession.stopRunning()
+            }
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.onBarcodeDetected?(value, format)
+        }
+    }
+
+    private func formatName(
+        for format: ZXIFormat
+    ) -> String {
+
+        switch format.rawValue {
+        case 1: return "aztec"
+        case 2: return "codabar"
+        case 3: return "code39"
+        case 4: return "code93"
+        case 5: return "code128"
+        case 6: return "gs1DataBar"
+        case 7: return "gs1DataBarExpanded"
+        case 8: return "gs1DataBarStacked"
+        case 9: return "gs1DataBarExpandedStacked"
+        case 10: return "gs1DataBarLimited"
+        case 11: return "dataMatrix"
+        case 12: return "dxFilmEdge"
+        case 13: return "telepen"
+        case 14: return "ean8"
+        case 15: return "ean13"
+        case 16: return "itf"
+        case 17: return "maxicode"
+        case 18: return "pdf417"
+        case 19: return "qr"
+        case 20: return "microQR"
+        case 21: return "rmQR"
+        case 22: return "upca"
+        case 23: return "upce"
+        default: return "unknown"
         }
     }
 }
