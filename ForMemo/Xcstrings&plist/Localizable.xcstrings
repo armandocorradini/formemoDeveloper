@@ -29551,6 +29551,40 @@
         }
       }
     },
+    "SettingsCam" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einstellungen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajustes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réglages"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impostazioni"
+          }
+        }
+      }
+    },
     "Shampoo" : {
       "localizations" : {
         "de" : {
@@ -35363,6 +35397,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Per nascondere la Cassaforte, vai prima in Impostazioni > Generali > Inserimento automatico e password e disattiva Inserimento automatico di password e passkey. Poi torna qui e disattiva Cassaforte."
+          }
+        }
+      }
+    },
+    "To scan a barcode, allow ForMemo to access the camera in Settings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um einen Barcode zu scannen, erlauben Sie ForMemo den Zugriff auf die Kamera unter Einstellungen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para escanear un código de barras, permite que ForMemo acceda a la cámara en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour scanner un code-barres, autorisez ForMemo à accéder à l’appareil photo dans Réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per scansionare un codice a barre, consenti a ForMemo di accedere alla fotocamera in Impostazioni."
           }
         }
       }

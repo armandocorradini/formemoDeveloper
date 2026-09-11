@@ -699,7 +699,59 @@ final class ZXingBarcodeScannerViewController:
 
     private func configureSession() {
 
-        guard AVCaptureDevice.authorizationStatus(for: .video) == .authorized else {
+        let authorizationStatus = AVCaptureDevice.authorizationStatus(for: .video)
+
+        switch authorizationStatus {
+        case .authorized:
+            break
+
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                guard granted else { return }
+
+                self?.sessionQueue.async { [weak self] in
+                    self?.configureSession()
+                }
+            }
+            return
+
+        case .denied, .restricted:
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+
+                let alert = UIAlertController(
+                    title: String(localized: "Camera Access Required"),
+                    message: String(localized: "To scan a barcode, allow ForMemo to access the camera in Settings."),
+                    preferredStyle: .alert
+                )
+
+                alert.addAction(
+                    UIAlertAction(
+                        title: "Cancel",
+                        style: .cancel
+                    )
+                )
+
+                alert.addAction(
+                    UIAlertAction(
+                        title: String(localized: "SettingsCam"),
+                        style: .default
+                    ) { _ in
+                        guard let url = URL(
+                            string: UIApplication.openSettingsURLString
+                        ) else {
+                            return
+                        }
+
+                        UIApplication.shared.open(url)
+                    }
+                )
+
+                self.present(alert, animated: true)
+            }
+            return
+
+        @unknown default:
             return
         }
 
