@@ -188,7 +188,9 @@ struct WalletView: View {
                                             cornerRadius: 16,
                                             style: .continuous
                                         )
-                                        .fill(Color.blue)
+                                        .fill(
+                                            Color(hex: card.colorHex ?? "#3B82F6") ?? .blue
+                                        )
                                     )
                                     .overlay {
                                         RoundedRectangle(

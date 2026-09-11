@@ -97,7 +97,9 @@ struct Dashboard: View {
                 id: "card-\(card.id)",
                 title: card.storeName,
                 type: String(localized: "Wallet"),
-                systemImage: nil,
+                systemImage: card.itemType == "ticket"
+                    ? "ticket.fill"
+                    : "creditcard",
                 logoRelativePath:
                     card.logoAsset?.relativePath
                     ?? card.loyaltyLogoRelativePath,
@@ -526,7 +528,9 @@ struct Dashboard: View {
                                                 title: item.title,
                                                 type: item.type,
                                                 systemImage: item.systemImage,
-                                                logoData: recentWalletLogos[item.id]
+                                                logoData: recentWalletLogos[item.id],
+                                                iconColor: .primary,
+                                                iconBackgroundColor: Color(hex: card.colorHex ?? "#3B82F6") ?? .blue
                                             )
                                         }
                                         .buttonStyle(.plain)
@@ -884,7 +888,8 @@ struct Dashboard: View {
         isCompleted: Bool = false,
         remainingItems: Int? = nil,
         iconColor: Color? = nil,
-        iconSecondaryColor: Color? = nil
+        iconSecondaryColor: Color? = nil,
+        iconBackgroundColor: Color? = nil
     ) -> some View {
 
         VStack(alignment: .center, spacing: 0) {
@@ -908,7 +913,7 @@ struct Dashboard: View {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 40, height: 40)
+                        .frame(width: 45, height: 45)
                         .clipShape(
                             RoundedRectangle(
                                 cornerRadius: 8,
@@ -927,11 +932,18 @@ struct Dashboard: View {
                             iconColor ?? .primary,
                             iconSecondaryColor ?? .primary
                         )
-                        .frame(width: 40, height: 40)
+                        .frame(width: 45, height: 45)
                 }
             }
-            .frame(width: 40, height: 40)
-
+            .frame(width: 45, height: 45)
+            .background(
+                iconBackgroundColor ?? .clear,
+                in: RoundedRectangle(
+                    cornerRadius: 8,
+                    style: .continuous
+                )
+            )
+            .offset(y: 6)
             Spacer(minLength: 0)
 
             // Area titolo + dettaglio
