@@ -2771,6 +2771,62 @@
         }
       }
     },
+    "Active Tasks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktive Aufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas activas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches actives"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività attive"
+          }
+        }
+      }
+    },
+    "Active Tasks: %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktive Aufgaben: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas activas: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches actives : %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività attive: %lld"
+          }
+        }
+      }
+    },
     "Activity" : {
       "localizations" : {
         "de" : {
@@ -9660,6 +9716,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attività completate con allegati"
+          }
+        }
+      }
+    },
+    "Completed Tasks: %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abgeschlossene Aufgaben: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas completadas: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches terminées : %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività completate: %lld"
           }
         }
       }
@@ -33379,34 +33463,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attività, note, checklist, promemoria, regole di ricorrenza, tag, priorità, stato posticipato, luoghi, carte e biglietti, documenti, allegati ed elementi della Cassaforte sono inclusi nell’archivio di backup."
-          }
-        }
-      }
-    },
-    "Tasks: %lld" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aufgaben: %lld"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aufgaben: %lld"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tâches : %lld"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Attività: %lld"
           }
         }
       }

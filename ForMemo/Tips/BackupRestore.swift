@@ -28,7 +28,8 @@ struct BackupRestoreView: View {
     @State private var restoreError: String?
     @State private var backupError: String?
     @State private var restoreArchive: BackupArchive?
-    @State private var restoreTasks = false
+    @State private var restoreActiveTasks = false
+    @State private var restoreCompletedTasks = false
     @State private var restoreWalletCards = false
     @State private var restoreNotes = false
     @State private var restoreTripLists = false
@@ -42,7 +43,8 @@ struct BackupRestoreView: View {
     @State private var showBackupCreationPasswordPrompt = false
     @State private var pendingRestoreArchive: BackupArchive?
 
-    @State private var pendingRestoreTasks = false
+    @State private var pendingRestoreActiveTasks = false
+    @State private var pendingRestoreCompletedTasks = false
     @State private var pendingRestoreWalletCards = false
     @State private var pendingRestoreNotes = false
     @State private var pendingRestoreTripLists = false
@@ -55,7 +57,16 @@ struct BackupRestoreView: View {
             return false
         }
 
-        return restoreTasks &&
+        let hasActiveTasks = archive.tasks.contains {
+            !($0.isCompleted ?? false)
+        }
+
+        let hasCompletedTasks = archive.tasks.contains {
+            $0.isCompleted ?? false
+        }
+
+        return (!hasActiveTasks || restoreActiveTasks) &&
+            (!hasCompletedTasks || restoreCompletedTasks) &&
             (archive.notes.isEmpty || restoreNotes) &&
             (archive.loyaltyCards.isEmpty || restoreWalletCards) &&
             (archive.tripLists.isEmpty || restoreTripLists) &&
@@ -65,7 +76,8 @@ struct BackupRestoreView: View {
     }
     
     private var hasPendingNonVaultRestore: Bool {
-        pendingRestoreTasks ||
+        pendingRestoreActiveTasks ||
+        pendingRestoreCompletedTasks ||
         pendingRestoreNotes ||
         pendingRestoreWalletCards ||
         pendingRestoreTripLists ||
@@ -288,7 +300,7 @@ struct BackupRestoreView: View {
                 BackupFileDocument(fileURL: $0)
             },
             contentType: .json,
-            defaultFilename: "ForMemoBackup"
+            defaultFilename: "FM_BK"
         ) { _ in
             isCreatingBackup = false
         }
@@ -313,7 +325,8 @@ struct BackupRestoreView: View {
                         let archive = try await BackupManager.loadBackupArchive(from: url)
 
                         await MainActor.run {
-                            restoreTasks = false
+                            restoreActiveTasks = false
+                            restoreCompletedTasks = false
                             restoreWalletCards = false
                             restoreNotes = false
                             restoreTripLists = false
@@ -322,7 +335,8 @@ struct BackupRestoreView: View {
                             restoreSettings = false
 
                             pendingRestoreArchive = nil
-                            pendingRestoreTasks = false
+                            pendingRestoreActiveTasks = false
+                            pendingRestoreCompletedTasks = false
                             pendingRestoreWalletCards = false
                             pendingRestoreNotes = false
                             pendingRestoreTripLists = false
@@ -360,7 +374,8 @@ struct BackupRestoreView: View {
 
             let archive = wrapper.archive
             let hasSelection =
-                restoreTasks ||
+                restoreActiveTasks ||
+                restoreCompletedTasks ||
                 restoreNotes ||
                 restoreWalletCards ||
                 restoreTripLists ||
@@ -374,7 +389,13 @@ struct BackupRestoreView: View {
                     List {
                         Section("Backup Contents") {
 
-                            Text("Tasks: \(archive.tasks.count)")
+                            Text(
+                                "Active Tasks: \(archive.tasks.filter { !($0.isCompleted ?? false) }.count)"
+                            )
+
+                            Text(
+                                "Completed Tasks: \(archive.tasks.filter { $0.isCompleted ?? false }.count)"
+                            )
                             
                             Text("Notes: \(archive.notes.count)")
                             
@@ -411,7 +432,8 @@ struct BackupRestoreView: View {
                                             return
                                         }
 
-                                        restoreTasks = newValue
+                                        restoreActiveTasks = newValue
+                                        restoreCompletedTasks = newValue
 
                                         if !archive.notes.isEmpty {
                                             restoreNotes = newValue
@@ -440,7 +462,19 @@ struct BackupRestoreView: View {
                                 )
                             )
                             
-                            Toggle("Tasks", isOn: $restoreTasks)
+                            if archive.tasks.contains(where: { !($0.isCompleted ?? false) }) {
+                                Toggle(
+                                    "Active Tasks",
+                                    isOn: $restoreActiveTasks
+                                )
+                            }
+
+                            if archive.tasks.contains(where: { $0.isCompleted ?? false }) {
+                                Toggle(
+                                    "Completed Tasks",
+                                    isOn: $restoreCompletedTasks
+                                )
+                            }
                             
                             if !archive.notes.isEmpty {
                                 Toggle(
@@ -485,7 +519,8 @@ struct BackupRestoreView: View {
                     .toolbar {
                         ToolbarItem(placement: .topBarLeading) {
                             Button("Cancel") {
-                                restoreTasks = false
+                                restoreActiveTasks = false
+                                restoreCompletedTasks = false
                                 restoreWalletCards = false
                                 restoreTripLists = false
                                 restoreDocuments = false
@@ -501,7 +536,8 @@ struct BackupRestoreView: View {
                                 // If restoring Vault, prompt for password, else restore immediately
                                 if !restoreVault {
                                     // No vault restore, no password required
-                                    let selectedTasks = restoreTasks
+                                    let selectedActiveTasks = restoreActiveTasks
+                                    let selectedCompletedTasks = restoreCompletedTasks
                                     let selectedNotes = restoreNotes
                                     let selectedWalletCards = restoreWalletCards
                                     let selectedTripLists = restoreTripLists
@@ -510,7 +546,8 @@ struct BackupRestoreView: View {
                                     let selectedSettings = restoreSettings
                                     let archiveToRestore = restoreArchive
                                     // Reset selections and archive
-                                    restoreTasks = false
+                                    restoreActiveTasks = false
+                                    restoreCompletedTasks = false
                                     restoreWalletCards = false
                                     restoreTripLists = false
                                     restoreDocuments = false
@@ -529,7 +566,8 @@ struct BackupRestoreView: View {
                                             try await BackupManager.restoreArchive(
                                                 archive,
                                                 modelContext: modelContext,
-                                                restoreTasks: selectedTasks,
+                                                restoreActiveTasks: selectedActiveTasks,
+                                                restoreCompletedTasks: selectedCompletedTasks,
                                                 restoreNotes: selectedNotes,
                                                 restoreWalletCards: selectedWalletCards,
                                                 restoreTripLists: selectedTripLists,
@@ -553,7 +591,8 @@ struct BackupRestoreView: View {
                                     // Vault restore selected, prompt for password
                                     pendingRestoreArchive = restoreArchive
 
-                                    pendingRestoreTasks = restoreTasks
+                                    pendingRestoreActiveTasks = restoreActiveTasks
+                                    pendingRestoreCompletedTasks = restoreCompletedTasks
                                     pendingRestoreNotes = restoreNotes
                                     pendingRestoreWalletCards = restoreWalletCards
                                     pendingRestoreTripLists = restoreTripLists
@@ -605,7 +644,8 @@ struct BackupRestoreView: View {
                 showBackupPasswordPrompt = false
             }
             Button("Restore") {
-                let selectedTasks = pendingRestoreTasks
+                let selectedActiveTasks = pendingRestoreActiveTasks
+                let selectedCompletedTasks = pendingRestoreCompletedTasks
                 let selectedNotes = pendingRestoreNotes
                 let selectedWalletCards = pendingRestoreWalletCards
                 let selectedTripLists = pendingRestoreTripLists
@@ -614,7 +654,8 @@ struct BackupRestoreView: View {
                 let selectedSettings = pendingRestoreSettings
 
                 let archiveToRestore = pendingRestoreArchive
-                restoreTasks = false
+                restoreActiveTasks = false
+                restoreCompletedTasks = false
                 restoreWalletCards = false
                 restoreTripLists = false
                 restoreDocuments = false
@@ -640,7 +681,8 @@ struct BackupRestoreView: View {
                         try await BackupManager.restoreArchive(
                             archive,
                             modelContext: modelContext,
-                            restoreTasks: selectedTasks,
+                            restoreActiveTasks: selectedActiveTasks,
+                            restoreCompletedTasks: selectedCompletedTasks,
                             restoreNotes: selectedNotes,
                             restoreWalletCards: selectedWalletCards,
                             restoreTripLists: selectedTripLists,
@@ -687,7 +729,8 @@ struct BackupRestoreView: View {
             Button("Cancel", role: .cancel) {
                 backupPassword = ""
                 pendingRestoreArchive = nil
-                pendingRestoreTasks = false
+                pendingRestoreActiveTasks = false
+                pendingRestoreCompletedTasks = false
                 pendingRestoreNotes = false
                 pendingRestoreWalletCards = false
                 pendingRestoreTripLists = false
@@ -755,7 +798,8 @@ struct BackupRestoreView: View {
             showVaultPasswordError = false
             backupPassword = ""
             pendingRestoreArchive = nil
-            pendingRestoreTasks = false
+            pendingRestoreActiveTasks = false
+            pendingRestoreCompletedTasks = false
             pendingRestoreWalletCards = false
             pendingRestoreNotes = false
             pendingRestoreTripLists = false
@@ -766,7 +810,8 @@ struct BackupRestoreView: View {
         }
         
 
-        let selectedTasks = pendingRestoreTasks
+        let selectedActiveTasks = pendingRestoreActiveTasks
+        let selectedCompletedTasks = pendingRestoreCompletedTasks
         let selectedNotes = pendingRestoreNotes
         let selectedWalletCards = pendingRestoreWalletCards
         let selectedVault = false
@@ -780,7 +825,8 @@ struct BackupRestoreView: View {
         Task {
             defer {
                 pendingRestoreArchive = nil
-                pendingRestoreTasks = false
+                pendingRestoreActiveTasks = false
+                pendingRestoreCompletedTasks = false
                 pendingRestoreWalletCards = false
                 pendingRestoreTripLists = false
                 pendingRestoreDocuments = false
@@ -793,7 +839,8 @@ struct BackupRestoreView: View {
                 try await BackupManager.restoreArchive(
                     archive,
                     modelContext: modelContext,
-                    restoreTasks: selectedTasks,
+                    restoreActiveTasks: selectedActiveTasks,
+                    restoreCompletedTasks: selectedCompletedTasks,
                     restoreNotes: selectedNotes,
                     restoreWalletCards: selectedWalletCards,
                     restoreTripLists: selectedTripLists,
@@ -1837,10 +1884,13 @@ private enum BackupManager {
 
         let data = try JSONEncoder.backup.encode(archive)
 
+        let formatter = DateFormatter()
+        formatter.dateFormat = "ddMMyy_HHmmss"
+
+        let filename = "FM_BK_\(formatter.string(from: .now)).json"
+
         let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent(
-                "ForMemoBackup-\(UUID().uuidString).json"
-            )
+            .appendingPathComponent(filename)
 
         try data.write(
             to: url,
@@ -1912,7 +1962,8 @@ private enum BackupManager {
     static func restoreArchive(
         _ archive: BackupArchive,
         modelContext: ModelContext,
-        restoreTasks: Bool,
+        restoreActiveTasks: Bool,
+        restoreCompletedTasks: Bool,
         restoreNotes: Bool,
         restoreWalletCards: Bool,
         restoreTripLists: Bool,
@@ -2000,7 +2051,7 @@ private enum BackupManager {
                 modelContext.insert(note)
             }
         }
-        if restoreTasks {
+        if restoreActiveTasks || restoreCompletedTasks {
 
             let attachmentsDirectory =
                 try TaskAttachment.ensureAttachmentsDirectoryForWrite()
@@ -2327,9 +2378,15 @@ private enum BackupManager {
             }
         }
 
-        if restoreTasks {
+        if restoreActiveTasks || restoreCompletedTasks {
 
-            for dto in archive.tasks {
+                for dto in archive.tasks {
+                    let isCompleted = dto.isCompleted ?? false
+
+                    guard (isCompleted && restoreCompletedTasks) ||
+                          (!isCompleted && restoreActiveTasks) else {
+                        continue
+                    }
 
                 let descriptor = FetchDescriptor<TodoTask>(
                     predicate: #Predicate { $0.id == dto.id }
