@@ -130,20 +130,6 @@ struct SettingsView: View {
                         .sheet(isPresented: $showDisclaimer) {
                             DisclaimerView()
                         }
-                        Button {
-                            showOpenSourceLicenses = true
-                        } label: {
-                            Label {
-                                Text("Open Source Licenses")
-                            } icon: {
-                                Image(systemName: "scroll")
-                                    .foregroundStyle(.blue)
-                            }
-                        }
-                        .tint(.primary)
-                        .sheet(isPresented: $showOpenSourceLicenses) {
-                            OpenSourceLicensesView()
-                        }
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
@@ -320,11 +306,7 @@ struct SettingsView: View {
                                 Label {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("Weather Forecast")
-                                        
-                                        Link("Weather data provided by Open-Meteo",
-                                             destination: URL(string: "https://open-meteo.com/")!)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)                                    }
+                                    }
                                 } icon: {
                                     Image(systemName: "cloud.sun")
                                         .foregroundStyle(.blue)
@@ -780,6 +762,48 @@ Attivazione: \(triggerInfo)
                                     .frame(width: iconWidth)
                             }
                         }
+                    }
+                    
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+                    
+                    Section {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Button {
+                                    showOpenSourceLicenses = true
+                                } label: {
+                                    Label {
+                                        Text("Open Source Licenses")
+                                    } icon: {
+                                        Image(systemName: "scroll")
+                                            .foregroundStyle(.blue)
+                                    }
+                                }
+                                .tint(.primary)
+
+                                Text("ForMemo uses ZXing-C++ for barcode and QR code detection, decoding, encoding, and generation.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .sheet(isPresented: $showOpenSourceLicenses) {
+                                OpenSourceLicensesView()
+                            }
+
+                        VStack(alignment: .leading, spacing: 6) {
+                            Link(destination: URL(string: "https://open-meteo.com/")!) {
+                                Label {
+                                    Text("Weather Data")
+                                } icon: {
+                                    Image(systemName: "cloud.sun")
+                                        .foregroundStyle(.blue)
+                                }
+                            }
+
+                            Text("Weather data provided by Open-Meteo.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    } header: {
+                        Text("About")
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     Section {

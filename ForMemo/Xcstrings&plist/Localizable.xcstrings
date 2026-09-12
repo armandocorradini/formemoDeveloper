@@ -2715,6 +2715,34 @@
     "A-Z" : {
       "shouldTranslate" : false
     },
+    "About" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À propos"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informazioni"
+          }
+        }
+      }
+    },
     "Account and info" : {
       "localizations" : {
         "de" : {
@@ -16141,6 +16169,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ForMemo supporta tre principali comandi Siri:\n\n• “Nuovo ForMemo” crea una nuova attività utilizzando il linguaggio naturale. L’app può assegnare automaticamente una categoria e un promemoria in base al titolo e alla scadenza dell’attività.\n\n• “Cerca ForMemo” consente di cercare attività tramite parole chiave.\n\n• “Controlla ForMemo” legge le attività pianificate per una data o un periodo come oggi, domani, fine settimana, settimane o date specifiche.\n\nL’assegnazione automatica di categorie e promemoria può essere attivata nelle Impostazioni per le attività create con Siri."
+          }
+        }
+      }
+    },
+    "ForMemo uses ZXing-C++ for barcode and QR code detection, decoding, encoding, and generation." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo verwendet ZXing-C++ zur Erkennung, Decodierung, Kodierung und Generierung von Barcodes und QR-Codes."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo utiliza ZXing-C++ para la detección, decodificación, codificación y generación de códigos de barras y códigos QR."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo utilise ZXing-C++ pour la détection, le décodage, l’encodage et la génération de codes-barres et de codes QR."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo utilizza ZXing-C++ per il rilevamento, la decodifica, la codifica e la generazione di codici a barre e codici QR."
           }
         }
       }
@@ -38007,6 +38063,34 @@
         }
       }
     },
+    "Weather Data" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wetterdaten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos meteorológicos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Données météorologiques"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dati meteorologici"
+          }
+        }
+      }
+    },
     "Weather data is provided by Open-Meteo. Different weather providers may use different forecasting models and update schedules." : {
       "localizations" : {
         "de" : {
@@ -38035,30 +38119,30 @@
         }
       }
     },
-    "Weather data provided by Open-Meteo" : {
+    "Weather data provided by Open-Meteo." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wetterdaten bereitgestellt von Open-Meteo"
+            "value" : "Wetterdaten bereitgestellt von Open-Meteo."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Datos meteorológicos proporcionados por Open-Meteo"
+            "value" : "Datos meteorológicos proporcionados por Open-Meteo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Données météo fournies par Open-Meteo"
+            "value" : "Données météorologiques fournies par Open-Meteo."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dati meteo forniti da Open-Meteo"
+            "value" : "Dati meteorologici forniti da Open-Meteo."
           }
         }
       }
