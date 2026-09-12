@@ -612,6 +612,7 @@
 		1C634D8730220C9C0092DB89 /* OtherViews */ = {
 			isa = PBXGroup;
 			children = (
+				1C62D1713054239600E97C02 /* Licenses */,
 				1C634D3D30220C9C0092DB89 /* AppQuickGuide.swift */,
 				1C634D3E30220C9C0092DB89 /* AppUnavailableView.swift */,
 				1C634D4E30220C9C0092DB89 /* DisclaimerView.swift */,
@@ -624,7 +625,6 @@
 		1C634D8B30220C9C0092DB89 /* ForMemo */ = {
 			isa = PBXGroup;
 			children = (
-				1C62D1713054239600E97C02 /* Licenses */,
 				1C8477673023782000C4FA34 /* Core */,
 				1C8225EC303F2C8100B77EC7 /* Siri */,
 				1C634E43302331530092DB89 /* Tips */,

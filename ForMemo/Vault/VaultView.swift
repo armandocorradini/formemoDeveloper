@@ -153,7 +153,7 @@ struct VaultView: View {
             .scrollContentBackground(.hidden)
             .background(Color.clear)
             .navigationTitle(String(localized: "Vault"))
-            .navigationSubtitle("\(activeItems.count) items")
+//            .navigationSubtitle("\(activeItems.count) items")
       
             .navigationBarTitleDisplayMode(.inline)
             .contentMargins(.bottom, 70, for: .scrollContent)
@@ -164,6 +164,16 @@ struct VaultView: View {
                 )
             )
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack(spacing: 1) {
+                        Text("Vault")
+                            .font(.headline)
+
+                        Text("\(activeItems.count) items")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink {
                         VaultSettingsView()
