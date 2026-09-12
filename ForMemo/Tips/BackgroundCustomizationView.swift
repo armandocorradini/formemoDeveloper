@@ -32,6 +32,7 @@ struct BackgroundCustomizationView: View {
     private let presets: [(String, Color, Color)] = [
         
         ("Default", defaultBackColor1, defaultBackColor2),
+        ("System Black/White", .black, .white),
         ("Custom", defaultBackColor1, defaultBackColor2),
         ("Graphite",
          Color(red: 0.11, green: 0.11, blue: 0.12),
@@ -108,6 +109,7 @@ struct BackgroundCustomizationView: View {
         ("Sunset", Color(red: 1.00, green: 0.70, blue: 0.55), Color(red: 1.00, green: 0.82, blue: 0.78)),
         ("No Background", .clear, .clear),
         
+        
     ]
 
     var body: some View {
@@ -117,6 +119,11 @@ struct BackgroundCustomizationView: View {
 
             if settings.backgroundStyle == .system {
                 Color(.systemBackground)
+                    .ignoresSafeArea()
+            } else if settings.backgroundStyle == .theme {
+                Color.black
+                    .opacity(0)
+                    .background(Color(.systemBackground))
                     .ignoresSafeArea()
             } else {
                 LinearGradient(
@@ -146,6 +153,7 @@ struct BackgroundCustomizationView: View {
                             let selectedColor2 = Color(hex: color2Hex) ?? defaultBackColor2
                             
                             let isNoBackground = settings.backgroundStyle == .system
+                            let isThemeBackground = settings.backgroundStyle == .theme
 
                             let isDefault =
                                 settings.backgroundStyle == .gradient &&
@@ -163,6 +171,7 @@ struct BackgroundCustomizationView: View {
 
                             let shouldShowCustom =
                                 !isNoBackground &&
+                                !isThemeBackground &&
                                 !isDefault &&
                                 !matchesPreset
 
@@ -179,6 +188,14 @@ struct BackgroundCustomizationView: View {
 
                                     if preset.0 == "No Background" {
                                         return isNoBackground
+                                    }
+
+                                    if preset.0 == "System Black/White" {
+                                        return isThemeBackground
+                                    }
+
+                                    if isThemeBackground {
+                                        return false
                                     }
 
                                     guard settings.backgroundStyle == .gradient else {
@@ -200,6 +217,10 @@ struct BackgroundCustomizationView: View {
                                 Button {
                                     if preset.0 == "No Background" {
                                         settings.backgroundStyle = .system
+                                    } else if preset.0 == "System Black/White" {
+                                        settings.backgroundStyle = .theme
+                                        settings.backgroundColor1Hex = Color.black.toHex() ?? settings.backgroundColor1Hex
+                                        settings.backgroundColor2Hex = Color.white.toHex() ?? settings.backgroundColor2Hex
                                     } else {
                                         settings.backgroundStyle = .gradient
 
@@ -228,7 +249,7 @@ struct BackgroundCustomizationView: View {
                                                     endPoint: .bottomTrailing
                                                 )
                                             )
-
+//XXXXX
                                             VStack {
 
                                                 Capsule()
@@ -333,7 +354,7 @@ struct BackgroundCustomizationView: View {
         case "Titanium": return String(localized: "Titanium")
         case "Graphite": return String(localized: "Graphite")
         case "No Background": return String(localized: "No Background")
-            
+        case "System Black/White": return String(localized: "System Black/White")
         default:
             return key
         }

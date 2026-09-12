@@ -4,6 +4,7 @@ import Observation
 enum AppBackgroundStyle: String, Codable {
     case system
     case gradient
+    case theme
 }
 
 @Observable
@@ -96,8 +97,6 @@ final class AppSettings {
             rawValue: defaults.string(forKey: "backgroundStyle") ?? ""
         ) ?? .gradient
 
-        backgroundColor1Hex = defaults.string(forKey: "backgroundColor1Hex") ?? (defaultBackColor1.toHex() ?? "")
-        backgroundColor2Hex = defaults.string(forKey: "backgroundColor2Hex") ?? (defaultBackColor2.toHex() ?? "")
         backgroundColor1Hex = defaults.string(forKey: "backgroundColor1Hex") ?? (defaultBackColor1.toHex() ?? "")
         backgroundColor2Hex = defaults.string(forKey: "backgroundColor2Hex") ?? (defaultBackColor2.toHex() ?? "")
         badgeMode = defaults.object(forKey: "badgeMode") as? Int ?? 1

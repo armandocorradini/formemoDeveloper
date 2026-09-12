@@ -82,11 +82,15 @@ struct AppBackgroundColors {
 struct AppGlassBackground: View {
 
     @Bindable var settings = AppSettings.shared
-
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         Group {
             if settings.backgroundStyle == .system {
                 Color(.systemBackground)
+                    .ignoresSafeArea()
+            } else if settings.backgroundStyle == .theme {
+                (colorScheme == .dark ? Color.black : Color.white)
                     .ignoresSafeArea()
             } else {
                 ZStack {
