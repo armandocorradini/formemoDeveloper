@@ -16173,30 +16173,30 @@
         }
       }
     },
-    "ForMemo uses ZXing-C++ for barcode and QR code detection, decoding, encoding, and generation." : {
+    "ForMemo uses ZXing-C++ for barcode and QR code scanning and generation." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo verwendet ZXing-C++ zur Erkennung, Decodierung, Kodierung und Generierung von Barcodes und QR-Codes."
+            "value" : "ForMemo utilise ZXing-C++ pour la lecture et la génération de codes-barres et de codes QR."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo utiliza ZXing-C++ para la detección, decodificación, codificación y generación de códigos de barras y códigos QR."
+            "value" : "ForMemo utiliza ZXing-C++ para escanear y generar códigos de barras y códigos QR."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo utilise ZXing-C++ pour la détection, le décodage, l’encodage et la génération de codes-barres et de codes QR."
+            "value" : "ForMemo uses ZXing-C++ for barcode and QR code scanning and generation."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo utilizza ZXing-C++ per il rilevamento, la decodifica, la codifica e la generazione di codici a barre e codici QR."
+            "value" : "ForMemo utilizza ZXing-C++ per la scansione e la generazione di codici a barre e codici QR."
           }
         }
       }

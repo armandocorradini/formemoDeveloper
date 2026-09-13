@@ -780,7 +780,7 @@ Attivazione: \(triggerInfo)
                                 }
                                 .tint(.primary)
 
-                                Text("ForMemo uses ZXing-C++ for barcode and QR code detection, decoding, encoding, and generation.")
+                                Text("ForMemo uses ZXing-C++ for barcode and QR code scanning and generation.")
                                     .font(.footnote)
                                     .foregroundStyle(.secondary)
                             }
@@ -797,6 +797,7 @@ Attivazione: \(triggerInfo)
                                         .foregroundStyle(.blue)
                                 }
                             }
+                            .foregroundStyle(.primary)
 
                             Text("Weather data provided by Open-Meteo.")
                                 .font(.footnote)

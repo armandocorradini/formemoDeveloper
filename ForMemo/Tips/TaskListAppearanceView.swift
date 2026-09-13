@@ -89,9 +89,9 @@ struct TaskListAppearanceView: View {
             .onChange(of: settings.dueIconEffect) { _, _ in
                 refreshID = UUID()
             }
-            .onChange(of: settings.showTodayExpiredLabel) { _, _ in
-                refreshID = UUID()
-            }
+//            .onChange(of: settings.showTodayExpiredLabel) { _, _ in
+//                refreshID = UUID()
+//            }
         }
         
         
