@@ -7,6 +7,54 @@ enum AppBackgroundStyle: String, Codable {
     case theme
 }
 
+enum AppBackgroundPattern: String, Codable {
+    case none
+    case essential
+    case organizer
+    case geometric
+    case notes
+    case flow
+    case minimal
+
+    var assetName: String? {
+        switch self {
+        case .none:
+            return nil
+        case .essential:
+            return "EssentialPattern"
+        case .organizer:
+            return "OrganizerPattern"
+        case .geometric:
+            return "GeometricPattern"
+        case .notes:
+            return "NotesPattern"
+        case .flow:
+            return "FlowPattern"
+        case .minimal:
+            return "MinimalPattern"
+        }
+    }
+
+    var localizedName: String {
+        switch self {
+        case .none:
+            return String(localized: "None")
+        case .essential:
+            return String(localized: "Essential")
+        case .organizer:
+            return String(localized: "Organizer")
+        case .geometric:
+            return String(localized: "Geometric")
+        case .notes:
+            return String(localized: "Notes")
+        case .flow:
+            return String(localized: "Flow")
+        case .minimal:
+            return String(localized: "Minimal")
+        }
+    }
+}
+
 @Observable
 @MainActor
 final class AppSettings {
@@ -99,6 +147,11 @@ final class AppSettings {
 
         backgroundColor1Hex = defaults.string(forKey: "backgroundColor1Hex") ?? (defaultBackColor1.toHex() ?? "")
         backgroundColor2Hex = defaults.string(forKey: "backgroundColor2Hex") ?? (defaultBackColor2.toHex() ?? "")
+        backgroundPattern = AppBackgroundPattern(
+            rawValue: defaults.string(forKey: "backgroundPattern") ?? ""
+        ) ?? .none
+        backgroundPatternOpacity =
+            defaults.object(forKey: "backgroundPatternOpacity") as? Double ?? 0.08
         badgeMode = defaults.object(forKey: "badgeMode") as? Int ?? 1
         showAppBadge = defaults.object(forKey: "showAppBadge") as? Bool ?? true
         selectedTheme = AppTheme(rawValue: defaults.integer(forKey: "selectedTheme")) ?? .system
@@ -423,6 +476,24 @@ final class AppSettings {
         }
     }
     
+    var backgroundPattern: AppBackgroundPattern {
+        didSet {
+            UserDefaults.standard.set(
+                backgroundPattern.rawValue,
+                forKey: "backgroundPattern"
+            )
+        }
+    }
+    
+    var backgroundPatternOpacity: Double {
+        didSet {
+            UserDefaults.standard.set(
+                backgroundPatternOpacity,
+                forKey: "backgroundPatternOpacity"
+            )
+        }
+    }
+    
     var diagnosticAttachmentFailure = false
     
     var badgeMode: Int {
@@ -566,6 +637,8 @@ final class AppSettings {
         backgroundStyle = .gradient
         backgroundColor1Hex = defaultBackColor1.toHex() ?? ""
         backgroundColor2Hex = defaultBackColor2.toHex() ?? ""
+        backgroundPattern = .none
+        backgroundPatternOpacity = 0.08
         badgeMode = 1
         showAppBadge = true
         selectedTheme = .system

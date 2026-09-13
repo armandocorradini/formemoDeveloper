@@ -83,33 +83,44 @@ struct AppGlassBackground: View {
 
     @Bindable var settings = AppSettings.shared
     @Environment(\.colorScheme) private var colorScheme
-    
-    var body: some View {
-        Group {
-            if settings.backgroundStyle == .system {
-                Color(.systemBackground)
-                    .ignoresSafeArea()
-            } else if settings.backgroundStyle == .theme {
-                (colorScheme == .dark ? Color.black : Color.white)
-                    .ignoresSafeArea()
-            } else {
-                ZStack {
-                    LinearGradient(
-                        colors: [
-                            Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
-                            Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .ignoresSafeArea()
 
-                    Rectangle()
-                        .fill(.ultraThinMaterial)
-                        .ignoresSafeArea()
+    var body: some View {
+        ZStack {
+            Group {
+                if settings.backgroundStyle == .system {
+                    Color(.systemBackground)
+
+                } else if settings.backgroundStyle == .theme {
+                    colorScheme == .dark ? Color.black : Color.white
+
+                } else {
+                    ZStack {
+                        LinearGradient(
+                            colors: [
+                                Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
+                                Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+
+                        Rectangle()
+                            .fill(.ultraThinMaterial)
+                    }
                 }
             }
+
+            if let assetName = settings.backgroundPattern.assetName {
+                Image(assetName)
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(.primary)
+                    .opacity(settings.backgroundPatternOpacity)
+                    .allowsHitTesting(false)
+            }
         }
+        .ignoresSafeArea()
     }
 }
 
@@ -117,6 +128,8 @@ struct AppGlassBackgroundModifier: ViewModifier {
     func body(content: Content) -> some View {
         ZStack {
             AppGlassBackground()
+                .ignoresSafeArea()
+
             content
         }
     }

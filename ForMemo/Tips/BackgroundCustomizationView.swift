@@ -112,24 +112,35 @@ struct BackgroundCustomizationView: View {
         
     ]
 
-    var body: some View {
-        let color1Hex = settings.backgroundColor1Hex
-        let color2Hex = settings.backgroundColor2Hex
+    private var backgroundPatternBinding: Binding<AppBackgroundPattern> {
+        Binding(
+            get: {
+                settings.backgroundPattern
+            },
+            set: {
+                settings.backgroundPattern = $0
+            }
+        )
+    }
+    
+    @ViewBuilder
+    private var backgroundLayer: some View {
         ZStack {
-
             if settings.backgroundStyle == .system {
                 Color(.systemBackground)
                     .ignoresSafeArea()
+
             } else if settings.backgroundStyle == .theme {
                 Color.black
                     .opacity(0)
                     .background(Color(.systemBackground))
                     .ignoresSafeArea()
+
             } else {
                 LinearGradient(
                     colors: [
-                        Color(hex: color1Hex) ?? defaultBackColor1,
-                        Color(hex: color2Hex) ?? defaultBackColor2
+                        Color(hex: settings.backgroundColor1Hex) ?? defaultBackColor1,
+                        Color(hex: settings.backgroundColor2Hex) ?? defaultBackColor2
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -140,8 +151,45 @@ struct BackgroundCustomizationView: View {
                     .fill(.ultraThinMaterial)
                     .ignoresSafeArea()
             }
-
-            Form {
+        }
+        .ignoresSafeArea()
+    }
+    
+    @ViewBuilder
+    private var patternLayer: some View {
+        Color.clear
+            .ignoresSafeArea()
+            .overlay {
+                if let assetName = settings.backgroundPattern.assetName {
+                    Image(assetName)
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
+                        .foregroundStyle(.primary)
+                        .opacity(settings.backgroundPatternOpacity)
+                        .allowsHitTesting(false)
+                }
+            }
+            .allowsHitTesting(false)
+    }
+    
+    
+    private var patternOpacityBinding: Binding<Double> {
+        Binding(
+            get: { settings.backgroundPatternOpacity },
+            set: { settings.backgroundPatternOpacity = $0 }
+        )
+    }
+    
+    var body: some View {
+        let color1Hex = settings.backgroundColor1Hex
+        let color2Hex = settings.backgroundColor2Hex
+        ZStack {
+            backgroundLayer
+            patternLayer
+        Form {
 
                 Section("Presets") {
 
@@ -286,7 +334,68 @@ struct BackgroundCustomizationView: View {
                         .padding(.horizontal, 4)
                     }
                 }
+                Section("Pattern") {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            patternButton(
+                                pattern: .none,
+                                title: "None"
+                            )
 
+                            patternButton(
+                                pattern: .essential,
+                                title: "Essential"
+                            )
+
+                            patternButton(
+                                pattern: .organizer,
+                                title: "Organizer"
+                            )
+
+                            patternButton(
+                                pattern: .geometric,
+                                title: "Geometric"
+                            )
+
+                            patternButton(
+                                pattern: .notes,
+                                title: "Notes"
+                            )
+                            patternButton(
+                                pattern: .flow,
+                                title: "Flow"
+                            )
+                            patternButton(
+                                pattern: .minimal,
+                                title: "Minimal"
+                            )
+                        }
+                        .padding(.vertical, 4)
+                    }
+
+                    if settings.backgroundPattern != .none {
+                        VStack(spacing: 6) {
+                            HStack {
+                                Text("Opacity")
+
+                                Spacer()
+
+                                Text(
+                                    settings.backgroundPatternOpacity,
+                                    format: .percent.precision(.fractionLength(0))
+                                )
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                            }
+
+                            Slider(
+                                value: patternOpacityBinding,
+                                in: 0...0.20,
+                                step: 0.01
+                            )
+                        }
+                    }
+                }
                 Section("Customize colors") {
 
                     ColorPicker("Top color", selection: color1)
@@ -304,6 +413,7 @@ struct BackgroundCustomizationView: View {
                 }
 
             }
+        .listStyle(.insetGrouped)
             .contentMargins(.bottom, 70, for: .scrollContent)
             .scrollContentBackground(.hidden)
             .background(Color.clear)
@@ -359,4 +469,52 @@ struct BackgroundCustomizationView: View {
             return key
         }
     }
+    
+    @ViewBuilder
+    private func patternButton(
+        pattern: AppBackgroundPattern,
+        title: LocalizedStringKey
+    ) -> some View {
+        let isSelected = settings.backgroundPattern == pattern
+
+        Button {
+            settings.backgroundPattern = pattern
+        } label: {
+            VStack(spacing: 6) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.regularMaterial)
+
+                    if let assetName = pattern.assetName {
+                        Image(assetName)
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFill()
+                            .foregroundStyle(.primary)
+                            .opacity(0.65)
+                            .clipped()
+                    } else {
+                        Image(systemName: "nosign")
+                            .font(.title2)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(width: 92, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(
+                            isSelected ? Color.accentColor : .clear,
+                            lineWidth: 2
+                        )
+                }
+
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+    
 }
