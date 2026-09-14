@@ -111,12 +111,18 @@ struct AppGlassBackground: View {
             }
 
             if let assetName = settings.backgroundPattern.assetName {
-                Image(assetName)
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundStyle(.primary)
-                    .opacity(settings.backgroundPatternOpacity)
+                Color.clear
+                    .ignoresSafeArea()
+                    .overlay {
+                        Image(assetName)
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFill()
+                            .ignoresSafeArea()
+                            .foregroundStyle(.primary)
+                            .opacity(settings.backgroundPatternOpacity)
+                            .allowsHitTesting(false)
+                    }
                     .allowsHitTesting(false)
             }
         }

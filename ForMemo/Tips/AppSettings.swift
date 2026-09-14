@@ -15,7 +15,11 @@ enum AppBackgroundPattern: String, Codable {
     case notes
     case flow
     case minimal
-
+    case balanced
+    case dense
+    case packed
+    case saturated
+    
     var assetName: String? {
         switch self {
         case .none:
@@ -32,6 +36,14 @@ enum AppBackgroundPattern: String, Codable {
             return "FlowPattern"
         case .minimal:
             return "MinimalPattern"
+        case .balanced:
+            return "BalancedPattern"
+        case .dense:
+            return "DensePattern"
+        case .packed:
+            return "PackedPattern"
+        case .saturated:
+            return "SaturatedPattern"
         }
     }
 
@@ -51,6 +63,16 @@ enum AppBackgroundPattern: String, Codable {
             return String(localized: "Flow")
         case .minimal:
             return String(localized: "Minimal")
+        case .balanced:
+            return String(localized: "Balanced")
+        case .dense:
+            return String(localized: "Dense")
+        case .packed:
+            return String(localized: "Packed")
+        case .saturated:
+            return String(localized: "Saturated")
+            
+
         }
     }
 }
@@ -151,7 +173,7 @@ final class AppSettings {
             rawValue: defaults.string(forKey: "backgroundPattern") ?? ""
         ) ?? .none
         backgroundPatternOpacity =
-            defaults.object(forKey: "backgroundPatternOpacity") as? Double ?? 0.08
+            defaults.object(forKey: "backgroundPatternOpacity") as? Double ?? 0.025
         badgeMode = defaults.object(forKey: "badgeMode") as? Int ?? 1
         showAppBadge = defaults.object(forKey: "showAppBadge") as? Bool ?? true
         selectedTheme = AppTheme(rawValue: defaults.integer(forKey: "selectedTheme")) ?? .system

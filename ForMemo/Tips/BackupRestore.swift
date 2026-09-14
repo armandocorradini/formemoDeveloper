@@ -98,13 +98,6 @@ struct BackupRestoreView: View {
 
                     VStack(alignment: .leading, spacing: 10) {
 
-//                        Label {
-//                            Text("Backup & Restore")
-//                                .font(.title3.bold())
-//                        } icon: {
-//                            Image(systemName: "externaldrive.badge.icloud")
-//                                .foregroundStyle(.blue)
-//                        }
 
                         Text("Backups are stored independently from iCloud sync. You can use them to safely migrate all your ForMemo data to another device.")
                         .font(.caption)
@@ -1711,6 +1704,26 @@ private enum BackupManager {
                let data = try? JSONSerialization.data(withJSONObject: ["value": value]) {
                 settingsPayload[key] = data
             }
+        }
+        
+        
+        let patternSettings = await MainActor.run {
+            (
+                AppSettings.shared.backgroundPattern.rawValue,
+                AppSettings.shared.backgroundPatternOpacity
+            )
+        }
+
+        if let data = try? JSONSerialization.data(
+            withJSONObject: ["value": patternSettings.0]
+        ) {
+            settingsPayload["backgroundPattern"] = data
+        }
+
+        if let data = try? JSONSerialization.data(
+            withJSONObject: ["value": patternSettings.1]
+        ) {
+            settingsPayload["backgroundPatternOpacity"] = data
         }
 
         if !tasks.isEmpty {

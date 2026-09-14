@@ -4,6 +4,7 @@ struct BackgroundCustomizationView: View {
 
     @Environment(AppSettings.self)
     private var settings
+    @Environment(\.dismiss) private var dismiss
 
     private var color1: Binding<Color> {
         Binding(
@@ -157,24 +158,26 @@ struct BackgroundCustomizationView: View {
     
     @ViewBuilder
     private var patternLayer: some View {
-        Color.clear
-            .ignoresSafeArea()
-            .overlay {
-                if let assetName = settings.backgroundPattern.assetName {
-                    Image(assetName)
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .clipped()
-                        .foregroundStyle(.primary)
-                        .opacity(settings.backgroundPatternOpacity)
-                        .allowsHitTesting(false)
-                }
+        GeometryReader { proxy in
+            if let assetName = settings.backgroundPattern.assetName {
+                Image(assetName)
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(
+                        width: proxy.size.width,
+                        height: proxy.size.width * 2.20,
+                        alignment: .top
+                    )
+                    .clipped()
+                    .foregroundStyle(.primary)
+                    .opacity(settings.backgroundPatternOpacity)
+                    .allowsHitTesting(false)
             }
-            .allowsHitTesting(false)
+        }
+        .allowsHitTesting(false)
+        .ignoresSafeArea()
     }
-    
     
     private var patternOpacityBinding: Binding<Double> {
         Binding(
@@ -341,7 +344,25 @@ struct BackgroundCustomizationView: View {
                                 pattern: .none,
                                 title: "None"
                             )
-
+                            
+                            patternButton(
+                                pattern: .balanced,
+                                title: "Balanced"
+                            )
+                            
+                            patternButton(
+                                pattern: .dense,
+                                title: "Dense"
+                            )
+                            patternButton(
+                                pattern: .packed,
+                                title: "Packed"
+                            )
+                            
+                            patternButton(
+                                pattern: .saturated,
+                                title: "Saturated"
+                            )
                             patternButton(
                                 pattern: .essential,
                                 title: "Essential"
@@ -382,7 +403,7 @@ struct BackgroundCustomizationView: View {
 
                                 Text(
                                     settings.backgroundPatternOpacity,
-                                    format: .percent.precision(.fractionLength(0))
+                                    format: .percent.precision(.fractionLength(1))
                                 )
                                 .foregroundStyle(.secondary)
                                 .monospacedDigit()
@@ -390,8 +411,8 @@ struct BackgroundCustomizationView: View {
 
                             Slider(
                                 value: patternOpacityBinding,
-                                in: 0...0.20,
-                                step: 0.01
+                                in: 0...0.10,
+                                step: 0.001
                             )
                         }
                     }
@@ -418,8 +439,19 @@ struct BackgroundCustomizationView: View {
             .scrollContentBackground(.hidden)
             .background(Color.clear)
         }
+        .navigationBarBackButtonHidden(true)
         .navigationTitle("Background")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+                
+            }
+        }
     }
     
     private func localizedPresetName(_ key: String) -> String {
