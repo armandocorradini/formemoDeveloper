@@ -14,6 +14,9 @@ struct AppShortcuts: AppShortcutsProvider {
 
                 // 🇮🇹 Italiano
                 AppShortcutPhrase("Nuovo \(.applicationName)"),
+                
+                AppShortcutPhrase("Nuova \(.applicationName)"),
+                
                 AppShortcutPhrase("Aggiungi \(.applicationName)"),
 
                 // 🇩🇪 Deutsch
@@ -22,10 +25,12 @@ struct AppShortcuts: AppShortcutsProvider {
 
                 // 🇫🇷 Français
                 AppShortcutPhrase("Nouveau \(.applicationName)"),
+                AppShortcutPhrase("Nouvelle \(.applicationName)"),
                 AppShortcutPhrase("Ajouter \(.applicationName)"),
 
                 // 🇪🇸 Español (España)
                 AppShortcutPhrase("Nuevo \(.applicationName)"),
+                AppShortcutPhrase("Nueva \(.applicationName)"),
                 AppShortcutPhrase("Añadir \(.applicationName)")
             ],
             shortTitle: LocalizedStringResource("Add Task"),
