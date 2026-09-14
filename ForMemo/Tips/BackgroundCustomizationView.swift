@@ -411,7 +411,7 @@ struct BackgroundCustomizationView: View {
 
                             Slider(
                                 value: patternOpacityBinding,
-                                in: 0...0.10,
+                                in: 0...0.30,
                                 step: 0.001
                             )
                         }
