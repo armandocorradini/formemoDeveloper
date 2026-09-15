@@ -1703,6 +1703,34 @@
         }
       }
     },
+    "%lld tasks with hourly recurrence could not be added to Calendar because Calendar does not support hourly recurrences." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Aufgaben mit stündlicher Wiederholung wurden nicht zum Kalender hinzugefügt, da stündliche Wiederholungen nicht unterstützt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tareas con repetición horaria no se han añadido al Calendario porque las repeticiones horarias no son compatibles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld tâches avec une récurrence horaire n’ont pas été ajoutées au calendrier, car les récurrences horaires ne sont pas prises en charge."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld attività con ricorrenza oraria non sono state aggiunte al Calendario perché le ricorrenze orarie non sono supportate."
+          }
+        }
+      }
+    },
     "%lld°" : {
       "shouldTranslate" : false
     },
@@ -2456,6 +2484,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "1 ora"
+          }
+        }
+      }
+    },
+    "1 task with hourly recurrence could not be added to Calendar because Calendar does not support hourly recurrences." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 Aufgabe mit stündlicher Wiederholung wurde nicht zum Kalender hinzugefügt, da stündliche Wiederholungen nicht unterstützt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 tarea con repetición horaria no se ha añadido al Calendario porque las repeticiones horarias no son compatibles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 tâche avec une récurrence horaire n’a pas été ajoutée au calendrier, car les récurrences horaires ne sont pas prises en charge."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 attività con ricorrenza oraria non è stata aggiunta al Calendario perché le ricorrenze orarie non sono supportate."
           }
         }
       }
@@ -17704,6 +17760,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ora"
+          }
+        }
+      }
+    },
+    "Hourly recurrence not added" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stündliche Wiederholung nicht hinzugefügt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repetición horaria no añadida"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récurrence horaire non ajoutée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricorrenza oraria non aggiunta"
           }
         }
       }
@@ -35301,6 +35385,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Questo provider non supporta l'esportazione delle credenziali."
+          }
+        }
+      }
+    },
+    "This task could not be added to Calendar because Calendar does not support hourly recurrences." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Aufgabe konnte nicht zum Kalender hinzugefügt werden, da stündliche Wiederholungen nicht unterstützt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta tarea no se ha añadido al Calendario porque las repeticiones horarias no son compatibles."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette tâche n’a pas pu être ajoutée au calendrier, car les récurrences horaires ne sont pas prises en charge."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa attività non è stata aggiunta al Calendario perché le ricorrenze orarie non sono supportate."
           }
         }
       }

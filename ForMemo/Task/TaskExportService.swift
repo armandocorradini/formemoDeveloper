@@ -120,4 +120,38 @@ extension TaskExportService {
             }
         }
     }
+    
+    func exportToCalendarWithResult(
+        tasks: [TodoTask],
+        calendar: EKCalendar,
+        onComplete: @escaping (CalendarExportResult?, Error?) -> Void
+    ) {
+        let items = tasks.map { TaskTransferObject(task: $0) }
+
+        Task {
+            do {
+                let engine = CalendarExportEngine()
+
+                try await engine.requestAccess()
+
+                let result = try engine.exportWithResult(
+                    items: items,
+                    to: calendar
+                )
+
+                await MainActor.run {
+                    onComplete(result, nil)
+                }
+
+            } catch {
+                AppLogger.persistence.error(
+                    "Calendar export failed: \(error.localizedDescription)"
+                )
+
+                await MainActor.run {
+                    onComplete(nil, error)
+                }
+            }
+        }
+    }
 }

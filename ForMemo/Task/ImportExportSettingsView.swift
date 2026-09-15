@@ -12,6 +12,8 @@ struct ImportExportSettingsView: View {
     @State private var selectedExportTasks: [TodoTask] = []
     @State private var calendars: [EKCalendar] = []
     @State private var toastMessage: String?
+    @State private var showHourlyRecurrenceAlert = false
+    @State private var hourlyRecurrenceCount = 0
     enum ExportRoute: Hashable {
         case selection
         case calendarPicker
@@ -241,10 +243,30 @@ var body: some View {
                     CSVExportSelectionView(
                         tasks: selectedExportTasks,
                         onExport: { selected in
+
+                            let hourlyTasks = selected.filter {
+                                $0.recurrenceRule == "hourly"
+                            }
+
+                            let exportableTasks = selected.filter {
+                                $0.recurrenceRule != "hourly"
+                            }
+
+                            if !hourlyTasks.isEmpty {
+                                hourlyRecurrenceCount = hourlyTasks.count
+                            }
+
+                            // Nessun task esportabile:
+                            // non aprire il selettore del calendario.
+                            guard !exportableTasks.isEmpty else {
+                                showHourlyRecurrenceAlert = true
+                                return
+                            }
+
                             Task {
                                 let engine = CalendarExportEngine()
                                 let available = engine.availableCalendars()
-                                
+
                                 await MainActor.run {
                                     self.selectedExportTasks = selected
                                     self.calendars = available
@@ -258,18 +280,46 @@ var body: some View {
                         modeTitle: String(localized: "To Calendar")
                     )
                     
-                case .calendarPicker:
-                    CalendarPickerView(calendars: calendars) { calendar in
-                        let exporter = TaskExportService()
-                        exporter.exportToCalendar(
-                            tasks: selectedExportTasks.sorted {
-                                ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
-                            },
-                            calendar: calendar
-                        ) { count in
-                            showToast(count, action: "exported")
+                case .calendarPicker: CalendarPickerView(calendars: calendars) { calendar in
+                    
+                    let hourlyTasks = selectedExportTasks.filter {
+                        $0.recurrenceRule == "hourly"
+                    }
+
+                    let exportableTasks = selectedExportTasks.filter {
+                        $0.recurrenceRule != "hourly"
+                    }
+
+                    if !hourlyTasks.isEmpty {
+                        hourlyRecurrenceCount = hourlyTasks.count
+                    }
+
+                    guard !exportableTasks.isEmpty else {
+                        showHourlyRecurrenceAlert = true
+                        return
+                    }
+
+                    let exporter = TaskExportService()
+
+                    exporter.exportToCalendar(
+                        tasks: exportableTasks.sorted {
+                            ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
+                        },
+                        calendar: calendar
+                    ) { count in
+
+                        showToast(
+                            count,
+                            action: "exported"
+                        )
+
+                        if !hourlyTasks.isEmpty {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                showHourlyRecurrenceAlert = true
+                            }
                         }
                     }
+                }
                     
                 case .permissionError:
                     AppUnavailableView.permissionError(
@@ -278,7 +328,25 @@ var body: some View {
                 }
             }
         }
-
+        .alert(
+            String(localized: "Hourly recurrence not added"),
+            isPresented: $showHourlyRecurrenceAlert
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(
+                hourlyRecurrenceCount == 1
+                ? String(
+                    localized: "1 task with hourly recurrence could not be added to Calendar because Calendar does not support hourly recurrences."
+                )
+                : String.localizedStringWithFormat(
+                    String(
+                        localized: "%lld tasks with hourly recurrence could not be added to Calendar because Calendar does not support hourly recurrences."
+                    ),
+                    hourlyRecurrenceCount
+                )
+            )
+        }
         .overlay(alignment: .top) {
             if let message = toastMessage {
                 ToastView(text: message)
@@ -416,6 +484,7 @@ struct CSVImportView: View {
                 }
             }
         }
+        
         .alert(
             "Import Result",
             isPresented: $showImportSummary

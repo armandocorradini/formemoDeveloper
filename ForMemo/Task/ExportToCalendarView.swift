@@ -23,6 +23,9 @@ struct ExportToCalendarView: View {
     
     @State private var message: String?
     
+    @State private var showHourlyRecurrenceAlert = false
+    @State private var hourlyRecurrenceCount = 0
+    
     var body: some View {
         
         NavigationStack {
@@ -104,17 +107,30 @@ struct ExportToCalendarView: View {
                             
                             let exporter = TaskExportService()
                             
-                            exporter.exportToCalendar(
+                            exporter.exportToCalendarWithResult(
                                 tasks: selectedTasks,
                                 calendar: calendar
-                            ) { count in
-                                
+                            ) { result, error in
+                                guard let result else {
+                                    return
+                                }
+
+                                let count = result.exportedCount
+
                                 message = count == 1
                                 ? "1 event added to calendar"
                                 : "\(count) events added to calendar"
 
                                 showCalendarPicker = false
                                 showBanner = true
+
+                                if result.skippedHourlyCount > 0 {
+                                    hourlyRecurrenceCount = result.skippedHourlyCount
+
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                        showHourlyRecurrenceAlert = true
+                                    }
+                                }
 
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                                     showBanner = false
@@ -124,6 +140,18 @@ struct ExportToCalendarView: View {
                     }
                 }
                 .navigationTitle("Select Calendar")
+                .alert(
+                    "Hourly recurrence not added",
+                    isPresented: $showHourlyRecurrenceAlert
+                ) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(
+                        hourlyRecurrenceCount == 1
+                        ? "1 task with hourly recurrence could not be added to Calendar because Calendar does not support hourly recurrences."
+                        : "\(hourlyRecurrenceCount) tasks with hourly recurrence could not be added to Calendar because Calendar does not support hourly recurrences."
+                    )
+                }
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {
                         Button("Cancel") {

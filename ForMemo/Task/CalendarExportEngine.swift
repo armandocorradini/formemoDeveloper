@@ -1,5 +1,11 @@
 import EventKit
 
+
+struct CalendarExportResult {
+    let exportedCount: Int
+    let skippedHourlyCount: Int
+}
+
 final class CalendarExportEngine {
     
     private static let sharedStore = EKEventStore()
@@ -27,15 +33,29 @@ final class CalendarExportEngine {
             }
         }
     }
-    
+
     // MARK: - EXPORT
-    
+
     func export(
         items: [TaskTransferObject],
         to calendar: EKCalendar
     ) throws -> Int {
         
+        let result = try exportWithResult(
+            items: items,
+            to: calendar
+        )
+        
+        return result.exportedCount
+    }
+
+    func exportWithResult(
+        items: [TaskTransferObject],
+        to calendar: EKCalendar
+    ) throws -> CalendarExportResult {
+        
         var count = 0
+        var skippedHourlyCount = 0
         
         // 🔍 Range eventi esistenti
         let start = Date().addingTimeInterval(-60 * 60 * 24 * 365) // -1 anno
@@ -60,6 +80,12 @@ final class CalendarExportEngine {
             
             guard let date = item.deadline else { continue }
             
+            // 🚫 Apple Calendar non supporta ricorrenze orarie
+            if item.recurrenceRule == "hourly" {
+                skippedHourlyCount += 1
+                continue
+            }
+            
             let key = "\(item.title.lowercased())|\(date.timeIntervalSince1970)"
             
             // 🚫 skip duplicati
@@ -77,11 +103,53 @@ final class CalendarExportEngine {
                Calendar.current.component(.minute, from: date) == 0 {
                 
                 event.isAllDay = true
-                event.endDate = Calendar.current.date(byAdding: .day, value: 1, to: date)
+                event.endDate = Calendar.current.date(
+                    byAdding: .day,
+                    value: 1,
+                    to: date
+                )
                 
             } else {
                 
-                event.endDate = Calendar.current.date(byAdding: .minute, value: 30, to: date)
+                event.endDate = Calendar.current.date(
+                    byAdding: .minute,
+                    value: 30,
+                    to: date
+                )
+            }
+            
+            // 🔁 RECURRENCE
+            
+            if let recurrenceRule = item.recurrenceRule {
+                
+                let frequency: EKRecurrenceFrequency?
+                
+                switch recurrenceRule {
+                case "daily":
+                    frequency = .daily
+                    
+                case "weekly":
+                    frequency = .weekly
+                    
+                case "monthly":
+                    frequency = .monthly
+                    
+                case "yearly":
+                    frequency = .yearly
+                    
+                default:
+                    frequency = nil
+                }
+                
+                if let frequency {
+                    event.recurrenceRules = [
+                        EKRecurrenceRule(
+                            recurrenceWith: frequency,
+                            interval: max(1, item.recurrenceInterval ?? 1),
+                            end: nil
+                        )
+                    ]
+                }
             }
             
             event.calendar = calendar
@@ -89,7 +157,9 @@ final class CalendarExportEngine {
             // 🔔 REMINDER
             
             if let minutes = item.reminderOffsetMinutes {
-                let alarm = EKAlarm(relativeOffset: TimeInterval(-minutes * 60))
+                let alarm = EKAlarm(
+                    relativeOffset: TimeInterval(-minutes * 60)
+                )
                 event.addAlarm(alarm)
             }
             
@@ -103,7 +173,10 @@ final class CalendarExportEngine {
             count += 1
         }
         
-        return count
+        return CalendarExportResult(
+            exportedCount: count,
+            skippedHourlyCount: skippedHourlyCount
+        )
     }
     
     // MARK: - HELPERS

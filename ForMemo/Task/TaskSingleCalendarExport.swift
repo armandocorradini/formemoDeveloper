@@ -16,6 +16,11 @@ final class TaskSingleCalendarExport {
     func present(for task: TodoTask) {
         guard task.deadLine != nil else { return }
 
+        if task.recurrenceRule == "hourly" {
+            presentHourlyRecurrenceAlert()
+            return
+        }
+
         Task {
             do {
                 try await engine.requestAccess()
@@ -37,6 +42,27 @@ final class TaskSingleCalendarExport {
                 )
             }
         }
+    }
+
+    private func presentHourlyRecurrenceAlert() {
+        guard let presenter = topViewController() else {
+            return
+        }
+
+        let alert = UIAlertController(
+            title: String(localized: "Hourly recurrence not added"),
+            message: String(localized: "This task could not be added to Calendar because Calendar does not support hourly recurrences."),
+            preferredStyle: .alert
+        )
+
+        alert.addAction(
+            UIAlertAction(title: "OK", style: .cancel)
+        )
+       
+        presenter.present(
+            alert,
+            animated: true
+        )
     }
 
     private func presentCalendarPicker(
