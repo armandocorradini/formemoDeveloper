@@ -187,6 +187,7 @@
 		1C634E3A30220C9C0092DB89 /* WeatherForecastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */; };
 		1C634E3B30220C9C0092DB89 /* WeeklyTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */; };
 		1C634E3D30220D580092DB89 /* WalletAssetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */; };
+		1C716EF23059795C006C6178 /* TaskSingleCalendarExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C716EF13059795B006C6178 /* TaskSingleCalendarExport.swift */; };
 		1C8225E1303B50B600B77EC7 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E0303B50A000B77EC7 /* Note.swift */; };
 		1C8225E3303B535500B77EC7 /* NoteListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E2303B531F00B77EC7 /* NoteListView.swift */; };
 		1C8225E5303B555000B77EC7 /* NoteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */; };
@@ -420,6 +421,7 @@
 		1C634D8830220C9C0092DB89 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1C634D8930220C9C0092DB89 /* ForMemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ForMemo.entitlements; sourceTree = "<group>"; };
 		1C634D8A30220C9C0092DB89 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1C716EF13059795B006C6178 /* TaskSingleCalendarExport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskSingleCalendarExport.swift; sourceTree = "<group>"; };
 		1C8225E0303B50A000B77EC7 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
 		1C8225E2303B531F00B77EC7 /* NoteListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteListView.swift; sourceTree = "<group>"; };
 		1C8225E4303B554A00B77EC7 /* NoteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorView.swift; sourceTree = "<group>"; };
@@ -649,6 +651,7 @@
 		1C634E3C30220CAE0092DB89 /* Task */ = {
 			isa = PBXGroup;
 			children = (
+				1C716EF13059795B006C6178 /* TaskSingleCalendarExport.swift */,
 				1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */,
 				1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */,
 				1C634D1030220C9C0092DB89 /* TaskAttachment.swift */,
@@ -1098,6 +1101,7 @@
 				1C634DD930220C9C0092DB89 /* VaultLock.swift in Sources */,
 				1C634DDA30220C9C0092DB89 /* VaultManager.swift in Sources */,
 				1C634DDB30220C9C0092DB89 /* VaultSecret.swift in Sources */,
+				1C716EF23059795C006C6178 /* TaskSingleCalendarExport.swift in Sources */,
 				1C634DDC30220C9C0092DB89 /* WalletAsset.swift in Sources */,
 				1C634DDE30220C9C0092DB89 /* WalletAssetStore.swift in Sources */,
 				1C8225EF3040934A00B77EC7 /* NoteImportHandoff.swift in Sources */,

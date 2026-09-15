@@ -1119,6 +1119,16 @@ private struct DayTasksInlineView: View {
                             Label("Delete", systemImage: "trash")
                         }
 
+                        if task.deadLine != nil {
+                            Button {
+                                TaskSingleCalendarExport.shared.present(for: task)
+                            } label: {
+                                Label(
+                                    "Add to Calendar",
+                                    systemImage: "calendar.badge.plus"
+                                )
+                            }
+                        }
                         TaskRescheduleMenu(task: task)
                         
                         if let deadline = task.deadLine,
@@ -1179,28 +1189,7 @@ private struct DayTasksInlineView: View {
                             }
                            
                         }
-                        Menu {
-                            Button {
-                                do {
-                                    _ = try TaskDuplicationService.duplicate(
-                                        task,
-                                        using: modelContext,
-                                        includingAttachments: false
-                                    )
-
-                                    NotificationCenter.default.post(
-                                        name: .taskDidChange,
-                                        object: nil
-                                    )
-                                } catch {
-                                    AppLogger.persistence.error(
-                                        "Task duplication failed: \(error.localizedDescription)"
-                                    )
-                                }
-                            } label: {
-                                Label("Task", systemImage: "text.badge.checkmark")
-                            }
-
+                        if !(task.attachments?.isEmpty ?? true) {
                             Button {
                                 do {
                                     _ = try TaskDuplicationService.duplicate(
@@ -1208,7 +1197,6 @@ private struct DayTasksInlineView: View {
                                         using: modelContext,
                                         includingAttachments: true
                                     )
-
                                     NotificationCenter.default.post(
                                         name: .taskDidChange,
                                         object: nil
@@ -1219,10 +1207,11 @@ private struct DayTasksInlineView: View {
                                     )
                                 }
                             } label: {
-                                Label("Task & Attachments", systemImage: "rectangle.and.paperclip")
+                                Label(
+                                    "Task & Attachments",
+                                    systemImage: "rectangle.and.paperclip"
+                                )
                             }
-                        } label: {
-                            Label("Duplicate", systemImage: "plus.square.on.square")
                         }
                     }
                     

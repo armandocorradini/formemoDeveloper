@@ -1429,6 +1429,7 @@ struct TodoSectionView: View {
             }
         }
         .contextMenu {
+            
             Button(role: .destructive) {
                 if confirmTaskDeletion {
                     DispatchQueue.main.async {
@@ -1451,10 +1452,20 @@ struct TodoSectionView: View {
             } label: {
                 Label("Complete", systemImage: "checkmark.circle")
             }
+        
             
-            
+            if t.deadLine != nil {
+                Button {
+                    TaskSingleCalendarExport.shared.present(for: t)
+                } label: {
+                    Label(
+                        "Add to Calendar",
+                        systemImage: "calendar.badge.plus"
+                    )
+                }
+            }
+
             TaskRescheduleMenu(task: t)
-            
             
             if let deadline = t.deadLine,
 
@@ -1514,6 +1525,7 @@ struct TodoSectionView: View {
                 }
             }
             Menu {
+
                 Button {
                     do {
                         _ = try TaskDuplicationService.duplicate(
@@ -1521,7 +1533,6 @@ struct TodoSectionView: View {
                             using: modelContext,
                             includingAttachments: false
                         )
-
                         NotificationCenter.default.post(
                             name: .taskDidChange,
                             object: nil
@@ -1535,26 +1546,31 @@ struct TodoSectionView: View {
                     Label("Task", systemImage: "text.badge.checkmark")
                 }
 
-                Button {
-                    do {
-                        _ = try TaskDuplicationService.duplicate(
-                            t,
-                            using: modelContext,
-                            includingAttachments: true
-                        )
-
-                        NotificationCenter.default.post(
-                            name: .taskDidChange,
-                            object: nil
-                        )
-                    } catch {
-                        AppLogger.persistence.error(
-                            "Task duplication failed: \(error.localizedDescription)"
+                if !(t.attachments?.isEmpty ?? true) {
+                    Button {
+                        do {
+                            _ = try TaskDuplicationService.duplicate(
+                                t,
+                                using: modelContext,
+                                includingAttachments: true
+                            )
+                            NotificationCenter.default.post(
+                                name: .taskDidChange,
+                                object: nil
+                            )
+                        } catch {
+                            AppLogger.persistence.error(
+                                "Task duplication failed: \(error.localizedDescription)"
+                            )
+                        }
+                    } label: {
+                        Label(
+                            "Task & Attachments",
+                            systemImage: "rectangle.and.paperclip"
                         )
                     }
-                } label: {
-                    Label("Task & Attachments", systemImage: "rectangle.and.paperclip")
                 }
+
             } label: {
                 Label("Duplicate", systemImage: "plus.square.on.square")
             }

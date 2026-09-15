@@ -73,7 +73,7 @@ enum TaskRowMetrics {
     static let separatorHeight: CGFloat = 0.35
 
     // Larghezza della barra verticale di highlight/priorità.
-    static let highlightBarWidth: CGFloat = 1.5
+    static let highlightBarWidth: CGFloat = 4
     // Altezza della barra verticale di highlight/priorità.
     static let highlightBarHeight: CGFloat = 38
 
