@@ -878,6 +878,7 @@ Attivazione: \(triggerInfo)
             .contentMargins(.bottom, 70, for: .scrollContent)
 
             .scrollContentBackground(.hidden)
+            .scrollEdgeEffectHidden(true, for: .top)
             .task {
                 cleanupRecentlyDeleted()
                 checkNotificationStatus()

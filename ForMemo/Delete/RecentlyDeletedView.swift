@@ -345,6 +345,7 @@ var body: some View {
         .background(Color.clear)
         .navigationTitle("Recently Deleted")
         .navigationBarTitleDisplayMode(.inline)
+        .scrollEdgeEffectHidden(true, for: .top)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 VStack(spacing: 1) {

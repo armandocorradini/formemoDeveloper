@@ -52,6 +52,7 @@ struct WeatherDayView: View {
             }
         }
         .contentMargins(.bottom, 70, for: .scrollContent)
+        .scrollEdgeEffectHidden(true, for: .top)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {

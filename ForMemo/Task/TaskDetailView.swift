@@ -187,6 +187,7 @@ struct TaskDetailView: View {
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
             .scrollContentBackground(.hidden)
+            .scrollEdgeEffectHidden(true, for: .top)
             .scrollDismissesKeyboard(.interactively)
         }
         .confirmationDialog(

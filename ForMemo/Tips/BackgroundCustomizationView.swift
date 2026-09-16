@@ -442,6 +442,7 @@ struct BackgroundCustomizationView: View {
         .navigationBarBackButtonHidden(true)
         .navigationTitle("Background")
         .navigationBarTitleDisplayMode(.inline)
+        .scrollEdgeEffectHidden(true, for: .top)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {

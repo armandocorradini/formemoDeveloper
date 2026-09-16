@@ -505,6 +505,7 @@ struct NoteListView: View {
             }
             .scrollContentBackground(.hidden)
             .background(Color.clear)
+            .scrollEdgeEffectHidden(true, for: .top)
             .contentMargins(.bottom, 70, for: .scrollContent)
             .listStyle(.insetGrouped)
         }

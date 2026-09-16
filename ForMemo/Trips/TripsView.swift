@@ -717,6 +717,7 @@ struct ChecklistListView: View {
                     }
                     .navigationTitle(String(localized: "Export"))
                     .navigationBarTitleDisplayMode(.inline)
+                    .scrollEdgeEffectHidden(true, for: .top)
                     .toolbar {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button(String(localized: "Done")) {
@@ -1192,6 +1193,7 @@ struct ChecklistView: View {
             }
         }
         .scrollContentBackground(.hidden)
+        .scrollEdgeEffectHidden(true, for: .top)
         .contentMargins(.bottom, 70, for: .scrollContent)
         .onAppear {
             category.lastOpenedAt = Date()

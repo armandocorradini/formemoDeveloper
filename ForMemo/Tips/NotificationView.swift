@@ -237,6 +237,7 @@ struct NotificationView: View {
                         
                         .contentMargins(.bottom, 70, for: .scrollContent)
                         .scrollContentBackground(.hidden)
+                        .scrollEdgeEffectHidden(true, for: .top)
                         .background(Color.clear)
                     }
                 }

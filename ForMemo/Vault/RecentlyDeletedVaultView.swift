@@ -150,6 +150,7 @@ struct RecentlyDeletedVaultView: View {
                 }
             }
             .scrollContentBackground(.hidden)
+            .scrollEdgeEffectHidden(true, for: .top)
             .background(Color.clear)
         }
         .navigationTitle("Recently Deleted")

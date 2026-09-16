@@ -338,6 +338,8 @@ struct WalletView: View {
             }
             .navigationTitle("Wallet")
             .navigationBarTitleDisplayMode(.inline)
+            .scrollEdgeEffectHidden(true, for: .top)
+
             .toolbar {
 
                 ToolbarItem(placement: .principal) {

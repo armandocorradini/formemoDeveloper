@@ -68,6 +68,7 @@ struct TaskListAppearanceView: View {
             .scrollContentBackground(.hidden)
             .navigationTitle("Customize")
             .navigationBarTitleDisplayMode(.inline)
+            .scrollEdgeEffectHidden(true, for: .top)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button {

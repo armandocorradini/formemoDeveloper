@@ -34,6 +34,7 @@ struct TabBarCustomizationView: View {
         }
         .contentMargins(.bottom, 70, for: .scrollContent)
         .navigationTitle("Customize Tab Bar")
+        .scrollEdgeEffectHidden(true, for: .top)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button("Reset") {

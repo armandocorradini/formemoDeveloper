@@ -515,14 +515,15 @@ struct TaskTabView: View {
             showNoteUnsavedChangesAlert = true
             return
         }
-
+        resetTab(tag)
+        
         withAnimation(nil) {
             selectedTab = tag
         }
 
-        Task {
-            resetTab(tag)
-        }
+//        Task {
+//            resetTab(tag)
+//        }
     }
 
     private func tabItem(

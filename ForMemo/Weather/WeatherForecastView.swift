@@ -54,6 +54,7 @@ struct WeatherForecastView: View {
         .contentMargins(.bottom, 70, for: .scrollContent)
         .navigationTitle("7 Days")
         .navigationBarTitleDisplayMode(.inline)
+        .scrollEdgeEffectHidden(true, for: .top)
         .task {
             await weatherManager.refreshIfNeeded()
         }

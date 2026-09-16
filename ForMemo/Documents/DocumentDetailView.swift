@@ -262,6 +262,7 @@ struct DocumentDetailView: View {
             .contentMargins(.bottom, 70, for: .scrollContent)
             .navigationTitle(document.name.isEmpty ? String(localized: "Document") : document.name)
             .navigationBarTitleDisplayMode(.inline)
+            .scrollEdgeEffectHidden(true, for: .top)
             .toolbar {
                 
                 if !isEditing {

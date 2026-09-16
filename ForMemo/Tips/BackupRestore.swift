@@ -24,6 +24,7 @@ struct BackupRestoreView: View {
     @State private var showRestoreConfirmation = false
     @State private var exportURL: URL?
     @State private var showExporter = false
+    @State private var backupFilename = ""
     @State private var showImporter = false
     @State private var restoreError: String?
     @State private var backupError: String?
@@ -135,6 +136,7 @@ struct BackupRestoreView: View {
                                         vaultBackupPassword: ""
                                     )
                                     exportURL = url
+                                    backupFilename = url.deletingPathExtension().lastPathComponent
                                     showExporter = true
                                     isCreatingBackup = false
                                 } catch {
@@ -241,6 +243,7 @@ struct BackupRestoreView: View {
                 }
             }
             .scrollContentBackground(.hidden)
+            .scrollEdgeEffectHidden(true, for: .top)
             .listSectionSpacing(12)
             .background(Color.clear)
             .contentMargins(.bottom, 70, for: .scrollContent)
@@ -293,7 +296,7 @@ struct BackupRestoreView: View {
                 BackupFileDocument(fileURL: $0)
             },
             contentType: .json,
-            defaultFilename: "FM_BK"
+            defaultFilename: backupFilename
         ) { _ in
             isCreatingBackup = false
         }
@@ -761,6 +764,7 @@ struct BackupRestoreView: View {
                             vaultBackupPassword: backupPassword
                         )
                         exportURL = url
+                        backupFilename = url.deletingPathExtension().lastPathComponent
                         showExporter = true
                         isCreatingBackup = false
                         backupPassword = ""
@@ -1898,7 +1902,7 @@ private enum BackupManager {
         let data = try JSONEncoder.backup.encode(archive)
 
         let formatter = DateFormatter()
-        formatter.dateFormat = "ddMMyy_HHmmss"
+        formatter.dateFormat = "dd-MM-yy_HH-mm-ss"
 
         let filename = "FM_BK_\(formatter.string(from: .now)).json"
 

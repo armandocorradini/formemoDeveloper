@@ -420,6 +420,7 @@ struct WeeklyTasksView: View {
             }
             .scrollContentBackground(.hidden)
             .containerBackground(.clear, for: .navigation)
+            .scrollEdgeEffectHidden(true, for: .top)
             // Shared delete confirmation alert
             .alert(
                 "Delete task?",

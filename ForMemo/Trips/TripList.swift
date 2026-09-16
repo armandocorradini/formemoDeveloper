@@ -143,6 +143,7 @@ struct TripItemData: Codable, Identifiable, Hashable {
     
     var id: UUID = UUID()
     
+    
     var title: String = ""
     
     var isChecked: Bool = false

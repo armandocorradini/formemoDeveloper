@@ -314,6 +314,7 @@ struct OverviewView: View {
         }
         .navigationTitle("Overview")
         .navigationBarTitleDisplayMode(.inline)
+        .scrollEdgeEffectHidden(true, for: .top)
         .contentMargins(.bottom, 70, for: .scrollContent)
         .onAppear {
             refreshFileStats()

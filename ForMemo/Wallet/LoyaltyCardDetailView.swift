@@ -403,6 +403,7 @@ struct LoyaltyCardDetailView: View {
         )
         .navigationBarTitleDisplayMode(.inline)
         .scrollContentBackground(.hidden)
+        .scrollEdgeEffectHidden(true, for: .top)
         .containerBackground(.clear, for: .navigation)
 
         .fullScreenCover(item: $previewImage) { preview in

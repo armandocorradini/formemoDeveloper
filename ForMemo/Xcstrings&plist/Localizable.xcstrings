@@ -1720,13 +1720,13 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld tâches avec une récurrence horaire n’ont pas été ajoutées au calendrier, car les récurrences horaires ne sont pas prises en charge."
+            "value" : "%lld tâches avec une récurrence horaire n’ont pas été ajoutées au Calendrier, car les récurrences horaires ne sont pas prises en charge."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld attività con ricorrenza oraria non sono state aggiunte al Calendario perché le ricorrenze orarie non sono supportate."
+            "value" : "%lld attività con ricorrenza oraria non sono state aggiunte a Calendario perché le ricorrenze orarie non sono supportate."
           }
         }
       }
@@ -2505,13 +2505,13 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1 tâche avec une récurrence horaire n’a pas été ajoutée au calendrier, car les récurrences horaires ne sont pas prises en charge."
+            "value" : "1 tâche avec une récurrence horaire n’a pas été ajoutée au Calendrier, car les récurrences horaires ne sont pas prises en charge."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1 attività con ricorrenza oraria non è stata aggiunta al Calendario perché le ricorrenze orarie non sono supportate."
+            "value" : "1 attività con ricorrenza oraria non è stata aggiunta a Calendario perché le ricorrenze orarie non sono supportate."
           }
         }
       }
@@ -35406,13 +35406,13 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette tâche n’a pas pu être ajoutée au calendrier, car les récurrences horaires ne sont pas prises en charge."
+            "value" : "Cette tâche n’a pas pu être ajoutée au Calendrier, car les récurrences horaires ne sont pas prises en charge."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa attività non è stata aggiunta al Calendario perché le ricorrenze orarie non sono supportate."
+            "value" : "Questa attività non è stata aggiunta a Calendario perché le ricorrenze orarie non sono supportate."
           }
         }
       }

@@ -194,6 +194,7 @@ struct TaskListView: View {
                     }
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
+                    .scrollEdgeEffectHidden(true, for: .top)
                     .alert(
                         "Delete task?",
                         isPresented: Binding(
@@ -304,6 +305,7 @@ struct TaskListView: View {
                     filteredTodoTasksCache = filteredTodoTasks
                 }
                         .toolbarBackground(.hidden, for: .navigationBar)
+                        .toolbarBackgroundVisibility(.hidden, for: .navigationBar)
             
                         .navigationTitle(todoQuery.isEmpty && !showCompleted ? "" : String(localized:"My Tasks"))
                 .navigationBarTitleDisplayMode(.inline)

@@ -236,6 +236,7 @@ struct VaultDetailView: View {
             .navigationTitle(item.title)
             .navigationBarTitleDisplayMode(.inline)
             .contentMargins(.bottom, 70, for: .scrollContent)
+            .scrollEdgeEffectHidden(true, for: .top)
             .alert(alertTitle, isPresented: $showingError) {
                 Button("OK", role: .cancel) { }
             } message: {

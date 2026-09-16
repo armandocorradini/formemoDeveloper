@@ -154,6 +154,7 @@ struct DocumentsView: View {
             .background(Color.clear)
             .navigationTitle(String(localized: "Document Expiry"))
             .navigationBarTitleDisplayMode(.inline)
+            .scrollEdgeEffectHidden(true, for: .top)
             .searchable(
                 text: $searchText,
                 placement: .navigationBarDrawer(displayMode: .automatic),

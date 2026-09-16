@@ -567,6 +567,7 @@ struct Dashboard: View {
                 .padding()
             }
             .scrollContentBackground(.hidden)
+            .scrollEdgeEffectHidden(true, for: .top)
             .background(Color.clear)
         }
         .alert(
