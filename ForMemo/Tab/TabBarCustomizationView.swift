@@ -5,55 +5,86 @@ struct TabBarCustomizationView: View {
     @State private var tabs: [AppTab] = []
 
     var body: some View {
-        List {
-            Section {
-                ForEach(tabs) { tab in
-                    HStack(spacing: 12) {
-                        Image(systemName: tab.icon)
-                            .foregroundStyle(.blue)
-                            .frame(width: 24)
-
-                        Text(tab.title(using: settings))
-
-                        Spacer()
-
-                        if !tab.isVisible(using: settings) {
-                            Text("Hidden")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+        ZStack{
+            AppGlassBackground()
+            List {
+                
+                Section {
+                    ColorPicker(
+                        "Icon Color",
+                        selection: Binding(
+                            get: {
+                                Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue
+                            },
+                            set: { newColor in
+                                settings.tabBarCustomizationIconColorHex =
+                                newColor.toHex() ?? settings.tabBarCustomizationIconColorHex
+                            }
+                        )
+                    )
+                } header: {
+                    Text("Appearance")
+                }
+                Section {
+                    ForEach(tabs) { tab in
+                        HStack(spacing: 0) {
+                            
+                            Image(systemName: tab.icon)
+                                .foregroundStyle(
+                                    Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue
+                                )
+                                .frame(width: 22)
+                            
+                            Text(tab.title(using: settings))
+                                .foregroundStyle(
+                                    Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue
+                                )
+                                .font(.body)
+                            
+                            Spacer()
+                            
+                            if !tab.isVisible(using: settings) {
+                                Text("Hidden")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
+                        .frame(height: 22)
+                        .opacity(tab.isVisible(using: settings) ? 1 : 0.55)
                     }
-                    .opacity(tab.isVisible(using: settings) ? 1 : 0.55)
-                }
-                .onMove(perform: moveTabs)
-            } header: {
-                Text("Tab order")
-            } footer: {
-                Text("Drag sections to choose their order. Hidden sections keep their position and return there when enabled again.")
-            }
-        }
-        .contentMargins(.bottom, 70, for: .scrollContent)
-        .navigationTitle("Customize Tab Bar")
-        .scrollEdgeEffectHidden(true, for: .top)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Reset") {
-                    tabs = AppTab.defaultOrder
-                    settings.tabOrder = tabs.map(\.rawValue)
+                    .onMove(perform: moveTabs)
+                } header: {
+                    Text("Tab order")
+                } footer: {
+                    Text("Drag sections to choose their order. Hidden sections keep their position and return there when enabled again.")
                 }
             }
-
-            ToolbarItem(placement: .topBarTrailing) {
-                EditButton()
+        }
+        .scrollContentBackground(.hidden)
+        .background(Color.clear)
+            .contentMargins(.bottom, 70, for: .scrollContent)
+            .navigationTitle("Customize Tab Bar")
+            .scrollEdgeEffectHidden(true, for: .top)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Reset") {
+                        tabs = AppTab.defaultOrder
+                        settings.tabOrder = tabs.map(\.rawValue)
+                        settings.tabBarCustomizationIconColorHex = Color.blue.toHex() ?? ""
+                    }            }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    EditButton()
+                }
+            }
+            .onAppear {
+                tabs = settings.orderedTabs
+            }
+            .onChange(of: settings.tabOrder) { _, _ in
+                tabs = settings.orderedTabs
             }
         }
-        .onAppear {
-            tabs = settings.orderedTabs
-        }
-        .onChange(of: settings.tabOrder) { _, _ in
-            tabs = settings.orderedTabs
-        }
-    }
+    
 
     private func moveTabs(from source: IndexSet, to destination: Int) {
         tabs.move(fromOffsets: source, toOffset: destination)

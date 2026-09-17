@@ -298,13 +298,18 @@ struct TaskTabView: View {
                     showMorePopover.toggle()
                 } label: {
                     VStack(spacing: 4) {
+
                         Image(systemName: "square.grid.2x2")
                             .font(.system(size: 21, weight: .regular))
                             .frame(height: 22)
+
                         Text("More")
                             .font(.system(size: 9, weight: .medium))
+
                         Capsule()
-                            .fill(Color.accentColor)
+                            .fill(
+                                Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue
+                            )
                             .frame(width: 16, height: 3)
                             .opacity(moreTabs.contains { $0.rawValue == selectedTab } ? 1 : 0)
                     }
@@ -313,7 +318,7 @@ struct TaskTabView: View {
                     .contentShape(Rectangle())
                     .foregroundStyle(
                         moreTabs.contains { $0.rawValue == selectedTab }
-                        ? Color.accentColor
+                        ? (Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue)
                         : Color.primary
                     )
                 }
@@ -492,14 +497,18 @@ struct TaskTabView: View {
                     Image(systemName: tab.icon)
                         .frame(width: 22)
                     Capsule()
-                        .fill(Color.accentColor)
+                        .fill(Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue)
                         .frame(width: 16, height: 3)
                         .opacity(selectedTab == tab.rawValue ? 1 : 0)
                 }
 
                 Text(tab.title(using: settings))
             }
-            .foregroundStyle(selectedTab == tab.rawValue ? Color.accentColor : Color.primary)
+            .foregroundStyle(
+                selectedTab == tab.rawValue
+                ? (Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue)
+                : Color.primary
+            )
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
         }
@@ -552,7 +561,7 @@ struct TaskTabView: View {
                     .minimumScaleFactor(0.9)
                 
                 Capsule()
-                    .fill(Color.accentColor)
+                    .fill(Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue)
                     .frame(width: 16, height: 3)
                     .opacity(selectedTab == tag ? 1 : 0)
             }
@@ -561,7 +570,7 @@ struct TaskTabView: View {
             .contentShape(Rectangle())
             .foregroundStyle(
                 selectedTab == tag
-                ? Color.accentColor
+                ? (Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue)
                 : Color.primary
             )
             // Bubble background removed

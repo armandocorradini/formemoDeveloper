@@ -400,18 +400,18 @@ struct TaskDetailView: View {
                 await importPhotos(from: newItems)
             }
         }
-        .onChange(of: task.reminderOffsetMinutes, initial: false) { _, _ in
-            saveTask()
-        }
-        .onChange(of: task.locationName) { _, _ in
-            saveTask()
-        }
-        .onChange(of: task.locationLatitude) { _, _ in
-            saveTask()
-        }
-        .onChange(of: task.locationLongitude) { _, _ in
-            saveTask()
-        }
+//        .onChange(of: task.reminderOffsetMinutes, initial: false) { _, _ in
+//            saveTask()
+//        }
+//        .onChange(of: task.locationName) { _, _ in
+//            saveTask()
+//        }
+//        .onChange(of: task.locationLatitude) { _, _ in
+//            saveTask()
+//        }
+//        .onChange(of: task.locationLongitude) { _, _ in
+//            saveTask()
+//        }
         .onChange(of: task.isCompleted) { _, _ in
             saveTask()
         }
@@ -422,6 +422,8 @@ struct TaskDetailView: View {
     }
     @MainActor
     private func saveTask() {
+        guard modelContext.hasChanges else { return }
+
         do {
             try modelContext.save()
             DebugLog.writeCloudKitEvent(

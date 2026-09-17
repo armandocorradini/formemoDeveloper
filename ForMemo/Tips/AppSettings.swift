@@ -123,6 +123,10 @@ final class AppSettings {
         showBadgeOnlyWithPriority = defaults.object(forKey: TaskListAppearanceKeys.showBadgeOnlyWithPriority) as? Bool ?? true
         highlightEnabled = defaults.object(forKey: "tasklist.highlightEnabled") as? Bool ?? true
         highlightColorHex = defaults.string(forKey: "tasklist.highlightColor") ?? (Color.red.toHex() ?? "")
+        
+        tabBarCustomizationIconColorHex =
+            defaults.string(forKey: "tabBarCustomizationIconColor") ?? (Color.blue.toHex() ?? "")
+        
         showTodayExpiredLabel = defaults.object(forKey: TaskListAppearanceKeys.showTodayExpiredLabel) as? Bool ?? true
         selectedTaskRowStyle = defaults.object(forKey: "selectedTaskRowStyle") as? Int ?? 0
         surfaceCornerRadius = defaults.object(forKey: "surfaceCornerRadius") as? Double ?? 22
@@ -264,6 +268,15 @@ final class AppSettings {
             UserDefaults.standard.set(
                 highlightColorHex,
                 forKey: "tasklist.highlightColor"
+            )
+        }
+    }
+    
+    var tabBarCustomizationIconColorHex: String {
+        didSet {
+            UserDefaults.standard.set(
+                tabBarCustomizationIconColorHex,
+                forKey: "tabBarCustomizationIconColor"
             )
         }
     }
@@ -635,6 +648,7 @@ final class AppSettings {
         showBadgeOnlyWithPriority = true
         highlightEnabled = true
         highlightColorHex = Color.red.toHex() ?? ""
+        tabBarCustomizationIconColorHex = Color.blue.toHex() ?? ""
         showTodayExpiredLabel = true
         selectedTaskRowStyle = 0
         surfaceCornerRadius = 22
