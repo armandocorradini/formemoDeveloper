@@ -19,6 +19,10 @@ enum AppBackgroundPattern: String, Codable {
     case dense
     case packed
     case saturated
+    case sea
+    case mountain
+    case countryside
+    case space
     
     var assetName: String? {
         switch self {
@@ -44,6 +48,14 @@ enum AppBackgroundPattern: String, Codable {
             return "PackedPattern"
         case .saturated:
             return "SaturatedPattern"
+        case .sea:
+            return "SeaPattern"
+        case .mountain:
+            return "MountainPattern"
+        case .countryside:
+            return "CountrysidePattern"
+        case .space:
+            return "SpacePattern"
         }
     }
 
@@ -71,8 +83,14 @@ enum AppBackgroundPattern: String, Codable {
             return String(localized: "Packed")
         case .saturated:
             return String(localized: "Saturated")
-            
-
+        case .sea:
+            return String(localized: "Sea")
+        case .mountain:
+            return String(localized: "Mountain")
+        case .countryside:
+            return String(localized: "Countryside")
+        case .space:
+            return String(localized: "Space")
         }
     }
 }

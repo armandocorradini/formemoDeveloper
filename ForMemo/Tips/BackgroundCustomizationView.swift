@@ -390,6 +390,23 @@ struct BackgroundCustomizationView: View {
                                 pattern: .minimal,
                                 title: "Minimal"
                             )
+                            patternButton(
+                                pattern: .sea,
+                                title: "Sea"
+                            )
+                            patternButton(
+                                pattern: .mountain,
+                                title: "Mountain"
+                            )
+                            patternButton(
+                                pattern: .countryside,
+                                title: "Countryside"
+                            )
+                            patternButton(
+                                pattern: .space,
+                                title: "Space"
+                            )
+
                         }
                         .padding(.vertical, 4)
                     }

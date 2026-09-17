@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1C1358C9305C54A80030AC9B /* PerformanceBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C1358C8305C54A80030AC9B /* PerformanceBenchmark.swift */; };
 		1C3191D23036F7D2009ABE1E /* RemoteAssetCleanupCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */; };
 		1C62D169304FDC9E00E97C02 /* TaskRescheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */; };
 		1C62D16D3053E5C800E97C02 /* BarcodePhotoDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D16C3053E5C200E97C02 /* BarcodePhotoDetector.swift */; };
@@ -239,6 +240,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1C1358C8305C54A80030AC9B /* PerformanceBenchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceBenchmark.swift; sourceTree = "<group>"; };
 		1C1C23002F7E983A00A77282 /* ForMemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ForMemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteAssetCleanupCoordinator.swift; sourceTree = "<group>"; };
 		1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRescheduler.swift; sourceTree = "<group>"; };
@@ -790,6 +792,7 @@
 		1C634E43302331530092DB89 /* Tips */ = {
 			isa = PBXGroup;
 			children = (
+				1C1358C8305C54A80030AC9B /* PerformanceBenchmark.swift */,
 				1C634D4730220C9C0092DB89 /* Dashboard.swift */,
 				1C634CD830220C9C0092DB89 /* AppSettings.swift */,
 				1C634D5F30220C9C0092DB89 /* NotificationView.swift */,
@@ -1196,6 +1199,7 @@
 				1C634E2D30220C9C0092DB89 /* TripsView.swift in Sources */,
 				1C634E2E30220C9C0092DB89 /* VaultDetailView.swift in Sources */,
 				1C634E2F30220C9C0092DB89 /* VaultEditView.swift in Sources */,
+				1C1358C9305C54A80030AC9B /* PerformanceBenchmark.swift in Sources */,
 				1C634E3030220C9C0092DB89 /* VaultGateView.swift in Sources */,
 				1C634E3130220C9C0092DB89 /* VaultLockCoverView.swift in Sources */,
 				1C634E3230220C9C0092DB89 /* VaultPasswordField.swift in Sources */,

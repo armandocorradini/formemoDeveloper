@@ -266,6 +266,23 @@ struct SettingsView: View {
                             }
                         }
                         
+                        NavigationLink {
+                            TabBarCustomizationView()
+                        } label: {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Customize Tab Bar")
+
+                                    Text("Choose the order of all sections")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "rectangle.3.group")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
                         LabeledContent {
                             Picker(
                                 "",
@@ -333,24 +350,6 @@ struct SettingsView: View {
                                 }
                             } icon: {
                                 Image(systemName: "key.shield")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
-                        }
-
-                        NavigationLink {
-                            TabBarCustomizationView()
-                        } label: {
-                            Label {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Customize Tab Bar")
-
-                                    Text("Choose the order of all sections")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            } icon: {
-                                Image(systemName: "rectangle.3.group")
                                     .foregroundStyle(.blue)
                                     .frame(width: iconWidth)
                             }
@@ -853,6 +852,12 @@ Attivazione: \(triggerInfo)
                                 Text("Elimina")
                             }
                         }
+                        NavigationLink {
+                            PerformanceBenchmarkView()
+                        } label: {
+                            Label("Performance Benchmark", systemImage: "speedometer")
+                        }
+                        
                         Button(role: .destructive) {
                             DebugTools.resetPreferences()
                             
