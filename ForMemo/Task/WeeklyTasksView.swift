@@ -503,7 +503,7 @@ struct WeeklyTasksView: View {
             }
 
             HStack {
-                Spacer()
+//                Spacer()
                 Stepper(
                     "",
                     value: Binding(
@@ -521,6 +521,7 @@ struct WeeklyTasksView: View {
                 Spacer()
             }
             .padding(.top, 8)
+            .padding(.leading, 70)
         }
         .textCase(nil)
   
@@ -706,13 +707,14 @@ private struct WeeklyTaskRow: View {
                     Label("Snooze", systemImage: "timer")
                 }
             }
-            if !(task.attachments?.isEmpty ?? true) {
+            Menu {
+
                 Button {
                     do {
                         _ = try TaskDuplicationService.duplicate(
                             task,
                             using: modelContext,
-                            includingAttachments: true
+                            includingAttachments: false
                         )
                         NotificationCenter.default.post(
                             name: .taskDidChange,
@@ -724,11 +726,36 @@ private struct WeeklyTaskRow: View {
                         )
                     }
                 } label: {
-                    Label(
-                        "Task & Attachments",
-                        systemImage: "rectangle.and.paperclip"
-                    )
+                    Label("Task", systemImage: "text.badge.checkmark")
                 }
+
+                if !(task.attachments?.isEmpty ?? true) {
+                    Button {
+                        do {
+                            _ = try TaskDuplicationService.duplicate(
+                                task,
+                                using: modelContext,
+                                includingAttachments: true
+                            )
+                            NotificationCenter.default.post(
+                                name: .taskDidChange,
+                                object: nil
+                            )
+                        } catch {
+                            AppLogger.persistence.error(
+                                "Task duplication failed: \(error.localizedDescription)"
+                            )
+                        }
+                    } label: {
+                        Label(
+                            "Task & Attachments",
+                            systemImage: "rectangle.and.paperclip"
+                        )
+                    }
+                }
+
+            } label: {
+                Label("Duplicate", systemImage: "plus.square.on.square")
             }
         }
     }
