@@ -303,7 +303,7 @@ func refreshFromCloudKit() {
         guard !tasks.isEmpty else { return "EMPTY" }
         
         let body = tasks
-            .sorted { $0.id.uuidString < $1.id.uuidString }
+//            .sorted { $0.id.uuidString < $1.id.uuidString }
             .map {
                 "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)-\($0.manualSnoozeUntil?.timeIntervalSince1970 ?? 0)"
             }
@@ -414,7 +414,13 @@ func refreshFromCloudKit() {
     
     // MARK: - REBUILD
     
-    private func rebuild(_ tasks: [TodoTask]) async {
+    private func rebuild(
+        _ tasks: [TodoTask],
+        cleanupStale: Bool = true,
+        syncBadge: Bool = true
+    ) async {
+        let badgeIndex = TaskBadgePolicy.Index(tasks: tasks)
+        
         let rebuildStart = Date()
         let center = UNUserNotificationCenter.current()
         let now = Date()
@@ -481,11 +487,13 @@ func refreshFromCloudKit() {
         for task in tasks {
             
             guard !task.isCompleted else { continue }
+            guard !task.isDebugTask else { continue }
             
             guard let next = nextTrigger(for: task, now: now) else {
                 continue
+                
             }
-            let badgeAtTrigger = computeBadgeCount(at: next.date, tasks: tasks)
+            let badgeAtTrigger = badgeIndex.count(at: next.date)
 
             let content: UNMutableNotificationContent
             
@@ -580,17 +588,34 @@ func refreshFromCloudKit() {
         // Prevent stale rebuild cleanup
         guard rebuildStart >= self.lastRebuild else { return }
         
-        let toRemove = existing.keys.filter { id in
-            id.starts(with: "task.") && !expectedIDs.contains(id)
+        if cleanupStale {
+            let toRemove = existing.keys.filter { id in
+                id.starts(with: "task.") && !expectedIDs.contains(id)
+            }
+
+            center.removePendingNotificationRequests(
+                withIdentifiers: toRemove
+            )
         }
-        
-        center.removePendingNotificationRequests(withIdentifiers: toRemove)
 
         // 🔥 FINAL SYNC: ensure badge always matches latest state
-        let finalBadge = computeBadgeCount(from: tasks)
-        let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
-        applyBadge(showBadge ? finalBadge : 0)
+        if syncBadge {
+            let finalBadge = computeBadgeCount(from: tasks)
+            let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
+            applyBadge(showBadge ? finalBadge : 0)
+        }
     }
+    
+#if DEBUG
+func debugRebuild(tasks: [TodoTask]) async {
+    await rebuild(
+        tasks,
+        cleanupStale: false,
+        syncBadge: false
+    )
+}
+#endif
+    
     
     // MARK: - ACTIONS
     
