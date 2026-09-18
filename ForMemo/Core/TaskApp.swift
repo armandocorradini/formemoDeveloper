@@ -142,11 +142,6 @@ struct ForMemoApp: App {
             WalletAsset.normalizePersistedKinds(
                 in: context
             )
-
-            DebugLog.writeDatabaseSnapshot(
-                context: context
-            )
-            
             
             VaultAutoFillManager.shared.synchronize(using: context)
             if appSettings.autoDeleteCompletedAttachments {
@@ -274,10 +269,6 @@ struct ForMemoApp: App {
                         in: context
                     )
                     
-//                    DebugLog.writeDatabaseSnapshot(
-//                        context: context
-//                    )
-                    
                     // 1️⃣ Applica azioni notifiche
                     NotificationActionProcessor.shared.processAll(using: context)
  
@@ -344,12 +335,6 @@ struct ForMemoApp: App {
                 // local asset file. Reconcile physical assets only after the
                 // remote change has had time to settle.
                 Self.scheduleRemoteAssetCleanup(context: context)
-
-//                if DiagnosticsOptions.attachmentDatabase {
-//                    DebugLog.writeDatabaseSnapshot(
-//                        context: context
-//                    )
-//                }
                 
                 NotificationActionProcessor.shared.processAll(
                     using: context

@@ -71,19 +71,17 @@ enum DiagnosticsRedactor {
 
     }
     
+    private static let knownFileNameRegex = try? NSRegularExpression(
+        pattern: #"[^\s/]+\.(jpg|jpeg|png|heic|gif|pdf|doc|docx|xls|xlsx|zip|txt|m4a|mp3|mov|mp4)"#,
+        options: [.caseInsensitive]
+    )
     
     private static func redactKnownFileNames(
         in text: String
     ) -> String {
-
         var result = text
 
-        let pattern = #"[^\s/]+\.(jpg|jpeg|png|heic|gif|pdf|doc|docx|xls|xlsx|zip|txt|m4a|mp3|mov|mp4)"#
-
-        guard let regex = try? NSRegularExpression(
-            pattern: pattern,
-            options: [.caseInsensitive]
-        ) else {
+        guard let regex = knownFileNameRegex else {
             return result
         }
 
@@ -93,7 +91,6 @@ enum DiagnosticsRedactor {
         )
 
         for match in matches.reversed() {
-
             guard
                 let range = Range(match.range, in: result)
             else {
@@ -107,13 +104,10 @@ enum DiagnosticsRedactor {
                 range,
                 with: replacement
             )
-
         }
 
         return result
-
     }
-    
     
     private static func redactTaskFields(
         in text: String
@@ -243,23 +237,16 @@ private extension DiagnosticsRedactor {
 
     }
 
-    static func redactFileName(
-        _ fileName: String
-    ) -> String {
-
-        guard !fileName.isEmpty else {
-            return fileName
-        }
-
-        let ext = URL(fileURLWithPath: fileName)
-            .pathExtension
-
-        if ext.isEmpty {
+    static func redactFileName(_ fileName: String) -> String {
+        guard !fileName.isEmpty,
+              let dot = fileName.lastIndex(of: "."),
+              dot != fileName.startIndex,
+              dot != fileName.index(before: fileName.endIndex) else {
             return "[File]"
         }
 
+        let ext = String(fileName[fileName.index(after: dot)...])
         return "[File].\(ext.lowercased())"
-
     }
     
     
