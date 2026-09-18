@@ -30,8 +30,9 @@ struct WeeklyTasksView: View {
 
     @State private var selectedWeatherDay: SelectedWeatherDay?
 
-    @State private var weeklyTasks: [TodoTask] = []
     
+    @State private var weeklyTasks: [TodoTask] = []
+    @State private var expiredTaskCount = 0
     
     @MainActor
     private func fetchWeeklyTasks() {
@@ -44,62 +45,52 @@ struct WeeklyTasksView: View {
             to: startOfToday
         ) else {
             weeklyTasks = []
+            expiredTaskCount = 0
             return
         }
 
-        let predicate = #Predicate<TodoTask> { task in
+        let weeklyPredicate = #Predicate<TodoTask> { task in
             !task.isCompleted &&
             task.deadLine != nil &&
             task.deadLine! >= startOfToday &&
             task.deadLine! < endOfPeriod
         }
 
-        let descriptor = FetchDescriptor<TodoTask>(
-            predicate: predicate,
+        let weeklyDescriptor = FetchDescriptor<TodoTask>(
+            predicate: weeklyPredicate,
             sortBy: [
                 SortDescriptor(\TodoTask.deadLine, order: .forward)
             ]
         )
 
+        let expiredPredicate = #Predicate<TodoTask> { task in
+            !task.isCompleted &&
+            task.deadLine != nil &&
+            task.deadLine! < startOfToday
+        }
+
+        let expiredDescriptor = FetchDescriptor<TodoTask>(
+            predicate: expiredPredicate
+        )
+
         do {
-            weeklyTasks = try modelContext.fetch(descriptor)
+            weeklyTasks = try modelContext.fetch(weeklyDescriptor)
         } catch {
             AppLogger.persistence.error(
                 "Weekly tasks fetch failed: \(error.localizedDescription)"
             )
             weeklyTasks = []
         }
-    }
-    
-    private var expiredTasks: [TodoTask] {
-        let calendar = Calendar.current
-        let startOfToday = calendar.startOfDay(for: .now)
-
-        let predicate = #Predicate<TodoTask> { task in
-            !task.isCompleted &&
-            task.deadLine != nil &&
-            task.deadLine! < startOfToday
-        }
-
-        let descriptor = FetchDescriptor<TodoTask>(
-            predicate: predicate,
-            sortBy: [
-                SortDescriptor(\TodoTask.deadLine, order: .forward)
-            ]
-        )
 
         do {
-            return try modelContext.fetch(descriptor)
+            expiredTaskCount = try modelContext.fetchCount(expiredDescriptor)
         } catch {
             AppLogger.persistence.error(
-                "Expired tasks fetch failed: \(error.localizedDescription)"
+                "Expired tasks count failed: \(error.localizedDescription)"
             )
-            return []
+            expiredTaskCount = 0
         }
     }
-    
-    
-
     
     private var formattedDate: String {
         Date.now.formatted(
@@ -495,7 +486,7 @@ struct WeeklyTasksView: View {
         
         VStack {
             
-            if expiredTasks.count > 0 {
+            if expiredTaskCount > 0 {
                 HStack {
 
                     Spacer()
@@ -503,7 +494,7 @@ struct WeeklyTasksView: View {
                     Image(systemName: "exclamationmark.circle.fill")
                         .foregroundStyle(.red)
 
-                    Text("Overdue in previous days: \(expiredTasks.count)")
+                    Text("Overdue in previous days: \(expiredTaskCount)")
                         .font(.body)
                         .foregroundStyle(.red)
 
