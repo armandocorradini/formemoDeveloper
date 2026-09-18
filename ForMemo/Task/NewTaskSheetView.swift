@@ -662,18 +662,23 @@ struct NewTaskSheetView: View {
     
     @MainActor
     private func saveTask() {
-        
         if draftTask.modelContext == nil {
             modelContext.insert(draftTask)
         }
-    
+
         do {
             try modelContext.save()
-            
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
         } catch {
-            AppLogger.persistence.error("Save failed: \(error.localizedDescription)")
+            AppLogger.persistence.error(
+                "Save failed: \(error.localizedDescription)"
+            )
         }
-        
+
         NotificationManager.shared.refresh(force: true)
     }
     

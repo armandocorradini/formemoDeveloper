@@ -30,70 +30,77 @@ struct WeeklyTasksView: View {
 
     @State private var selectedWeatherDay: SelectedWeatherDay?
 
-    private static let activeTasksPredicate =
-        #Predicate<TodoTask> { !$0.isCompleted }
-
-    private static let activeTasksSortDescriptors = [
-        SortDescriptor<TodoTask>(\.deadLine, order: .forward)
-    ]
-
-    @Query(
-        filter: Self.activeTasksPredicate,
-        sort: Self.activeTasksSortDescriptors
-    )
-
-    private var allTasks: [TodoTask]
+    @State private var weeklyTasks: [TodoTask] = []
     
-    private var weeklyTasks: [TodoTask] {
+    
+    @MainActor
+    private func fetchWeeklyTasks() {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: .now)
-        let endOfPeriod = calendar.date(byAdding: .day, value: taskWeekDays, to: startOfToday)?
-            .addingTimeInterval(-1) ?? .now
-        let filtered = allTasks.filter { task in
-            guard let deadline = task.deadLine else { return false }
-            return deadline >= startOfToday && deadline <= endOfPeriod
+
+        guard let endOfPeriod = calendar.date(
+            byAdding: .day,
+            value: taskWeekDays,
+            to: startOfToday
+        ) else {
+            weeklyTasks = []
+            return
         }
-        let unique = Dictionary(grouping: filtered, by: \.id)
-            .compactMap { $0.value.first }
-        return unique.sorted {
-            let lhs = $0.deadLine ?? .distantFuture
-            let rhs = $1.deadLine ?? .distantFuture
-            if lhs != rhs {
-                return lhs < rhs
-            }
-            return $0.id.uuidString < $1.id.uuidString
+
+        let predicate = #Predicate<TodoTask> { task in
+            !task.isCompleted &&
+            task.deadLine != nil &&
+            task.deadLine! >= startOfToday &&
+            task.deadLine! < endOfPeriod
+        }
+
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: predicate,
+            sortBy: [
+                SortDescriptor(\TodoTask.deadLine, order: .forward)
+            ]
+        )
+
+        do {
+            weeklyTasks = try modelContext.fetch(descriptor)
+        } catch {
+            AppLogger.persistence.error(
+                "Weekly tasks fetch failed: \(error.localizedDescription)"
+            )
+            weeklyTasks = []
         }
     }
     
     private var expiredTasks: [TodoTask] {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: .now)
-        
-        let filtered = allTasks.filter { task in
-            guard let deadline = task.deadLine else { return false }
-            return deadline < startOfToday
+
+        let predicate = #Predicate<TodoTask> { task in
+            !task.isCompleted &&
+            task.deadLine != nil &&
+            task.deadLine! < startOfToday
         }
 
-        let unique = Dictionary(grouping: filtered, by: \.id)
-            .compactMap { $0.value.first }
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: predicate,
+            sortBy: [
+                SortDescriptor(\TodoTask.deadLine, order: .forward)
+            ]
+        )
 
-        return unique.sorted {
-            let lhs = $0.deadLine ?? .distantFuture
-            let rhs = $1.deadLine ?? .distantFuture
-
-            if lhs != rhs {
-                return lhs < rhs
-            }
-
-            return $0.id.uuidString < $1.id.uuidString
-        }
-    }
-    private var dayTasks: [TodoTask] {
-        allTasks.filter { task in
-            guard let deadline = task.deadLine else { return false }
-            return Calendar.current.isDateInToday(deadline)
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            AppLogger.persistence.error(
+                "Expired tasks fetch failed: \(error.localizedDescription)"
+            )
+            return []
         }
     }
+    
+    
+
+    
     private var formattedDate: String {
         Date.now.formatted(
             .dateTime
@@ -373,7 +380,16 @@ struct WeeklyTasksView: View {
             .listStyle(.plain)
             .animation(.smooth(duration: 0.18), value: groupedTasksByDay.count)
             .task {
+                fetchWeeklyTasks()
                 await weatherManager.refreshIfNeeded()
+            }
+            .onChange(of: taskWeekDays) {
+                fetchWeeklyTasks()
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(for: .taskDidChange)
+            ) { _ in
+                fetchWeeklyTasks()
             }
             .onReceive(
                 NotificationCenter.default.publisher(
