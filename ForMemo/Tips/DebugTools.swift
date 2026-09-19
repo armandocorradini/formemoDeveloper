@@ -11,7 +11,7 @@ enum DebugTools {
     
     // MARK: - Generate
     
-    static func generateTasks(context: ModelContext, count: Int = 10000) {
+    static func generateTasks(context: ModelContext, count: Int = 100000) {
         let start = Date()
         let calendar = Calendar.current
         let now = Date()
@@ -26,39 +26,39 @@ enum DebugTools {
             )
             
             task.isDebugTask = true
-            if i % 3 == 0,
-               let attachmentsDir = TaskAttachment.attachmentsDirectory {
-
-                let fileName = "debug_app_icon.png"
-                let destinationURL = attachmentsDir.appendingPathComponent(fileName)
-                let fm = FileManager.default
-
-                if !fm.fileExists(atPath: destinationURL.path) {
-
-                    let config = UIImage.SymbolConfiguration(pointSize: 120, weight: .regular)
-
-                    if let image = UIImage(
-                        systemName: "checkmark.circle.dotted",
-                        withConfiguration: config
-                    ),
-                    let data = image.pngData() {
-
-                        try? data.write(to: destinationURL)
-                    }
-                }
-
-                if fm.fileExists(atPath: destinationURL.path) {
-
-                    let attachment = TaskAttachment(
-                        originalName: fileName,
-                        relativePath: fileName,
-                        contentType: "image/png",
-                        task: task
-                    )
-
-                    task.attachments = [attachment]
-                }
-            }
+//            if i % 3 == 0,
+//               let attachmentsDir = TaskAttachment.attachmentsDirectory {
+//
+//                let fileName = "debug_app_icon.png"
+//                let destinationURL = attachmentsDir.appendingPathComponent(fileName)
+//                let fm = FileManager.default
+//
+//                if !fm.fileExists(atPath: destinationURL.path) {
+//
+//                    let config = UIImage.SymbolConfiguration(pointSize: 120, weight: .regular)
+//
+//                    if let image = UIImage(
+//                        systemName: "checkmark.circle.dotted",
+//                        withConfiguration: config
+//                    ),
+//                    let data = image.pngData() {
+//
+//                        try? data.write(to: destinationURL)
+//                    }
+//                }
+//
+//                if fm.fileExists(atPath: destinationURL.path) {
+//
+//                    let attachment = TaskAttachment(
+//                        originalName: fileName,
+//                        relativePath: fileName,
+//                        contentType: "image/png",
+//                        task: task
+//                    )
+//
+//                    task.attachments = [attachment]
+//                }
+//            }
             context.insert(task)
         }
         

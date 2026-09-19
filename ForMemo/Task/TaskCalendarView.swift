@@ -63,7 +63,24 @@ struct TaskCalendarView: View {
     @State private var holidayDates: Set<Date> = []
 
     @State private var tasksCache: [Date: [TodoTask]] = [:]
+    
+    @State private var calendarContainerSize: CGSize = .zero
 
+    private var calendarMaxZoomScale: CGFloat {
+        guard calendarContainerSize.width > 0 else {
+            return 6
+        }
+
+        let longSide = max(
+            calendarContainerSize.width,
+            calendarContainerSize.height
+        )
+
+        let orientationRatio = longSide / calendarContainerSize.width
+
+        return 6 * orientationRatio
+    }
+    
     var body: some View {
 
         ZStack {
@@ -82,7 +99,10 @@ struct TaskCalendarView: View {
 
                     if isLandscape || isExpanded {
 
-                        ZoomableScrollView(minScale: 1, maxScale: 3) {
+                        ZoomableScrollView(
+                            minScale: 1,
+                            maxScale: calendarMaxZoomScale
+                        ) {
 
                             VStack(spacing: 5) {
 
@@ -205,7 +225,14 @@ struct TaskCalendarView: View {
             }
 
         }
-
+        
+        .onGeometryChange(for: CGSize.self) { proxy in
+            proxy.size
+        } action: { newSize in
+            calendarContainerSize = newSize
+        }
+        
+        
         .id(verticalSizeClass)
 
         .padding(.top, isLandscape || isExpanded ? 0 : -8)
@@ -1128,8 +1155,10 @@ private extension TaskCalendarView {
                     isHoliday: holidayDates.contains(calendar.startOfDay(for: day)),
 
                     tasks: tasksForDay(day),
-
+                    
                     isExpanded: showExpandedCalendar,
+                    
+                    isLandscape: isLandscape,
 
                     onSelect: { selectedDate = day },
 
@@ -1182,7 +1211,9 @@ private struct DayCell: View {
     let tasks: [TodoTask]
 
     let isExpanded: Bool
-
+    
+    let isLandscape: Bool
+    
     let onSelect: () -> Void
 
     let onToggleCompleted: (TodoTask) -> Void
@@ -1353,38 +1384,46 @@ private struct DayCell: View {
 
     private var expandedTitles: some View {
 
-        VStack(alignment: .leading, spacing: 1) {
+        VStack(
+            alignment: .leading,
+            spacing: isExpanded ? 3 : 1
+        ) {
 
-            ForEach(
+            let sortedTasks = tasks.sorted {
+                ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
+            }
 
-                tasks
+            let visibleTasks = isExpanded
+                ? sortedTasks
+                : Array(sortedTasks.prefix(3))
 
-                    .sorted { ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture) }
-
-                    .prefix(3)
-
-            ) { task in
+            ForEach(visibleTasks) { task in
 
                 NavigationLink(value: task) {
 
                     HStack(spacing: 3) {
-
+                        if isLandscape {
                         Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-
-                            .font(.system(size: 5, weight: .medium))
-
+                        
+                            .font(.system(
+                                size: isExpanded ? 7 : 5,
+                                weight: .medium
+                            ))
+                        
                             .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
-
+                        
                             .foregroundStyle(iconColor(for: task), .primary)
-
+                    }
                         HStack(spacing: 3) {
 
                             Text(task.title)
 
-                                .font(.system(size: 4, weight: .regular))
-
-                                .lineLimit(1)
-
+                                .font(.system(
+                                    size: isExpanded ? 7 : 4,
+                                    weight: .regular
+                                ))
+                                .lineLimit(isExpanded ? 2 : 1)
+                                .fixedSize(horizontal: false, vertical: true)
                                 .foregroundStyle(task.isCompleted ? .secondary : .primary)
 
                                 .overlay(alignment: .bottomLeading) {
@@ -1405,7 +1444,7 @@ private struct DayCell: View {
 
                                 .strikethrough(task.isCompleted, color: .secondary)
 
-                            if task.recurrenceRule != nil {
+                            if isLandscape &&  task.recurrenceRule != nil {
 
                                 Image(systemName: "arrow.triangle.2.circlepath")
 
@@ -1423,7 +1462,7 @@ private struct DayCell: View {
 
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                    .padding(.vertical, 1)
+                    .padding(.vertical, isExpanded ? 2 : 1)
 
                     .contentShape(Rectangle())
 
@@ -1437,14 +1476,10 @@ private struct DayCell: View {
 
             }
 
-            if tasks.count > 3 {
-
+            if !isExpanded && tasks.count > 3 {
                 Text("…")
-
                     .font(.system(size: 9, weight: .medium))
-
                     .foregroundStyle(.secondary)
-
             }
 
         }
@@ -2094,14 +2129,6 @@ private func isOverdue(_ task: TodoTask) -> Bool {
     return !task.isCompleted && deadline < .now
 
 }
-
-
-
-
-
-
-
-
 
 
 
