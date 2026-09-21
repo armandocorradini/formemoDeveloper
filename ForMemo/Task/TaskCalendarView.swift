@@ -54,6 +54,7 @@ struct TaskCalendarView: View {
     @State private var isExpanded: Bool = false
 
     private let expandThreshold: CGFloat = 40
+    @State private var isCalendarHidden: Bool = false
 
     private let calendar: Calendar = {
 
@@ -99,131 +100,140 @@ struct TaskCalendarView: View {
 
             VStack(spacing: 0) {
 
-                header
+                if !isCalendarHidden || isLandscape {
 
-                    .padding(.horizontal)
+                    header
+                        .padding(.horizontal)
+                        .padding(.top, (isLandscape || isExpanded) ? 0 : 10)
 
-                    .padding(.top, (isLandscape || isExpanded) ? 0 : 10)
+                    VStack(spacing: 5) {
 
-                VStack(spacing: 5) {
+                        if isLandscape || isExpanded {
 
-                    if isLandscape || isExpanded {
+                            ZoomableScrollView(
+                                minScale: 1,
+                                maxScale: calendarMaxZoomScale
+                            ) {
+                                VStack(spacing: 5) {
 
-                        ZoomableScrollView(
-                            minScale: 1,
-                            maxScale: calendarMaxZoomScale
-                        ) {
+                                    weekHeader
+
+                                    calendarGrid
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.top, 2)
+                                }
+                            }
+                            .id(
+                                isLandscape
+                                    ? "landscape_zoom_view"
+                                    : "portrait_zoom_view"
+                            )
+
+                        } else {
 
                             VStack(spacing: 5) {
-
                                 weekHeader
-
                                 calendarGrid
-
-                                    .frame(maxWidth: .infinity)
-
-                                    .padding(.top, 2)
-
                             }
-
                         }
-
-                        .id(isLandscape ? "landscape_zoom_view" : "portrait_zoom_view")
-
-                    } else {
-
-                        VStack(spacing: 5) {
-
-                            weekHeader
-
-                            calendarGrid
-
-                        }
-
                     }
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+                    .frame(
+                        height: isLandscape
+                            ? nil
+                            : (isExpanded ? 520 : 310),
+                        alignment: .top
+                    )
+                    .highPriorityGesture(
+                        isLandscape || isExpanded
+                            ? nil
+                            : monthSwipeGesture
+                    )
+                    .simultaneousGesture(
+                        isLandscape
+                            ? nil
+                            : DragGesture(minimumDistance: 30)
+                                .onChanged { value in
+                                    if abs(value.translation.height)
+                                        > abs(value.translation.width) {
 
+                                        updateExpandedState(
+                                            with: value.translation.height
+                                        )
+                                    }
+                                }
+                    )
                 }
-
-                .padding(.horizontal)
-
-                .padding(.bottom, 4)
-
-                .frame(height: isLandscape ? nil : (isExpanded ? 520 : 310), alignment: .top)
-
-                .highPriorityGesture(
-
-                    isLandscape || isExpanded ? nil : monthSwipeGesture
-
-                )
-
-                .simultaneousGesture(
-
-                    isLandscape ? nil :
-
-                        DragGesture(minimumDistance: 30)
-
-                        .onChanged { value in
-
-                            if abs(value.translation.height) > abs(value.translation.width) {
-
-                                updateExpandedState(with: value.translation.height)
-
-                            }
-
-                        }
-
-                )
-
+                
                 Divider()
 
                 if !showExpandedCalendar {
 
-                    HStack {
+                    ZStack(alignment: .top) {
 
-                        Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
+                        // Contenuto della row: centrato verticalmente
+                        HStack {
+                            Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
 
-                        Spacer()
+                            Spacer()
 
-                        Button {
+                            Button {
+                                showCompletedTasks.toggle()
+                            } label: {
+                                Image(systemName: showCompletedTasks ? "eye.slash" : "eye")
+                            }
+                            .labelStyle(.iconOnly)
+                            .padding(.trailing, 4)
 
-                            showCompletedTasks.toggle()
-
-                        } label: {
-
-                            Image(systemName: showCompletedTasks ? "eye.slash" : "eye")
-
+                            Button {
+                                prepareNewTask(on: selectedDate)
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title)
+                                    .foregroundStyle(.green)
+                            }
+                            .labelStyle(.iconOnly)
                         }
+                        .padding(.horizontal)
+                        .frame(maxHeight: .infinity, alignment: .center)
 
-                        .labelStyle(.iconOnly)
-
-                        .padding(.trailing, 4)
-
-                        Button {
-
-                            prepareNewTask(on: selectedDate)
-
-                        } label: {
-
-                            Image(systemName: "plus.circle.fill")
-
-                                .font(.title)
-
-                                .foregroundStyle(.green)
-
-                        }
-
-                        .labelStyle(.iconOnly)
-
+                        // Maniglia: sempre nella parte alta
+                        Capsule()
+                            .fill(Color.secondary.opacity(0.6))
+                            .frame(width: 36, height: 4)
+                            .padding(.top, 10)
                     }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52)                    .frame(maxWidth: .infinity)
+                    .frame(height: 52, alignment: .top)
+                    .background(
+                        Color(uiColor: .secondarySystemBackground)
+                            .opacity(0.4)
+                    )
+                    .contentShape(Rectangle())
+                    .simultaneousGesture(
+                        isLandscape ? nil :
+                            DragGesture(minimumDistance: 20)
+                                .onEnded { value in
 
-                    .font(.subheadline.weight(.medium))
+                                    guard abs(value.translation.height)
+                                            > abs(value.translation.width),
+                                          abs(value.translation.height) > 40
+                                    else {
+                                        return
+                                    }
 
-                    .padding(.horizontal)
-
-                    .padding(.vertical, 6)
-
-                    .background(Color(uiColor: .secondarySystemBackground).opacity(0.4))
-
+                                    withAnimation(.snappy(duration: 0.25)) {
+                                        if value.translation.height < 0 {
+                                            isCalendarHidden = true
+                                        } else {
+                                            isCalendarHidden = false
+                                        }
+                                    }
+                                }
+                    )
+                    
                     DayTasksInlineView(
 
                         tasks: tasksForDay(selectedDate)
