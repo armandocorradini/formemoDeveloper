@@ -63,7 +63,7 @@ struct TaskListView: View {
 
 
 
-  @State private var todoQuery: [TodoTask] = []
+//  @State private var todoQuery: [TodoTask] = []
   @State private var draftTask: TodoTask?
     @State private var completedQuery: [TodoTask] = []
     
@@ -676,11 +676,15 @@ struct TaskListView: View {
         let hasSearch = !debouncedSearchText.isEmpty
         let searchValue = debouncedSearchText
 
-        let phases: [ActiveTaskFetchPhase] = [
-            .overdue,
-            .future,
-            .noDeadline
-        ]
+        let phases: [ActiveTaskFetchPhase]
+
+        if period.noDeadlineOnly {
+            phases = [.noDeadline]
+        } else if period.hasRange {
+            phases = [.overdue, .future]
+        } else {
+            phases = [.overdue, .future, .noDeadline]
+        }
 
         do {
             var total = 0
@@ -745,7 +749,7 @@ struct TaskListView: View {
 
     if period.invalid {
 
-      todoQuery = []
+//      todoQuery = []
 
       filteredTodoTasksCache = []
 
@@ -869,97 +873,13 @@ struct TaskListView: View {
 
       }
 
-      todoQuery = result
+//      todoQuery = result
 
       AppLogger.persistence.debug(
 
         "TaskList fetchActiveTasks RESULT: \(result.count) active tasks"
-
       )
-
-        
         filteredTodoTasksCache = result
-        
-        
-//      let filteredResult = result
-//
-//        .filter { task in
-//
-//          let matchesSearch =
-//
-//            debouncedSearchText.isEmpty ||
-//
-//            task.title.localizedCaseInsensitiveContains(debouncedSearchText)
-//
-//          let matchesTag: Bool = {
-//
-//            switch selectedTagFilter {
-//
-//            case .all:
-//
-//              return true
-//
-//            case .none:
-//
-//              return task.mainTag == nil
-//
-//            case .tag(let tag):
-//
-//              return task.mainTag == tag
-//
-//            }
-//
-//          }()
-//
-//          let matchesPriority =
-//
-//            selectedPriorityFilter == nil ||
-//
-//            task.priority == selectedPriorityFilter
-//
-//          let matchesPeriod =
-//
-//            selectedPeriodFilter == nil ||
-//
-//            selectedPeriodFilter?.matches(task.deadLine) == true
-//
-//          return matchesSearch &&
-//
-//             matchesTag &&
-//
-//             matchesPriority &&
-//
-//             matchesPeriod
-//
-//        }
-//
-//        .sorted {
-//
-//          let lhs = $0.deadLine ?? .distantFuture
-//
-//          let rhs = $1.deadLine ?? .distantFuture
-//
-//          let lhsOverdue = lhs < now
-//
-//          let rhsOverdue = rhs < now
-//
-//          if lhsOverdue != rhsOverdue {
-//
-//            return lhsOverdue
-//
-//          }
-//
-//          if lhs != rhs {
-//
-//            return lhs < rhs
-//
-//          }
-//
-//          return $0.id.uuidString < $1.id.uuidString
-//
-//        }
-//
-//      filteredTodoTasksCache = filteredResult
 
       AppLogger.persistence.debug(
 
@@ -974,8 +894,6 @@ struct TaskListView: View {
         "TaskList optimized fetch failed: \(error.localizedDescription)"
 
       )
-
-      todoQuery = []
 
       filteredTodoTasksCache = []
 
@@ -1101,8 +1019,6 @@ struct TaskListView: View {
                 isLoadingMoreActive = false
                 return
             }
-
-            todoQuery.append(contentsOf: newTasks)
             filteredTodoTasksCache.append(contentsOf: newTasks)
 
             if newTasks.count < 100 {
@@ -1524,30 +1440,22 @@ struct TaskListView: View {
     
     
     
-    @ViewBuilder
-    private var completedTasksView: some View {
-        CompletedTasksContainerView(
-            taskPendingDeletion: $taskPendingDeletion,
-            modelContext: modelContext,
-            searchText: searchText,
-            selectedTagFilter: selectedTagFilter,
-            selectedPriorityFilter: selectedPriorityFilter,
-            selectedPeriodFilter: selectedPeriodFilter,
-            tasks: completedQuery,
-            loadMoreTasks: loadMoreCompletedTasks,
-            completedTaskCount: completedTaskCount
-        )
-    }
+//    @ViewBuilder
+//    private var completedTasksView: some View {
+//        CompletedTasksContainerView(
+//            taskPendingDeletion: $taskPendingDeletion,
+//            modelContext: modelContext,
+//            tasks: completedQuery,
+//            loadMoreTasks: loadMoreCompletedTasks,
+//            completedTaskCount: completedTaskCount
+//        )
+//    }
     
     @ViewBuilder
     private var completedTasksSection: some View {
         CompletedTasksContainerView(
             taskPendingDeletion: $taskPendingDeletion,
             modelContext: modelContext,
-            searchText: searchText,
-            selectedTagFilter: selectedTagFilter,
-            selectedPriorityFilter: selectedPriorityFilter,
-            selectedPeriodFilter: selectedPeriodFilter,
             tasks: completedQuery,
             loadMoreTasks: loadMoreCompletedTasks,
             completedTaskCount: completedTaskCount
@@ -1575,125 +1483,71 @@ struct TaskListView: View {
             
         }
         .id(showCompleted)
-                .id(debouncedSearchText)
+        .id(debouncedSearchText)
     }
-    
     
   var body: some View {
      
     ZStack {
-
       AppGlassBackground()
-
         listWithStyle {
             taskListContent
-
           .safeAreaInset(edge: .bottom) {
-
             Color.clear.frame(height: 80)
-
           }
-
           .scrollContentBackground(.hidden)
-
           .background(Color.clear)
-
           .scrollEdgeEffectHidden(true, for: .top)
-
           .alert(
-
             "Delete task?",
-
             isPresented: Binding(
-
               get: { taskPendingDeletion != nil },
-
               set: { if !$0 { taskPendingDeletion = nil } }
-
             )
 
           ) {
 
             Button("Delete", role: .destructive) {
-
               guard let task = taskPendingDeletion else {
-
                 taskPendingDeletion = nil
-
                 return
-
               }
-
               withAnimation {
-
                   deleteTaskAndRefresh(task)
-
               }
-
               taskPendingDeletion = nil
-
             }
-
             Button("Cancel", role: .cancel) {
-
               taskPendingDeletion = nil
-
             }
-
           } message: {
-
             Text("This action cannot be undone.")
-
           }
-
           .contentMargins(
-
             .horizontal,
-
             listStyleChoice == .plain
-
             ? 0
-
             : TaskRowMetrics.groupedLeadingPadding,
-
             for: .scrollContent
-
           )
 
           .fullScreenCover(isPresented: $showQuickGuide) {
-
             AppQuickGuideView()
-
           }
-
           .listRowSpacing(0)
-
         }
-
         .navigationDestination(for: TodoTask.self) { task in
-
           TaskDetailView(task: task)
-
         }
-
         .scrollDismissesKeyboard(.immediately)
-
         }
-
     .onChange(of: scenePhase) { _, newPhase in
-
       if newPhase == .inactive {
-
         if showCompleted {
-
           showCompleted = false
-
         }
-
         return
-
       }
-
     }
 
     .searchableIf(
@@ -1842,7 +1696,7 @@ struct TaskListView: View {
                         updateCompletedTaskCount()
                     } else {
                         fetchActiveTasks()
-                        updateCompletedTaskCount()
+                        updateActiveTaskCount()
                     }
                 } label: {
                     Image(systemName: showCompleted ? "eye.slash" : "eye")
@@ -2211,8 +2065,6 @@ struct EmptySectionView: View {
 
             .lineLimit(2)
 
-          //                .minimumScaleFactor(0.5) // Permette di ridursi fino al 50% della dimensione originale
-
         }
 
         Group {
@@ -2241,8 +2093,6 @@ struct EmptySectionView: View {
 
               Image(systemName: "plus.circle.fill")
 
-              //                    .frame(width: 30)
-
                 .foregroundStyle(.green)
 
               Text("add a new task to your list.")
@@ -2256,8 +2106,6 @@ struct EmptySectionView: View {
             HStack(alignment: .top, spacing: 12) {
 
               Image(systemName: "eye")
-
-              //                    .frame(width: 30)
 
                 .foregroundStyle(.blue)
 
@@ -3225,49 +3073,28 @@ struct TodoSectionView: View {
 
       .sorted { $0.date < $1.date }
 
-    var result: [GroupedSection] = []
-
-    for index in sortedGroups.indices {
+      var result: [GroupedSection] = []
+      var remainingTasksCount = tasks.count
+      for index in sortedGroups.indices {
 
       let group = sortedGroups[index]
 
-      let relativeTitle = relativeHeaderTitle(for: group.date)
+        let relativeTitle = relativeHeaderTitle(for: group.date)
 
-      let isUpcomingBoundary: Bool = {
+        let previousRelativeTitle: LocalizedStringKey? =
+            index > 0
+            ? relativeHeaderTitle(for: sortedGroups[index - 1].date)
+            : nil
 
-        guard index > 0 else {
+        let isUpcomingBoundary =
+            previousRelativeTitle != nil &&
+            relativeTitle == nil
 
-          return false
+          let upcomingTasksCount = isUpcomingBoundary
+              ? remainingTasksCount
+              : 0
 
-        }
-
-        let previousRelativeTitle =
-
-          relativeHeaderTitle(
-
-            for: sortedGroups[index - 1].date
-
-          )
-
-        return previousRelativeTitle != nil &&
-
-           relativeTitle == nil
-
-      }()
-
-      let upcomingTasksCount: Int = {
-
-        guard isUpcomingBoundary else {
-
-          return 0
-
-        }
-
-        return sortedGroups[index...]
-
-          .reduce(0) { $0 + $1.tasks.count }
-
-      }()
+          remainingTasksCount -= group.tasks.count
 
       result.append(
 
@@ -3343,8 +3170,9 @@ struct TodoSectionView: View {
 
       .listRowSeparator(.hidden)
 
-        ForEach(Array(groupedTasksByDay.enumerated()), id: \.element.date) { groupIndex, group in
-
+          ForEach(groupedTasksByDay.indices, id: \.self) { groupIndex in
+              let group = groupedTasksByDay[groupIndex]
+              
           if group.isUpcomingBoundary {
 
             let upcomingTasksCount = group.upcomingTasksCount
@@ -3441,11 +3269,6 @@ struct TodoSectionView: View {
 
           ForEach(Array(group.tasks.enumerated()), id: \.element.id) { index, t in
 
-            let isLastVisibleRow =
-
-              group.date == groupedTasksByDay.last?.date &&
-
-              index == group.tasks.indices.last
 
             taskRow(
 
@@ -3462,7 +3285,11 @@ struct TodoSectionView: View {
             )
 
             .onAppear {
-                guard isLastVisibleRow else { return }
+                guard groupIndex == groupedTasksByDay.count - 1,
+                      index == group.tasks.count - 1 else {
+                    return
+                }
+
                 loadMoreTasks()
             }
 
@@ -3548,20 +3375,6 @@ struct TodoSectionView: View {
         } else if tasks.count < visibleLimit {
             visibleLimit = max(100, tasks.count)
         }
-    }
-
-    .onReceive(
-
-      NotificationCenter.default.publisher(
-
-        for: .taskDidChange
-
-      )
-
-    ) { _ in
-
-      rebuildGroups()
-
     }
 
     .onReceive(
@@ -3678,16 +3491,6 @@ struct TodoSectionView: View {
 
           withAnimation {
               deleteTask(t, in: modelContext)
-              
-//            deleteTask(t, in: modelContext)
-//
-//            NotificationCenter.default.post(
-//
-//              name: .taskDidChange,
-//
-//              object: nil
-//
-//            )
 
           }
 
@@ -4015,69 +3818,16 @@ struct CompletedTasksContainerView: View {
   @Binding var taskPendingDeletion: TodoTask?
 
     let modelContext: ModelContext
-    let searchText: String
-    let selectedTagFilter: TaskTagFilter
-    let selectedPriorityFilter: TaskPriority?
-    let selectedPeriodFilter: TaskPeriodFilter?
     let tasks: [TodoTask]
     let loadMoreTasks: () -> Void
     let completedTaskCount: Int
-    
-  private var filteredCompleted: [TodoTask] {
-
-      tasks.filter { task in
-
-      let matchesSearch =
-
-        searchText.isEmpty ||
-
-        task.title.localizedCaseInsensitiveContains(searchText)
-
-      let matchesTag: Bool = {
-
-        switch selectedTagFilter {
-
-        case .all:
-
-          return true
-
-        case .none:
-
-          return task.mainTag == nil
-
-        case .tag(let tag):
-
-          return task.mainTag == tag
-
-        }
-
-      }()
-
-      let matchesPriority =
-
-        selectedPriorityFilter == nil ||
-
-        task.priority == selectedPriorityFilter
-
-      let matchesPeriod =
-
-        selectedPeriodFilter == nil ||
-
-        selectedPeriodFilter?.matches(task.deadLine) == true
-
-      return matchesSearch &&
-
-         matchesTag &&
-         matchesPriority &&
-         matchesPeriod
-    }
-  }
 
   var body: some View {
 
       CompletedSectionView(
+        
           taskPendingDeletion: $taskPendingDeletion,
-          tasks: filteredCompleted,
+          tasks: tasks,
           modelContext: modelContext,
           completedTaskCount: completedTaskCount,loadMoreTasks: loadMoreTasks
           
