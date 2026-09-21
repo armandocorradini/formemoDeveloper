@@ -33,7 +33,12 @@ struct TaskCalendarView: View {
     @State private var showCompletedTasks: Bool = false
 
     @State private var displayedMonth: Date = .now
-
+    
+    @State private var showMonthYearPicker = false
+    @State private var pickerMonth = Calendar.current.component(.month, from: .now)
+    @State private var pickerYear = Calendar.current.component(.year, from: .now)
+    
+    
     @State private var selectedDate: Date = Calendar.current.startOfDay(for: .now)
 
     @State private var newTaskSelection: NewTaskSelection?
@@ -66,6 +71,11 @@ struct TaskCalendarView: View {
     
     @State private var calendarContainerSize: CGSize = .zero
 
+    private var availableYears: [Int] {
+        let currentYear = Calendar.current.component(.year, from: .now)
+        return Array((currentYear - 100)...(currentYear + 100))
+    }
+    
     private var calendarMaxZoomScale: CGFloat {
         guard calendarContainerSize.width > 0 else {
             return 6
@@ -267,6 +277,73 @@ struct TaskCalendarView: View {
 
             TaskDetailView(task: task)
 
+        }
+        .sheet(isPresented: $showMonthYearPicker) {
+            NavigationStack {
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
+
+                        Picker("Month", selection: $pickerMonth) {
+                            ForEach(1...12, id: \.self) { month in
+                                Text(calendar.monthSymbols[month - 1])
+                                    .tag(month)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(maxWidth: .infinity)
+
+                        Picker("Year", selection: $pickerYear) {
+                            ForEach(availableYears, id: \.self) { year in
+                                Text(String(year))
+                                    .tag(year)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(maxWidth: .infinity)
+                    }
+                    .frame(height: 220)
+                }
+                .navigationTitle("Select Month")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            showMonthYearPicker = false
+                        }
+                    }
+
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") {
+                            let selectedDay = calendar.component(.day, from: selectedDate)
+
+                            var components = DateComponents()
+                            components.year = pickerYear
+                            components.month = pickerMonth
+                            components.day = 1
+
+                            guard let monthStart = calendar.date(from: components),
+                                  let range = calendar.range(of: .day, in: .month, for: monthStart)
+                            else {
+                                showMonthYearPicker = false
+                                return
+                            }
+
+                            let day = min(selectedDay, range.count)
+                            components.day = day
+
+                            if let newDate = calendar.date(from: components) {
+                                withAnimation(.snappy) {
+                                    displayedMonth = monthStart
+                                    selectedDate = newDate
+                                }
+                            }
+
+                            showMonthYearPicker = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
         }
 
     }
@@ -479,7 +556,16 @@ private extension TaskCalendarView {
 
         HStack {
 
-            Text(displayedMonth, format: .dateTime.month(.wide).year())
+            Button {
+                pickerMonth = calendar.component(.month, from: displayedMonth)
+                pickerYear = calendar.component(.year, from: displayedMonth)
+                showMonthYearPicker = true
+            } label: {
+                Text(displayedMonth, format: .dateTime.month(.wide).year())
+                    .font(.headline.bold())
+                    .foregroundStyle(.primary)
+            }
+            .buttonStyle(.plain)
 
                 .font(.headline.bold())
 

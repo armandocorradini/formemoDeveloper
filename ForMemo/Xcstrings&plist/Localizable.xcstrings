@@ -21446,6 +21446,9 @@
         }
       }
     },
+    "Month" : {
+
+    },
     "months" : {
       "localizations" : {
         "de" : {
@@ -29569,6 +29572,9 @@
           }
         }
       }
+    },
+    "Select Month" : {
+
     },
     "Select Tasks" : {
       "comment" : "A title for a view that lets the user select tasks to export.",
@@ -40367,6 +40373,9 @@
           }
         }
       }
+    },
+    "Year" : {
+
     },
     "years" : {
       "localizations" : {
