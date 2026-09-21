@@ -101,9 +101,6 @@ struct NewTaskSheetView: View {
     @FocusState private var isTitleFocused: Bool
     
     
-    @Query private var allAttachments: [TaskAttachment]
-    @Query private var allTasks: [TodoTask]
-    
     @AppStorage("hiddenSavedLocations")
     private var hiddenSavedLocationsData: Data = Data()
     
@@ -118,6 +115,8 @@ struct NewTaskSheetView: View {
     
     @State private var validationMessage: String? = nil
     @State private var selectedRecurrence: RecurrenceUI = .none
+    
+    @State private var savedLocations: [SavedLocationItem] = []
     
     init(draftTask: TodoTask) {
         self._draftTask = Bindable(wrappedValue: draftTask)
@@ -135,7 +134,7 @@ struct NewTaskSheetView: View {
     }
     
     private var attachments: [TaskAttachment] {
-        allAttachments.filter { $0.task == draftTask }
+        draftTask.attachments ?? []
     }
 
     private var hiddenSavedLocations: Set<String> {
@@ -151,33 +150,63 @@ struct NewTaskSheetView: View {
         hiddenSavedLocationsData = (try? JSONEncoder().encode(hidden)) ?? Data()
     }
 
-    private var savedLocations: [SavedLocationItem] {
-        var seen = Set<String>()
+    @MainActor
+    private func loadSavedLocations() {
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                $0.locationName != nil &&
+                $0.locationLatitude != nil &&
+                $0.locationLongitude != nil
+            }
+        )
 
-        return allTasks.compactMap { task in
-            guard let name = task.locationName,
-                  let latitude = task.locationLatitude,
-                  let longitude = task.locationLongitude else {
-                return nil
+        do {
+            let tasks = try modelContext.fetch(descriptor)
+
+            var seen = Set<String>()
+            var locations: [SavedLocationItem] = []
+            locations.reserveCapacity(tasks.count)
+
+            for task in tasks {
+                guard
+                    let name = task.locationName,
+                    let latitude = task.locationLatitude,
+                    let longitude = task.locationLongitude
+                else {
+                    continue
+                }
+
+                let key = "\(name.lowercased())|\(latitude)|\(longitude)"
+
+                guard
+                    !seen.contains(key),
+                    !hiddenSavedLocations.contains(key)
+                else {
+                    continue
+                }
+
+                seen.insert(key)
+
+                locations.append(
+                    SavedLocationItem(
+                        name: name,
+                        latitude: latitude,
+                        longitude: longitude
+                    )
+                )
             }
 
-            let key = "\(name.lowercased())|\(latitude)|\(longitude)"
-
-            guard !seen.contains(key),
-                  !hiddenSavedLocations.contains(key) else {
-                return nil
+            locations.sort {
+                $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
             }
 
-            seen.insert(key)
+            savedLocations = locations
 
-            return SavedLocationItem(
-                name: name,
-                latitude: latitude,
-                longitude: longitude
+        } catch {
+            AppLogger.persistence.error(
+                "Saved locations fetch failed: \(error.localizedDescription)"
             )
-        }
-        .sorted {
-            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            savedLocations = []
         }
     }
     
@@ -194,8 +223,10 @@ struct NewTaskSheetView: View {
                     attachmentsSection
                 }
                 .task {
-                    // piccolo delay per evitare glitch SwiftUI
+                    loadSavedLocations()
+
                     try? await Task.sleep(for: .milliseconds(150))
+
                     isTitleFocused = true
                 }
                 .scrollContentBackground(.hidden)
@@ -557,6 +588,7 @@ struct NewTaskSheetView: View {
                             },
                             onDelete: { item in
                                 hideSavedLocation(item)
+                                loadSavedLocations()
                             }
                         )
                     } label: {

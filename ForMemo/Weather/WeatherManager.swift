@@ -45,7 +45,10 @@ struct HourlyWeatherInfo {
     let cloudCover: Int
 }
 
-
+private struct WeatherProcessingResult: Sendable {
+    let weatherByDay: [Date: DailyWeatherInfo]
+    let hourlyWeatherByDay: [Date: [HourlyWeatherInfo]]
+}
 
 // MARK: - Weather Manager
 
@@ -297,204 +300,18 @@ private struct OpenMeteoHourly: Decodable {
 
             let pm10Values = airQualityDaily?["pm10_max"] as? [Double?] ?? []
 
-            var updated: [Date: DailyWeatherInfo] = [:]
 
-            var hourlyUpdated: [Date: [HourlyWeatherInfo]] = [:]
-            
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withFullDate]
-
-            let localDateFormatter = DateFormatter()
-
-            localDateFormatter.locale = Locale(identifier: "en_US_POSIX")
-
-            localDateFormatter.timeZone = .current
-
-            localDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
-            
-            for index in decoded.hourly.time.indices {
-
-                guard let parsedDate = localDateFormatter.date(
-                    from: decoded.hourly.time[index]
-                ) else {
-                    continue
-                }
-
-                let key = Calendar.current.startOfDay(for: parsedDate)
-                let hour = Calendar.current.component(.hour, from: parsedDate)
-
-                guard hour >= 0,
-                      hour <= 23 else {
-                    continue
-                }
-
-                let weatherCode = decoded.hourly.weather_code[safe: index] ?? 0
-                let cloudCover = decoded.hourly.cloud_cover[safe: index]
-
-                let precipitationChance =
-                    decoded.hourly.precipitation_probability[safe: index] ?? 0
-
-                let precipitationAmount =
-                    decoded.hourly.precipitation[safe: index] ?? 0
-
-                let temperature = Int(
-                    (decoded.hourly.temperature_2m[safe: index] ?? 0).rounded()
+            let processingResult = await Task.detached(priority: .userInitiated) {
+                WeatherManager.processWeatherData(
+                    decoded: decoded,
+                    pm10Values: pm10Values
                 )
+            }.value
 
-                let windSpeed = Int(
-                    (decoded.hourly.wind_speed_10m[safe: index] ?? 0).rounded()
-                )
-
-                let uvIndex = Int(
-                    (decoded.hourly.uv_index[safe: index] ?? 0).rounded()
-                )
-
-                let humidity =
-                    decoded.hourly.relative_humidity_2m[safe: index] ?? 0
-
-                let symbolName: String
-
-                if Calendar.current.isDateInToday(parsedDate) {
-
-                    symbolName = symbol(
-                        for: weatherCode,
-                        cloudCover: cloudCover,
-                        precipitationChance: precipitationChance,
-                        precipitationAmount: precipitationAmount,
-                        windSpeed: 0,
-                        isDay: hour >= 6 && hour < 20
-                    )
-
-                } else {
-
-                    symbolName = WeatherCondition(code: weatherCode)
-                        .symbolName(
-                            isDay: hour >= 6 && hour < 20,
-                            cloudCover: cloudCover
-                        )
-                }
-
-                hourlyUpdated[key, default: []].append(
-                    HourlyWeatherInfo(
-                        date: parsedDate,
-                        hour: hour,
-                        symbolName: symbolName,
-                        weatherCode: weatherCode,
-                        temperature: temperature,
-                        precipitationChance: precipitationChance,
-                        windSpeed: windSpeed,
-                        uvIndex: uvIndex,
-                        humidity: humidity,
-                        cloudCover: cloudCover ?? 0
-                    )
-                )
-            }
-
-            for index in decoded.daily.time.indices {
-
-                guard let date = formatter.date(from: decoded.daily.time[index]) else {
-                    continue
-                }
-
-                let key = Calendar.current.startOfDay(for: date)
-
-                let weatherCode = decoded.daily.weather_code[safe: index] ?? 0
-
-                let daytimeCodes = hourlyWeatherCodes(
-                    for: date,
-                    hourly: decoded.hourly
-                )
-
-                let dominantWeatherCode = dominantDaytimeWeatherCode(
-                    fallback: weatherCode,
-                    hourlyCodes: daytimeCodes
-                )
-
-                let daytimePrecipitationChance = daytimePrecipitationProbability(
-                    for: date,
-                    hourly: decoded.hourly
-                )
-
-                let daytimePrecipitationAmount = daytimePrecipitationAmount(
-                    for: date,
-                    hourly: decoded.hourly
-                )
-
-                let precipitationChance = max(
-                    Double(daytimePrecipitationChance),
-                    decoded.daily.precipitation_probability_max[index] * 0.45
-                )
-
-                let precipitationAmount = max(
-                    daytimePrecipitationAmount,
-                    decoded.daily.precipitation_sum[index] * 0.35
-                )
-
-                let windSpeed = decoded.daily.wind_speed_10m_max[index]
-
-                let uvIndex = decoded.daily.uv_index_max[index]
-
-                let airQuality = index < pm10Values.count
-                    ? pm10Values[index]
-                    : nil
-
-                let sunrise = localDateFormatter.date(
-                    from: decoded.daily.sunrise[index]
-                )
-
-                let sunset = localDateFormatter.date(
-                    from: decoded.daily.sunset[index]
-                )
-
-                let now = Date()
-
-                let isCurrentlyDaytime: Bool
-
-                if Calendar.current.isDateInToday(date),
-                   let sunrise,
-                   let sunset {
-
-                    let currentHour = Calendar.current.component(.hour, from: now)
-                    let sunriseHour = Calendar.current.component(.hour, from: sunrise)
-                    let sunsetHour = Calendar.current.component(.hour, from: sunset)
-
-                    isCurrentlyDaytime = currentHour >= sunriseHour
-                        && currentHour < sunsetHour
-
-                } else {
-
-                    isCurrentlyDaytime = true
-                }
-
-                updated[key] = DailyWeatherInfo(
-                    date: date,
-                    symbolName: symbol(
-                        for: dominantWeatherCode,
-                        cloudCover: decoded.daily.cloud_cover_mean[index],
-                        precipitationChance: Int(precipitationChance.rounded()),
-                        precipitationAmount: precipitationAmount,
-                        windSpeed: Int(windSpeed.rounded()),
-                        isDay: isCurrentlyDaytime
-                    ),
-                    weatherCode: dominantWeatherCode,
-                    minTemperature: Int(decoded.daily.temperature_2m_min[index].rounded()),
-                    maxTemperature: Int(decoded.daily.temperature_2m_max[index].rounded()),
-                    precipitationChance: Int(precipitationChance.rounded()),
-                    precipitationAmount: precipitationAmount,
-                    windSpeed: Int(windSpeed.rounded()),
-                    sunrise: sunrise,
-                    sunset: sunset,
-                    uvIndex: uvIndex.map { Int($0.rounded()) },
-                    airQualityIndex: airQuality.map { Int($0.rounded()) },
-                    cloudCover: decoded.daily.cloud_cover_mean[index]
-                )
-            }
-
-            weatherByDay = updated
-            hourlyWeatherByDay = hourlyUpdated
+            weatherByDay = processingResult.weatherByDay
+            hourlyWeatherByDay = processingResult.hourlyWeatherByDay
             refreshID = UUID()
-
-            isAvailable = !updated.isEmpty
+            isAvailable = !processingResult.weatherByDay.isEmpty
             isLoading = false
             lastLoadFailed = false
             lastRefresh = Date()
@@ -508,9 +325,227 @@ private struct OpenMeteoHourly: Decodable {
         }
     }
 
+    private nonisolated static func processWeatherData(
+        decoded: OpenMeteoResponse,
+        pm10Values: [Double?]
+    ) -> WeatherProcessingResult {
+
+        var updated: [Date: DailyWeatherInfo] = [:]
+        var hourlyUpdated: [Date: [HourlyWeatherInfo]] = [:]
+
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withFullDate]
+
+        let localDateFormatter = DateFormatter()
+        localDateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        localDateFormatter.timeZone = .current
+        localDateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm"
+
+        for index in decoded.hourly.time.indices {
+
+            guard let parsedDate = localDateFormatter.date(
+                from: decoded.hourly.time[index]
+            ) else {
+                continue
+            }
+
+            let key = Calendar.current.startOfDay(for: parsedDate)
+            let hour = Calendar.current.component(.hour, from: parsedDate)
+
+            guard hour >= 0,
+                  hour <= 23 else {
+                continue
+            }
+
+            let weatherCode =
+                decoded.hourly.weather_code[safe: index] ?? 0
+
+            let cloudCover =
+                decoded.hourly.cloud_cover[safe: index]
+
+            let precipitationChance =
+                decoded.hourly.precipitation_probability[safe: index] ?? 0
+
+            let precipitationAmount =
+                decoded.hourly.precipitation[safe: index] ?? 0
+
+            let temperature = Int(
+                (decoded.hourly.temperature_2m[safe: index] ?? 0).rounded()
+            )
+
+            let windSpeed = Int(
+                (decoded.hourly.wind_speed_10m[safe: index] ?? 0).rounded()
+            )
+
+            let uvIndex = Int(
+                (decoded.hourly.uv_index[safe: index] ?? 0).rounded()
+            )
+
+            let humidity =
+                decoded.hourly.relative_humidity_2m[safe: index] ?? 0
+
+            let symbolName: String
+
+            if Calendar.current.isDateInToday(parsedDate) {
+                symbolName = Self.symbol(
+                    for: weatherCode,
+                    cloudCover: cloudCover,
+                    precipitationChance: precipitationChance,
+                    precipitationAmount: precipitationAmount,
+                    windSpeed: 0,
+                    isDay: hour >= 6 && hour < 20
+                )
+            } else {
+                symbolName = WeatherCondition(code: weatherCode)
+                    .symbolName(
+                        isDay: hour >= 6 && hour < 20,
+                        cloudCover: cloudCover
+                    )
+            }
+
+            hourlyUpdated[key, default: []].append(
+                HourlyWeatherInfo(
+                    date: parsedDate,
+                    hour: hour,
+                    symbolName: symbolName,
+                    weatherCode: weatherCode,
+                    temperature: temperature,
+                    precipitationChance: precipitationChance,
+                    windSpeed: windSpeed,
+                    uvIndex: uvIndex,
+                    humidity: humidity,
+                    cloudCover: cloudCover ?? 0
+                )
+            )
+        }
+
+        for index in decoded.daily.time.indices {
+
+            guard let date = formatter.date(
+                from: decoded.daily.time[index]
+            ) else {
+                continue
+            }
+
+            let key = Calendar.current.startOfDay(for: date)
+
+            let weatherCode =
+                decoded.daily.weather_code[safe: index] ?? 0
+
+            let daytimeCodes = Self.hourlyWeatherCodes(
+                for: date,
+                hourly: decoded.hourly
+            )
+
+            let dominantWeatherCode = Self.dominantDaytimeWeatherCode(
+                fallback: weatherCode,
+                hourlyCodes: daytimeCodes
+            )
+
+            let daytimePrecipitationChance =
+                Self.daytimePrecipitationProbability(
+                    for: date,
+                    hourly: decoded.hourly
+                )
+
+            let daytimePrecipitationAmount =
+                Self.daytimePrecipitationAmount(
+                    for: date,
+                    hourly: decoded.hourly
+                )
+
+            let precipitationChance = max(
+                Double(daytimePrecipitationChance),
+                (decoded.daily.precipitation_probability_max[safe: index] ?? 0) * 0.45)
+
+            let precipitationAmount = max(
+                daytimePrecipitationAmount,
+                (decoded.daily.precipitation_sum[safe: index] ?? 0) * 0.35)
+                
+            let windSpeed =
+                decoded.daily.wind_speed_10m_max[safe: index] ?? 0
+
+            let uvIndex = decoded.daily.uv_index_max[safe: index] ?? nil
+
+            let airQuality =
+                index < pm10Values.count
+                ? pm10Values[index]
+                : nil
+
+            let sunrise = localDateFormatter.date(
+                from: decoded.daily.sunrise[safe: index] ?? ""
+            )
+
+            let sunset = localDateFormatter.date(
+                from: decoded.daily.sunset[safe: index] ?? ""
+            )
+
+            let now = Date()
+
+            let isCurrentlyDaytime: Bool
+
+            if Calendar.current.isDateInToday(date),
+               let sunrise,
+               let sunset {
+
+                let currentHour =
+                    Calendar.current.component(.hour, from: now)
+
+                let sunriseHour =
+                    Calendar.current.component(.hour, from: sunrise)
+
+                let sunsetHour =
+                    Calendar.current.component(.hour, from: sunset)
+
+                isCurrentlyDaytime =
+                    currentHour >= sunriseHour &&
+                    currentHour < sunsetHour
+
+            } else {
+                isCurrentlyDaytime = true
+            }
+
+            updated[key] = DailyWeatherInfo(
+                date: date,
+                symbolName: Self.symbol(
+                    for: dominantWeatherCode,
+                    cloudCover: decoded.daily.cloud_cover_mean[safe: index],
+                    precipitationChance: Int(precipitationChance.rounded()),
+                    precipitationAmount: precipitationAmount,
+                    windSpeed: Int(windSpeed.rounded()),
+                    isDay: isCurrentlyDaytime
+                ),
+                weatherCode: dominantWeatherCode,
+                minTemperature:
+                    Int((decoded.daily.temperature_2m_min[safe: index] ?? 0).rounded()),
+                maxTemperature:
+                    Int((decoded.daily.temperature_2m_max[safe: index] ?? 0).rounded()),
+                precipitationChance:
+                    Int(precipitationChance.rounded()),
+                precipitationAmount: precipitationAmount,
+                windSpeed:
+                    Int(windSpeed.rounded()),
+                sunrise: sunrise,
+                sunset: sunset,
+                uvIndex:
+                    uvIndex.map { Int($0.rounded()) },
+                airQualityIndex:
+                    airQuality.map { Int($0.rounded()) },
+                cloudCover:
+                    decoded.daily.cloud_cover_mean[safe: index]
+            )
+        }
+
+        return WeatherProcessingResult(
+            weatherByDay: updated,
+            hourlyWeatherByDay: hourlyUpdated
+        )
+    }
+    
+    
     // MARK: - Weather Symbol Mapping
 
-    private func symbol(
+    private nonisolated static func symbol(
         for weatherCode: Int,
         cloudCover: Int?,
         precipitationChance: Int,
@@ -624,7 +659,7 @@ private struct OpenMeteoHourly: Decodable {
         )
     }
 
-    private func hourlyWeatherCodes(
+    private nonisolated static func hourlyWeatherCodes(
         for date: Date,
         hourly: OpenMeteoHourly
     ) -> [Int] {
@@ -658,7 +693,7 @@ private struct OpenMeteoHourly: Decodable {
             }
     }
 
-    private func daytimePrecipitationProbability(
+    private nonisolated static func daytimePrecipitationProbability(
         for date: Date,
         hourly: OpenMeteoHourly
     ) -> Int {
@@ -700,7 +735,7 @@ private struct OpenMeteoHourly: Decodable {
         return sorted[sorted.count / 2]
     }
 
-    private func daytimePrecipitationAmount(
+    private nonisolated static func daytimePrecipitationAmount(
         for date: Date,
         hourly: OpenMeteoHourly
     ) -> Double {
@@ -735,7 +770,7 @@ private struct OpenMeteoHourly: Decodable {
             .reduce(0, +) / 2.8
     }
 
-    private func dominantDaytimeWeatherCode(
+    private nonisolated static func dominantDaytimeWeatherCode(
         fallback: Int,
         hourlyCodes: [Int]
     ) -> Int {
@@ -817,7 +852,7 @@ private struct OpenMeteoHourly: Decodable {
     }
     
     
-    private func weatherEvaluationWindow(
+    private nonisolated static func weatherEvaluationWindow(
         for date: Date
     ) -> (startHour: Int, endHour: Int) {
 
@@ -940,7 +975,7 @@ enum WeatherCondition: Int, Sendable {
 
     case unknown = -1
 
-    init(code: Int?) {
+    nonisolated init(code: Int?) {
 
         guard let code else {
             self = .unknown
@@ -1131,7 +1166,7 @@ extension WeatherCondition {
 
 private extension Array {
 
-    subscript(safe index: Int) -> Element? {
+    nonisolated subscript(safe index: Int) -> Element? {
 
         guard indices.contains(index) else {
             return nil

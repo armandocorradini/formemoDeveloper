@@ -131,8 +131,12 @@ struct ForMemoApp: App {
         Task { @MainActor in
             let context = sharedContainer.mainContext
             AttachmentDiagnosticService.update(using: context)
-            AttachmentMigration.runIfNeeded(
-                context: context
+            let tAttachmentMigration = ContinuousClock.now
+
+            AttachmentMigration.runIfNeeded(context: context)
+
+            AppLogger.notifications.debug(
+                "⏱️ ACTIVE AttachmentMigration: \(ContinuousClock.now - tAttachmentMigration)"
             )
 
             WalletMigrationService.runIfNeeded(
@@ -145,9 +149,16 @@ struct ForMemoApp: App {
             
             VaultAutoFillManager.shared.synchronize(using: context)
             if appSettings.autoDeleteCompletedAttachments {
+
+                let tAttachmentCleanup = ContinuousClock.now
+
                 try? AttachmentMaintenanceManager.shared.performAutomaticCleanup(
                     context: context,
                     retentionDays: appSettings.attachmentRetentionDays
+                )
+
+                AppLogger.notifications.debug(
+                    "⏱️ ACTIVE AttachmentCleanup: \(ContinuousClock.now - tAttachmentCleanup)"
                 )
             }
 
@@ -264,6 +275,8 @@ struct ForMemoApp: App {
                     LocationReminderManager.shared.requestPermissionIfNeeded()
                     
                     let context = container.mainContext
+                    
+                    let activationStart = ContinuousClock.now
 
                     NoteImportService.importPendingNote(
                         in: context
@@ -274,7 +287,14 @@ struct ForMemoApp: App {
  
 
                     // 2️⃣ 🔥 CLEANUP RECENTLY DELETED (task + attachments)
+                    
+                    let tDeletedCleanup = ContinuousClock.now
+
                     cleanupRecentlyDeleted(context: context)
+
+                    AppLogger.notifications.debug(
+                        "⏱️ ACTIVE DeletedCleanup: \(ContinuousClock.now - tDeletedCleanup)"
+                    )
                 
                     
                     // 3️⃣ UI refresh
@@ -284,7 +304,17 @@ struct ForMemoApp: App {
                     )
                     
                     // 4️⃣ refresh notifiche (con piccolo delay SAFE)
+                    let tNotificationRefresh = ContinuousClock.now
+
                     NotificationManager.shared.refresh(force: true)
+
+                    AppLogger.notifications.debug(
+                        "⏱️ ACTIVE NotificationRefresh: \(ContinuousClock.now - tNotificationRefresh)"
+                    )
+                    
+                    AppLogger.notifications.debug(
+                        "⏱️ ACTIVE TOTAL: \(ContinuousClock.now - activationStart)"
+                    )
                 }
             case .inactive:
                 

@@ -4,12 +4,7 @@ import SwiftData
 struct StartView: View {
     
     @State private var isAnimating = false
-    
-    @Environment(\.modelContext) private var modelContext
 
-    
-    @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
-    private var activeTasks: [TodoTask]
     
     var body: some View {
         ZStack {

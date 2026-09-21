@@ -5,16 +5,17 @@ enum AttachmentDiagnosticService {
 
     @MainActor
     static func update(using context: ModelContext) {
-        let descriptor = FetchDescriptor<TodoTask>(
-            predicate: #Predicate { !$0.isCompleted }
+
+        let descriptor = FetchDescriptor<TaskAttachment>(
+            predicate: #Predicate<TaskAttachment> {
+                $0.task?.isCompleted == false
+            }
         )
 
-        guard let tasks = try? context.fetch(descriptor) else {
+        guard let activeAttachments = try? context.fetch(descriptor) else {
             AppSettings.shared.diagnosticAttachmentFailure = false
             return
         }
-
-        let activeAttachments = tasks.flatMap { $0.attachments ?? [] }
 
         guard !activeAttachments.isEmpty else {
             AppSettings.shared.diagnosticAttachmentFailure = false

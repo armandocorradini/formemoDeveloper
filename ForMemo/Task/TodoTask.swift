@@ -6,6 +6,12 @@ import CoreLocation
 @Model
 final class TodoTask {
     
+    #Index<TodoTask>(
+        [\.isCompleted, \.deadLine],
+        [\.isCompleted, \.priorityRaw],
+        [\.isCompleted, \.mainTagRaw]
+    )
+    
     var id: UUID = UUID()
     var title: String = ""
     var taskDescription: String = ""

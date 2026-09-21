@@ -88,6 +88,61 @@ private var triggeredRecently: [String: Date] = {
         )
     }
     
+    func refreshMonitoring(using context: ModelContext) {
+        
+        let enabled = UserDefaults.standard.bool(
+            forKey: "locationRemindersEnabled"
+        )
+        
+        guard enabled else {
+            stopAllMonitoring()
+            return
+        }
+        
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.locationReminderEnabled &&
+                $0.locationLatitude != nil &&
+                $0.locationLongitude != nil
+            }
+        )
+        
+        let tasks: [TodoTask]
+        
+        do {
+            tasks = try context.fetch(descriptor)
+        } catch {
+    #if DEBUG
+            AppLogger.notifications.error(
+                "Location task fetch failed: \(error.localizedDescription)"
+            )
+    #endif
+            return
+        }
+        
+        guard !tasks.isEmpty else {
+            stopAllMonitoring()
+            return
+        }
+        
+        requestPermissionIfNeeded()
+        
+        if !isMonitoringActive {
+            manager.startMonitoringSignificantLocationChanges()
+            manager.startUpdatingLocation()
+            isMonitoringActive = true
+        }
+        
+        if lastKnownLocation == nil ||
+           Date().timeIntervalSince(lastLocationRequest) > 60 {
+            manager.requestLocation()
+            lastLocationRequest = Date()
+        }
+        
+        updateRegions(tasks: tasks)
+    }
+    
     
     func refreshMonitoring(tasks: [TodoTask]) {
         

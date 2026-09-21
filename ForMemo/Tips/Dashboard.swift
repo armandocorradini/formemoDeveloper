@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct Dashboard: View {
     @Environment(AppSettings.self) private var settings
@@ -12,7 +13,7 @@ struct Dashboard: View {
     @State private var selectedWeatherDate: Date?
     @State private var selectedNote: Note?
     @State private var recentWalletLogos: [String: Data] = [:]
-    
+    @State private var dashboardContinueItems: [ContinueItem] = []
     
     @State private var recoveryResult: AttachmentRecoveryResult?
     @State private var showRecoveryAlert = false
@@ -21,25 +22,12 @@ struct Dashboard: View {
     @State private var showRecoveryConfirmation = false
     
     @State private var showNoRecoveryNeededAlert = false
-    
-    private static let activeTasksPredicate =
-        #Predicate<TodoTask> { !$0.isCompleted }
 
-    @Query(filter: Self.activeTasksPredicate)
-    private var activeTasks: [TodoTask]
-    
+    @State private var dashboardTodayTasks: [TodoTask] = []
+    @State private var dashboardTodayTasksCount = 0
+    @State private var dashboardTomorrowTasks: [TodoTask] = []
+    @State private var dashboardTomorrowTasksCount = 0
 
-    @Query
-    private var trips: [TripList]
-
-    @Query
-    private var documents: [DocumentItem]
-
-    @Query
-    private var loyaltyCards: [LoyaltyCard]
-    
-    @Query
-    private var notes: [Note]
 
     private let weatherManager = WeatherManager.shared
 
@@ -60,126 +48,277 @@ struct Dashboard: View {
         let destination: ContinueDestination
     }
 
-    private var continueItems: [ContinueItem] {
 
-        let tripItems: [ContinueItem] = trips.compactMap { trip in
-            guard let lastOpenedAt = trip.lastOpenedAt else { return nil }
+    @MainActor
+    private func refreshContinueItems() {
+        var tripDescriptor = FetchDescriptor<TripList>(
+            predicate: #Predicate<TripList> {
+                $0.lastOpenedAt != nil
+            },
+            sortBy: [
+                SortDescriptor(\TripList.lastOpenedAt, order: .reverse)
+            ]
+        )
 
-            return ContinueItem(
-                id: "trip-\(trip.id)",
-                title: trip.name,
-                type: String(localized: "Checklists"),
-                systemImage: trip.icon,
-                logoRelativePath: nil,
-                lastOpenedAt: lastOpenedAt,
-                destination: .trip(trip)
+        tripDescriptor.fetchLimit = 3
+
+        var documentDescriptor = FetchDescriptor<DocumentItem>(
+            predicate: #Predicate<DocumentItem> {
+                $0.lastOpenedAt != nil
+            },
+            sortBy: [
+                SortDescriptor(\DocumentItem.lastOpenedAt, order: .reverse)
+            ]
+        )
+
+        documentDescriptor.fetchLimit = 3
+
+        var cardDescriptor = FetchDescriptor<LoyaltyCard>(
+            predicate: #Predicate<LoyaltyCard> {
+                $0.lastOpenedAt != nil
+            },
+            sortBy: [
+                SortDescriptor(\LoyaltyCard.lastOpenedAt, order: .reverse)
+            ]
+        )
+
+        cardDescriptor.fetchLimit = 3
+
+        var noteDescriptor = FetchDescriptor<Note>(
+            predicate: #Predicate<Note> {
+                $0.lastOpenedAt != nil
+            },
+            sortBy: [
+                SortDescriptor(\Note.lastOpenedAt, order: .reverse)
+            ]
+        )
+
+        noteDescriptor.fetchLimit = 3
+
+        do {
+            let trips = try modelContext.fetch(tripDescriptor)
+            let documents = try modelContext.fetch(documentDescriptor)
+            let loyaltyCards = try modelContext.fetch(cardDescriptor)
+            let notes = try modelContext.fetch(noteDescriptor)
+
+            let tripItems: [ContinueItem] = trips.compactMap { trip in
+                guard let lastOpenedAt = trip.lastOpenedAt else {
+                    return nil
+                }
+
+                return ContinueItem(
+                    id: "trip-\(trip.id)",
+                    title: trip.name,
+                    type: String(localized: "Checklists"),
+                    systemImage: trip.icon,
+                    logoRelativePath: nil,
+                    lastOpenedAt: lastOpenedAt,
+                    destination: .trip(trip)
+                )
+            }
+
+            let documentItems: [ContinueItem] = documents.compactMap { document in
+                guard let lastOpenedAt = document.lastOpenedAt else {
+                    return nil
+                }
+
+                return ContinueItem(
+                    id: "document-\(document.id)",
+                    title: document.name,
+                    type: String(localized: "Documents"),
+                    systemImage: document.documentType.systemImage,
+                    logoRelativePath: nil,
+                    lastOpenedAt: lastOpenedAt,
+                    destination: .document(document)
+                )
+            }
+
+            let cardItems: [ContinueItem] = loyaltyCards.compactMap { card in
+                guard let lastOpenedAt = card.lastOpenedAt else {
+                    return nil
+                }
+
+                return ContinueItem(
+                    id: "card-\(card.id)",
+                    title: card.storeName,
+                    type: String(localized: "Wallet"),
+                    systemImage: card.itemType == "ticket"
+                        ? "ticket.fill"
+                        : "creditcard",
+                    logoRelativePath:
+                        card.logoAsset?.relativePath
+                        ?? card.loyaltyLogoRelativePath,
+                    lastOpenedAt: lastOpenedAt,
+                    destination: .loyaltyCard(card)
+                )
+            }
+
+            let noteItems: [ContinueItem] = notes.compactMap { note in
+                guard let lastOpenedAt = note.lastOpenedAt else {
+                    return nil
+                }
+
+                return ContinueItem(
+                    id: "note-\(note.id)",
+                    title: note.title.isEmpty
+                        ? String(localized: "Untitled")
+                        : note.title,
+                    type: String(localized: "Notes"),
+                    systemImage: "note.text",
+                    logoRelativePath: nil,
+                    lastOpenedAt: lastOpenedAt,
+                    destination: .note(note)
+                )
+            }
+
+            dashboardContinueItems = Array(
+                (tripItems + documentItems + cardItems + noteItems)
+                    .sorted { $0.lastOpenedAt > $1.lastOpenedAt }
+                    .prefix(3)
             )
-        }
 
-        let documentItems: [ContinueItem] = documents.compactMap { document in
-            guard let lastOpenedAt = document.lastOpenedAt else { return nil }
-
-            return ContinueItem(
-                id: "document-\(document.id)",
-                title: document.name,
-                type: String(localized: "Documents"),
-                systemImage: document.documentType.systemImage,
-                logoRelativePath: nil,
-                lastOpenedAt: lastOpenedAt,
-                destination: .document(document)
+        } catch {
+            AppLogger.persistence.error(
+                "Dashboard recent items fetch failed: \(error.localizedDescription)"
             )
+
+            dashboardContinueItems = []
         }
+    }
+    
+    private var todayStart: Date {
+        Calendar.current.startOfDay(for: .now)
+    }
 
-        let cardItems: [ContinueItem] = loyaltyCards.compactMap { card in
-            guard let lastOpenedAt = card.lastOpenedAt else { return nil }
+    private var tomorrowStart: Date {
+        Calendar.current.date(
+            byAdding: .day,
+            value: 1,
+            to: todayStart
+        ) ?? todayStart
+    }
 
-            return ContinueItem(
-                id: "card-\(card.id)",
-                title: card.storeName,
-                type: String(localized: "Wallet"),
-                systemImage: card.itemType == "ticket"
-                    ? "ticket.fill"
-                    : "creditcard",
-                logoRelativePath:
-                    card.logoAsset?.relativePath
-                    ?? card.loyaltyLogoRelativePath,
-                lastOpenedAt: lastOpenedAt,
-                destination: .loyaltyCard(card)
+    private var dayAfterTomorrowStart: Date {
+        Calendar.current.date(
+            byAdding: .day,
+            value: 2,
+            to: todayStart
+        ) ?? tomorrowStart
+    }
+
+    @MainActor
+    private func fetchDashboardTasks(
+        from start: Date,
+        to end: Date
+    ) -> [TodoTask] {
+        var descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.deadLine != nil &&
+                $0.deadLine! >= start &&
+                $0.deadLine! < end
+            },
+            sortBy: [
+                SortDescriptor(\TodoTask.deadLine, order: .forward),
+                SortDescriptor(\TodoTask.id, order: .forward)
+            ]
+        )
+
+        descriptor.fetchLimit = 100
+
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            AppLogger.persistence.error(
+                "Dashboard task fetch failed: \(error.localizedDescription)"
             )
+            return []
         }
-        let noteItems: [ContinueItem] = notes.compactMap { note in
-            guard let lastOpenedAt = note.lastOpenedAt else { return nil }
+    }
 
-            return ContinueItem(
-                id: "note-\(note.id)",
-                title: note.title.isEmpty
-                    ? String(localized: "Untitled")
-                    : note.title,
-                type: String(localized: "Notes"),
-                systemImage: "note.text",
-                logoRelativePath: nil,
-                lastOpenedAt: lastOpenedAt,
-                destination: .note(note)
-            )
-        }
-        return Array(
-            ((tripItems + documentItems + cardItems + noteItems))
-                .sorted { $0.lastOpenedAt > $1.lastOpenedAt }
-                .prefix(3)
+    @MainActor
+    private func refreshTodayDashboard() {
+        let start = todayStart
+        let end = tomorrowStart
+
+        dashboardTodayTasks = fetchDashboardTasks(
+            from: start,
+            to: end
+        )
+
+        dashboardTodayTasksCount = countDashboardTasks(
+            from: start,
+            to: end
         )
     }
+    
+    
+    @MainActor
+    private func refreshTomorrowDashboard() {
+        let start = tomorrowStart
+        let end = dayAfterTomorrowStart
 
-    private var todayTasksCount: Int {
-        activeTasks.filter {
-            guard let deadline = $0.deadLine else { return false }
-            return Calendar.current.isDateInToday(deadline)
-        }.count
+        dashboardTomorrowTasks = fetchDashboardTasks(
+            from: start,
+            to: end
+        )
+
+        dashboardTomorrowTasksCount = countDashboardTasks(
+            from: start,
+            to: end
+        )
+    }
+    @MainActor
+    private func countDashboardTasks(
+        from start: Date,
+        to end: Date
+    ) -> Int {
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.deadLine != nil &&
+                $0.deadLine! >= start &&
+                $0.deadLine! < end
+            }
+        )
+
+        do {
+            return try modelContext.fetchCount(descriptor)
+        } catch {
+            AppLogger.persistence.error(
+                "Dashboard task count failed: \(error.localizedDescription)"
+            )
+            return 0
+        }
     }
 
-    private var todayTasks: [TodoTask] {
-        activeTasks
-            .filter {
-                guard let deadline = $0.deadLine else { return false }
-                return Calendar.current.isDateInToday(deadline)
-            }
-            .sorted {
-                ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
-            }
-    }
 
-    private var tomorrowTasksCount: Int {
-        activeTasks.filter {
-            guard let deadline = $0.deadLine else { return false }
-            return Calendar.current.isDateInTomorrow(deadline)
-        }.count
-    }
+    @MainActor
+    private func fetchOverduePreviousDaysCount() -> Int {
+        let startOfToday = todayStart
 
-    private var tomorrowTasks: [TodoTask] {
-        activeTasks
-            .filter {
-                guard let deadline = $0.deadLine else { return false }
-                return Calendar.current.isDateInTomorrow(deadline)
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.deadLine != nil &&
+                $0.deadLine! < startOfToday
             }
-            .sorted {
-                ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
-            }
-    }
+        )
 
-    private var overdueTodayCount: Int {
-        activeTasks.filter {
-            guard let deadline = $0.deadLine else { return false }
-            return Calendar.current.isDateInToday(deadline) && deadline < .now
-        }.count
+        do {
+            return try modelContext.fetchCount(descriptor)
+        } catch {
+            AppLogger.persistence.error(
+                "Dashboard overdue count failed: \(error.localizedDescription)"
+            )
+            return 0
+        }
     }
 
     private var overduePreviousDaysCount: Int {
-        let startOfToday = Calendar.current.startOfDay(for: .now)
-
-        return activeTasks.filter {
-            guard let deadline = $0.deadLine else { return false }
-            return deadline < startOfToday
-        }.count
+        fetchOverduePreviousDaysCount()
     }
+    
     private func hide(_ item: ContinueItem) {
         switch item.destination {
         case .trip(let trip):
@@ -279,10 +418,10 @@ struct Dashboard: View {
 
                             // Numero attività
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Text("\(todayTasksCount)")
+                                Text("\(dashboardTodayTasksCount)")
                                     .font(.system(size: 58, weight: .bold, design: .rounded))
 
-                                Text(todayTasksCount == 1
+                                Text(dashboardTodayTasksCount == 1
                                      ? "task to complete"
                                      : "tasks to complete")
                                     .font(.title3)
@@ -291,10 +430,10 @@ struct Dashboard: View {
                             .padding(.top, 2)
 
                             // Attività
-                            if !todayTasks.isEmpty {
+                            if !dashboardTodayTasks.isEmpty {
                                 VStack(alignment: .leading, spacing: 6) {
                                     ForEach(
-                                        todayTasks,
+                                        dashboardTodayTasks,
                                         id: \.persistentModelID
                                     ) { task in
                                         dashboardTaskRow(task)
@@ -338,7 +477,7 @@ struct Dashboard: View {
                     // MARK: - Domani
 
                     if settings.showDashboardTomorrow &&
-                       tomorrowTasksCount > 0 {
+                        dashboardTomorrowTasksCount > 0 {
 
                         Button {
                             NotificationCenter.default.post(
@@ -390,15 +529,15 @@ struct Dashboard: View {
                                 }
 
                                 Text(
-                                    "^[\(tomorrowTasksCount) tasks scheduled](inflect: true)"
+                                    "^[\(dashboardTomorrowTasksCount) tasks scheduled](inflect: true)"
                                 )
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
 
-                                if !tomorrowTasks.isEmpty {
+                                if !dashboardTomorrowTasks.isEmpty {
                                     VStack(alignment: .leading, spacing: 6) {
                                         ForEach(
-                                            tomorrowTasks,
+                                            dashboardTomorrowTasks,
                                             id: \.persistentModelID
                                         ) { task in
                                             dashboardTaskRow(task)
@@ -417,7 +556,7 @@ struct Dashboard: View {
                     // MARK: - Recenti
 
                     if settings.showDashboardContinue &&
-                       !continueItems.isEmpty {
+                        !dashboardContinueItems.isEmpty {
 
                         VStack(alignment: .leading, spacing: 12) {
 
@@ -433,11 +572,11 @@ struct Dashboard: View {
                             LazyVGrid(
                                 columns: Array(
                                     repeating: GridItem(.flexible(), spacing: 8),
-                                    count: min(continueItems.count, 3)
+                                    count: min(dashboardContinueItems.count, 3)
                                 ),
                                 spacing: 8
                             ) {
-                                ForEach(continueItems) { item in
+                                ForEach(dashboardContinueItems) { item in
 
                                     switch item.destination {
 
@@ -716,8 +855,15 @@ struct Dashboard: View {
                 cameFromForecast: false
             )
         }
+        .onAppear {
+            refreshContinueItems()
+            refreshTodayDashboard()
+            refreshTomorrowDashboard()
+        }
 
         .task {
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
             await weatherManager.refreshIfNeeded()
         }
         .onReceive(

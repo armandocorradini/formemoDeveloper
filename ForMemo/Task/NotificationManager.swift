@@ -135,11 +135,23 @@ final class NotificationManager: NSObject {
             forceFullRefresh(using: context)
         }
 
-        let tasksInitial = fetchTasks(using: context)
-        LocationReminderManager.shared.refreshMonitoring(tasks: tasksInitial)
+        let tBadge = ContinuousClock.now
+
+        let badge = computeBadgeCount(using: context)
+
+        AppLogger.notifications.debug(
+            "⏱️ REFRESH badge count: \(ContinuousClock.now - tBadge)"
+        )
+
+        let tLocationRefresh = ContinuousClock.now
+
+        LocationReminderManager.shared.refreshMonitoring(using: context)
+
+        AppLogger.notifications.debug(
+            "⏱️ REFRESH location: \(ContinuousClock.now - tLocationRefresh)"
+        )
 
         // 🔥 Badge immediato
-        let badge = computeBadgeCount(from: tasksInitial)
         let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
         applyBadge(showBadge ? badge : 0)
 
@@ -187,8 +199,21 @@ final class NotificationManager: NSObject {
                     return
                 }
 
-                let fetched = self.fetchTasks(using: context)
+                let tSecondFetch = ContinuousClock.now
+
+                let fetched = self.fetchNotificationTasks(using: context)
+
+                AppLogger.notifications.debug(
+                    "⏱️ REFRESH notification fetch: \(ContinuousClock.now - tSecondFetch)"
+                )
+
+                let tSignature = ContinuousClock.now
+
                 let signature = self.signature(for: fetched)
+
+                AppLogger.notifications.debug(
+                    "⏱️ REFRESH signature: \(ContinuousClock.now - tSignature)"
+                )
 
                 if !force && signature == self.lastTasksSignature {
                     self.pendingRefresh = false
@@ -263,38 +288,101 @@ func refreshFromCloudKit() {
     // MARK: - FETCH
     
     private func fetchTasks(using context: ModelContext) -> [TodoTask] {
-        
-        let tasks = (try? context.fetch(FetchDescriptor<TodoTask>(
-            predicate: #Predicate { !$0.isCompleted }
-        ))) ?? []
-        var needsSave = false
-        
-        for task in tasks {
-            // 🔴 Skip debug stress-test tasks (no notifications)
-            if task.isDebugTask { continue }
-            // (Snooze cleanup block removed)
-            
-            // 🔵 Cleanup expired manual snooze
-            if let manual = task.manualSnoozeUntil,
-               manual <= Date() {
+        let now = Date()
+
+        // Cleanup expired manual snooze
+        let expiredSnoozeDescriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.manualSnoozeUntil != nil &&
+                $0.manualSnoozeUntil! <= now
+            }
+        )
+
+        if let expiredTasks = try? context.fetch(expiredSnoozeDescriptor) {
+            for task in expiredTasks {
                 task.manualSnoozeUntil = nil
-                needsSave = true
             }
-            
-            
-            
-            if task.reminderOffsetMinutes == 0 {
+        }
+
+        // Cleanup invalid reminder offset
+        let zeroReminderDescriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.reminderOffsetMinutes == 0
+            }
+        )
+
+        if let zeroReminderTasks = try? context.fetch(zeroReminderDescriptor) {
+            for task in zeroReminderTasks {
                 task.reminderOffsetMinutes = nil
-                needsSave = true
             }
         }
-        
-        if needsSave {
-            context.processPendingChanges()
-        }
-        
-        return tasks
+
+        context.processPendingChanges()
+
+        // Main notification fetch
+        return (try? context.fetch(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> {
+                    !$0.isCompleted
+                }
+            )
+        )) ?? []
     }
+    
+    
+    
+    
+    private func computeBadgeCount(using context: ModelContext) -> Int {
+        let now = Date()
+
+        let badgeMode = UserDefaults.standard.integer(forKey: "badgeMode")
+        let leadDays = UserDefaults.standard.integer(
+            forKey: "notificationLeadTimeDays"
+        )
+
+        let cutoffDate: Date
+
+        if badgeMode == 0 || leadDays <= 0 {
+            cutoffDate = now
+        } else {
+            cutoffDate = Calendar.current.date(
+                byAdding: .day,
+                value: leadDays,
+                to: now
+            ) ?? now
+        }
+
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.deadLine != nil &&
+                $0.deadLine! <= cutoffDate
+            }
+        )
+
+        return (try? context.fetchCount(descriptor)) ?? 0
+    }
+    
+    
+    private func fetchNotificationTasks(using context: ModelContext) -> [TodoTask] {
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                !$0.isDebugTask &&
+                (
+                    $0.deadLine != nil ||
+                    $0.manualSnoozeUntil != nil ||
+                    $0.snoozeUntil != nil
+                )
+            }
+        )
+
+        return (try? context.fetch(descriptor)) ?? []
+    }
+    
+    
     
     // MARK: - SIGNATURE
     
@@ -922,7 +1010,14 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             if let container = self.modelContainer {
                 let context = container.mainContext
                 
+                let tNotificationActions = ContinuousClock.now
+
                 NotificationActionProcessor.shared.processAll(using: context)
+
+                AppLogger.notifications.debug(
+                    "⏱️ ACTIVE NotificationActionProcessor: \(ContinuousClock.now - tNotificationActions)"
+                )
+                
                 context.processPendingChanges()
                 
                 // Immediate badge refresh

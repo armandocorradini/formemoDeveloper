@@ -42,15 +42,9 @@ struct TaskDetailView: View {
     @Environment(\.dismiss) private var dismiss
     var isSheet: Bool = false
     
-    @Query(sort: \TaskAttachment.createdAt)
-    private var attachments: [TaskAttachment]
-    
     private var taskAttachments: [TaskAttachment] {
-        attachments.filter {
-            $0.task?.persistentModelID == task.persistentModelID
-        }
+        task.attachments ?? []
     }
-    
     
     @Environment(\.scenePhase) private var scenePhase
     
@@ -429,6 +423,10 @@ struct TaskDetailView: View {
             DebugLog.writeCloudKitEvent(
                 "TaskDetail context save completed"
             )
+            
+            // Il refresh globale delle notifiche non viene eseguito
+            // per le normali modifiche del contenuto del task.
+
             NotificationManager.shared.refresh()
 #if DEBUG
             AppLogger.notifications.info("💾 Saved")

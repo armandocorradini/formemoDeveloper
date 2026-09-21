@@ -56,7 +56,13 @@ struct TaskMapView: View {
     
     @Environment(\.modelContext) private var context
     
-    @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
+    @Query(
+        filter: #Predicate<TodoTask> {
+            !$0.isCompleted &&
+            $0.locationLatitude != nil &&
+            $0.locationLongitude != nil
+        }
+    )
     private var tasks: [TodoTask]
     
     @State private var zoomLevel: Double = ZoomStore.zoomLevel

@@ -1,13 +1,17 @@
 import SwiftUI
 import SwiftData
 import CoreLocation
+import os
 
 
 // MARK: - contextSection
  struct ContextSection: View {
 
+     
+     @Environment(\.modelContext) private var modelContext
+     
     @Bindable var task: TodoTask
-    @Query private var allTasks: [TodoTask]
+     @State private var savedLocations: [SavedLocationItem] = []
 
     @AppStorage("hiddenSavedLocations")
     private var hiddenSavedLocationsData: Data = Data()
@@ -31,38 +35,66 @@ import CoreLocation
         hiddenSavedLocationsData = (try? JSONEncoder().encode(hidden)) ?? Data()
     }
 
-    private var savedLocations: [SavedLocationItem] {
+     @MainActor
+     private func loadSavedLocations() {
+         let descriptor = FetchDescriptor<TodoTask>(
+             predicate: #Predicate<TodoTask> {
+                 $0.locationName != nil &&
+                 $0.locationLatitude != nil &&
+                 $0.locationLongitude != nil
+             }
+         )
 
-        var seen = Set<String>()
+         do {
+             let tasks = try modelContext.fetch(descriptor)
 
-        return allTasks.compactMap { task in
+             var seen = Set<String>()
+             var locations: [SavedLocationItem] = []
 
-            guard let name = task.locationName,
-                  let latitude = task.locationLatitude,
-                  let longitude = task.locationLongitude else {
-                return nil
-            }
+             locations.reserveCapacity(tasks.count)
 
-            let key = "\(name.lowercased())|\(latitude)|\(longitude)"
+             for task in tasks {
+                 guard
+                     let name = task.locationName,
+                     let latitude = task.locationLatitude,
+                     let longitude = task.locationLongitude
+                 else {
+                     continue
+                 }
 
-            guard !seen.contains(key),
-                  !hiddenSavedLocations.contains(key) else {
-                return nil
-            }
+                 let key = "\(name.lowercased())|\(latitude)|\(longitude)"
 
-            seen.insert(key)
+                 guard !seen.contains(key),
+                       !hiddenSavedLocations.contains(key)
+                 else {
+                     continue
+                 }
 
-            return SavedLocationItem(
-                name: name,
-                latitude: latitude,
-                longitude: longitude
-            )
-        }
-        .sorted {
-            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-        }
-    }
+                 seen.insert(key)
 
+                 locations.append(
+                     SavedLocationItem(
+                         name: name,
+                         latitude: latitude,
+                         longitude: longitude
+                     )
+                 )
+             }
+
+             locations.sort {
+                 $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+             }
+
+             savedLocations = locations
+
+         } catch {
+             AppLogger.persistence.error(
+                 "Saved locations fetch failed: \(error.localizedDescription)"
+             )
+             savedLocations = []
+         }
+     }
+     
     var body: some View {
 
         Section("Context") {
@@ -198,5 +230,9 @@ import CoreLocation
             .pickerStyle(.menu)
         }
         .listRowBackground(Color(.systemBackground).opacity(0.3))
-    }
-}
+    
+         .task {
+             loadSavedLocations()
+         }
+        }
+     }

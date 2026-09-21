@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 struct OverviewView: View {
 
@@ -13,14 +14,18 @@ struct OverviewView: View {
     }
 
     @State private var fileStats = OverviewFileStats()
+    
+    @Environment(\.modelContext) private var modelContext
 
+    @State private var activeTasksCount = 0
+    @State private var overdueTasksCountValue = 0
+    
+    @State private var recurringTasksCountValue = 0
+    @State private var activeWithAttachmentsCountValue = 0
+    @State private var activeWithLocationCountValue = 0
+    @State private var activeAttachmentsCountValue = 0
+    @State private var completedTasksCountValue = 0
 
-    // 1. Query principali ottimizzate alla radice
-    @Query(filter: #Predicate<TodoTask> { !$0.isCompleted })
-    private var activeTasks: [TodoTask]
-
-    @Query(filter: #Predicate<TodoTask> { $0.isCompleted })
-    private var completedTasks: [TodoTask]
 
     @Query private var documents: [DocumentItem]
     @Query private var documentAssets: [DocumentAsset]
@@ -79,6 +84,72 @@ struct OverviewView: View {
         formattedSize(bytes: fileStats.activeAttachmentBytes)
     }
 
+    @MainActor
+    private func refreshRecurringTasksCount() {
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.recurrenceRule != nil
+            }
+        )
+
+        do {
+            recurringTasksCountValue = try modelContext.fetchCount(descriptor)
+        } catch {
+            recurringTasksCountValue = 0
+            AppLogger.persistence.error(
+                "Overview recurring task count failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @MainActor
+    private func refreshActiveWithLocationCount() {
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.locationName != nil &&
+                $0.locationName != ""
+            }
+        )
+
+        do {
+            activeWithLocationCountValue = try modelContext.fetchCount(descriptor)
+        } catch {
+            activeWithLocationCountValue = 0
+            AppLogger.persistence.error(
+                "Overview active location task count failed: \(error.localizedDescription)"
+            )
+        }
+    }
+    
+    @MainActor
+    private func refreshActiveAttachmentsCount() {
+        let descriptor = FetchDescriptor<TaskAttachment>(
+            predicate: #Predicate<TaskAttachment> {
+                $0.task?.isCompleted == false
+            }
+        )
+
+        do {
+            let attachments = try modelContext.fetch(descriptor)
+
+            activeAttachmentsCountValue = attachments.count
+
+            activeWithAttachmentsCountValue = Set(
+                attachments.compactMap { $0.task?.id }
+            ).count
+
+        } catch {
+            activeAttachmentsCountValue = 0
+            activeWithAttachmentsCountValue = 0
+
+            AppLogger.persistence.error(
+                "Overview active attachment count failed: \(error.localizedDescription)"
+            )
+        }
+    }
+    
     private func formattedSize(bytes: Int64) -> String {
         ByteCountFormatter.string(
             fromByteCount: bytes,
@@ -98,14 +169,41 @@ struct OverviewView: View {
         // Read SwiftData relationships on the current actor, then perform
         // filesystem I/O on a detached utility task. No SwiftData models
         // cross the concurrency boundary.
-        let activeAttachmentURLs = activeTasks
-            .flatMap { $0.attachments ?? [] }
-            .compactMap(\.fileURL)
+        
+        let activeAttachmentURLs: [URL] = {
+            let descriptor = FetchDescriptor<TaskAttachment>(
+                predicate: #Predicate<TaskAttachment> {
+                    $0.task?.isCompleted == false
+                }
+            )
 
-        let completedAttachmentURLs = completedTasks
-            .flatMap { $0.attachments ?? [] }
-            .compactMap(\.fileURL)
+            do {
+                return try modelContext.fetch(descriptor)
+                    .compactMap(\.fileURL)
+            } catch {
+                AppLogger.persistence.error(
+                    "Overview active attachment URL fetch failed: \(error.localizedDescription)"
+                )
+                return []
+            }
+        }()
+        let completedAttachmentURLs: [URL] = {
+            let descriptor = FetchDescriptor<TaskAttachment>(
+                predicate: #Predicate<TaskAttachment> {
+                    $0.task?.isCompleted == true
+                }
+            )
 
+            do {
+                return try modelContext.fetch(descriptor)
+                    .compactMap(\.fileURL)
+            } catch {
+                AppLogger.persistence.error(
+                    "Overview completed attachment fetch failed: \(error.localizedDescription)"
+                )
+                return []
+            }
+        }()
         let documentAssetURLs = documentAssets
             .compactMap(\.fileURL)
 
@@ -159,7 +257,7 @@ struct OverviewView: View {
             fileStats = result
 
             AppSettings.shared.diagnosticAttachmentFailure =
-                activeAttachmentsCount > 0 &&
+                activeAttachmentsCountValue > 0 &&
                 result.activeAttachmentBytes == 0
         }
     }
@@ -285,11 +383,24 @@ struct OverviewView: View {
     }
 
     var activeAttachmentsCount: Int {
-        activeTasks.reduce(0) { $0 + ($1.attachments?.count ?? 0) }
+        activeAttachmentsCountValue
     }
 
     var completedAttachmentsCount: Int {
-        completedTasks.reduce(0) { $0 + ($1.attachments?.count ?? 0) }
+        let descriptor = FetchDescriptor<TaskAttachment>(
+            predicate: #Predicate<TaskAttachment> {
+                $0.task?.isCompleted == true
+            }
+        )
+
+        do {
+            return try modelContext.fetchCount(descriptor)
+        } catch {
+            AppLogger.persistence.error(
+                "Overview completed attachment count failed: \(error.localizedDescription)"
+            )
+            return 0
+        }
     }
     
     
@@ -315,8 +426,30 @@ struct OverviewView: View {
         .navigationTitle("Overview")
         .navigationBarTitleDisplayMode(.inline)
         .scrollEdgeEffectHidden(true, for: .top)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    refreshActiveTasksCount()
+                    refreshCompletedTasksCount()
+                    refreshOverdueTasksCount()
+                    refreshRecurringTasksCount()
+                    refreshActiveWithLocationCount()
+                    refreshActiveAttachmentsCount()
+                    refreshFileStats()
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .accessibilityLabel(String(localized: "Refresh"))
+            }
+        }
         .contentMargins(.bottom, 70, for: .scrollContent)
         .onAppear {
+            refreshActiveTasksCount()
+            refreshCompletedTasksCount()
+            refreshOverdueTasksCount()
+            refreshRecurringTasksCount()
+            refreshActiveWithLocationCount()
+            refreshActiveAttachmentsCount()
             refreshFileStats()
         }
         .onChange(of: activeAttachmentsCount) { _, _ in
@@ -339,6 +472,67 @@ struct OverviewView: View {
 
 // MARK: - Proprietà Calcolate (Ottimizzate per performance)
 private extension OverviewView {
+    
+    @MainActor
+    private func refreshActiveTasksCount() {
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted
+            }
+        )
+
+        do {
+            activeTasksCount = try modelContext.fetchCount(descriptor)
+        } catch {
+            activeTasksCount = 0
+            AppLogger.persistence.error(
+                "Overview active task count failed: \(error.localizedDescription)"
+            )
+        }
+    }
+    
+    @MainActor
+    private func refreshCompletedTasksCount() {
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                $0.isCompleted
+            }
+        )
+
+        do {
+            completedTasksCountValue = try modelContext.fetchCount(descriptor)
+        } catch {
+            completedTasksCountValue = 0
+            AppLogger.persistence.error(
+                "Overview completed task count failed: \(error.localizedDescription)"
+            )
+        }
+    }
+    
+    
+    @MainActor
+    private func refreshOverdueTasksCount() {
+        let now = Date()
+
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.deadLine != nil &&
+                $0.deadLine! < now
+            }
+        )
+
+        do {
+            overdueTasksCountValue = try modelContext.fetchCount(descriptor)
+        } catch {
+            overdueTasksCountValue = 0
+            AppLogger.persistence.error(
+                "Overview overdue task count failed: \(error.localizedDescription)"
+            )
+        }
+    }
+    
+    
     var documentAssetsCount: Int {
         documentAssets.count
     }
@@ -348,8 +542,10 @@ private extension OverviewView {
     }
     
     var walletAssetsCount: Int {
-        walletAssets.count
-    }
+       
+            walletAssets.filter { $0.kind != .logo }.count
+        }
+    
 
     private var walletAssetSignature: String {
         walletAssets
@@ -374,31 +570,30 @@ private extension OverviewView {
 
 
     // Calcolo scadenze centralizzato senza istanziare Date() nei loop
-    var overdueTasksCount: Int {
-        let now = Date()
-
-        return activeTasks.filter {
-            guard let deadline = $0.deadLine else {
-                return false
-            }
-            return deadline < now
-        }.count
-    }
-
-    var recurringTasksCount: Int {
-        activeTasks.filter { $0.recurrenceRule != nil }.count
-    }
-
     var activeWithAttachmentsCount: Int {
-        activeTasks.filter { !($0.attachments ?? []).isEmpty }.count
-    }
-
-    var activeWithLocationCount: Int {
-        activeTasks.filter { !($0.locationName ?? "").isEmpty }.count
+        activeWithAttachmentsCountValue
     }
 
     var completedWithAttachmentsCount: Int {
-        completedTasks.filter { !($0.attachments ?? []).isEmpty }.count
+        let descriptor = FetchDescriptor<TaskAttachment>(
+            predicate: #Predicate<TaskAttachment> {
+                $0.task?.isCompleted == true
+            }
+        )
+
+        do {
+            let attachments = try modelContext.fetch(descriptor)
+
+            return Set(
+                attachments.compactMap { $0.task?.id }
+            ).count
+
+        } catch {
+            AppLogger.persistence.error(
+                "Overview completed tasks with attachments count failed: \(error.localizedDescription)"
+            )
+            return 0
+        }
     }
 
     var expiringDocumentsCount: Int {
@@ -474,11 +669,10 @@ private extension OverviewView {
             Divider()
                 .overlay(.white.opacity(0.12))
             VStack(alignment: .leading, spacing: 10) {
-                LabeledContent("Active") { Text("\(activeTasks.count)") }
-                LabeledContent("Overdue") { Text("\(overdueTasksCount)") }
-                LabeledContent("Recurring") { Text("\(recurringTasksCount)") }
-                LabeledContent("With location") { Text("\(activeWithLocationCount)") }
-                
+                LabeledContent("Active") { Text("\(activeTasksCount)") }
+                LabeledContent("Overdue") { Text("\(overdueTasksCountValue)") }
+                LabeledContent("Recurring") { Text("\(recurringTasksCountValue)") }
+                LabeledContent("With location") { Text("\(activeWithLocationCountValue)") }
                 LabeledContent("Tasks with attachments") {
                     Text("\(activeWithAttachmentsCount)")
                 }
@@ -489,7 +683,9 @@ private extension OverviewView {
                     Text(activeAttachmentsSize)
                 }
 
-                LabeledContent("Completed") { Text("\(completedTasks.count)") }
+                LabeledContent("Completed") {
+                    Text("\(completedTasksCountValue)")
+                }
                 LabeledContent("Completed tasks with attachments") {
                     Text("\(completedWithAttachmentsCount)")
                 }
