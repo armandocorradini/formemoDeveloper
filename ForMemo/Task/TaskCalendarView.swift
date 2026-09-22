@@ -52,6 +52,10 @@ struct TaskCalendarView: View {
     // Expanded calendar state (scroll driven)
 
     @State private var isExpanded: Bool = false
+    
+    
+    @State private var showDatePicker = false
+    @State private var datePickerSelection: Date = .now
 
     private let expandThreshold: CGFloat = 40
     @State private var isCalendarHidden: Bool = false
@@ -174,7 +178,14 @@ struct TaskCalendarView: View {
 
                         // Contenuto della row: centrato verticalmente
                         HStack {
-                            Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
+                            Button {
+                                datePickerSelection = selectedDate
+                                showDatePicker = true
+                            } label: {
+                                Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
+                                    .foregroundStyle(.primary)
+                            }
+                            .buttonStyle(.plain)
 
                             Spacer()
 
@@ -198,12 +209,20 @@ struct TaskCalendarView: View {
                         .padding(.horizontal)
                         .frame(maxHeight: .infinity, alignment: .center)
 
-                        // Maniglia: indica la direzione dell'azione
-                        Image(systemName: isCalendarHidden ? "chevron.down" : "chevron.up")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 44, height: 30)
-                            .padding(.top, 8)
+                        // Maniglia: tap per mostrare/nascondere il calendario
+                        Button {
+                            withAnimation(.snappy(duration: 0.25)) {
+                                isCalendarHidden.toggle()
+                            }
+                        } label: {
+                            Image(systemName: isCalendarHidden ? "chevron.down" : "chevron.up")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 44, height: 30)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 8)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 52, alignment: .top)
@@ -287,6 +306,39 @@ struct TaskCalendarView: View {
 
             TaskDetailView(task: task)
 
+        }
+        
+        .sheet(isPresented: $showDatePicker) {
+            NavigationStack {
+                DatePicker(
+                    "Select Date",
+                    selection: $datePickerSelection,
+                    displayedComponents: .date
+                )
+                .datePickerStyle(.graphical)
+                .padding()
+                .navigationTitle("Select Date")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") {
+                            withAnimation(.snappy) {
+                                selectedDate = datePickerSelection
+
+                                displayedMonth = calendar.date(
+                                    from: calendar.dateComponents(
+                                        [.year, .month],
+                                        from: datePickerSelection
+                                    )
+                                ) ?? datePickerSelection
+                            }
+
+                            showDatePicker = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
         }
         .sheet(isPresented: $showMonthYearPicker) {
             NavigationStack {
@@ -1402,7 +1454,7 @@ private struct DayCell: View {
 
                 Circle()
 
-                    .fill(indicatorColor.opacity(indicatorColor == .clear ? 0 : 0.6))
+                    .fill(indicatorColor.opacity(indicatorColor == .clear ? 0 : 1))
 
                     .frame(width: 6, height: 6)
 
@@ -1899,6 +1951,11 @@ private struct DayTasksInlineView: View {
                             }
 
                             NotificationManager.shared.refresh(force: true)
+                            
+                            NotificationCenter.default.post(
+                                name: .taskDidChange,
+                                object: nil
+                            )
 
                         } label: {
 
@@ -1995,6 +2052,11 @@ private struct DayTasksInlineView: View {
                             }
 
                             NotificationManager.shared.refresh(force: true)
+                            
+                            NotificationCenter.default.post(
+                                name: .taskDidChange,
+                                object: nil
+                            )
                         } label: {
                             Label("Complete", systemImage: "checkmark.circle")
                         }
