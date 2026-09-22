@@ -13695,30 +13695,30 @@
         }
       }
     },
-    "Drag sections to choose their order. Hidden sections keep their position and return there when enabled again." : {
+    "Drag the items to change their order." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ziehe Bereiche, um ihre Reihenfolge festzulegen. Ausgeblendete Bereiche behalten ihre Position und kehren dorthin zurück, wenn sie wieder aktiviert werden."
+            "value" : "Ziehen Sie die Elemente, um ihre Reihenfolge zu ändern."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arrastra las secciones para elegir su orden. Las secciones ocultas mantienen su posición y vuelven a ella cuando se activan de nuevo."
+            "value" : "Arrastra los elementos para cambiar su orden."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Faites glisser les sections pour choisir leur ordre. Les sections masquées conservent leur position et y reviennent lorsqu’elles sont de nouveau activées."
+            "value" : "Faites glisser les éléments pour modifier leur ordre."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trascina le sezioni per sceglierne l’ordine. Le sezioni nascoste mantengono la loro posizione e vi tornano quando vengono riattivate."
+            "value" : "Trascina gli elementi per modificarne l’ordine."
           }
         }
       }
@@ -21447,7 +21447,32 @@
       }
     },
     "Month" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monat"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mois"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mese"
+          }
+        }
+      }
     },
     "months" : {
       "localizations" : {
@@ -27224,7 +27249,32 @@
       }
     },
     "Refresh" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiser"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna"
+          }
+        }
+      }
     },
     "remaining" : {
       "localizations" : {
@@ -29574,7 +29624,32 @@
       }
     },
     "Select Month" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monat auswählen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar mes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélectionner un mois"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona mese"
+          }
+        }
+      }
     },
     "Select Tasks" : {
       "comment" : "A title for a view that lets the user select tasks to export.",
@@ -33096,34 +33171,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Magliette"
-          }
-        }
-      }
-    },
-    "Tab order" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reihenfolge der Tabs"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Orden de las pestañas"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordre des onglets"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordine delle tab"
           }
         }
       }
@@ -40375,7 +40422,32 @@
       }
     },
     "Year" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jahr"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Año"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Année"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anno"
+          }
+        }
+      }
     },
     "years" : {
       "localizations" : {
