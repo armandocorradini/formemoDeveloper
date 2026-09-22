@@ -1009,7 +1009,7 @@ Attivazione: \(triggerInfo)
 
     @MainActor
     private func cleanupRecentlyDeleted() {
-
+        let cleanupStart = Date()
         DebugLog.writeAttachmentEvent("")
         DebugLog.writeAttachmentEvent("════════════════════════════════════")
         DebugLog.writeAttachmentEvent("SETTINGS CLEANUP START")
@@ -1033,7 +1033,11 @@ Attivazione: \(triggerInfo)
             return
         }
 
-        DebugLog.writeAttachmentEvent("Expired deleted items detected")
+        DebugLog.writeAttachmentEvent(
+            "Expired deleted items detected: \(items.count)"
+        )
+
+        let loopStart = Date()
 
         for item in items {
 
@@ -1076,7 +1080,21 @@ Attivazione: \(triggerInfo)
             modelContext.delete(item)
         }
 
+        DebugLog.writeAttachmentEvent(
+            "Cleanup loop completed: \(String(format: "%.3f", Date().timeIntervalSince(loopStart))) s"
+        )
+
+        let saveStart = Date()
+        
         try? modelContext.save()
+        
+        DebugLog.writeAttachmentEvent(
+            "Cleanup save completed: \(String(format: "%.3f", Date().timeIntervalSince(saveStart))) s"
+        )
+
+        DebugLog.writeAttachmentEvent(
+            "SETTINGS CLEANUP TOTAL: \(String(format: "%.3f", Date().timeIntervalSince(cleanupStart))) s"
+        )
     }
 
 

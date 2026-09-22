@@ -653,7 +653,6 @@
 		1C634E3C30220CAE0092DB89 /* Task */ = {
 			isa = PBXGroup;
 			children = (
-				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
 				1C716EF13059795B006C6178 /* TaskSingleCalendarExport.swift */,
 				1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */,
 				1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */,
@@ -682,7 +681,6 @@
 				1C634CFF30220C9C0092DB89 /* Notification+Extensions.swift */,
 				1C634D0030220C9C0092DB89 /* NotificationActionProcessor.swift */,
 				1C634D0130220C9C0092DB89 /* NotificationLeadTime.swift */,
-				1C634D0230220C9C0092DB89 /* NotificationManager.swift */,
 				1C634D5E30220C9C0092DB89 /* NotificationSoundPickerView.swift */,
 				1C634D0730220C9C0092DB89 /* ReminderScrubberControl.swift */,
 				1C634D0630220C9C0092DB89 /* RemindersAccess.swift */,
@@ -793,8 +791,10 @@
 			isa = PBXGroup;
 			children = (
 				1C1358C8305C54A80030AC9B /* PerformanceBenchmark.swift */,
+				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
 				1C634D4730220C9C0092DB89 /* Dashboard.swift */,
 				1C634CD830220C9C0092DB89 /* AppSettings.swift */,
+				1C634D0230220C9C0092DB89 /* NotificationManager.swift */,
 				1C634D5F30220C9C0092DB89 /* NotificationView.swift */,
 				1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */,
 				1C634D4430220C9C0092DB89 /* BackupRestore.swift */,

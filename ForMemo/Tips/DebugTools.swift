@@ -702,17 +702,25 @@ enum DebugLog {
     private static func writeGeneralSnapshot(
         context: ModelContext
     ) {
-        
+
         guard isEnabled,
               DiagnosticsOptions.generalSnapshot else {
             return
         }
-        
+
+        let openStart = Date()
+
         let openTasks = (try? context.fetchCount(
             FetchDescriptor<TodoTask>(
                 predicate: #Predicate { !$0.isCompleted }
             )
         )) ?? 0
+
+        write(
+            "⏱️ Open Tasks fetchCount: \(String(format: "%.3f", Date().timeIntervalSince(openStart))) s"
+        )
+
+        let completedStart = Date()
 
         let completedTasks = (try? context.fetchCount(
             FetchDescriptor<TodoTask>(
@@ -720,10 +728,12 @@ enum DebugLog {
             )
         )) ?? 0
 
+        write(
+            "⏱️ Completed Tasks fetchCount: \(String(format: "%.3f", Date().timeIntervalSince(completedStart))) s"
+        )
+
         write("📊 Open Tasks: \(openTasks)")
         write("📊 Completed Tasks: \(completedTasks)")
-        
-        
     }
     
     

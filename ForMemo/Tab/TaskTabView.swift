@@ -7,10 +7,12 @@ struct TaskTabView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(AppSettings.self) private var settings
 
-    @Query private var tasks: [TodoTask]
-    @Query private var documents: [DocumentItem]
-    @Query private var cards: [LoyaltyCard]
-    @Query private var trips: [TripList]
+//    @Query private var tasks: [TodoTask]
+//    @Query private var documents: [DocumentItem]
+//    @Query private var cards: [LoyaltyCard]
+//    @Query private var trips: [TripList]
+    
+    @State private var hasContent = false
     
     @State private var selectedTab: Int = 0
     @State private var previousTab = 0
@@ -44,6 +46,22 @@ struct TaskTabView: View {
 
                 selectedTab = 0
 
+                let context = modelContext
+
+                hasContent =
+                    ((try? context.fetchCount(
+                        FetchDescriptor<TodoTask>()
+                    )) ?? 0) > 0 ||
+                    ((try? context.fetchCount(
+                        FetchDescriptor<DocumentItem>()
+                    )) ?? 0) > 0 ||
+                    ((try? context.fetchCount(
+                        FetchDescriptor<LoyaltyCard>()
+                    )) ?? 0) > 0 ||
+                    ((try? context.fetchCount(
+                        FetchDescriptor<TripList>()
+                    )) ?? 0) > 0
+
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     NotificationCenter.default.post(
                         name: Notification.Name("StartStartIconRotationFast"),
@@ -58,12 +76,6 @@ struct TaskTabView: View {
 
                         withAnimation(.easeInOut(duration: 0.18)) {
                             if settings.startupTab == -1 {
-                                let hasContent =
-                                    !tasks.isEmpty ||
-                                    !documents.isEmpty ||
-                                    !cards.isEmpty ||
-                                    !trips.isEmpty
-
                                 selectedTab = hasContent ? 10 : 1
                             } else {
                                 selectedTab = settings.startupTab
@@ -80,11 +92,6 @@ struct TaskTabView: View {
 
                     withAnimation(.easeInOut(duration: 0.18)) {
                         if settings.startupTab == -1 {
-                            let hasContent =
-                                !tasks.isEmpty ||
-                                !documents.isEmpty ||
-                                !cards.isEmpty ||
-                                !trips.isEmpty
                             selectedTab = hasContent ? 10 : 1
                         } else {
                             selectedTab = settings.startupTab
@@ -233,27 +240,46 @@ struct TaskTabView: View {
             }
         
             .task {
-                
-                AppLogger.persistence.notice("TASKTAB .task STARTED")
-                
+                let start = CFAbsoluteTimeGetCurrent()
+
+                AppLogger.persistence.notice("STARTUP ⏱ TaskTabView task START")
+
                 guard !recoveryCheckPerformed else {
+                    AppLogger.persistence.notice(
+                        "STARTUP ⏱ TaskTabView task already performed: \(CFAbsoluteTimeGetCurrent() - start)s"
+                    )
                     return
                 }
 
                 recoveryCheckPerformed = true
 
-                let result = AssetRecoveryCoordinator.launchRecoveryCheck()
-
                 guard DiagnosticsOptions.assetRecoveryDiagnostics else {
+                    AppLogger.persistence.notice(
+                        "STARTUP ⏱ Asset Recovery SKIPPED: \(CFAbsoluteTimeGetCurrent() - start)s"
+                    )
                     return
                 }
 
+                let recoveryStart = CFAbsoluteTimeGetCurrent()
+
+                let result = AssetRecoveryCoordinator.launchRecoveryCheck()
+
+                AppLogger.persistence.notice(
+                    "STARTUP ⏱ Asset Recovery = \(CFAbsoluteTimeGetCurrent() - recoveryStart)s"
+                )
+
                 guard result.needsRepair else {
+                    AppLogger.persistence.notice(
+                        "STARTUP ⏱ TaskTabView total = \(CFAbsoluteTimeGetCurrent() - start)s"
+                    )
                     return
                 }
 
                 recoveryResult = result
 
+                AppLogger.persistence.notice(
+                    "STARTUP ⏱ TaskTabView total = \(CFAbsoluteTimeGetCurrent() - start)s"
+                )
             }
         
     }

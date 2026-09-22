@@ -312,7 +312,23 @@ struct TaskCalendarView: View {
             NavigationStack {
                 DatePicker(
                     "Select Date",
-                    selection: $datePickerSelection,
+                    selection: Binding(
+                        get: { datePickerSelection },
+                        set: { newDate in
+                            datePickerSelection = newDate
+
+                            withAnimation(.snappy) {
+                                selectedDate = newDate
+
+                                displayedMonth = calendar.date(
+                                    from: calendar.dateComponents(
+                                        [.year, .month],
+                                        from: newDate
+                                    )
+                                ) ?? newDate
+                            }
+                        }
+                    ),
                     displayedComponents: .date
                 )
                 .datePickerStyle(.graphical)
@@ -322,17 +338,6 @@ struct TaskCalendarView: View {
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Done") {
-                            withAnimation(.snappy) {
-                                selectedDate = datePickerSelection
-
-                                displayedMonth = calendar.date(
-                                    from: calendar.dateComponents(
-                                        [.year, .month],
-                                        from: datePickerSelection
-                                    )
-                                ) ?? datePickerSelection
-                            }
-
                             showDatePicker = false
                         }
                     }

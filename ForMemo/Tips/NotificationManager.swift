@@ -240,6 +240,13 @@ final class NotificationManager: NSObject {
         }
     }
     
+    func refreshAndWait(force: Bool = false) async {
+        refresh(force: force)
+
+        let task = rebuildTask
+        await task?.value
+    }
+    
     func forceFullRefresh(using context: ModelContext) {
         refresh(force: true)
     }
