@@ -198,14 +198,14 @@ struct TaskCalendarView: View {
                         .padding(.horizontal)
                         .frame(maxHeight: .infinity, alignment: .center)
 
-                        // Maniglia: sempre nella parte alta
-                        Capsule()
-                            .fill(Color.secondary.opacity(0.6))
-                            .frame(width: 36, height: 4)
-                            .padding(.top, 10)
+                        // Maniglia: indica la direzione dell'azione
+                        Image(systemName: isCalendarHidden ? "chevron.down" : "chevron.up")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 44, height: 30)
+                            .padding(.top, 8)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 52)                    .frame(maxWidth: .infinity)
                     .frame(height: 52, alignment: .top)
                     .background(
                         Color(uiColor: .secondarySystemBackground)
