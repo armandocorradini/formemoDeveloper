@@ -11,7 +11,7 @@ enum DebugTools {
     
     // MARK: - Generate
     
-    static func generateTasks(context: ModelContext, count: Int = 100000) {
+    static func generateTasks(context: ModelContext, count: Int = 10000) {
         let start = Date()
         let calendar = Calendar.current
         let now = Date()
@@ -21,7 +21,7 @@ enum DebugTools {
         
         for i in 0..<count {
             let task = TodoTask(
-                title: testTitle,
+                title: "\(testTitle)\(i + 1)",
                 deadLine: calendar.date(byAdding: .hour, value: i * 24, to: now)
             )
             
@@ -75,7 +75,7 @@ enum DebugTools {
         let start = Date()
         
         let descriptor = FetchDescriptor<TodoTask>(
-            predicate: #Predicate { $0.title == testTitle }
+            predicate: #Predicate { $0.isDebugTask }
         )
         
         if let tasks = try? context.fetch(descriptor) {
@@ -98,7 +98,7 @@ enum DebugTools {
         let start = Date()
         
         let descriptor = FetchDescriptor<TodoTask>(
-            predicate: #Predicate { $0.title == testTitle }
+            predicate: #Predicate { $0.isDebugTask }
         )
         
         if let tasks = try? context.fetch(descriptor) {
@@ -118,22 +118,22 @@ enum DebugTools {
     
     static func hasTestTasks(context: ModelContext) -> Bool {
         let descriptor = FetchDescriptor<TodoTask>(
-            predicate: #Predicate { $0.title == testTitle }
+            predicate: #Predicate { $0.isDebugTask }
         )
-        
+
         let count = (try? context.fetchCount(descriptor)) ?? 0
         return count > 0
     }
 
     static func areTestTasksCompleted(context: ModelContext) -> Bool {
         let descriptor = FetchDescriptor<TodoTask>(
-            predicate: #Predicate { $0.title == testTitle }
+            predicate: #Predicate { $0.isDebugTask }
         )
-        
+
         guard let tasks = try? context.fetch(descriptor), !tasks.isEmpty else {
             return false
         }
-        
+
         return tasks.allSatisfy { $0.isCompleted }
     }
 

@@ -141,6 +141,7 @@ struct TaskListView: View {
     @State private var activeFutureOffset = 0
     @State private var activeNoDeadlineOffset = 0
     @State private var activeHasMore = true
+    @State private var activeFetchNow = Date()
     @State private var isLoadingMoreActive = false
     @State private var activeTaskCount = 0
     @State private var completedTaskCount = 0
@@ -744,6 +745,7 @@ struct TaskListView: View {
     )
 
     let now = Date()
+    activeFetchNow = now
 
     let period = activeTaskPeriodRange(now: now)
 
@@ -779,7 +781,7 @@ struct TaskListView: View {
       activeOverdueOffset = 0
       activeFutureOffset = 0
       activeNoDeadlineOffset = 0
-      activeHasMore = true
+      activeHasMore = false
 
     do {
 
@@ -880,6 +882,7 @@ struct TaskListView: View {
         "TaskList fetchActiveTasks RESULT: \(result.count) active tasks"
       )
         filteredTodoTasksCache = result
+        activeHasMore = result.count == 100
 
       AppLogger.persistence.debug(
 
@@ -908,7 +911,7 @@ struct TaskListView: View {
 
         isLoadingMoreActive = true
 
-        let now = Date()
+        let now = activeFetchNow
         let period = activeTaskPeriodRange(now: now)
 
         guard !period.invalid else {
@@ -1019,7 +1022,9 @@ struct TaskListView: View {
                 isLoadingMoreActive = false
                 return
             }
-            filteredTodoTasksCache.append(contentsOf: newTasks)
+            let existingTaskIDs = Set(filteredTodoTasksCache.map(\.id))
+            let uniqueNewTasks = newTasks.filter { !existingTaskIDs.contains($0.id) }
+            filteredTodoTasksCache.append(contentsOf: uniqueNewTasks)
 
             if newTasks.count < 100 {
                 activeHasMore = false
@@ -1551,7 +1556,7 @@ struct TaskListView: View {
     }
 
     .searchableIf(
-        true,
+        databaseIsEmpty == false,
         text: $searchText,
         placement: .navigationBarDrawer(displayMode: .automatic),
         prompt: "Search task"
@@ -1562,6 +1567,9 @@ struct TaskListView: View {
             for: .taskDidChange
         )
     ) { _ in
+        
+        checkDatabaseIsEmpty()
+        
         if showCompleted {
             fetchCompletedTasks()
             updateCompletedTaskCount()
@@ -1669,19 +1677,15 @@ struct TaskListView: View {
         }
 
         .sheet(
-
-          item: $draftTask,
-
-          onDismiss: {
-
-            fetchActiveTasks()
-
-          }
-
+            item: $draftTask,
+            onDismiss: {
+                checkDatabaseIsEmpty()
+                fetchActiveTasks()
+                updateActiveTaskCount()
+            }
         ) { task in
 
-          NewTaskSheetView(draftTask: task)
-
+            NewTaskSheetView(draftTask: task)
         }
 
         .toolbar {
@@ -1725,6 +1729,7 @@ struct TaskListView: View {
 
           }
 
+          if databaseIsEmpty == false {
             ToolbarItem(placement: .topBarLeading) {
 
               Menu {
@@ -1912,6 +1917,8 @@ struct TaskListView: View {
               }
 
             }
+
+          }
 
           ToolbarItem(placement: .topBarLeading) {
 

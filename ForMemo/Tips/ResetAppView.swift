@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import UserNotifications
+import CloudKit
 
 import os
 
@@ -109,16 +110,35 @@ struct ResetAppView: View {
                 try PersistenceOperationCoordinator.shared.begin(.reset)
                 let resetDirectories = resetDirectories()
 
-                try await deleteAllData(
+                let didDeleteLocalData = try await deleteAllData(
                     directories: resetDirectories
                 )
 
                 try verifyResetState()
 
+                // If local objects were deleted, let Core Data + CloudKit
+                // mirroring finish exporting those deletions before we
+                // perform the explicit CloudKit purge. If the local store
+                // was already empty, no export is required.
+                try await PersistenceOperationCoordinator.shared.waitForSettlement(
+                    requireExport: didDeleteLocalData,
+                    directoriesThatMustBeEmpty: resetDirectories
+                )
+
+                // CloudKit deve essere svuotato esplicitamente,
+                // anche se il database locale era già vuoto.
+                try await purgeCloudKitData()
+
+                // Keep the coordinator active after the explicit purge.
+                // This gives any final mirroring/import activity a chance
+                // to settle before the reset is declared successful.
                 try await PersistenceOperationCoordinator.shared.waitForSettlement(
                     requireExport: false,
                     directoriesThatMustBeEmpty: resetDirectories
                 )
+
+                // Final CloudKit verification after mirroring has settled.
+                try await verifyCloudKitIsEmpty()
 
                 try await purgePhysicalFilesUntilEmpty(
                     directories: resetDirectories
@@ -128,8 +148,9 @@ struct ResetAppView: View {
                     directories: resetDirectories
                 )
 
-                PersistenceOperationCoordinator.shared.finish()
+                deletionMessage = "All data has been deleted successfully."
 
+                PersistenceOperationCoordinator.shared.finish()
 
                 isDeleting = false
                 dismiss()
@@ -147,6 +168,246 @@ struct ResetAppView: View {
         }
     }
     
+    
+    private func purgeCloudKitData() async throws {
+
+        let container = CKContainer(
+            identifier: "iCloud.corradini.armando.NewTask"
+        )
+
+        let database = container.privateCloudDatabase
+
+        let zoneID = CKRecordZone.ID(
+            zoneName: "com.apple.coredata.cloudkit.zone",
+            ownerName: CKCurrentUserDefaultName
+        )
+
+        let recordTypes = [
+            "CD_DeletedItem",
+            "CD_DocumentAsset",
+            "CD_DocumentItem",
+            "CD_LoyaltyCard",
+            "CD_Note",
+            "CD_TaskAttachment",
+            "CD_TodoTask",
+            "CD_TripList",
+            "CD_VaultItem",
+            "CD_VaultSecret",
+            "CD_WalletAsset"
+        ]
+
+        AppLogger.persistence.notice(
+            "☁️ RESET CLOUDKIT — START"
+        )
+
+        for recordType in recordTypes {
+
+            let query = CKQuery(
+                recordType: recordType,
+                predicate: NSPredicate(value: true)
+            )
+
+            var recordIDs: [CKRecord.ID] = []
+
+            var response = try await database.records(
+                matching: query,
+                inZoneWith: zoneID,
+                desiredKeys: [],
+                resultsLimit: 100
+            )
+
+            for (_, result) in response.matchResults {
+                if case .success(let record) = result {
+                    recordIDs.append(record.recordID)
+                }
+            }
+
+            if recordType == "CD_TodoTask" {
+                AppLogger.persistence.notice(
+                    "☁️ RESET CLOUDKIT — CD_TodoTask trovati: \(recordIDs.count)"
+                )
+            }
+
+            while let cursor = response.queryCursor {
+
+                response = try await database.records(
+                    continuingMatchFrom: cursor,
+                    desiredKeys: [],
+                    resultsLimit: 100
+                )
+
+                for (_, result) in response.matchResults {
+                    if case .success(let record) = result {
+                        recordIDs.append(record.recordID)
+                    }
+                }
+            }
+
+            if recordType == "CD_TodoTask" {
+                AppLogger.persistence.notice(
+                    "☁️ RESET CLOUDKIT — CD_TodoTask totale da eliminare: \(recordIDs.count)"
+                )
+            }
+
+            guard !recordIDs.isEmpty else {
+                AppLogger.persistence.notice(
+                    "☁️ RESET CLOUDKIT — \(recordType): 0"
+                )
+                continue
+            }
+
+            var deletedCount = 0
+
+            for batchStart in stride(
+                from: 0,
+                to: recordIDs.count,
+                by: 400
+            ) {
+
+                let batchEnd = min(
+                    batchStart + 400,
+                    recordIDs.count
+                )
+
+                let batch = Array(
+                    recordIDs[batchStart..<batchEnd]
+                )
+
+                let result = try await database.modifyRecords(
+                    saving: [],
+                    deleting: batch,
+                    savePolicy: .ifServerRecordUnchanged,
+                    atomically: false
+                )
+
+                for recordID in batch {
+
+                    if let deleteResult = result.deleteResults[recordID] {
+
+                        switch deleteResult {
+                        case .success:
+                            deletedCount += 1
+
+                        case .failure(let error):
+                            throw error
+                        }
+                    } else {
+                        throw ResetVerificationError.cloudKitDeletionIncomplete
+                    }
+                }
+            }
+
+            AppLogger.persistence.notice(
+                "☁️ RESET CLOUDKIT — \(recordType): \(deletedCount) deleted"
+            )
+
+            if recordType == "CD_TodoTask" {
+                AppLogger.persistence.notice(
+                    "☁️ RESET CLOUDKIT — CD_TodoTask eliminati realmente: \(deletedCount)"
+                )
+            }
+        }
+
+        try await verifyCloudKitIsEmpty(
+            database: database,
+            zoneID: zoneID,
+            recordTypes: recordTypes
+        )
+
+        AppLogger.persistence.notice(
+            "☁️ RESET CLOUDKIT — VERIFIED EMPTY"
+        )
+    }
+    
+    private func verifyCloudKitIsEmpty() async throws {
+
+        let container = CKContainer(
+            identifier: "iCloud.corradini.armando.NewTask"
+        )
+
+        let database = container.privateCloudDatabase
+
+        let zoneID = CKRecordZone.ID(
+            zoneName: "com.apple.coredata.cloudkit.zone",
+            ownerName: CKCurrentUserDefaultName
+        )
+
+        let recordTypes = [
+            "CD_DeletedItem",
+            "CD_DocumentAsset",
+            "CD_DocumentItem",
+            "CD_LoyaltyCard",
+            "CD_Note",
+            "CD_TaskAttachment",
+            "CD_TodoTask",
+            "CD_TripList",
+            "CD_VaultItem",
+            "CD_VaultSecret",
+            "CD_WalletAsset"
+        ]
+
+        try await verifyCloudKitIsEmpty(
+            database: database,
+            zoneID: zoneID,
+            recordTypes: recordTypes
+        )
+    }
+
+    private func verifyCloudKitIsEmpty(
+        database: CKDatabase,
+        zoneID: CKRecordZone.ID,
+        recordTypes: [String]
+    ) async throws {
+
+        for recordType in recordTypes {
+
+            let query = CKQuery(
+                recordType: recordType,
+                predicate: NSPredicate(value: true)
+            )
+
+            var response = try await database.records(
+                matching: query,
+                inZoneWith: zoneID,
+                desiredKeys: [],
+                resultsLimit: 1
+            )
+
+            if recordType == "CD_TodoTask" {
+                AppLogger.persistence.notice(
+                    "☁️ RESET CLOUDKIT — CD_TodoTask presenti dopo purge: \(response.matchResults.count)"
+                )
+            }
+
+            if !response.matchResults.isEmpty {
+                throw ResetVerificationError.cloudKitNotEmpty(
+                    recordType
+                )
+            }
+
+            while let cursor = response.queryCursor {
+
+                response = try await database.records(
+                    continuingMatchFrom: cursor,
+                    desiredKeys: [],
+                    resultsLimit: 1
+                )
+
+                if recordType == "CD_TodoTask" {
+                    AppLogger.persistence.notice(
+                        "☁️ RESET CLOUDKIT — CD_TodoTask presenti nella pagina successiva: \(response.matchResults.count)"
+                    )
+                }
+
+                if !response.matchResults.isEmpty {
+                    throw ResetVerificationError.cloudKitNotEmpty(
+                        recordType
+                    )
+                }
+            }
+        }
+    }
+    
     @MainActor
     private func verifyResetState() throws {
 
@@ -160,6 +421,10 @@ struct ResetAppView: View {
 
         let vaultCount = try modelContext.fetchCount(
             FetchDescriptor<VaultItem>()
+        )
+
+        let vaultSecretCount = try modelContext.fetchCount(
+            FetchDescriptor<VaultSecret>()
         )
 
         let loyaltyCardCount = try modelContext.fetchCount(
@@ -194,6 +459,7 @@ struct ResetAppView: View {
             taskCount == 0,
             attachmentCount == 0,
             vaultCount == 0,
+            vaultSecretCount == 0,
             loyaltyCardCount == 0,
             walletAssetCount == 0,
             tripCount == 0,
@@ -209,6 +475,8 @@ struct ResetAppView: View {
     private enum ResetVerificationError: LocalizedError {
         case storeNotEmpty
         case physicalStorageNotEmpty
+        case cloudKitDeletionIncomplete
+        case cloudKitNotEmpty(String)
 
         var errorDescription: String? {
             switch self {
@@ -217,6 +485,12 @@ struct ResetAppView: View {
 
             case .physicalStorageNotEmpty:
                 return "Reset could not be completed because physical storage still contains files."
+
+            case .cloudKitDeletionIncomplete:
+                return "Reset could not be completed because CloudKit deletion was incomplete."
+
+            case .cloudKitNotEmpty(let recordType):
+                return "Reset could not be completed because CloudKit still contains \(recordType) records."
             }
         }
     }
@@ -351,10 +625,11 @@ struct ResetAppView: View {
     @MainActor
     private func deleteAllData(
         directories: [URL]
-    ) async throws {
+    ) async throws -> Bool {
 
         let center = UNUserNotificationCenter.current()
         let fileManager = FileManager.default
+        var didDeleteLocalData = false
         
         do {
             
@@ -364,6 +639,10 @@ struct ResetAppView: View {
             
             // 🔴 Attachments
             let attachments = try modelContext.fetch(FetchDescriptor<TaskAttachment>())
+
+            if !attachments.isEmpty {
+                didDeleteLocalData = true
+            }
             
             for attachment in attachments {
 
@@ -372,6 +651,10 @@ struct ResetAppView: View {
             
             // 🔴 Tasks
             let tasks = try modelContext.fetch(FetchDescriptor<TodoTask>())
+
+            if !tasks.isEmpty {
+                didDeleteLocalData = true
+            }
             
             for task in tasks {
                 modelContext.delete(task)
@@ -380,8 +663,25 @@ struct ResetAppView: View {
             // 🔴 Vault
             let vaultItems = try modelContext.fetch(FetchDescriptor<VaultItem>())
 
+            if !vaultItems.isEmpty {
+                didDeleteLocalData = true
+            }
+
             for item in vaultItems {
                 modelContext.delete(item)
+            }
+            
+            // 🔴 Vault Secrets
+            let vaultSecrets = try modelContext.fetch(
+                FetchDescriptor<VaultSecret>()
+            )
+
+            if !vaultSecrets.isEmpty {
+                didDeleteLocalData = true
+            }
+
+            for secret in vaultSecrets {
+                modelContext.delete(secret)
             }
             
             
@@ -389,6 +689,10 @@ struct ResetAppView: View {
             let loyaltyCards = try modelContext.fetch(
                 FetchDescriptor<LoyaltyCard>()
             )
+
+            if !loyaltyCards.isEmpty {
+                didDeleteLocalData = true
+            }
 
             for card in loyaltyCards {
 
@@ -399,6 +703,10 @@ struct ResetAppView: View {
                 FetchDescriptor<WalletAsset>()
             )
 
+            if !walletAssets.isEmpty {
+                didDeleteLocalData = true
+            }
+
             for asset in walletAssets {
                 modelContext.delete(asset)
             }
@@ -406,6 +714,10 @@ struct ResetAppView: View {
             
             // 🔴 Checklists
             let tripLists = try modelContext.fetch(FetchDescriptor<TripList>())
+
+            if !tripLists.isEmpty {
+                didDeleteLocalData = true
+            }
 
             for trip in tripLists {
                 modelContext.delete(trip)
@@ -416,6 +728,10 @@ struct ResetAppView: View {
                 FetchDescriptor<DocumentAsset>()
             )
 
+            if !documentAssets.isEmpty {
+                didDeleteLocalData = true
+            }
+
             for asset in documentAssets {
                 modelContext.delete(asset)
             }
@@ -423,6 +739,10 @@ struct ResetAppView: View {
             let documents = try modelContext.fetch(
                 FetchDescriptor<DocumentItem>()
             )
+
+            if !documents.isEmpty {
+                didDeleteLocalData = true
+            }
 
             for document in documents {
                 modelContext.delete(document)
@@ -433,12 +753,20 @@ struct ResetAppView: View {
                 FetchDescriptor<Note>()
             )
 
+            if !notes.isEmpty {
+                didDeleteLocalData = true
+            }
+
             for note in notes {
                 modelContext.delete(note)
             }
             
             // 🔴 Recently Deleted
             let deletedItems = try modelContext.fetch(FetchDescriptor<DeletedItem>())
+
+            if !deletedItems.isEmpty {
+                didDeleteLocalData = true
+            }
             
             for item in deletedItems {
                 
@@ -483,8 +811,8 @@ struct ResetAppView: View {
             
             // 🔴 Refresh
             NotificationManager.shared.refresh(force: true)
-            
-            deletionMessage = "All data has been deleted successfully."
+
+            return didDeleteLocalData
             
         } catch {
             deletionMessage = "Error deleting data: \(error.localizedDescription)"
