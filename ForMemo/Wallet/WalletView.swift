@@ -374,35 +374,6 @@ struct WalletView: View {
                         .pickerStyle(.menu)
                         .labelStyle(.iconOnly)
                         .labelsHidden()
-//
-//                        Picker(
-//                            "Order",
-//                            selection: Binding(
-//                                get: { walletSortMode },
-//                                set: { newValue in
-//                                    guard newValue != walletSortMode else { return }
-//
-//                                    if newValue == "custom" {
-//                                        pendingSortMode = newValue
-//                                        showCustomSortInfo = true
-//                                    } else {
-//                                        walletSortMode = newValue
-//                                    }
-//                                }
-//                            )
-//                        ) {
-//                            Section(String(localized: "Sorting")) { }
-//
-//                            Label("A-Z", systemImage: "textformat.abc")
-//                                .tag("alphabetical")
-//
-//                            Label("Custom", systemImage: "line.3.horizontal")
-//                                .tag("custom")
-//                        }
-//                        .pickerStyle(.menu)
-//                        .labelStyle(.iconOnly)
-//                        .labelsHidden()
-
                         Menu {
                             Picker(
                                 String(localized: "Sorting"),
@@ -620,9 +591,9 @@ private struct WalletRowAppearanceModifier: ViewModifier {
                 .listRowSeparator(.hidden)
                 .listRowInsets(
                     EdgeInsets(
-                        top: 6,
+                        top: style == "cards" ? 3 : 6,
                         leading: 0,
-                        bottom: 6,
+                        bottom: style == "cards" ? 3 : 6,
                         trailing: 0
                     )
                 )

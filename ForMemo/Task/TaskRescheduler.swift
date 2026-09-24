@@ -5,17 +5,33 @@ import os
 // MARK: - Task Reschedule
 
 enum TaskRescheduleOption: Identifiable {
-    case plusOneHour, plusThreeHours, plusOneDay, plusTwoDays, plusThreeDays
-    case minusOneHour, minusThreeHours, minusOneDay, minusTwoDays, minusThreeDays
+    case plusOneHour, plusTwoHours, plusThreeHours, plusOneDay, plusTwoDays, plusThreeDays
+    case minusOneHour, minusTwoHours, minusThreeHours, minusOneDay, minusTwoDays, minusThreeDays
 
-    static let positive: [Self] = [.plusOneHour, .plusThreeHours, .plusOneDay, .plusTwoDays, .plusThreeDays]
-    static let negative: [Self] = [.minusOneHour, .minusThreeHours, .minusOneDay, .minusTwoDays, .minusThreeDays]
+    static let positive: [Self] = [
+        .plusOneHour,
+        .plusTwoHours,
+        .plusThreeHours,
+        .plusOneDay,
+        .plusTwoDays,
+        .plusThreeDays
+    ]
+
+    static let negative: [Self] = [
+        .minusOneHour,
+        .minusTwoHours,
+        .minusThreeHours,
+        .minusOneDay,
+        .minusTwoDays,
+        .minusThreeDays
+    ]
 
     var id: Self { self }
 
     var value: Int {
         switch self {
         case .plusOneHour, .minusOneHour: return 1
+        case .plusTwoHours, .minusTwoHours: return 2
         case .plusThreeHours, .minusThreeHours: return 3
         case .plusOneDay, .minusOneDay: return 1
         case .plusTwoDays, .minusTwoDays: return 2
@@ -25,14 +41,20 @@ enum TaskRescheduleOption: Identifiable {
 
     var component: Calendar.Component {
         switch self {
-        case .plusOneHour, .plusThreeHours, .minusOneHour, .minusThreeHours: return .hour
+        case .plusOneHour,
+             .plusTwoHours,
+             .plusThreeHours,
+             .minusOneHour,
+             .minusTwoHours,
+             .minusThreeHours:
+            return .hour
         default: return .day
         }
     }
 
     var signedValue: Int {
         switch self {
-        case .minusOneHour, .minusThreeHours, .minusOneDay, .minusTwoDays, .minusThreeDays:
+        case .minusOneHour,.minusTwoHours, .minusThreeHours, .minusOneDay, .minusTwoDays, .minusThreeDays:
             return -value
         default:
             return value
@@ -42,11 +64,13 @@ enum TaskRescheduleOption: Identifiable {
     var title: LocalizedStringKey {
         switch self {
         case .plusOneHour: return "+1 hour"
+        case .plusTwoHours: return "+2 hours"
         case .plusThreeHours: return "+3 hours"
         case .plusOneDay: return "+1 day"
         case .plusTwoDays: return "+2 days"
         case .plusThreeDays: return "+3 days"
         case .minusOneHour: return "-1 hour"
+        case .minusTwoHours: return "-2 hours"
         case .minusThreeHours: return "-3 hours"
         case .minusOneDay: return "-1 day"
         case .minusTwoDays: return "-2 days"
@@ -56,11 +80,17 @@ enum TaskRescheduleOption: Identifiable {
 
     var systemImage: String {
         switch self {
-        case .plusOneHour, .minusOneHour: return "clock.badge"
-        case .plusThreeHours, .minusThreeHours: return "clock.arrow.trianglehead.counterclockwise.rotate.90"
+        case .plusOneHour: return "clock.badge"
+        case .plusTwoHours: return "clock.arrow.trianglehead.clockwise.rotate.90.path.dotted"
+        case .plusThreeHours: return "arrow.trianglehead.clockwise"
         case .plusOneDay, .minusOneDay: return "sun.max"
         case .plusTwoDays, .minusTwoDays: return "calendar"
         case .plusThreeDays, .minusThreeDays: return "calendar.badge.clock"
+            
+        case.minusOneHour: return "clock.badge"
+        case .minusTwoHours: return "clock.arrow.trianglehead.counterclockwise.rotate.90"
+        case  .minusThreeHours: return "arrow.trianglehead.counterclockwise.rotate.90"
+ 
         }
     }
 }
