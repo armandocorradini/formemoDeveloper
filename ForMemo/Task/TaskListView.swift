@@ -1,22 +1,14 @@
 import SwiftUI
 import SwiftData
-
 import PhotosUI
-
 import Observation
-
 import WeatherKit
-
 import CoreLocation
-
 import os
-
-
 
 extension Notification.Name {
 
   static let taskDidChange = Notification.Name("taskDidChange")
-
 }
 
 // MARK: - TaskTagFilter
@@ -143,6 +135,9 @@ struct TaskListView: View {
     @State private var activeHasMore = true
     @State private var activeFetchNow = Date()
     @State private var isLoadingMoreActive = false
+    @State private var activeListRefreshInProgress = false
+    @State private var activeFetchGeneration = 0
+    @State private var activePaginationTask: Task<Void, Never>?
     @State private var activeTaskCount = 0
     @State private var completedTaskCount = 0
     @State private var completedOffset = 0
@@ -150,7 +145,7 @@ struct TaskListView: View {
     @State private var isLoadingMoreCompleted = false
     
     
-  private enum ActiveTaskFetchPhase {
+  private enum ActiveTaskFetchPhase: Sendable {
 
     case overdue
 
@@ -734,6 +729,30 @@ struct TaskListView: View {
         }
     }
 
+    @MainActor
+    private func refreshActiveList() {
+        activePaginationTask?.cancel()
+        activePaginationTask = nil
+        isLoadingMoreActive = false
+
+        activeListRefreshInProgress = true
+        activeFetchGeneration &+= 1
+        let refreshGeneration = activeFetchGeneration
+
+        checkDatabaseIsEmpty()
+        fetchActiveTasks()
+        updateActiveTaskCount()
+
+        // Let SwiftUI commit the refreshed datasource before an onAppear at the
+        // page boundary can request another page.
+        DispatchQueue.main.async {
+            guard refreshGeneration == activeFetchGeneration else {
+                return
+            }
+            activeListRefreshInProgress = false
+        }
+    }
+
   @MainActor
 
   private func fetchActiveTasks() {
@@ -775,9 +794,15 @@ struct TaskListView: View {
 
     }
 
+    // During a refresh caused by an edit/delete/complete/reschedule, do not
+    // collapse the datasource back to the first 100 rows. Keep the number of
+    // already materialized rows so SwiftUI/List can preserve the current
+    // scroll position, especially around 100/200/300 item boundaries.
+    let refreshLimit = max(100, filteredTodoTasksCache.count)
+
     var result: [TodoTask] = []
 
-    result.reserveCapacity(100)
+    result.reserveCapacity(refreshLimit)
       activeOverdueOffset = 0
       activeFutureOffset = 0
       activeNoDeadlineOffset = 0
@@ -787,7 +812,7 @@ struct TaskListView: View {
 
       for phase in phases {
 
-        let remaining = 100 - result.count
+        let remaining = refreshLimit - result.count
 
         guard remaining > 0 else {
 
@@ -882,7 +907,7 @@ struct TaskListView: View {
         "TaskList fetchActiveTasks RESULT: \(result.count) active tasks"
       )
         filteredTodoTasksCache = result
-        activeHasMore = result.count == 100
+        activeHasMore = result.count == refreshLimit
 
       AppLogger.persistence.debug(
 
@@ -903,16 +928,26 @@ struct TaskListView: View {
     }
 
   }
+    private struct ActivePaginationResult: Sendable {
+        let ids: [UUID]
+        let overdueCount: Int
+        let futureCount: Int
+        let noDeadlineCount: Int
+        let hasMore: Bool
+    }
+
     @MainActor
     private func loadMoreActiveTasks() {
-        guard !isLoadingMoreActive, activeHasMore else {
+        guard !activeListRefreshInProgress, !isLoadingMoreActive, activeHasMore else {
             return
         }
 
         isLoadingMoreActive = true
 
+        let generation = activeFetchGeneration
         let now = activeFetchNow
         let period = activeTaskPeriodRange(now: now)
+        let container = modelContext.container
 
         guard !period.invalid else {
             isLoadingMoreActive = false
@@ -921,7 +956,6 @@ struct TaskListView: View {
         }
 
         let phases: [ActiveTaskFetchPhase]
-
         if period.noDeadlineOnly {
             phases = [.noDeadline]
         } else if period.hasRange {
@@ -930,114 +964,198 @@ struct TaskListView: View {
             phases = [.overdue, .future, .noDeadline]
         }
 
-        var newTasks: [TodoTask] = []
-        newTasks.reserveCapacity(100)
+        let overdueOffset = activeOverdueOffset
+        let futureOffset = activeFutureOffset
+        let noDeadlineOffset = activeNoDeadlineOffset
+        let searchValue = debouncedSearchText
+        let hasSearch = !searchValue.isEmpty
+        let hasPriorityFilter = selectedPriorityFilter != nil
+        let priorityValue = selectedPriorityFilter?.rawValue ?? 0
 
-        do {
-            for phase in phases {
-                let remaining = 100 - newTasks.count
-
-                guard remaining > 0 else {
-                    break
-                }
-
-                let offset: Int
-
-                switch phase {
-                case .overdue:
-                    offset = activeOverdueOffset
-
-                case .future:
-                    offset = activeFutureOffset
-
-                case .noDeadline:
-                    offset = activeNoDeadlineOffset
-                }
-
-                let predicate = activeTaskPredicate(
-                    phase: phase,
-                    now: now,
-                    periodStart: period.start,
-                    periodEnd: period.end,
-                    hasPeriodRange: period.hasRange,
-                    noDeadlineOnly: period.noDeadlineOnly,
-                    hasSearch: !debouncedSearchText.isEmpty,
-                    searchValue: debouncedSearchText
-                )
-
-                let sortDescriptors: [SortDescriptor<TodoTask>]
-
-                switch phase {
-                case .overdue, .future:
-                    sortDescriptors = [
-                        SortDescriptor(
-                            \TodoTask.deadLine,
-                            order: .forward
-                        ),
-                        SortDescriptor(
-                            \TodoTask.id,
-                            order: .forward
-                        )
-                    ]
-
-                case .noDeadline:
-                    sortDescriptors = [
-                        SortDescriptor(
-                            \TodoTask.id,
-                            order: .forward
-                        )
-                    ]
-                }
-
-                var descriptor = FetchDescriptor<TodoTask>(
-                    predicate: predicate,
-                    sortBy: sortDescriptors
-                )
-
-                descriptor.fetchOffset = offset
-                descriptor.fetchLimit = remaining
-
-                let page = try modelContext.fetch(descriptor)
-
-                guard !page.isEmpty else {
-                    continue
-                }
-
-                newTasks.append(contentsOf: page)
-
-                switch phase {
-                case .overdue:
-                    activeOverdueOffset += page.count
-
-                case .future:
-                    activeFutureOffset += page.count
-
-                case .noDeadline:
-                    activeNoDeadlineOffset += page.count
-                }
-            }
-
-            guard !newTasks.isEmpty else {
-                activeHasMore = false
-                isLoadingMoreActive = false
-                return
-            }
-            let existingTaskIDs = Set(filteredTodoTasksCache.map(\.id))
-            let uniqueNewTasks = newTasks.filter { !existingTaskIDs.contains($0.id) }
-            filteredTodoTasksCache.append(contentsOf: uniqueNewTasks)
-
-            if newTasks.count < 100 {
-                activeHasMore = false
-            }
-
-        } catch {
-            AppLogger.persistence.error(
-                "TaskList loadMoreActiveTasks failed: \(error.localizedDescription)"
-            )
+        let isNoTagFilter: Bool
+        let hasTagFilter: Bool
+        let tagValue: String
+        switch selectedTagFilter {
+        case .all:
+            isNoTagFilter = false
+            hasTagFilter = false
+            tagValue = ""
+        case .none:
+            isNoTagFilter = true
+            hasTagFilter = false
+            tagValue = ""
+        case .tag(let tag):
+            isNoTagFilter = false
+            hasTagFilter = true
+            tagValue = tag.rawValue
         }
 
-        isLoadingMoreActive = false
+        let periodStart = period.start
+        let periodEnd = period.end
+        let hasPeriodRange = period.hasRange
+        let noDeadlineOnly = period.noDeadlineOnly
+
+        activePaginationTask = Task { @MainActor in
+            defer {
+                isLoadingMoreActive = false
+                activePaginationTask = nil
+            }
+
+            let result = await Task.detached(priority: .userInitiated) {
+                let backgroundContext = ModelContext(container)
+                var ids: [UUID] = []
+                ids.reserveCapacity(100)
+
+                var nextOverdueOffset = overdueOffset
+                var nextFutureOffset = futureOffset
+                var nextNoDeadlineOffset = noDeadlineOffset
+
+                do {
+                    for phase in phases {
+                        let remaining = 100 - ids.count
+                        guard remaining > 0 else { break }
+
+                        let offset: Int
+                        switch phase {
+                        case .overdue:
+                            offset = nextOverdueOffset
+                        case .future:
+                            offset = nextFutureOffset
+                        case .noDeadline:
+                            offset = nextNoDeadlineOffset
+                        }
+
+                        let predicate: Predicate<TodoTask>
+                        switch phase {
+                        case .overdue:
+                            predicate = #Predicate<TodoTask> {
+                                !$0.isCompleted &&
+                                (!hasSearch || $0.title.localizedStandardContains(searchValue)) &&
+                                !noDeadlineOnly &&
+                                $0.deadLine != nil &&
+                                $0.deadLine! < now &&
+                                (!hasPeriodRange || ($0.deadLine! >= periodStart && $0.deadLine! < periodEnd)) &&
+                                (!hasPriorityFilter || $0.priorityRaw == priorityValue) &&
+                                ((isNoTagFilter && $0.mainTagRaw == nil) ||
+                                 (!isNoTagFilter && (!hasTagFilter || $0.mainTagRaw == tagValue)))
+                            }
+                        case .future:
+                            predicate = #Predicate<TodoTask> {
+                                !$0.isCompleted &&
+                                (!hasSearch || $0.title.localizedStandardContains(searchValue)) &&
+                                !noDeadlineOnly &&
+                                $0.deadLine != nil &&
+                                $0.deadLine! >= now &&
+                                (!hasPeriodRange || ($0.deadLine! >= periodStart && $0.deadLine! < periodEnd)) &&
+                                (!hasPriorityFilter || $0.priorityRaw == priorityValue) &&
+                                ((isNoTagFilter && $0.mainTagRaw == nil) ||
+                                 (!isNoTagFilter && (!hasTagFilter || $0.mainTagRaw == tagValue)))
+                            }
+                        case .noDeadline:
+                            predicate = #Predicate<TodoTask> {
+                                !$0.isCompleted &&
+                                (!hasSearch || $0.title.localizedStandardContains(searchValue)) &&
+                                $0.deadLine == nil &&
+                                !hasPeriodRange &&
+                                (!hasPriorityFilter || $0.priorityRaw == priorityValue) &&
+                                ((isNoTagFilter && $0.mainTagRaw == nil) ||
+                                 (!isNoTagFilter && (!hasTagFilter || $0.mainTagRaw == tagValue)))
+                            }
+                        }
+
+                        let sortDescriptors: [SortDescriptor<TodoTask>]
+                        switch phase {
+                        case .overdue, .future:
+                            sortDescriptors = [
+                                SortDescriptor(\TodoTask.deadLine, order: .forward),
+                                SortDescriptor(\TodoTask.id, order: .forward)
+                            ]
+                        case .noDeadline:
+                            sortDescriptors = [
+                                SortDescriptor(\TodoTask.id, order: .forward)
+                            ]
+                        }
+
+                        var descriptor = FetchDescriptor<TodoTask>(
+                            predicate: predicate,
+                            sortBy: sortDescriptors
+                        )
+                        descriptor.fetchOffset = offset
+                        descriptor.fetchLimit = remaining
+
+                        let page = try backgroundContext.fetch(descriptor)
+                        guard !page.isEmpty else { continue }
+
+                        ids.append(contentsOf: page.map(\.id))
+
+                        switch phase {
+                        case .overdue:
+                            nextOverdueOffset += page.count
+                        case .future:
+                            nextFutureOffset += page.count
+                        case .noDeadline:
+                            nextNoDeadlineOffset += page.count
+                        }
+                    }
+
+                    return ActivePaginationResult(
+                        ids: ids,
+                        overdueCount: nextOverdueOffset,
+                        futureCount: nextFutureOffset,
+                        noDeadlineCount: nextNoDeadlineOffset,
+                        hasMore: ids.count == 100
+                    )
+                } catch {
+                    await AppLogger.persistence.error(
+                        "TaskList background pagination failed: \(error.localizedDescription)"
+                    )
+                    return ActivePaginationResult(
+                        ids: [],
+                        overdueCount: overdueOffset,
+                        futureCount: futureOffset,
+                        noDeadlineCount: noDeadlineOffset,
+                        hasMore: false
+                    )
+                }
+            }.value
+
+            guard !Task.isCancelled,
+                  generation == activeFetchGeneration,
+                  !activeListRefreshInProgress else {
+                return
+            }
+
+            guard !result.ids.isEmpty else {
+                activeHasMore = false
+                return
+            }
+
+            do {
+                let ids = result.ids
+                let descriptor = FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> { ids.contains($0.id) }
+                )
+                let fetchedTasks = try modelContext.fetch(descriptor)
+                let tasksByID = Dictionary(uniqueKeysWithValues: fetchedTasks.map { ($0.id, $0) })
+                let orderedTasks = result.ids.compactMap { tasksByID[$0] }
+
+                let existingTaskIDs = Set(filteredTodoTasksCache.map(\.id))
+                let uniqueNewTasks = orderedTasks.filter { !existingTaskIDs.contains($0.id) }
+
+                activeOverdueOffset = result.overdueCount
+                activeFutureOffset = result.futureCount
+                activeNoDeadlineOffset = result.noDeadlineCount
+                filteredTodoTasksCache.append(contentsOf: uniqueNewTasks)
+                activeHasMore = result.hasMore
+            } catch {
+                AppLogger.persistence.error(
+                    "TaskList main pagination materialization failed: \(error.localizedDescription)"
+                )
+            }
+
+        }
     }
+
     private func completedTaskPredicate(
         hasSearch: Bool,
         searchValue: String,
@@ -1482,7 +1600,10 @@ struct TaskListView: View {
                     },
                     tasks: filteredTodoTasksCache,
                     activeTaskCount: activeTaskCount,modelContext: modelContext,
-                    loadMoreTasks: loadMoreActiveTasks
+                    loadMoreTasks: loadMoreActiveTasks,
+                    paginationLocked: activeListRefreshInProgress,
+                    deleteTaskAndRefresh: deleteTaskAndRefresh,
+                    duplicateTaskAndUpdateList: duplicateTaskAndUpdateList
                 )
             }
             
@@ -1517,9 +1638,7 @@ struct TaskListView: View {
                 taskPendingDeletion = nil
                 return
               }
-              withAnimation {
-                  deleteTaskAndRefresh(task)
-              }
+              deleteTaskAndRefresh(task)
               taskPendingDeletion = nil
             }
             Button("Cancel", role: .cancel) {
@@ -1574,8 +1693,7 @@ struct TaskListView: View {
             fetchCompletedTasks()
             updateCompletedTaskCount()
         } else {
-            fetchActiveTasks()
-            updateActiveTaskCount()
+            refreshActiveList()
         }
     }
         .onChange(of: searchText) { _, newValue in
@@ -1598,8 +1716,7 @@ struct TaskListView: View {
             if databaseIsEmpty == nil {
                 checkDatabaseIsEmpty()
             }
-            fetchActiveTasks()
-            updateActiveTaskCount()
+            refreshActiveList()
         }
 
         .onChange(of: debouncedSearchText) { _, _ in
@@ -1607,8 +1724,7 @@ struct TaskListView: View {
                 fetchCompletedTasks()
                 updateCompletedTaskCount()
             } else {
-                fetchActiveTasks()
-                updateActiveTaskCount()
+                refreshActiveList()
             }
         }
 
@@ -1617,8 +1733,7 @@ struct TaskListView: View {
                 fetchCompletedTasks()
                 updateCompletedTaskCount()
             } else {
-                fetchActiveTasks()
-                updateActiveTaskCount()
+                refreshActiveList()
             }
         }
 
@@ -1627,8 +1742,7 @@ struct TaskListView: View {
                 fetchCompletedTasks()
                 updateCompletedTaskCount()
             } else {
-                fetchActiveTasks()
-                updateActiveTaskCount()
+                refreshActiveList()
             }
         }
 
@@ -1637,8 +1751,7 @@ struct TaskListView: View {
                 fetchCompletedTasks()
                 updateCompletedTaskCount()
             } else {
-                fetchActiveTasks()
-                updateActiveTaskCount()
+                refreshActiveList()
             }
         }
 
@@ -1679,9 +1792,7 @@ struct TaskListView: View {
         .sheet(
             item: $draftTask,
             onDismiss: {
-                checkDatabaseIsEmpty()
-                fetchActiveTasks()
-                updateActiveTaskCount()
+                refreshActiveList()
             }
         ) { task in
 
@@ -1699,8 +1810,7 @@ struct TaskListView: View {
                         fetchCompletedTasks()
                         updateCompletedTaskCount()
                     } else {
-                        fetchActiveTasks()
-                        updateActiveTaskCount()
+                        refreshActiveList()
                     }
                 } label: {
                     Image(systemName: showCompleted ? "eye.slash" : "eye")
@@ -1968,6 +2078,73 @@ struct TaskListView: View {
 
         }
 
+    }
+
+    @MainActor
+    private func duplicateTaskAndUpdateList(_ duplicatedTask: TodoTask) {
+        guard !duplicatedTask.isCompleted else { return }
+        guard !filteredTodoTasksCache.contains(where: { $0.id == duplicatedTask.id }) else { return }
+
+        let now = activeFetchNow
+        let phase: ActiveTaskFetchPhase
+
+        if duplicatedTask.deadLine == nil {
+            phase = .noDeadline
+        } else if duplicatedTask.deadLine! < now {
+            phase = .overdue
+        } else {
+            phase = .future
+        }
+
+        func comesBefore(_ lhs: TodoTask, _ rhs: TodoTask) -> Bool {
+            switch phase {
+            case .overdue, .future:
+                let lhsDate = lhs.deadLine ?? .distantFuture
+                let rhsDate = rhs.deadLine ?? .distantFuture
+                if lhsDate != rhsDate {
+                    return lhsDate < rhsDate
+                }
+                return lhs.id.uuidString < rhs.id.uuidString
+            case .noDeadline:
+                return lhs.id.uuidString < rhs.id.uuidString
+            }
+        }
+
+        let insertionIndex: Int
+        switch phase {
+        case .overdue:
+            let range = filteredTodoTasksCache.indices.filter { index in
+                let task = filteredTodoTasksCache[index]
+                return task.deadLine != nil && task.deadLine! < now
+            }
+            insertionIndex = range.first(where: { comesBefore(duplicatedTask, filteredTodoTasksCache[$0]) }) ?? (range.last.map { $0 + 1 } ?? 0)
+
+        case .future:
+            let start = filteredTodoTasksCache.firstIndex(where: {
+                guard let deadline = $0.deadLine else { return false }
+                return deadline >= now
+            }) ?? filteredTodoTasksCache.count
+            let end = filteredTodoTasksCache.firstIndex(where: { $0.deadLine == nil }) ?? filteredTodoTasksCache.count
+            let upperBound = max(start, end)
+            let range = start..<upperBound
+            insertionIndex = range.first(where: { comesBefore(duplicatedTask, filteredTodoTasksCache[$0]) }) ?? upperBound
+
+        case .noDeadline:
+            insertionIndex = filteredTodoTasksCache.firstIndex(where: { $0.deadLine == nil && comesBefore(duplicatedTask, $0) }) ?? filteredTodoTasksCache.count
+        }
+
+        filteredTodoTasksCache.insert(duplicatedTask, at: insertionIndex)
+
+        switch phase {
+        case .overdue:
+            activeOverdueOffset += 1
+        case .future:
+            activeFutureOffset += 1
+        case .noDeadline:
+            activeNoDeadlineOffset += 1
+        }
+
+        activeTaskCount += 1
     }
 
     @MainActor
@@ -2682,6 +2859,7 @@ extension View {
 
 }
 
+@MainActor
 struct TodoSectionView: View {
 
   @Environment(AppSettings.self) private var settings
@@ -2969,6 +3147,9 @@ struct TodoSectionView: View {
     let activeTaskCount: Int
     let modelContext: ModelContext
     let loadMoreTasks: () -> Void
+    let paginationLocked: Bool
+    let deleteTaskAndRefresh: (TodoTask) -> Void
+    let duplicateTaskAndUpdateList: (TodoTask) -> Void
     
   private struct GroupedSection: Identifiable, Equatable {
 
@@ -2986,157 +3167,80 @@ struct TodoSectionView: View {
 
   }
     
-    @State private var groupedTasksCache: [GroupedSection] = []
-
-  @State private var visibleLimit = 100
-
-  private var visibleGroups: [GroupedSection] {
-
-    guard visibleLimit > 0 else { return [] }
-
-    var renderedRows = 0
-
-    var result: [GroupedSection] = []
-
-    for group in groupedTasksCache {
-
-      if renderedRows >= visibleLimit {
-
-        break
-
-      }
-
-      let remaining = visibleLimit - renderedRows
-
-      let visibleTasks = Array(group.tasks.prefix(remaining))
-
-      guard !visibleTasks.isEmpty else { continue }
-
-      result.append(
-
-        GroupedSection(
-
-          date: group.date,
-
-          tasks: visibleTasks,
-
-          relativeTitle: group.relativeTitle,
-
-          isUpcomingBoundary: group.isUpcomingBoundary,
-
-          upcomingTasksCount: group.upcomingTasksCount
-
-        )
-
-      )
-
-      renderedRows += visibleTasks.count
-
-    }
-
-    return result
-
+  private struct GroupingSignature: Equatable {
+    let id: UUID
+    let deadline: Date?
   }
 
+  @State private var groupedTasksCache: [GroupedSection] = []
+  @State private var groupedTasksSignature: [GroupingSignature] = []
 
+  private func currentGroupingSignature() -> [GroupingSignature] {
+    tasks.map {
+      GroupingSignature(id: $0.id, deadline: $0.deadLine)
+    }
+  }
 
-  private func rebuildGroups() {
-
+  private func rebuildGroupedTasksCache() {
     let calendar = Calendar.current
 
     let grouped = Dictionary(grouping: tasks) { task in
-
       calendar.startOfDay(for: task.deadLine ?? .distantFuture)
-
     }
 
     let sortedGroups = grouped
-
       .map { key, value in
-
         (
-
           date: key,
-
           tasks: value.sorted {
-
             let lhs = $0.deadLine ?? .distantFuture
-
             let rhs = $1.deadLine ?? .distantFuture
-
             if lhs != rhs {
-
               return lhs < rhs
-
             }
-
             return $0.id.uuidString < $1.id.uuidString
-
           }
-
         )
-
       }
-
       .sorted { $0.date < $1.date }
 
-      var result: [GroupedSection] = []
-      var remainingTasksCount = tasks.count
-      for index in sortedGroups.indices {
+    var result: [GroupedSection] = []
+    var remainingTasksCount = tasks.count
 
+    for index in sortedGroups.indices {
       let group = sortedGroups[index]
+      let relativeTitle = relativeHeaderTitle(for: group.date)
+      let previousRelativeTitle: LocalizedStringKey? =
+        index > 0
+        ? relativeHeaderTitle(for: sortedGroups[index - 1].date)
+        : nil
 
-        let relativeTitle = relativeHeaderTitle(for: group.date)
+      let isUpcomingBoundary =
+        previousRelativeTitle != nil && relativeTitle == nil
 
-        let previousRelativeTitle: LocalizedStringKey? =
-            index > 0
-            ? relativeHeaderTitle(for: sortedGroups[index - 1].date)
-            : nil
+      let upcomingTasksCount = isUpcomingBoundary
+        ? remainingTasksCount
+        : 0
 
-        let isUpcomingBoundary =
-            previousRelativeTitle != nil &&
-            relativeTitle == nil
-
-          let upcomingTasksCount = isUpcomingBoundary
-              ? remainingTasksCount
-              : 0
-
-          remainingTasksCount -= group.tasks.count
+      remainingTasksCount -= group.tasks.count
 
       result.append(
-
         GroupedSection(
-
           date: group.date,
-
           tasks: group.tasks,
-
           relativeTitle: relativeTitle,
-
           isUpcomingBoundary: isUpcomingBoundary,
-
           upcomingTasksCount: upcomingTasksCount
-
         )
-
       )
-
     }
 
     groupedTasksCache = result
-
+    groupedTasksSignature = currentGroupingSignature()
   }
 
   private var groupedTasksByDay: [GroupedSection] {
-
-    if tasks.count <= visibleLimit {
-
-      return groupedTasksCache
-
-    }
-
-    return visibleGroups
-
+    groupedTasksCache
   }
 
   private var showDateEveryRow: Bool {
@@ -3177,8 +3281,8 @@ struct TodoSectionView: View {
 
       .listRowSeparator(.hidden)
 
-          ForEach(groupedTasksByDay.indices, id: \.self) { groupIndex in
-              let group = groupedTasksByDay[groupIndex]
+          ForEach(groupedTasksByDay) { group in
+              let isLastGroup = group.id == groupedTasksByDay.last?.id
               
           if group.isUpcomingBoundary {
 
@@ -3292,11 +3396,11 @@ struct TodoSectionView: View {
             )
 
             .onAppear {
-                guard groupIndex == groupedTasksByDay.count - 1,
+                guard !paginationLocked,
+                      isLastGroup,
                       index == group.tasks.count - 1 else {
                     return
                 }
-
                 loadMoreTasks()
             }
 
@@ -3341,7 +3445,8 @@ struct TodoSectionView: View {
                   position: startsNewDayGroup ? .first : .middle
               )
               .onAppear {
-                  guard index == tasks.count - 1 else {
+                  guard !paginationLocked,
+                        index == tasks.count - 1 else {
                       return
                   }
 
@@ -3355,8 +3460,7 @@ struct TodoSectionView: View {
     }
 
     .task {
-
-      rebuildGroups()
+      rebuildGroupedTasksCache()
 
       DispatchQueue.main.asyncAfter(
 
@@ -3375,13 +3479,17 @@ struct TodoSectionView: View {
     }
 
     .onChange(of: tasks) { _, _ in
-        rebuildGroups()
+      let signature = currentGroupingSignature()
+      guard signature != groupedTasksSignature else { return }
+      rebuildGroupedTasksCache()
+    }
 
-        if tasks.count > visibleLimit {
-            visibleLimit = tasks.count
-        } else if tasks.count < visibleLimit {
-            visibleLimit = max(100, tasks.count)
-        }
+    .onReceive(
+      NotificationCenter.default.publisher(for: .taskDidChange)
+    ) { _ in
+      let signature = currentGroupingSignature()
+      guard signature != groupedTasksSignature else { return }
+      rebuildGroupedTasksCache()
     }
 
     .onReceive(
@@ -3468,7 +3576,7 @@ struct TodoSectionView: View {
 
           withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
 
-              deleteTask(t, in: modelContext)
+deleteTaskAndRefresh(t)
 
           }
 
@@ -3497,7 +3605,7 @@ struct TodoSectionView: View {
         } else {
 
           withAnimation {
-              deleteTask(t, in: modelContext)
+deleteTaskAndRefresh(t)
 
           }
 
@@ -3653,7 +3761,7 @@ struct TodoSectionView: View {
 
           do {
 
-            _ = try TaskDuplicationService.duplicate(
+            let duplicatedTask = try TaskDuplicationService.duplicate(
 
               t,
 
@@ -3663,13 +3771,7 @@ struct TodoSectionView: View {
 
             )
 
-            NotificationCenter.default.post(
-
-              name: .taskDidChange,
-
-              object: nil
-
-            )
+            duplicateTaskAndUpdateList(duplicatedTask)
 
           } catch {
 
@@ -3693,7 +3795,7 @@ struct TodoSectionView: View {
 
             do {
 
-              _ = try TaskDuplicationService.duplicate(
+              let duplicatedTask = try TaskDuplicationService.duplicate(
 
                 t,
 
@@ -3703,13 +3805,7 @@ struct TodoSectionView: View {
 
               )
 
-              NotificationCenter.default.post(
-
-                name: .taskDidChange,
-
-                object: nil
-
-              )
+              duplicateTaskAndUpdateList(duplicatedTask)
 
             } catch {
 

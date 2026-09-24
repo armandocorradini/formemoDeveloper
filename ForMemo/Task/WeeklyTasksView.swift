@@ -92,6 +92,13 @@ struct WeeklyTasksView: View {
         }
     }
     
+    @MainActor
+    private func deleteTaskAndRefresh(_ task: TodoTask) {
+        deleteTask(task, in: modelContext)
+        modelContext.processPendingChanges()
+        NotificationCenter.default.post(name: .taskDidChange, object: nil)
+    }
+
     private var formattedDate: String {
         Date.now.formatted(
             .dateTime
@@ -439,7 +446,7 @@ struct WeeklyTasksView: View {
                 Button("Delete", role: .destructive) {
                     if let task = taskPendingDeletion {
                         withAnimation {
-                            deleteTask(task, in: modelContext)
+                            deleteTaskAndRefresh(task)
                         }
                         taskPendingDeletion = nil
                     }
@@ -467,7 +474,8 @@ struct WeeklyTasksView: View {
                     position:     TaskRowPosition.position(
                         index: index,
                         total: group.tasks.count
-                    )
+                    ),
+                    deleteTaskAndRefresh: deleteTaskAndRefresh
                 )
                 .listRowSeparator(.hidden)
             
@@ -557,6 +565,7 @@ private struct WeeklyTaskRow: View {
     let taskWeekDays: Int
     let task: TodoTask
     let position: TaskRowPosition
+    let deleteTaskAndRefresh: (TodoTask) -> Void
 
     private var hasAttachments: Bool {
         !(task.attachments ?? []).isEmpty
@@ -610,7 +619,7 @@ private struct WeeklyTaskRow: View {
                     taskPendingDeletion = task
                 } else {
                     withAnimation {
-                        deleteTask(task, in: modelContext)
+                        deleteTaskAndRefresh(task)
                     }
                 }
 
@@ -625,7 +634,7 @@ private struct WeeklyTaskRow: View {
                     taskPendingDeletion = task
                 } else {
                     withAnimation {
-                        deleteTask(task, in: modelContext)
+                        deleteTaskAndRefresh(task)
                     }
                 }
             } label: {
