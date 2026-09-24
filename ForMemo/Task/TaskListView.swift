@@ -3556,7 +3556,7 @@ struct TodoSectionView: View {
 
       } label: {
 
-        Label("Completed", systemImage: "checkmark.circle")
+        Label("Complete", systemImage: "checkmark.circle")
 
       }
 

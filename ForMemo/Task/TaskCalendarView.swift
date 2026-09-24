@@ -1963,10 +1963,11 @@ private struct DayTasksInlineView: View {
                             )
 
                         } label: {
+                            
 
                             Label(
 
-                                task.isCompleted ? "To do" : "Completed",
+                                task.isCompleted ? "To do" : "Complete",
 
                                 systemImage: task.isCompleted
 
@@ -2063,7 +2064,12 @@ private struct DayTasksInlineView: View {
                                 object: nil
                             )
                         } label: {
-                            Label("Complete", systemImage: "checkmark.circle")
+                            Label(
+                                  task.isCompleted ? "To do" : "Complete",
+                                  systemImage: task.isCompleted
+                                      ? "arrow.uturn.backward"
+                                      : "checkmark.circle"
+                              )
                         }
 
                         if task.deadLine != nil {
