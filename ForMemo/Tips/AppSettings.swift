@@ -95,6 +95,12 @@ enum AppBackgroundPattern: String, Codable {
     }
 }
 
+
+enum WalletViewStyle: String, Codable {
+    case list
+    case cards
+}
+
 @Observable
 @MainActor
 final class AppSettings {
@@ -164,6 +170,11 @@ final class AppSettings {
         
         let rawValue = defaults.string(forKey: "TaskListStyle")
         taskListStyle = TaskListStyle(rawValue: rawValue ?? TaskListStyle.grouped.rawValue) ?? .plain
+        
+        let walletViewRawValue = defaults.string(forKey: "WalletViewStyle")
+        walletViewStyle = WalletViewStyle(
+            rawValue: walletViewRawValue ?? WalletViewStyle.cards.rawValue
+        ) ?? .cards
         
         showDateEveryRow = defaults.object(forKey: "TaskListShowDateEveryRow") as? Bool ?? false
         confirmTaskDeletion = defaults.object(forKey: "confirmTaskDeletion") as? Bool ?? true
@@ -373,6 +384,15 @@ final class AppSettings {
             UserDefaults.standard.set(
                 taskListStyle.rawValue,
                 forKey: "TaskListStyle"
+            )
+        }
+    }
+    
+    var walletViewStyle: WalletViewStyle {
+        didSet {
+            UserDefaults.standard.set(
+                walletViewStyle.rawValue,
+                forKey: "WalletViewStyle"
             )
         }
     }
@@ -676,6 +696,7 @@ final class AppSettings {
         
         dueIconEffectRaw = DueIconEffect.blink.rawValue
         taskListStyle = .plain
+        walletViewStyle = .cards
         showDateEveryRow = false
         confirmTaskDeletion = true
         keepRecurringTaskHistory = true

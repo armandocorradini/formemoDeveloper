@@ -7,7 +7,9 @@ struct WalletView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var sizeClass
-
+    @Environment(AppSettings.self) private var settings
+    
+    
     @Query(
         sort: [
             SortDescriptor(\LoyaltyCard.sortOrder, order: .forward)
@@ -261,8 +263,10 @@ struct WalletView: View {
                             }
                             .buttonStyle(.plain)
                             .navigationLinkIndicatorVisibility(.hidden)
-                            .listRowSeparator(.visible, edges: .bottom)
-                            .listRowSeparatorTint(.secondary.opacity(0.38))
+                            .modifier(
+                                WalletRowAppearanceModifier(
+                                    style: settings.walletViewStyle.rawValue
+                                )                            )
 //                            .listRowBackground(
 //
 //                                Color(.systemBackground)
@@ -370,34 +374,90 @@ struct WalletView: View {
                         .pickerStyle(.menu)
                         .labelStyle(.iconOnly)
                         .labelsHidden()
+//
+//                        Picker(
+//                            "Order",
+//                            selection: Binding(
+//                                get: { walletSortMode },
+//                                set: { newValue in
+//                                    guard newValue != walletSortMode else { return }
+//
+//                                    if newValue == "custom" {
+//                                        pendingSortMode = newValue
+//                                        showCustomSortInfo = true
+//                                    } else {
+//                                        walletSortMode = newValue
+//                                    }
+//                                }
+//                            )
+//                        ) {
+//                            Section(String(localized: "Sorting")) { }
+//
+//                            Label("A-Z", systemImage: "textformat.abc")
+//                                .tag("alphabetical")
+//
+//                            Label("Custom", systemImage: "line.3.horizontal")
+//                                .tag("custom")
+//                        }
+//                        .pickerStyle(.menu)
+//                        .labelStyle(.iconOnly)
+//                        .labelsHidden()
 
-                        Picker(
-                            "Order",
-                            selection: Binding(
-                                get: { walletSortMode },
-                                set: { newValue in
-                                    guard newValue != walletSortMode else { return }
+                        Menu {
+                            Picker(
+                                String(localized: "Sorting"),
+                                selection: Binding(
+                                    get: { walletSortMode },
+                                    set: { newValue in
+                                        guard newValue != walletSortMode else { return }
 
-                                    if newValue == "custom" {
-                                        pendingSortMode = newValue
-                                        showCustomSortInfo = true
-                                    } else {
-                                        walletSortMode = newValue
+                                        if newValue == "custom" {
+                                            pendingSortMode = newValue
+                                            showCustomSortInfo = true
+                                        } else {
+                                            walletSortMode = newValue
+                                        }
                                     }
-                                }
-                            )
-                        ) {
-                            Section(String(localized: "Sorting")) { }
-
-                            Label("A-Z", systemImage: "textformat.abc")
+                                )
+                            ) {
+                                Label(
+                                    String(localized: "A-Z"),
+                                    systemImage: "textformat.abc"
+                                )
                                 .tag("alphabetical")
 
-                            Label("Custom", systemImage: "line.3.horizontal")
+                                Label(
+                                    String(localized: "Custom"),
+                                    systemImage: "line.3.horizontal"
+                                )
                                 .tag("custom")
+                            }
+
+                            Divider()
+
+                            Picker(
+                                String(localized: "View"),
+                                selection: Binding(
+                                    get: { settings.walletViewStyle },
+                                    set: { settings.walletViewStyle = $0 }
+                                )
+                            ) {
+                                Label(
+                                    String(localized: "List"),
+                                    systemImage: "list.bullet"
+                                )
+                                .tag(WalletViewStyle.list)
+
+                                Label(
+                                    String(localized: "Cards"),
+                                    systemImage: "rectangle.on.rectangle"
+                                )
+                                .tag(WalletViewStyle.cards)
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                                .foregroundStyle(.primary.opacity(0.7))
                         }
-                        .pickerStyle(.menu)
-                        .labelStyle(.iconOnly)
-                        .labelsHidden()
                     }
                 }
 
@@ -538,3 +598,40 @@ struct WalletView: View {
     
     
 }
+
+private struct WalletRowAppearanceModifier: ViewModifier {
+    let style: String
+
+    func body(content: Content) -> some View {
+        if style == "cards" {
+            content
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    Color(.systemBackground).opacity(0.3)
+                )
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: 20,
+                        style: .continuous
+                    )
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(
+                    EdgeInsets(
+                        top: 6,
+                        leading: 0,
+                        bottom: 6,
+                        trailing: 0
+                    )
+                )
+        } else {
+            content
+                .listRowSeparator(.visible, edges: .bottom)
+                .listRowSeparatorTint(.secondary.opacity(0.38))
+                .listRowBackground(Color.clear)
+        }
+    }
+}
+

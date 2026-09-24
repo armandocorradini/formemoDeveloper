@@ -36,7 +36,7 @@ struct NoteEditorView: View {
     @State private var initialColor: String?
     @State private var textHeight: CGFloat = 0
     @FocusState private var titleIsFocused: Bool
-    
+    @State private var contentIsFocused = false
     init(
         note: Note,
         noteEditorCoordinator: NoteEditorCoordinator? = nil,
@@ -119,6 +119,7 @@ struct NoteEditorView: View {
                 
                 NoteTextView(
                     text: $text,
+                    isFocused: $contentIsFocused,
                     onTextHeightChange: { height in
                         textHeight = height
                     }
@@ -230,6 +231,14 @@ struct NoteEditorView: View {
         .font(.title2.weight(.semibold))
         .textFieldStyle(.plain)
         .focused($titleIsFocused)
+        .submitLabel(.next)
+        .onSubmit {
+            titleIsFocused = false
+
+            DispatchQueue.main.async {
+                contentIsFocused = true
+            }
+        }
         .padding(.horizontal, 20)
         .padding(.top, 14)
         .padding(.bottom, 10)
@@ -439,7 +448,10 @@ struct NoteEditorView: View {
 
 private struct NoteTextView: UIViewRepresentable {
     @Binding var text: AttributedString
+    @Binding var isFocused: Bool
+    
     var onTextHeightChange: ((CGFloat) -> Void)?
+    
     
     private func styledContent(
         from attributedString: AttributedString,
@@ -596,6 +608,17 @@ private struct NoteTextView: UIViewRepresentable {
         _ textView: UITextView,
         context: Context
     ) {
+        
+        if isFocused {
+            if !textView.isFirstResponder {
+                DispatchQueue.main.async {
+                    textView.becomeFirstResponder()
+                }
+            }
+        } else if textView.isFirstResponder {
+            textView.resignFirstResponder()
+        }
+        
         context.coordinator.text = $text
         
         if let textLayoutManager = textView.textLayoutManager {
