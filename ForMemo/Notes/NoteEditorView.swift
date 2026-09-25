@@ -508,9 +508,12 @@ private struct NoteTextView: UIViewRepresentable {
     func makeCoordinator() -> Coordinator {
         Coordinator(
             text: $text,
+            isFocused: $isFocused,
             onTextHeightChange: onTextHeightChange
         )
     }
+    
+    
     @MainActor
     func makeUIView(
         context: Context
@@ -679,17 +682,29 @@ private struct NoteTextView: UIViewRepresentable {
     @MainActor
     final class Coordinator: NSObject, UITextViewDelegate {
         var text: Binding<AttributedString>
+        var isFocused: Binding<Bool>
         var onTextHeightChange: ((CGFloat) -> Void)?
 
         init(
             text: Binding<AttributedString>,
+            isFocused: Binding<Bool>,
             onTextHeightChange: ((CGFloat) -> Void)?
         ) {
             self.text = text
+            self.isFocused = isFocused
             self.onTextHeightChange = onTextHeightChange
             super.init()
         }
+        
+        func textViewDidBeginEditing(_ textView: UITextView) {
+            isFocused.wrappedValue = true
+        }
 
+        func textViewDidEndEditing(_ textView: UITextView) {
+            isFocused.wrappedValue = false
+        }
+        
+        
         // MARK: - Minimal keyboard formatting bar
 
         private weak var textView: UITextView?

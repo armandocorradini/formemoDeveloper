@@ -20,9 +20,9 @@ final class TodoTask {
     var completedAt: Date? = nil
     var createdAt: Date = Date()
     var reminderOffsetMinutes: Int? = nil
-    var locationName: String? = nil // Corretto da locaMonName
-    var locationLatitude: Double? = nil // Corretto da locaMonLaMtude
-    var locationLongitude: Double? = nil // Corretto da locaMonLongitude
+    var locationName: String? = nil
+    var locationLatitude: Double? = nil
+    var locationLongitude: Double? = nil
     var locationReminderEnabled: Bool = false
     var priorityRaw: Int = 0
     var mainTagRaw: String? = nil
