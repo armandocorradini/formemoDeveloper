@@ -22,6 +22,7 @@ struct WeeklyTasksView: View {
     
     
     @State private var taskPendingDeletion: TodoTask?
+    @State private var pendingDeletionShowsRecurrenceChoices = false
     @State private var draftTask: TodoTask?
     private struct SelectedWeatherDay: Identifiable {
         let date: Date
@@ -97,6 +98,66 @@ struct WeeklyTasksView: View {
         deleteTask(task, in: modelContext)
         modelContext.processPendingChanges()
         NotificationCenter.default.post(name: .taskDidChange, object: nil)
+    }
+
+    @MainActor
+    private func requestTaskDeletion(_ task: TodoTask) {
+        guard task.recurrenceID != nil else {
+            pendingDeletionShowsRecurrenceChoices = false
+
+            if settings.confirmTaskDeletion {
+                taskPendingDeletion = task
+            } else {
+                withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
+                    deleteTaskAndRefresh(task)
+                }
+            }
+            return
+        }
+
+        do {
+            let recurrenceID = task.recurrenceID
+            let currentIndex = task.occurrenceIndex ?? 1
+
+            let occurrences = try modelContext.fetch(
+                FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> {
+                        $0.recurrenceID == recurrenceID
+                    }
+                )
+            )
+
+            let hasFutureOccurrence = occurrences.contains { occurrence in
+                guard occurrence.id != task.id,
+                      let occurrenceIndex = occurrence.occurrenceIndex else {
+                    return false
+                }
+
+                return occurrenceIndex > currentIndex
+            }
+
+            if hasFutureOccurrence {
+                pendingDeletionShowsRecurrenceChoices = true
+                taskPendingDeletion = task
+            } else if settings.confirmTaskDeletion {
+                // Ultima occorrenza: comportamento identico a un task singolo.
+                pendingDeletionShowsRecurrenceChoices = false
+                taskPendingDeletion = task
+            } else {
+                // Ultima occorrenza e conferma disattivata: eliminazione diretta.
+                pendingDeletionShowsRecurrenceChoices = false
+                withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
+                    deleteTaskAndRefresh(task)
+                }
+            }
+        } catch {
+            // In caso di errore non cancelliamo automaticamente.
+            pendingDeletionShowsRecurrenceChoices = false
+            taskPendingDeletion = task
+            AppLogger.persistence.error(
+                "Weekly recurrence deletion check failed: \(error.localizedDescription)"
+            )
+        }
     }
 
     private var formattedDate: String {
@@ -440,19 +501,55 @@ struct WeeklyTasksView: View {
                 "Delete task?",
                 isPresented: Binding(
                     get: { taskPendingDeletion != nil },
-                    set: { if !$0 { taskPendingDeletion = nil } }
+                    set: {
+                        if !$0 {
+                            taskPendingDeletion = nil
+                            pendingDeletionShowsRecurrenceChoices = false
+                        }
+                    }
                 )
             ) {
-                Button("Delete", role: .destructive) {
-                    if let task = taskPendingDeletion {
-                        withAnimation {
-                            deleteTaskAndRefresh(task)
+                if pendingDeletionShowsRecurrenceChoices {
+                    Button("Delete This Occurrence", role: .destructive) {
+                        if let task = taskPendingDeletion {
+                            withAnimation {
+                                deleteTaskAndRefresh(task)
+                            }
                         }
                         taskPendingDeletion = nil
+                        pendingDeletionShowsRecurrenceChoices = false
+                    }
+
+                    Button("Delete This & Future Occurrences", role: .destructive) {
+                        if let task = taskPendingDeletion {
+                            deleteRecurringTaskAndFutureOccurrences(
+                                task,
+                                in: modelContext
+                            )
+                            modelContext.processPendingChanges()
+                            NotificationCenter.default.post(
+                                name: .taskDidChange,
+                                object: nil
+                            )
+                        }
+                        taskPendingDeletion = nil
+                        pendingDeletionShowsRecurrenceChoices = false
+                    }
+                } else {
+                    Button("Delete", role: .destructive) {
+                        if let task = taskPendingDeletion {
+                            withAnimation {
+                                deleteTaskAndRefresh(task)
+                            }
+                        }
+                        taskPendingDeletion = nil
+                        pendingDeletionShowsRecurrenceChoices = false
                     }
                 }
+
                 Button("Cancel", role: .cancel) {
                     taskPendingDeletion = nil
+                    pendingDeletionShowsRecurrenceChoices = false
                 }
             } message: {
                 Text("This action cannot be undone.")
@@ -475,7 +572,7 @@ struct WeeklyTasksView: View {
                         index: index,
                         total: group.tasks.count
                     ),
-                    deleteTaskAndRefresh: deleteTaskAndRefresh
+                    requestTaskDeletion: requestTaskDeletion
                 )
                 .listRowSeparator(.hidden)
             
@@ -565,7 +662,7 @@ private struct WeeklyTaskRow: View {
     let taskWeekDays: Int
     let task: TodoTask
     let position: TaskRowPosition
-    let deleteTaskAndRefresh: (TodoTask) -> Void
+    let requestTaskDeletion: (TodoTask) -> Void
 
     private var hasAttachments: Bool {
         !(task.attachments ?? []).isEmpty
@@ -615,13 +712,7 @@ private struct WeeklyTaskRow: View {
 
             Button(role: .destructive) {
 
-                if confirmTaskDeletion {
-                    taskPendingDeletion = task
-                } else {
-                    withAnimation {
-                        deleteTaskAndRefresh(task)
-                    }
-                }
+                requestTaskDeletion(task)
 
             } label: {
                 Label("Delete", systemImage: "trash")
@@ -630,13 +721,7 @@ private struct WeeklyTaskRow: View {
 
         .contextMenu {
             Button(role: .destructive) {
-                if confirmTaskDeletion {
-                    taskPendingDeletion = task
-                } else {
-                    withAnimation {
-                        deleteTaskAndRefresh(task)
-                    }
-                }
+                requestTaskDeletion(task)
             } label: {
                 Label("Delete", systemImage: "trash")
             }

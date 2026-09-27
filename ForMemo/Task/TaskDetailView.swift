@@ -94,6 +94,281 @@ struct TaskDetailView: View {
     
     @State private var refreshID = UUID()
     @State private var selectedRecurrence: RecurrenceUI = .none
+    @State private var recurrenceLimitMode: RecurrenceLimitMode = .until
+    @State private var recurrenceEndDate: Date = .now
+    @State private var recurrenceCount: Int = 10
+
+    // MARK: - Recurrence edit scope
+    // True after the user has chosen how edits in this detail session
+    // should be applied. The current occurrence is always already saved;
+    // the choice determines whether future occurrences receive the same values.
+    @State private var recurrenceEditScopeResolved = false
+    @State private var showingRecurrenceEditScope = false
+    @State private var hasFutureRecurrenceOccurrences = false
+    @State private var isExitingDetail = false
+    @State private var recurrenceGenerationConfirmation = false
+    @State private var recurrenceGenerationRequestedCount = 0
+    @State private var recurrenceGenerationCreateCount = 0
+    @State private var recurrenceGenerationWasCapped = false
+    @State private var pendingRecurrenceRegeneration = false
+
+
+    private struct TaskEditSnapshot: Equatable {
+        let title: String
+        let taskDescription: String
+        let deadLine: Date?
+        let isCompleted: Bool
+        let reminderOffsetMinutes: Int?
+        let locationName: String?
+        let locationLatitude: Double?
+        let locationLongitude: Double?
+        let locationReminderEnabled: Bool
+        let priorityRaw: Int
+        let mainTagRaw: String?
+        let recurrenceID: UUID?
+        let occurrenceIndex: Int?
+        let recurrenceRule: String?
+        let recurrenceInterval: Int
+        let recurrenceStartDate: Date?
+        let recurrenceEndDate: Date?
+        let recurrenceCount: Int?
+        let attachmentIDs: [UUID]
+
+        init(task: TodoTask) {
+            self.title = task.title
+            self.taskDescription = task.taskDescription
+            self.deadLine = task.deadLine
+            self.isCompleted = task.isCompleted
+            self.reminderOffsetMinutes = task.reminderOffsetMinutes
+            self.locationName = task.locationName
+            self.locationLatitude = task.locationLatitude
+            self.locationLongitude = task.locationLongitude
+            self.locationReminderEnabled = task.locationReminderEnabled
+            self.priorityRaw = task.priorityRaw
+            self.mainTagRaw = task.mainTagRaw
+            self.recurrenceID = task.recurrenceID
+            self.occurrenceIndex = task.occurrenceIndex
+            self.recurrenceRule = task.recurrenceRule
+            self.recurrenceInterval = task.recurrenceInterval
+            self.recurrenceStartDate = task.recurrenceStartDate
+            self.recurrenceEndDate = task.recurrenceEndDate
+            self.recurrenceCount = task.recurrenceCount
+            self.attachmentIDs = (task.attachments ?? []).map(\.id).sorted { $0.uuidString < $1.uuidString }
+        }
+    }
+
+    @State private var initialEditSnapshot: TaskEditSnapshot?
+
+    init(task: TodoTask, isSheet: Bool = false) {
+        self._task = Bindable(wrappedValue: task)
+        self.isSheet = isSheet
+
+        let recurrence = RecurrenceUI(rawValue: task.recurrenceRule ?? "") ?? .none
+        self._selectedRecurrence = State(initialValue: recurrence)
+
+        if let count = task.recurrenceCount {
+            self._recurrenceLimitMode = State(initialValue: .count)
+            self._recurrenceCount = State(initialValue: min(max(count, 1), 2_000))
+            self._recurrenceEndDate = State(initialValue: task.recurrenceEndDate ?? .now)
+        } else {
+            self._recurrenceLimitMode = State(initialValue: .until)
+            self._recurrenceEndDate = State(initialValue: task.recurrenceEndDate ?? .now)
+            self._recurrenceCount = State(initialValue: 10)
+        }
+    }
+
+    private func recurrenceUnitTitle(for recurrence: RecurrenceUI) -> String {
+        let plural = task.recurrenceInterval > 1
+
+        switch recurrence {
+        case .none:
+            return String(localized: "None")
+        case .hourly:
+            return String(localized: plural ? "hours" : "hour")
+        case .daily:
+            return String(localized: plural ? "days" : "day")
+        case .weekly:
+            return String(localized: plural ? "weeks" : "week")
+        case .monthly:
+            return String(localized: plural ? "months" : "month")
+        case .yearly:
+            return String(localized: plural ? "years" : "year")
+        }
+    }
+    
+    private var recurrenceSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 10) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .foregroundStyle(.blue)
+
+                    Text(String(localized: "Repeat"))
+
+                    Spacer()
+
+                    if selectedRecurrence == .none {
+                        Menu {
+                            ForEach(RecurrenceUI.allCases) { option in
+                                Button {
+                                    selectedRecurrence = option
+                                } label: {
+                                    Text(recurrenceUnitTitle(for: option))
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(recurrenceUnitTitle(for: selectedRecurrence))
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.primary)
+                            .contentShape(Rectangle())
+                        }
+                        .fixedSize(horizontal: true, vertical: false)
+                    }
+                }
+
+                if selectedRecurrence != .none {
+                    HStack(spacing: 12) {
+                        Text(String(localized: "Every"))
+                            .foregroundStyle(.primary)
+
+                        Menu {
+                            ForEach(1...365, id: \.self) { value in
+                                Button("\(value)") {
+                                    task.recurrenceInterval = value
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text("\(task.recurrenceInterval)")
+                                    .monospacedDigit()
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.primary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .contentShape(Rectangle())
+                        }
+                        .tint(.primary)
+
+                        Menu {
+                            Button {
+                                selectedRecurrence = .none
+                            } label: {
+                                Text(recurrenceUnitTitle(for: .none))
+                            }
+
+                            Divider()
+
+                            ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
+                                Button {
+                                    selectedRecurrence = option
+                                } label: {
+                                    Text(recurrenceUnitTitle(for: option))
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(recurrenceUnitTitle(for: selectedRecurrence))
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.primary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .contentShape(Rectangle())
+                        }
+                        .tint(.primary)
+
+                        Spacer()
+                    }
+
+                    Divider()
+                        .padding(.vertical, 4)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(String(localized: "Ends"))
+                            .foregroundStyle(.primary)
+
+                        Picker("", selection: $recurrenceLimitMode) {
+                            Text(String(localized: "Date"))
+                                .tag(RecurrenceLimitMode.until)
+                            Text(String(localized: "Occurrences"))
+                                .tag(RecurrenceLimitMode.count)
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity)
+
+                        if recurrenceLimitMode == .until {
+                            DatePicker(
+                                String(localized: "Until"),
+                                selection: $recurrenceEndDate,
+                                displayedComponents: [.date]
+                            )
+                            .frame(maxWidth: .infinity)
+                        } else {
+                            Stepper(
+                                value: $recurrenceCount,
+                                in: 1...2_000
+                            ) {
+                                HStack {
+                                    Text(String(localized: "Occurrences"))
+                                    Spacer()
+                                    Text("\(recurrenceCount)")
+                                        .monospacedDigit()
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .onChange(of: selectedRecurrence) { _, newValue in
+                if newValue == .none {
+                    task.recurrenceRule = nil
+                    task.recurrenceInterval = 1
+                    task.recurrenceEndDate = nil
+                    task.recurrenceCount = nil
+                } else {
+                    task.recurrenceRule = newValue.rawValue
+                    if task.recurrenceInterval < 1 {
+                        task.recurrenceInterval = 1
+                    }
+                }
+            }
+            .onChange(of: recurrenceLimitMode) { _, newValue in
+                switch newValue {
+                case .until:
+                    task.recurrenceCount = nil
+                    task.recurrenceEndDate = recurrenceEndDate
+                case .count:
+                    task.recurrenceEndDate = nil
+                    task.recurrenceCount = min(max(recurrenceCount, 1), 2_000)
+                }
+            }
+            .onChange(of: recurrenceEndDate) { _, newValue in
+                guard selectedRecurrence != .none,
+                      recurrenceLimitMode == .until else { return }
+                task.recurrenceEndDate = newValue
+                task.recurrenceCount = nil
+            }
+            .onChange(of: recurrenceCount) { _, newValue in
+                guard selectedRecurrence != .none,
+                      recurrenceLimitMode == .count else { return }
+                let clamped = min(max(newValue, 1), 2_000)
+                if clamped != newValue {
+                    recurrenceCount = clamped
+                }
+                task.recurrenceCount = clamped
+                task.recurrenceEndDate = nil
+            }
+        }
+    }
     
     private var rowModel: TaskRowDisplayModel {
         let icon = task.mainTag?.mainIcon ?? task.status.icon
@@ -140,27 +415,30 @@ struct TaskDetailView: View {
                     task: task,
                     rowModel: rowModel,
                     iconStyle: settings.iconStyle,
-                    saveTask: { saveTask() },
+                    saveTask: { saveTask(userInitiated: true) },
                     dismiss: dismiss,
                     modelContext: modelContext
                 )
                 
                 ScheduleSection(
                     task: task,
-                    selectedRecurrence: $selectedRecurrence,
                     notificationLeadTimeDays: settings.notificationLeadTimeDays,
                     validationMessage: validationMessage,
                     showingDeleteDeadlineAlert: $showingDeleteDeadlineAlert,
-                    saveTask: { saveTask() },
+                    saveTask: { saveTask(userInitiated: true) },
                     validateReminder: { validateReminder() }
                 )
+
+                if task.deadLine != nil {
+                    recurrenceSection
+                }
                 
                 ContextSection(
                     task: task,
                     navigationApp: settings.navigationApp,
                     showingDeleteConfirmation: $showingDeleteConfirmation,
                     showingLocationPicker: $showingLocationPicker,
-                    saveTask: { saveTask() },
+                    saveTask: { saveTask(userInitiated: true) },
                     openNavigation: openNavigation
                 )
                 
@@ -220,20 +498,44 @@ struct TaskDetailView: View {
             
             Button("Cancel", role: .cancel) { }
         }
+        .confirmationDialog(
+            "Apply changes to",
+            isPresented: $showingRecurrenceEditScope,
+            titleVisibility: .visible
+        ) {
+            Button("This") {
+                recurrenceEditScopeResolved = true
+                showingRecurrenceEditScope = false
+                finishDetailExit()
+            }
+
+            Button("This & Future") {
+                recurrenceEditScopeResolved = true
+                showingRecurrenceEditScope = false
+                applyCurrentChangesToFutureOccurrences()
+                finishDetailExit()
+            }
+
+            Button("Cancel", role: .cancel) {
+                // Stay in the detail view. No future occurrence is changed.
+                showingRecurrenceEditScope = false
+            }
+        } message: {
+            Text("Choose whether the changes apply only to this occurrence or also to future occurrences.")
+        }
         .navigationTitle("Details")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
         .padding(.top, -15)
         .toolbar {
-            if isSheet  {
-                ToolbarItem(placement: .navigationBarLeading) { // 2. Posiziona a sinistra
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                    }
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    requestDetailExit()
+                } label: {
+                    Image(systemName: "chevron.left")
                 }
             }
-            
+
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showingShareSheet = true
@@ -338,7 +640,7 @@ struct TaskDetailView: View {
                 task.locationLatitude = coordinate.latitude
                 task.locationLongitude = coordinate.longitude
                 
-                saveTask()
+                saveTask(userInitiated: true)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .attachmentsShouldRefresh)) { _ in
@@ -361,12 +663,33 @@ struct TaskDetailView: View {
             guard case .success(let urls) = result else { return }
             Task { @MainActor in await importFiles(from: urls)}
         }
+        .alert(
+            "Modify future occurrences?",
+            isPresented: $recurrenceGenerationConfirmation
+        ) {
+            Button("OK") {
+                performConfirmedRecurrenceRegeneration()
+            }
+            Button("Cancel", role: .cancel) {
+                cancelPendingRecurrenceRegeneration()
+            }
+        } message: {
+            if recurrenceGenerationWasCapped {
+                Text(
+                    "The new recurrence requires \(recurrenceGenerationRequestedCount) future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first \(recurrenceGenerationCreateCount) occurrences, up to the maximum limit of 2,000."
+                )
+            } else {
+                Text(
+                    "The currently scheduled future occurrences will be deleted and replaced with \(recurrenceGenerationCreateCount) new future occurrences according to the new recurrence."
+                )
+            }
+        }
         .alert("Remove deadline?", isPresented: $showingDeleteDeadlineAlert) {
             Button("Remove", role: .destructive) {
                 task.deadLine = nil
                 task.reminderOffsetMinutes = nil   // ✅ fondamentale
                 
-                saveTask()
+                saveTask(userInitiated: true)
             }
             Button("Cancel", role: .cancel) { }
         } message: {
@@ -386,6 +709,11 @@ struct TaskDetailView: View {
             Text(photoImportMessage ?? "")
         }
         .onAppear {
+            recurrenceEditScopeResolved = false
+            showingRecurrenceEditScope = false
+            hasFutureRecurrenceOccurrences = false
+            isExitingDetail = false
+            initialEditSnapshot = TaskEditSnapshot(task: task)
             onAppearAction()
         }
         .onChange(of: photoItems) { _, newItems in
@@ -407,15 +735,15 @@ struct TaskDetailView: View {
 //            saveTask()
 //        }
         .onChange(of: task.isCompleted) { _, _ in
-            saveTask()
+            saveTask(userInitiated: true)
         }
         .onDisappear {
             saveTaskDebounce?.cancel()
-            saveTask()
+            saveTask(userInitiated: false)
         }
     }
     @MainActor
-    private func saveTask() {
+    private func saveTask(userInitiated: Bool = false) {
         guard modelContext.hasChanges else { return }
 
         do {
@@ -423,15 +751,11 @@ struct TaskDetailView: View {
             DebugLog.writeCloudKitEvent(
                 "TaskDetail context save completed"
             )
-            
-            // Il refresh globale delle notifiche non viene eseguito
-            // per le normali modifiche del contenuto del task.
 
             NotificationManager.shared.refresh()
 #if DEBUG
             AppLogger.notifications.info("💾 Saved")
 #endif
-            
         } catch {
             DebugLog.writeCloudKitEvent(
                 "TaskDetail context save failed"
@@ -439,12 +763,402 @@ struct TaskDetailView: View {
             AppLogger.persistence.fault(
                 "Task detail save failed: \(error.localizedDescription)"
             )
-            
+
             modelContext.rollback()
             assertionFailure("CRITICAL: TaskDetailView.saveTask failed → rollback executed")
         }
     }
-    
+
+    // MARK: - Detail exit / recurrence edit scope
+
+    @MainActor
+    private func requestDetailExit() {
+        guard !isExitingDetail else { return }
+
+        let hasActualChanges =
+            initialEditSnapshot != nil &&
+            initialEditSnapshot != TaskEditSnapshot(task: task)
+
+        guard hasActualChanges else {
+            finishDetailExit()
+            return
+        }
+
+        // A change to any recurrence definition has its own flow.
+        // It never shows the normal "This / This & Future" dialog.
+        if recurrenceDefinitionChanged() {
+            prepareRecurrenceDefinitionChange()
+            return
+        }
+
+        // Non-recurrence edits retain the existing This / This & Future flow.
+        saveTask(userInitiated: false)
+
+        guard let recurrenceID = task.recurrenceID,
+              task.recurrenceRule != nil else {
+            finishDetailExit()
+            return
+        }
+
+        let currentIndex = task.occurrenceIndex ?? 1
+
+        do {
+            let occurrences = try modelContext.fetch(
+                FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> { candidate in
+                        candidate.recurrenceID == recurrenceID
+                    }
+                )
+            )
+
+            let hasFuture = occurrences.contains { occurrence in
+                occurrence.id != task.id &&
+                (occurrence.occurrenceIndex ?? 1) > currentIndex
+            }
+
+            guard hasFuture else {
+                // Last occurrence: behave exactly like a single task.
+                finishDetailExit()
+                return
+            }
+
+            hasFutureRecurrenceOccurrences = true
+            recurrenceEditScopeResolved = false
+            showingRecurrenceEditScope = true
+
+        } catch {
+            AppLogger.persistence.error(
+                "TaskDetail recurrence edit scope check failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @MainActor
+    private func prepareRecurrenceDefinitionChange() {
+        guard let initial = initialEditSnapshot else {
+            finishDetailExit()
+            return
+        }
+
+        // If this task already belonged to a recurrence series, the
+        // confirmation is needed only when there are future occurrences.
+        //
+        // If the task was previously single and the user is now creating a
+        // recurrence, the new recurrence itself creates future occurrences,
+        // so the confirmation is still required.
+        if initial.recurrenceID != nil {
+            let oldRecurrenceID = initial.recurrenceID!
+            let currentIndex = initial.occurrenceIndex ?? 1
+
+            do {
+                let occurrences = try modelContext.fetch(
+                    FetchDescriptor<TodoTask>(
+                        predicate: #Predicate<TodoTask> { candidate in
+                            candidate.recurrenceID == oldRecurrenceID
+                        }
+                    )
+                )
+
+                let hasFuture = occurrences.contains { occurrence in
+                    occurrence.id != task.id &&
+                    (occurrence.occurrenceIndex ?? 1) > currentIndex
+                }
+
+                // This is the last occurrence: treat the edit as a normal
+                // single-task edit. Do not show the recurrence alert.
+                guard hasFuture else {
+                    finishDetailExit()
+                    return
+                }
+            } catch {
+                AppLogger.persistence.error(
+                    "TaskDetail future recurrence check failed: \(error.localizedDescription)"
+                )
+                return
+            }
+        }
+
+        // A single task becoming recurring has no existing future
+        // occurrences to check; the new recurrence will create them.
+        //
+        // If an existing recurring task is being changed to "None", we
+        // already verified above that future occurrences exist, so the
+        // confirmation must still be shown.
+        if initial.recurrenceID == nil {
+            guard task.recurrenceRule != nil else {
+                finishDetailExit()
+                return
+            }
+        }
+
+        let preview = calculateFutureRecurrencePlan()
+        recurrenceGenerationRequestedCount = preview.requestedCount
+        recurrenceGenerationCreateCount = preview.createCount
+        recurrenceGenerationWasCapped = preview.wasCapped
+        pendingRecurrenceRegeneration = true
+        recurrenceGenerationConfirmation = true
+    }
+
+    @MainActor
+    private func cancelPendingRecurrenceRegeneration() {
+        pendingRecurrenceRegeneration = false
+        recurrenceGenerationConfirmation = false
+
+        // The recurrence controls edit the bound task immediately. Restore only
+        // the recurrence definition; unrelated edits made in the same session
+        // remain intact and can still be saved normally.
+        guard let initial = initialEditSnapshot else { return }
+
+        task.recurrenceID = initial.recurrenceID
+        task.occurrenceIndex = initial.occurrenceIndex
+        task.recurrenceRule = initial.recurrenceRule
+        task.recurrenceInterval = initial.recurrenceInterval
+        task.recurrenceStartDate = initial.recurrenceStartDate
+        task.recurrenceEndDate = initial.recurrenceEndDate
+        task.recurrenceCount = initial.recurrenceCount
+
+        selectedRecurrence = RecurrenceUI(rawValue: initial.recurrenceRule ?? "") ?? .none
+        if let count = initial.recurrenceCount {
+            recurrenceLimitMode = .count
+            recurrenceCount = min(max(count, 1), 2_000)
+        } else {
+            recurrenceLimitMode = .until
+            recurrenceEndDate = initial.recurrenceEndDate ?? .now
+        }
+    }
+
+    @MainActor
+    private func finishDetailExit() {
+        guard !isExitingDetail else { return }
+
+        isExitingDetail = true
+        saveTask(userInitiated: false)
+
+        initialEditSnapshot = TaskEditSnapshot(task: task)
+        recurrenceEditScopeResolved = true
+        hasFutureRecurrenceOccurrences = false
+
+        dismiss()
+    }
+
+    @MainActor
+    private func applyCurrentChangesToFutureOccurrences() {
+        // This method is now only used for the normal "This & Future" path.
+        // Recurrence-definition changes are handled by the dedicated
+        // confirmation flow in prepareRecurrenceDefinitionChange().
+        guard let oldRecurrenceID = task.recurrenceID else {
+            finishDetailExit()
+            return
+        }
+
+        let currentIndex = task.occurrenceIndex ?? 1
+
+        do {
+            let occurrences = try modelContext.fetch(
+                FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> { candidate in
+                        candidate.recurrenceID == oldRecurrenceID
+                    }
+                )
+            )
+
+            for occurrence in occurrences where
+                occurrence.id != task.id &&
+                (occurrence.occurrenceIndex ?? 1) > currentIndex {
+                copyFutureTaskProperties(from: task, to: occurrence)
+            }
+
+            try modelContext.save()
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+            NotificationManager.shared.refresh()
+            finishDetailExit()
+
+        } catch {
+            AppLogger.persistence.error(
+                "TaskDetail future recurrence update failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    private struct FutureRecurrencePlan {
+        let requestedCount: Int
+        let createCount: Int
+        let wasCapped: Bool
+    }
+
+    @MainActor
+    private func calculateFutureRecurrencePlan() -> FutureRecurrencePlan {
+        guard let ruleRaw = task.recurrenceRule,
+              let rule = RecurrenceEngine.Rule(rawValue: ruleRaw),
+              let startDate = task.deadLine ?? task.recurrenceStartDate else {
+            return FutureRecurrencePlan(
+                requestedCount: 0,
+                createCount: 0,
+                wasCapped: false
+            )
+        }
+
+        let limit: RecurrenceEngine.Limit
+
+        if let count = task.recurrenceCount {
+            let currentIndex = task.occurrenceIndex ?? 1
+            let remainingOccurrences = max(1, count - currentIndex + 1)
+
+            limit = .count(
+                remainingOccurrences
+            )
+        } else if let endDate = task.recurrenceEndDate {
+            limit = .until(endDate)
+        } else {
+            limit = .unlimited
+        }
+
+        let dates = RecurrenceEngine.occurrenceDates(
+            startDate: startDate,
+            rule: rule,
+            interval: max(1, task.recurrenceInterval),
+            limit: limit
+        )
+
+        let futureCount = max(0, dates.count - 1)
+
+        return FutureRecurrencePlan(
+            requestedCount: futureCount,
+            createCount: min(
+                futureCount,
+                RecurrenceEngine.maximumGeneratedFutureOccurrences
+            ),
+            wasCapped: futureCount > RecurrenceEngine.maximumGeneratedFutureOccurrences
+        )
+    }
+
+    @MainActor
+    private func currentOccurrenceIndexForNewSequence() -> Int {
+        return task.occurrenceIndex ?? 1
+    }
+
+    @MainActor
+    private func performConfirmedRecurrenceRegeneration() {
+        guard pendingRecurrenceRegeneration else { return }
+        pendingRecurrenceRegeneration = false
+        recurrenceGenerationConfirmation = false
+
+        guard let initial = initialEditSnapshot else {
+            finishDetailExit()
+            return
+        }
+
+        let oldRecurrenceID = initial.recurrenceID
+        let currentIndex = initial.occurrenceIndex ?? 1
+        let currentDate = task.deadLine ?? task.recurrenceStartDate ?? Date()
+
+        do {
+            // Delete all future occurrences belonging to the old series.
+            // This also handles a single task becoming recurring (old ID nil).
+            if let oldRecurrenceID {
+                let occurrences = try modelContext.fetch(
+                    FetchDescriptor<TodoTask>(
+                        predicate: #Predicate<TodoTask> { candidate in
+                            candidate.recurrenceID == oldRecurrenceID
+                        }
+                    )
+                )
+
+                for occurrence in occurrences where
+                    occurrence.id != task.id &&
+                    (occurrence.occurrenceIndex ?? 1) > currentIndex {
+                    modelContext.delete(occurrence)
+                }
+            }
+
+            guard task.recurrenceRule != nil else {
+                // Recurrence removed: current task becomes a normal single task.
+                task.recurrenceID = nil
+                task.occurrenceIndex = nil
+                task.recurrenceStartDate = nil
+                task.recurrenceEndDate = nil
+                task.recurrenceCount = nil
+
+                try modelContext.save()
+                modelContext.processPendingChanges()
+                NotificationCenter.default.post(name: .taskDidChange, object: nil)
+                NotificationManager.shared.refresh()
+                finishDetailExit()
+                return
+            }
+
+            task.recurrenceID = UUID()
+            task.occurrenceIndex = 1
+            task.recurrenceStartDate = currentDate
+
+            if let count = task.recurrenceCount {
+                task.recurrenceCount = max(1, count - currentIndex + 1)
+            }
+
+            let generated = try RecurrenceEngine.materializeFutureOccurrences(
+                for: task,
+                in: modelContext
+            )
+
+            let allowedCount = min(
+                generated.count,
+                recurrenceGenerationCreateCount
+            )
+
+            if generated.count > allowedCount {
+                for extra in generated.dropFirst(allowedCount) {
+                    modelContext.delete(extra)
+                }
+            }
+
+            try modelContext.save()
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+            NotificationManager.shared.refresh()
+            finishDetailExit()
+
+        } catch {
+            AppLogger.persistence.error(
+                "TaskDetail recurrence regeneration failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @MainActor
+    private func copyFutureTaskProperties(
+        from source: TodoTask,
+        to destination: TodoTask
+    ) {
+        destination.title = source.title
+        destination.taskDescription = source.taskDescription
+        destination.reminderOffsetMinutes = source.reminderOffsetMinutes
+        destination.locationName = source.locationName
+        destination.locationLatitude = source.locationLatitude
+        destination.locationLongitude = source.locationLongitude
+        destination.locationReminderEnabled = source.locationReminderEnabled
+        destination.priorityRaw = source.priorityRaw
+        destination.mainTagRaw = source.mainTagRaw
+        destination.recurrenceRule = source.recurrenceRule
+        destination.recurrenceInterval = source.recurrenceInterval
+        destination.recurrenceStartDate = source.recurrenceStartDate
+        destination.recurrenceEndDate = source.recurrenceEndDate
+        destination.recurrenceCount = source.recurrenceCount
+    }
+
+    private func recurrenceDefinitionChanged() -> Bool {
+        guard let initial = initialEditSnapshot else {
+            return false
+        }
+
+        return initial.deadLine != task.deadLine ||
+               initial.recurrenceRule != task.recurrenceRule ||
+               initial.recurrenceInterval != task.recurrenceInterval ||
+               initial.recurrenceStartDate != task.recurrenceStartDate ||
+               initial.recurrenceEndDate != task.recurrenceEndDate ||
+               initial.recurrenceCount != task.recurrenceCount
+    }
+
     @MainActor
     private func debounceCloudKitUpdate() {
         
@@ -478,7 +1192,7 @@ struct TaskDetailView: View {
             
             guard !Task.isCancelled else { return }
             
-            saveTask()
+            saveTask(userInitiated: true)
         }
     }
     
@@ -853,7 +1567,7 @@ struct TaskDetailView: View {
                 in: modelContext
             )
             
-            saveTask()
+            saveTask(userInitiated: true)
             NotificationCenter.default.post(
                 name: .attachmentsShouldRefresh,
                 object: nil
@@ -891,7 +1605,7 @@ AppLogger.notifications.info(
         modelContext.processPendingChanges()
         
         // 🔹 Save
-        saveTask()
+        saveTask(userInitiated: true)
         
         NotificationCenter.default.post(
             name: .attachmentsShouldRefresh,

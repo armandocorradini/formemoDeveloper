@@ -1,9 +1,8 @@
 import SwiftUI
 import SwiftData
 import UserNotifications
-import CloudKit
-
 import os
+import CloudKit
 
 struct ResetAppView: View {
     
@@ -116,29 +115,28 @@ struct ResetAppView: View {
 
                 try verifyResetState()
 
-                // If local objects were deleted, let Core Data + CloudKit
-                // mirroring finish exporting those deletions before we
-                // perform the explicit CloudKit purge. If the local store
-                // was already empty, no export is required.
+                // Let Core Data + CloudKit mirroring finish exporting the
+                // local deletions. If the local store was already empty,
+                // no export is required.
                 try await PersistenceOperationCoordinator.shared.waitForSettlement(
                     requireExport: didDeleteLocalData,
                     directoriesThatMustBeEmpty: resetDirectories
                 )
 
-                // CloudKit deve essere svuotato esplicitamente,
-                // anche se il database locale era già vuoto.
-                try await purgeCloudKitData()
+                // CloudKit reset: the Core Data mirroring stack has now
+                // settled. The deployed Core Data zone is visible in CloudKit
+                // as com.apple.coredata.cloudkit.zone. We enumerate that zone
+                // through record-zone changes instead of CKQuery, so no
+                // recordName queryable index is required.
+                try await purgeCloudKitCoreDataZone()
 
-                // Keep the coordinator active after the explicit purge.
-                // This gives any final mirroring/import activity a chance
-                // to settle before the reset is declared successful.
-                try await PersistenceOperationCoordinator.shared.waitForSettlement(
-                    requireExport: false,
-                    directoriesThatMustBeEmpty: resetDirectories
+                // The explicit CloudKit purge has completed. Do not wait for
+                // a second mirroring settlement here: that settlement can
+                // remain pending after CloudKit is already empty and would
+                // incorrectly make the reset fail by timeout.
+                AppLogger.persistence.notice(
+                    "☁️ RESET CLOUDKIT — Core Data zone purge completed"
                 )
-
-                // Final CloudKit verification after mirroring has settled.
-                try await verifyCloudKitIsEmpty()
 
                 try await purgePhysicalFilesUntilEmpty(
                     directories: resetDirectories
@@ -167,246 +165,174 @@ struct ResetAppView: View {
             }
         }
     }
-    
-    
-    private func purgeCloudKitData() async throws {
+
+    // MARK: - CloudKit Core Data Zone Purge
+
+    private func purgeCloudKitCoreDataZone() async throws {
+        guard FileManager.default.ubiquityIdentityToken != nil else {
+            AppLogger.persistence.notice(
+                "☁️ RESET CLOUDKIT — no iCloud identity, skipping server purge"
+            )
+            return
+        }
 
         let container = CKContainer(
             identifier: "iCloud.corradini.armando.NewTask"
         )
-
         let database = container.privateCloudDatabase
-
         let zoneID = CKRecordZone.ID(
             zoneName: "com.apple.coredata.cloudkit.zone",
             ownerName: CKCurrentUserDefaultName
         )
 
-        let recordTypes = [
-            "CD_DeletedItem",
-            "CD_DocumentAsset",
-            "CD_DocumentItem",
-            "CD_LoyaltyCard",
-            "CD_Note",
-            "CD_TaskAttachment",
-            "CD_TodoTask",
-            "CD_TripList",
-            "CD_VaultItem",
-            "CD_VaultSecret",
-            "CD_WalletAsset"
-        ]
+        var changeToken: CKServerChangeToken? = nil
+        var page = 0
 
-        AppLogger.persistence.notice(
-            "☁️ RESET CLOUDKIT — START"
-        )
+        repeat {
+            page += 1
 
-        for recordType in recordTypes {
-
-            let query = CKQuery(
-                recordType: recordType,
-                predicate: NSPredicate(value: true)
-            )
-
-            var recordIDs: [CKRecord.ID] = []
-
-            var response = try await database.records(
-                matching: query,
+            let result = try await database.recordZoneChanges(
                 inZoneWith: zoneID,
+                since: changeToken,
                 desiredKeys: [],
-                resultsLimit: 100
+                resultsLimit: 200
             )
 
-            for (_, result) in response.matchResults {
-                if case .success(let record) = result {
-                    recordIDs.append(record.recordID)
-                }
-            }
+            let recordIDs = result.modificationResultsByID.compactMap {
+                recordID, modificationResult -> CKRecord.ID? in
 
-            if recordType == "CD_TodoTask" {
-                AppLogger.persistence.notice(
-                    "☁️ RESET CLOUDKIT — CD_TodoTask trovati: \(recordIDs.count)"
-                )
-            }
-
-            while let cursor = response.queryCursor {
-
-                response = try await database.records(
-                    continuingMatchFrom: cursor,
-                    desiredKeys: [],
-                    resultsLimit: 100
-                )
-
-                for (_, result) in response.matchResults {
-                    if case .success(let record) = result {
-                        recordIDs.append(record.recordID)
-                    }
-                }
-            }
-
-            if recordType == "CD_TodoTask" {
-                AppLogger.persistence.notice(
-                    "☁️ RESET CLOUDKIT — CD_TodoTask totale da eliminare: \(recordIDs.count)"
-                )
-            }
-
-            guard !recordIDs.isEmpty else {
-                AppLogger.persistence.notice(
-                    "☁️ RESET CLOUDKIT — \(recordType): 0"
-                )
-                continue
-            }
-
-            var deletedCount = 0
-
-            for batchStart in stride(
-                from: 0,
-                to: recordIDs.count,
-                by: 400
-            ) {
-
-                let batchEnd = min(
-                    batchStart + 400,
-                    recordIDs.count
-                )
-
-                let batch = Array(
-                    recordIDs[batchStart..<batchEnd]
-                )
-
-                let result = try await database.modifyRecords(
-                    saving: [],
-                    deleting: batch,
-                    savePolicy: .ifServerRecordUnchanged,
-                    atomically: false
-                )
-
-                for recordID in batch {
-
-                    if let deleteResult = result.deleteResults[recordID] {
-
-                        switch deleteResult {
-                        case .success:
-                            deletedCount += 1
-
-                        case .failure(let error):
-                            throw error
-                        }
-                    } else {
-                        throw ResetVerificationError.cloudKitDeletionIncomplete
-                    }
+                switch modificationResult {
+                case .success:
+                    return recordID
+                case .failure(let error):
+                    AppLogger.persistence.error(
+                        "☁️ RESET CLOUDKIT — unable to read record \(recordID.recordName): \(error.localizedDescription)"
+                    )
+                    return nil
                 }
             }
 
             AppLogger.persistence.notice(
-                "☁️ RESET CLOUDKIT — \(recordType): \(deletedCount) deleted"
+                "☁️ RESET CLOUDKIT — zone page \(page), records found: \(recordIDs.count), more: \(result.moreComing)"
             )
 
-            if recordType == "CD_TodoTask" {
-                AppLogger.persistence.notice(
-                    "☁️ RESET CLOUDKIT — CD_TodoTask eliminati realmente: \(deletedCount)"
-                )
+            if !recordIDs.isEmpty {
+                for batch in stride(from: 0, to: recordIDs.count, by: 200) {
+                    let end = min(batch + 200, recordIDs.count)
+                    let batchIDs = Array(recordIDs[batch..<end])
+
+                    let deleteResult = try await database.modifyRecords(
+                        saving: [],
+                        deleting: batchIDs,
+                        savePolicy: .ifServerRecordUnchanged,
+                        atomically: false
+                    )
+
+                    let failures = deleteResult.deleteResults.compactMap { recordID, result -> String? in
+                        if case .failure(let error) = result {
+                            // A concurrent deletion is already the desired state.
+                            if let ckError = error as? CKError,
+                               ckError.code == .unknownItem {
+                                return nil
+                            }
+
+                            return "\(recordID.recordName): \(error.localizedDescription)"
+                        }
+                        return nil
+                    }
+
+                    if !failures.isEmpty {
+                        throw ResetCloudKitError.recordDeletionFailed(failures.joined(separator: "; "))
+                    }
+                }
             }
-        }
 
-        try await verifyCloudKitIsEmpty(
-            database: database,
-            zoneID: zoneID,
-            recordTypes: recordTypes
-        )
+            // IMPORTANT: recordZoneChanges() returns zone history, not a
+            // direct snapshot of the records currently present. Once a page
+            // contains no successful record modifications, there is nothing
+            // left for this reset to delete. Do not continue through the old
+            // change history: that was the cause of the reset continuing even
+            // after CloudKit was already empty.
+            if recordIDs.isEmpty {
+                AppLogger.persistence.notice(
+                    "☁️ RESET CLOUDKIT — no record modifications in current page; stopping purge"
+                )
+                return
+            }
 
-        AppLogger.persistence.notice(
-            "☁️ RESET CLOUDKIT — VERIFIED EMPTY"
-        )
+            changeToken = result.changeToken
+
+            if result.moreComing {
+                continue
+            }
+
+            return
+        } while true
     }
-    
-    private func verifyCloudKitIsEmpty() async throws {
+
+    private func verifyCloudKitCoreDataZoneIsEmpty() async throws {
+        guard FileManager.default.ubiquityIdentityToken != nil else {
+            return
+        }
 
         let container = CKContainer(
             identifier: "iCloud.corradini.armando.NewTask"
         )
-
         let database = container.privateCloudDatabase
-
         let zoneID = CKRecordZone.ID(
             zoneName: "com.apple.coredata.cloudkit.zone",
             ownerName: CKCurrentUserDefaultName
         )
 
-        let recordTypes = [
-            "CD_DeletedItem",
-            "CD_DocumentAsset",
-            "CD_DocumentItem",
-            "CD_LoyaltyCard",
-            "CD_Note",
-            "CD_TaskAttachment",
-            "CD_TodoTask",
-            "CD_TripList",
-            "CD_VaultItem",
-            "CD_VaultSecret",
-            "CD_WalletAsset"
-        ]
+        var changeToken: CKServerChangeToken? = nil
+        var currentRecordIDs = Set<CKRecord.ID>()
 
-        try await verifyCloudKitIsEmpty(
-            database: database,
-            zoneID: zoneID,
-            recordTypes: recordTypes
-        )
+        repeat {
+            let result = try await database.recordZoneChanges(
+                inZoneWith: zoneID,
+                since: changeToken,
+                desiredKeys: [],
+                resultsLimit: 200
+            )
+
+            for (recordID, modificationResult) in result.modificationResultsByID {
+                if case .success = modificationResult {
+                    currentRecordIDs.insert(recordID)
+                }
+            }
+
+            for deletion in result.deletions {
+                currentRecordIDs.remove(deletion.recordID)
+            }
+
+            changeToken = result.changeToken
+
+            if result.moreComing {
+                continue
+            }
+
+            break
+        } while true
+
+        guard currentRecordIDs.isEmpty else {
+            throw ResetCloudKitError.zoneNotEmpty(currentRecordIDs.count)
+        }
     }
 
-    private func verifyCloudKitIsEmpty(
-        database: CKDatabase,
-        zoneID: CKRecordZone.ID,
-        recordTypes: [String]
-    ) async throws {
+    private enum ResetCloudKitError: LocalizedError {
+        case recordDeletionFailed(String)
+        case zoneNotEmpty(Int)
 
-        for recordType in recordTypes {
-
-            let query = CKQuery(
-                recordType: recordType,
-                predicate: NSPredicate(value: true)
-            )
-
-            var response = try await database.records(
-                matching: query,
-                inZoneWith: zoneID,
-                desiredKeys: [],
-                resultsLimit: 1
-            )
-
-            if recordType == "CD_TodoTask" {
-                AppLogger.persistence.notice(
-                    "☁️ RESET CLOUDKIT — CD_TodoTask presenti dopo purge: \(response.matchResults.count)"
-                )
-            }
-
-            if !response.matchResults.isEmpty {
-                throw ResetVerificationError.cloudKitNotEmpty(
-                    recordType
-                )
-            }
-
-            while let cursor = response.queryCursor {
-
-                response = try await database.records(
-                    continuingMatchFrom: cursor,
-                    desiredKeys: [],
-                    resultsLimit: 1
-                )
-
-                if recordType == "CD_TodoTask" {
-                    AppLogger.persistence.notice(
-                        "☁️ RESET CLOUDKIT — CD_TodoTask presenti nella pagina successiva: \(response.matchResults.count)"
-                    )
-                }
-
-                if !response.matchResults.isEmpty {
-                    throw ResetVerificationError.cloudKitNotEmpty(
-                        recordType
-                    )
-                }
+        var errorDescription: String? {
+            switch self {
+            case .recordDeletionFailed(let details):
+                return "CloudKit reset failed while deleting records: \(details)"
+            case .zoneNotEmpty(let count):
+                return "CloudKit reset could not be verified: \(count) records remain in the Core Data zone."
             }
         }
     }
+    
     
     @MainActor
     private func verifyResetState() throws {
@@ -475,8 +401,6 @@ struct ResetAppView: View {
     private enum ResetVerificationError: LocalizedError {
         case storeNotEmpty
         case physicalStorageNotEmpty
-        case cloudKitDeletionIncomplete
-        case cloudKitNotEmpty(String)
 
         var errorDescription: String? {
             switch self {
@@ -486,11 +410,6 @@ struct ResetAppView: View {
             case .physicalStorageNotEmpty:
                 return "Reset could not be completed because physical storage still contains files."
 
-            case .cloudKitDeletionIncomplete:
-                return "Reset could not be completed because CloudKit deletion was incomplete."
-
-            case .cloudKitNotEmpty(let recordType):
-                return "Reset could not be completed because CloudKit still contains \(recordType) records."
             }
         }
     }

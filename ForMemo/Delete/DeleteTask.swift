@@ -27,7 +27,17 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
     }
 
 
-    DeletedFingerprintStore.markDeleted(task)
+    if let recurrenceID = task.recurrenceID,
+       let occurrenceIndex = task.occurrenceIndex {
+
+        DeletedFingerprintStore.markDeletedOccurrence(
+            recurrenceID: recurrenceID,
+            occurrenceIndex: occurrenceIndex
+        )
+    } else {
+        DeletedFingerprintStore.markDeleted(task)
+    }
+
     context.delete(task)
 
     context.safeSave(operation: "DeleteTask")
@@ -35,6 +45,81 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
     NotificationManager.shared.refresh()
 }
 
+@MainActor
+func deleteRecurringTaskAndFutureOccurrences(
+    _ task: TodoTask,
+    in context: ModelContext
+) {
+    guard let recurrenceID = task.recurrenceID,
+          let occurrenceIndex = task.occurrenceIndex else {
+        deleteTask(task, in: context)
+        return
+    }
+
+    let batchSize = 250
+
+    // Store the deletion range once.
+    DeletedFingerprintStore.markDeletedFromOccurrence(
+        recurrenceID: recurrenceID,
+        occurrenceIndex: occurrenceIndex
+    )
+
+    let descriptor = FetchDescriptor<TodoTask>(
+        predicate: #Predicate<TodoTask> { candidate in
+            candidate.recurrenceID == recurrenceID
+        },
+        sortBy: [
+            SortDescriptor(\TodoTask.occurrenceIndex)
+        ]
+    )
+
+    let recurrenceTasks = (try? context.fetch(descriptor)) ?? []
+
+    let tasksToDelete = recurrenceTasks.filter { recurrenceTask in
+        guard let index = recurrenceTask.occurrenceIndex else {
+            return false
+        }
+
+        return index >= occurrenceIndex
+    }
+
+    guard !tasksToDelete.isEmpty else {
+        NotificationManager.shared.refresh()
+        return
+    }
+
+    for batchStart in stride(
+        from: 0,
+        to: tasksToDelete.count,
+        by: batchSize
+    ) {
+        let batchEnd = min(
+            batchStart + batchSize,
+            tasksToDelete.count
+        )
+
+        for recurrenceTask in tasksToDelete[batchStart..<batchEnd] {
+
+            if let attachments = recurrenceTask.attachments {
+                for attachment in attachments {
+                    _ = attachment.deleteFileIfNeeded()
+
+                    TaskAttachment.deleteCloudMirror(
+                        relativePath: attachment.relativePath
+                    )
+                }
+            }
+
+            context.delete(recurrenceTask)
+        }
+
+        context.safeSave(
+            operation: "DeleteRecurringTaskAndFutureOccurrences.batch"
+        )
+    }
+
+    NotificationManager.shared.refresh()
+}
 
 @MainActor
 func deleteLoyaltyCard(

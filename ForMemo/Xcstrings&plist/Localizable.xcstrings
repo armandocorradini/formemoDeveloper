@@ -3980,6 +3980,34 @@
         }
       }
     },
+    "Apply changes to" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Änderungen anwenden auf"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar cambios a"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appliquer les modifications à"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applica modifiche a"
+          }
+        }
+      }
+    },
     "Appointments" : {
       "localizations" : {
         "de" : {
@@ -9104,6 +9132,34 @@
         }
       }
     },
+    "Choose whether the changes apply only to this occurrence or also to future occurrences." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle aus, ob die Änderungen nur für diese Wiederholung oder auch für zukünftige Wiederholungen gelten sollen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige si los cambios se aplican solo a esta ocurrencia o también a las ocurrencias futuras."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez si les modifications s’appliquent uniquement à cette occurrence ou également aux occurrences futures."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli se applicare le modifiche solo a questa occorrenza oppure anche alle occorrenze future."
+          }
+        }
+      }
+    },
     "Choose Your Map" : {
       "localizations" : {
         "de" : {
@@ -10795,6 +10851,34 @@
         }
       }
     },
+    "Create future occurrences?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zukünftige Wiederholungen erstellen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Crear ocurrencias futuras?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer les occurrences futures ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creare le occorrenze future?"
+          }
+        }
+      }
+    },
     "Create guest list" : {
       "localizations" : {
         "de" : {
@@ -11620,6 +11704,7 @@
       }
     },
     "day" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -11748,6 +11833,7 @@
       }
     },
     "days" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -12355,6 +12441,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancellare l’attività?"
+          }
+        }
+      }
+    },
+    "Delete This & Future Occurrences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese und zukünftige Wiederholungen löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar esta y las ocurrencias futuras"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer cette occurrence et les occurrences futures"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina questa e le occorrenze future"
+          }
+        }
+      }
+    },
+    "Delete This Occurrence" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Wiederholung löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar esta ocurrencia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer cette occurrence"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina questa occorrenza"
           }
         }
       }
@@ -14509,6 +14651,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abilitato"
+          }
+        }
+      }
+    },
+    "Ends" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finaliza"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se termine"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Termina"
           }
         }
       }
@@ -17821,6 +17991,7 @@
       }
     },
     "hour" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -17877,6 +18048,7 @@
       }
     },
     "hours" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21446,6 +21618,34 @@
         }
       }
     },
+    "Modify future occurrences?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zukünftige Wiederholungen ändern?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Modificar las ocurrencias futuras?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier les occurrences futures ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica le occorrenze future?"
+          }
+        }
+      }
+    },
     "Monochrome" : {
       "localizations" : {
         "de" : {
@@ -21475,6 +21675,7 @@
       }
     },
     "month" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -21531,6 +21732,7 @@
       }
     },
     "months" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -23714,6 +23916,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notifica globale"
+          }
+        }
+      }
+    },
+    "Occurrences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederholungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocurrencias"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Occurrences"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Occorrenze"
           }
         }
       }
@@ -34727,6 +34957,34 @@
         }
       }
     },
+    "The currently scheduled future occurrences will be deleted and replaced with %lld new future occurrences according to the new recurrence." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die derzeit geplanten zukünftigen Wiederholungen werden gelöscht und gemäß der neuen Wiederholung durch %lld neue zukünftige Wiederholungen ersetzt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las ocurrencias futuras actualmente programadas se eliminarán y se sustituirán por %lld nuevas ocurrencias futuras según la nueva recurrencia."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les occurrences futures actuellement programmées seront supprimées et remplacées par %lld nouvelles occurrences futures selon la nouvelle récurrence."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le occorrenze future attualmente programmate verranno eliminate e sostituite da %lld nuove occorrenze future in base alla nuova ricorrenza."
+          }
+        }
+      }
+    },
     "The Dashboard automatically highlights what needs your attention first. View overdue tasks, tasks due today, upcoming activities, weather forecasts and recently opened items from Wallet, Documents and Checklists in one place." : {
       "localizations" : {
         "de" : {
@@ -34891,6 +35149,133 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La mappa si adatta automaticamente per mostrare tutti i task all’apertura. Dopo, il livello di zoom scelto viene mantenuto."
+          }
+        }
+      }
+    },
+    "The new recurrence requires %lld future occurrences. Only the first %lld will be created, up to the maximum limit of 2,000." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die neue Wiederholung erfordert %1$Ild zukünftige Wiederholungen. Es werden nur die ersten %2$Ild erstellt, bis zum Höchstlimit von 2.000."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The new recurrence requires %1$lld future occurrences. Only the first %2$lld will be created, up to the maximum limit of 2,000."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nueva recurrencia requiere %1$Ild ocurrencias futuras. Solo se crearán las primeras %2$Ild, hasta el límite máximo de 2.000."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nouvelle récurrence nécessite %1$Ild occurrences futures. Seules les %2$Ild premières seront créées, dans la limite maximale de 2 000."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nuova ricorrenza richiede %1$Ild occorrenze future. Verranno create solo le prime %2$Ild, fino al limite massimo di 2.000."
+          }
+        }
+      }
+    },
+    "The new recurrence requires %lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %lld occurrences, up to the maximum limit of 2,000." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nouvelle récurrence nécessite %lld occurrences futures.\nLes occurrences futures actuellement programmées seront supprimées et remplacées par les %lld premières occurrences, dans la limite maximale de 2 000."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The new recurrence requires %1$lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %2$lld occurrences, up to the maximum limit of 2,000."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nueva recurrencia requiere %lld ocurrencias futuras.\nLas ocurrencias futuras actualmente programadas se eliminarán y sustituirán por las primeras %lldocurrencias, hasta el límite máximo de 2.000."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nouvelle récurrence nécessite %lld occurrences futures. Les occurrences futures actuellement programmées seront supprimées et remplacées par les %lld premières occurrences, dans la limite maximale de 2 000."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nuova ricorrenza richiede %lld occorrenze future.\nLe occorrenze future attualmente programmate verranno eliminate e sostituite dalle prime %lld occorrenze, fino al limite massimo di 2.000."
+          }
+        }
+      }
+    },
+    "The new recurrence will create %lld future occurrences." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die neue Wiederholung erstellt %lld zukünftige Wiederholungen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nueva recurrencia creará %lld ocurrencias futuras."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nouvelle récurrence créera %lld occurrences futures."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nuova ricorrenza creerà %lld occorrenze future."
+          }
+        }
+      }
+    },
+    "The new recurrence will replace the %lld future occurrences. The currently scheduled future occurrences will be deleted and recreated according to the new recurrence." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nouvelle récurrence remplacera les %lld occurrences futures. Les occurrences futures actuellement programmées seront supprimées et recréées selon la nouvelle récurrence."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nueva recurrencia sustituirá las %lld ocurrencias futuras. Las ocurrencias futuras actualmente programadas se eliminarán y volverán a crearse según la nueva recurrencia."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nouvelle récurrence remplacera les %lld occurrences futures. Les occurrences futures actuellement programmées seront supprimées et recréées selon la nouvelle récurrence."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nuova ricorrenza sostituirà le %lld occorrenze future. Le occorrenze future attualmente programmate verranno eliminate e ricreate in base alla nuova ricorrenza."
           }
         }
       }
@@ -35471,6 +35856,62 @@
         }
       }
     },
+    "This" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette occurrence"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa"
+          }
+        }
+      }
+    },
+    "This & Future" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese und zukünftige"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta y las futuras"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette occurrence et les suivantes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa e le future"
+          }
+        }
+      }
+    },
     "This action cannot be undone." : {
       "localizations" : {
         "de" : {
@@ -35665,6 +36106,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Questo provider non supporta l'esportazione delle credenziali."
+          }
+        }
+      }
+    },
+    "This recurrence requires more than 2,000 tasks. Only the first 2,000 tasks will be created." : {
+
+    },
+    "This recurrence will create %lld future tasks." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette récurrence créera %lld tâches futures."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta recurrencia creará %lld tareas futuras."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette récurrence créera %lld tâches futures."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa ricorrenza creerà %lld attività future."
+          }
+        }
+      }
+    },
+    "This recurrence will create %lld tasks." : {
+
+    },
+    "This recurrence will create more than 2,000 future tasks. The first 2,000 will be created." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Wiederholung erstellt mehr als 2.000 zukünftige Aufgaben. Es werden nur die ersten 2.000 erstellt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta recurrencia creará más de 2.000 tareas futuras. Solo se crearán las primeras 2.000."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette récurrence créera plus de 2 000 tâches futures. Seules les 2 000 premières seront créées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa ricorrenza creerà più di 2.000 attività future. Verranno create solo le prime 2.000."
           }
         }
       }
@@ -37609,6 +38114,34 @@
         }
       }
     },
+    "Until" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bis"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hasta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jusqu’au"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fino al"
+          }
+        }
+      }
+    },
     "Untitled" : {
       "localizations" : {
         "de" : {
@@ -39016,6 +39549,7 @@
       }
     },
     "week" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -39044,6 +39578,7 @@
       }
     },
     "weeks" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -40534,6 +41069,7 @@
       }
     },
     "year" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -40590,6 +41126,7 @@
       }
     },
     "years" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

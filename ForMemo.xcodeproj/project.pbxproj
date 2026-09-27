@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1C1358C9305C54A80030AC9B /* PerformanceBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C1358C8305C54A80030AC9B /* PerformanceBenchmark.swift */; };
 		1C3191D23036F7D2009ABE1E /* RemoteAssetCleanupCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */; };
+		1C604A283067095400142E9C /* RecurrenceEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C604A273067094100142E9C /* RecurrenceEngine.swift */; };
 		1C62D169304FDC9E00E97C02 /* TaskRescheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */; };
 		1C62D16D3053E5C800E97C02 /* BarcodePhotoDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D16C3053E5C200E97C02 /* BarcodePhotoDetector.swift */; };
 		1C62D1703054230500E97C02 /* ZXingCpp in Frameworks */ = {isa = PBXBuildFile; productRef = 1C62D16F3054230500E97C02 /* ZXingCpp */; };
@@ -243,6 +244,7 @@
 		1C1358C8305C54A80030AC9B /* PerformanceBenchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceBenchmark.swift; sourceTree = "<group>"; };
 		1C1C23002F7E983A00A77282 /* ForMemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ForMemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteAssetCleanupCoordinator.swift; sourceTree = "<group>"; };
+		1C604A273067094100142E9C /* RecurrenceEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceEngine.swift; sourceTree = "<group>"; };
 		1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRescheduler.swift; sourceTree = "<group>"; };
 		1C62D16C3053E5C200E97C02 /* BarcodePhotoDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodePhotoDetector.swift; sourceTree = "<group>"; };
 		1C62D172305423A600E97C02 /* OpenSourceLicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSourceLicensesView.swift; sourceTree = "<group>"; };
@@ -653,6 +655,7 @@
 		1C634E3C30220CAE0092DB89 /* Task */ = {
 			isa = PBXGroup;
 			children = (
+				1C604A273067094100142E9C /* RecurrenceEngine.swift */,
 				1C716EF13059795B006C6178 /* TaskSingleCalendarExport.swift */,
 				1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */,
 				1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */,
@@ -1201,6 +1204,7 @@
 				1C634E2F30220C9C0092DB89 /* VaultEditView.swift in Sources */,
 				1C1358C9305C54A80030AC9B /* PerformanceBenchmark.swift in Sources */,
 				1C634E3030220C9C0092DB89 /* VaultGateView.swift in Sources */,
+				1C604A283067095400142E9C /* RecurrenceEngine.swift in Sources */,
 				1C634E3130220C9C0092DB89 /* VaultLockCoverView.swift in Sources */,
 				1C634E3230220C9C0092DB89 /* VaultPasswordField.swift in Sources */,
 				1C634E3330220C9C0092DB89 /* VaultRow.swift in Sources */,

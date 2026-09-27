@@ -31,8 +31,13 @@ final class TodoTask {
     var manualSnoozeUntil: Date? = nil
 
     // MARK: - Recurrence
-    var recurrenceRule: String? = nil // "hourly", "daily", "weekly", "monthly", "yearly"
+    var recurrenceRule: String? = nil
     var recurrenceInterval: Int = 1
+    var recurrenceID: UUID? = nil
+    var occurrenceIndex: Int? = nil
+    var recurrenceStartDate: Date? = nil
+    var recurrenceEndDate: Date? = nil
+    var recurrenceCount: Int? = nil
     
     var isDebugTask: Bool = false
     
@@ -327,73 +332,16 @@ extension TodoTask {
         in context: ModelContext,
         options: RecurringTaskOptions
     ) {
-        
-        if options.keepHistory {
+        _ = context
+        _ = options
 
-            // 1️⃣ CREA COPIA COMPLETATA (STORICO se settato dall'utente)
-            let completedCopy = TodoTask(
-                title: self.title,
-                taskDescription: self.taskDescription
-            )
-
-            completedCopy.deadLine = self.deadLine
-            completedCopy.reminderOffsetMinutes = self.reminderOffsetMinutes
-            completedCopy.priority = self.priority
-            completedCopy.mainTag = self.mainTag
-
-            completedCopy.locationName = self.locationName
-            completedCopy.locationLatitude = self.locationLatitude
-            completedCopy.locationLongitude = self.locationLongitude
-
-            completedCopy.isCompleted = true
-            completedCopy.completedAt = Date()
-
-            // 🔴 fondamentale: NO ricorrenza nella copia
-            completedCopy.recurrenceRule = nil
-            completedCopy.recurrenceInterval = 1
-
-            context.insert(completedCopy)
-        }
-        // 2️⃣ AGGIORNA TASK ORIGINALE → PROSSIMA OCCORRENZA
-        moveToNextOccurrence()
-        
-        self.isCompleted = false
-        self.completedAt = nil
-        self.snoozeUntil = nil
-        self.manualSnoozeUntil = nil
+        isCompleted = true
+        completedAt = .now
+        snoozeUntil = nil
+        manualSnoozeUntil = nil
     }
-    
-    private func moveToNextOccurrence() {
-        
-        guard let rule = recurrenceRule,
-              let current = deadLine else { return }
-        
-        let calendar = Calendar.current
-        let interval = max(1, recurrenceInterval)
-        
-        switch rule {
-        case "hourly":
-            deadLine = calendar.date(byAdding: .hour, value: interval, to: current)
-            
-        case "daily":
-            deadLine = calendar.date(byAdding: .day, value: interval, to: current)
-            
-        case "weekly":
-            deadLine = calendar.date(byAdding: .weekOfYear, value: interval, to: current)
-            
-        case "monthly":
-            deadLine = calendar.date(byAdding: .month, value: interval, to: current)
-            
-        case "yearly":
-            deadLine = calendar.date(byAdding: .year, value: interval, to: current)
-            
-        default:
-            break
-        }
-    }
+
 }
-
-
 
 struct RecurringTaskOptions {
     let keepHistory: Bool

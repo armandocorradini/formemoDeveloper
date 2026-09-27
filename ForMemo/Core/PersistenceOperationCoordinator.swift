@@ -11,6 +11,7 @@ final class PersistenceOperationCoordinator {
     enum Operation: String {
         case reset
         case restore
+        case delete
     }
 
     enum CoordinatorError: LocalizedError {

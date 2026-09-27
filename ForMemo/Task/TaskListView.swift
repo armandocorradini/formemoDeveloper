@@ -126,6 +126,12 @@ struct TaskListView: View {
 
   }
 
+  private var confirmTaskDeletion: Bool {
+
+    settings.confirmTaskDeletion
+
+  }
+
   @State private var taskPendingDeletion: TodoTask?
 
   @State private var filteredTodoTasksCache: [TodoTask] = []
@@ -1625,27 +1631,68 @@ struct TaskListView: View {
           .background(Color.clear)
           .scrollEdgeEffectHidden(true, for: .top)
           .alert(
-            "Delete task?",
-            isPresented: Binding(
-              get: { taskPendingDeletion != nil },
-              set: { if !$0 { taskPendingDeletion = nil } }
-            )
-
+              String(localized: "Delete task?"),
+              isPresented: Binding(
+                  get: { taskPendingDeletion != nil },
+                  set: { if !$0 { taskPendingDeletion = nil } }
+              )
           ) {
 
-            Button("Delete", role: .destructive) {
-              guard let task = taskPendingDeletion else {
-                taskPendingDeletion = nil
-                return
+              if let task = taskPendingDeletion,
+                 task.recurrenceID != nil {
+
+                  Button(
+                      String(localized: "Delete This Occurrence"),
+                      role: .destructive
+                  ) {
+                      deleteTaskAndRefresh(task)
+                      taskPendingDeletion = nil
+                  }
+
+                  Button(
+                      String(localized: "Delete This & Future Occurrences"),
+                      role: .destructive
+                  ) {
+                      deleteRecurringTaskAndFutureOccurrences(
+                          task,
+                          in: modelContext
+                      )
+
+                      modelContext.processPendingChanges()
+
+                      NotificationCenter.default.post(
+                          name: .taskDidChange,
+                          object: nil
+                      )
+
+                      taskPendingDeletion = nil
+                  }
+
+              } else {
+
+                  Button(
+                      String(localized: "Delete"),
+                      role: .destructive
+                  ) {
+                      guard let task = taskPendingDeletion else {
+                          taskPendingDeletion = nil
+                          return
+                      }
+
+                      deleteTaskAndRefresh(task)
+                      taskPendingDeletion = nil
+                  }
               }
-              deleteTaskAndRefresh(task)
-              taskPendingDeletion = nil
-            }
-            Button("Cancel", role: .cancel) {
-              taskPendingDeletion = nil
-            }
+
+              Button(
+                  String(localized: "Cancel"),
+                  role: .cancel
+              ) {
+                  taskPendingDeletion = nil
+              }
+
           } message: {
-            Text("This action cannot be undone.")
+              Text(String(localized: "This action cannot be undone."))
           }
           .contentMargins(
             .horizontal,
@@ -2157,6 +2204,54 @@ struct TaskListView: View {
             name: .taskDidChange,
             object: nil
         )
+    }
+
+    @MainActor
+    private func requestTaskDeletion(_ task: TodoTask) {
+        guard task.recurrenceID != nil else {
+            if confirmTaskDeletion {
+                taskPendingDeletion = task
+            } else {
+                withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
+                    deleteTaskAndRefresh(task)
+                }
+            }
+            return
+        }
+
+        do {
+            let recurrenceID = task.recurrenceID
+            let currentIndex = task.occurrenceIndex ?? 1
+
+            let occurrences = try modelContext.fetch(
+                FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> {
+                        $0.recurrenceID == recurrenceID
+                    }
+                )
+            )
+
+            let hasFutureOccurrence = occurrences.contains { occurrence in
+                guard occurrence.id != task.id,
+                      let occurrenceIndex = occurrence.occurrenceIndex else {
+                    return false
+                }
+                return occurrenceIndex > currentIndex
+            }
+
+            if hasFutureOccurrence || confirmTaskDeletion {
+                taskPendingDeletion = task
+            } else {
+                withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
+                    deleteTaskAndRefresh(task)
+                }
+            }
+        } catch {
+            taskPendingDeletion = task
+            AppLogger.persistence.error(
+                "TaskList recurrence deletion check failed: \(error.localizedDescription)"
+            )
+        }
     }
     
     
@@ -3508,6 +3603,54 @@ struct TodoSectionView: View {
 
   }
 
+  @MainActor
+  private func requestTaskDeletion(_ task: TodoTask) {
+    guard task.recurrenceID != nil else {
+      if confirmTaskDeletion {
+        taskPendingDeletion = task
+      } else {
+        withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
+          deleteTaskAndRefresh(task)
+        }
+      }
+      return
+    }
+
+    do {
+      let recurrenceID = task.recurrenceID
+      let currentIndex = task.occurrenceIndex ?? 1
+
+      let occurrences = try modelContext.fetch(
+        FetchDescriptor<TodoTask>(
+          predicate: #Predicate<TodoTask> {
+            $0.recurrenceID == recurrenceID
+          }
+        )
+      )
+
+      let hasFutureOccurrence = occurrences.contains { occurrence in
+        guard occurrence.id != task.id,
+              let occurrenceIndex = occurrence.occurrenceIndex else {
+          return false
+        }
+        return occurrenceIndex > currentIndex
+      }
+
+      if hasFutureOccurrence || confirmTaskDeletion {
+        taskPendingDeletion = task
+      } else {
+        withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
+          deleteTaskAndRefresh(task)
+        }
+      }
+    } catch {
+      taskPendingDeletion = task
+      AppLogger.persistence.error(
+        "TaskList recurrence deletion check failed: \(error.localizedDescription)"
+      )
+    }
+  }
+
   @ViewBuilder
 
   private func taskRow(for t: TodoTask, position: TaskRowPosition) -> some View {
@@ -3568,19 +3711,7 @@ struct TodoSectionView: View {
 
       Button(role: .destructive) {
 
-        if confirmTaskDeletion {
-
-          taskPendingDeletion = t
-
-        } else {
-
-          withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
-
-deleteTaskAndRefresh(t)
-
-          }
-
-        }
+          requestTaskDeletion(t)
 
       } label: {
 
@@ -3594,22 +3725,7 @@ deleteTaskAndRefresh(t)
 
       Button(role: .destructive) {
 
-        if confirmTaskDeletion {
-
-          DispatchQueue.main.async {
-
-            taskPendingDeletion = t
-
-          }
-
-        } else {
-
-          withAnimation {
-deleteTaskAndRefresh(t)
-
-          }
-
-        }
+          requestTaskDeletion(t)
 
       } label: {
 
@@ -3917,6 +4033,15 @@ deleteTaskAndRefresh(t)
 
 
 struct CompletedTasksContainerView: View {
+    
+    @Environment(AppSettings.self)
+    private var settings
+
+  private var confirmTaskDeletion: Bool {
+
+      settings.confirmTaskDeletion
+
+  }
 
   @Binding var taskPendingDeletion: TodoTask?
 
@@ -3962,6 +4087,61 @@ struct CompletedSectionView: View {
   let modelContext: ModelContext
   let completedTaskCount: Int
     let loadMoreTasks: () -> Void
+
+  @MainActor
+  private func requestTaskDeletion(_ task: TodoTask) {
+    guard task.recurrenceID != nil else {
+      if confirmTaskDeletion {
+        taskPendingDeletion = task
+      } else {
+        withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
+          deleteTaskAndRefresh(task)
+        }
+      }
+      return
+    }
+
+    do {
+      let recurrenceID = task.recurrenceID
+      let currentIndex = task.occurrenceIndex ?? 1
+
+      let occurrences = try modelContext.fetch(
+        FetchDescriptor<TodoTask>(
+          predicate: #Predicate<TodoTask> {
+            $0.recurrenceID == recurrenceID
+          }
+        )
+      )
+
+      let hasFutureOccurrence = occurrences.contains { occurrence in
+        guard occurrence.id != task.id,
+              let occurrenceIndex = occurrence.occurrenceIndex else {
+          return false
+        }
+        return occurrenceIndex > currentIndex
+      }
+
+      if hasFutureOccurrence || confirmTaskDeletion {
+        taskPendingDeletion = task
+      } else {
+        withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
+          deleteTaskAndRefresh(task)
+        }
+      }
+    } catch {
+      taskPendingDeletion = task
+      AppLogger.persistence.error(
+        "TaskList completed recurrence deletion check failed: \(error.localizedDescription)"
+      )
+    }
+  }
+
+  @MainActor
+  private func deleteTaskAndRefresh(_ task: TodoTask) {
+    deleteTask(task, in: modelContext)
+    modelContext.processPendingChanges()
+    NotificationCenter.default.post(name: .taskDidChange, object: nil)
+  }
     
 
   var body: some View {
@@ -4028,19 +4208,7 @@ struct CompletedSectionView: View {
 
             Button(role: .destructive) {
 
-              if confirmTaskDeletion {
-
-                taskPendingDeletion = t
-
-              } else {
-
-                withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
-
-                  deleteTask(t, in: modelContext)
-
-                }
-
-              }
+                requestTaskDeletion(t)
 
             } label: {
 
@@ -4054,19 +4222,7 @@ struct CompletedSectionView: View {
 
             Button(role: .destructive) {
 
-              if confirmTaskDeletion {
-
-                taskPendingDeletion = t
-
-              } else {
-
-                withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
-
-                  deleteTask(t, in: modelContext)
-
-                }
-
-              }
+                requestTaskDeletion(t)
 
             } label: {
 

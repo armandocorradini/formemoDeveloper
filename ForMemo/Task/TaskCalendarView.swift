@@ -1654,6 +1654,7 @@ private struct DayTasksInlineView: View {
     @Environment(AppSettings.self) private var settings
 
     @State private var taskPendingDeletion: TodoTask?
+    @State private var pendingDeletionHasFutureOccurrences = false
 
     let tasks: [TodoTask]
 
@@ -1736,6 +1737,64 @@ private struct DayTasksInlineView: View {
     }
 
 
+
+    @MainActor
+    private func requestTaskDeletion(_ task: TodoTask) {
+        guard let recurrenceID = task.recurrenceID else {
+            pendingDeletionHasFutureOccurrences = false
+            if settings.confirmTaskDeletion {
+                taskPendingDeletion = task
+            } else {
+                withAnimation {
+                    deleteTask(task, in: modelContext)
+                }
+                NotificationCenter.default.post(
+                    name: .taskDidChange,
+                    object: nil
+                )
+            }
+            return
+        }
+
+        do {
+            let occurrences = try modelContext.fetch(
+                FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> {
+                        $0.recurrenceID == recurrenceID
+                    }
+                )
+            )
+
+            let currentIndex = task.occurrenceIndex ?? 1
+            let hasFutureOccurrence = occurrences.contains { occurrence in
+                occurrence.id != task.id &&
+                (occurrence.occurrenceIndex ?? 1) > currentIndex
+            }
+
+            pendingDeletionHasFutureOccurrences = hasFutureOccurrence
+
+            if hasFutureOccurrence || settings.confirmTaskDeletion {
+                taskPendingDeletion = task
+            } else {
+                withAnimation {
+                    deleteTask(task, in: modelContext)
+                }
+                NotificationCenter.default.post(
+                    name: .taskDidChange,
+                    object: nil
+                )
+                pendingDeletionHasFutureOccurrences = false
+            }
+        } catch {
+            // In caso di errore non cancelliamo automaticamente.
+            // Mostriamo la conferma del task per evitare una cancellazione inattesa.
+            pendingDeletionHasFutureOccurrences = false
+            taskPendingDeletion = task
+            AppLogger.persistence.error(
+                "Calendar recurrence deletion check failed: \(error.localizedDescription)"
+            )
+        }
+    }
 
     var body: some View {
 
@@ -1986,28 +2045,9 @@ private struct DayTasksInlineView: View {
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
 
                         Button(role: .destructive) {
-
-                            if settings.confirmTaskDeletion {
-
-                                taskPendingDeletion = task // <--- Questo attiva l'alert
-
-                            } else {
-
-                                withAnimation {
-                                    deleteTask(task, in: modelContext)
-                                }
-
-                                NotificationCenter.default.post(
-                                    name: .taskDidChange,
-                                    object: nil
-                                )
-
-                            }
-
+                            requestTaskDeletion(task)
                         } label: {
-
                             Label("Delete", systemImage: "trash")
-
                         }
 
                     }
@@ -2015,19 +2055,7 @@ private struct DayTasksInlineView: View {
                     .contextMenu {
 
                         Button(role: .destructive) {
-                            if settings.confirmTaskDeletion {
-                                DispatchQueue.main.async {
-                                    taskPendingDeletion = task
-                                }
-                            } else {
-                                withAnimation {
-                                    deleteTask(task, in: modelContext)
-                                    NotificationCenter.default.post(
-                                        name: .taskDidChange,
-                                        object: nil
-                                    )
-                                }
-                            }
+                            requestTaskDeletion(task)
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -2221,46 +2249,69 @@ private struct DayTasksInlineView: View {
             .background(Color.clear)
 
             .alert("Delete task?",
-
                    isPresented: Binding(
-
                     get: { taskPendingDeletion != nil },
-
-                    set: { if !$0 { taskPendingDeletion = nil } }
-
+                    set: {
+                        if !$0 {
+                            taskPendingDeletion = nil
+                            pendingDeletionHasFutureOccurrences = false
+                        }
+                    }
                    )
-
             ) {
 
-                Button("Delete", role: .destructive) {
+                if let task = taskPendingDeletion, pendingDeletionHasFutureOccurrences {
 
-                    if let task = taskPendingDeletion {
-
+                    Button("Delete This Occurrence", role: .destructive) {
                         withAnimation {
                             deleteTask(task, in: modelContext)
                         }
-
                         NotificationCenter.default.post(
                             name: .taskDidChange,
                             object: nil
                         )
-
                         taskPendingDeletion = nil
-
+                        pendingDeletionHasFutureOccurrences = false
                     }
 
+                    Button("Delete This & Future Occurrences", role: .destructive) {
+                        deleteRecurringTaskAndFutureOccurrences(
+                            task,
+                            in: modelContext
+                        )
+                        modelContext.processPendingChanges()
+                        NotificationCenter.default.post(
+                            name: .taskDidChange,
+                            object: nil
+                        )
+                        taskPendingDeletion = nil
+                        pendingDeletionHasFutureOccurrences = false
+                    }
+
+                } else {
+
+                    Button("Delete", role: .destructive) {
+                        if let task = taskPendingDeletion {
+                            withAnimation {
+                                deleteTask(task, in: modelContext)
+                            }
+                            NotificationCenter.default.post(
+                                name: .taskDidChange,
+                                object: nil
+                            )
+                        }
+                        taskPendingDeletion = nil
+                        pendingDeletionHasFutureOccurrences = false
+                    }
                 }
 
                 Button("Cancel", role: .cancel) {
-
                     taskPendingDeletion = nil
-
+                    pendingDeletionHasFutureOccurrences = false
                 }
 
             } message: {
-
                 Text("This action cannot be undone.")
-
             }
 
         }
