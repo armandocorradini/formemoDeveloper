@@ -343,6 +343,41 @@ extension TodoTask {
 
 }
 
+extension TodoTask {
+    
+    @MainActor
+    static func createDeletedTaskRecord(
+        from task: TodoTask,
+        in context: ModelContext
+    ) {
+        let item = DeletedItem(type: "task")
+        
+        item.taskID = task.id
+        item.title = task.title
+        item.taskDescription = task.taskDescription
+        item.deadLine = task.deadLine
+        item.createdAt = task.createdAt
+        item.isCompleted = task.isCompleted
+        item.completedAt = task.completedAt
+        item.reminderOffsetMinutes = task.reminderOffsetMinutes
+        item.locationName = task.locationName
+        item.locationLatitude = task.locationLatitude
+        item.locationLongitude = task.locationLongitude
+        item.priorityRaw = task.priorityRaw
+        item.mainTagRaw = task.mainTagRaw
+        item.recurrenceID = task.recurrenceID
+        item.occurrenceIndex = task.occurrenceIndex
+        item.recurrenceRule = task.recurrenceRule
+        item.recurrenceInterval = task.recurrenceInterval
+        item.recurrenceStartDate = task.recurrenceStartDate
+        item.recurrenceEndDate = task.recurrenceEndDate
+        item.recurrenceCount = task.recurrenceCount
+        
+        context.insert(item)
+    }
+}
+
+
 struct RecurringTaskOptions {
     let keepHistory: Bool
 }

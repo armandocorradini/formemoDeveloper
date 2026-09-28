@@ -61,6 +61,9 @@ struct TaskRowContent: View, Equatable, TaskRowBaseLogic {
     
     @ViewBuilder
     private func recurrenceAndYearIndicator() -> some View {
+        let recurrenceColor: Color =
+            model.isLegacyRecurrence ? .red : .blue
+
         if let futureYearText {
             HStack(spacing: 3) {
                 Image(
@@ -69,7 +72,11 @@ struct TaskRowContent: View, Equatable, TaskRowBaseLogic {
                         : "calendar"
                 )
                 .font(.caption)
-                .foregroundStyle(.blue)
+                .foregroundStyle(
+                    model.recurrenceRule != nil
+                        ? recurrenceColor
+                        : .blue
+                )
 
                 Text(futureYearText)
                     .font(.system(size: 9, weight: .semibold))
@@ -78,9 +85,10 @@ struct TaskRowContent: View, Equatable, TaskRowBaseLogic {
         } else if model.recurrenceRule != nil {
             Image(systemName: "arrow.triangle.2.circlepath")
                 .font(.caption)
-                .foregroundStyle(.blue)
+                .foregroundStyle(recurrenceColor)
         }
     }
+    
 
     @ViewBuilder
     private func todayExpiredLabel() -> some View {
@@ -259,7 +267,9 @@ extension TaskRowContent {
                     if model.recurrenceRule != nil {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.system(size: 10, weight: .semibold))
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(
+                                model.isLegacyRecurrence ? .red : .blue
+                            )
                     }
                 }
 
@@ -434,7 +444,9 @@ extension TaskRowContent {
                     if model.recurrenceRule != nil {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.caption)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(
+                                model.isLegacyRecurrence ? .red : .blue
+                            )
                     }
                 }
 
@@ -788,7 +800,9 @@ extension TaskRowContent {
                     if model.recurrenceRule != nil {
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.caption)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(
+                                model.isLegacyRecurrence ? .red : .blue
+                            )
                     }
                 }
             }

@@ -42,9 +42,7 @@ struct RecentlyDeletedView: View {
                     $0.loyaltyCardID == item.loyaltyCardID
                 }) == nil
             }
-            
             return true
-            
         }
     }
     

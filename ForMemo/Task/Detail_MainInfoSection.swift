@@ -86,11 +86,15 @@ import SwiftData
                 Toggle(isOn: Binding(
                     get: { task.isCompleted },
                     set: { newValue in
-                        if newValue == true, task.recurrenceRule != nil {
+                        if newValue == true,
+                           task.recurrenceRule != nil,
+                           task.occurrenceIndex != nil {
+
                             task.completeRecurringTask(
                                 in: modelContext,
                                 options: settings.recurringTaskOptions
                             )
+
                         } else {
                             task.isCompleted = newValue
                             task.completedAt = newValue ? .now : nil
@@ -99,7 +103,8 @@ import SwiftData
 
                         saveTask()
 
-                        if newValue == true {
+                        if newValue == true,
+                           !(task.recurrenceRule != nil && task.occurrenceIndex == nil) {
                             dismiss()
                         }
                     }
@@ -107,12 +112,14 @@ import SwiftData
                 {
                     VStack(alignment: .leading) {
                         HStack {
-                            Text("Toggle_Completed")
+                            Text(task.isCompleted ? "Completed" : "Complete")
 
                             if task.recurrenceRule != nil {
                                 Image(systemName: "arrow.triangle.2.circlepath")
                                     .font(.caption)
-                                    .foregroundStyle(.blue)
+                                    .foregroundStyle(
+                                        task.occurrenceIndex == nil ? .red : .blue
+                                    )
                             }
                         }
 

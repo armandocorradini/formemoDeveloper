@@ -23,13 +23,15 @@ struct TaskRowDisplayModel: Identifiable, Equatable {
     let isCompleted: Bool
 
     let recurrenceRule: String?
+    let isLegacyRecurrence: Bool
     let mainTag: TaskMainTag?
 }
 extension TaskRowDisplayModel {
 
     static func == (
         lhs: TaskRowDisplayModel,
-        rhs: TaskRowDisplayModel
+        rhs: TaskRowDisplayModel,
+        
     ) -> Bool {
 
         lhs.id == rhs.id &&
@@ -45,6 +47,7 @@ extension TaskRowDisplayModel {
         lhs.shouldShowBadge == rhs.shouldShowBadge &&
         lhs.isCompleted == rhs.isCompleted &&
         lhs.recurrenceRule == rhs.recurrenceRule &&
+        lhs.isLegacyRecurrence == rhs.isLegacyRecurrence &&
         lhs.mainTag == rhs.mainTag
     }
 }

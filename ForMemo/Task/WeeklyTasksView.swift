@@ -35,6 +35,8 @@ struct WeeklyTasksView: View {
     @State private var weeklyTasks: [TodoTask] = []
     @State private var expiredTaskCount = 0
     
+ 
+    
     @MainActor
     private func fetchWeeklyTasks() {
         let calendar = Calendar.current
@@ -675,7 +677,7 @@ private struct WeeklyTaskRow: View {
     private var priorityIconName: String? {
         task.priority.systemImage
     }
-
+    @State private var legacyRecurrenceTask: TodoTask?
     
     var body: some View {
         TaskRow(
@@ -852,6 +854,22 @@ private struct WeeklyTaskRow: View {
                 Label("Duplicate", systemImage: "plus.square.on.square")
             }
         }
+        
+        .sheet(item: $legacyRecurrenceTask) { task in
+            RecurrenceMigrationView(
+                task: task,
+                onMigrate: { task, futureCount, endDate in
+                    migrateLegacyRecurrence(
+                        task,
+                        futureCount: futureCount,
+                        endDate: endDate
+                    )
+                },
+                onDeleteRecurrence: { task in
+                    deleteLegacyRecurrence(task)
+                }
+            )
+        }
     }
     
     // MARK: - Actions
@@ -867,12 +885,16 @@ private struct WeeklyTaskRow: View {
     }
     
   
-
     @MainActor
     private func completeTask() {
         guard task.isCompleted == false else { return }
+
         if task.recurrenceRule != nil {
-            // Complete(se scelto da utente) and reschedule recurring task
+            if task.occurrenceIndex == nil {
+                legacyRecurrenceTask = task
+                return
+            }
+
             task.completeRecurringTask(
                 in: modelContext,
                 options: settings.recurringTaskOptions
@@ -882,14 +904,77 @@ private struct WeeklyTaskRow: View {
             task.completedAt = .now
             task.snoozeUntil = nil
         }
+
         do {
             try modelContext.save()
-            // Refresh notifications
             NotificationManager.shared.refresh(force: true)
-            // Trigger list refresh
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
         } catch {
             AppLogger.persistence.fault("Failed to save completion: \(error)")
+        }
+    }
+    @MainActor
+    private func migrateLegacyRecurrence(
+        _ task: TodoTask,
+        futureCount: Int?,
+        endDate: Date?
+    ) {
+        do {
+            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+                for: task,
+                futureCount: futureCount,
+                endDate: endDate,
+                in: modelContext
+            )
+
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            NotificationManager.shared.refresh(force: false)
+
+            legacyRecurrenceTask = nil
+
+        } catch {
+            AppLogger.persistence.error(
+                "Legacy recurrence migration failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @MainActor
+    private func deleteLegacyRecurrence(_ task: TodoTask) {
+        task.isCompleted = true
+        task.completedAt = .now
+        task.snoozeUntil = nil
+
+        task.recurrenceRule = nil
+        task.recurrenceInterval = 1
+        task.recurrenceID = nil
+        task.occurrenceIndex = nil
+        task.recurrenceStartDate = nil
+        task.recurrenceEndDate = nil
+        task.recurrenceCount = nil
+
+        do {
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            legacyRecurrenceTask = nil
+
+        } catch {
+            AppLogger.persistence.error(
+                "Legacy recurrence deletion failed: \(error)"
+            )
         }
     }
     

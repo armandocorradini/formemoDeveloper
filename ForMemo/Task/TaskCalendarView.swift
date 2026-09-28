@@ -32,6 +32,8 @@ struct TaskCalendarView: View {
 
     @State private var showCompletedTasks: Bool = false
 
+    @State private var legacyRecurrenceTask: TodoTask?
+
     @State private var displayedMonth: Date = .now
     
     @State private var showMonthYearPicker = false
@@ -182,8 +184,16 @@ struct TaskCalendarView: View {
                                 datePickerSelection = selectedDate
                                 showDatePicker = true
                             } label: {
-                                Text(selectedDate.formatted(date: .abbreviated, time: .omitted))
-                                    .foregroundStyle(.primary)
+                                Text(
+                                    selectedDate.formatted(
+                                        .dateTime
+                                            .weekday(.abbreviated)
+                                            .day()
+                                            .month(.abbreviated)
+                                            .year(.twoDigits)
+                                    )
+                                )
+                                .foregroundStyle(.primary)
                             }
                             .buttonStyle(.plain)
 
@@ -254,9 +264,10 @@ struct TaskCalendarView: View {
                     )
                     
                     DayTasksInlineView(
-
-                        tasks: tasksForDay(selectedDate)
-
+                        tasks: tasksForDay(selectedDate),
+                        onLegacyRecurrenceCompletion: { task in
+                            legacyRecurrenceTask = task
+                        }
                     )
 
                 }
@@ -300,6 +311,22 @@ struct TaskCalendarView: View {
 
             NewTaskSheetView(draftTask: task)
 
+        }
+
+        .sheet(item: $legacyRecurrenceTask) { task in
+            RecurrenceMigrationView(
+                task: task,
+                onMigrate: { task, futureCount, endDate in
+                    migrateLegacyRecurrence(
+                        task,
+                        futureCount: futureCount,
+                        endDate: endDate
+                    )
+                },
+                onDeleteRecurrence: { task in
+                    deleteLegacyRecurrence(task)
+                }
+            )
         }
 
         .navigationDestination(for: TodoTask.self) { task in
@@ -1239,7 +1266,10 @@ private extension TaskCalendarView {
 
         if task.recurrenceRule != nil {
 
-            // Complete(se scelto da utenet) and reschedule recurring task
+            if task.occurrenceIndex == nil {
+                legacyRecurrenceTask = task
+                return
+            }
 
             task.completeRecurringTask(
 
@@ -1271,6 +1301,75 @@ private extension TaskCalendarView {
 
         NotificationManager.shared.refresh(force: true)
 
+        NotificationCenter.default.post(
+            name: .taskDidChange,
+            object: nil
+        )
+
+    }
+
+    @MainActor
+    private func migrateLegacyRecurrence(
+        _ task: TodoTask,
+        futureCount: Int?,
+        endDate: Date?
+    ) {
+        do {
+            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+                for: task,
+                futureCount: futureCount,
+                endDate: endDate,
+                in: modelContext
+            )
+
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            NotificationManager.shared.refresh(force: false)
+
+            legacyRecurrenceTask = nil
+
+        } catch {
+            AppLogger.persistence.error(
+                "Legacy recurrence migration failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @MainActor
+    private func deleteLegacyRecurrence(_ task: TodoTask) {
+        task.isCompleted = true
+        task.completedAt = .now
+        task.snoozeUntil = nil
+
+        task.recurrenceRule = nil
+        task.recurrenceInterval = 1
+        task.recurrenceID = nil
+        task.occurrenceIndex = nil
+        task.recurrenceStartDate = nil
+        task.recurrenceEndDate = nil
+        task.recurrenceCount = nil
+
+        do {
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            legacyRecurrenceTask = nil
+        } catch {
+            AppLogger.persistence.error(
+                "Legacy recurrence deletion failed: \(error)"
+            )
+        }
     }
 
 }
@@ -1603,7 +1702,9 @@ private struct DayCell: View {
 
                                     .font(.system(size: 5))
 
-                                    .foregroundStyle(.blue)
+                                    .foregroundStyle(
+                                        task.occurrenceIndex == nil ? .red : .blue
+                                    )
 
                             }
 
@@ -1657,6 +1758,7 @@ private struct DayTasksInlineView: View {
     @State private var pendingDeletionHasFutureOccurrences = false
 
     let tasks: [TodoTask]
+    let onLegacyRecurrenceCompletion: (TodoTask) -> Void
 
     private var uniqueTasks: [TodoTask] {
 
@@ -1916,7 +2018,9 @@ private struct DayTasksInlineView: View {
 
                                             .font(.caption)
 
-                                            .foregroundStyle(.blue)
+                                            .foregroundStyle(
+                                        task.occurrenceIndex == nil ? .red : .blue
+                                    )
 
                                     }
 
@@ -1973,6 +2077,11 @@ private struct DayTasksInlineView: View {
                         Button {
 
                             if task.recurrenceRule != nil {
+
+                                if task.occurrenceIndex == nil {
+                                    onLegacyRecurrenceCompletion(task)
+                                    return
+                                }
 
                                 // Complete and reschedule recurring task
 
@@ -2062,6 +2171,12 @@ private struct DayTasksInlineView: View {
 
                         Button {
                             if task.recurrenceRule != nil {
+
+                                if task.occurrenceIndex == nil {
+                                    onLegacyRecurrenceCompletion(task)
+                                    return
+                                }
+
                                 task.completeRecurringTask(
                                     in: modelContext,
                                     options: settings.recurringTaskOptions

@@ -88,6 +88,8 @@ struct TaskListView: View {
   @State private var selectedPeriodFilter: TaskPeriodFilter? = nil
 
     @State private var databaseIsEmpty: Bool?
+    
+    @State private var legacyRecurrenceTask: TodoTask?
 
 
   private var listStyleChoice: TaskListStyle {
@@ -1499,6 +1501,69 @@ struct TaskListView: View {
         isLoadingMoreCompleted = false
     }
     
+    @MainActor
+    private func migrateLegacyRecurrence(
+        _ task: TodoTask,
+        futureCount: Int?,
+        endDate: Date?
+    ) {
+        do {
+            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+                for: task,
+                futureCount: futureCount,
+                endDate: endDate,
+                in: modelContext
+            )
+
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            NotificationManager.shared.refresh(force: false)
+
+            legacyRecurrenceTask = nil
+
+        } catch {
+            AppLogger.persistence.error(
+                "Legacy recurrence migration failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @MainActor
+    private func deleteLegacyRecurrence(_ task: TodoTask) {
+        task.isCompleted = true
+        task.completedAt = .now
+        task.snoozeUntil = nil
+        task.recurrenceRule = nil
+        task.recurrenceInterval = 1
+        task.recurrenceID = nil
+        task.occurrenceIndex = nil
+        task.recurrenceStartDate = nil
+        task.recurrenceEndDate = nil
+        task.recurrenceCount = nil
+
+        do {
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            legacyRecurrenceTask = nil
+
+        } catch {
+            AppLogger.persistence.error(
+                "Legacy recurrence deletion failed: \(error.localizedDescription)"
+            )
+        }
+    }
     
     @MainActor
     private func updateCompletedTaskCount() {
@@ -1569,25 +1634,19 @@ struct TaskListView: View {
     
     
     
-//    @ViewBuilder
-//    private var completedTasksView: some View {
-//        CompletedTasksContainerView(
-//            taskPendingDeletion: $taskPendingDeletion,
-//            modelContext: modelContext,
-//            tasks: completedQuery,
-//            loadMoreTasks: loadMoreCompletedTasks,
-//            completedTaskCount: completedTaskCount
-//        )
-//    }
-    
     @ViewBuilder
     private var completedTasksSection: some View {
+        
         CompletedTasksContainerView(
             taskPendingDeletion: $taskPendingDeletion,
             modelContext: modelContext,
             tasks: completedQuery,
             loadMoreTasks: loadMoreCompletedTasks,
-            completedTaskCount: completedTaskCount
+            completedTaskCount: completedTaskCount,
+            refreshCompletedTasks: {
+                fetchCompletedTasks()
+                updateCompletedTaskCount()
+            }
         )
     }
     
@@ -1605,11 +1664,15 @@ struct TaskListView: View {
                         selectedWeatherDay = SelectedWeatherDay(date: date)
                     },
                     tasks: filteredTodoTasksCache,
-                    activeTaskCount: activeTaskCount,modelContext: modelContext,
+                    activeTaskCount: activeTaskCount,
+                    modelContext: modelContext,
                     loadMoreTasks: loadMoreActiveTasks,
                     paginationLocked: activeListRefreshInProgress,
                     deleteTaskAndRefresh: deleteTaskAndRefresh,
-                    duplicateTaskAndUpdateList: duplicateTaskAndUpdateList
+                    duplicateTaskAndUpdateList: duplicateTaskAndUpdateList,
+                    onLegacyRecurrenceCompletion: { task in
+                        legacyRecurrenceTask = task
+                    }
                 )
             }
             
@@ -1742,6 +1805,22 @@ struct TaskListView: View {
         } else {
             refreshActiveList()
         }
+    }
+      
+    .sheet(item: $legacyRecurrenceTask) { task in
+        RecurrenceMigrationView(
+            task: task,
+            onMigrate: { task, futureCount, endDate in
+                migrateLegacyRecurrence(
+                    task,
+                    futureCount: futureCount,
+                    endDate: endDate
+                )
+            },
+            onDeleteRecurrence: { task in
+                deleteLegacyRecurrence(task)
+            }
+        )
     }
         .onChange(of: searchText) { _, newValue in
             if newValue.isEmpty {
@@ -2536,47 +2615,33 @@ struct TaskRow: View {
 
   }
 
-  private var model: TaskRowDisplayModel {
+    private var model: TaskRowDisplayModel {
 
-    let shouldDisplayBadge =
+        let shouldDisplayBadge =
+            appearance.showBadge &&
+            (!appearance.showBadgeOnlyWithPriority || task.priority != .none)
 
-      appearance.showBadge && (!appearance.showBadgeOnlyWithPriority || task.priority != .none)
+        let attachments = task.attachments ?? []
 
-    let attachments = task.attachments ?? []
-
-    return TaskRowDisplayModel(
-
-      id: task.persistentModelID,
-
-      title: task.title,
-
-      subtitle: task.taskDescription,
-
-      mainIcon: task.mainTag?.mainIcon ?? task.status.icon,
-
-      statusColor: task.status.color,
-
-      hasValidAttachments: !attachments.isEmpty,
-
-      hasLocation: task.locationName?.isEmpty == false,
-
-      badgeText: task.daysRemainingBadgeText,
-
-      prioritySystemImage: task.priority.systemImage,
-
-      deadLine: task.deadLine,
-
-      reminderOffsetMinutes: task.reminderOffsetMinutes,
-
-      shouldShowBadge: shouldDisplayBadge,
-
-      isCompleted: task.isCompleted,
-
-      recurrenceRule: task.recurrenceRule, mainTag: task.mainTag
-
-    )
-
-  }
+        return TaskRowDisplayModel(
+            id: task.persistentModelID,
+            title: task.title,
+            subtitle: task.taskDescription,
+            mainIcon: task.mainTag?.mainIcon ?? task.status.icon,
+            statusColor: task.status.color,
+            hasValidAttachments: !attachments.isEmpty,
+            hasLocation: task.locationName?.isEmpty == false,
+            badgeText: task.daysRemainingBadgeText,
+            prioritySystemImage: task.priority.systemImage,
+            deadLine: task.deadLine,
+            reminderOffsetMinutes: task.reminderOffsetMinutes,
+            shouldShowBadge: shouldDisplayBadge,
+            isCompleted: task.isCompleted,
+            recurrenceRule: task.recurrenceRule,
+            isLegacyRecurrence: task.recurrenceRule != nil && task.occurrenceIndex == nil,
+            mainTag: task.mainTag
+        )
+    }
 
   var body: some View {
 
@@ -2965,6 +3030,7 @@ struct TodoSectionView: View {
 
   @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
 
+    
   @ViewBuilder
 
   private func weatherCapsuleView(
@@ -3245,6 +3311,7 @@ struct TodoSectionView: View {
     let paginationLocked: Bool
     let deleteTaskAndRefresh: (TodoTask) -> Void
     let duplicateTaskAndUpdateList: (TodoTask) -> Void
+    let onLegacyRecurrenceCompletion: (TodoTask) -> Void
     
   private struct GroupedSection: Identifiable, Equatable {
 
@@ -3600,6 +3667,7 @@ struct TodoSectionView: View {
       locationAuthorizationStatus = CLLocationManager().authorizationStatus
 
     }
+
 
   }
 
@@ -3988,7 +4056,10 @@ struct TodoSectionView: View {
 
     if task.recurrenceRule != nil {
 
-      // 🔁 Ricorrenza: completa(se scelto dall'utente) e rischedula
+        if task.occurrenceIndex == nil {
+            onLegacyRecurrenceCompletion(task)
+            return
+        }
 
       task.completeRecurringTask(
 
@@ -4049,16 +4120,17 @@ struct CompletedTasksContainerView: View {
     let tasks: [TodoTask]
     let loadMoreTasks: () -> Void
     let completedTaskCount: Int
-
+    let refreshCompletedTasks: () -> Void
+    
   var body: some View {
 
       CompletedSectionView(
-        
           taskPendingDeletion: $taskPendingDeletion,
           tasks: tasks,
           modelContext: modelContext,
-          completedTaskCount: completedTaskCount,loadMoreTasks: loadMoreTasks
-          
+          completedTaskCount: completedTaskCount,
+          loadMoreTasks: loadMoreTasks,
+          refreshCompletedTasks: refreshCompletedTasks
       )
   }
 }
@@ -4072,6 +4144,8 @@ struct CompletedSectionView: View {
     settings.taskListStyle
 
   }
+    
+    @State private var legacyRecurrenceTask: TodoTask?
 
   private var confirmTaskDeletion: Bool {
 
@@ -4087,7 +4161,8 @@ struct CompletedSectionView: View {
   let modelContext: ModelContext
   let completedTaskCount: Int
     let loadMoreTasks: () -> Void
-
+    let refreshCompletedTasks: () -> Void
+    
   @MainActor
   private func requestTaskDeletion(_ task: TodoTask) {
     guard task.recurrenceID != nil else {
@@ -4244,6 +4319,7 @@ struct CompletedSectionView: View {
 
           }
 
+
           .onAppear {
               guard index == tasks.count - 1 else {
                   return
@@ -4280,52 +4356,35 @@ struct CompletedSectionView: View {
 
   }
 
-  @MainActor
+    @MainActor
+    private func toggleCompleted(_ task: TodoTask) {
+        guard task.isCompleted else {
+            return
+        }
 
-  private func toggleCompleted(_ task: TodoTask) {
-
-    // 🔥 RICORRENZA: se riattivi un task ricorrente NON ha senso tenerlo completato
-
-    if task.recurrenceRule != nil {
-
-      // 🔁 Ricorrenza: completa(se scelto da utente) e rischedula
-
-      task.completeRecurringTask(
-
-        in: modelContext,
-
-        options: settings.recurringTaskOptions
-
-      )
-
-      modelContext.processPendingChanges()
-
-    } else {
-
-      let newValue = !task.isCompleted
-
-      task.isCompleted = newValue
-
-      if newValue {
-
-        task.completedAt = .now
-
-        task.snoozeUntil = nil
-
-      } else {
-
+        task.isCompleted = false
         task.completedAt = nil
-
         task.snoozeUntil = nil
 
-      }
+        do {
+            try modelContext.save()
+        } catch {
+            AppLogger.persistence.error(
+                "Failed to reactivate task: \(error.localizedDescription)"
+            )
+            return
+        }
 
+        modelContext.processPendingChanges()
+
+        refreshCompletedTasks()
+
+        NotificationCenter.default.post(
+            name: .taskDidChange,
+            object: nil
+        )
+
+        NotificationManager.shared.refresh(force: false)
     }
-
-    persistChanges()
-
-    NotificationManager.shared.refresh(force: false)
-
-  }
 
 }

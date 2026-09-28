@@ -11,6 +11,10 @@ struct RecurrenceEngine {
         case yearly
     }
 
+    enum MigrationError: Error {
+        case notLegacyRecurrence
+    }
+
     enum Limit {
         case until(Date)
         case count(Int)
@@ -87,6 +91,50 @@ struct RecurrenceEngine {
         }
 
         return dates
+    }
+
+    // MARK: - Legacy Migration
+
+    /// Migra un task legacy nella nuova struttura delle ricorrenze.
+    ///
+    /// Il task originale diventa l'occorrenza #1 completata.
+    /// `futureCount` indica esclusivamente quante nuove occorrenze creare.
+    @MainActor
+    static func migrateLegacyRecurrence(
+        for task: TodoTask,
+        futureCount: Int?,
+        endDate: Date?,
+        in context: ModelContext,
+        calendar: Calendar = .autoupdatingCurrent
+    ) throws -> [TodoTask] {
+
+        guard task.recurrenceRule != nil,
+              task.occurrenceIndex == nil else {
+            throw MigrationError.notLegacyRecurrence
+        }
+
+        let recurrenceID = UUID()
+
+        task.recurrenceID = recurrenceID
+        task.occurrenceIndex = 1
+        task.recurrenceStartDate = task.deadLine
+        task.recurrenceEndDate = endDate
+
+        if let futureCount {
+            task.recurrenceCount = max(0, futureCount) + 1
+        } else {
+            task.recurrenceCount = nil
+        }
+
+        task.isCompleted = true
+        task.completedAt = .now
+        task.snoozeUntil = nil
+
+        return try materializeFutureOccurrences(
+            for: task,
+            in: context,
+            calendar: calendar
+        )
     }
 
     // MARK: - Materialization

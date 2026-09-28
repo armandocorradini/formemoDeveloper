@@ -10,6 +10,7 @@
 		1C1358C9305C54A80030AC9B /* PerformanceBenchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C1358C8305C54A80030AC9B /* PerformanceBenchmark.swift */; };
 		1C3191D23036F7D2009ABE1E /* RemoteAssetCleanupCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */; };
 		1C604A283067095400142E9C /* RecurrenceEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C604A273067094100142E9C /* RecurrenceEngine.swift */; };
+		1C604A2C306942BE00142E9C /* RecurrenceMigrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C604A2B306942BD00142E9C /* RecurrenceMigrationView.swift */; };
 		1C62D169304FDC9E00E97C02 /* TaskRescheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */; };
 		1C62D16D3053E5C800E97C02 /* BarcodePhotoDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D16C3053E5C200E97C02 /* BarcodePhotoDetector.swift */; };
 		1C62D1703054230500E97C02 /* ZXingCpp in Frameworks */ = {isa = PBXBuildFile; productRef = 1C62D16F3054230500E97C02 /* ZXingCpp */; };
@@ -245,6 +246,7 @@
 		1C1C23002F7E983A00A77282 /* ForMemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ForMemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C3191D13036F7D0009ABE1E /* RemoteAssetCleanupCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteAssetCleanupCoordinator.swift; sourceTree = "<group>"; };
 		1C604A273067094100142E9C /* RecurrenceEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceEngine.swift; sourceTree = "<group>"; };
+		1C604A2B306942BD00142E9C /* RecurrenceMigrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceMigrationView.swift; sourceTree = "<group>"; };
 		1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRescheduler.swift; sourceTree = "<group>"; };
 		1C62D16C3053E5C200E97C02 /* BarcodePhotoDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodePhotoDetector.swift; sourceTree = "<group>"; };
 		1C62D172305423A600E97C02 /* OpenSourceLicensesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenSourceLicensesView.swift; sourceTree = "<group>"; };
@@ -655,6 +657,7 @@
 		1C634E3C30220CAE0092DB89 /* Task */ = {
 			isa = PBXGroup;
 			children = (
+				1C604A2B306942BD00142E9C /* RecurrenceMigrationView.swift */,
 				1C604A273067094100142E9C /* RecurrenceEngine.swift */,
 				1C716EF13059795B006C6178 /* TaskSingleCalendarExport.swift */,
 				1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */,
@@ -1086,6 +1089,7 @@
 				1C62D173305423C100E97C02 /* OpenSourceLicensesView.swift in Sources */,
 				1C634DC630220C9C0092DB89 /* SecureClipboard.swift in Sources */,
 				1C634DC730220C9C0092DB89 /* SensitiveValues.swift in Sources */,
+				1C604A2C306942BE00142E9C /* RecurrenceMigrationView.swift in Sources */,
 				1C634DC830220C9C0092DB89 /* StoreMigrationManager.swift in Sources */,
 				1CC0DE7E30483D4F001EB9C2 /* TaskDuplicationService.swift in Sources */,
 				1C634DC930220C9C0092DB89 /* SurfaceSettings.swift in Sources */,

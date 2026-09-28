@@ -27,6 +27,17 @@ final class DeletedItem {
     var locationLongitude: Double?
     var priorityRaw: Int?
     var mainTagRaw: String?
+    // MARK: - Recurrence snapshot
+
+    var recurrenceID: UUID?
+    var occurrenceIndex: Int?
+    var recurrenceRule: String?
+    var recurrenceInterval: Int = 1
+    var recurrenceStartDate: Date?
+    var recurrenceEndDate: Date?
+    var recurrenceCount: Int?
+
+    
     
     // ATTACHMENT
     var fileName: String?
@@ -161,7 +172,15 @@ extension DeletedItem {
             )
             
             task.mainTagRaw = mainTagRaw
-            
+
+            task.recurrenceID = recurrenceID
+            task.occurrenceIndex = occurrenceIndex
+            task.recurrenceRule = recurrenceRule
+            task.recurrenceInterval = recurrenceInterval
+            task.recurrenceStartDate = recurrenceStartDate
+            task.recurrenceEndDate = recurrenceEndDate
+            task.recurrenceCount = recurrenceCount
+
             context.insert(task)
             
             guard let currentTaskID = taskID else { return false}

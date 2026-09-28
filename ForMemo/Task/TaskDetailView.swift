@@ -112,6 +112,10 @@ struct TaskDetailView: View {
     @State private var recurrenceGenerationWasCapped = false
     @State private var pendingRecurrenceRegeneration = false
 
+    // MARK: - Legacy recurrence migration
+    @State private var legacyRecurrenceTask: TodoTask?
+    @State private var isMigratingLegacyRecurrence = false
+    @State private var showingLegacyRecurrenceMigration = false
 
     private struct TaskEditSnapshot: Equatable {
         let title: String
@@ -182,7 +186,7 @@ struct TaskDetailView: View {
 
         switch recurrence {
         case .none:
-            return String(localized: "None")
+            return String(localized: "recurrence.none")
         case .hourly:
             return String(localized: plural ? "hours" : "hour")
         case .daily:
@@ -201,7 +205,9 @@ struct TaskDetailView: View {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.triangle.2.circlepath")
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(
+                            task.occurrenceIndex == nil ? .red : .blue
+                        )
 
                     Text(String(localized: "Repeat"))
 
@@ -394,6 +400,7 @@ struct TaskDetailView: View {
             ),
             isCompleted: task.isCompleted,
             recurrenceRule: task.recurrenceRule,
+            isLegacyRecurrence: task.recurrenceRule != nil && task.occurrenceIndex == nil,
             mainTag: task.mainTag
         )
     }
@@ -663,6 +670,26 @@ struct TaskDetailView: View {
             guard case .success(let urls) = result else { return }
             Task { @MainActor in await importFiles(from: urls)}
         }
+        .sheet(isPresented: $showingLegacyRecurrenceMigration) {
+
+            if let task = legacyRecurrenceTask {
+
+                RecurrenceMigrationView(
+                    task: task,
+                    onMigrate: { task, futureCount, endDate in
+                        migrateLegacyRecurrence(
+                            task,
+                            futureCount: futureCount,
+                            endDate: endDate
+                        )
+                    },
+                    onDeleteRecurrence: { task in
+                        deleteLegacyRecurrence(task)
+                    }
+                )
+            }
+        }
+
         .alert(
             "Modify future occurrences?",
             isPresented: $recurrenceGenerationConfirmation
@@ -734,7 +761,23 @@ struct TaskDetailView: View {
 //        .onChange(of: task.locationLongitude) { _, _ in
 //            saveTask()
 //        }
-        .onChange(of: task.isCompleted) { _, _ in
+        .onChange(of: task.isCompleted) { _, newValue in
+
+            if newValue,
+               task.recurrenceRule != nil,
+               task.occurrenceIndex == nil,
+               !isMigratingLegacyRecurrence {
+
+                // Do not complete the legacy task before the migration choice.
+                task.isCompleted = false
+                task.completedAt = nil
+                task.snoozeUntil = nil
+
+                legacyRecurrenceTask = task
+                showingLegacyRecurrenceMigration = true
+                return
+            }
+
             saveTask(userInitiated: true)
         }
         .onDisappear {
@@ -780,6 +823,13 @@ struct TaskDetailView: View {
             initialEditSnapshot != TaskEditSnapshot(task: task)
 
         guard hasActualChanges else {
+            finishDetailExit()
+            return
+        }
+        
+        // Legacy recurrence: edits are saved normally.
+        // Migration is triggered only when the user completes the task.
+        if task.recurrenceRule != nil && task.occurrenceIndex == nil {
             finishDetailExit()
             return
         }
@@ -924,6 +974,92 @@ struct TaskDetailView: View {
         } else {
             recurrenceLimitMode = .until
             recurrenceEndDate = initial.recurrenceEndDate ?? .now
+        }
+    }
+
+    @MainActor
+    private func migrateLegacyRecurrence(
+        _ task: TodoTask,
+        futureCount: Int?,
+        endDate: Date?
+    ) {
+        isMigratingLegacyRecurrence = true
+
+        do {
+            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+                for: task,
+                futureCount: futureCount,
+                endDate: endDate,
+                in: modelContext
+            )
+
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            NotificationManager.shared.refresh(force: false)
+
+            legacyRecurrenceTask = nil
+            isMigratingLegacyRecurrence = false
+            showingLegacyRecurrenceMigration = false
+
+            DispatchQueue.main.async {
+                dismiss()
+            }
+
+        } catch {
+            isMigratingLegacyRecurrence = false
+
+            AppLogger.persistence.error(
+                "TaskDetail legacy recurrence migration failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @MainActor
+    private func deleteLegacyRecurrence(_ task: TodoTask) {
+        isMigratingLegacyRecurrence = true
+
+        task.isCompleted = true
+        task.completedAt = .now
+        task.snoozeUntil = nil
+
+        task.recurrenceRule = nil
+        task.recurrenceInterval = 1
+        task.recurrenceID = nil
+        task.occurrenceIndex = nil
+        task.recurrenceStartDate = nil
+        task.recurrenceEndDate = nil
+        task.recurrenceCount = nil
+
+        do {
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            NotificationManager.shared.refresh(force: false)
+
+            legacyRecurrenceTask = nil
+            isMigratingLegacyRecurrence = false
+            
+            DispatchQueue.main.async {
+                dismiss()
+            }
+
+        } catch {
+            isMigratingLegacyRecurrence = false
+
+            AppLogger.persistence.error(
+                "TaskDetail legacy recurrence removal failed: \(error.localizedDescription)"
+            )
         }
     }
 
