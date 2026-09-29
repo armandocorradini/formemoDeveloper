@@ -227,4 +227,12 @@ enum DeletedFingerprintStore {
 
         return "\(normalizedTitle)|\(deadline)|\(created)"
     }
+    
+    // MARK: - Reset
+
+    static func clearAll() {
+        UserDefaults.standard.removeObject(forKey: key)
+        UserDefaults.standard.removeObject(forKey: recurrenceOccurrenceKey)
+        UserDefaults.standard.removeObject(forKey: recurrenceFutureKey)
+    }
 }

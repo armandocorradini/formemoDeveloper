@@ -782,7 +782,6 @@ struct Dashboard: View {
                 """)
 
             }
-
         }
         .contentMargins(.bottom, 70, for: .scrollContent)
         .containerBackground(.clear, for: .navigation)
@@ -951,12 +950,14 @@ struct Dashboard: View {
                         }
                     }
 
-                if task.recurrenceRule != nil {
-                    Image(
-                        systemName: "arrow.triangle.2.circlepath"
-                    )
-                    .font(.caption)
-                    .foregroundStyle(.blue)
+                if task.recurrenceRule != nil && task.occurrenceIndex == nil {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                } else if task.occurrenceIndex != nil {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.caption)
+                        .foregroundStyle(.blue)
                 }
             }
             .font(.subheadline)

@@ -20014,6 +20014,7 @@
       }
     },
     "Keep history of recurring tasks" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -30533,6 +30534,7 @@
       }
     },
     "Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the next occurrence is scheduled automatically. You can also choose whether to keep completed occurrences in your history or simply move the task to the next occurrence." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -30559,6 +30561,9 @@
           }
         }
       }
+    },
+    "Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you create a recurrence, ForMemo creates the selected occurrences as individual tasks. Each occurrence can be completed, edited, rescheduled, or deleted independently. You can define when the recurrence starts, when it ends, or how many occurrences should be created." : {
+
     },
     "Settings" : {
       "localizations" : {
@@ -40259,6 +40264,7 @@
       }
     },
     "When enabled, completing a recurring task saves the completed occurrence and automatically schedules the next one. When disabled, the task is simply moved to the next occurrence without creating a completed record." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -42735,6 +42741,7 @@
       }
     },
     "You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, ForMemo automatically schedules the next occurrence based on the selected frequency. You can also choose whether completed occurrences are kept in your history or whether the task simply moves to the next occurrence without creating a completed record. You can change or stop recurrence at any time." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -42761,6 +42768,9 @@
           }
         }
       }
+    },
+    "You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you create a recurrence, ForMemo creates the selected occurrences as individual tasks. Each occurrence can be completed, edited, rescheduled, or deleted independently. You can define when the recurrence starts, when it ends, or how many occurrences should be created. You can also update or stop a recurrence at any time." : {
+
     },
     "You have a task to complete here." : {
       "comment" : "Text displayed in a notification when a task is nearby.",

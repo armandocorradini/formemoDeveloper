@@ -25,9 +25,21 @@ enum TaskDuplicationService {
         copy.mainTag = task.mainTag
         copy.recurrenceRule = task.recurrenceRule
         copy.recurrenceInterval = task.recurrenceInterval
+
+        copy.recurrenceID = nil
+        copy.occurrenceIndex = nil
+        copy.recurrenceStartDate = nil
+        copy.recurrenceEndDate = nil
+        copy.recurrenceCount = nil
+
+        if task.occurrenceIndex != nil {
+            // Una nuova occorrenza duplicata diventa un task indipendente.
+            copy.recurrenceRule = nil
+            copy.recurrenceInterval = 1
+        }
+
         copy.locationReminderEnabled = task.locationReminderEnabled
         copy.snoozeUntil = nil
-        
         context.insert(copy)
 
         if includingAttachments {

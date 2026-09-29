@@ -49,7 +49,7 @@
 		1C634DAC30220C9C0092DB89 /* GetTasksIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CEF30220C9C0092DB89 /* GetTasksIntent.swift */; };
 		1C634DAD30220C9C0092DB89 /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF030220C9C0092DB89 /* Global.swift */; };
 		1C634DAE30220C9C0092DB89 /* ICSExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF130220C9C0092DB89 /* ICSExporter.swift */; };
-		1C634DAF30220C9C0092DB89 /* Import.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF230220C9C0092DB89 /* Import.swift */; };
+		1C634DAF30220C9C0092DB89 /* RemindersImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF230220C9C0092DB89 /* RemindersImportView.swift */; };
 		1C634DB030220C9C0092DB89 /* ImportCalendar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF330220C9C0092DB89 /* ImportCalendar.swift */; };
 		1C634DB130220C9C0092DB89 /* ImportCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF430220C9C0092DB89 /* ImportCard.swift */; };
 		1C634DB230220C9C0092DB89 /* ImportExportCSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF530220C9C0092DB89 /* ImportExportCSV.swift */; };
@@ -280,7 +280,7 @@
 		1C634CEF30220C9C0092DB89 /* GetTasksIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTasksIntent.swift; sourceTree = "<group>"; };
 		1C634CF030220C9C0092DB89 /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
 		1C634CF130220C9C0092DB89 /* ICSExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ICSExporter.swift; sourceTree = "<group>"; };
-		1C634CF230220C9C0092DB89 /* Import.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Import.swift; sourceTree = "<group>"; };
+		1C634CF230220C9C0092DB89 /* RemindersImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersImportView.swift; sourceTree = "<group>"; };
 		1C634CF330220C9C0092DB89 /* ImportCalendar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportCalendar.swift; sourceTree = "<group>"; };
 		1C634CF430220C9C0092DB89 /* ImportCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportCard.swift; sourceTree = "<group>"; };
 		1C634CF530220C9C0092DB89 /* ImportExportCSV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExportCSV.swift; sourceTree = "<group>"; };
@@ -672,12 +672,6 @@
 				1C634CE330220C9C0092DB89 /* CSVTask.swift */,
 				1C634CDD30220C9C0092DB89 /* CalendarExportEngine.swift */,
 				1C634CDE30220C9C0092DB89 /* CalendarPickerView.swift */,
-				1C634D4830220C9C0092DB89 /* Detail_AttachmentList.swift */,
-				1C634D4930220C9C0092DB89 /* Detail_ContextSection.swift */,
-				1C634D4A30220C9C0092DB89 /* Detail_MainInfoSection.swift */,
-				1C634D4B30220C9C0092DB89 /* Detail_QuickLookPreview.swift */,
-				1C634D4C30220C9C0092DB89 /* Detail_ResourcesSection.swift */,
-				1C634D4D30220C9C0092DB89 /* Detail_Share.swift */,
 				1C634D5730220C9C0092DB89 /* ExportToCalendarView.swift */,
 				1C634CF330220C9C0092DB89 /* ImportCalendar.swift */,
 				1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */,
@@ -698,6 +692,12 @@
 				1C634D1330220C9C0092DB89 /* TaskRowAppearance.swift */,
 				1C634D6C30220C9C0092DB89 /* TaskCalendarView.swift */,
 				1C634D6D30220C9C0092DB89 /* TaskDaySection.swift */,
+				1C634D4830220C9C0092DB89 /* Detail_AttachmentList.swift */,
+				1C634D4930220C9C0092DB89 /* Detail_ContextSection.swift */,
+				1C634D4A30220C9C0092DB89 /* Detail_MainInfoSection.swift */,
+				1C634D4B30220C9C0092DB89 /* Detail_QuickLookPreview.swift */,
+				1C634D4C30220C9C0092DB89 /* Detail_ResourcesSection.swift */,
+				1C634D4D30220C9C0092DB89 /* Detail_Share.swift */,
 				1C634D6E30220C9C0092DB89 /* TaskDeadlineColumn.swift */,
 				1C634D6F30220C9C0092DB89 /* TaskDetail_ScheduleSection.swift */,
 				1C634D7030220C9C0092DB89 /* TaskDetailView.swift */,
@@ -715,7 +715,7 @@
 				1C634D5430220C9C0092DB89 /* DueIconEffect.swift */,
 				1C634D5530220C9C0092DB89 /* DueIconEffectModifier.swift */,
 				1C634CE230220C9C0092DB89 /* CSVImporter.swift */,
-				1C634CF230220C9C0092DB89 /* Import.swift */,
+				1C634CF230220C9C0092DB89 /* RemindersImportView.swift */,
 				1C634CF130220C9C0092DB89 /* ICSExporter.swift */,
 				1C634CF530220C9C0092DB89 /* ImportExportCSV.swift */,
 			);
@@ -1061,7 +1061,7 @@
 				1C634DAC30220C9C0092DB89 /* GetTasksIntent.swift in Sources */,
 				1C634DAD30220C9C0092DB89 /* Global.swift in Sources */,
 				1C634DAE30220C9C0092DB89 /* ICSExporter.swift in Sources */,
-				1C634DAF30220C9C0092DB89 /* Import.swift in Sources */,
+				1C634DAF30220C9C0092DB89 /* RemindersImportView.swift in Sources */,
 				1C634DB030220C9C0092DB89 /* ImportCalendar.swift in Sources */,
 				1C634DB130220C9C0092DB89 /* ImportCard.swift in Sources */,
 				1C634DB230220C9C0092DB89 /* ImportExportCSV.swift in Sources */,

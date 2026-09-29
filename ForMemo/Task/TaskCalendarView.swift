@@ -1271,13 +1271,7 @@ private extension TaskCalendarView {
                 return
             }
 
-            task.completeRecurringTask(
-
-                in: modelContext,
-
-                options: settings.recurringTaskOptions
-
-            )
+            task.completeRecurringTask()
 
         } else {
 
@@ -1842,7 +1836,7 @@ private struct DayTasksInlineView: View {
 
     @MainActor
     private func requestTaskDeletion(_ task: TodoTask) {
-        guard let recurrenceID = task.recurrenceID else {
+        guard task.recurrenceID != nil else {
             pendingDeletionHasFutureOccurrences = false
             if settings.confirmTaskDeletion {
                 taskPendingDeletion = task
@@ -1859,19 +1853,10 @@ private struct DayTasksInlineView: View {
         }
 
         do {
-            let occurrences = try modelContext.fetch(
-                FetchDescriptor<TodoTask>(
-                    predicate: #Predicate<TodoTask> {
-                        $0.recurrenceID == recurrenceID
-                    }
-                )
+            let hasFutureOccurrence = try RecurrenceEngine.hasFutureOccurrence(
+                for: task,
+                in: modelContext
             )
-
-            let currentIndex = task.occurrenceIndex ?? 1
-            let hasFutureOccurrence = occurrences.contains { occurrence in
-                occurrence.id != task.id &&
-                (occurrence.occurrenceIndex ?? 1) > currentIndex
-            }
 
             pendingDeletionHasFutureOccurrences = hasFutureOccurrence
 
@@ -1881,17 +1866,18 @@ private struct DayTasksInlineView: View {
                 withAnimation {
                     deleteTask(task, in: modelContext)
                 }
+
                 NotificationCenter.default.post(
                     name: .taskDidChange,
                     object: nil
                 )
+
                 pendingDeletionHasFutureOccurrences = false
             }
         } catch {
-            // In caso di errore non cancelliamo automaticamente.
-            // Mostriamo la conferma del task per evitare una cancellazione inattesa.
             pendingDeletionHasFutureOccurrences = false
             taskPendingDeletion = task
+
             AppLogger.persistence.error(
                 "Calendar recurrence deletion check failed: \(error.localizedDescription)"
             )
@@ -2085,13 +2071,7 @@ private struct DayTasksInlineView: View {
 
                                 // Complete and reschedule recurring task
 
-                                task.completeRecurringTask(
-
-                                    in: modelContext,
-
-                                    options: settings.recurringTaskOptions
-
-                                )
+                                task.completeRecurringTask()
 
                             } else {
 
@@ -2177,10 +2157,8 @@ private struct DayTasksInlineView: View {
                                     return
                                 }
 
-                                task.completeRecurringTask(
-                                    in: modelContext,
-                                    options: settings.recurringTaskOptions
-                                )
+                                task.completeRecurringTask()
+                                    
                             } else {
                                 task.isCompleted.toggle()
                                 if task.isCompleted {

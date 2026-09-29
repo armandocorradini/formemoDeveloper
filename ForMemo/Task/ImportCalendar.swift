@@ -1,6 +1,34 @@
 import SwiftUI
 import EventKit
 import SwiftData
+import CryptoKit
+
+private func deterministicUUID(from value: String) -> UUID {
+    let digest = SHA256.hash(data: Data(value.utf8))
+
+    let bytes = Array(digest.prefix(16))
+
+    return UUID(uuid: (
+        bytes[0],
+        bytes[1],
+        bytes[2],
+        bytes[3],
+        bytes[4],
+        bytes[5],
+        bytes[6],
+        bytes[7],
+        bytes[8],
+        bytes[9],
+        bytes[10],
+        bytes[11],
+        bytes[12],
+        bytes[13],
+        bytes[14],
+        bytes[15]
+    ))
+}
+
+
 
 // MARK: - DTO
 
@@ -14,6 +42,7 @@ struct CalendarEventDTO: Identifiable, Hashable {
     let locationName: String?
     let recurrenceRule: String?
     let recurrenceInterval: Int?
+    let recurrenceIdentifier: String?
 }
 
 // MARK: - VIEW
@@ -187,25 +216,9 @@ private extension CalendarImportView {
         
         let events = store.events(matching: predicate)
         
-        var seenRecurringKeys = Set<String>()
-
         return events
             .filter { $0.startDate > now }
-            .filter { event in
-
-                guard let recurrenceRule = event.recurrenceRules?.first else {
-                    return true
-                }
-
-                let key = "\((event.title ?? "").lowercased())|\(recurrenceRule.frequency.rawValue)|\(recurrenceRule.interval)"
-
-                if seenRecurringKeys.contains(key) {
-                    return false
-                }
-
-                seenRecurringKeys.insert(key)
-                return true
-            }
+            .sorted { $0.startDate < $1.startDate }
             .map { map($0) }
     }
 }
@@ -228,7 +241,8 @@ private extension CalendarImportView {
             tag: inferredTag?.rawValue,
             locationName: event.location,
             recurrenceRule: recurrence.rule,
-            recurrenceInterval: recurrence.interval
+            recurrenceInterval: recurrence.interval,
+            recurrenceIdentifier: event.calendarItemExternalIdentifier
         )
     }
     func mapRecurrence(_ rule: EKRecurrenceRule?) -> (rule: String?, interval: Int?) {
@@ -307,6 +321,8 @@ private extension CalendarImportView {
         var skippedDuplicates = 0
         var failed = 0
         
+        var recurrenceIndexes: [String: Int] = [:]
+        
         for item in items {
             
             let trimmedTitle = item.title.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -332,6 +348,28 @@ private extension CalendarImportView {
                 priorityRaw: 0
             )
             
+            if item.recurrenceRule != nil {
+                if let recurrenceIdentifier = item.recurrenceIdentifier {
+                    task.recurrenceID = deterministicUUID(from: recurrenceIdentifier)
+
+                    let nextIndex = (recurrenceIndexes[recurrenceIdentifier] ?? 0) + 1
+                    recurrenceIndexes[recurrenceIdentifier] = nextIndex
+                    task.occurrenceIndex = nextIndex
+                } else {
+                    task.recurrenceID = UUID()
+                    task.occurrenceIndex = 1
+                }
+
+                task.recurrenceStartDate = item.startDate
+
+                if let rule = item.recurrenceRule {
+                    task.recurrenceRule = rule
+                }
+
+                if let interval = item.recurrenceInterval {
+                    task.recurrenceInterval = max(1, interval)
+                }
+            }
             if let tag = item.tag,
                let mapped = TaskMainTag(rawValue: tag) {
                 task.mainTag = mapped

@@ -716,6 +716,9 @@ struct ResetAppView: View {
                 modelContext.delete(item)
             }
             
+            // 🔴 Recurrence deletion fingerprints
+            DeletedFingerprintStore.clearAll()
+            
             // 🔴 SAVE UNICO
             try modelContext.save()
       

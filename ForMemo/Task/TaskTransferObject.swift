@@ -22,6 +22,11 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
         case locationName
         case recurrenceRule
         case recurrenceInterval
+        case recurrenceID
+        case occurrenceIndex
+        case recurrenceStartDate
+        case recurrenceEndDate
+        case recurrenceCount
         case locationReminderEnabled
         case isCompleted
         case createdAt
@@ -48,6 +53,11 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
     
     let recurrenceRule: String?
     let recurrenceInterval: Int?
+    let recurrenceID: UUID?
+    let occurrenceIndex: Int?
+    let recurrenceStartDate: Date?
+    let recurrenceEndDate: Date?
+    let recurrenceCount: Int?
     
     let locationReminderEnabled: Bool?
     
@@ -137,6 +147,36 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
                 forKey: .recurrenceInterval
             )
 
+        recurrenceID =
+            try container.decodeIfPresent(
+                UUID.self,
+                forKey: .recurrenceID
+            )
+
+        occurrenceIndex =
+            try container.decodeIfPresent(
+                Int.self,
+                forKey: .occurrenceIndex
+            )
+
+        recurrenceStartDate =
+            try Self.decodeLegacyDate(
+                .recurrenceStartDate,
+                from: container
+            )
+
+        recurrenceEndDate =
+            try Self.decodeLegacyDate(
+                .recurrenceEndDate,
+                from: container
+            )
+
+        recurrenceCount =
+            try container.decodeIfPresent(
+                Int.self,
+                forKey: .recurrenceCount
+            )
+
         locationReminderEnabled =
             try container.decodeIfPresent(
                 Bool.self,
@@ -187,6 +227,11 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
         locationName: String?,
         recurrenceRule: String?,
         recurrenceInterval: Int?,
+        recurrenceID: UUID?,
+        occurrenceIndex: Int?,
+        recurrenceStartDate: Date?,
+        recurrenceEndDate: Date?,
+        recurrenceCount: Int?,
         locationReminderEnabled: Bool?,
         isCompleted: Bool?,
         createdAt: Date?,
@@ -204,9 +249,14 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
         self.latitude = latitude
         self.longitude = longitude
         self.locationName = locationName
+        self.locationReminderEnabled = locationReminderEnabled
         self.recurrenceRule = recurrenceRule
         self.recurrenceInterval = recurrenceInterval
-        self.locationReminderEnabled = locationReminderEnabled
+        self.recurrenceID = recurrenceID
+        self.occurrenceIndex = occurrenceIndex
+        self.recurrenceStartDate = recurrenceStartDate
+        self.recurrenceEndDate = recurrenceEndDate
+        self.recurrenceCount = recurrenceCount
         self.isCompleted = isCompleted
         self.createdAt = createdAt
         self.completedAt = completedAt
@@ -242,6 +292,11 @@ extension TaskTransferObject {
             locationName: task.locationName,
             recurrenceRule: task.recurrenceRule,
             recurrenceInterval: task.recurrenceInterval,
+            recurrenceID: task.recurrenceID,
+            occurrenceIndex: task.occurrenceIndex,
+            recurrenceStartDate: task.recurrenceStartDate,
+            recurrenceEndDate: task.recurrenceEndDate,
+            recurrenceCount: task.recurrenceCount,
             locationReminderEnabled: task.locationReminderEnabled,
             isCompleted: task.isCompleted,
             createdAt: task.createdAt,
@@ -282,6 +337,11 @@ extension TaskTransferObject {
             locationName: task.locationName,
             recurrenceRule: task.recurrenceRule,
             recurrenceInterval: task.recurrenceInterval,
+            recurrenceID: task.recurrenceID,
+            occurrenceIndex: task.occurrenceIndex,
+            recurrenceStartDate: task.recurrenceStartDate,
+            recurrenceEndDate: task.recurrenceEndDate,
+            recurrenceCount: task.recurrenceCount,
             locationReminderEnabled: task.locationReminderEnabled,
             isCompleted: task.isCompleted,
             createdAt: task.createdAt,
@@ -316,6 +376,12 @@ extension TodoTask {
         if let recurrenceInterval = dto.recurrenceInterval {
             self.recurrenceInterval = recurrenceInterval
         }
+
+        self.recurrenceID = dto.recurrenceID
+        self.occurrenceIndex = dto.occurrenceIndex
+        self.recurrenceStartDate = dto.recurrenceStartDate
+        self.recurrenceEndDate = dto.recurrenceEndDate
+        self.recurrenceCount = dto.recurrenceCount
         
         if let locationReminderEnabled = dto.locationReminderEnabled {
             self.locationReminderEnabled = locationReminderEnabled

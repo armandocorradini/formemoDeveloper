@@ -192,18 +192,21 @@ private extension RemindersImportView {
     func map(_ reminder: EKReminder) -> ReminderDTO {
 
         let deadline = buildDeadline(from: reminder)
+        
         let location = extractLocation(from: reminder)
-
+        
         let combinedText = reminder.title + " " + (reminder.notes ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let inferredTag = TagInference.infer(from: combinedText.lowercased())
         let recurrence = mapRecurrence(reminder.recurrenceRules?.first)
+        
+        
         return ReminderDTO(
             id: reminder.calendarItemIdentifier,
             title: reminder.title,
             notes: reminder.notes,
             deadline: deadline,
-            reminderOffsetMinutes: 0,
+            reminderOffsetMinutes: nil,
             tag: inferredTag?.rawValue,
             locationName: location.name,
             latitude: location.lat,
@@ -215,8 +218,14 @@ private extension RemindersImportView {
     }
     
     func buildDeadline(from reminder: EKReminder) -> Date? {
-        guard let comp = reminder.dueDateComponents else { return nil }
-        return Calendar.autoupdatingCurrent.date(from: comp)
+        guard let comp = reminder.dueDateComponents else {
+            return nil
+        }
+
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Rome")!
+
+        return calendar.date(from: comp)
     }
     
     func extractLocation(from reminder: EKReminder) -> (name: String?, lat: Double?, lon: Double?) {
@@ -396,22 +405,20 @@ func filterAlreadyImported(
 
 
 func buildKey(title: String, date: Date?) -> String {
-    
     let normalized = normalize(title)
-        .trimmingCharacters(in: .whitespacesAndNewlines)
-        .lowercased()
-    
-    let day: String
-    
+
+    let dateKey: String
+
     if let date {
-        let startOfDay = Calendar.current.startOfDay(for: date)
-        day = String(Int(startOfDay.timeIntervalSince1970))
+        dateKey = String(Int(date.timeIntervalSince1970))
     } else {
-        day = "no-date"
+        dateKey = "no-date"
     }
-    
-    return "\(normalized)|\(day)"
+
+    return "\(normalized)|\(dateKey)"
 }
+
+
 func normalize(_ text: String) -> String {
     text
         .trimmingCharacters(in: .whitespacesAndNewlines)

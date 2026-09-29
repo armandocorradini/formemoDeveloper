@@ -16,7 +16,8 @@ final class TaskSingleCalendarExport {
     func present(for task: TodoTask) {
         guard task.deadLine != nil else { return }
 
-        if task.recurrenceRule == "hourly" {
+        if task.recurrenceRule == "hourly",
+           task.occurrenceIndex == nil {
             presentHourlyRecurrenceAlert()
             return
         }

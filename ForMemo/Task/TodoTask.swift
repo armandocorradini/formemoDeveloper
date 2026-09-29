@@ -108,23 +108,7 @@ final class TodoTask {
             return nil
         }
     }
-    
-    func rescheduleAfterCompletion() {
-        
-        guard let currentDeadline = deadLine else {
-            assertionFailure("Recurring task without deadline")
-            return
-        }
-        
-        guard let nextDate = nextRecurrenceDate(from: currentDeadline) else { return }
-        
-        deadLine = nextDate
-        
-        isCompleted = false
-        completedAt = nil
-        snoozeUntil = nil
-        manualSnoozeUntil = nil
-    }
+
 }
 
 enum Constants {
@@ -328,13 +312,7 @@ extension TodoTask {
 
 extension TodoTask {
     
-    func completeRecurringTask(
-        in context: ModelContext,
-        options: RecurringTaskOptions
-    ) {
-        _ = context
-        _ = options
-
+    func completeRecurringTask() {
         isCompleted = true
         completedAt = .now
         snoozeUntil = nil
@@ -377,7 +355,3 @@ extension TodoTask {
     }
 }
 
-
-struct RecurringTaskOptions {
-    let keepHistory: Bool
-}

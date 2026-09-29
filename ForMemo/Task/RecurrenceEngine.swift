@@ -92,6 +92,36 @@ struct RecurrenceEngine {
 
         return dates
     }
+    
+
+    static func hasFutureOccurrence(
+        for task: TodoTask,
+        in context: ModelContext
+    ) throws -> Bool {
+        guard let recurrenceID = task.recurrenceID,
+              let currentIndex = task.occurrenceIndex else {
+            return false
+        }
+
+        let occurrences = try context.fetch(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { occurrence in
+                    occurrence.recurrenceID == recurrenceID
+                }
+            )
+        )
+
+        return occurrences.contains { occurrence in
+            guard occurrence.id != task.id,
+                  let occurrenceIndex = occurrence.occurrenceIndex else {
+                return false
+            }
+
+            return occurrenceIndex > currentIndex
+        }
+    }
+    
+    
 
     // MARK: - Legacy Migration
 
@@ -212,6 +242,13 @@ struct RecurrenceEngine {
             guard !existingIndexes.contains(occurrenceIndex) else {
                 continue
             }
+            
+            guard !DeletedFingerprintStore.isDeletedOccurrence(
+                recurrenceID: recurrenceID,
+                occurrenceIndex: occurrenceIndex
+            ) else {
+                continue
+            }
 
             let occurrence = TodoTask(
                 title: task.title,
@@ -305,3 +342,5 @@ struct RecurrenceEngine {
         }
     }
 }
+
+

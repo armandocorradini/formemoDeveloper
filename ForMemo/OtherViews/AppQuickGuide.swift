@@ -197,7 +197,7 @@ struct AppQuickGuideView: View {
         ),
         .init(
             title: String(localized: "Recurring Tasks"),
-            description: String(localized: "Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, the next occurrence is scheduled automatically. You can also choose whether to keep completed occurrences in your history or simply move the task to the next occurrence."),
+            description: String(localized: "Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you create a recurrence, ForMemo creates the selected occurrences as individual tasks. Each occurrence can be completed, edited, rescheduled, or deleted independently. You can define when the recurrence starts, when it ends, or how many occurrences should be created."),
             icon: "arrow.triangle.2.circlepath",
             tint: .blue
         ),

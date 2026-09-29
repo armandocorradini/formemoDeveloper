@@ -57,7 +57,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"How do recurring tasks work?"),
-                answer: String(localized:"You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you complete a recurring task, ForMemo automatically schedules the next occurrence based on the selected frequency. You can also choose whether completed occurrences are kept in your history or whether the task simply moves to the next occurrence without creating a completed record. You can change or stop recurrence at any time.")
+                answer: String(localized:"You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you create a recurrence, ForMemo creates the selected occurrences as individual tasks. Each occurrence can be completed, edited, rescheduled, or deleted independently. You can define when the recurrence starts, when it ends, or how many occurrences should be created. You can also update or stop a recurrence at any time.")
             ),
             FAQItem(
                 question: String(localized:"Does the app include weather forecasts?"),

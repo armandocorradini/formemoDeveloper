@@ -80,12 +80,18 @@ final class CalendarExportEngine {
             
             guard let date = item.deadline else { continue }
             
-            // 🚫 Apple Calendar non supporta ricorrenze orarie
-            if item.recurrenceRule == "hourly" {
+            // Le nuove occorrenze sono già task concreti.
+            // Non devono essere esportate come una nuova RRULE.
+            let isNewRecurrenceOccurrence = item.occurrenceIndex != nil
+
+            // Apple Calendar non supporta le ricorrenze orarie.
+            // Un'occorrenza oraria già materializzata è però un evento concreto
+            // e può essere esportata normalmente.
+            if item.recurrenceRule == "hourly" && !isNewRecurrenceOccurrence {
                 skippedHourlyCount += 1
                 continue
             }
-            
+
             let key = "\(item.title.lowercased())|\(date.timeIntervalSince1970)"
             
             // 🚫 skip duplicati
@@ -119,8 +125,13 @@ final class CalendarExportEngine {
             }
             
             // 🔁 RECURRENCE
-            
-            if let recurrenceRule = item.recurrenceRule {
+            //
+            // Le ricorrenze legacy possono essere esportate tramite RRULE.
+            // Le nuove occorrenze sono già task concreti e quindi devono
+            // essere esportate come singoli eventi.
+
+            if !isNewRecurrenceOccurrence,
+               let recurrenceRule = item.recurrenceRule {
                 
                 let frequency: EKRecurrenceFrequency?
                 

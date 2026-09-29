@@ -870,7 +870,7 @@ private struct RestoreArchiveSheetWrapper: Identifiable {
 }
 
 private enum BackupFormat {
-    static let currentVersion = 5
+    static let currentVersion = 6
 }
 
 private extension JSONEncoder {

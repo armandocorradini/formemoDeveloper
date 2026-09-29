@@ -39,7 +39,8 @@ struct ICSExporter {
             let summary = escape(item.title)
             let description = escape(item.description)
             let location = escape(item.locationName ?? "")
-
+            let isNewRecurrenceOccurrence = item.occurrenceIndex != nil
+            
             ics += """
 
             BEGIN:VEVENT
@@ -60,7 +61,8 @@ struct ICSExporter {
                 ics += "\nLOCATION:\(location)"
             }
 
-            if let recurrenceRule = item.recurrenceRule {
+            if !isNewRecurrenceOccurrence,
+               let recurrenceRule = item.recurrenceRule {
                 let frequency: String
 
                 switch recurrenceRule {

@@ -105,11 +105,12 @@ struct ImportExportSettingsView: View {
                 tasks: selectedExportTasks,
                 onExport: { selected in
                     let hourlyTasks = selected.filter {
-                        $0.recurrenceRule == "hourly"
+                        $0.recurrenceRule == "hourly" &&
+                        $0.occurrenceIndex == nil
                     }
 
                     let exportableTasks = selected.filter {
-                        $0.recurrenceRule != "hourly"
+                        !($0.recurrenceRule == "hourly" && $0.occurrenceIndex == nil)
                     }
 
                     if !hourlyTasks.isEmpty {
@@ -141,11 +142,12 @@ struct ImportExportSettingsView: View {
         case .calendarPicker:
             CalendarPickerView(calendars: calendars) { calendar in
                 let hourlyTasks = selectedExportTasks.filter {
-                    $0.recurrenceRule == "hourly"
+                    $0.recurrenceRule == "hourly" &&
+                    $0.occurrenceIndex == nil
                 }
 
                 let exportableTasks = selectedExportTasks.filter {
-                    $0.recurrenceRule != "hourly"
+                    !($0.recurrenceRule == "hourly" && $0.occurrenceIndex == nil)
                 }
 
                 if !hourlyTasks.isEmpty {

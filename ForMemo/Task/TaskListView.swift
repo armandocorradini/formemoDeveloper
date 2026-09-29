@@ -1702,7 +1702,8 @@ struct TaskListView: View {
           ) {
 
               if let task = taskPendingDeletion,
-                 task.recurrenceID != nil {
+                 task.recurrenceID != nil,
+                 hasFutureOccurrenceForDeletion(task) {
 
                   Button(
                       String(localized: "Delete This Occurrence"),
@@ -2284,6 +2285,22 @@ struct TaskListView: View {
             object: nil
         )
     }
+    
+    @MainActor
+    private func hasFutureOccurrenceForDeletion(_ task: TodoTask) -> Bool {
+        do {
+            return try RecurrenceEngine.hasFutureOccurrence(
+                for: task,
+                in: modelContext
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "TaskList future occurrence check failed: \(error.localizedDescription)"
+            )
+            return false
+        }
+    }
+    
 
     @MainActor
     private func requestTaskDeletion(_ task: TodoTask) {
@@ -2298,38 +2315,14 @@ struct TaskListView: View {
             return
         }
 
-        do {
-            let recurrenceID = task.recurrenceID
-            let currentIndex = task.occurrenceIndex ?? 1
+        let hasFutureOccurrence = hasFutureOccurrenceForDeletion(task)
 
-            let occurrences = try modelContext.fetch(
-                FetchDescriptor<TodoTask>(
-                    predicate: #Predicate<TodoTask> {
-                        $0.recurrenceID == recurrenceID
-                    }
-                )
-            )
-
-            let hasFutureOccurrence = occurrences.contains { occurrence in
-                guard occurrence.id != task.id,
-                      let occurrenceIndex = occurrence.occurrenceIndex else {
-                    return false
-                }
-                return occurrenceIndex > currentIndex
-            }
-
-            if hasFutureOccurrence || confirmTaskDeletion {
-                taskPendingDeletion = task
-            } else {
-                withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
-                    deleteTaskAndRefresh(task)
-                }
-            }
-        } catch {
+        if hasFutureOccurrence || confirmTaskDeletion {
             taskPendingDeletion = task
-            AppLogger.persistence.error(
-                "TaskList recurrence deletion check failed: \(error.localizedDescription)"
-            )
+        } else {
+            withAnimation(.snappy(duration: 0.26, extraBounce: 0.01)) {
+                deleteTaskAndRefresh(task)
+            }
         }
     }
     
@@ -4061,13 +4054,7 @@ struct TodoSectionView: View {
             return
         }
 
-      task.completeRecurringTask(
-
-        in: modelContext,
-
-        options: settings.recurringTaskOptions
-
-      )
+      task.completeRecurringTask()
 
       modelContext.processPendingChanges()
 

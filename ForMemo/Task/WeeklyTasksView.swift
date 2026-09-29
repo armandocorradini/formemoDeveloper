@@ -117,26 +117,16 @@ struct WeeklyTasksView: View {
             return
         }
 
+        let hasFutureOccurrence: Bool
+
         do {
-            let recurrenceID = task.recurrenceID
-            let currentIndex = task.occurrenceIndex ?? 1
-
-            let occurrences = try modelContext.fetch(
-                FetchDescriptor<TodoTask>(
-                    predicate: #Predicate<TodoTask> {
-                        $0.recurrenceID == recurrenceID
-                    }
-                )
+            hasFutureOccurrence = try RecurrenceEngine.hasFutureOccurrence(
+                for: task,
+                in: modelContext
             )
-
-            let hasFutureOccurrence = occurrences.contains { occurrence in
-                guard occurrence.id != task.id,
-                      let occurrenceIndex = occurrence.occurrenceIndex else {
-                    return false
-                }
-
-                return occurrenceIndex > currentIndex
-            }
+        } catch {
+            hasFutureOccurrence = false
+        }
 
             if hasFutureOccurrence {
                 pendingDeletionShowsRecurrenceChoices = true
@@ -152,14 +142,6 @@ struct WeeklyTasksView: View {
                     deleteTaskAndRefresh(task)
                 }
             }
-        } catch {
-            // In caso di errore non cancelliamo automaticamente.
-            pendingDeletionShowsRecurrenceChoices = false
-            taskPendingDeletion = task
-            AppLogger.persistence.error(
-                "Weekly recurrence deletion check failed: \(error.localizedDescription)"
-            )
-        }
     }
 
     private var formattedDate: String {
@@ -895,10 +877,8 @@ private struct WeeklyTaskRow: View {
                 return
             }
 
-            task.completeRecurringTask(
-                in: modelContext,
-                options: settings.recurringTaskOptions
-            )
+            task.completeRecurringTask()
+            
         } else {
             task.isCompleted = true
             task.completedAt = .now

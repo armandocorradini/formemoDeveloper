@@ -19,6 +19,8 @@ struct CSVExporter {
         
         for item in items {
             
+            let isNewRecurrenceOccurrence = item.occurrenceIndex != nil
+            
             let deadline = item.deadline.map {
                 formatter.string(from: $0)
             } ?? ""
@@ -35,9 +37,11 @@ struct CSVExporter {
                 String($0)
             } ?? ""
             
-            let recurrenceInterval = item.recurrenceInterval.map {
-                String($0)
-            } ?? ""
+            let recurrenceInterval = isNewRecurrenceOccurrence
+                ? ""
+                : (item.recurrenceInterval.map {
+                    String($0)
+                } ?? "")
             
             let locationReminderEnabled = item.locationReminderEnabled.map {
                 String($0)
@@ -70,7 +74,11 @@ struct CSVExporter {
             row.append(longitude)
             row.append(escape(item.locationName ?? ""))
             row.append(String(item.priority))
-            row.append(item.recurrenceRule ?? "")
+            row.append(
+                isNewRecurrenceOccurrence
+                    ? ""
+                    : (item.recurrenceRule ?? "")
+            )
             row.append(recurrenceInterval)
             row.append(locationReminderEnabled)
             row.append(isCompleted)

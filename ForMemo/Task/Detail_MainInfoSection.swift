@@ -90,10 +90,7 @@ import SwiftData
                            task.recurrenceRule != nil,
                            task.occurrenceIndex != nil {
 
-                            task.completeRecurringTask(
-                                in: modelContext,
-                                options: settings.recurringTaskOptions
-                            )
+                            task.completeRecurringTask()
 
                         } else {
                             task.isCompleted = newValue

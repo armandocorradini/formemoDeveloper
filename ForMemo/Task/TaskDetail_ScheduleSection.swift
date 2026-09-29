@@ -153,16 +153,8 @@ struct ScheduleSection: View {
         .listRowBackground(
             Color(.systemBackground).opacity(0.3)
         )
-        .onChange(of: task.deadLine) { _, newValue in
+        .onChange(of: task.deadLine) { _, _ in
             validateReminder()
-
-            if newValue == nil {
-                task.recurrenceRule = nil
-                task.recurrenceInterval = 1
-                task.recurrenceEndDate = nil
-                task.recurrenceCount = nil
-                saveTask()
-            }
         }
     }
 }
