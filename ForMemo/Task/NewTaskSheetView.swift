@@ -773,15 +773,15 @@ struct NewTaskSheetView: View {
 
         switch recurrence {
         case .hourly:
-            return NSLocalizedString(plural ? "hours" : "hour", comment: "")
+            return NSLocalizedString(plural ? "recurrence.hour.one" : "recurrence.hour.other", comment: "")
         case .daily:
-            return NSLocalizedString(plural ? "days" : "day", comment: "")
+            return NSLocalizedString(plural ? "recurrence.day.one" : "recurrence.day.other", comment: "")
         case .weekly:
-            return NSLocalizedString(plural ? "weeks" : "week", comment: "")
+            return NSLocalizedString(plural ? "recurrence.week.one" : "recurrence.week.other", comment: "")
         case .monthly:
-            return NSLocalizedString(plural ? "months" : "month", comment: "")
+            return NSLocalizedString(plural ? "recurrence.month.one" : "recurrence.month.other", comment: "")
         case .yearly:
-            return NSLocalizedString(plural ? "years" : "year", comment: "")
+            return NSLocalizedString(plural ? "recurrence.year.one" : "recurrence.year.other", comment: "")
         case .none:
             return NSLocalizedString("recurrence.none", comment: "")
         }

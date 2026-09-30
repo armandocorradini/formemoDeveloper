@@ -185,20 +185,21 @@ struct TaskDetailView: View {
         let plural = task.recurrenceInterval > 1
 
         switch recurrence {
-        case .none:
-            return String(localized: "recurrence.none")
         case .hourly:
-            return String(localized: plural ? "hours" : "hour")
+            return NSLocalizedString(plural ? "recurrence.hour.one" : "recurrence.hour.other", comment: "")
         case .daily:
-            return String(localized: plural ? "days" : "day")
+            return NSLocalizedString(plural ? "recurrence.day.one" : "recurrence.day.other", comment: "")
         case .weekly:
-            return String(localized: plural ? "weeks" : "week")
+            return NSLocalizedString(plural ? "recurrence.week.one" : "recurrence.week.other", comment: "")
         case .monthly:
-            return String(localized: plural ? "months" : "month")
+            return NSLocalizedString(plural ? "recurrence.month.one" : "recurrence.month.other", comment: "")
         case .yearly:
-            return String(localized: plural ? "years" : "year")
+            return NSLocalizedString(plural ? "recurrence.year.one" : "recurrence.year.other", comment: "")
+        case .none:
+            return NSLocalizedString("recurrence.none", comment: "")
         }
     }
+
     
     private var recurrenceSection: some View {
         Section {
