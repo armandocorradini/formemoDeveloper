@@ -420,6 +420,16 @@ struct NewTaskSheetView: View {
                         notificationLeadTimeDays: settings.notificationLeadTimeDays
                     )
                     
+                    Toggle(
+                        String(localized: "Alarm"),
+                        isOn: $draftTask.alarmEnabled
+                    )
+
+                    Text(String(localized: "AlarmFootnote"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    
+                    
                     if let msg = validationMessage {
                         Text(msg)
                             .font(.caption.weight(.medium))
@@ -429,16 +439,7 @@ struct NewTaskSheetView: View {
                 }
             }
 
-            Picker("Priority", selection: $draftTask.priority) {
-                ForEach(TaskPriority.allCases) { item in
-                    if let icon = item.systemImage {
-                        Label(item.localizedTitle, systemImage: icon).tag(item)
-                    } else {
-                        Text(item.localizedTitle).tag(item)
-                    }
-                }
-            }
-            .pickerStyle(.menu)
+
         }
         .disabled(!isTitleValid)
         .opacity(isTitleValid ? 1 : 0.4)
@@ -619,6 +620,27 @@ struct NewTaskSheetView: View {
     private var contextSection: some View {
         Section("Context") {
             
+            Picker("Tag", selection: $draftTask.mainTag) {
+                Text("None").tag(TaskMainTag?.none)
+                
+                ForEach(TaskMainTag.localizedSortedCases) { tag in
+                    Label(tag.localizedTitle, systemImage: tag.mainIcon)
+                        .tag(Optional(tag))
+                }
+            }
+            .pickerStyle(.menu)
+            
+            Picker("Priority", selection: $draftTask.priority) {
+                ForEach(TaskPriority.allCases) { item in
+                    if let icon = item.systemImage {
+                        Label(item.localizedTitle, systemImage: icon).tag(item)
+                    } else {
+                        Text(item.localizedTitle).tag(item)
+                    }
+                }
+            }
+            .pickerStyle(.menu)
+            
             if let name = draftTask.locationName,
                let _ = draftTask.locationCoordinate {
                 
@@ -695,15 +717,6 @@ struct NewTaskSheetView: View {
                 }
             }
             
-            Picker("Tag", selection: $draftTask.mainTag) {
-                Text("None").tag(TaskMainTag?.none)
-                
-                ForEach(TaskMainTag.localizedSortedCases) { tag in
-                    Label(tag.localizedTitle, systemImage: tag.mainIcon)
-                        .tag(Optional(tag))
-                }
-            }
-            .pickerStyle(.menu)
         }
         .disabled(!isTitleValid)
         .opacity(isTitleValid ? 1 : 0.4)

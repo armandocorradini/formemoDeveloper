@@ -24,6 +24,7 @@ final class TodoTask {
     var locationLatitude: Double? = nil
     var locationLongitude: Double? = nil
     var locationReminderEnabled: Bool = false
+    var alarmEnabled: Bool = false
     var priorityRaw: Int = 0
     var mainTagRaw: String? = nil
     var snoozeUntil: Date? = nil

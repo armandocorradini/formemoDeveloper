@@ -115,6 +115,21 @@ struct ScheduleSection: View {
                         notificationLeadTimeDays:
                             notificationLeadTimeDays
                     )
+                    
+                    Toggle(
+                        String(localized: "Alarm"),
+                        isOn: Binding(
+                            get: { task.alarmEnabled },
+                            set: { newValue in
+                                task.alarmEnabled = newValue
+                                saveTask()
+                            }
+                        )
+                    )
+
+                    Text(String(localized: "AlarmFootnote"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
 
                     if let msg = validationMessage {
                         Text(msg)
@@ -125,30 +140,6 @@ struct ScheduleSection: View {
                 }
             }
 
-            Picker(
-                "Priority",
-                selection: Binding(
-                    get: { task.priority },
-                    set: { newValue in
-                        task.priority = newValue
-                        saveTask()
-                    }
-                )
-            ) {
-                ForEach(TaskPriority.allCases) { item in
-                    if let icon = item.systemImage {
-                        Label(
-                            item.localizedTitle,
-                            systemImage: icon
-                        )
-                        .tag(item)
-                    } else {
-                        Text(item.localizedTitle)
-                            .tag(item)
-                    }
-                }
-            }
-            .pickerStyle(.menu)
         }
         .listRowBackground(
             Color(.systemBackground).opacity(0.3)

@@ -98,6 +98,53 @@ import os
     var body: some View {
 
         Section("Context") {
+            
+            Picker(
+                String(localized: "Tags"),
+                selection: Binding<TaskMainTag?>(
+                    get: { task.mainTag },
+                    set: {
+                        task.mainTag = $0
+                        saveTask()
+                    }
+                )
+            ) {
+
+                Text("None")
+                    .tag(TaskMainTag?.none)
+
+                ForEach(TaskMainTag.localizedSortedCases) { tag in
+                    Label(tag.localizedTitle, systemImage: tag.mainIcon)
+                        .tag(Optional(tag))
+                }
+            }
+            .pickerStyle(.menu)
+            
+            Picker(
+                "Priority",
+                selection: Binding(
+                    get: { task.priority },
+                    set: { newValue in
+                        task.priority = newValue
+                        saveTask()
+                    }
+                )
+            ) {
+                ForEach(TaskPriority.allCases) { item in
+                    if let icon = item.systemImage {
+                        Label(
+                            item.localizedTitle,
+                            systemImage: icon
+                        )
+                        .tag(item)
+                    } else {
+                        Text(item.localizedTitle)
+                            .tag(item)
+                    }
+                }
+            }
+            .pickerStyle(.menu)
+            
 
             if let name = task.locationName,
                let coordinate = task.locationCoordinate {
@@ -208,26 +255,7 @@ import os
                 }
             }
 
-            Picker(
-                String(localized: "Tags"),
-                selection: Binding<TaskMainTag?>(
-                    get: { task.mainTag },
-                    set: {
-                        task.mainTag = $0
-                        saveTask()
-                    }
-                )
-            ) {
 
-                Text("None")
-                    .tag(TaskMainTag?.none)
-
-                ForEach(TaskMainTag.localizedSortedCases) { tag in
-                    Label(tag.localizedTitle, systemImage: tag.mainIcon)
-                        .tag(Optional(tag))
-                }
-            }
-            .pickerStyle(.menu)
         }
         .listRowBackground(Color(.systemBackground).opacity(0.3))
     
