@@ -16,9 +16,6 @@ struct ForMemoApp: App {
     
     // MARK: - App Storage
     
-    @AppStorage("completeTaskFromNotification")
-    private var completeTaskFromNotification: String?
-    
     @AppStorage("snoozeTaskFromNotification")
     private var snoozeTaskFromNotification: Data?
     

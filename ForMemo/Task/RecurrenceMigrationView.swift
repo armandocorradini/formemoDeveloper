@@ -9,7 +9,8 @@ struct RecurrenceMigrationView: View {
     let onMigrate: (
         TodoTask,
         Int?,
-        Date?
+        Date?,
+        Bool
     ) -> Void
 
     let onDeleteRecurrence: (TodoTask) -> Void
@@ -36,7 +37,8 @@ struct RecurrenceMigrationView: View {
     @State private var migrationMode: MigrationMode = .count
     @State private var occurrenceCount: Int = 10
     @State private var endDate: Date = Date()
-
+    @State private var keepCurrentOccurrenceActive = true
+    
     @State private var showingDeleteConfirmation = false
     @State private var showingUpdateConfirmation = false
 
@@ -76,6 +78,14 @@ struct RecurrenceMigrationView: View {
         return dates[1]
     }
 
+    private var currentOccurrenceIsFuture: Bool {
+        guard let deadline = task.deadLine else {
+            return false
+        }
+
+        return deadline > Date()
+    }
+    
     private var canConfirm: Bool {
         guard let firstFutureDate else {
             return false
@@ -122,6 +132,28 @@ struct RecurrenceMigrationView: View {
                         )
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                    }
+                    
+                    if currentOccurrenceIsFuture {
+                        Section("Current occurrence") {
+                            Text(
+                                "The deadline of the current occurrence is in the future."
+                            )
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                            Picker(
+                                "Current occurrence",
+                                selection: $keepCurrentOccurrenceActive
+                            ) {
+                                Text("Keep active")
+                                    .tag(true)
+
+                                Text("Complete")
+                                    .tag(false)
+                            }
+                            .pickerStyle(.segmented)
+                        }
                     }
                     
                     Section("New recurrence") {
@@ -279,14 +311,16 @@ struct RecurrenceMigrationView: View {
             onMigrate(
                 task,
                 occurrenceCount,
-                nil
+                nil,
+                keepCurrentOccurrenceActive
             )
 
         case .endDate:
             onMigrate(
                 task,
                 nil,
-                endDate
+                endDate,
+                keepCurrentOccurrenceActive
             )
         }
 

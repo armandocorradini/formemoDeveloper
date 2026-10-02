@@ -11215,6 +11215,9 @@
         }
       }
     },
+    "Current occurrence" : {
+
+    },
     "Custom" : {
       "localizations" : {
         "de" : {
@@ -20013,6 +20016,9 @@
         }
       }
     },
+    "Keep active" : {
+
+    },
     "Keep track of important documents, expiry dates, notes and reminders. Receive notifications before documents expire." : {
       "localizations" : {
         "de" : {
@@ -27240,7 +27246,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ora"
+            "value" : "ore"
           }
         }
       }
@@ -35217,6 +35223,9 @@
           }
         }
       }
+    },
+    "The deadline of the current occurrence is in the future." : {
+
     },
     "The diagnostics report only contains technical app events, configuration information and aggregate item counts. Task titles, notes, attachments, document details, card information and personal contents are never included." : {
       "localizations" : {

@@ -74,6 +74,7 @@ struct NotificationView: View {
     @State private var isLoading = true
     @State private var hasLoadedNotifications = false
     @Query private var documents: [DocumentItem]
+    @Query private var tasks: [TodoTask]
     
     var body: some View {
         ZStack {
@@ -408,6 +409,10 @@ struct NotificationView: View {
                 return nil
             }
             
+            let matchingTask = taskID.flatMap { id in
+                tasks.first { $0.id == id }
+            }
+
             return PendingNotificationInfo(
                 id: request.identifier,
                 title: request.content.title,
@@ -418,7 +423,7 @@ struct NotificationView: View {
                     request.content.categoryIdentifier,
                 taskID: taskID,
                 deadlineDate:
-                    matchingDocument?.expiryDate
+                    matchingDocument?.expiryDate ?? matchingTask?.deadLine
             )
         }
         .sorted {

@@ -677,11 +677,12 @@ struct TaskDetailView: View {
 
                 RecurrenceMigrationView(
                     task: task,
-                    onMigrate: { task, futureCount, endDate in
+                    onMigrate: { task, futureCount, endDate, keepCurrentOccurrenceActive in
                         migrateLegacyRecurrence(
                             task,
                             futureCount: futureCount,
-                            endDate: endDate
+                            endDate: endDate,
+                            keepCurrentOccurrenceActive: keepCurrentOccurrenceActive
                         )
                     },
                     onDeleteRecurrence: { task in
@@ -982,7 +983,8 @@ struct TaskDetailView: View {
     private func migrateLegacyRecurrence(
         _ task: TodoTask,
         futureCount: Int?,
-        endDate: Date?
+        endDate: Date?,
+        keepCurrentOccurrenceActive: Bool
     ) {
         isMigratingLegacyRecurrence = true
 
@@ -990,7 +992,7 @@ struct TaskDetailView: View {
             _ = try RecurrenceEngine.migrateLegacyRecurrence(
                 for: task,
                 futureCount: futureCount,
-                endDate: endDate,
+                endDate: endDate,keepCurrentOccurrenceActive: keepCurrentOccurrenceActive,
                 in: modelContext
             )
 
@@ -1080,9 +1082,11 @@ struct TaskDetailView: View {
 
     @MainActor
     private func applyCurrentChangesToFutureOccurrences() {
-        // This method is now only used for the normal "This & Future" path.
-        // Recurrence-definition changes are handled by the dedicated
-        // confirmation flow in prepareRecurrenceDefinitionChange().
+        // This method is used for the normal "This & Future" path.
+        // Non-recurrence properties are copied directly.
+        // If the deadline changed, future deadlines are recalculated
+        // from the new deadline of the current occurrence.
+
         guard let oldRecurrenceID = task.recurrenceID else {
             finishDetailExit()
             return
@@ -1099,15 +1103,69 @@ struct TaskDetailView: View {
                 )
             )
 
-            for occurrence in occurrences where
-                occurrence.id != task.id &&
-                (occurrence.occurrenceIndex ?? 1) > currentIndex {
-                copyFutureTaskProperties(from: task, to: occurrence)
+            let futureOccurrences = occurrences
+                .filter {
+                    $0.id != task.id &&
+                    ($0.occurrenceIndex ?? 1) > currentIndex
+                }
+                .sorted {
+                    ($0.occurrenceIndex ?? 1) < ($1.occurrenceIndex ?? 1)
+                }
+
+            // Copy the non-date properties first.
+            for occurrence in futureOccurrences {
+                copyFutureTaskProperties(
+                    from: task,
+                    to: occurrence
+                )
+            }
+
+            // If the current task has a deadline and a valid recurrence rule,
+            // rebuild the future dates from the NEW current deadline.
+            if let newDeadline = task.deadLine,
+               let ruleRaw = task.recurrenceRule,
+               let rule = RecurrenceEngine.Rule(rawValue: ruleRaw),
+               !futureOccurrences.isEmpty {
+
+                let maximumOffset = futureOccurrences.reduce(0) { maximum, occurrence in
+                    let occurrenceIndex = occurrence.occurrenceIndex ?? currentIndex
+                    return max(
+                        maximum,
+                        occurrenceIndex - currentIndex
+                    )
+                }
+
+                let generatedDates = RecurrenceEngine.occurrenceDates(
+                    startDate: newDeadline,
+                    rule: rule,
+                    interval: max(1, task.recurrenceInterval),
+                    limit: .count(maximumOffset + 1)
+                )
+
+                for occurrence in futureOccurrences {
+                    guard let occurrenceIndex = occurrence.occurrenceIndex else {
+                        continue
+                    }
+
+                    let offset = occurrenceIndex - currentIndex
+
+                    guard offset > 0,
+                          offset < generatedDates.count else {
+                        continue
+                    }
+
+                    occurrence.deadLine = generatedDates[offset]
+                }
             }
 
             try modelContext.save()
             modelContext.processPendingChanges()
-            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
             NotificationManager.shared.refresh()
             finishDetailExit()
 
@@ -1288,7 +1346,7 @@ struct TaskDetailView: View {
             return false
         }
 
-        return initial.deadLine != task.deadLine ||
+        return
                initial.recurrenceRule != task.recurrenceRule ||
                initial.recurrenceInterval != task.recurrenceInterval ||
                initial.recurrenceStartDate != task.recurrenceStartDate ||

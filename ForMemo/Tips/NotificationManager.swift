@@ -132,7 +132,7 @@ final class NotificationManager: NSObject {
         if requiresUpgradeNotificationRebuild {
             lastTasksSignature = ""
             requiresUpgradeNotificationRebuild = false
-            forceFullRefresh(using: context)
+//            forceFullRefresh(using: context)
         }
 
         let tBadge = ContinuousClock.now
@@ -278,9 +278,6 @@ func refreshFromCloudKit() {
                 self.lastCloudKitRefresh = Date()
                 self.refresh(force: true)
 
-                Task {
-                    await self.rebuildDocumentNotifications()
-                }
 
                 NotificationCenter.default.post(
                     name: .cloudKitDidStabilize,
@@ -398,7 +395,7 @@ func refreshFromCloudKit() {
         guard !tasks.isEmpty else { return "EMPTY" }
         
         let body = tasks
-//            .sorted { $0.id.uuidString < $1.id.uuidString }
+            .sorted { $0.id.uuidString < $1.id.uuidString }
             .map {
                 "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)-\($0.manualSnoozeUntil?.timeIntervalSince1970 ?? 0)"
             }
@@ -416,53 +413,65 @@ func refreshFromCloudKit() {
             let type: String
         }
 
-        static func nextEvent(for task: TodoTask, now: Date, lead: NotificationLeadTime) -> Event? {
-            guard let deadline = task.deadLine else { return nil }
+        /// Returns every future notification event for the task.
+        ///
+        /// Snooze is exclusive: while an active snooze exists, the snooze
+        /// notification is the only event that may be pending for that task.
+        static func allEvents(
+            for task: TodoTask,
+            now: Date,
+            lead: NotificationLeadTime
+        ) -> [Event] {
+            guard let deadline = task.deadLine else {
+                return []
+            }
 
-            // 🔵 Manual Snooze (independent from notification-action snooze)
-            if let manual = task.manualSnoozeUntil,
-               manual > now {
-                return Event(
+            if let manual = task.manualSnoozeUntil, manual > now {
+                return [Event(
                     id: "task.\(task.id.uuidString).manualSnooze",
                     date: manual,
                     type: "manualSnooze"
-                )
+                )]
             }
 
-            // 🔥 Existing notification snooze
-            if let snooze = task.snoozeUntil,
-               snooze > now {
-                return Event(
+            if let snooze = task.snoozeUntil, snooze > now {
+                return [Event(
                     id: "task.\(task.id.uuidString).snooze",
                     date: snooze,
                     type: "snooze"
-                )
+                )]
             }
-
-            // 🔥 Existing logic
-            if deadline <= now {
-                return nil
+            
+            guard deadline > now else {
+                return []
             }
 
             var candidates: [Event] = []
+            let calendar = Calendar.current
 
-            // 🔵 Global
-            if !lead.isNone {
-                let calendar = Calendar.current
-                if let globalDate = calendar.date(byAdding: .day, value: -lead.rawValue, to: deadline),
-                   globalDate > now {
-                    candidates.append(Event(
-                        id: "task.\(task.id.uuidString).global",
-                        date: globalDate,
-                        type: "global"
-                    ))
-                }
+            if !lead.isNone,
+               let globalDate = calendar.date(
+                    byAdding: .day,
+                    value: -lead.rawValue,
+                    to: deadline
+               ),
+               globalDate > now,
+               globalDate < deadline {
+                candidates.append(Event(
+                    id: "task.\(task.id.uuidString).global",
+                    date: globalDate,
+                    type: "global"
+                ))
             }
 
-            // 🔵 Reminder
             if let minutes = task.reminderOffsetMinutes,
-               let reminderDate = Calendar.current.date(byAdding: .minute, value: -minutes, to: deadline),
-               reminderDate > now {
+               let reminderDate = calendar.date(
+                    byAdding: .minute,
+                    value: -minutes,
+                    to: deadline
+               ),
+               reminderDate > now,
+               reminderDate < deadline {
                 candidates.append(Event(
                     id: "task.\(task.id.uuidString).reminder",
                     date: reminderDate,
@@ -470,237 +479,317 @@ func refreshFromCloudKit() {
                 ))
             }
 
-            // 🔵 Deadline (always if future)
-            let deadlineEvent = Event(
+            candidates.append(Event(
                 id: "task.\(task.id.uuidString).deadline",
                 date: deadline,
                 type: "deadline"
-            )
+            ))
 
-            // 🔥 Legacy fix:
-            // old versions could schedule GLOBAL or REMINDER
-            // exactly at deadline.
-            // In that case ALWAYS prefer the dedicated deadline event.
-            candidates.removeAll {
-                ($0.type == "global" || $0.type == "reminder") &&
-                abs($0.date.timeIntervalSince(deadline)) < 1
+            return candidates.sorted {
+                if $0.date != $1.date {
+                    return $0.date < $1.date
+                }
+                return $0.id < $1.id
             }
+        }
 
-            candidates.append(deadlineEvent)
-
-            return candidates.min(by: { $0.date < $1.date })
+        /// Compatibility helper used by existing callers/benchmarks.
+        static func nextEvent(
+            for task: TodoTask,
+            now: Date,
+            lead: NotificationLeadTime
+        ) -> Event? {
+            allEvents(for: task, now: now, lead: lead).first
         }
     }
 
     // MARK: - NEXT TRIGGER (single source of truth)
 
-    private func nextTrigger(for task: TodoTask, now: Date) -> (id: String, date: Date, type: String)? {
+    private func nextTrigger(
+        for task: TodoTask,
+        now: Date
+    ) -> TaskEventCalculator.Event? {
         let lead = NotificationLeadTime(
-            safeRawValue: UserDefaults.standard.integer(forKey: "notificationLeadTimeDays")
+            safeRawValue: UserDefaults.standard.integer(
+                forKey: "notificationLeadTimeDays"
+            )
         )
 
-        guard let event = TaskEventCalculator.nextEvent(for: task, now: now, lead: lead) else {
-            return nil
-        }
-
-        return (event.id, event.date, event.type)
+        return TaskEventCalculator.nextEvent(
+            for: task,
+            now: now,
+            lead: lead
+        )
     }
-    
-    
+
     // MARK: - REBUILD
+
     
     private func rebuild(
         _ tasks: [TodoTask],
         cleanupStale: Bool = true,
         syncBadge: Bool = true
     ) async {
-        let badgeIndex = TaskBadgePolicy.Index(tasks: tasks)
-        
         let rebuildStart = Date()
         let center = UNUserNotificationCenter.current()
         let now = Date()
-       
-        let requests = await center.pendingNotificationRequests()
-        
+        let badgeIndex = TaskBadgePolicy.Index(tasks: tasks)
+
+        let pending = await center.pendingNotificationRequests()
         var existing: [String: UNNotificationRequest] = [:]
-        for req in requests {
-            existing[req.identifier] = req
+        existing.reserveCapacity(pending.count)
+        for request in pending {
+            existing[request.identifier] = request
         }
-        
-        var expectedIDs: Set<String> = []
-        
-        func addOrUpdate(
-            id: String,
-            content: UNNotificationContent,
-            trigger: UNNotificationTrigger
-        ) async {
-            
-            expectedIDs.insert(id)
-            
-            if let existingReq = existing[id] {
-                
-                // 🔥 controlla TUTTO, non solo body
-                // 🔥 FIX: considera anche il trigger (data)
 
-                var isSame = false
+        let lead = NotificationLeadTime(
+            safeRawValue: UserDefaults.standard.integer(
+                forKey: "notificationLeadTimeDays"
+            )
+        )
 
-                if let oldTrigger = existingReq.trigger as? UNCalendarNotificationTrigger,
-                   let newTrigger = trigger as? UNCalendarNotificationTrigger {
-                    
-                    isSame = oldTrigger.nextTriggerDate() == newTrigger.nextTriggerDate()
-                }
-                else if let oldTrigger = existingReq.trigger as? UNTimeIntervalNotificationTrigger,
-                        let newTrigger = trigger as? UNTimeIntervalNotificationTrigger {
-                    
-                    isSame = abs(oldTrigger.timeInterval - newTrigger.timeInterval) < 1
-                }
+        struct ScheduledEvent {
+            let id: String
+            let date: Date
+            let content: UNMutableNotificationContent
+        }
 
-                if isSame &&
-                   existingReq.content.body == content.body &&
-                   existingReq.content.title == content.title {
-                    return
-                }
-                
-                center.removePendingNotificationRequests(withIdentifiers: [id])
+        var candidates: [ScheduledEvent] = []
+        candidates.reserveCapacity(tasks.count * 3)
+
+        for task in tasks {
+            guard !task.isCompleted, !task.isDebugTask else { continue }
+
+            for event in TaskEventCalculator.allEvents(
+                for: task,
+                now: now,
+                lead: lead
+            ) {
+                let content = taskNotificationContent(
+                    for: task,
+                    event: event,
+                    badge: badgeIndex.count(at: event.date)
+                )
+                candidates.append(
+                    ScheduledEvent(
+                        id: event.id,
+                        date: event.date,
+                        content: content
+                    )
+                )
             }
-            
+        }
+
+        // Documents are part of the same global chronological queue.
+        if let context = modelContainer?.mainContext {
+            let documents = (try? context.fetch(FetchDescriptor<DocumentItem>())) ?? []
+
+            for document in documents {
+                guard document.notificationEnabled,
+                      let expiryDate = document.expiryDate,
+                      let triggerDate = Calendar.current.date(
+                        byAdding: .day,
+                        value: -document.notificationDaysBefore,
+                        to: expiryDate
+                      ),
+                      triggerDate > now else {
+                    continue
+                }
+
+                let content = documentNotificationContent(title: document.name)
+                candidates.append(
+                    ScheduledEvent(
+                        id: "document.\(document.id.uuidString)",
+                        date: triggerDate,
+                        content: content
+                    )
+                )
+            }
+        }
+
+        // The queue is global: task + document notifications compete by date.
+        // Only the 64 earliest requests are installed in UNUserNotificationCenter.
+        // Everything after #64 remains represented by the model and will enter
+        // the pending queue on the next rebuild when earlier requests disappear.
+        candidates.sort {
+            if $0.date != $1.date {
+                return $0.date < $1.date
+            }
+            return $0.id < $1.id
+        }
+
+        let selected = Array(candidates.prefix(64))
+        let selectedIDs = Set(selected.map(\.id))
+
+        guard rebuildStart >= self.lastRebuild else { return }
+
+        // Synchronize removals before additions.
+        // This is important when the notification queue changes substantially
+        // after a recurrence is created, migrated, changed, completed or deleted.
+        if cleanupStale {
+            let managedPrefixes = ["task.", "document."]
+            let staleIDs = existing.keys.filter { id in
+                managedPrefixes.contains(where: { id.hasPrefix($0) }) &&
+                !selectedIDs.contains(id)
+            }
+
+            if !staleIDs.isEmpty {
+                center.removePendingNotificationRequests(
+                    withIdentifiers: Array(staleIDs)
+                )
+
+                for id in staleIDs {
+                    existing.removeValue(forKey: id)
+                }
+            }
+        }
+
+        for item in selected {
+            let trigger = calendarTrigger(for: item.date)
+
+            if let old = existing[item.id],
+               notificationRequestMatches(
+                    old,
+                    content: item.content,
+                    trigger: trigger
+               ) {
+                continue
+            }
+
+            if existing[item.id] != nil {
+                center.removePendingNotificationRequests(
+                    withIdentifiers: [item.id]
+                )
+                existing.removeValue(forKey: item.id)
+            }
+
             let request = UNNotificationRequest(
-                identifier: id,
-                content: content,
+                identifier: item.id,
+                content: item.content,
                 trigger: trigger
             )
-            
+
             do {
                 try await center.add(request)
             } catch {
-            #if DEBUG
-                AppLogger.notifications.error("Notification scheduling failed: \(error.localizedDescription)")
-            #endif
-            }
-        }
-        
-        for task in tasks {
-            
-            guard !task.isCompleted else { continue }
-            guard !task.isDebugTask else { continue }
-            
-            guard let next = nextTrigger(for: task, now: now) else {
-                continue
-                
-            }
-            let badgeAtTrigger = badgeIndex.count(at: next.date)
-
-            let content: UNMutableNotificationContent
-            
-            switch next.type {
-                
-            case "manualSnooze":
-                content = baseContent(
-                    task,
-                    title: String(localized: "⏲️ Snoozed")
+#if DEBUG
+                AppLogger.notifications.error(
+                    "Notification scheduling failed [\(item.id)]: \(error.localizedDescription)"
                 )
-                
-            case "snooze":
-                content = baseContent(task, title: String(localized: "⏲️ Snoozed"))
-
-            case "reminder":
-                let minutes = task.reminderOffsetMinutes ?? 0
-                let reminderTitle: String
-                if minutes < 60 {
-                    if minutes == 1 {
-                        reminderTitle = String(localized: "🔔 In 1 minute!")
-                    } else {
-                        reminderTitle = String(localized: "🔔 In \(minutes) minutes!")
-                    }
-                } else if minutes < 1440 {
-                    let hours = minutes / 60
-                    if hours == 1 {
-                        reminderTitle = String(localized: "🔔 In 1 hour!")
-                    } else {
-                        reminderTitle = String(localized: "🔔 In \(hours) hours!")
-                    }
-                } else {
-                    let days = minutes / 1440
-                    if days == 1 {
-                        reminderTitle = String(localized: "🔔 In 1 day!")
-                    } else {
-                        reminderTitle = String(localized: "🔔 In \(days) days!")
-                    }
-                }
-                content = baseContent(task, title: reminderTitle)
-
-            case "global":
-                let leadDays = NotificationLeadTime(
-                    safeRawValue: UserDefaults.standard.integer(forKey: "notificationLeadTimeDays")
-                ).rawValue
-                
-                let title: String
-                if leadDays == 1 {
-                    title = String(localized: "⏱️ In 1 day!")
-                } else {
-                    title = String(localized: "⏱️ In \(leadDays) days!")
-                }
-                content = baseContent(task, title: title)
-
-            case "deadline":
-                content = baseContent(task, title: String(localized: "⏰ Overdue"))
-
-            default:
-                content = baseContent(task, title: String(localized: "Reminder"))
+#endif
             }
-            content.badge = NSNumber(value: badgeAtTrigger)
-            content.userInfo["type"] = next.type
-            
-            let rawInterval = next.date.timeIntervalSinceNow
-
-            // 🔥 Prevent valid reminder/global notifications from being lost
-            // when rebuild happens too close to the trigger time.
-            // Instead of skipping them, reschedule with a small safe delay.
-            let interval: TimeInterval
-
-            if (next.type == "reminder" || next.type == "global") && rawInterval <= 2 {
-                interval = 3
-            } else {
-                interval = max(rawInterval, 5)
-            }
-
-            // 🔥 Small stable stagger to reduce iOS notification stacking/grouping
-            // when many different tasks fire at the exact same time.
-            let spread = Double(abs(task.id.uuidString.hashValue % 3))
-            let finalInterval = interval + spread
-            let trigger = UNTimeIntervalNotificationTrigger(
-                timeInterval: finalInterval,
-                repeats: false
-            )
-            
-            await addOrUpdate(
-                id: next.id,
-                content: content,
-                trigger: trigger
-            )
-        }
-        
-        // Prevent stale rebuild cleanup
-        guard rebuildStart >= self.lastRebuild else { return }
-        
-        if cleanupStale {
-            let toRemove = existing.keys.filter { id in
-                id.starts(with: "task.") && !expectedIDs.contains(id)
-            }
-
-            center.removePendingNotificationRequests(
-                withIdentifiers: toRemove
-            )
         }
 
-        // 🔥 FINAL SYNC: ensure badge always matches latest state
         if syncBadge {
             let finalBadge = computeBadgeCount(from: tasks)
             let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
             applyBadge(showBadge ? finalBadge : 0)
         }
     }
-    
+
+    private func calendarTrigger(for date: Date) -> UNCalendarNotificationTrigger {
+        let components = Calendar.current.dateComponents(
+            [.year, .month, .day, .hour, .minute, .second],
+            from: date
+        )
+        return UNCalendarNotificationTrigger(
+            dateMatching: components,
+            repeats: false
+        )
+    }
+
+    private func notificationRequestMatches(
+        _ existing: UNNotificationRequest,
+        content: UNNotificationContent,
+        trigger: UNNotificationTrigger
+    ) -> Bool {
+        guard existing.content.title == content.title,
+              existing.content.body == content.body,
+              existing.content.sound?.description == content.sound?.description,
+              existing.content.badge == content.badge else {
+            return false
+        }
+
+        guard let oldTrigger = existing.trigger as? UNCalendarNotificationTrigger,
+              let newTrigger = trigger as? UNCalendarNotificationTrigger else {
+            return false
+        }
+
+        return oldTrigger.nextTriggerDate() == newTrigger.nextTriggerDate()
+    }
+
+    private func taskNotificationContent(
+        for task: TodoTask,
+        event: TaskEventCalculator.Event,
+        badge: Int
+    ) -> UNMutableNotificationContent {
+        let content: UNMutableNotificationContent
+
+        switch event.type {
+        case "manualSnooze", "snooze":
+            content = baseContent(task, title: String(localized: "⏲️ Snoozed"))
+
+        case "reminder":
+            let minutes = task.reminderOffsetMinutes ?? 0
+            let title: String
+            if minutes < 60 {
+                title = minutes == 1
+                    ? String(localized: "🔔 In 1 minute!")
+                    : String(localized: "🔔 In \(minutes) minutes!")
+            } else if minutes < 1440 {
+                let hours = minutes / 60
+                title = hours == 1
+                    ? String(localized: "🔔 In 1 hour!")
+                    : String(localized: "🔔 In \(hours) hours!")
+            } else {
+                let days = minutes / 1440
+                title = days == 1
+                    ? String(localized: "🔔 In 1 day!")
+                    : String(localized: "🔔 In \(days) days!")
+            }
+            content = baseContent(task, title: title)
+
+        case "global":
+            let days = NotificationLeadTime(
+                safeRawValue: UserDefaults.standard.integer(
+                    forKey: "notificationLeadTimeDays"
+                )
+            ).rawValue
+            let title = days == 1
+                ? String(localized: "⏱️ In 1 day!")
+                : String(localized: "⏱️ In \(days) days!")
+            content = baseContent(task, title: title)
+
+        case "deadline":
+            content = baseContent(task, title: String(localized: "⏰ Overdue"))
+
+        default:
+            content = baseContent(task, title: String(localized: "Reminder"))
+        }
+
+        content.badge = NSNumber(value: badge)
+        content.userInfo["type"] = event.type
+        return content
+    }
+
+    private func documentNotificationContent(title: String) -> UNMutableNotificationContent {
+        let content = UNMutableNotificationContent()
+        content.title = String(localized: "Document Expiring")
+        content.body = title
+
+        let soundName = UserDefaults.standard.string(
+            forKey: "notificationSoundName"
+        ) ?? ""
+
+        content.sound = soundName.isEmpty
+            ? .default
+            : UNNotificationSound(
+                named: UNNotificationSoundName(rawValue: soundName)
+            )
+
+        return content
+    }
+
 #if DEBUG
 func debugRebuild(tasks: [TodoTask]) async {
     await rebuild(
@@ -769,77 +858,17 @@ func debugRebuild(tasks: [TodoTask]) async {
 
     @MainActor
     func rebuildDocumentNotifications() async {
-
-        guard let context = modelContainer?.mainContext else {
-            return
-        }
-
-        let documents =
-            (try? context.fetch(
-                FetchDescriptor<DocumentItem>()
-            )) ?? []
-
-        for document in documents {
-
-            removeDocumentNotification(
-                documentID: document.id
-            )
-
-            guard document.notificationEnabled,
-                  let expiryDate = document.expiryDate else {
-                continue
-            }
-
-            let triggerDate = Calendar.current.date(
-                byAdding: .day,
-                value: -document.notificationDaysBefore,
-                to: expiryDate
-            )
-
-            guard let triggerDate else {
-                continue
-            }
-
-
-// documenti con reminder oltre 1 anno → non occupano slot di notifica;
-// quando entreranno nell’orizzonte di 1 anno verranno schedulati automaticamente dai rebuild già presenti;
-            
-            let oneYearFromNow = Calendar.current.date(
-                byAdding: .year,
-                value: 1,
-                to: Date()
-            ) ?? .distantFuture
-
-            guard triggerDate <= oneYearFromNow else {
-                continue
-            }
-//
-            
-            
-            await scheduleDocumentNotification(
-                id: document.id,
-                title: document.name,
-                triggerDate: triggerDate
-            )
-        }
+        // Documents participate in the same global chronological queue as tasks.
+        refresh(force: true)
+        await rebuildTask?.value
     }
 
     @MainActor
-    func removeDocumentNotification(
-        documentID: UUID
-    ) {
-
+    func removeDocumentNotification(documentID: UUID) {
         let identifier = "document.\(documentID.uuidString)"
-
-        UNUserNotificationCenter.current()
-            .removePendingNotificationRequests(
-                withIdentifiers: [identifier]
-            )
-
-        UNUserNotificationCenter.current()
-            .removeDeliveredNotifications(
-                withIdentifiers: [identifier]
-            )
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [identifier])
+        center.removeDeliveredNotifications(withIdentifiers: [identifier])
     }
 
     @MainActor
@@ -848,46 +877,11 @@ func debugRebuild(tasks: [TodoTask]) async {
         title: String,
         triggerDate: Date
     ) async {
-
         guard triggerDate > Date() else { return }
 
-        let content = UNMutableNotificationContent()
-
-        content.title = String(localized: "Document Expiring")
-        content.body = title
-
-        let soundName =
-            UserDefaults.standard.string(
-                forKey: "notificationSoundName"
-            ) ?? ""
-
-        if soundName.isEmpty {
-            content.sound = .default
-        } else {
-            content.sound = UNNotificationSound(
-                named: UNNotificationSoundName(
-                    rawValue: soundName
-                )
-            )
-        }
-
-        let interval = triggerDate.timeIntervalSinceNow
-
-        guard interval > 1 else { return }
-
-        let trigger = UNTimeIntervalNotificationTrigger(
-            timeInterval: interval,
-            repeats: false
-        )
-
-        let request = UNNotificationRequest(
-            identifier: "document.\(id.uuidString)",
-            content: content,
-            trigger: trigger
-        )
-
-        try? await UNUserNotificationCenter.current()
-            .add(request)
+        // Keep the existing public API, but never bypass the global queue.
+        refresh(force: true)
+        await rebuildTask?.value
     }
 }
 
@@ -907,15 +901,10 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse
     ) async {
         
-        guard let taskID = response.notification.request.content.userInfo["taskID"] as? String else { return }
-        
-        
+        let taskID = response.notification.request.content.userInfo["taskID"] as? String
+
         // 1️⃣ salva azione (come già fai)
         switch response.actionIdentifier {
-            
-        case UNNotificationDefaultActionIdentifier:
-            // 🔥 TAP sulla notifica → completa task
-            UserDefaults.standard.set(taskID, forKey: "completeTaskFromNotification")
             
         case "OPEN_APP":
             break // iOS apre già l'app automaticamente
@@ -933,9 +922,10 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 default: interval = 300
                 }
 
-                if let uuid = UUID(uuidString: taskID) {
+                if let taskID,
+                   let uuid = UUID(uuidString: taskID) {
                     let descriptor = FetchDescriptor<TodoTask>(
-                        predicate: #Predicate { $0.id == uuid }
+                        predicate: #Predicate<TodoTask> { $0.id == uuid }
                     )
 
                     if let task = try? context.fetch(descriptor).first {

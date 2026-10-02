@@ -2638,8 +2638,9 @@ private enum BackupManager {
             name: .taskDidChange,
             object: nil
         )
-        
+        NotificationManager.shared.refresh(force: true)
     }
+    
 }
 
 private struct BackupFileDocument: FileDocument {

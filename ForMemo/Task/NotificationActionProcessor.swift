@@ -30,6 +30,50 @@ final class NotificationActionProcessor {
     }
     
     func processAll(using context: ModelContext) {
-        // Reserved for future notification actions.
+        processCompletion(using: context)
+    }
+
+    private func processCompletion(using context: ModelContext) {
+        guard let id = UserDefaults.standard.string(
+            forKey: "completeTaskFromNotification"
+        ),
+        let uuid = UUID(uuidString: id)
+        else {
+            return
+        }
+
+        UserDefaults.standard.removeObject(
+            forKey: "completeTaskFromNotification"
+        )
+
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate { $0.id == uuid }
+        )
+
+        guard let task = try? context.fetch(descriptor).first else {
+            AppLogger.notifications.error(
+                "Completion failed: task not found"
+            )
+            return
+        }
+
+        task.isCompleted = true
+        task.completedAt = .now
+        task.snoozeUntil = nil
+        task.manualSnoozeUntil = nil
+
+        do {
+            try context.save()
+            context.processPendingChanges()
+            NotificationManager.shared.refresh(force: true)
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+        } catch {
+            AppLogger.persistence.fault(
+                "Failed to complete task from notification: \(error.localizedDescription)"
+            )
+        }
     }
 }

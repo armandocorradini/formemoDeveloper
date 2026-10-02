@@ -1505,13 +1505,14 @@ struct TaskListView: View {
     private func migrateLegacyRecurrence(
         _ task: TodoTask,
         futureCount: Int?,
-        endDate: Date?
+        endDate: Date?,
+        keepCurrentOccurrenceActive: Bool
     ) {
         do {
             _ = try RecurrenceEngine.migrateLegacyRecurrence(
                 for: task,
                 futureCount: futureCount,
-                endDate: endDate,
+                endDate: endDate,keepCurrentOccurrenceActive: keepCurrentOccurrenceActive,
                 in: modelContext
             )
 
@@ -1555,7 +1556,9 @@ struct TaskListView: View {
                 name: .taskDidChange,
                 object: nil
             )
-
+            
+            NotificationManager.shared.refresh(force: false)
+            
             legacyRecurrenceTask = nil
 
         } catch {
@@ -1811,11 +1814,12 @@ struct TaskListView: View {
     .sheet(item: $legacyRecurrenceTask) { task in
         RecurrenceMigrationView(
             task: task,
-            onMigrate: { task, futureCount, endDate in
+            onMigrate: { task, futureCount, endDate, keepCurrentOccurrenceActive in
                 migrateLegacyRecurrence(
                     task,
                     futureCount: futureCount,
-                    endDate: endDate
+                    endDate: endDate,
+                    keepCurrentOccurrenceActive: keepCurrentOccurrenceActive
                 )
             },
             onDeleteRecurrence: { task in

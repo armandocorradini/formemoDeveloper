@@ -134,6 +134,7 @@ struct RecurrenceEngine {
         for task: TodoTask,
         futureCount: Int?,
         endDate: Date?,
+        keepCurrentOccurrenceActive: Bool,
         in context: ModelContext,
         calendar: Calendar = .autoupdatingCurrent
     ) throws -> [TodoTask] {
@@ -156,8 +157,14 @@ struct RecurrenceEngine {
             task.recurrenceCount = nil
         }
 
-        task.isCompleted = true
-        task.completedAt = .now
+        if keepCurrentOccurrenceActive {
+            task.isCompleted = false
+            task.completedAt = nil
+        } else {
+            task.isCompleted = true
+            task.completedAt = .now
+        }
+
         task.snoozeUntil = nil
 
         return try materializeFutureOccurrences(

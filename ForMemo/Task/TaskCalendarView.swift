@@ -316,11 +316,12 @@ struct TaskCalendarView: View {
         .sheet(item: $legacyRecurrenceTask) { task in
             RecurrenceMigrationView(
                 task: task,
-                onMigrate: { task, futureCount, endDate in
+                onMigrate: { task, futureCount, endDate, keepCurrentOccurrenceActive in
                     migrateLegacyRecurrence(
                         task,
                         futureCount: futureCount,
-                        endDate: endDate
+                        endDate: endDate,
+                        keepCurrentOccurrenceActive: keepCurrentOccurrenceActive
                     )
                 },
                 onDeleteRecurrence: { task in
@@ -1306,13 +1307,14 @@ private extension TaskCalendarView {
     private func migrateLegacyRecurrence(
         _ task: TodoTask,
         futureCount: Int?,
-        endDate: Date?
+        endDate: Date?,
+        keepCurrentOccurrenceActive: Bool
     ) {
         do {
             _ = try RecurrenceEngine.migrateLegacyRecurrence(
                 for: task,
                 futureCount: futureCount,
-                endDate: endDate,
+                endDate: endDate,keepCurrentOccurrenceActive: keepCurrentOccurrenceActive,
                 in: modelContext
             )
 
