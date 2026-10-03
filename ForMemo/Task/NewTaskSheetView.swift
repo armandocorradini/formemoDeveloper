@@ -498,7 +498,7 @@ struct NewTaskSheetView: View {
                                         Button {
                                             selectedRecurrence = option
                                         } label: {
-                                            Text(recurrenceUnitTitle(for: option))
+                                            Text(recurrenceUnitTitle(for: option, forcePlural: true))
                                         }
                                     }
                                 } label: {
@@ -550,7 +550,7 @@ struct NewTaskSheetView: View {
                                         Button {
                                             selectedRecurrence = option
                                         } label: {
-                                            Text(recurrenceUnitTitle(for: option))
+                                            Text(recurrenceUnitTitle(for: option, forcePlural: true))
                                         }
                                     }
                                 } label: {
@@ -804,20 +804,20 @@ struct NewTaskSheetView: View {
         .opacity(isTitleValid ? 1 : 0.4)
     }
     
-    private func recurrenceUnitTitle(for recurrence: RecurrenceUI) -> String {
-        let plural = draftTask.recurrenceInterval > 1
+    private func recurrenceUnitTitle(for recurrence: RecurrenceUI, forcePlural: Bool = false) -> String {
+        let plural = forcePlural || draftTask.recurrenceInterval > 1
 
         switch recurrence {
         case .hourly:
-            return NSLocalizedString(plural ? "recurrence.hour.one" : "recurrence.hour.other", comment: "")
+            return NSLocalizedString(plural ? "recurrence.hour.other" : "recurrence.hour.one", comment: "")
         case .daily:
-            return NSLocalizedString(plural ? "recurrence.day.one" : "recurrence.day.other", comment: "")
+            return NSLocalizedString(plural ? "recurrence.day.other" : "recurrence.day.one", comment: "")
         case .weekly:
-            return NSLocalizedString(plural ? "recurrence.week.one" : "recurrence.week.other", comment: "")
+            return NSLocalizedString(plural ? "recurrence.week.other" : "recurrence.week.one", comment: "")
         case .monthly:
-            return NSLocalizedString(plural ? "recurrence.month.one" : "recurrence.month.other", comment: "")
+            return NSLocalizedString(plural ? "recurrence.month.other" : "recurrence.month.one", comment: "")
         case .yearly:
-            return NSLocalizedString(plural ? "recurrence.year.one" : "recurrence.year.other", comment: "")
+            return NSLocalizedString(plural ? "recurrence.year.other" : "recurrence.year.one", comment: "")
         case .none:
             return NSLocalizedString("recurrence.none", comment: "")
         }
