@@ -397,7 +397,7 @@ func refreshFromCloudKit() {
         let body = tasks
             .sorted { $0.id.uuidString < $1.id.uuidString }
             .map {
-                "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)-\($0.manualSnoozeUntil?.timeIntervalSince1970 ?? 0)"
+                "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.alarmEnabled)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)-\($0.manualSnoozeUntil?.timeIntervalSince1970 ?? 0)"
             }
             .joined(separator: "|")
         
@@ -479,11 +479,22 @@ func refreshFromCloudKit() {
                 ))
             }
 
-            candidates.append(Event(
-                id: "task.\(task.id.uuidString).deadline",
-                date: deadline,
-                type: "deadline"
-            ))
+            if task.alarmEnabled {
+                // AlarmKit is the user-facing deadline alert.
+                // Keep one silent UN notification at the same time only to update
+                // the app badge when the AlarmKit alarm fires.
+                candidates.append(Event(
+                    id: "task.\(task.id.uuidString).alarmBadge",
+                    date: deadline,
+                    type: "alarmBadge"
+                ))
+            } else {
+                candidates.append(Event(
+                    id: "task.\(task.id.uuidString).deadline",
+                    date: deadline,
+                    type: "deadline"
+                ))
+            }
 
             return candidates.sorted {
                 if $0.date != $1.date {
@@ -762,6 +773,11 @@ func refreshFromCloudKit() {
 
         case "deadline":
             content = baseContent(task, title: String(localized: "⏰ Overdue"))
+
+        case "alarmBadge":
+            // AlarmKit provides the actual alarm UI and sound.
+            // This request exists only so iOS applies the badge at the deadline.
+            content = UNMutableNotificationContent()
 
         default:
             content = baseContent(task, title: String(localized: "Reminder"))

@@ -123,6 +123,7 @@ struct TaskDetailView: View {
         let deadLine: Date?
         let isCompleted: Bool
         let reminderOffsetMinutes: Int?
+        let alarmEnabled: Bool
         let locationName: String?
         let locationLatitude: Double?
         let locationLongitude: Double?
@@ -144,6 +145,7 @@ struct TaskDetailView: View {
             self.deadLine = task.deadLine
             self.isCompleted = task.isCompleted
             self.reminderOffsetMinutes = task.reminderOffsetMinutes
+            self.alarmEnabled = task.alarmEnabled
             self.locationName = task.locationName
             self.locationLatitude = task.locationLatitude
             self.locationLongitude = task.locationLongitude
@@ -793,6 +795,32 @@ struct TaskDetailView: View {
 
         do {
             try modelContext.save()
+            
+            if let recurrenceID = task.recurrenceID {
+                Task { @MainActor in
+                    await ForMemoAlarmManager.shared.synchronize(task: task)
+
+                    let occurrences = (try? modelContext.fetch(
+                        FetchDescriptor<TodoTask>(
+                            predicate: #Predicate<TodoTask> {
+                                $0.recurrenceID == recurrenceID
+                            }
+                        )
+                    )) ?? []
+
+                    await ForMemoAlarmManager.shared.synchronize(
+                        tasks: occurrences
+                    )
+                }
+            } else {
+                Task { @MainActor in
+                    await ForMemoAlarmManager.shared.synchronize(task: task)
+                }
+            }
+            
+            
+            
+            
             DebugLog.writeCloudKitEvent(
                 "TaskDetail context save completed"
             )
@@ -1334,6 +1362,7 @@ struct TaskDetailView: View {
         destination.locationReminderEnabled = source.locationReminderEnabled
         destination.priorityRaw = source.priorityRaw
         destination.mainTagRaw = source.mainTagRaw
+        destination.alarmEnabled = source.alarmEnabled
         destination.recurrenceRule = source.recurrenceRule
         destination.recurrenceInterval = source.recurrenceInterval
         destination.recurrenceStartDate = source.recurrenceStartDate

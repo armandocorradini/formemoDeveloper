@@ -1,6 +1,7 @@
 import SwiftUI
 import UserNotifications
 import SwiftData
+import AlarmKit
 
 struct PendingNotificationInfo: Identifiable {
     
@@ -20,6 +21,10 @@ struct PendingNotificationInfo: Identifiable {
             return String(localized: "Snooze")
         }
         
+        if lower.contains("alarm") {
+            return String(localized: "Alarm")
+        }
+
         if lower.contains("deadline") {
             return String(localized: "Deadline")
         }
@@ -46,6 +51,10 @@ struct PendingNotificationInfo: Identifiable {
             return "⏲️"
         }
         
+        if lower.contains("alarm") {
+            return "⏰"
+        }
+
         if lower.contains("deadline") {
             return "⏰"
         }
@@ -352,6 +361,12 @@ struct NotificationView: View {
         let mapped = requests.compactMap {
             request -> PendingNotificationInfo? in
             
+            // AlarmKit has its own system alert. This UN request is only a
+            // silent badge update and must not appear as a separate notification.
+            if request.identifier.lowercased().contains(".alarmbadge") {
+                return nil
+            }
+            
             let triggerDate: Date?
             
             if let calendarTrigger =
@@ -431,7 +446,44 @@ struct NotificationView: View {
             ($1.triggerDate ?? .distantFuture)
         }
         
-        pending = mapped
+        var merged = mapped
+
+        // AlarmKit alarms are not part of UNUserNotificationCenter's pending
+        // requests, so add the scheduled alarms explicitly to this screen.
+        let alarmManager = AlarmManager.shared
+        let scheduledAlarms = (try? alarmManager.alarms) ?? []
+            .filter { alarm in
+                if case .scheduled = alarm.state {
+                    return true
+                }
+                return false
+            }
+
+        for alarm in scheduledAlarms {
+            guard let task = tasks.first(where: { $0.id == alarm.id }),
+                  task.alarmEnabled,
+                  let deadline = task.deadLine,
+                  deadline > .now else {
+                continue
+            }
+
+            merged.append(
+                PendingNotificationInfo(
+                    id: "alarm.\(alarm.id.uuidString)",
+                    title: task.title,
+                    body: task.title,
+                    triggerDate: deadline,
+                    identifier: "alarm.\(alarm.id.uuidString)",
+                    categoryIdentifier: "ALARM",
+                    taskID: task.id,
+                    deadlineDate: deadline
+                )
+            )
+        }
+
+        pending = merged.sorted {
+            ($0.triggerDate ?? .distantFuture) < ($1.triggerDate ?? .distantFuture)
+        }
         isLoading = false
         print("🔵 NotificationView: loadPendingNotifications END — pending = \(pending.count)")
     }

@@ -27,6 +27,41 @@
       },
       "shouldTranslate" : false
     },
+    "NSAlarmKitUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo verwendet Alarme, um Sie zur geplanten Zeit für Ihre Aufgaben zu benachrichtigen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo uses alarms to alert you at the scheduled time for your tasks."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo utiliza alarmas para avisarte a la hora programada para tus tareas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo utilise des alarmes pour vous alerter à l’heure programmée de vos tâches."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo utilizza le sveglie per avvisarti all’ora programmata per le tue attività."
+          }
+        }
+      }
+    },
     "NSCalendarsFullAccessUsageDescription" : {
       "comment" : "Privacy - Calendars Full Access Usage Description",
       "localizations" : {

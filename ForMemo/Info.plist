@@ -7,6 +7,8 @@
 		<string>comgooglemaps</string>
 		<string>waze</string>
 	</array>
+	<key>NSAlarmKitUsageDescription</key>
+	<string>ForMemo uses alarms to alert you at the scheduled time for your tasks.</string>
 	<key>NSUbiquitousContainers</key>
 	<dict>
 		<key>iCloud.corradini.armando.NewTask</key>

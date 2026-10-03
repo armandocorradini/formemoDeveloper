@@ -1,4 +1,5 @@
 import SwiftUI
+import os
 
 // MARK: - ScheduleSection
 //
@@ -116,27 +117,47 @@ struct ScheduleSection: View {
                             notificationLeadTimeDays
                     )
                     
+                    if let msg = validationMessage {
+                        Text(msg)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.red)
+                            .padding(.vertical, 10)
+                    }
+                    
+                    Divider()
+                    
                     Toggle(
                         String(localized: "Alarm"),
                         isOn: Binding(
                             get: { task.alarmEnabled },
                             set: { newValue in
-                                task.alarmEnabled = newValue
-                                saveTask()
+                                if newValue {
+                                    Task { @MainActor in
+                                        do {
+                                            try await ForMemoAlarmManager.shared.requestAuthorization()
+
+                                            task.alarmEnabled = true
+                                            saveTask()
+                                        } catch {
+                                            AppLogger.notifications.error(
+                                                "AlarmKit authorization failed: \(error.localizedDescription)"
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    task.alarmEnabled = false
+                                    saveTask()
+                                }
                             }
                         )
                     )
-
+                    .padding(.top,10)
+                    
                     Text(String(localized: "AlarmFootnote"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
 
-                    if let msg = validationMessage {
-                        Text(msg)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.red)
-                            .padding(.top, 8)
-                    }
+
                 }
             }
 

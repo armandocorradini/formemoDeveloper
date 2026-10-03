@@ -3727,10 +3727,66 @@
       }
     },
     "Alarm" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarm"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarme"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sveglia"
+          }
+        }
+      }
     },
     "AlarmFootnote" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn diese Option aktiviert ist, werden Sie zur geplanten Zeit durch einen Alarm benachrichtigt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When enabled, the alarm alerts you at the scheduled time."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuando esta opción está activada, la alarma te avisa a la hora programada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lorsque cette option est activée, l’alarme vous avertit à l’heure programmée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando questa opzione è attiva, la sveglia ti avvisa all’ora programmata."
+          }
+        }
+      }
     },
     "All" : {
       "localizations" : {
@@ -11222,7 +11278,32 @@
       }
     },
     "Current occurrence" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktuelles Vorkommen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocurrencia actual"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Occurrence actuelle"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Occorrenza corrente"
+          }
+        }
+      }
     },
     "Custom" : {
       "localizations" : {
@@ -20023,7 +20104,32 @@
       }
     },
     "Keep active" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktiv lassen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantener activa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Garder active"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantieni attiva"
+          }
+        }
+      }
     },
     "Keep track of important documents, expiry dates, notes and reminders. Receive notifications before documents expire." : {
       "localizations" : {
@@ -35231,7 +35337,32 @@
       }
     },
     "The deadline of the current occurrence is in the future." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Fälligkeit des aktuellen Vorkommens liegt in der Zukunft."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fecha límite de la ocurrencia actual es futura."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’échéance de l’occurrence actuelle est à venir."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La scadenza dell’occorrenza corrente è futura."
+          }
+        }
+      }
     },
     "The diagnostics report only contains technical app events, configuration information and aggregate item counts. Task titles, notes, attachments, document details, card information and personal contents are never included." : {
       "localizations" : {

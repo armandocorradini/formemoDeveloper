@@ -268,6 +268,7 @@ struct RecurrenceEngine {
                 locationLatitude: task.locationLatitude,
                 locationLongitude: task.locationLongitude,
                 priorityRaw: task.priorityRaw
+
             )
 
             occurrence.recurrenceID = recurrenceID
@@ -280,7 +281,8 @@ struct RecurrenceEngine {
             occurrence.recurrenceCount = task.recurrenceCount
 
             occurrence.mainTagRaw = task.mainTagRaw
-
+            occurrence.alarmEnabled = task.alarmEnabled
+            
             occurrence.snoozeUntil = nil
             occurrence.manualSnoozeUntil = nil
 

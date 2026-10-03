@@ -420,22 +420,45 @@ struct NewTaskSheetView: View {
                         notificationLeadTimeDays: settings.notificationLeadTimeDays
                     )
                     
+                    if let msg = validationMessage {
+                        Text(msg)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.red)
+                            .padding(.vertical, 10)
+                    }
+                    
+                    Divider()
+                    
                     Toggle(
                         String(localized: "Alarm"),
-                        isOn: $draftTask.alarmEnabled
-                    )
+                        isOn: Binding(
+                            get: { draftTask.alarmEnabled },
+                            set: { newValue in
+                                if newValue {
+                                    Task { @MainActor in
+                                        do {
+                                            try await ForMemoAlarmManager.shared.requestAuthorization()
 
+                                            draftTask.alarmEnabled = true
+                                        } catch {
+                                            AppLogger.notifications.error(
+                                                "AlarmKit authorization failed: \(error.localizedDescription)"
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    draftTask.alarmEnabled = false
+                                }
+                            }
+                        )
+                    )
+                    .padding(.top,10)
                     Text(String(localized: "AlarmFootnote"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     
                     
-                    if let msg = validationMessage {
-                        Text(msg)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.red)
-                            .padding(.top, 6)
-                    }
+
                 }
             }
 
@@ -904,6 +927,35 @@ struct NewTaskSheetView: View {
             AppLogger.persistence.error(
                 "Save failed: \(error.localizedDescription)"
             )
+        }
+
+        let savedTaskID = draftTask.id
+        let savedRecurrenceID = draftTask.recurrenceID
+
+        Task { @MainActor in
+            if let savedRecurrenceID {
+                let occurrences = (try? modelContext.fetch(
+                    FetchDescriptor<TodoTask>(
+                        predicate: #Predicate<TodoTask> {
+                            $0.recurrenceID == savedRecurrenceID
+                        }
+                    )
+                )) ?? []
+
+                await ForMemoAlarmManager.shared.synchronize(
+                    tasks: occurrences
+                )
+            } else if let savedTask = try? modelContext.fetch(
+                FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> {
+                        $0.id == savedTaskID
+                    }
+                )
+            ).first {
+                await ForMemoAlarmManager.shared.synchronize(
+                    task: savedTask
+                )
+            }
         }
 
         NotificationManager.shared.refresh(force: true)
