@@ -1780,12 +1780,21 @@ struct TaskListView: View {
         .scrollDismissesKeyboard(.immediately)
         }
     .onChange(of: scenePhase) { _, newPhase in
-      if newPhase == .inactive {
-        if showCompleted {
-          showCompleted = false
+        if newPhase == .inactive {
+            if showCompleted {
+                showCompleted = false
+            }
+            return
         }
-        return
-      }
+
+        if newPhase == .active {
+            if showCompleted {
+                fetchCompletedTasks()
+                updateCompletedTaskCount()
+            } else {
+                refreshActiveList()
+            }
+        }
     }
 
     .searchableIf(

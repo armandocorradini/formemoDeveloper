@@ -11,7 +11,8 @@ struct TaskCalendarView: View {
     private var settings
 
     @Environment(\.modelContext) private var modelContext
-
+    @Environment(\.scenePhase) private var scenePhase
+    
     @State private var calendarTasks: [TodoTask] = []
 
     @Environment(\.verticalSizeClass) private var verticalSizeClass
@@ -297,10 +298,17 @@ struct TaskCalendarView: View {
             Task { @MainActor in await loadHolidays(for: displayedMonth) }
             fetchCalendarTasks()
         }
+        
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                fetchCalendarTasks()
+            }
+        }
         .onChange(of: displayedMonth) { _, newValue in
             Task { @MainActor in await loadHolidays(for: newValue) }
             fetchCalendarTasks()
         }
+        
         .onReceive(
             NotificationCenter.default.publisher(for: .taskDidChange)
         ) { _ in
@@ -1745,6 +1753,7 @@ private struct DayCell: View {
 private struct DayTasksInlineView: View {
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var hasAnyTasks: Bool? = nil
 

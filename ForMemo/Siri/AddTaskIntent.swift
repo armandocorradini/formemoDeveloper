@@ -401,6 +401,14 @@ struct AddTaskIntent: AppIntent {
 
         context.insert(task)
         try context.save()
+            
+            context.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+            
         
         NotificationManager.shared.refresh()
         

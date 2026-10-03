@@ -16,6 +16,9 @@ struct WeeklyTasksView: View {
     @Environment(\.locale) private var appLocale
     @Environment(\.modelContext) private var modelContext
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
+    
+    
     @State private var weatherManager = WeatherManager.shared
     
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
@@ -425,6 +428,11 @@ struct WeeklyTasksView: View {
             .task {
                 fetchWeeklyTasks()
                 await weatherManager.refreshIfNeeded()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    fetchWeeklyTasks()
+                }
             }
             .onChange(of: taskWeekDays) {
                 fetchWeeklyTasks()
