@@ -406,6 +406,24 @@ struct BackgroundCustomizationView: View {
                                 pattern: .space,
                                 title: "Space"
                             )
+                            patternButton(
+                                pattern: .solarsystem,
+                                title: "Solar System"
+                            )
+                            
+                            patternButton(
+                                pattern: .pets,
+                                title: "Pets"
+                            )
+                            
+                            patternButton(
+                                pattern: .alice,
+                                title: "Alice"
+                            )
+                            patternButton(
+                                pattern: .love,
+                                title: "Love"
+                            )
 
                         }
                         .padding(.vertical, 4)

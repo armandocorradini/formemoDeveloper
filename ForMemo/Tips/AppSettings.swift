@@ -23,6 +23,10 @@ enum AppBackgroundPattern: String, Codable {
     case mountain
     case countryside
     case space
+    case solarsystem
+    case pets
+    case alice
+    case love
     
     var assetName: String? {
         switch self {
@@ -56,6 +60,14 @@ enum AppBackgroundPattern: String, Codable {
             return "CountrysidePattern"
         case .space:
             return "SpacePattern"
+        case .solarsystem:
+            return "SolarSystemPattern"
+        case .pets:
+            return "PetsPattern"
+        case .alice:
+            return "AlicePattern"
+        case .love:
+            return "LovePattern"
         }
     }
 
@@ -91,6 +103,14 @@ enum AppBackgroundPattern: String, Codable {
             return String(localized: "Countryside")
         case .space:
             return String(localized: "Space")
+        case .solarsystem:
+            return String(localized: "Solar System")
+        case .pets:
+            return String(localized: "Pets")
+        case .alice:
+            return String(localized: "Alice")
+        case .love:
+            return String(localized: "Love")
         }
     }
 }

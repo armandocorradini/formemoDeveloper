@@ -3788,6 +3788,9 @@
         }
       }
     },
+    "Alice" : {
+      "shouldTranslate" : false
+    },
     "All" : {
       "localizations" : {
         "de" : {
@@ -21048,6 +21051,34 @@
         }
       }
     },
+    "Love" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liebe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amor"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amour"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amore"
+          }
+        }
+      }
+    },
     "Loyalty Card" : {
       "localizations" : {
         "de" : {
@@ -25561,6 +25592,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Progetti personali"
+          }
+        }
+      }
+    },
+    "Pets" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Haustiere"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mascotas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animaux de compagnie"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Animali domestici"
           }
         }
       }
@@ -32434,6 +32493,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Software"
+          }
+        }
+      }
+    },
+    "Solar System" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonnensystem"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema solar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Système solaire"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema solare"
           }
         }
       }
