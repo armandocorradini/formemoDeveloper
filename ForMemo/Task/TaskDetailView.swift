@@ -308,7 +308,7 @@ struct TaskDetailView: View {
                         Picker("", selection: $recurrenceLimitMode) {
                             Text(String(localized: "Date"))
                                 .tag(RecurrenceLimitMode.until)
-                            Text(String(localized: "Occurrences"))
+                            Text(String(localized: "Total Occurrences"))
                                 .tag(RecurrenceLimitMode.count)
                         }
                         .pickerStyle(.segmented)
@@ -328,7 +328,7 @@ struct TaskDetailView: View {
                                 in: 1...2_000
                             ) {
                                 HStack {
-                                    Text(String(localized: "Occurrences"))
+                                    Text(String(localized: "Total Occurrences"))
                                     Spacer()
                                     Text("\(recurrenceCount)")
                                         .monospacedDigit()
@@ -380,8 +380,11 @@ struct TaskDetailView: View {
                 task.recurrenceEndDate = nil
             }
         }
+        .listRowBackground(
+            Color(.systemBackground).opacity(0.3)
+        )
     }
-    
+
     private var rowModel: TaskRowDisplayModel {
         let icon = task.mainTag?.mainIcon ?? task.status.icon
         let color: Color = settings.iconStyle == .monochrome

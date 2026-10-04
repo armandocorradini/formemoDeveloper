@@ -587,7 +587,7 @@ struct NewTaskSheetView: View {
                                     Text(String(localized: "Date"))
                                         .tag(RecurrenceLimitMode.until)
 
-                                    Text(String(localized: "Occurrences"))
+                                    Text(String(localized: "Total Occurrences"))
                                         .tag(RecurrenceLimitMode.count)
                                 }
                                 .pickerStyle(.segmented)
@@ -610,7 +610,7 @@ struct NewTaskSheetView: View {
                                         in: 1...2_000
                                     ) {
                                         HStack {
-                                            Text(String(localized: "Occurrences"))
+                                            Text(String(localized: "Total Occurrences"))
 
                                             Spacer()
 

@@ -3759,31 +3759,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wenn diese Option aktiviert ist, werden Sie zur geplanten Zeit durch einen Alarm benachrichtigt."
+            "value" : "Wenn die Weckfunktion aktiviert ist, ersetzt sie die Benachrichtigung und weist dich zur geplanten Zeit darauf hin."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "When enabled, the alarm alerts you at the scheduled time."
+            "value" : "When enabled, the alarm replaces the notification and alerts you at the scheduled time."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cuando esta opción está activada, la alarma te avisa a la hora programada."
+            "value" : "Cuando está activada, la alarma sustituye a la notificación y te avisa a la hora programada."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lorsque cette option est activée, l’alarme vous avertit à l’heure programmée."
+            "value" : "Lorsqu’elle est activée, l’alarme remplace la notification et vous avertit à l’heure programmée."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quando questa opzione è attiva, la sveglia ti avvisa all’ora programmata."
+            "value" : "Quando è attiva, la sveglia sostituisce la notifica e ti avvisa all’ora programmata."
           }
         }
       }
@@ -37679,6 +37679,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Colore superiore"
+          }
+        }
+      }
+    },
+    "Total Occurrences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesamtanzahl"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total ocurrencias"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Total occurrences"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Totale occorrenze"
           }
         }
       }
