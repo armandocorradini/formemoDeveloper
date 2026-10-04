@@ -420,7 +420,7 @@ struct WalletView: View {
                                 .tag(WalletViewStyle.list)
 
                                 Label(
-                                    String(localized: "Cards"),
+                                    String(localized: "Tiles"),
                                     systemImage: "rectangle.on.rectangle"
                                 )
                                 .tag(WalletViewStyle.cards)

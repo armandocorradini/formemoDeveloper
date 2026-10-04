@@ -24,6 +24,7 @@ enum AppBackgroundPattern: String, Codable {
     case countryside
     case space
     case solarsystem
+    case blackhole
     case pets
     case alice
     case love
@@ -62,6 +63,8 @@ enum AppBackgroundPattern: String, Codable {
             return "SpacePattern"
         case .solarsystem:
             return "SolarSystemPattern"
+        case .blackhole:
+            return "BlackHolePattern"
         case .pets:
             return "PetsPattern"
         case .alice:
@@ -105,6 +108,8 @@ enum AppBackgroundPattern: String, Codable {
             return String(localized: "Space")
         case .solarsystem:
             return String(localized: "Solar System")
+        case .blackhole:
+            return String(localized: "Black Hole")
         case .pets:
             return String(localized: "Pets")
         case .alice:

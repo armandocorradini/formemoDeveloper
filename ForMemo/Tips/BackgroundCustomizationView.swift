@@ -410,6 +410,10 @@ struct BackgroundCustomizationView: View {
                                 pattern: .solarsystem,
                                 title: "Solar System"
                             )
+                            patternButton(
+                                pattern: .blackhole,
+                                title: "Black Hole"
+                            )
                             
                             patternButton(
                                 pattern: .pets,

@@ -6241,6 +6241,9 @@
         }
       }
     },
+    "Black Hole" : {
+
+    },
     "Blink" : {
       "localizations" : {
         "de" : {
@@ -36849,6 +36852,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tickets"
+          }
+        }
+      }
+    },
+    "Tiles" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kacheln"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mosaicos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vignettes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riquadri"
           }
         }
       }
