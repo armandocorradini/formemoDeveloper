@@ -384,7 +384,7 @@ struct RecurrenceMigrationView: View {
 
         if interval == 1 {
             let oneUnit = String(localized: String.LocalizationValue(unitKey))
-            return "Ogni \(oneUnit)"
+            return "Every \(oneUnit)"
         }
 
         let format = String(
