@@ -101,31 +101,6 @@ struct ScheduleSection: View {
 
                 VStack(alignment: .leading, spacing: 8) {
 
-                    ReminderScrubberControl(
-                        reminderOffsetMinutes: Binding(
-                            get: {
-                                task.reminderOffsetMinutes
-                            },
-                            set: { newValue in
-                                task.reminderOffsetMinutes = newValue
-                                task.snoozeUntil = nil
-                                validateReminder()
-                                saveTask()
-                            }
-                        ),
-                        notificationLeadTimeDays:
-                            notificationLeadTimeDays
-                    )
-                    
-                    if let msg = validationMessage {
-                        Text(msg)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.red)
-                            .padding(.vertical, 10)
-                    }
-                    
-                    Divider()
-                    
                     Toggle(
                         String(localized: "Alarm"),
                         isOn: Binding(
@@ -151,13 +126,38 @@ struct ScheduleSection: View {
                             }
                         )
                     )
-                    .padding(.top,10)
-                    
+                    .padding(.vertical, 10)
+
                     Text(String(localized: "AlarmFootnote"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                        .padding(.bottom, 5)
 
+                    Divider()
 
+                    ReminderScrubberControl(
+                        reminderOffsetMinutes: Binding(
+                            get: {
+                                task.reminderOffsetMinutes
+                            },
+                            set: { newValue in
+                                task.reminderOffsetMinutes = newValue
+                                task.snoozeUntil = nil
+                                validateReminder()
+                                saveTask()
+                            }
+                        ),
+                        notificationLeadTimeDays:
+                            notificationLeadTimeDays
+                    )
+                    .padding(.top, 5)
+
+                    if let msg = validationMessage {
+                        Text(msg)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.red)
+                            .padding(.vertical, 10)
+                    }
                 }
             }
 

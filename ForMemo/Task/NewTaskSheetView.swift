@@ -401,7 +401,7 @@ struct NewTaskSheetView: View {
             if let deadline = draftTask.deadLine {
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    
+
                     DatePicker(
                         "",
                         selection: Binding(
@@ -414,18 +414,7 @@ struct NewTaskSheetView: View {
                         displayedComponents: [.date, .hourAndMinute]
                     )
                     .labelsHidden()
-                    
-                    ReminderScrubberControl(
-                        reminderOffsetMinutes: $draftTask.reminderOffsetMinutes,
-                        notificationLeadTimeDays: settings.notificationLeadTimeDays
-                    )
-                    
-                    if let msg = validationMessage {
-                        Text(msg)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.red)
-                            .padding(.vertical, 10)
-                    }
+                    .padding(.bottom, 5)
                     
                     Divider()
                     
@@ -452,13 +441,27 @@ struct NewTaskSheetView: View {
                             }
                         )
                     )
-                    .padding(.top,10)
+                    .padding(.vertical, 10)
+
                     Text(String(localized: "AlarmFootnote"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                    
-                    
+                        .padding(.bottom, 5)
 
+                    Divider()
+
+                    ReminderScrubberControl(
+                        reminderOffsetMinutes: $draftTask.reminderOffsetMinutes,
+                        notificationLeadTimeDays: settings.notificationLeadTimeDays
+                    )
+                    .padding(.top,5)
+
+                    if let msg = validationMessage {
+                        Text(msg)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(.red)
+                            .padding(.vertical, 10)
+                    }
                 }
             }
 
