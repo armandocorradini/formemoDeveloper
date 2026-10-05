@@ -16,73 +16,73 @@ struct SavedLocationItem: Identifiable, Hashable {
 }
 
 struct SavedLocationsListView: View {
-
+    
     let locations: [SavedLocationItem]
     let onSelect: (SavedLocationItem) -> Void
     let onDelete: (SavedLocationItem) -> Void
-
+    
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
-
+    
     private var filteredLocations: [SavedLocationItem] {
         guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return locations
         }
-
+        
         return locations.filter {
             $0.name.localizedCaseInsensitiveContains(searchText)
         }
     }
-
+    
     var body: some View {
         ZStack {
             AppGlassBackground()
-
-        List {
-            ForEach(filteredLocations) { item in
-
-                Button {
-                    onSelect(item)
-                    dismiss()
-                } label: {
-                    HStack(spacing: 12) {
-
-                        Image(systemName: "mappin.circle.fill")
-                            .foregroundStyle(.blue)
-
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.name)
-                                .foregroundStyle(.primary)
-
-                            Text("\(item.latitude), \(item.longitude)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-
-                        Spacer()
-                    }
-                }
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        onDelete(item)
+            
+            List {
+                ForEach(filteredLocations) { item in
+                    
+                    Button {
+                        onSelect(item)
+                        dismiss()
                     } label: {
-                        Label("Delete", systemImage: "trash")
+                        HStack(spacing: 12) {
+                            
+                            Image(systemName: "mappin.circle.fill")
+                                .foregroundStyle(.blue)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(item.name)
+                                    .foregroundStyle(.primary)
+                                
+                                Text("\(item.latitude), \(item.longitude)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Spacer()
+                        }
+                    }
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            onDelete(item)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                     }
                 }
             }
+            .searchable(
+                text: $searchText,
+                placement: .navigationBarDrawer(displayMode: .automatic),
+                prompt: String(localized: "Search locations")
+            )
+            .navigationTitle("Saved Locations")
+            .navigationBarTitleDisplayMode(.inline)
+            .contentMargins(.bottom, 70, for: .scrollContent)
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            
         }
-        .searchable(
-            text: $searchText,
-            placement: .navigationBarDrawer(displayMode: .automatic),
-            prompt: String(localized: "Search locations")
-        )
-        .navigationTitle("Saved Locations")
-        .navigationBarTitleDisplayMode(.inline)
-        .contentMargins(.bottom, 70, for: .scrollContent)
-        .scrollContentBackground(.hidden)
-        .background(Color.clear)
-
-    }
         
     }
 }
@@ -90,7 +90,7 @@ struct SavedLocationsListView: View {
 enum RecurrenceLimitMode: String, CaseIterable, Identifiable {
     case until
     case count
-
+    
     var id: String { rawValue }
 }
 struct NewTaskSheetView: View {
@@ -118,7 +118,7 @@ struct NewTaskSheetView: View {
     @State private var showingAudioRecorder = false
     
     @State private var validationMessage: String? = nil
-
+    
     // Recurrence generation confirmation (>150 future occurrences)
     @State private var recurrenceGenerationConfirmation = false
     @State private var recurrenceGenerationCreateCount = 0
@@ -147,20 +147,20 @@ struct NewTaskSheetView: View {
     private var attachments: [TaskAttachment] {
         draftTask.attachments ?? []
     }
-
+    
     private var hiddenSavedLocations: Set<String> {
         (try? JSONDecoder().decode(Set<String>.self, from: hiddenSavedLocationsData)) ?? []
     }
-
+    
     private func hideSavedLocation(_ item: SavedLocationItem) {
         let key = "\(item.name.lowercased())|\(item.latitude)|\(item.longitude)"
-
+        
         var hidden = hiddenSavedLocations
         hidden.insert(key)
-
+        
         hiddenSavedLocationsData = (try? JSONEncoder().encode(hidden)) ?? Data()
     }
-
+    
     @MainActor
     private func loadSavedLocations() {
         let descriptor = FetchDescriptor<TodoTask>(
@@ -170,34 +170,34 @@ struct NewTaskSheetView: View {
                 $0.locationLongitude != nil
             }
         )
-
+        
         do {
             let tasks = try modelContext.fetch(descriptor)
-
+            
             var seen = Set<String>()
             var locations: [SavedLocationItem] = []
             locations.reserveCapacity(tasks.count)
-
+            
             for task in tasks {
                 guard
                     let name = task.locationName,
                     let latitude = task.locationLatitude,
                     let longitude = task.locationLongitude
-                else {
+                        else {
                     continue
                 }
-
+                
                 let key = "\(name.lowercased())|\(latitude)|\(longitude)"
-
+                
                 guard
                     !seen.contains(key),
                     !hiddenSavedLocations.contains(key)
-                else {
+                        else {
                     continue
                 }
-
+                
                 seen.insert(key)
-
+                
                 locations.append(
                     SavedLocationItem(
                         name: name,
@@ -206,13 +206,13 @@ struct NewTaskSheetView: View {
                     )
                 )
             }
-
+            
             locations.sort {
                 $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
             }
-
+            
             savedLocations = locations
-
+            
         } catch {
             AppLogger.persistence.error(
                 "Saved locations fetch failed: \(error.localizedDescription)"
@@ -236,9 +236,9 @@ struct NewTaskSheetView: View {
                 }
                 .task {
                     loadSavedLocations()
-
+                    
                     try? await Task.sleep(for: .milliseconds(150))
-
+                    
                     isTitleFocused = true
                 }
                 .scrollContentBackground(.hidden)
@@ -309,7 +309,7 @@ struct NewTaskSheetView: View {
                     Button("Cancel", role: .cancel) {
                         recurrenceGenerationConfirmation = false
                     }
-
+                    
                     Button("OK") {
                         recurrenceGenerationConfirmation = false
                         saveTask()
@@ -322,7 +322,7 @@ struct NewTaskSheetView: View {
                         Text("This recurrence will create \(recurrenceGenerationCreateCount + 1) tasks.")
                     }
                 }
-
+                
                 .alert(
                     "Photo import incomplete",
                     isPresented: Binding(
@@ -336,7 +336,7 @@ struct NewTaskSheetView: View {
                 } message: {
                     Text(photoImportMessage ?? "")
                 }
-
+                
                 
                 .onChange(of: capturedImage) {
                     if let image = capturedImage {
@@ -401,7 +401,7 @@ struct NewTaskSheetView: View {
             if let deadline = draftTask.deadLine {
                 
                 VStack(alignment: .leading, spacing: 8) {
-
+                    
                     DatePicker(
                         "",
                         selection: Binding(
@@ -427,7 +427,7 @@ struct NewTaskSheetView: View {
                                     Task { @MainActor in
                                         do {
                                             try await ForMemoAlarmManager.shared.requestAuthorization()
-
+                                            
                                             draftTask.alarmEnabled = true
                                         } catch {
                                             AppLogger.notifications.error(
@@ -442,20 +442,20 @@ struct NewTaskSheetView: View {
                         )
                     )
                     .padding(.vertical, 10)
-
+                    
                     Text(String(localized: "AlarmFootnote"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .padding(.bottom, 5)
-
+                    
                     Divider()
-
+                    
                     ReminderScrubberControl(
                         reminderOffsetMinutes: $draftTask.reminderOffsetMinutes,
                         notificationLeadTimeDays: settings.notificationLeadTimeDays
                     )
                     .padding(.top,5)
-
+                    
                     if let msg = validationMessage {
                         Text(msg)
                             .font(.caption.weight(.medium))
@@ -464,183 +464,183 @@ struct NewTaskSheetView: View {
                     }
                 }
             }
-
-
+            
+            
         }
         .disabled(!isTitleValid)
         .opacity(isTitleValid ? 1 : 0.4)
     }
     
-
-
+    
+    
     private var repeatSection: some View {
         Section("Repeat") {
             VStack(alignment: .leading, spacing: 14) {
-
-                        // MARK: Repeat
-
-                        HStack(spacing: 10) {
-                            Image(systemName: "arrow.triangle.2.circlepath")
-                                .foregroundStyle(.blue)
-
-                            Text(String(localized: "Repeat"))
-
-                            Spacer()
-
-                            if selectedRecurrence == .none {
-                                Menu {
-                                    Button {
-                                        selectedRecurrence = .none
-                                    } label: {
-                                        Text(recurrenceUnitTitle(for: .none))
-                                    }
-
-                                    Divider()
-
-                                    ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
-                                        Button {
-                                            selectedRecurrence = option
-                                        } label: {
-                                            Text(recurrenceUnitTitle(for: option, forcePlural: true))
-                                        }
-                                    }
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Text(recurrenceUnitTitle(for: selectedRecurrence))
-
-                                        Image(systemName: "chevron.up.chevron.down")
-                                            .font(.caption)
-                                    }
-                                    .foregroundStyle(.primary)
-                                    .contentShape(Rectangle())
-                                }
-                                .fixedSize(horizontal: true, vertical: false)
+                
+                // MARK: Repeat
+                
+                HStack(spacing: 10) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .foregroundStyle(.blue)
+                    
+                    Text(String(localized: "Repeat"))
+                    
+                    Spacer()
+                    
+                    if selectedRecurrence == .none {
+                        Menu {
+                            Button {
+                                selectedRecurrence = .none
+                            } label: {
+                                Text(recurrenceUnitTitle(for: .none))
                             }
-                        }
-
-                        if selectedRecurrence != .none {
-
-                            // MARK: Interval
-
-                            HStack(spacing: 12) {
-
-                                Text(String(localized: "Every"))
-                                    .foregroundStyle(.primary)
-
-                                Menu {
-                                    ForEach(1...365, id: \.self) { value in
-                                        Button("\(value)") {
-                                            draftTask.recurrenceInterval = value
-                                        }
-                                    }
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Text("\(draftTask.recurrenceInterval)")
-                                            .monospacedDigit()
-
-                                        Image(systemName: "chevron.up.chevron.down")
-                                            .font(.caption)
-                                    }
-                                    .foregroundStyle(.primary)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 6)
-                                    .contentShape(Rectangle())
-                                }
-                                .tint(.primary)
-
-                                Menu {
-                                    ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
-                                        Button {
-                                            selectedRecurrence = option
-                                        } label: {
-                                            Text(recurrenceUnitTitle(for: option, forcePlural: true))
-                                        }
-                                    }
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Text(recurrenceUnitTitle(for: selectedRecurrence))
-
-                                        Image(systemName: "chevron.up.chevron.down")
-                                            .font(.caption)
-                                    }
-                                    .foregroundStyle(.primary)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 6)
-                                    .contentShape(Rectangle())
-                                }
-                                .tint(.primary)
-
-                                Spacer()
-                            }
-
+                            
                             Divider()
-                                .padding(.vertical, 4)
-
-                            // MARK: Recurrence limit
-
-                            VStack(alignment: .leading, spacing: 12) {
-
-                                Text(String(localized: "Ends"))
-                                    .foregroundStyle(.primary)
-
-                                Picker("", selection: $recurrenceLimitMode) {
-                                    Text(String(localized: "Date"))
-                                        .tag(RecurrenceLimitMode.until)
-
-                                    Text(String(localized: "Total Occurrences"))
-                                        .tag(RecurrenceLimitMode.count)
-                                }
-                                .pickerStyle(.segmented)
-                                .labelsHidden()
-                                .frame(maxWidth: .infinity)
-
-                                if recurrenceLimitMode == .until {
-
-                                    DatePicker(
-                                        String(localized: "Until"),
-                                        selection: $recurrenceEndDate,
-                                        displayedComponents: [.date]
-                                    )
-                                    .frame(maxWidth: .infinity)
-
-                                } else {
-
-                                    Stepper(
-                                        value: $recurrenceCount,
-                                        in: 1...2_000
-                                    ) {
-                                        HStack {
-                                            Text(String(localized: "Total Occurrences"))
-
-                                            Spacer()
-
-                                            Text("\(recurrenceCount)")
-                                                .monospacedDigit()
-                                                .foregroundStyle(.secondary)
-                                        }
-                                    }
+                            
+                            ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
+                                Button {
+                                    selectedRecurrence = option
+                                } label: {
+                                    Text(recurrenceUnitTitle(for: option, forcePlural: true))
                                 }
                             }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(recurrenceUnitTitle(for: selectedRecurrence))
+                                
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.primary)
+                            .contentShape(Rectangle())
+                        }
+                        .fixedSize(horizontal: true, vertical: false)
+                    }
+                }
+                
+                if selectedRecurrence != .none {
+                    
+                    // MARK: Interval
+                    
+                    HStack(spacing: 12) {
+                        
+                        Text(String(localized: "Every"))
+                            .foregroundStyle(.primary)
+                        
+                        Menu {
+                            ForEach(1...365, id: \.self) { value in
+                                Button("\(value)") {
+                                    draftTask.recurrenceInterval = value
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text("\(draftTask.recurrenceInterval)")
+                                    .monospacedDigit()
+                                
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.primary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .contentShape(Rectangle())
+                        }
+                        .tint(.primary)
+                        
+                        Menu {
+                            ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
+                                Button {
+                                    selectedRecurrence = option
+                                } label: {
+                                    Text(recurrenceUnitTitle(for: option, forcePlural: true))
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(recurrenceUnitTitle(for: selectedRecurrence))
+                                
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.primary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .contentShape(Rectangle())
+                        }
+                        .tint(.primary)
+                        
+                        Spacer()
+                    }
+                    
+                    Divider()
+                        .padding(.vertical, 4)
+                    
+                    // MARK: Recurrence limit
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        
+                        Text(String(localized: "Ends"))
+                            .foregroundStyle(.primary)
+                        
+                        Picker("", selection: $recurrenceLimitMode) {
+                            Text(String(localized: "Date"))
+                                .tag(RecurrenceLimitMode.until)
+                            
+                            Text(String(localized: "Occurrences"))
+                                .tag(RecurrenceLimitMode.count)
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity)
+                        
+                        if recurrenceLimitMode == .until {
+                            
+                            DatePicker(
+                                String(localized: "Until"),
+                                selection: $recurrenceEndDate,
+                                displayedComponents: [.date]
+                            )
+                            .frame(maxWidth: .infinity)
+                            
+                        } else {
+                            
+                            Stepper(
+                                value: $recurrenceCount,
+                                in: 1...2_000
+                            ) {
+                                HStack {
+                                    Text(String(localized: "Total Occurrences"))
+                                    
+                                    Spacer()
+                                    
+                                    Text("\(recurrenceCount)")
+                                        .monospacedDigit()
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
                     }
-                    .onChange(of: selectedRecurrence) { _, newValue in
-                        if newValue == .none {
-                            draftTask.recurrenceRule = nil
-                            draftTask.recurrenceInterval = 1
-                        } else {
-                            draftTask.recurrenceRule = newValue.rawValue
-
-                            if draftTask.recurrenceInterval < 1 {
-                                draftTask.recurrenceInterval = 1
-                            }
-                        }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .onChange(of: selectedRecurrence) { _, newValue in
+                if newValue == .none {
+                    draftTask.recurrenceRule = nil
+                    draftTask.recurrenceInterval = 1
+                } else {
+                    draftTask.recurrenceRule = newValue.rawValue
+                    
+                    if draftTask.recurrenceInterval < 1 {
+                        draftTask.recurrenceInterval = 1
+                    }
+                }
             }
         }
         .disabled(!isTitleValid || draftTask.deadLine == nil)
         .opacity(isTitleValid && draftTask.deadLine != nil ? 1 : 0.4)
     }
-
+    
     // MARK: - CONTEXT
     
     private var contextSection: some View {
@@ -702,7 +702,7 @@ struct NewTaskSheetView: View {
                 } label: {
                     Label("Add location", systemImage: "mappin.and.ellipse")
                 }
-
+                
                 if !savedLocations.isEmpty {
                     NavigationLink {
                         SavedLocationsListView(
@@ -722,18 +722,18 @@ struct NewTaskSheetView: View {
                     }
                 }
             }
-
+            
             // Location Reminder Toggle
             if draftTask.locationLatitude != nil && draftTask.locationLongitude != nil {
                 let canUseLocationReminders =
-                    UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
-                    && CLLocationManager().authorizationStatus == .authorizedAlways
-
+                UserDefaults.standard.bool(forKey: "locationRemindersEnabled")
+                && CLLocationManager().authorizationStatus == .authorizedAlways
+                
                 VStack(alignment: .leading, spacing: 4) {
                     Toggle("Location Reminder", isOn: $draftTask.locationReminderEnabled)
                         .disabled(!canUseLocationReminders)
                         .opacity(canUseLocationReminders ? 1 : 0.4)
-
+                    
                     if !canUseLocationReminders {
                         Text("Location reminders require \"Always Allow\" location access and must be enabled in Settings.")
                             .font(.caption)
@@ -773,7 +773,7 @@ struct NewTaskSheetView: View {
                 showingCamera = true
             } label: {
                 Label("Take Photo", systemImage: "camera")
-                    
+                
             }
             
             PhotosPicker(
@@ -809,7 +809,7 @@ struct NewTaskSheetView: View {
     
     private func recurrenceUnitTitle(for recurrence: RecurrenceUI, forcePlural: Bool = false) -> String {
         let plural = forcePlural || draftTask.recurrenceInterval > 1
-
+        
         switch recurrence {
         case .hourly:
             return NSLocalizedString(plural ? "recurrence.hour.other" : "recurrence.hour.one", comment: "")
@@ -825,7 +825,7 @@ struct NewTaskSheetView: View {
             return NSLocalizedString("recurrence.none", comment: "")
         }
     }
-
+    
     // MARK: - SAVE
     
     @MainActor
@@ -835,53 +835,53 @@ struct NewTaskSheetView: View {
             dismiss()
             return
         }
-
+        
         guard
             let startDate = draftTask.recurrenceStartDate ?? draftTask.deadLine,
             let rawRule = draftTask.recurrenceRule,
             let rule = RecurrenceEngine.Rule(rawValue: rawRule)
-        else {
+                else {
             saveTask()
             dismiss()
             return
         }
-
+        
         let limit: RecurrenceEngine.Limit
-
+        
         switch recurrenceLimitMode {
         case .until:
             limit = .until(recurrenceEndDate)
         case .count:
             limit = .count(max(1, recurrenceCount))
         }
-
+        
         let dates = RecurrenceEngine.occurrenceDates(
             startDate: startDate,
             rule: rule,
             interval: max(1, draftTask.recurrenceInterval),
             limit: limit
         )
-
+        
         // The first date is the task itself (#1).
         let futureCount = max(0, dates.count - 1)
-
+        
         guard futureCount > 150 else {
             saveTask()
             dismiss()
             return
         }
-
+        
         recurrenceGenerationCreateCount = min(
             futureCount,
             RecurrenceEngine.maximumGeneratedFutureOccurrences
         )
-
+        
         recurrenceGenerationWasCapped =
-            futureCount > RecurrenceEngine.maximumGeneratedFutureOccurrences
-
+        futureCount > RecurrenceEngine.maximumGeneratedFutureOccurrences
+        
         recurrenceGenerationConfirmation = true
     }
-
+    
     @MainActor
     private func saveTask() {
         if draftTask.recurrenceRule != nil {
@@ -889,7 +889,7 @@ struct NewTaskSheetView: View {
             case .until:
                 draftTask.recurrenceEndDate = recurrenceEndDate
                 draftTask.recurrenceCount = nil
-
+                
             case .count:
                 draftTask.recurrenceEndDate = nil
                 draftTask.recurrenceCount = recurrenceCount
@@ -898,7 +898,7 @@ struct NewTaskSheetView: View {
             draftTask.recurrenceEndDate = nil
             draftTask.recurrenceCount = nil
         }
-
+        
         if draftTask.modelContext == nil {
             modelContext.insert(draftTask)
         }
@@ -906,7 +906,7 @@ struct NewTaskSheetView: View {
             if draftTask.recurrenceID == nil {
                 draftTask.recurrenceID = UUID()
             }
-
+            
             draftTask.occurrenceIndex = 1
             draftTask.recurrenceStartDate = draftTask.deadLine
         }
@@ -918,10 +918,10 @@ struct NewTaskSheetView: View {
                     for: draftTask,
                     in: modelContext
                 )
-
+                
                 try modelContext.save()
             }
-
+            
             NotificationCenter.default.post(
                 name: .taskDidChange,
                 object: nil
@@ -931,10 +931,10 @@ struct NewTaskSheetView: View {
                 "Save failed: \(error.localizedDescription)"
             )
         }
-
+        
         let savedTaskID = draftTask.id
         let savedRecurrenceID = draftTask.recurrenceID
-
+        
         Task { @MainActor in
             if let savedRecurrenceID {
                 let occurrences = (try? modelContext.fetch(
@@ -944,7 +944,7 @@ struct NewTaskSheetView: View {
                         }
                     )
                 )) ?? []
-
+                
                 await ForMemoAlarmManager.shared.synchronize(
                     tasks: occurrences
                 )
@@ -960,7 +960,7 @@ struct NewTaskSheetView: View {
                 )
             }
         }
-
+        
         NotificationManager.shared.refresh(force: true)
     }
     
@@ -970,20 +970,20 @@ struct NewTaskSheetView: View {
     private func importPhotos(_ items: [PhotosPickerItem]) async {
         var importedCount = 0
         var skippedCount = 0
-
+        
         for item in items {
             guard let data = try? await item.loadTransferable(type: Data.self) else {
                 skippedCount += 1
                 AppLogger.app.error("Photo import skipped: unable to load selected item")
                 continue
             }
-
+            
             let imageType = item.supportedContentTypes.first { $0.conforms(to: .image) }
             let fileExtension = imageType?.preferredFilenameExtension ?? "jpg"
             let filename = "Photo-\(UUID().uuidString).\(fileExtension)"
             let tmpURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent(filename)
-
+            
             do {
                 try data.write(to: tmpURL)
                 await saveAttachment(from: tmpURL)
@@ -993,9 +993,9 @@ struct NewTaskSheetView: View {
                 AppLogger.app.error("Photo write error:\(error.localizedDescription)")
             }
         }
-
+        
         libraryPickerItems.removeAll()
-
+        
         if skippedCount > 0 {
             photoImportMessage = String(
                 localized: "Imported \(importedCount) photos. \(skippedCount) could not be loaded from Photos/iCloud. Open Photos, download them locally, then try again."
@@ -1046,32 +1046,32 @@ struct NewTaskSheetView: View {
     
     @MainActor
     private func saveAttachment(from url: URL) async {
-
+        
         let didStartAccessing = url.startAccessingSecurityScopedResource()
-
+        
         defer {
             if didStartAccessing {
                 url.stopAccessingSecurityScopedResource()
             }
         }
-
+        
         do {
-
+            
             try await AttachmentImporter.addAttachment(
                 from: url,
                 to: draftTask,
                 in: modelContext
             )
-
+            
             try modelContext.save()
-
+            
             NotificationCenter.default.post(
                 name: .attachmentsShouldRefresh,
                 object: nil
             )
-
+            
         } catch {
-
+            
             AppLogger.persistence.error(
                 "Attachment import failed: \(error.localizedDescription)"
             )

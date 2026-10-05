@@ -308,7 +308,7 @@ struct TaskDetailView: View {
                         Picker("", selection: $recurrenceLimitMode) {
                             Text(String(localized: "Date"))
                                 .tag(RecurrenceLimitMode.until)
-                            Text(String(localized: "Total Occurrences"))
+                            Text(String(localized: "Occurrences"))
                                 .tag(RecurrenceLimitMode.count)
                         }
                         .pickerStyle(.segmented)
@@ -701,7 +701,9 @@ struct TaskDetailView: View {
         }
 
         .alert(
-            "Modify future occurrences?",
+            initialEditSnapshot?.recurrenceID == nil
+                ? "Create future occurrences?"
+                : "Modify future occurrences?",
             isPresented: $recurrenceGenerationConfirmation
         ) {
             Button("OK") {
@@ -711,7 +713,17 @@ struct TaskDetailView: View {
                 cancelPendingRecurrenceRegeneration()
             }
         } message: {
-            if recurrenceGenerationWasCapped {
+            if initialEditSnapshot?.recurrenceID == nil {
+                if recurrenceGenerationWasCapped {
+                    Text(
+                        "The new recurrence requires \(recurrenceGenerationRequestedCount) future occurrences. The first \(recurrenceGenerationCreateCount) occurrences will be created, up to the maximum limit of 2,000."
+                    )
+                } else {
+                    Text(
+                        "The new recurrence will create \(recurrenceGenerationCreateCount) future occurrences according to the selected recurrence."
+                    )
+                }
+            } else if recurrenceGenerationWasCapped {
                 Text(
                     "The new recurrence requires \(recurrenceGenerationRequestedCount) future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first \(recurrenceGenerationCreateCount) occurrences, up to the maximum limit of 2,000."
                 )
@@ -720,8 +732,7 @@ struct TaskDetailView: View {
                     "The currently scheduled future occurrences will be deleted and replaced with \(recurrenceGenerationCreateCount) new future occurrences according to the new recurrence."
                 )
             }
-        }
-        .alert("Remove deadline?", isPresented: $showingDeleteDeadlineAlert) {
+        }        .alert("Remove deadline?", isPresented: $showingDeleteDeadlineAlert) {
             Button("Remove", role: .destructive) {
                 task.deadLine = nil
                 task.reminderOffsetMinutes = nil   // ✅ fondamentale
@@ -863,17 +874,16 @@ struct TaskDetailView: View {
             return
         }
         
+        // A change to any recurrence definition has its own flow.
+        if recurrenceDefinitionChanged() {
+            prepareRecurrenceDefinitionChange()
+            return
+        }
+
         // Legacy recurrence: edits are saved normally.
         // Migration is triggered only when the user completes the task.
         if task.recurrenceRule != nil && task.occurrenceIndex == nil {
             finishDetailExit()
-            return
-        }
-
-        // A change to any recurrence definition has its own flow.
-        // It never shows the normal "This / This & Future" dialog.
-        if recurrenceDefinitionChanged() {
-            prepareRecurrenceDefinitionChange()
             return
         }
 
@@ -1380,13 +1390,11 @@ struct TaskDetailView: View {
         guard let initial = initialEditSnapshot else {
             return false
         }
-
-        return
-               initial.recurrenceRule != task.recurrenceRule ||
-               initial.recurrenceInterval != task.recurrenceInterval ||
-               initial.recurrenceStartDate != task.recurrenceStartDate ||
-               initial.recurrenceEndDate != task.recurrenceEndDate ||
-               initial.recurrenceCount != task.recurrenceCount
+        return initial.recurrenceRule != task.recurrenceRule ||
+        initial.recurrenceInterval != task.recurrenceInterval ||
+        initial.recurrenceStartDate != task.recurrenceStartDate ||
+        initial.recurrenceEndDate != task.recurrenceEndDate ||
+        initial.recurrenceCount != task.recurrenceCount
     }
 
     @MainActor
@@ -1696,18 +1704,55 @@ struct TaskDetailView: View {
         return UTType(attachment.contentType)?.conforms(to: .audio) ?? false
     }
     //    }
+
     private var metadataSection: some View {
         Section("Metadata") {
             LabeledContent(
                 "Created at",
-                value: (task.createdAt).formatted(
-                    date: .long,
+                value: task.createdAt.formatted(
+                    date: .abbreviated,
                     time: .shortened
                 )
             )
+
+            if let occurrenceIndex = task.occurrenceIndex {
+                LabeledContent(
+                    "Occurrence",
+                    value: task.recurrenceCount.map {
+                        "\(occurrenceIndex) of \($0)"
+                    } ?? "\(occurrenceIndex)"
+                )
+            }
+            if let recurrenceCount = task.recurrenceCount {
+                LabeledContent(
+                    "Total occurrences",
+                    value: "\(recurrenceCount)"
+                )
+            }
+
+            if let recurrenceStartDate = task.recurrenceStartDate {
+                LabeledContent(
+                    "Series started",
+                    value: recurrenceStartDate.formatted(
+                        date: .abbreviated,
+                        time: .shortened
+                    )
+                )
+            }
+            if let recurrenceEndDate = task.recurrenceEndDate {
+                LabeledContent(
+                    "Series ends",
+                    value: recurrenceEndDate.formatted(
+                        date: .abbreviated,
+                        time: .shortened
+                    )
+                )
+            }
+            
         }
         .listRowBackground(Color(.systemBackground).opacity(0.3))
     }
+    
     @MainActor
     private func importPhotos(from items: [PhotosPickerItem]) async {
         var importedCount = 0

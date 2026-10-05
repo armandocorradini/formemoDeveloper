@@ -2317,6 +2317,10 @@ struct TaskListView: View {
 
     @MainActor
     private func requestTaskDeletion(_ task: TodoTask) {
+        
+        AppLogger.persistence.error(
+            "DELETE DEBUG — title=\(task.title), recurrenceID=\(task.recurrenceID?.uuidString ?? "nil"), occurrenceIndex=\(task.occurrenceIndex.map(String.init) ?? "nil"), recurrenceRule=\(task.recurrenceRule ?? "nil")"
+        )
         guard task.recurrenceID != nil else {
             if confirmTaskDeletion {
                 taskPendingDeletion = task

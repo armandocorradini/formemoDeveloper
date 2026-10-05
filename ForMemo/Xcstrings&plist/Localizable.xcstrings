@@ -24148,6 +24148,34 @@
         }
       }
     },
+    "Occurrence" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorkommen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocurrencia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Occurrence"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Occorrenza"
+          }
+        }
+      }
+    },
     "Occurrences" : {
       "localizations" : {
         "de" : {
@@ -30547,6 +30575,62 @@
         }
       }
     },
+    "Series ends" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ende der Serie"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fin de la serie"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fin de la série"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fine della serie"
+          }
+        }
+      }
+    },
+    "Series started" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beginn der Serie"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicio de la serie"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Début de la série"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inizio della serie"
+          }
+        }
+      }
+    },
     "Server" : {
       "localizations" : {
         "de" : {
@@ -35625,6 +35709,68 @@
         }
       }
     },
+    "The new recurrence requires %lld future occurrences. The first %lld occurrences will be created, up to the maximum limit of 2,000." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die neue Wiederholung erfordert %lld zukünftige Vorkommen. Die ersten %lld Vorkommen werden bis zum maximalen Limit von 2.000 erstellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The new recurrence requires %1$lld future occurrences. The first %2$lld occurrences will be created, up to the maximum limit of 2,000."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nueva recurrencia requiere %lld ocurrencias futuras. Se crearán las primeras %lld ocurrencias, hasta el límite máximo de 2.000."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nouvelle récurrence nécessite %lld occurrences futures. Les %lld premières occurrences seront créées, jusqu’à la limite maximale de 2 000."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nuova ricorrenza richiede %lld occorrenze future. Verranno create le prime %lld occorrenze, fino al limite massimo di 2.000."
+          }
+        }
+      }
+    },
+    "The new recurrence will create %lld future occurrences according to the selected recurrence." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die neue Wiederholung erstellt %lld zukünftige Vorkommen entsprechend der ausgewählten Wiederholung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nueva recurrencia creará %lld ocurrencias futuras según la recurrencia seleccionada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nouvelle récurrence créera %lld occurrences futures selon la récurrence sélectionnée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La nuova ricorrenza creerà %lld occorrenze future in base alla ricorrenza selezionata."
+          }
+        }
+      }
+    },
     "The password is incorrect. Enter the correct password to restore Vault, or continue without Vault." : {
       "localizations" : {
         "de" : {
@@ -37679,6 +37825,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Colore superiore"
+          }
+        }
+      }
+    },
+    "Total occurrences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesamtzahl der Vorkommen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número total de ocurrencias"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre total d’occurrences"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numero totale di occorrenze"
           }
         }
       }
