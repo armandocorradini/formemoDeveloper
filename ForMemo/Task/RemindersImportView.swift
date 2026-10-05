@@ -223,7 +223,7 @@ private extension RemindersImportView {
         }
 
         var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Europe/Rome")!
+        calendar.timeZone = .current
 
         return calendar.date(from: comp)
     }
