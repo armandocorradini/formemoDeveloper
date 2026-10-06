@@ -40,6 +40,8 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
 
     context.delete(task)
 
+    ForMemoAlarmManager.shared.cancelAlarmIfNeeded(id: task.id)
+    
     context.safeSave(operation: "DeleteTask")
 
     NotificationManager.shared.refresh()
@@ -49,7 +51,7 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
 func deleteRecurringTaskAndFutureOccurrences(
     _ task: TodoTask,
     in context: ModelContext
-) {
+) async {
     guard let recurrenceID = task.recurrenceID,
           let occurrenceIndex = task.occurrenceIndex else {
         deleteTask(task, in: context)
@@ -58,6 +60,9 @@ func deleteRecurringTaskAndFutureOccurrences(
 
     let batchSize = 250
 
+    
+    await ForMemoAlarmManager.shared.waitForPendingSynchronizations()
+    
     // Store the deletion range once.
     DeletedFingerprintStore.markDeletedFromOccurrence(
         recurrenceID: recurrenceID,
@@ -115,6 +120,14 @@ func deleteRecurringTaskAndFutureOccurrences(
 
         context.safeSave(
             operation: "DeleteRecurringTaskAndFutureOccurrences.batch"
+        )
+    }
+
+    let remainingTasks = (try? context.fetch(FetchDescriptor<TodoTask>())) ?? []
+
+    Task { @MainActor in
+        await ForMemoAlarmManager.shared.removeOrphanedAlarms(
+            tasks: remainingTasks
         )
     }
 

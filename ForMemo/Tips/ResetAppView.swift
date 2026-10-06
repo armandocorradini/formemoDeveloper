@@ -1,4 +1,5 @@
 import SwiftUI
+import AlarmKit
 import SwiftData
 import UserNotifications
 import os
@@ -555,6 +556,10 @@ struct ResetAppView: View {
             // 🔴 Notifiche
             center.removeAllPendingNotificationRequests()
             center.removeAllDeliveredNotifications()
+            
+            // 🔴 AlarmKit
+             await ForMemoAlarmManager.shared.removeOrphanedAlarms(tasks: [])
+            
             
             // 🔴 Attachments
             let attachments = try modelContext.fetch(FetchDescriptor<TaskAttachment>())

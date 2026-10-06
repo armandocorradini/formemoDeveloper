@@ -97,7 +97,7 @@ struct TaskDetailView: View {
     @State private var recurrenceLimitMode: RecurrenceLimitMode = .until
     @State private var recurrenceEndDate: Date = .now
     @State private var recurrenceCount: Int = 10
-
+    
     // MARK: - Recurrence edit scope
     // True after the user has chosen how edits in this detail session
     // should be applied. The current occurrence is always already saved;
@@ -111,12 +111,14 @@ struct TaskDetailView: View {
     @State private var recurrenceGenerationCreateCount = 0
     @State private var recurrenceGenerationWasCapped = false
     @State private var pendingRecurrenceRegeneration = false
-
+    
+    @State private var isSynchronizing = false
+    
     // MARK: - Legacy recurrence migration
     @State private var legacyRecurrenceTask: TodoTask?
     @State private var isMigratingLegacyRecurrence = false
     @State private var showingLegacyRecurrenceMigration = false
-
+    
     private struct TaskEditSnapshot: Equatable {
         let title: String
         let taskDescription: String
@@ -138,7 +140,7 @@ struct TaskDetailView: View {
         let recurrenceEndDate: Date?
         let recurrenceCount: Int?
         let attachmentIDs: [UUID]
-
+        
         init(task: TodoTask) {
             self.title = task.title
             self.taskDescription = task.taskDescription
@@ -162,16 +164,16 @@ struct TaskDetailView: View {
             self.attachmentIDs = (task.attachments ?? []).map(\.id).sorted { $0.uuidString < $1.uuidString }
         }
     }
-
+    
     @State private var initialEditSnapshot: TaskEditSnapshot?
-
+    
     init(task: TodoTask, isSheet: Bool = false) {
         self._task = Bindable(wrappedValue: task)
         self.isSheet = isSheet
-
+        
         let recurrence = RecurrenceUI(rawValue: task.recurrenceRule ?? "") ?? .none
         self._selectedRecurrence = State(initialValue: recurrence)
-
+        
         if let count = task.recurrenceCount {
             self._recurrenceLimitMode = State(initialValue: .count)
             self._recurrenceCount = State(initialValue: min(max(count, 1), 2_000))
@@ -182,13 +184,13 @@ struct TaskDetailView: View {
             self._recurrenceCount = State(initialValue: 10)
         }
     }
-
+    
     private func recurrenceUnitTitle(
         for recurrence: RecurrenceUI,
         forcePlural: Bool = false
     ) -> String {
         let plural = forcePlural || task.recurrenceInterval > 1
-
+        
         switch recurrence {
         case .hourly:
             return NSLocalizedString(plural ? "recurrence.hour.other" : "recurrence.hour.one", comment: "")
@@ -204,7 +206,7 @@ struct TaskDetailView: View {
             return NSLocalizedString("recurrence.none", comment: "")
         }
     }
-
+    
     
     private var recurrenceSection: some View {
         Section {
@@ -214,11 +216,11 @@ struct TaskDetailView: View {
                         .foregroundStyle(
                             task.occurrenceIndex == nil ? .red : .blue
                         )
-
+                    
                     Text(String(localized: "Repeat"))
-
+                    
                     Spacer()
-
+                    
                     if selectedRecurrence == .none {
                         Menu {
                             ForEach(RecurrenceUI.allCases) { option in
@@ -240,12 +242,12 @@ struct TaskDetailView: View {
                         .fixedSize(horizontal: true, vertical: false)
                     }
                 }
-
+                
                 if selectedRecurrence != .none {
                     HStack(spacing: 12) {
                         Text(String(localized: "Every"))
                             .foregroundStyle(.primary)
-
+                        
                         Menu {
                             ForEach(1...365, id: \.self) { value in
                                 Button("\(value)") {
@@ -265,16 +267,16 @@ struct TaskDetailView: View {
                             .contentShape(Rectangle())
                         }
                         .tint(.primary)
-
+                        
                         Menu {
                             Button {
                                 selectedRecurrence = .none
                             } label: {
                                 Text(recurrenceUnitTitle(for: .none))
                             }
-
+                            
                             Divider()
-
+                            
                             ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
                                 Button {
                                     selectedRecurrence = option
@@ -294,17 +296,17 @@ struct TaskDetailView: View {
                             .contentShape(Rectangle())
                         }
                         .tint(.primary)
-
+                        
                         Spacer()
                     }
-
+                    
                     Divider()
                         .padding(.vertical, 4)
-
+                    
                     VStack(alignment: .leading, spacing: 12) {
                         Text(String(localized: "Ends"))
                             .foregroundStyle(.primary)
-
+                        
                         Picker("", selection: $recurrenceLimitMode) {
                             Text(String(localized: "Date"))
                                 .tag(RecurrenceLimitMode.until)
@@ -314,7 +316,7 @@ struct TaskDetailView: View {
                         .pickerStyle(.segmented)
                         .labelsHidden()
                         .frame(maxWidth: .infinity)
-
+                        
                         if recurrenceLimitMode == .until {
                             DatePicker(
                                 String(localized: "Until"),
@@ -384,7 +386,7 @@ struct TaskDetailView: View {
             Color(.systemBackground).opacity(0.3)
         )
     }
-
+    
     private var rowModel: TaskRowDisplayModel {
         let icon = task.mainTag?.mainIcon ?? task.status.icon
         let color: Color = settings.iconStyle == .monochrome
@@ -442,9 +444,13 @@ struct TaskDetailView: View {
                     validationMessage: validationMessage,
                     showingDeleteDeadlineAlert: $showingDeleteDeadlineAlert,
                     saveTask: { saveTask(userInitiated: true) },
+                    saveAndWaitForScheduling: {
+                        await saveAndWaitForAlarmScheduling()
+                    },
+                    isSynchronizing: $isSynchronizing,
                     validateReminder: { validateReminder() }
                 )
-
+                
                 if task.deadLine != nil {
                     recurrenceSection
                 }
@@ -472,6 +478,37 @@ struct TaskDetailView: View {
                 )
                 
                 metadataSection
+            }
+            
+            .overlay {
+                if isSynchronizing {
+                    ZStack {
+                        Color.black
+                            .opacity(0.25)
+                            .ignoresSafeArea()
+                        
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .controlSize(.large)
+                            
+                            Text("Do not close the app")
+                                .font(.headline)
+                            
+                            Text("ForMemo is scheduling notifications and alarms.")
+                                .font(.subheadline)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(24)
+                        .background(
+                            .regularMaterial,
+                            in: RoundedRectangle(cornerRadius: 18)
+                        )
+                        .padding()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
+                }
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
             .scrollContentBackground(.hidden)
@@ -524,14 +561,18 @@ struct TaskDetailView: View {
                 showingRecurrenceEditScope = false
                 finishDetailExit()
             }
-
+            
             Button("This & Future") {
                 recurrenceEditScopeResolved = true
                 showingRecurrenceEditScope = false
-                applyCurrentChangesToFutureOccurrences()
-                finishDetailExit()
-            }
+                isSynchronizing = true
 
+                Task { @MainActor in
+                    await applyCurrentChangesToFutureOccurrences()
+                    isSynchronizing = false
+                }
+            }
+            
             Button("Cancel", role: .cancel) {
                 // Stay in the detail view. No future occurrence is changed.
                 showingRecurrenceEditScope = false
@@ -551,7 +592,7 @@ struct TaskDetailView: View {
                     Image(systemName: "chevron.left")
                 }
             }
-
+            
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showingShareSheet = true
@@ -637,13 +678,13 @@ struct TaskDetailView: View {
             }
         }
         .sheet(item: $previewItem) { item in
-
+            
             if FileManager.default.fileExists(atPath: item.url.path) {
-
+                
                 QuickLookPreview(url: item.url)
-
+                
             } else {
-
+                
                 ContentUnavailableView(
                     "File unavailable",
                     systemImage: "icloud.slash"
@@ -680,9 +721,9 @@ struct TaskDetailView: View {
             Task { @MainActor in await importFiles(from: urls)}
         }
         .sheet(isPresented: $showingLegacyRecurrenceMigration) {
-
+            
             if let task = legacyRecurrenceTask {
-
+                
                 RecurrenceMigrationView(
                     task: task,
                     onMigrate: { task, futureCount, endDate, keepCurrentOccurrenceActive in
@@ -699,11 +740,11 @@ struct TaskDetailView: View {
                 )
             }
         }
-
+        
         .alert(
             initialEditSnapshot?.recurrenceID == nil
-                ? "Create future occurrences?"
-                : "Modify future occurrences?",
+            ? "Create future occurrences?"
+            : "Modify future occurrences?",
             isPresented: $recurrenceGenerationConfirmation
         ) {
             Button("OK") {
@@ -725,7 +766,7 @@ struct TaskDetailView: View {
                 }
             } else if recurrenceGenerationWasCapped {
                 Text(
-                    "The new recurrence requires \(recurrenceGenerationRequestedCount) future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first \(recurrenceGenerationCreateCount) occurrences, up to the maximum limit of 2,000."
+                    "The new recurrence requires \(recurrenceGenerationRequestedCount) future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first \(recurrenceGenerationCreateCount) occurrences, up to the maximum limit of 2.000."
                 )
             } else {
                 Text(
@@ -770,35 +811,35 @@ struct TaskDetailView: View {
                 await importPhotos(from: newItems)
             }
         }
-//        .onChange(of: task.reminderOffsetMinutes, initial: false) { _, _ in
-//            saveTask()
-//        }
-//        .onChange(of: task.locationName) { _, _ in
-//            saveTask()
-//        }
-//        .onChange(of: task.locationLatitude) { _, _ in
-//            saveTask()
-//        }
-//        .onChange(of: task.locationLongitude) { _, _ in
-//            saveTask()
-//        }
+        //        .onChange(of: task.reminderOffsetMinutes, initial: false) { _, _ in
+        //            saveTask()
+        //        }
+        //        .onChange(of: task.locationName) { _, _ in
+        //            saveTask()
+        //        }
+        //        .onChange(of: task.locationLatitude) { _, _ in
+        //            saveTask()
+        //        }
+        //        .onChange(of: task.locationLongitude) { _, _ in
+        //            saveTask()
+        //        }
         .onChange(of: task.isCompleted) { _, newValue in
-
+            
             if newValue,
                task.recurrenceRule != nil,
                task.occurrenceIndex == nil,
                !isMigratingLegacyRecurrence {
-
+                
                 // Do not complete the legacy task before the migration choice.
                 task.isCompleted = false
                 task.completedAt = nil
                 task.snoozeUntil = nil
-
+                
                 legacyRecurrenceTask = task
                 showingLegacyRecurrenceMigration = true
                 return
             }
-
+            
             saveTask(userInitiated: true)
         }
         .onDisappear {
@@ -806,17 +847,20 @@ struct TaskDetailView: View {
             saveTask(userInitiated: false)
         }
     }
+    @discardableResult
     @MainActor
-    private func saveTask(userInitiated: Bool = false) {
-        guard modelContext.hasChanges else { return }
-
+    private func saveTask(userInitiated: Bool = false) -> Task<Void, Never>? {
+        guard modelContext.hasChanges else { return nil }
+        
+        var synchronizationTask: Task<Void, Never>?
+        
         do {
             try modelContext.save()
             
             if let recurrenceID = task.recurrenceID {
-                Task { @MainActor in
-                    await ForMemoAlarmManager.shared.synchronize(task: task)
-
+                synchronizationTask = Task { @MainActor in
+                    _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                    
                     let occurrences = (try? modelContext.fetch(
                         FetchDescriptor<TodoTask>(
                             predicate: #Predicate<TodoTask> {
@@ -824,24 +868,20 @@ struct TaskDetailView: View {
                             }
                         )
                     )) ?? []
-
-                    await ForMemoAlarmManager.shared.synchronize(
-                        tasks: occurrences
-                    )
+                    
+                    _ = await ForMemoAlarmManager.shared.synchronize(tasks: occurrences)
                 }
             } else {
-                Task { @MainActor in
-                    await ForMemoAlarmManager.shared.synchronize(task: task)
+                synchronizationTask = Task { @MainActor in
+                    _ = await ForMemoAlarmManager.shared.synchronize(task: task)
                 }
             }
             
-            
-            
-            
+
             DebugLog.writeCloudKitEvent(
                 "TaskDetail context save completed"
             )
-
+            
             NotificationManager.shared.refresh()
 #if DEBUG
             AppLogger.notifications.info("💾 Saved")
@@ -853,12 +893,53 @@ struct TaskDetailView: View {
             AppLogger.persistence.fault(
                 "Task detail save failed: \(error.localizedDescription)"
             )
-
+            
             modelContext.rollback()
             assertionFailure("CRITICAL: TaskDetailView.saveTask failed → rollback executed")
         }
-    }
+    
+    return synchronizationTask
+}
+    
+    @MainActor
+    private func saveAndWaitForAlarmScheduling() async {
+        guard modelContext.hasChanges else { return }
 
+        do {
+            try modelContext.save()
+
+            _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+
+            await NotificationManager.shared.refreshAndWait(force: true)
+
+            DebugLog.writeCloudKitEvent(
+                "TaskDetail alarm toggle save completed"
+            )
+
+    #if DEBUG
+            AppLogger.notifications.info("💾 Alarm toggle saved")
+    #endif
+
+        } catch {
+            DebugLog.writeCloudKitEvent(
+                "TaskDetail alarm toggle save failed"
+            )
+
+            AppLogger.persistence.fault(
+                "Task detail alarm toggle save failed: \(error.localizedDescription)"
+            )
+
+            modelContext.rollback()
+
+            assertionFailure(
+                "CRITICAL: TaskDetailView.saveAndWaitForAlarmScheduling failed → rollback executed"
+            )
+        }
+    }
+    
+    
+    
+    
     // MARK: - Detail exit / recurrence edit scope
 
     @MainActor
@@ -1125,7 +1206,7 @@ struct TaskDetailView: View {
     }
 
     @MainActor
-    private func applyCurrentChangesToFutureOccurrences() {
+    private func applyCurrentChangesToFutureOccurrences() async {
         // This method is used for the normal "This & Future" path.
         // Non-recurrence properties are copied directly.
         // If the deadline changed, future deadlines are recalculated
@@ -1205,12 +1286,16 @@ struct TaskDetailView: View {
             try modelContext.save()
             modelContext.processPendingChanges()
 
+            _ = await ForMemoAlarmManager.shared.synchronize(
+                tasks: futureOccurrences
+            )
+
             NotificationCenter.default.post(
                 name: .taskDidChange,
                 object: nil
             )
 
-            NotificationManager.shared.refresh()
+            await NotificationManager.shared.refreshAndWait(force: true)
             finishDetailExit()
 
         } catch {
@@ -1283,6 +1368,16 @@ struct TaskDetailView: View {
         pendingRecurrenceRegeneration = false
         recurrenceGenerationConfirmation = false
 
+        Task { @MainActor in
+            await ForMemoAlarmManager.shared.waitForPendingSynchronizations()
+            await performConfirmedRecurrenceRegenerationAfterSynchronization()
+        }
+    }
+    
+    
+    @MainActor
+    private func performConfirmedRecurrenceRegenerationAfterSynchronization() async {
+
         guard let initial = initialEditSnapshot else {
             finishDetailExit()
             return
@@ -1353,6 +1448,19 @@ struct TaskDetailView: View {
 
             try modelContext.save()
             modelContext.processPendingChanges()
+
+            if let newRecurrenceID = task.recurrenceID {
+                let occurrences = (try? modelContext.fetch(
+                    FetchDescriptor<TodoTask>(
+                        predicate: #Predicate<TodoTask> {
+                            $0.recurrenceID == newRecurrenceID
+                        }
+                    )
+                )) ?? []
+
+                _ = await ForMemoAlarmManager.shared.synchronize(tasks: occurrences)
+            }
+
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
             NotificationManager.shared.refresh()
             finishDetailExit()

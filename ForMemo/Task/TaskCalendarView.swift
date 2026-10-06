@@ -78,6 +78,9 @@ struct TaskCalendarView: View {
     @State private var tasksCache: [Date: [TodoTask]] = [:]
     
     @State private var calendarContainerSize: CGSize = .zero
+    
+    @State private var isDeletingRecurrence = false
+
 
     private var availableYears: [Int] {
         let currentYear = Calendar.current.component(.year, from: .now)
@@ -275,6 +278,29 @@ struct TaskCalendarView: View {
 
             }
 
+            if isDeletingRecurrence {
+                ZStack {
+                    Color.black.opacity(0.25)
+                        .ignoresSafeArea()
+
+                    VStack(spacing: 12) {
+                        ProgressView()
+
+                        Text(String(localized: "Deleting occurrences…"))
+                            .font(.headline)
+
+                        Text(String(localized: "Do not close ForMemo until the deletion is complete."))
+                            .font(.subheadline)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(24)
+                    .frame(maxWidth: 320)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+                }
+                .zIndex(100)
+            }
+            
         }
         
         .onGeometryChange(for: CGSize.self) { proxy in
@@ -1761,6 +1787,8 @@ private struct DayTasksInlineView: View {
 
     @State private var taskPendingDeletion: TodoTask?
     @State private var pendingDeletionHasFutureOccurrences = false
+    
+    @State private var isDeletingRecurrence = false
 
     let tasks: [TodoTask]
     let onLegacyRecurrenceCompletion: (TodoTask) -> Void
@@ -2379,17 +2407,27 @@ private struct DayTasksInlineView: View {
                     }
 
                     Button("Delete This & Future Occurrences", role: .destructive) {
-                        deleteRecurringTaskAndFutureOccurrences(
-                            task,
-                            in: modelContext
-                        )
-                        modelContext.processPendingChanges()
-                        NotificationCenter.default.post(
-                            name: .taskDidChange,
-                            object: nil
-                        )
                         taskPendingDeletion = nil
                         pendingDeletionHasFutureOccurrences = false
+                        isDeletingRecurrence = true
+
+                        Task { @MainActor in
+                            await Task.yield()
+
+                            await deleteRecurringTaskAndFutureOccurrences(
+                                task,
+                                in: modelContext
+                            )
+
+                            modelContext.processPendingChanges()
+
+                            NotificationCenter.default.post(
+                                name: .taskDidChange,
+                                object: nil
+                            )
+
+                            isDeletingRecurrence = false
+                        }
                     }
 
                 } else {

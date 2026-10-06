@@ -15,6 +15,10 @@ struct ScheduleSection: View {
     let validationMessage: String?
     let showingDeleteDeadlineAlert: Binding<Bool>
     let saveTask: () -> Void
+    
+    let saveAndWaitForScheduling: () async -> Void
+    let isSynchronizing: Binding<Bool>
+    
     let validateReminder: () -> Void
 
     var body: some View {
@@ -106,22 +110,28 @@ struct ScheduleSection: View {
                         isOn: Binding(
                             get: { task.alarmEnabled },
                             set: { newValue in
-                                if newValue {
-                                    Task { @MainActor in
+
+                                isSynchronizing.wrappedValue = true
+
+                                Task { @MainActor in
+                                    if newValue {
                                         do {
                                             try await ForMemoAlarmManager.shared.requestAuthorization()
 
                                             task.alarmEnabled = true
-                                            saveTask()
+                                            await saveAndWaitForScheduling()
+
                                         } catch {
                                             AppLogger.notifications.error(
                                                 "AlarmKit authorization failed: \(error.localizedDescription)"
                                             )
                                         }
+                                    } else {
+                                        task.alarmEnabled = false
+                                        await saveAndWaitForScheduling()
                                     }
-                                } else {
-                                    task.alarmEnabled = false
-                                    saveTask()
+
+                                    isSynchronizing.wrappedValue = false
                                 }
                             }
                         )

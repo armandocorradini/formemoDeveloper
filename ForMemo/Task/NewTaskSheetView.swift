@@ -24,6 +24,8 @@ struct SavedLocationsListView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var searchText = ""
     
+    @State private var isSynchronizing = false
+    
     private var filteredLocations: [SavedLocationItem] {
         guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return locations
@@ -69,6 +71,33 @@ struct SavedLocationsListView: View {
                             Label("Delete", systemImage: "trash")
                         }
                     }
+                }
+            }
+            .overlay {
+                if isSynchronizing {
+                    ZStack {
+                        Color.black
+                            .opacity(0.25)
+                            .ignoresSafeArea()
+
+                        VStack(spacing: 16) {
+                            ProgressView()
+                                .controlSize(.large)
+
+                            Text("Do not close the app")
+                                .font(.headline)
+
+                            Text("ForMemo is scheduling notifications and alarms.")
+                                .font(.subheadline)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(24)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+                        .padding()
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .contentShape(Rectangle())
                 }
             }
             .searchable(
@@ -128,6 +157,8 @@ struct NewTaskSheetView: View {
     @State private var recurrenceEndDate: Date = .now
     @State private var recurrenceCount: Int = 2
     @State private var savedLocations: [SavedLocationItem] = []
+    
+    @State private var isSynchronizing = false
     
     init(draftTask: TodoTask) {
         self._draftTask = Bindable(wrappedValue: draftTask)
@@ -234,6 +265,36 @@ struct NewTaskSheetView: View {
                     contextSection
                     attachmentsSection
                 }
+                .overlay {
+                    if isSynchronizing {
+                        ZStack {
+                            Color.black
+                                .opacity(0.25)
+                                .ignoresSafeArea()
+
+                            VStack(spacing: 16) {
+                                ProgressView()
+                                    .controlSize(.large)
+
+                                Text("Do not close the app")
+                                    .font(.headline)
+
+                                Text("ForMemo is scheduling notifications and alarms.")
+                                    .font(.subheadline)
+                                    .multilineTextAlignment(.center)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(24)
+                            .background(
+                                .regularMaterial,
+                                in: RoundedRectangle(cornerRadius: 18)
+                            )
+                            .padding()
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .contentShape(Rectangle())
+                    }
+                }
                 .task {
                     loadSavedLocations()
                     
@@ -259,13 +320,16 @@ struct NewTaskSheetView: View {
                         Button("Cancel") {
                             dismiss()
                         }
+                        .disabled(isSynchronizing)
                     }
                     
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Save") {
-                            requestSaveTask()
+                            Task { @MainActor in
+                                await requestSaveTask()
+                            }
                         }
-                        .disabled(!isTitleValid)
+                        .disabled(!isTitleValid || isSynchronizing)
                     }
                 }
                 
@@ -312,8 +376,13 @@ struct NewTaskSheetView: View {
                     
                     Button("OK") {
                         recurrenceGenerationConfirmation = false
-                        saveTask()
-                        dismiss()
+                        isSynchronizing = true
+
+                        Task { @MainActor in
+                            await saveTask()
+                            isSynchronizing = false
+                            dismiss()
+                        }
                     }
                 } message: {
                     if recurrenceGenerationWasCapped {
@@ -829,9 +898,9 @@ struct NewTaskSheetView: View {
     // MARK: - SAVE
     
     @MainActor
-    private func requestSaveTask() {
+    private func requestSaveTask() async {
         guard draftTask.recurrenceRule != nil else {
-            saveTask()
+            await saveTask()
             dismiss()
             return
         }
@@ -841,7 +910,7 @@ struct NewTaskSheetView: View {
             let rawRule = draftTask.recurrenceRule,
             let rule = RecurrenceEngine.Rule(rawValue: rawRule)
                 else {
-            saveTask()
+            await saveTask()
             dismiss()
             return
         }
@@ -866,7 +935,7 @@ struct NewTaskSheetView: View {
         let futureCount = max(0, dates.count - 1)
         
         guard futureCount > 150 else {
-            saveTask()
+            await saveTask()
             dismiss()
             return
         }
@@ -883,7 +952,7 @@ struct NewTaskSheetView: View {
     }
     
     @MainActor
-    private func saveTask() {
+    private func saveTask() async {
         if draftTask.recurrenceRule != nil {
             switch recurrenceLimitMode {
             case .until:
@@ -935,33 +1004,31 @@ struct NewTaskSheetView: View {
         let savedTaskID = draftTask.id
         let savedRecurrenceID = draftTask.recurrenceID
         
-        Task { @MainActor in
-            if let savedRecurrenceID {
-                let occurrences = (try? modelContext.fetch(
-                    FetchDescriptor<TodoTask>(
-                        predicate: #Predicate<TodoTask> {
-                            $0.recurrenceID == savedRecurrenceID
-                        }
-                    )
-                )) ?? []
-                
-                await ForMemoAlarmManager.shared.synchronize(
-                    tasks: occurrences
-                )
-            } else if let savedTask = try? modelContext.fetch(
+        if let savedRecurrenceID {
+            let occurrences = (try? modelContext.fetch(
                 FetchDescriptor<TodoTask>(
                     predicate: #Predicate<TodoTask> {
-                        $0.id == savedTaskID
+                        $0.recurrenceID == savedRecurrenceID
                     }
                 )
-            ).first {
-                await ForMemoAlarmManager.shared.synchronize(
-                    task: savedTask
-                )
-            }
+            )) ?? []
+
+            _ = await ForMemoAlarmManager.shared.synchronize(
+                tasks: occurrences
+            )
+        } else if let savedTask = try? modelContext.fetch(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> {
+                    $0.id == savedTaskID
+                }
+            )
+        ).first {
+            _ = await ForMemoAlarmManager.shared.synchronize(
+                task: savedTask
+            )
         }
         
-        NotificationManager.shared.refresh(force: true)
+        await NotificationManager.shared.refreshAndWait(force: true)
     }
     
     // MARK: - IMPORT (COME PRIMA)

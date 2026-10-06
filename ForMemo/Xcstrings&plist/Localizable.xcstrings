@@ -12846,6 +12846,34 @@
         }
       }
     },
+    "Deleting occurrences…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorkommen werden gelöscht…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminando las ocurrencias…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suppression des occurrences…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminazione delle occorrenze…"
+          }
+        }
+      }
+    },
     "Deletion" : {
       "localizations" : {
         "de" : {
@@ -13327,6 +13355,37 @@
           }
         }
       }
+    },
+    "Do not close ForMemo until the deletion is complete." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließen Sie ForMemo erst, wenn der Löschvorgang abgeschlossen ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No cierres ForMemo hasta que se complete la eliminación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne fermez pas ForMemo tant que la suppression n’est pas terminée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non chiudere ForMemo finché l’eliminazione non è completata."
+          }
+        }
+      }
+    },
+    "Do not close the app" : {
+
     },
     "Do weather forecasts require location access?" : {
       "localizations" : {
@@ -16741,6 +16800,9 @@
           }
         }
       }
+    },
+    "ForMemo is scheduling notifications and alarms." : {
+
     },
     "ForMemo lets you create, organize, and manage tasks and notes in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. At the due time, you can choose whether to receive a notification or an alarm. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards and tickets, with barcode and QR code scanning and quick access to your saved items.\n\nYou can create and manage Checklists, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, cards, tickets, checklists, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking." : {
       "localizations" : {
@@ -35675,18 +35737,18 @@
         }
       }
     },
-    "The new recurrence requires %lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %lld occurrences, up to the maximum limit of 2,000." : {
+    "The new recurrence requires %lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %lld occurrences, up to the maximum limit of 2.000." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nouvelle récurrence nécessite %lld occurrences futures.\nLes occurrences futures actuellement programmées seront supprimées et remplacées par les %lld premières occurrences, dans la limite maximale de 2 000."
+            "value" : "La nouvelle récurrence nécessite %lld occurrences futures.\nLes occurrences futures actuellement programmées seront supprimées et remplacées par les %lld premières occurrences, dans la limite maximale de 2.000."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "The new recurrence requires %1$lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %2$lld occurrences, up to the maximum limit of 2,000."
+            "value" : "The new recurrence requires %1$lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %2$lld occurrences, up to the maximum limit of 2.000."
           }
         },
         "es" : {
@@ -35698,7 +35760,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nouvelle récurrence nécessite %lld occurrences futures. Les occurrences futures actuellement programmées seront supprimées et remplacées par les %lld premières occurrences, dans la limite maximale de 2 000."
+            "value" : "La nouvelle récurrence nécessite %lld occurrences futures. Les occurrences futures actuellement programmées seront supprimées et remplacées par les %lld premières occurrences, dans la limite maximale de 2.000."
           }
         },
         "it" : {
@@ -35732,7 +35794,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nouvelle récurrence nécessite %lld occurrences futures. Les %lld premières occurrences seront créées, jusqu’à la limite maximale de 2 000."
+            "value" : "La nouvelle récurrence nécessite %lld occurrences futures. Les %lld premières occurrences seront créées, jusqu’à la limite maximale de 2.000."
           }
         },
         "it" : {
@@ -36618,7 +36680,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette récurrence nécessite plus de 2 000 tâches. Seules les 2 000 premières tâches seront créées."
+            "value" : "Cette récurrence nécessite plus de 2.000 tâches. Seules les 2.000 premières tâches seront créées."
           }
         },
         "it" : {

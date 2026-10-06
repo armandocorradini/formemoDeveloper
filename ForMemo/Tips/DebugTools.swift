@@ -1,4 +1,5 @@
 import Foundation
+import AlarmKit
 import SwiftData
 
 import UserNotifications
@@ -524,11 +525,64 @@ enum DebugLog {
             )
         }
 
+        do {
+            let alarms = try AlarmManager.shared.alarms
+
+            let scheduledAlarms = alarms.filter { alarm in
+                if case .scheduled = alarm.state {
+                    return true
+                }
+                return false
+            }
+
+            DebugLog.write(
+                "🔔 🔔 🔔 🔔 AlarmKit alarms: \(scheduledAlarms.count)"
+            )
+
+            DebugLog.write(
+                "   AlarmKit total: \(alarms.count)"
+            )
+        } catch {
+            DebugLog.write(
+                "❌ AlarmKit alarms unavailable: \(error.localizedDescription)"
+            )
+        }
+        
         UNUserNotificationCenter.current()
             .getPendingNotificationRequests { requests in
+                
                 DebugLog.write(
                     "🔔 Pending notifications: \(requests.count)"
                 )
+                
+                var counts: [String: Int] = [:]
+                
+                for request in requests {
+                    if let type = request.content.userInfo["type"] as? String {
+                        counts[type, default: 0] += 1
+                    } else if request.identifier.hasPrefix("document.") {
+                        counts["documents", default: 0] += 1
+                    } else {
+                        counts["other", default: 0] += 1
+                    }
+                }
+                
+                let orderedTypes = [
+                    ("global", "Global"),
+                    ("reminder", "Reminder"),
+                    ("deadline", "Deadline"),
+                    ("alarmBadge", "Alarm badge"),
+                    ("snooze", "Snooze"),
+                    ("manualSnooze", "Manual snooze"),
+                    ("documents", "Documents"),
+                    ("other", "Other")
+                ]
+                
+                for (key, title) in orderedTypes {
+                    DebugLog.write(
+                        "   \(title): \(counts[key, default: 0])"
+                    )
+                }
                 
                 UNUserNotificationCenter.current()
                     .getNotificationSettings { settings in
@@ -1498,6 +1552,64 @@ enum DebugLog {
             return
         }
 
+        do {
+            let alarms = try AlarmManager.shared.alarms
+
+            let scheduledAlarms = alarms.filter { alarm in
+                if case .scheduled = alarm.state {
+                    return true
+                }
+                return false
+            }
+
+            write("🔔  🔔  🔔  🔔  AlarmKit alarms: \(scheduledAlarms.count)")
+            write("   AlarmKit total: \(alarms.count)")
+        } catch {
+            write("❌ AlarmKit alarms unavailable: \(error.localizedDescription)")
+        }
+        let semaphore = DispatchSemaphore(value: 0)
+
+        UNUserNotificationCenter.current()
+            .getPendingNotificationRequests { requests in
+
+                write(
+                    "🔔 Pending notifications: \(requests.count)"
+                )
+
+                var counts: [String: Int] = [:]
+
+                for request in requests {
+                    if let type = request.content.userInfo["type"] as? String {
+                        counts[type, default: 0] += 1
+                    } else if request.identifier.hasPrefix("document.") {
+                        counts["documents", default: 0] += 1
+                    } else {
+                        counts["other", default: 0] += 1
+                    }
+                }
+
+                let orderedTypes = [
+                    ("global", "Global"),
+                    ("reminder", "Reminder"),
+                    ("deadline", "Deadline"),
+                    ("alarmBadge", "Alarm badge"),
+                    ("snooze", "Snooze"),
+                    ("manualSnooze", "Manual snooze"),
+                    ("documents", "Documents"),
+                    ("other", "Other")
+                ]
+
+                for (key, title) in orderedTypes {
+                    write(
+                        "   \(title): \(counts[key, default: 0])"
+                    )
+                }
+
+                semaphore.signal()
+            }
+
+        semaphore.wait()
+
         writeGeneralSnapshot(context: context)
 
         let env = makeAttachmentEnvironment()
@@ -1508,6 +1620,7 @@ enum DebugLog {
             context: context,
             environment: env
         )
+
         writeSystemEventHistory()
     }
     
@@ -1813,7 +1926,7 @@ struct ExportDiagnosticsView: View {
                                 .textSelection(.enabled)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(height: 160)
+                        .frame(height: 400)
                     }
                 }
         

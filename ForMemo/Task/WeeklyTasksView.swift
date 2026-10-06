@@ -37,7 +37,7 @@ struct WeeklyTasksView: View {
     
     @State private var weeklyTasks: [TodoTask] = []
     @State private var expiredTaskCount = 0
-    
+    @State private var isDeletingRecurrence = false
  
     
     @MainActor
@@ -514,18 +514,31 @@ struct WeeklyTasksView: View {
 
                     Button("Delete This & Future Occurrences", role: .destructive) {
                         if let task = taskPendingDeletion {
-                            deleteRecurringTaskAndFutureOccurrences(
-                                task,
-                                in: modelContext
-                            )
-                            modelContext.processPendingChanges()
-                            NotificationCenter.default.post(
-                                name: .taskDidChange,
-                                object: nil
-                            )
+                            taskPendingDeletion = nil
+                            pendingDeletionShowsRecurrenceChoices = false
+                            isDeletingRecurrence = true
+
+                            Task { @MainActor in
+                                await Task.yield()
+
+                                await deleteRecurringTaskAndFutureOccurrences(
+                                    task,
+                                    in: modelContext
+                                )
+
+                                modelContext.processPendingChanges()
+
+                                NotificationCenter.default.post(
+                                    name: .taskDidChange,
+                                    object: nil
+                                )
+
+                                isDeletingRecurrence = false
+                            }
+                        } else {
+                            taskPendingDeletion = nil
+                            pendingDeletionShowsRecurrenceChoices = false
                         }
-                        taskPendingDeletion = nil
-                        pendingDeletionShowsRecurrenceChoices = false
                     }
                 } else {
                     Button("Delete", role: .destructive) {
@@ -545,6 +558,29 @@ struct WeeklyTasksView: View {
                 }
             } message: {
                 Text("This action cannot be undone.")
+            }
+            
+            if isDeletingRecurrence {
+                ZStack {
+                    Color.black.opacity(0.25)
+                        .ignoresSafeArea()
+
+                    VStack(spacing: 12) {
+                        ProgressView()
+
+                        Text(String(localized: "Deleting occurrences…"))
+                            .font(.headline)
+
+                        Text(String(localized: "Do not close ForMemo until the deletion is complete."))
+                            .font(.subheadline)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(24)
+                    .frame(maxWidth: 320)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+                }
+                .zIndex(100)
             }
         }
     }

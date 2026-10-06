@@ -152,6 +152,8 @@ struct TaskListView: View {
     @State private var completedHasMore = true
     @State private var isLoadingMoreCompleted = false
     
+    @State private var isDeletingRecurrence = false
+    
     
   private enum ActiveTaskFetchPhase: Sendable {
 
@@ -1720,19 +1722,26 @@ struct TaskListView: View {
                       String(localized: "Delete This & Future Occurrences"),
                       role: .destructive
                   ) {
-                      deleteRecurringTaskAndFutureOccurrences(
-                          task,
-                          in: modelContext
-                      )
-
-                      modelContext.processPendingChanges()
-
-                      NotificationCenter.default.post(
-                          name: .taskDidChange,
-                          object: nil
-                      )
-
                       taskPendingDeletion = nil
+                      isDeletingRecurrence = true
+
+                      Task { @MainActor in
+                          await Task.yield()
+
+                          await deleteRecurringTaskAndFutureOccurrences(
+                              task,
+                              in: modelContext
+                          )
+
+                          modelContext.processPendingChanges()
+
+                          NotificationCenter.default.post(
+                              name: .taskDidChange,
+                              object: nil
+                          )
+
+                          isDeletingRecurrence = false
+                      }
                   }
 
               } else {
@@ -1778,6 +1787,33 @@ struct TaskListView: View {
           TaskDetailView(task: task)
         }
         .scrollDismissesKeyboard(.immediately)
+        
+        if isDeletingRecurrence {
+            ZStack {
+                Color.black.opacity(0.25)
+                    .ignoresSafeArea()
+
+                VStack(spacing: 12) {
+                    ProgressView()
+
+                    Text(String(localized: "Deleting occurrences…"))
+                        .font(.headline)
+
+                    Text(String(localized: "Do not close ForMemo until the deletion is complete."))
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(24)
+                .frame(maxWidth: 320)
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+            }
+            .zIndex(100)
+        }
+        
+        
+        
+        
         }
     .onChange(of: scenePhase) { _, newPhase in
         if newPhase == .inactive {
