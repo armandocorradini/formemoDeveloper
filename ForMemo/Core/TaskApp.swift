@@ -164,6 +164,10 @@ struct ForMemoApp: App {
             // 1️⃣ Setup notifiche (PRIMA DI TUTTO)
             await NotificationManager.shared.configure()
             
+            await ForMemoAlarmManager.shared.removeOrphanedAlarmsAtStartup(
+                context: context
+            )
+            
             // 🔥 REGISTRA APP SHORTCUTS
             AppShortcuts.updateAppShortcutParameters()
             

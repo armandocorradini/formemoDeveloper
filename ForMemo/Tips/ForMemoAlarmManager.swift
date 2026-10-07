@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 import SwiftUI
 import AlarmKit
 import ActivityKit
@@ -36,6 +37,24 @@ final class ForMemoAlarmManager {
 //            }
         } catch {
             print("❌ AlarmKit: unable to read scheduled alarms: \(error)")
+        }
+    }
+    
+    func scheduledAlarmCount() -> Int? {
+        do {
+            let alarms = try alarmManager.alarms
+
+            return alarms.reduce(into: 0) { count, alarm in
+                if case .scheduled = alarm.state {
+                    count += 1
+                }
+            }
+
+        } catch {
+            AppLogger.notifications.error(
+                "❌ AlarmKit count failed: \(error.localizedDescription)"
+            )
+            return nil
         }
     }
     
@@ -292,6 +311,14 @@ final class ForMemoAlarmManager {
     }
     
     func removeOrphanedAlarms(tasks: [TodoTask]) async {
+        
+//        let startTime = Date()
+//
+//        AppLogger.notifications.info(
+//            "🔔 AlarmKit orphan cleanup START"
+//        )
+        
+        
         do {
             let scheduledAlarms = try alarmManager.alarms
             let validTaskIDs = Set(tasks.map(\.id))
@@ -313,6 +340,14 @@ final class ForMemoAlarmManager {
                 }
             }
 
+            
+//            let elapsed = Date().timeIntervalSince(startTime)
+
+//            AppLogger.notifications.info(
+//                "🔔 AlarmKit orphan cleanup END — \(removedCount) alarms removed in \(String(format: "%.2f", elapsed)) s"
+//            )
+            
+            
             AppLogger.notifications.info(
                 "🔔 AlarmKit orphan cleanup: removed \(removedCount) alarms"
             )
@@ -322,6 +357,54 @@ final class ForMemoAlarmManager {
         } catch {
             AppLogger.notifications.error(
                 "AlarmKit orphan cleanup failed: \(error.localizedDescription)"
+            )
+        }
+    }
+    
+    
+    func removeOrphanedAlarmsAtStartup(context: ModelContext) async {
+        do {
+            let scheduledAlarms = try alarmManager.alarms
+
+            guard !scheduledAlarms.isEmpty else {
+                return
+            }
+
+            let descriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> {
+                    !$0.isCompleted
+                }
+            )
+
+            let tasks = (try? context.fetch(descriptor)) ?? []
+            let validTaskIDs = Set(tasks.map(\.id))
+
+            var removedCount = 0
+
+            for alarm in scheduledAlarms {
+                guard !validTaskIDs.contains(alarm.id) else {
+                    continue
+                }
+
+                do {
+                    try alarmManager.cancel(id: alarm.id)
+                    removedCount += 1
+                } catch {
+                    AppLogger.notifications.error(
+                        "Failed to remove orphaned AlarmKit alarm \(alarm.id.uuidString): \(error.localizedDescription)"
+                    )
+                }
+            }
+
+            AppLogger.notifications.info(
+                "🔔 AlarmKit startup orphan cleanup: removed \(removedCount) alarms"
+            )
+
+            logScheduledAlarmsCount()
+
+        } catch {
+            AppLogger.notifications.error(
+                "AlarmKit startup orphan cleanup failed: \(error.localizedDescription)"
             )
         }
     }

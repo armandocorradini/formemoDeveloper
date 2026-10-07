@@ -121,15 +121,15 @@ func deleteRecurringTaskAndFutureOccurrences(
         context.safeSave(
             operation: "DeleteRecurringTaskAndFutureOccurrences.batch"
         )
+        
+        await Task.yield()
     }
 
     let remainingTasks = (try? context.fetch(FetchDescriptor<TodoTask>())) ?? []
 
-    Task { @MainActor in
-        await ForMemoAlarmManager.shared.removeOrphanedAlarms(
-            tasks: remainingTasks
-        )
-    }
+    await ForMemoAlarmManager.shared.removeOrphanedAlarms(
+        tasks: remainingTasks
+    )
 
     NotificationManager.shared.refresh()
 }
