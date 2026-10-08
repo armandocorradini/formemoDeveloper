@@ -157,6 +157,9 @@ struct NewTaskSheetView: View {
     @State private var recurrenceEndDate: Date = .now
     @State private var recurrenceCount: Int = 2
     @State private var savedLocations: [SavedLocationItem] = []
+    @State private var recurringAttachmentScopeResolved = false
+    @State private var propagateAttachmentsToFuture = false
+    @State private var showingRecurringAttachmentScope = false
     
     @State private var isSynchronizing = false
     
@@ -365,6 +368,25 @@ struct NewTaskSheetView: View {
                 
                 .onChange(of: libraryPickerItems) {
                     Task { @MainActor in await importPhotos(libraryPickerItems) }
+                }
+                .confirmationDialog(
+                    "Apply attachments to future occurrences?",
+                    isPresented: $showingRecurringAttachmentScope,
+                    titleVisibility: .visible
+                ) {
+                    Button("This occurrence") {
+                        recurringAttachmentScopeResolved = true
+                        propagateAttachmentsToFuture = false
+                        Task { @MainActor in await requestSaveTask() }
+                    }
+
+                    Button("This & Future") {
+                        recurringAttachmentScopeResolved = true
+                        propagateAttachmentsToFuture = true
+                        Task { @MainActor in await requestSaveTask() }
+                    }
+                } message: {
+                    Text("Choose whether the attachments should stay with the first occurrence or also appear in future occurrences.")
                 }
                 .alert(
                     "Create future occurrences?",
@@ -904,6 +926,12 @@ struct NewTaskSheetView: View {
             dismiss()
             return
         }
+
+        if !recurringAttachmentScopeResolved,
+           !(draftTask.attachments ?? []).isEmpty {
+            showingRecurringAttachmentScope = true
+            return
+        }
         
         guard
             let startDate = draftTask.recurrenceStartDate ?? draftTask.deadLine,
@@ -987,7 +1015,15 @@ struct NewTaskSheetView: View {
                     for: draftTask,
                     in: modelContext
                 )
-                
+
+                if propagateAttachmentsToFuture {
+                    try RecurringAttachmentManager.configurePropagation(
+                        for: draftTask.attachments ?? [],
+                        from: draftTask,
+                        in: modelContext
+                    )
+                }
+
                 try modelContext.save()
             }
             
@@ -1028,7 +1064,11 @@ struct NewTaskSheetView: View {
             )
         }
         
-        await NotificationManager.shared.refreshAndWait(force: true)
+        // Refresh the global notification queue independently of the Save flow.
+        // The task is already persisted; notification rebuilding must not delay dismissing this sheet.
+        Task { @MainActor in
+            NotificationManager.shared.refresh(force: true)
+        }
     }
     
     // MARK: - IMPORT (COME PRIMA)

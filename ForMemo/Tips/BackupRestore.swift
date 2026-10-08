@@ -128,6 +128,7 @@ struct BackupRestoreView: View {
                                     isCreatingBackup = true
                                     let url = try await BackupManager.createBackup(
                                         tasks: tasks,
+                                        modelContext: modelContext,
                                         notes: notes,
                                         loyaltyCards: loyaltyCards,
                                         tripLists: tripLists,
@@ -756,6 +757,7 @@ struct BackupRestoreView: View {
                         isCreatingBackup = true
                         let url = try await BackupManager.createBackup(
                             tasks: tasks,
+                            modelContext: modelContext,
                             notes: notes,
                             loyaltyCards: loyaltyCards,
                             tripLists: tripLists,
@@ -870,7 +872,7 @@ private struct RestoreArchiveSheetWrapper: Identifiable {
 }
 
 private enum BackupFormat {
-    static let currentVersion = 6
+    static let currentVersion = 7
 }
 
 private extension JSONEncoder {
@@ -907,6 +909,7 @@ private struct BackupArchive: Codable {
         case vaultItems
         case vaultBackupPackage
         case attachmentFiles
+        case recurringAttachmentLinks
         case loyaltyCardLogoFiles
         case settings
     }
@@ -923,6 +926,7 @@ private struct BackupArchive: Codable {
     let vaultItems: [VaultItemTransferObject]
     let vaultBackupPackage: VaultBackupPackage?
     let attachmentFiles: [String: Data]
+    let recurringAttachmentLinks: [RecurringAttachmentLinkTransferObject]
     let loyaltyCardLogoFiles: [String: Data]
     let settings: [String: Data]
 
@@ -940,6 +944,7 @@ private struct BackupArchive: Codable {
         vaultItems: [VaultItemTransferObject],
         vaultBackupPackage: VaultBackupPackage?,
         attachmentFiles: [String: Data],
+        recurringAttachmentLinks: [RecurringAttachmentLinkTransferObject],
         loyaltyCardLogoFiles: [String: Data],
         settings: [String: Data]
     ) {
@@ -955,6 +960,7 @@ private struct BackupArchive: Codable {
         self.vaultItems = vaultItems
         self.vaultBackupPackage = vaultBackupPackage
         self.attachmentFiles = attachmentFiles
+        self.recurringAttachmentLinks = recurringAttachmentLinks
         self.loyaltyCardLogoFiles = loyaltyCardLogoFiles
         self.settings = settings
         
@@ -1014,6 +1020,10 @@ private struct BackupArchive: Codable {
             [String: Data].self,
             forKey: .attachmentFiles
         ) ?? [:]
+        recurringAttachmentLinks = try container.decodeIfPresent(
+            [RecurringAttachmentLinkTransferObject].self,
+            forKey: .recurringAttachmentLinks
+        ) ?? []
         loyaltyCardLogoFiles = try container.decodeIfPresent(
             [String: Data].self,
             forKey: .loyaltyCardLogoFiles
@@ -1078,6 +1088,10 @@ private struct BackupArchive: Codable {
             forKey: .attachmentFiles
         )
         try container.encode(
+            recurringAttachmentLinks,
+            forKey: .recurringAttachmentLinks
+        )
+        try container.encode(
             loyaltyCardLogoFiles,
             forKey: .loyaltyCardLogoFiles
         )
@@ -1085,6 +1099,41 @@ private struct BackupArchive: Codable {
             settings,
             forKey: .settings
         )
+    }
+}
+
+
+private struct RecurringAttachmentLinkTransferObject: Codable {
+    let id: UUID
+    let taskID: UUID?
+    let attachmentID: UUID?
+    let attachmentOriginalName: String?
+    let attachmentRelativePath: String?
+    let attachmentContentType: String?
+    let attachmentCreatedAt: Date?
+    let recurrenceID: UUID?
+    let occurrenceIndex: Int?
+    let propagationStartIndex: Int?
+    let propagationEndIndex: Int?
+    let isPropagationAnchor: Bool
+    let isActive: Bool
+    let createdAt: Date
+
+    init(link: RecurringAttachmentLink, attachment: TaskAttachment?) {
+        id = link.id
+        taskID = link.taskID
+        attachmentID = link.attachmentID
+        attachmentOriginalName = attachment?.originalName
+        attachmentRelativePath = attachment?.relativePath
+        attachmentContentType = attachment?.contentType
+        attachmentCreatedAt = attachment?.createdAt
+        recurrenceID = link.recurrenceID
+        occurrenceIndex = link.occurrenceIndex
+        propagationStartIndex = link.propagationStartIndex
+        propagationEndIndex = link.propagationEndIndex
+        isPropagationAnchor = link.isPropagationAnchor
+        isActive = link.isActive
+        createdAt = link.createdAt
     }
 }
 
@@ -1663,8 +1712,10 @@ private struct TripListTransferObject: Codable {
 
 private enum BackupManager {
 
+    @MainActor
     static func createBackup(
         tasks: [TodoTask],
+        modelContext: ModelContext,
         notes: [Note],
         loyaltyCards: [LoyaltyCard],
         tripLists: [TripList],
@@ -1866,6 +1917,39 @@ private enum BackupManager {
             }
         }
         
+        let recurringLinkModels =
+            (try? RecurringAttachmentManager.activeRules(
+                in: modelContext
+            )) ?? []
+
+        var recurringAttachmentLinks: [RecurringAttachmentLinkTransferObject] = []
+
+        for link in recurringLinkModels {
+            let attachmentID = link.attachmentID
+            guard let attachment = (try? modelContext.fetch(
+                FetchDescriptor<TaskAttachment>(
+                    predicate: #Predicate<TaskAttachment> {
+                        $0.id == attachmentID
+                    }
+                )
+            ))?.first else {
+                continue
+            }
+
+            if !attachment.relativePath.isEmpty,
+               attachmentPayload[attachment.relativePath] == nil,
+               let data = await attachment.loadDataAsync() {
+                attachmentPayload[attachment.relativePath] = data
+            }
+
+            recurringAttachmentLinks.append(
+                RecurringAttachmentLinkTransferObject(
+                    link: link,
+                    attachment: attachment
+                )
+            )
+        }
+
         let archive = BackupArchive(
             version: BackupFormat.currentVersion,
             createdAt: .now,
@@ -1895,6 +1979,7 @@ private enum BackupManager {
             },
             vaultBackupPackage: vaultPackage,
             attachmentFiles: attachmentPayload,
+            recurringAttachmentLinks: recurringAttachmentLinks,
             loyaltyCardLogoFiles: walletAssetPayload,
             settings: settingsPayload
         )
@@ -2446,6 +2531,144 @@ private enum BackupManager {
                 }
             }
         }
+        if (restoreActiveTasks || restoreCompletedTasks),
+           !archive.recurringAttachmentLinks.isEmpty {
+
+            for dto in archive.recurringAttachmentLinks {
+                guard dto.isActive,
+                      let attachmentID = dto.attachmentID,
+                      let recurrenceID = dto.recurrenceID else {
+                    // Inactive legacy tombstones have no equivalent in the
+                    // new global-propagation model and are intentionally ignored.
+                    continue
+                }
+
+                let attachmentDescriptor = FetchDescriptor<TaskAttachment>(
+                    predicate: #Predicate<TaskAttachment> { attachment in
+                        attachment.id == attachmentID
+                    }
+                )
+
+                var attachment = (try? modelContext.fetch(
+                    attachmentDescriptor
+                ))?.first
+
+                if attachment == nil,
+                   let relativePath = dto.attachmentRelativePath,
+                   !relativePath.isEmpty,
+                   let originalName = dto.attachmentOriginalName,
+                   let contentType = dto.attachmentContentType {
+
+                    let restored = TaskAttachment(
+                        originalName: originalName,
+                        relativePath: relativePath,
+                        contentType: contentType,
+                        task: nil
+                    )
+
+                    restored.id = attachmentID
+                    restored.createdAt = dto.attachmentCreatedAt ?? Date()
+
+                    modelContext.insert(restored)
+                    attachment = restored
+                }
+
+                guard attachment != nil else {
+                    continue
+                }
+
+                let startIndex =
+                    dto.propagationStartIndex ??
+                    dto.occurrenceIndex ??
+                    1
+
+                // `taskID` identifies the physical owner's task.
+                // `propagationStartIndex` identifies only where propagation begins;
+                // it must never be used to reassign physical ownership.
+                let ownerID = dto.taskID
+
+                let ownerTask: TodoTask?
+                if let ownerID {
+                    ownerTask = (try? modelContext.fetch(
+                        FetchDescriptor<TodoTask>(
+                            predicate: #Predicate<TodoTask> { task in
+                                task.id == ownerID
+                            }
+                        )
+                    ))?.first
+                } else {
+                    ownerTask = nil
+                }
+
+                let existing = ((try? modelContext.fetch(
+                    FetchDescriptor<RecurringAttachmentLink>(
+                        predicate: #Predicate<RecurringAttachmentLink> { link in
+                            link.recurrenceID == recurrenceID
+                        }
+                    )
+                )) ?? []).first {
+                    $0.isActive &&
+                    $0.attachmentID == attachmentID
+                }
+
+                if let existing {
+                    if startIndex < existing.propagationStartIndex {
+                        existing.propagationStartIndex = startIndex
+                        existing.occurrenceIndex = startIndex
+                    }
+
+                    if let ownerID {
+                        existing.taskID = ownerID
+                    }
+
+                    existing.propagationEndIndex = dto.propagationEndIndex
+                    existing.isPropagationAnchor = true
+                    existing.isActive = true
+                } else {
+                    modelContext.insert(
+                        RecurringAttachmentLink(
+                            taskID: ownerID ?? UUID(),
+                            attachmentID: attachmentID,
+                            recurrenceID: recurrenceID,
+                            occurrenceIndex: startIndex,
+                            propagationStartIndex: startIndex,
+                            propagationEndIndex: dto.propagationEndIndex,
+                            isPropagationAnchor: true,
+                            isActive: true
+                        )
+                    )
+                }
+
+                // Reattach the physical owner only when the backup identifies
+                // that owner task and it is actually being restored.
+                if let ownerID,
+                   let ownerTask = ownerTask ??
+                       (try? modelContext.fetch(
+                           FetchDescriptor<TodoTask>(
+                               predicate: #Predicate<TodoTask> { task in
+                                   task.id == ownerID
+                               }
+                           )
+                       ))?.first,
+                   let attachment,
+                   ownerTask.recurrenceID == recurrenceID,
+                   ownerTask.occurrenceIndex == startIndex {
+
+                    attachment.task = ownerTask
+
+                    if ownerTask.attachments == nil {
+                        ownerTask.attachments = []
+                    }
+
+                    if !(ownerTask.attachments ?? []).contains(where: {
+                        $0.id == attachment.id
+                    }) {
+                        ownerTask.attachments?.append(attachment)
+                    }
+                }
+            }
+        }
+
 
         if restoreVault {
 

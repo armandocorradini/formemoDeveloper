@@ -351,7 +351,7 @@ extension TodoTask {
         item.recurrenceStartDate = task.recurrenceStartDate
         item.recurrenceEndDate = task.recurrenceEndDate
         item.recurrenceCount = task.recurrenceCount
-        
+
         context.insert(item)
     }
 }

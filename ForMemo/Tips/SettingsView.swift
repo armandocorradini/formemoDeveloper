@@ -4,6 +4,7 @@ import EventKit
 import SwiftData
 import CoreData
 import CoreLocation
+import os
 
 enum SoundPickerContext: Identifiable {
     case task
@@ -661,10 +662,18 @@ Attivazione: \(triggerInfo)
                             Button("Cancel", role: .cancel) { }
                             
                             Button("Delete", role: .destructive) {
-                                Task {
-                                    let context = modelContext
-                                    try? AttachmentMaintenanceManager.shared
-                                        .deleteAllCompletedTaskAttachments(context: context)
+                                do {
+                                    try AttachmentMaintenanceManager.shared
+                                        .deleteAllCompletedTaskAttachments(context: modelContext)
+
+                                    NotificationCenter.default.post(
+                                        name: .attachmentsShouldRefresh,
+                                        object: nil
+                                    )
+                                } catch {
+                                    AppLogger.persistence.error(
+                                        "Manual attachment cleanup failed: \(error.localizedDescription)"
+                                    )
                                 }
                             }
                         } message: {

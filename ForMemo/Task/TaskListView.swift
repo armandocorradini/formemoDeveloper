@@ -1554,6 +1554,10 @@ struct TaskListView: View {
             try modelContext.save()
             modelContext.processPendingChanges()
 
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+            }
+
             NotificationCenter.default.post(
                 name: .taskDidChange,
                 object: nil
@@ -2667,7 +2671,7 @@ struct TaskRow: View {
             appearance.showBadge &&
             (!appearance.showBadgeOnlyWithPriority || task.priority != .none)
 
-        let attachments = task.attachments ?? []
+        let hasValidAttachments = task.hasVisibleTaskAttachments
 
         return TaskRowDisplayModel(
             id: task.persistentModelID,
@@ -2675,7 +2679,7 @@ struct TaskRow: View {
             subtitle: task.taskDescription,
             mainIcon: task.mainTag?.mainIcon ?? task.status.icon,
             statusColor: task.status.color,
-            hasValidAttachments: !attachments.isEmpty,
+            hasValidAttachments: hasValidAttachments,
             hasLocation: task.locationName?.isEmpty == false,
             badgeText: task.daysRemainingBadgeText,
             prioritySystemImage: task.priority.systemImage,
@@ -4019,7 +4023,7 @@ struct TodoSectionView: View {
 
         }
 
-        if !(t.attachments?.isEmpty ?? true) {
+        if t.hasVisibleTaskAttachments {
 
           Button {
 
@@ -4134,6 +4138,10 @@ struct TodoSectionView: View {
     }
 
     persistChanges()
+
+    Task { @MainActor in
+      _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+    }
 
     NotificationManager.shared.refresh(force: false)
 
@@ -4416,6 +4424,10 @@ struct CompletedSectionView: View {
         }
 
         modelContext.processPendingChanges()
+
+        Task { @MainActor in
+            _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+        }
 
         refreshCompletedTasks()
 

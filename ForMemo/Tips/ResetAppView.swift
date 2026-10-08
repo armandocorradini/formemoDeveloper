@@ -346,6 +346,10 @@ struct ResetAppView: View {
             FetchDescriptor<TaskAttachment>()
         )
 
+        let recurringAttachmentLinkCount = try modelContext.fetchCount(
+            FetchDescriptor<RecurringAttachmentLink>()
+        )
+
         let vaultCount = try modelContext.fetchCount(
             FetchDescriptor<VaultItem>()
         )
@@ -385,6 +389,7 @@ struct ResetAppView: View {
         guard
             taskCount == 0,
             attachmentCount == 0,
+            recurringAttachmentLinkCount == 0,
             vaultCount == 0,
             vaultSecretCount == 0,
             loyaltyCardCount == 0,
@@ -561,6 +566,19 @@ struct ResetAppView: View {
              await ForMemoAlarmManager.shared.removeOrphanedAlarms(tasks: [])
             
             
+            // 🔴 Recurring attachment propagation rules
+            let recurringAttachmentLinks = try modelContext.fetch(
+                FetchDescriptor<RecurringAttachmentLink>()
+            )
+
+            if !recurringAttachmentLinks.isEmpty {
+                didDeleteLocalData = true
+            }
+
+            for link in recurringAttachmentLinks {
+                modelContext.delete(link)
+            }
+
             // 🔴 Attachments
             let attachments = try modelContext.fetch(FetchDescriptor<TaskAttachment>())
 

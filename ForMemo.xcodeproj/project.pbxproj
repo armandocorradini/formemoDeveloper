@@ -147,7 +147,6 @@
 		1C634E0F30220C9C0092DB89 /* ImportExportSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */; };
 		1C634E1030220C9C0092DB89 /* LocationPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5B30220C9C0092DB89 /* LocationPickerView.swift */; };
 		1C634E1130220C9C0092DB89 /* LoyaltyCardDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5C30220C9C0092DB89 /* LoyaltyCardDetailView.swift */; };
-		1C634E1230220C9C0092DB89 /* NewTaskSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5D30220C9C0092DB89 /* NewTaskSheetView.swift */; };
 		1C634E1330220C9C0092DB89 /* NotificationSoundPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5E30220C9C0092DB89 /* NotificationSoundPickerView.swift */; };
 		1C634E1430220C9C0092DB89 /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D5F30220C9C0092DB89 /* NotificationView.swift */; };
 		1C634E1530220C9C0092DB89 /* OtherSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */; };
@@ -207,6 +206,8 @@
 		1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325C30268F8300B16A50 /* SystemEventHistory.swift */; };
 		1CED325F30276D7C00B16A50 /* RecoveryStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */; };
 		1CED32613027760E00B16A50 /* DiagnosticsRedactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED32603027760400B16A50 /* DiagnosticsRedactor.swift */; };
+		1CF0C7303076AE7B0083664A /* RecurringAttachmentLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF0C72F3076AE7B0083664A /* RecurringAttachmentLink.swift */; };
+		1CF0C77F3076F63A0083664A /* NewTaskSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF0C77E3076F63A0083664A /* NewTaskSheetView.swift */; };
 		1CF49EAB306FECB8000BA744 /* ForMemoAlarmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF49EAA306FECB8000BA744 /* ForMemoAlarmManager.swift */; };
 		1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */; };
 		1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -383,7 +384,6 @@
 		1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportExportSettingsView.swift; sourceTree = "<group>"; };
 		1C634D5B30220C9C0092DB89 /* LocationPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPickerView.swift; sourceTree = "<group>"; };
 		1C634D5C30220C9C0092DB89 /* LoyaltyCardDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoyaltyCardDetailView.swift; sourceTree = "<group>"; };
-		1C634D5D30220C9C0092DB89 /* NewTaskSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTaskSheetView.swift; sourceTree = "<group>"; };
 		1C634D5E30220C9C0092DB89 /* NotificationSoundPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSoundPickerView.swift; sourceTree = "<group>"; };
 		1C634D5F30220C9C0092DB89 /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
 		1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OtherSettingsView.swift; sourceTree = "<group>"; };
@@ -445,6 +445,8 @@
 		1CED325C30268F8300B16A50 /* SystemEventHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemEventHistory.swift; sourceTree = "<group>"; };
 		1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryStatistics.swift; sourceTree = "<group>"; };
 		1CED32603027760400B16A50 /* DiagnosticsRedactor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsRedactor.swift; sourceTree = "<group>"; };
+		1CF0C72F3076AE7B0083664A /* RecurringAttachmentLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringAttachmentLink.swift; sourceTree = "<group>"; };
+		1CF0C77E3076F63A0083664A /* NewTaskSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTaskSheetView.swift; sourceTree = "<group>"; };
 		1CF49EAA306FECB8000BA744 /* ForMemoAlarmManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForMemoAlarmManager.swift; sourceTree = "<group>"; };
 		1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoCredentialProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
@@ -666,6 +668,7 @@
 				1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */,
 				1C634D1030220C9C0092DB89 /* TaskAttachment.swift */,
 				1C634D1830220C9C0092DB89 /* TodoTask.swift */,
+				1CF0C72F3076AE7B0083664A /* RecurringAttachmentLink.swift */,
 				1C634D3F30220C9C0092DB89 /* AttachmentImporter.swift */,
 				1C634CDB30220C9C0092DB89 /* AttachmentMaintenanceManager.swift */,
 				1C634CDC30220C9C0092DB89 /* AttachmentMigration.swift */,
@@ -703,12 +706,12 @@
 				1C634D7030220C9C0092DB89 /* TaskDetailView.swift */,
 				1C634D7330220C9C0092DB89 /* TaskListView.swift */,
 				1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */,
-				1C634D5D30220C9C0092DB89 /* NewTaskSheetView.swift */,
 				1C634D7430220C9C0092DB89 /* TaskMapView.swift */,
 				1C634D6E30220C9C0092DB89 /* TaskDeadlineColumn.swift */,
 				1C634D7130220C9C0092DB89 /* TaskIconContent.swift */,
 				1C634D7530220C9C0092DB89 /* TaskRowBaseLogic.swift */,
 				1C634D1430220C9C0092DB89 /* TaskRowBorder.swift */,
+				1CF0C77E3076F63A0083664A /* NewTaskSheetView.swift */,
 				1C634D1530220C9C0092DB89 /* TaskRowDisplayModel.swift */,
 				1C634D1630220C9C0092DB89 /* TaskRowSurface.swift */,
 				1C634D1730220C9C0092DB89 /* TaskTransferObject.swift */,
@@ -1090,7 +1093,9 @@
 				1C634DC330220C9C0092DB89 /* RowCardStyle.swift in Sources */,
 				1C634DC430220C9C0092DB89 /* SearchTasksIntent.swift in Sources */,
 				1C634DC530220C9C0092DB89 /* SecretValue.swift in Sources */,
+				1CF0C7303076AE7B0083664A /* RecurringAttachmentLink.swift in Sources */,
 				1C62D173305423C100E97C02 /* OpenSourceLicensesView.swift in Sources */,
+				1CF0C77F3076F63A0083664A /* NewTaskSheetView.swift in Sources */,
 				1C634DC630220C9C0092DB89 /* SecureClipboard.swift in Sources */,
 				1C634DC730220C9C0092DB89 /* SensitiveValues.swift in Sources */,
 				1C604A2C306942BE00142E9C /* RecurrenceMigrationView.swift in Sources */,
@@ -1178,7 +1183,6 @@
 				1C634E0F30220C9C0092DB89 /* ImportExportSettingsView.swift in Sources */,
 				1C634E1030220C9C0092DB89 /* LocationPickerView.swift in Sources */,
 				1C634E1130220C9C0092DB89 /* LoyaltyCardDetailView.swift in Sources */,
-				1C634E1230220C9C0092DB89 /* NewTaskSheetView.swift in Sources */,
 				1C634E1330220C9C0092DB89 /* NotificationSoundPickerView.swift in Sources */,
 				1C634E1430220C9C0092DB89 /* NotificationView.swift in Sources */,
 				1C634E1530220C9C0092DB89 /* OtherSettingsView.swift in Sources */,

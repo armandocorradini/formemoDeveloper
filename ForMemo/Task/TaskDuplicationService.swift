@@ -43,7 +43,11 @@ enum TaskDuplicationService {
         context.insert(copy)
 
         if includingAttachments {
-            for attachment in task.attachments ?? [] {
+            let attachmentsToDuplicate = RecurringAttachmentManager.visibleAttachments(
+                for: task
+            )
+
+            for attachment in attachmentsToDuplicate {
                 guard let sourceURL = attachment.fileURL else {
                     throw NSError(
                         domain: "TaskDuplicationService",

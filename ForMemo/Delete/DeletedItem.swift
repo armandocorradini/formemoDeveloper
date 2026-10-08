@@ -43,6 +43,7 @@ final class DeletedItem {
     var fileName: String?
     var relativePath: String?
     var trashFileName: String?
+    var recurringAttachmentLinksData: Data? = nil
 
     // LOYALTY CARD
     var loyaltyCardID: UUID?
@@ -182,6 +183,23 @@ extension DeletedItem {
             task.recurrenceCount = recurrenceCount
 
             context.insert(task)
+
+            do {
+                try RecurringAttachmentManager.restoreDeletedTaskAttachments(
+                    for: task,
+                    in: context
+                )
+            } catch {
+                AppLogger.persistence.error(
+                    "Failed to restore recurring attachment links: \(error.localizedDescription)"
+                )
+            }
+
+            RecurringAttachmentManager.restoreTaskSnapshots(
+                recurringAttachmentLinksData,
+                for: task,
+                in: context
+            )
             
             guard let currentTaskID = taskID else { return false}
             
@@ -366,6 +384,12 @@ extension DeletedItem {
                 
                 context.insert(attachment)
                 task.attachments?.append(attachment)
+                RecurringAttachmentManager.restoreSnapshots(
+                    recurringAttachmentLinksData,
+                    for: attachment,
+                    ownerTask: task,
+                    in: context
+                )
                 return true
             }
 

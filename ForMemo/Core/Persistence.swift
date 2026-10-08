@@ -105,6 +105,7 @@ enum Persistence {
     static let schema = Schema([
         TodoTask.self,
         TaskAttachment.self,
+        RecurringAttachmentLink.self,
         DeletedItem.self,
         LoyaltyCard.self,
         WalletAsset.self,

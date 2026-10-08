@@ -43,7 +43,7 @@ struct TaskDetailView: View {
     var isSheet: Bool = false
     
     private var taskAttachments: [TaskAttachment] {
-        task.attachments ?? []
+        task.visibleTaskAttachments
     }
     
     @Environment(\.scenePhase) private var scenePhase
@@ -70,6 +70,10 @@ struct TaskDetailView: View {
     @State private var selectedPhotos: [PhotosPickerItem] = []
     @State private var showCameraPicker = false
     @State private var imageCache: [UUID: UIImage] = [:]
+    @State private var recurringAttachmentScopeIDs: [UUID] = []
+    @State private var showingRecurringAttachmentScope = false
+    @State private var pendingRecurringAttachmentDeletion: TaskAttachment?
+    @State private var showingRecurringAttachmentGlobalDelete = false
     
     @State private var saveTaskDebounce: Task<Void, Never>?
     
@@ -550,6 +554,102 @@ struct TaskDetailView: View {
             }
             
             Button("Cancel", role: .cancel) { }
+        }
+        .alert(
+            "Apply attachment to future occurrences?",
+            isPresented: $showingRecurringAttachmentScope
+        ) {
+            Button("This occurrence") {
+                recurringAttachmentScopeIDs.removeAll()
+                initialEditSnapshot = TaskEditSnapshot(task: task)
+            }
+
+            Button("This & Future") {
+                let ids = recurringAttachmentScopeIDs
+                recurringAttachmentScopeIDs.removeAll()
+
+                for id in ids {
+                    guard let attachment = taskAttachments.first(where: { $0.id == id }) else {
+                        continue
+                    }
+
+                    do {
+                        try RecurringAttachmentManager.configurePropagation(
+                            for: [attachment],
+                            from: task,
+                            in: modelContext
+                        )
+                    } catch {
+                        AppLogger.persistence.error(
+                            "Recurring attachment propagation setup failed: \(error.localizedDescription)"
+                        )
+                    }
+                }
+
+                saveTask(userInitiated: true)
+                initialEditSnapshot = TaskEditSnapshot(task: task)
+            }
+        } message: {
+            Text("Choose whether the attachment should stay with this occurrence or also appear in future occurrences.")
+        }
+        .alert(
+            "Delete attachment from all occurrences?",
+            isPresented: $showingRecurringAttachmentGlobalDelete
+        ) {
+            Button("Delete", role: .destructive) {
+                guard let attachment = pendingRecurringAttachmentDeletion else { return }
+
+                let linkData = RecurringAttachmentManager.encodedSnapshots(
+                    for: attachment,
+                    in: modelContext
+                )
+
+                let ownerTaskID = attachment.task?.id ?? task.id
+                let trashName = attachment.deleteFileIfNeeded()
+                TaskAttachment.deleteCloudMirror(relativePath: attachment.relativePath)
+
+                let item = DeletedItem(type: "attachment")
+                item.taskID = ownerTaskID
+                item.fileName = attachment.originalName
+                item.relativePath = attachment.relativePath
+                item.trashFileName = trashName
+                item.recurringAttachmentLinksData = linkData
+                modelContext.insert(item)
+
+                task.attachments?.removeAll { $0.id == attachment.id }
+                attachment.task?.attachments?.removeAll {
+                    $0.id == attachment.id
+                }
+                attachment.task = nil
+
+                do {
+                    try RecurringAttachmentManager.deleteLinks(
+                        for: attachment,
+                        in: modelContext
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "Recurring attachment link cleanup failed: \(error.localizedDescription)"
+                    )
+                }
+
+                modelContext.delete(attachment)
+                modelContext.processPendingChanges()
+                saveTask(userInitiated: true)
+                initialEditSnapshot = TaskEditSnapshot(task: task)
+
+                NotificationCenter.default.post(
+                    name: .attachmentsShouldRefresh,
+                    object: nil
+                )
+                pendingRecurringAttachmentDeletion = nil
+            }
+
+            Button("Cancel", role: .cancel) {
+                pendingRecurringAttachmentDeletion = nil
+            }
+        } message: {
+            Text("This attachment is shared with this recurrence. If you delete it, it will be removed from all past, current, and future occurrences and moved to Recently Deleted.")
         }
         .confirmationDialog(
             "Apply changes to",
@@ -1388,8 +1488,23 @@ struct TaskDetailView: View {
         let currentDate = task.deadLine ?? task.recurrenceStartDate ?? Date()
 
         do {
-            // Delete all future occurrences belonging to the old series.
-            // This also handles a single task becoming recurring (old ID nil).
+            if let oldRecurrenceID {
+                // Collapse any legacy per-occurrence records created by
+                // earlier experimental versions into one logical rule per
+                // attachment/recurrence pair before changing the series.
+                try RecurringAttachmentManager.normalizeRules(
+                    for: oldRecurrenceID,
+                    in: modelContext
+                )
+            }
+
+            let currentLinks = RecurringAttachmentManager.links(
+                for: task,
+                in: modelContext
+            )
+
+            // Delete future occurrences belonging to the old series. Shared
+            // attachment rules remain independent and are handled below.
             if let oldRecurrenceID {
                 let occurrences = try modelContext.fetch(
                     FetchDescriptor<TodoTask>(
@@ -1402,12 +1517,67 @@ struct TaskDetailView: View {
                 for occurrence in occurrences where
                     occurrence.id != task.id &&
                     (occurrence.occurrenceIndex ?? 1) > currentIndex {
+
+                    RecurringAttachmentManager.prepareLinksBeforeTaskDeletion(
+                        occurrence,
+                        preserveAnchors: false,
+                        in: modelContext
+                    )
+
                     modelContext.delete(occurrence)
                 }
             }
 
+            let attachmentIDs = Set(
+                currentLinks
+                    .filter { $0.isActive }
+                    .map { $0.attachmentID }
+            )
+
             guard task.recurrenceRule != nil else {
-                // Recurrence removed: current task becomes a normal single task.
+                // The recurrence ends at the retained occurrence. Preserve
+                // the attachment on surviving past occurrences by truncating
+                // the old rules before this occurrence. The retained task
+                // receives ordinary ownership of the currently visible
+                // attachment.
+                if let oldRecurrenceID {
+                    try RecurringAttachmentManager.truncatePropagation(
+                        for: oldRecurrenceID,
+                        attachmentIDs: [],
+                        endingAt: currentIndex - 1,
+                        in: modelContext
+                    )
+                    try RecurringAttachmentManager.pruneUnreferencedRules(
+                        for: oldRecurrenceID,
+                        in: modelContext
+                    )
+                }
+
+                for attachmentID in attachmentIDs {
+                    let attachmentDescriptor = FetchDescriptor<TaskAttachment>(
+                        predicate: #Predicate<TaskAttachment> { attachment in
+                            attachment.id == attachmentID
+                        }
+                    )
+
+                    guard let attachment = try modelContext.fetch(
+                        attachmentDescriptor
+                    ).first else {
+                        continue
+                    }
+
+                    if task.attachments == nil {
+                        task.attachments = []
+                    }
+
+                    if !(task.attachments ?? []).contains(where: {
+                        $0.id == attachment.id
+                    }) {
+                        attachment.task = task
+                        task.attachments?.append(attachment)
+                    }
+                }
+
                 task.recurrenceID = nil
                 task.occurrenceIndex = nil
                 task.recurrenceStartDate = nil
@@ -1416,18 +1586,68 @@ struct TaskDetailView: View {
 
                 try modelContext.save()
                 modelContext.processPendingChanges()
-                NotificationCenter.default.post(name: .taskDidChange, object: nil)
+                NotificationCenter.default.post(
+                    name: .taskDidChange,
+                    object: nil
+                )
                 NotificationManager.shared.refresh()
                 finishDetailExit()
                 return
             }
 
-            task.recurrenceID = UUID()
+            let newRecurrenceID = UUID()
+
+            // The old series keeps propagation only through the last surviving
+            // past occurrence. The new series gets one fresh rule per shared
+            // attachment starting at occurrence 1.
+            if let oldRecurrenceID {
+                try RecurringAttachmentManager.truncatePropagation(
+                    for: oldRecurrenceID,
+                    attachmentIDs: [],
+                    endingAt: currentIndex - 1,
+                    in: modelContext
+                )
+
+                try RecurringAttachmentManager.pruneUnreferencedRules(
+                    for: oldRecurrenceID,
+                    in: modelContext
+                )
+            }
+
+            for attachmentID in attachmentIDs {
+                let attachmentDescriptor = FetchDescriptor<TaskAttachment>(
+                    predicate: #Predicate<TaskAttachment> { attachment in
+                        attachment.id == attachmentID
+                    }
+                )
+
+                let ownerTaskID =
+                    (try? modelContext.fetch(attachmentDescriptor).first?.task?.id)
+                    ?? task.id
+
+                modelContext.insert(
+                    RecurringAttachmentLink(
+                        taskID: ownerTaskID,
+                        attachmentID: attachmentID,
+                        recurrenceID: newRecurrenceID,
+                        occurrenceIndex: 1,
+                        propagationStartIndex: 1,
+                        propagationEndIndex: nil,
+                        isPropagationAnchor: true,
+                        isActive: true
+                    )
+                )
+            }
+
+            task.recurrenceID = newRecurrenceID
             task.occurrenceIndex = 1
             task.recurrenceStartDate = currentDate
 
             if let count = task.recurrenceCount {
-                task.recurrenceCount = max(1, count - currentIndex + 1)
+                task.recurrenceCount = max(
+                    1,
+                    count - currentIndex + 1
+                )
             }
 
             let generated = try RecurrenceEngine.materializeFutureOccurrences(
@@ -1458,10 +1678,15 @@ struct TaskDetailView: View {
                     )
                 )) ?? []
 
-                _ = await ForMemoAlarmManager.shared.synchronize(tasks: occurrences)
+                _ = await ForMemoAlarmManager.shared.synchronize(
+                    tasks: occurrences
+                )
             }
 
-            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
             NotificationManager.shared.refresh()
             finishDetailExit()
 
@@ -1881,7 +2106,7 @@ struct TaskDetailView: View {
 
             do {
                 try data.write(to: tmpURL)
-                await saveAttachment(from: tmpURL)
+                await saveAttachment(from: tmpURL, promptForRecurringScope: false)
                 importedCount += 1
             } catch {
                 skippedCount += 1
@@ -1890,6 +2115,11 @@ struct TaskDetailView: View {
         }
 
         photoItems.removeAll()
+
+        if task.recurrenceID != nil,
+           !recurringAttachmentScopeIDs.isEmpty {
+            showingRecurringAttachmentScope = true
+        }
 
         if skippedCount > 0 {
             photoImportMessage = String(
@@ -1907,7 +2137,12 @@ struct TaskDetailView: View {
             let access = url.startAccessingSecurityScopedResource()
             defer { if access { url.stopAccessingSecurityScopedResource() } }
             
-            await saveAttachment(from: url)
+            await saveAttachment(from: url, promptForRecurringScope: false)
+        }
+
+        if task.recurrenceID != nil,
+           !recurringAttachmentScopeIDs.isEmpty {
+            showingRecurringAttachmentScope = true
         }
     }
     
@@ -1927,14 +2162,19 @@ struct TaskDetailView: View {
             
             do {
                 try data.write(to: tmpURL)
-                await saveAttachment(from: tmpURL)
+                await saveAttachment(from: tmpURL, promptForRecurringScope: false)
             } catch {
                 AppLogger.app.error("Failed to write scan image:\(error))")
             }
         }
+
+        if task.recurrenceID != nil,
+           !recurringAttachmentScopeIDs.isEmpty {
+            showingRecurringAttachmentScope = true
+        }
     }
     @MainActor
-    private func saveAttachment(from url: URL) async {
+    private func saveAttachment(from url: URL, promptForRecurringScope: Bool = true) async {
         
         let didStartAccessing = url.startAccessingSecurityScopedResource()
         defer {
@@ -1944,12 +2184,20 @@ struct TaskDetailView: View {
         }
         
         do {
-            try await AttachmentImporter.addAttachment(
+            let attachment = try await AttachmentImporter.addAttachment(
                 from: url,
                 to: task,
                 in: modelContext
             )
-            
+
+            if task.recurrenceID != nil,
+               task.occurrenceIndex != nil {
+                recurringAttachmentScopeIDs.append(attachment.id)
+                if promptForRecurringScope {
+                    showingRecurringAttachmentScope = true
+                }
+            }
+
             saveTask(userInitiated: true)
             NotificationCenter.default.post(
                 name: .attachmentsShouldRefresh,
@@ -1967,36 +2215,36 @@ AppLogger.notifications.info(
     
     // MARK: - Delete
     private func deleteAttachment(_ attachment: TaskAttachment) {
-        
-        // 🔥 Move file to Trash and capture real name
+        if RecurringAttachmentManager.attachmentIsPropagated(
+            attachment,
+            in: modelContext
+        ) {
+            pendingRecurringAttachmentDeletion = attachment
+            showingRecurringAttachmentGlobalDelete = true
+            return
+        }
+
         let trashName = attachment.deleteFileIfNeeded()
-        
-        // 🔥 Create DeletedItem with correct data
+
         let item = DeletedItem(type: "attachment")
         item.taskID = task.id
         item.fileName = attachment.originalName
         item.relativePath = attachment.relativePath
         item.trashFileName = trashName
-        
         modelContext.insert(item)
-        
-        // 🔹 Remove from relationship
+
         task.attachments?.removeAll { $0.id == attachment.id }
-        
-        // 🔹 Delete from context
         modelContext.delete(attachment)
         modelContext.processPendingChanges()
-        
-        // 🔹 Save
         saveTask(userInitiated: true)
-        
+        initialEditSnapshot = TaskEditSnapshot(task: task)
+
         NotificationCenter.default.post(
             name: .attachmentsShouldRefresh,
             object: nil
         )
     }
-    
-    
+
     private func loadImageAsync(for attachment: TaskAttachment) async {
         
         guard imageCache[attachment.id] == nil else {

@@ -6,7 +6,16 @@ import os
 
 func deleteTask(_ task: TodoTask, in context: ModelContext) {
 
-    TodoTask.createDeletedTaskRecord(from: task, in: context)
+    TodoTask.createDeletedTaskRecord(
+        from: task,
+        in: context
+    )
+
+    let sharedAttachments =
+        RecurringAttachmentManager.detachSharedAttachmentsBeforeTaskDeletion(
+            task,
+            in: context
+        )
 
     if let attachments = task.attachments {
         for attachment in attachments {
@@ -26,10 +35,8 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
         }
     }
 
-
     if let recurrenceID = task.recurrenceID,
        let occurrenceIndex = task.occurrenceIndex {
-
         DeletedFingerprintStore.markDeletedOccurrence(
             recurrenceID: recurrenceID,
             occurrenceIndex: occurrenceIndex
@@ -38,10 +45,49 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
         DeletedFingerprintStore.markDeleted(task)
     }
 
-    context.delete(task)
+    let recurrenceID = task.recurrenceID
 
-    ForMemoAlarmManager.shared.cancelAlarmIfNeeded(id: task.id)
-    
+    context.delete(task)
+    context.processPendingChanges()
+
+    ForMemoAlarmManager.shared.cancelAlarmIfNeeded(
+        id: task.id
+    )
+
+    if let recurrenceID {
+        try? RecurringAttachmentManager.pruneUnreferencedRules(
+            for: recurrenceID,
+            in: context
+        )
+    }
+
+    // Shared source attachments stay alive while an active propagation rule
+    // still references them. If no rule remains, the asset is deleted exactly
+    // like an ordinary attachment belonging to the removed task.
+    for attachment in sharedAttachments where
+        attachment.task == nil &&
+        !RecurringAttachmentManager.attachmentIsPropagated(
+            attachment,
+            in: context
+        ) {
+
+        let trashName = attachment.deleteFileIfNeeded()
+
+        TaskAttachment.deleteCloudMirror(
+            relativePath: attachment.relativePath
+        )
+
+        let item = DeletedItem(type: "attachment")
+        item.taskID = task.id
+        item.fileName = attachment.originalName
+        item.relativePath = attachment.relativePath
+        item.trashFileName = trashName
+        item.createdAt = attachment.createdAt
+        context.insert(item)
+
+        context.delete(attachment)
+    }
+
     context.safeSave(operation: "DeleteTask")
 
     NotificationManager.shared.refresh()
@@ -69,6 +115,15 @@ func deleteRecurringTaskAndFutureOccurrences(
         occurrenceIndex: occurrenceIndex
     )
 
+    // Stop every propagation rule at the last surviving past occurrence.
+    try? RecurringAttachmentManager.truncatePropagation(
+        for: recurrenceID,
+        attachmentIDs: [],
+        endingAt: occurrenceIndex - 1,
+        in: context
+    )
+
+
     let descriptor = FetchDescriptor<TodoTask>(
         predicate: #Predicate<TodoTask> { candidate in
             candidate.recurrenceID == recurrenceID
@@ -93,6 +148,9 @@ func deleteRecurringTaskAndFutureOccurrences(
         return
     }
 
+    var sharedAttachmentsToReconcile: [TaskAttachment] = []
+    var sharedAttachmentIDs = Set<UUID>()
+
     for batchStart in stride(
         from: 0,
         to: tasksToDelete.count,
@@ -104,6 +162,23 @@ func deleteRecurringTaskAndFutureOccurrences(
         )
 
         for recurrenceTask in tasksToDelete[batchStart..<batchEnd] {
+
+            let sharedAttachments =
+                RecurringAttachmentManager.detachSharedAttachmentsBeforeTaskDeletion(
+                    recurrenceTask,
+                    in: context
+                )
+
+            for attachment in sharedAttachments where
+                sharedAttachmentIDs.insert(attachment.id).inserted {
+                sharedAttachmentsToReconcile.append(attachment)
+            }
+
+            RecurringAttachmentManager.prepareLinksBeforeTaskDeletion(
+                recurrenceTask,
+                preserveAnchors: false,
+                in: context
+            )
 
             if let attachments = recurrenceTask.attachments {
                 for attachment in attachments {
@@ -124,6 +199,36 @@ func deleteRecurringTaskAndFutureOccurrences(
         
         await Task.yield()
     }
+
+    // Shared assets are deleted only after all occurrence links in the
+    // selected range have been removed. If another recurrence/task still
+    // references the same TaskAttachment, the physical file is preserved.
+    context.processPendingChanges()
+
+    for attachment in sharedAttachmentsToReconcile {
+        guard attachment.task == nil,
+              !RecurringAttachmentManager.attachmentIsPropagated(
+                attachment,
+                in: context
+              ) else {
+            continue
+        }
+
+        _ = attachment.deleteFileIfNeeded()
+        TaskAttachment.deleteCloudMirror(
+            relativePath: attachment.relativePath
+        )
+        context.delete(attachment)
+    }
+
+    try? RecurringAttachmentManager.pruneUnreferencedRules(
+        for: recurrenceID,
+        in: context
+    )
+
+    context.safeSave(
+        operation: "DeleteRecurringTaskAndFutureOccurrences.sharedAttachments"
+    )
 
     let remainingTasks = (try? context.fetch(FetchDescriptor<TodoTask>())) ?? []
 

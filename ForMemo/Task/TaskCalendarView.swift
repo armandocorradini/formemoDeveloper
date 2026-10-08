@@ -1328,6 +1328,10 @@ private extension TaskCalendarView {
 
         }
 
+        Task { @MainActor in
+            _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+        }
+
         NotificationManager.shared.refresh(force: true)
 
         NotificationCenter.default.post(
@@ -1388,6 +1392,10 @@ private extension TaskCalendarView {
         do {
             try modelContext.save()
             modelContext.processPendingChanges()
+
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+            }
 
             NotificationCenter.default.post(
                 name: .taskDidChange,
@@ -2142,6 +2150,10 @@ private struct DayTasksInlineView: View {
 
                             }
 
+                            Task { @MainActor in
+                                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                            }
+
                             NotificationManager.shared.refresh(force: true)
                             
                             NotificationCenter.default.post(
@@ -2215,6 +2227,10 @@ private struct DayTasksInlineView: View {
                                 AppLogger.persistence.fault(
                                     "Failed to save task completion from context menu: \(error)"
                                 )
+                            }
+
+                            Task { @MainActor in
+                                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
                             }
 
                             NotificationManager.shared.refresh(force: true)
@@ -2338,7 +2354,7 @@ private struct DayTasksInlineView: View {
                                 Label("Task", systemImage: "text.badge.checkmark")
                             }
 
-                            if !(task.attachments?.isEmpty ?? true) {
+                            if task.hasVisibleTaskAttachments {
                                 Button {
                                     do {
                                         _ = try TaskDuplicationService.duplicate(

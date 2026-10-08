@@ -2,9 +2,37 @@ import Foundation
 
 struct AttachmentTransferObject: Hashable, Codable {
 
+    let id: UUID
     let originalName: String
     let relativePath: String
     let contentType: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case originalName
+        case relativePath
+        case contentType
+    }
+
+    init(
+        id: UUID = UUID(),
+        originalName: String,
+        relativePath: String,
+        contentType: String
+    ) {
+        self.id = id
+        self.originalName = originalName
+        self.relativePath = relativePath
+        self.contentType = contentType
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        self.originalName = try container.decode(String.self, forKey: .originalName)
+        self.relativePath = try container.decode(String.self, forKey: .relativePath)
+        self.contentType = try container.decode(String.self, forKey: .contentType)
+    }
 }
 
 struct TaskTransferObject: Identifiable, Hashable, Codable {
@@ -282,6 +310,7 @@ extension TaskTransferObject {
             tag: task.mainTagRaw,
             attachments: task.attachments?.map {
                 AttachmentTransferObject(
+                    id: $0.id,
                     originalName: $0.originalName,
                     relativePath: $0.relativePath,
                     contentType: $0.contentType
@@ -327,6 +356,7 @@ extension TaskTransferObject {
                 }
                 .map {
                     AttachmentTransferObject(
+                        id: $0.id,
                         originalName: $0.originalName,
                         relativePath: $0.relativePath,
                         contentType: $0.contentType
@@ -404,7 +434,7 @@ extension TodoTask {
                     relativePath: $0.relativePath,
                     contentType: $0.contentType,
                     task: self
-                )
+                ).withID($0.id)
             }
         }
 
@@ -412,5 +442,13 @@ extension TodoTask {
            let mapped = TaskMainTag(rawValue: tag) {
             self.mainTag = mapped
         }
+    }
+}
+
+
+extension TaskAttachment {
+    func withID(_ id: UUID) -> TaskAttachment {
+        self.id = id
+        return self
     }
 }

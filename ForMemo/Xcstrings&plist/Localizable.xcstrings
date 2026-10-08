@@ -4045,6 +4045,62 @@
         }
       }
     },
+    "Apply attachment to future occurrences?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhang auf zukünftige Wiederholungen anwenden?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Aplicar el archivo adjunto a las futuras ocurrencias?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appliquer la pièce jointe aux occurrences futures ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applica l’allegato alle occorrenze future?"
+          }
+        }
+      }
+    },
+    "Apply attachments to future occurrences?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhänge auf zukünftige Wiederholungen anwenden?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Aplicar los archivos adjuntos a las futuras ocurrencias?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appliquer les pièces jointes aux occurrences futures ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applica gli allegati alle occorrenze future?"
+          }
+        }
+      }
+    },
     "Apply changes to" : {
       "localizations" : {
         "de" : {
@@ -9225,6 +9281,62 @@
         }
       }
     },
+    "Choose whether the attachment should stay with this occurrence or also appear in future occurrences." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle aus, ob der Anhang nur für diese Wiederholung gelten oder auch bei zukünftigen Wiederholungen angezeigt werden soll."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige si el archivo adjunto debe permanecer en esta ocurrencia o aparecer también en las futuras."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez si la pièce jointe doit rester avec cette occurrence ou apparaître aussi dans les occurrences futures."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli se l’allegato deve rimanere in questa occorrenza o comparire anche nelle occorrenze future."
+          }
+        }
+      }
+    },
+    "Choose whether the attachments should stay with the first occurrence or also appear in future occurrences." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle aus, ob die Anhänge bei der ersten Wiederholung bleiben oder auch bei zukünftigen Wiederholungen angezeigt werden sollen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige si los archivos adjuntos deben permanecer en la primera ocurrencia o aparecer también en las futuras."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez si les pièces jointes doivent rester avec la première occurrence ou apparaître aussi dans les occurrences futures."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli se gli allegati devono rimanere nella prima occorrenza o comparire anche nelle occorrenze future."
+          }
+        }
+      }
+    },
     "Choose whether the changes apply only to this occurrence or also to future occurrences." : {
       "localizations" : {
         "de" : {
@@ -12424,6 +12536,34 @@
         }
       }
     },
+    "Delete attachment from all occurrences?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anhang aus allen Wiederholungen löschen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar el archivo adjunto de todas las ocurrencias?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la pièce jointe de toutes les occurrences ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminare l’allegato da tutte le occorrenze?"
+          }
+        }
+      }
+    },
     "Delete Image" : {
       "localizations" : {
         "de" : {
@@ -13385,7 +13525,32 @@
       }
     },
     "Do not close the app" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App nicht schließen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No cierres la app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne fermez pas l’app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non chiudere l’app."
+          }
+        }
+      }
     },
     "Do weather forecasts require location access?" : {
       "localizations" : {
@@ -16802,7 +16967,32 @@
       }
     },
     "ForMemo is scheduling notifications and alarms." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo plant Benachrichtigungen und Alarme."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo está programando notificaciones y alarmas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo programme les notifications et les alarmes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo sta programmando notifiche e sveglie."
+          }
+        }
+      }
     },
     "ForMemo lets you create, organize, and manage tasks and notes in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. At the due time, you can choose whether to receive a notification or an alarm. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards and tickets, with barcode and QR code scanning and quick access to your saved items.\n\nYou can create and manage Checklists, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, cards, tickets, checklists, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking." : {
       "localizations" : {
@@ -36493,6 +36683,34 @@
         }
       }
     },
+    "This attachment is shared with this recurrence. If you delete it, it will be removed from all past, current, and future occurrences and moved to Recently Deleted." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Anhang wird mit dieser Wiederholung geteilt. Wenn du ihn löschst, wird er aus allen vergangenen, aktuellen und zukünftigen Wiederholungen entfernt und in „Zuletzt gelöscht“ verschoben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo adjunto se comparte con esta repetición. Si lo eliminas, se quitará de todas las ocurrencias pasadas, actuales y futuras y se moverá a Eliminados recientemente."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette pièce jointe est partagée avec cette récurrence. Si vous la supprimez, elle sera retirée de toutes les occurrences passées, présentes et futures, puis placée dans Éléments supprimés récemment."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo allegato è condiviso con questa ricorrenza. Se lo elimini, verrà rimosso da tutte le occorrenze passate, presenti e future e spostato in Eliminati di recente."
+          }
+        }
+      }
+    },
     "This feature applies only to tasks created with Siri. The app analyzes the task title using a multilingual keyword system. Each category has its own keywords, and the best match is applied automatically." : {
       "localizations" : {
         "de" : {
@@ -36547,6 +36765,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Questo Mese"
+          }
+        }
+      }
+    },
+    "This occurrence" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Wiederholung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta ocurrencia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette occurrence"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa occorrenza"
           }
         }
       }

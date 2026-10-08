@@ -693,7 +693,7 @@ private struct WeeklyTaskRow: View {
     let requestTaskDeletion: (TodoTask) -> Void
 
     private var hasAttachments: Bool {
-        !(task.attachments ?? []).isEmpty
+        task.hasVisibleTaskAttachments
     }
 
     private var hasLocation: Bool {
@@ -851,7 +851,7 @@ private struct WeeklyTaskRow: View {
                     Label("Task", systemImage: "text.badge.checkmark")
                 }
 
-                if !(task.attachments?.isEmpty ?? true) {
+                if task.hasVisibleTaskAttachments {
                     Button {
                         do {
                             _ = try TaskDuplicationService.duplicate(
@@ -932,6 +932,9 @@ private struct WeeklyTaskRow: View {
 
         do {
             try modelContext.save()
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+            }
             NotificationManager.shared.refresh(force: true)
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
         } catch {
@@ -989,6 +992,10 @@ private struct WeeklyTaskRow: View {
         do {
             try modelContext.save()
             modelContext.processPendingChanges()
+
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+            }
 
             NotificationCenter.default.post(
                 name: .taskDidChange,

@@ -6,11 +6,12 @@ import os
 @MainActor
 final class AttachmentImporter {
     
+    @discardableResult
     static func addAttachment(
         from originalURL: URL,
         to task: TodoTask,
         in context: ModelContext
-    ) async throws {
+    ) async throws -> TaskAttachment {
         
         let access = originalURL.startAccessingSecurityScopedResource()
         defer {
@@ -79,6 +80,8 @@ final class AttachmentImporter {
             name: .attachmentsShouldRefresh,
             object: nil
         )
+
+        return attachment
     }
     
     private static func copyToAttachmentsFolder(
