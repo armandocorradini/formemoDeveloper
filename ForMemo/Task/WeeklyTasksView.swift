@@ -915,6 +915,7 @@ private struct WeeklyTaskRow: View {
     @MainActor
     private func completeTask() {
         guard task.isCompleted == false else { return }
+        let wasCompleted = task.isCompleted
 
         if task.recurrenceRule != nil {
             if task.occurrenceIndex == nil {
@@ -932,6 +933,10 @@ private struct WeeklyTaskRow: View {
 
         do {
             try modelContext.save()
+            RecurrenceCompletionNotice.postIfNeeded(
+                for: task,
+                wasCompleted: wasCompleted
+            )
             Task { @MainActor in
                 _ = await ForMemoAlarmManager.shared.synchronize(task: task)
             }

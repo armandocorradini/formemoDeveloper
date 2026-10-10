@@ -1299,6 +1299,8 @@ private extension TaskCalendarView {
 
     func toggleCompleted(_ task: TodoTask) {
 
+        let wasCompleted = task.isCompleted
+
         if task.recurrenceRule != nil {
 
             if task.occurrenceIndex == nil {
@@ -1321,6 +1323,10 @@ private extension TaskCalendarView {
         do {
 
             try modelContext.save()
+            RecurrenceCompletionNotice.postIfNeeded(
+                for: task,
+                wasCompleted: wasCompleted
+            )
 
         } catch {
 
@@ -2109,6 +2115,8 @@ private struct DayTasksInlineView: View {
 
                         Button {
 
+                            let wasCompleted = task.isCompleted
+
                             if task.recurrenceRule != nil {
 
                                 if task.occurrenceIndex == nil {
@@ -2143,6 +2151,10 @@ private struct DayTasksInlineView: View {
                             do {
 
                                 try modelContext.save()
+                                RecurrenceCompletionNotice.postIfNeeded(
+                                    for: task,
+                                    wasCompleted: wasCompleted
+                                )
 
                             } catch {
 
@@ -2201,6 +2213,7 @@ private struct DayTasksInlineView: View {
                         }
 
                         Button {
+                            let wasCompleted = task.isCompleted
                             if task.recurrenceRule != nil {
 
                                 if task.occurrenceIndex == nil {
@@ -2223,6 +2236,10 @@ private struct DayTasksInlineView: View {
 
                             do {
                                 try modelContext.save()
+                                RecurrenceCompletionNotice.postIfNeeded(
+                                    for: task,
+                                    wasCompleted: wasCompleted
+                                )
                             } catch {
                                 AppLogger.persistence.fault(
                                     "Failed to save task completion from context menu: \(error)"

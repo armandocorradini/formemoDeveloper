@@ -196,6 +196,7 @@ struct ForMemoApp: App {
     var body: some Scene {
         WindowGroup {
             TaskTabView()
+                .modifier(RecurrenceSeriesExtensionPresenter())
                 .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
                     
                     NotificationCenter.default.post(

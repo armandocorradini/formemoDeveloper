@@ -438,6 +438,7 @@ struct TaskDetailView: View {
                     rowModel: rowModel,
                     iconStyle: settings.iconStyle,
                     saveTask: { saveTask(userInitiated: true) },
+                    saveRecurringCompletion: { saveCompletedRecurringOccurrence() },
                     dismiss: dismiss,
                     modelContext: modelContext
                 )
@@ -947,6 +948,18 @@ struct TaskDetailView: View {
             saveTask(userInitiated: false)
         }
     }
+    @MainActor
+    private func saveCompletedRecurringOccurrence() {
+        guard saveTask(userInitiated: true) != nil else {
+            return
+        }
+
+        RecurrenceCompletionNotice.postIfNeeded(
+            for: task,
+            wasCompleted: false
+        )
+    }
+
     @discardableResult
     @MainActor
     private func saveTask(userInitiated: Bool = false) -> Task<Void, Never>? {

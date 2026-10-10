@@ -3645,6 +3645,34 @@
         }
       }
     },
+    "Additional occurrences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zusätzliche Wiederholungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocurrencias adicionales"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Occurrences supplémentaires"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Occorrenze aggiuntive"
+          }
+        }
+      }
+    },
     "Adjust priorities" : {
       "localizations" : {
         "de" : {
@@ -7150,6 +7178,34 @@
         }
       }
     },
+    "Can I extend a recurring series?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kann ich eine Wiederholungsserie verlängern?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Puedo ampliar una serie recurrente?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puis-je prolonger une série récurrente ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posso estendere una serie ricorrente?"
+          }
+        }
+      }
+    },
     "Can I filter tasks without a deadline?" : {
       "localizations" : {
         "de" : {
@@ -10430,6 +10486,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Continua"
+          }
+        }
+      }
+    },
+    "Continue this series" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Serie fortsetzen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar esta serie"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer cette série"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continua questa serie"
           }
         }
       }
@@ -16153,6 +16237,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esporta le tue attività su Calendario, CSV o ICS per condividerle o riutilizzarle in altre app.\n\nNota: gli allegati non sono inclusi nelle esportazioni."
+          }
+        }
+      }
+    },
+    "Extend" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verlängern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampliar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prolonger"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estendi"
+          }
+        }
+      }
+    },
+    "Extending series…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie wird verlängert …"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampliando la serie…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prolongation de la série…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estensione della serie…"
           }
         }
       }
@@ -26953,7 +27093,32 @@
       }
     },
     "Privacy Policy" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutzerklärung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Política de privacidad"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Politique de confidentialité"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informativa sulla privacy"
+          }
+        }
+      }
     },
     "Private Club" : {
       "localizations" : {
@@ -30861,6 +31026,34 @@
         }
       }
     },
+    "Series completed" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie abgeschlossen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie completada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Série terminée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie completata"
+          }
+        }
+      }
+    },
     "Series ends" : {
       "localizations" : {
         "de" : {
@@ -31165,6 +31358,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Imposta la ripetizione delle attività ogni ora, giorno, settimana, mese o anno. Quando crei una ricorrenza, ForMemo crea le occorrenze selezionate come singole attività. Ogni occorrenza può essere completata, modificata, riprogrammata o eliminata indipendentemente dalle altre. Puoi definire quando inizia la ricorrenza, quando termina o quante occorrenze creare."
+          }
+        }
+      }
+    },
+    "Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you create a recurrence, ForMemo creates the selected occurrences as individual tasks. Each occurrence can be completed, edited, rescheduled, or deleted independently. You can define when the recurrence starts, when it ends, or how many occurrences should be created. When you complete the last scheduled occurrence, you can extend the same series by adding more occurrences. The recurrence rule and interval are preserved, and past tasks and their completion status remain unchanged." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Legen Sie fest, dass Aufgaben stündlich, täglich, wöchentlich, monatlich oder jährlich wiederholt werden. Wenn Sie eine Wiederholung einrichten, erstellt ForMemo die ausgewählten Wiederholungen als einzelne Aufgaben. Jede Wiederholung kann unabhängig abgeschlossen, bearbeitet, verschoben oder gelöscht werden. Sie können festlegen, wann die Wiederholung beginnt und endet oder wie viele Wiederholungen erstellt werden sollen. Wenn Sie die letzte geplante Wiederholung abschließen, können Sie dieselbe Serie verlängern, indem Sie weitere Wiederholungen hinzufügen. Die Wiederholungsregel und das Intervall bleiben erhalten. Bereits vergangene Aufgaben und ihr Abschlussstatus bleiben unverändert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configura las tareas para que se repitan cada hora, cada día, cada semana, cada mes o cada año. Al crear una repetición, ForMemo genera las ocurrencias seleccionadas como tareas individuales. Cada ocurrencia se puede completar, editar, reprogramar o eliminar de forma independiente. Puedes definir cuándo empieza y termina la repetición o cuántas ocurrencias se deben crear. Cuando completes la última ocurrencia programada, puedes ampliar la misma serie añadiendo más ocurrencias. Se conservarán la regla de repetición y el intervalo, y las tareas anteriores y su estado de finalización permanecerán sin cambios."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Définissez des tâches pour qu’elles se répètent toutes les heures, tous les jours, toutes les semaines, tous les mois ou tous les ans. Lorsque vous créez une récurrence, ForMemo crée les occurrences sélectionnées sous forme de tâches individuelles. Chaque occurrence peut être terminée, modifiée, reprogrammée ou supprimée indépendamment. Vous pouvez définir la date de début et de fin de la récurrence, ou le nombre d’occurrences à créer. Lorsque vous terminez la dernière occurrence planifiée, vous pouvez prolonger la même série en ajoutant d’autres occurrences. La règle de récurrence et l’intervalle sont conservés, et les tâches passées ainsi que leur état d’achèvement restent inchangés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "mposta le attività in modo che si ripetano ogni ora, ogni giorno, ogni settimana, ogni mese o ogni anno. Quando crei una ricorrenza, ForMemo crea le occorrenze selezionate come attività singole. Ogni occorrenza può essere completata, modificata, riprogrammata o eliminata indipendentemente. Puoi definire quando inizia e quando termina la ricorrenza oppure quante occorrenze creare. Quando completi l’ultima occorrenza pianificata, puoi estendere la stessa serie aggiungendo altre occorrenze. La regola di ricorrenza e l’intervallo vengono mantenuti, mentre le attività passate e il relativo stato di completamento restano invariati."
           }
         }
       }
@@ -35933,6 +36154,34 @@
         }
       }
     },
+    "The last scheduled occurrence in this series is complete. You can extend the same series without changing past occurrences." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die letzte geplante Wiederholung dieser Serie ist abgeschlossen. Du kannst dieselbe Serie verlängern, ohne vergangene Wiederholungen zu ändern."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha completado la última ocurrencia programada de esta serie. Puedes ampliar la misma serie sin modificar las ocurrencias anteriores."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La dernière occurrence planifiée de cette série est terminée. Vous pouvez prolonger la même série sans modifier les occurrences passées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’ultima occorrenza pianificata di questa serie è stata completata. Puoi estendere la stessa serie senza modificare le occorrenze passate."
+          }
+        }
+      }
+    },
     "The map automatically adjusts to show all tasks when it opens. After that, your zoom level is preserved." : {
       "localizations" : {
         "de" : {
@@ -36137,6 +36386,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La password inserita non consente di sbloccare i dati della Cassaforte contenuti in questo backup. Controlla la password e riprova, oppure lascia la Cassaforte non selezionata. Gli altri dati del backup possono essere ripristinati normalmente."
+          }
+        }
+      }
+    },
+    "The recurrence rule and interval will be preserved. Past tasks and their completion status will remain unchanged." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Wiederholungsregel und das Intervall bleiben erhalten.\nVergangene Auf zaben und ihr Abschlussstatus bleiben unverändert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se conservarán la regla de repetición y el intervalo.\nLas tareas anteriores y su estado de finalización permanecerán sin cambios."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La règle de récurrence et l’intervalle seront conservés.\nLes tâches passées et leur état d’achèvement resteront inchangés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La regola di ricorrenza e l’intervallo verranno mantenuti.\nLe attività passate e il relativo stato di completamento resteranno invariati."
           }
         }
       }
@@ -38701,6 +38978,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impossibile accedere alla finestra dell'applicazione."
+          }
+        }
+      }
+    },
+    "Unable to extend series" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Serie kann nicht verlängert werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido ampliar la serie."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de prolonger la série."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile estendere la serie."
           }
         }
       }
@@ -43005,6 +43310,34 @@
         }
       }
     },
+    "Yes. When you complete the last scheduled occurrence, ForMemo lets you extend the same series by adding more occurrences. You can choose how many additional occurrences to add. The recurrence rule and interval are preserved, and past tasks and their completion status remain unchanged." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Wenn Sie die letzte geplante Wiederholung abschließen, können Sie mit ForMemo dieselbe Serie verlängern und weitere Wiederholungen hinzufügen. Sie können festlegen, wie viele zusätzliche Wiederholungen hinzukommen sollen.\nDie Wiederholungsregel und das Intervall bleiben erhalten. Bereits vergangene Aufgaben und ihr Abschlussstatus bleiben unverändert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Cuando completes la última ocurrencia programada, ForMemo te permite ampliar la misma serie añadiendo más ocurrencias. Puedes elegir cuántas ocurrencias adicionales quieres añadir.\nSe conservarán la regla de repetición y el intervalo, y las tareas anteriores y su estado de finalización permanecerán sin cambios."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Lorsque vous terminez la dernière occurrence planifiée, ForMemo vous permet de prolonger la même série en ajoutant d’autres occurrences. Vous pouvez choisir le nombre d’occurrences supplémentaires à ajouter.\nLa règle de récurrence et l’intervalle sont conservés, et les tâches passées ainsi que leur état d’achèvement restent inchangés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Quando completi l’ultima occorrenza pianificata, ForMemo ti consente di estendere la stessa serie aggiungendo altre occorrenze. Puoi scegliere quante occorrenze aggiuntive aggiungere.\nLa regola di ricorrenza e l’intervallo vengono mantenuti, mentre le attività passate e il relativo stato di completamento restano invariati."
+          }
+        }
+      }
+    },
     "Yes. You can attach files, images, documents, and record audio." : {
       "localizations" : {
         "de" : {
@@ -43563,34 +43896,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Puoi visualizzare in anteprima le informazioni diagnostiche esatte prima di esportarle."
-          }
-        }
-      }
-    },
-    "You can set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you create a recurrence, ForMemo creates the selected occurrences as individual tasks. Each occurrence can be completed, edited, rescheduled, or deleted independently. You can define when the recurrence starts, when it ends, or how many occurrences should be created. You can also update or stop a recurrence at any time." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sie können festlegen, dass Aufgaben stündlich, täglich, wöchentlich, monatlich oder jährlich wiederholt werden. Wenn Sie eine Wiederholung erstellen, erstellt ForMemo die ausgewählten Vorkommen als einzelne Aufgaben. Jedes Vorkommen kann unabhängig erledigt, bearbeitet, verschoben oder gelöscht werden. Sie können festlegen, wann die Wiederholung beginnt, wann sie endet oder wie viele Vorkommen erstellt werden sollen. Sie können eine Wiederholung jederzeit aktualisieren oder beenden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puedes configurar las tareas para que se repitan cada hora, día, semana, mes o año. Al crear una recurrencia, ForMemo crea las ocurrencias seleccionadas como tareas independientes. Cada ocurrencia se puede completar, editar, reprogramar o eliminar de forma independiente. Puedes definir cuándo comienza la recurrencia, cuándo termina o cuántas ocurrencias se deben crear. También puedes actualizar o detener una recurrencia en cualquier momento."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous pouvez configurer les tâches pour qu’elles se répètent toutes les heures, tous les jours, toutes les semaines, tous les mois ou tous les ans. Lorsque vous créez une récurrence, ForMemo crée les occurrences sélectionnées sous forme de tâches individuelles. Chaque occurrence peut être terminée, modifiée, reprogrammée ou supprimée indépendamment. Vous pouvez définir la date de début de la récurrence, sa date de fin ou le nombre d’occurrences à créer. Vous pouvez également modifier ou arrêter une récurrence à tout moment."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puoi impostare la ripetizione delle attività ogni ora, giorno, settimana, mese o anno. Quando crei una ricorrenza, ForMemo crea le occorrenze selezionate come singole attività. Ogni occorrenza può essere completata, modificata, riprogrammata o eliminata indipendentemente dalle altre. Puoi definire quando inizia la ricorrenza, quando termina o quante occorrenze creare. Puoi anche aggiornare o interrompere una ricorrenza in qualsiasi momento."
           }
         }
       }

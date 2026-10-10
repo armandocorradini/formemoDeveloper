@@ -94,6 +94,179 @@ struct RecurrenceEngine {
     }
     
 
+    enum ExtensionError: Error {
+        case invalidSeries
+        case notFinalOccurrence
+        case maximumReached
+        case invalidExtension
+    }
+
+    /// True only when this completed occurrence is the actual last occurrence
+    /// defined by a finite recurrence. Unlimited series and series truncated by
+    /// the generation cap are deliberately excluded.
+    static func isFinalPlannedOccurrence(
+        _ task: TodoTask,
+        in context: ModelContext
+    ) throws -> Bool {
+        guard isFinalDefinedOccurrence(task),
+              let recurrenceID = task.recurrenceID,
+              let currentIndex = task.occurrenceIndex else {
+            return false
+        }
+
+        let occurrences = try context.fetch(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { occurrence in
+                    occurrence.recurrenceID == recurrenceID
+                }
+            )
+        )
+
+        guard occurrences.contains(where: { $0.id == task.id }) else {
+            return false
+        }
+
+        // Refuse to extend if inconsistent records exist beyond the configured
+        // final index. This avoids treating a malformed series as completed.
+        return !occurrences.contains { occurrence in
+            guard occurrence.id != task.id,
+                  let occurrenceIndex = occurrence.occurrenceIndex else {
+                return false
+            }
+            return occurrenceIndex > currentIndex
+        }
+    }
+
+    private static func isFinalDefinedOccurrence(_ task: TodoTask) -> Bool {
+        guard task.isCompleted,
+              task.recurrenceRule != nil,
+              let occurrenceIndex = task.occurrenceIndex,
+              occurrenceIndex > 0,
+              occurrenceIndex < maximumGeneratedTasks,
+              let rawRule = task.recurrenceRule,
+              let rule = Rule(rawValue: rawRule),
+              let startDate = task.recurrenceStartDate ?? task.deadLine else {
+            return false
+        }
+
+        if let count = task.recurrenceCount {
+            // recurrenceCount includes occurrence #1.
+            return count > 0 && occurrenceIndex == count
+        }
+
+        guard let endDate = task.recurrenceEndDate else {
+            // An unlimited series has no final occurrence.
+            return false
+        }
+
+        let dates = occurrenceDates(
+            startDate: startDate,
+            rule: rule,
+            interval: max(1, task.recurrenceInterval),
+            limit: .until(endDate)
+        )
+
+        // A full result means occurrenceDates hit its safety cap; in that case
+        // we cannot prove that the configured end date is the true final date.
+        guard dates.count < maximumGeneratedDates else {
+            return false
+        }
+
+        return dates.count == occurrenceIndex
+    }
+
+    /// Extends the same recurrence definition without recreating existing tasks.
+    /// The completed occurrence and its history remain untouched except for the
+    /// shared recurrence boundary fields stored on every occurrence.
+    @MainActor
+    static func extendSeries(
+        after completedTask: TodoTask,
+        by additionalOccurrences: Int,
+        in context: ModelContext,
+        calendar: Calendar = .autoupdatingCurrent
+    ) throws -> [TodoTask] {
+        guard additionalOccurrences > 0,
+              isFinalDefinedOccurrence(completedTask),
+              let recurrenceID = completedTask.recurrenceID,
+              let currentIndex = completedTask.occurrenceIndex,
+              let rawRule = completedTask.recurrenceRule,
+              let rule = Rule(rawValue: rawRule),
+              let startDate = completedTask.recurrenceStartDate ?? completedTask.deadLine else {
+            throw ExtensionError.invalidSeries
+        }
+
+        guard additionalOccurrences <= maximumGeneratedTasks - currentIndex else {
+            throw ExtensionError.maximumReached
+        }
+
+        let recurrenceIDValue = recurrenceID
+        let occurrences = try context.fetch(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { occurrence in
+                    occurrence.recurrenceID == recurrenceIDValue
+                }
+            )
+        )
+
+        guard occurrences.contains(where: { $0.id == completedTask.id }) else {
+            throw ExtensionError.invalidSeries
+        }
+
+        guard !occurrences.contains(where: { occurrence in
+            guard occurrence.id != completedTask.id,
+                  let index = occurrence.occurrenceIndex else {
+                return false
+            }
+            return index > currentIndex
+        }) else {
+            throw ExtensionError.notFinalOccurrence
+        }
+
+        let newTotalCount = currentIndex + additionalOccurrences
+        let newCount: Int?
+        let newEndDate: Date?
+
+        if let existingCount = completedTask.recurrenceCount {
+            guard existingCount == currentIndex else {
+                throw ExtensionError.notFinalOccurrence
+            }
+            newCount = existingCount + additionalOccurrences
+            newEndDate = completedTask.recurrenceEndDate
+        } else if completedTask.recurrenceEndDate != nil {
+            let extendedDates = occurrenceDates(
+                startDate: startDate,
+                rule: rule,
+                interval: max(1, completedTask.recurrenceInterval),
+                limit: .count(newTotalCount),
+                calendar: calendar
+            )
+
+            guard extendedDates.count == newTotalCount,
+                  let finalDate = extendedDates.last else {
+                throw ExtensionError.invalidExtension
+            }
+
+            newCount = nil
+            newEndDate = finalDate
+        } else {
+            // Unlimited series are not eligible for this interaction.
+            throw ExtensionError.invalidSeries
+        }
+
+        // Each occurrence stores a copy of the recurrence definition. Keep these
+        // fields synchronized so editing any occurrence later sees the extension.
+        for occurrence in occurrences {
+            occurrence.recurrenceCount = newCount
+            occurrence.recurrenceEndDate = newEndDate
+        }
+
+        return try materializeFutureOccurrences(
+            for: completedTask,
+            in: context,
+            calendar: calendar
+        )
+    }
+
     static func hasFutureOccurrence(
         for task: TodoTask,
         in context: ModelContext
@@ -282,6 +455,7 @@ struct RecurrenceEngine {
 
             occurrence.mainTagRaw = task.mainTagRaw
             occurrence.alarmEnabled = task.alarmEnabled
+            occurrence.locationReminderEnabled = task.locationReminderEnabled
             
             occurrence.snoozeUntil = nil
             occurrence.manualSnoozeUntil = nil
@@ -353,3 +527,27 @@ struct RecurrenceEngine {
 }
 
 
+
+
+extension Notification.Name {
+    static let recurrenceOccurrenceCompleted =
+        Notification.Name("recurrenceOccurrenceCompleted")
+}
+
+enum RecurrenceCompletionNotice {
+    @MainActor
+    static func postIfNeeded(for task: TodoTask, wasCompleted: Bool) {
+        guard !wasCompleted,
+              task.isCompleted,
+              task.recurrenceRule != nil,
+              task.recurrenceID != nil,
+              task.occurrenceIndex != nil else {
+            return
+        }
+
+        NotificationCenter.default.post(
+            name: .recurrenceOccurrenceCompleted,
+            object: task.id
+        )
+    }
+}

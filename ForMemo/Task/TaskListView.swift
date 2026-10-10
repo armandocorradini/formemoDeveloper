@@ -4080,7 +4080,8 @@ struct TodoSectionView: View {
     
   @MainActor
 
-  private func persistChanges() {
+  @discardableResult
+  private func persistChanges() -> Bool {
 
     do {
 
@@ -4089,10 +4090,12 @@ struct TodoSectionView: View {
       modelContext.processPendingChanges()
 
       NotificationCenter.default.post(name: .taskDidChange, object: nil)
+      return true
 
     } catch {
 
       AppLogger.persistence.fault("Failed to save context: \(error)")
+      return false
 
     }
 
@@ -4101,6 +4104,8 @@ struct TodoSectionView: View {
   @MainActor
 
   private func toggleCompleted(_ task: TodoTask) {
+
+    let wasCompleted = task.isCompleted
 
     // 🔥 RICORRENZA: intercetta PRIMA di cambiare stato
 
@@ -4137,7 +4142,14 @@ struct TodoSectionView: View {
 
     }
 
-    persistChanges()
+    let didSave = persistChanges()
+
+    if didSave {
+      RecurrenceCompletionNotice.postIfNeeded(
+        for: task,
+        wasCompleted: wasCompleted
+      )
+    }
 
     Task { @MainActor in
       _ = await ForMemoAlarmManager.shared.synchronize(task: task)

@@ -8,6 +8,7 @@ import SwiftData
     let rowModel: TaskRowDisplayModel
     let iconStyle: TaskIconStyle
     let saveTask: () -> Void
+    let saveRecurringCompletion: () -> Void
     let dismiss: DismissAction
     let modelContext: ModelContext
 
@@ -91,14 +92,14 @@ import SwiftData
                            task.occurrenceIndex != nil {
 
                             task.completeRecurringTask()
+                            saveRecurringCompletion()
 
                         } else {
                             task.isCompleted = newValue
                             task.completedAt = newValue ? .now : nil
                             task.snoozeUntil = nil
+                            saveTask()
                         }
-
-                        saveTask()
 
                         if newValue == true,
                            !(task.recurrenceRule != nil && task.occurrenceIndex == nil) {

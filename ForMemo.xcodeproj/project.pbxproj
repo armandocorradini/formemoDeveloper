@@ -209,6 +209,7 @@
 		1CF0C7303076AE7B0083664A /* RecurringAttachmentLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF0C72F3076AE7B0083664A /* RecurringAttachmentLink.swift */; };
 		1CF0C77F3076F63A0083664A /* NewTaskSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF0C77E3076F63A0083664A /* NewTaskSheetView.swift */; };
 		1CF0C781307921480083664A /* DebugDiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF0C780307921480083664A /* DebugDiagnosticsView.swift */; };
+		1CF0C783307AAB6F0083664A /* RecurrenceSeriesExtensionPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF0C782307AAB6F0083664A /* RecurrenceSeriesExtensionPresenter.swift */; };
 		1CF49EAB306FECB8000BA744 /* ForMemoAlarmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF49EAA306FECB8000BA744 /* ForMemoAlarmManager.swift */; };
 		1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */; };
 		1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -449,6 +450,7 @@
 		1CF0C72F3076AE7B0083664A /* RecurringAttachmentLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringAttachmentLink.swift; sourceTree = "<group>"; };
 		1CF0C77E3076F63A0083664A /* NewTaskSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewTaskSheetView.swift; sourceTree = "<group>"; };
 		1CF0C780307921480083664A /* DebugDiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugDiagnosticsView.swift; sourceTree = "<group>"; };
+		1CF0C782307AAB6F0083664A /* RecurrenceSeriesExtensionPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceSeriesExtensionPresenter.swift; sourceTree = "<group>"; };
 		1CF49EAA306FECB8000BA744 /* ForMemoAlarmManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForMemoAlarmManager.swift; sourceTree = "<group>"; };
 		1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoCredentialProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
@@ -665,6 +667,7 @@
 			children = (
 				1C604A2B306942BD00142E9C /* RecurrenceMigrationView.swift */,
 				1C604A273067094100142E9C /* RecurrenceEngine.swift */,
+				1CF0C782307AAB6F0083664A /* RecurrenceSeriesExtensionPresenter.swift */,
 				1C716EF13059795B006C6178 /* TaskSingleCalendarExport.swift */,
 				1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */,
 				1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */,
@@ -1133,6 +1136,7 @@
 				1C634DE230220C9C0092DB89 /* WalletViewerView.swift in Sources */,
 				1C634DE330220C9C0092DB89 /* WeatherManager.swift in Sources */,
 				1C634DE430220C9C0092DB89 /* AppleCredentialExchangeProvider.swift in Sources */,
+				1CF0C783307AAB6F0083664A /* RecurrenceSeriesExtensionPresenter.swift in Sources */,
 				1C634DE530220C9C0092DB89 /* AppleCredentialExportMapper.swift in Sources */,
 				1C634DE630220C9C0092DB89 /* AppleCredentialImportMapper.swift in Sources */,
 				1C634DE730220C9C0092DB89 /* CredentialExchangeManager.swift in Sources */,
