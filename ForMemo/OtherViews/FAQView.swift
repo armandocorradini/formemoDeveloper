@@ -207,7 +207,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Can I customize task highlighting?"),
-                answer: String(localized:"Yes. You can choose both color and opacity for highlighting critical tasks in Settings.")
+                answer: String(localized:"Yes. You can choose both color for highlighting critical tasks in Settings.")
             ),
             FAQItem(
                 question: String(localized:"Can I customize the appearance of task rows?"),

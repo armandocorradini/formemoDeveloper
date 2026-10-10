@@ -2063,7 +2063,7 @@
       }
     },
     "⏰" : {
-
+      "shouldTranslate" : false
     },
     "⏰ Overdue" : {
       "comment" : "Title of a notification when a task is overdue.",
@@ -2108,7 +2108,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⏱️ ¡En %lld days!"
+            "value" : "⏱️ ¡En %lld días!"
           }
         },
         "fr" : {
@@ -2290,7 +2290,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "🔔 In %lld minutes!"
+            "value" : "🔔 In %lld Tagen!"
           }
         },
         "es" : {
@@ -2987,7 +2987,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activity"
+            "value" : "Activité"
           }
         },
         "it" : {
@@ -3758,7 +3758,32 @@
       }
     },
     "Alarm enabled" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wecker aktiviert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma activada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarme activée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sveglia attiva"
+          }
+        }
+      }
     },
     "AlarmFootnote" : {
       "localizations" : {
@@ -9078,7 +9103,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose Every Time"
+            "value" : "Choisir à chaque fois"
           }
         },
         "it" : {
@@ -12059,7 +12084,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Day Before Yesterday"
+            "value" : "Avant-hier"
           }
         },
         "it" : {
@@ -17089,7 +17114,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo utilise ZXing-C++ pour la lecture et la génération de codes-barres et de codes QR."
+            "value" : "ForMemo verwendet ZXing-C++ zum Scannen und Generieren von Barcodes und QR-Codes."
           }
         },
         "es" : {
@@ -17101,7 +17126,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo uses ZXing-C++ for barcode and QR code scanning and generation."
+            "value" : "ForMemo utilise ZXing-C++ pour scanner et générer des codes-barres et des codes QR."
           }
         },
         "it" : {
@@ -23093,7 +23118,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No attachments"
+            "value" : "Aucune pièce jointe"
           }
         },
         "it" : {
@@ -35546,7 +35571,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The badge is dynamic and updates based on time, deadlines, and task status."
+            "value" : "Das App-Badge ist dynamisch und wird anhand der Uhrzeit, der Fälligkeitstermine und des Aufgabenstatus aktualisiert."
           }
         },
         "es" : {
@@ -37212,7 +37237,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ticket Code"
+            "value" : "Código Ticket"
           }
         },
         "fr" : {
@@ -42860,7 +42885,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. La Cassaforte supporta l'importazione di credenziali da gestori di password compatibili.\n\nA seconda dell'app di origine, le credenzziali possono essere importate direttamente oppure utilizzando un formato di importazione supportato."
+            "value" : "Sì. La Cassaforte supporta l'importazione di credenziali da gestori di password compatibili.\n\nA seconda dell'app di origine, le credenziali possono essere importate direttamente oppure utilizzando un formato di importazione supportato."
           }
         }
       }
@@ -43005,36 +43030,30 @@
         }
       }
     },
-    "Yes. You can choose both color and opacity for highlighting critical tasks in Settings." : {
+    "Yes. You can choose both color for highlighting critical tasks in Settings." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Sie können die Farbe für die Hervorhebung kritischer Aufgaben in den Einstellungen auswählen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yes. You can choose both color  for highlighting critical tasks in Settings."
+            "value" : "Ja. Sie können die Farbe der Hervorhebung kritischer Aufgaben in den Einstellungen auswählen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes elegir el color para resaltar tareas con prioridad crítica en Ajustes."
+            "value" : "Sí. Puedes elegir el color del resaltado de las tareas con prioridad crítica en Ajustes."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Vous pouvez choisir la couleur  pour mettre en évidence les tâches critiques dans les paramètres."
+            "value" : "Oui. Vous pouvez choisir la couleur de la mise en évidence des tâches critiques dans les Réglages."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Puoi scegliere il colore per evidenziare le attività con priorità critica nelle Impostazioni."
+            "value" : "Sì. Puoi scegliere il colore dell’evidenziazione delle attività con priorità critica nelle Impostazioni."
           }
         }
       }
