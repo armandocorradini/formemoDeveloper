@@ -558,7 +558,6 @@ Attivazione: \(triggerInfo)
 \(pipelineInfo.joined(separator: "\n"))
 ------------------
 """)
-                                    print("ℹ️ Sistema: 1 notifica per task (le altre verranno schedulate dopo)")
                                 }
                                 
                                 print("🔍 COLLISIONS ------------------")

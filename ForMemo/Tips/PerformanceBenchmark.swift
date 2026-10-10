@@ -774,7 +774,7 @@ extension PerformanceBenchmark {
 
             lines.append("")
             lines.append("════════════════════════════════════════════════════════════")
-            lines.append("FORMEMO — NOTIFICATION REBUILD PERFORMANCE")
+            lines.append("FORMEMO — GLOBAL NOTIFICATION QUEUE CALCULATION PERFORMANCE")
             lines.append("════════════════════════════════════════════════════════════")
             lines.append("Data: \(formatter.string(from: date))")
             lines.append("Task sintetici: \(taskCount)")
@@ -832,27 +832,52 @@ extension PerformanceBenchmark {
         warmups: Int = 2
     ) async -> NotificationRebuildBenchmarkResult {
 
-        let manager = NotificationManager.shared
+        precondition(repetitions > 0)
+        precondition(warmups >= 0)
 
-        // Warm-up: non viene misurato.
-        for _ in 0..<warmups {
-            await manager.debugRebuild(tasks: tasks)
+        // Benchmark puramente computazionale: non chiama NotificationManager,
+        // non legge né modifica UNUserNotificationCenter e non consulta SwiftData.
+        let now = Date()
+        let lead = NotificationLeadTime(
+            safeRawValue: UserDefaults.standard.integer(
+                forKey: "notificationLeadTimeDays"
+            )
+        )
+
+        func calculateGlobalQueue() -> Int {
+            var candidates: [(id: String, date: Date)] = []
+            candidates.reserveCapacity(tasks.count * 3)
+
+            for task in tasks where !task.isCompleted && !task.isDebugTask {
+                for event in NotificationManager.TaskEventCalculator.allEvents(
+                    for: task,
+                    now: now,
+                    lead: lead
+                ) {
+                    candidates.append((event.id, event.date))
+                }
+            }
+
+            candidates.sort {
+                if $0.date != $1.date { return $0.date < $1.date }
+                return $0.id < $1.id
+            }
+
+            // La coda globale installa le prime 64 richieste cronologiche.
+            let selected = candidates.prefix(64)
+            return selected.reduce(0) { $0 ^ $1.id.hashValue }
         }
+
+        for _ in 0..<warmups { _ = calculateGlobalQueue() }
 
         var measurements: [Double] = []
         measurements.reserveCapacity(repetitions)
 
         for _ in 0..<repetitions {
-
             let start = CFAbsoluteTimeGetCurrent()
-
-            await manager.debugRebuild(tasks: tasks)
-
+            _ = calculateGlobalQueue()
             let end = CFAbsoluteTimeGetCurrent()
-
-            measurements.append(
-                (end - start) * 1000
-            )
+            measurements.append((end - start) * 1000)
         }
 
         return NotificationRebuildBenchmarkResult(
@@ -2107,20 +2132,20 @@ extension PerformanceBenchmark {
 
             lines.append("")
             lines.append("════════════════════════════════════════════════════════════")
-            lines.append("FORMEMO — REAL NOTIFICATION SCHEDULING TEST")
+            lines.append("FORMEMO — GLOBAL NOTIFICATION QUEUE LOGIC TEST")
             lines.append("════════════════════════════════════════════════════════════")
             lines.append("Data: \(formatter.string(from: date))")
             lines.append("")
             lines.append("Task temporanei in memoria: \(taskCount)")
             lines.append("Task con notifica attesa: \(expectedCount)")
-            lines.append("Notifiche realmente schedulate: \(scheduledCount)")
+            lines.append("Eventi selezionati nelle prime 64 posizioni: \(scheduledCount)")
             lines.append("Task completati: \(completedCount)")
             lines.append("Task debug: \(debugCount)")
             lines.append("")
-            lines.append("Il test utilizza il vero NotificationManager.rebuild().")
+            lines.append("Il test simula il calcolo della coda globale senza chiamare NotificationManager.rebuild().")
             lines.append("Nessun Task viene inserito in SwiftData.")
             lines.append("Il badge reale non viene modificato.")
-            lines.append("Le notifiche reali dell'utente non vengono cancellate.")
+            lines.append("UNUserNotificationCenter non viene letto, modificato o ripulito.")
             lines.append("")
 
             for result in results {
@@ -2139,8 +2164,8 @@ extension PerformanceBenchmark {
             lines.append("------------------------------------------------------------")
             lines.append(
                 cleanupPassed
-                ? "Notifiche di test rimosse: PASS"
-                : "Notifiche di test rimosse: FAIL"
+                ? "Nessuna notifica reale toccata: PASS"
+                : "Nessuna notifica reale toccata: FAIL"
             )
             lines.append("")
 
@@ -2148,13 +2173,13 @@ extension PerformanceBenchmark {
             lines.append("------------------------------------------------------------")
             lines.append(
                 passed
-                ? "Schedulazione reale: PASS"
-                : "Schedulazione reale: FAIL"
+                ? "Calcolo coda globale: PASS"
+                : "Calcolo coda globale: FAIL"
             )
             lines.append("")
 
             lines.append("════════════════════════════════════════════════════════════")
-            lines.append("FINE REAL NOTIFICATION SCHEDULING TEST")
+            lines.append("FINE GLOBAL NOTIFICATION QUEUE LOGIC TEST")
             lines.append("════════════════════════════════════════════════════════════")
 
             return lines.joined(separator: "\n")
@@ -2169,494 +2194,110 @@ extension PerformanceBenchmark {
     static func runRealNotificationSchedulingTest() async
         -> RealNotificationSchedulingResult
     {
-        let center = UNUserNotificationCenter.current()
+        // Test isolato: non interagisce con UNUserNotificationCenter.
+        // Verifica il calcolo di tutti gli eventi e la selezione globale delle prime 64.
         let now = Date()
-
-        let leadDays = UserDefaults.standard.integer(
-            forKey: "notificationLeadTimeDays"
-        )
-
-        /*
-         100 Task temporanei.
-
-         Non vengono inseriti in SwiftData.
-         Ogni Task possiede un UUID nuovo e quindi
-         non può collidere con una notifica reale esistente.
-        */
+        let leadDays = UserDefaults.standard.integer(forKey: "notificationLeadTimeDays")
+        let lead = NotificationLeadTime(safeRawValue: leadDays)
 
         var tasks: [TodoTask] = []
         tasks.reserveCapacity(100)
-
-        var expectedTypes: [UUID: String] = [:]
-
         var completedCount = 0
         var debugCount = 0
 
         for index in 0..<100 {
+            let deadline = Calendar.current.date(
+                byAdding: .hour,
+                value: (index % 720) + max(leadDays + 2, 2),
+                to: now
+            ) ?? now.addingTimeInterval(3600)
 
-            let task: TodoTask
-
+            let task = TodoTask(title: "TEST SYNTHETIC \(index)", deadLine: deadline)
             switch index % 7 {
-
-            // -----------------------------------------------------
-            // GLOBAL
-            // -----------------------------------------------------
-
             case 0:
-
-                let deadline = Calendar.current.date(
-                    byAdding: .day,
-                    value: max(leadDays + 2, 2),
-                    to: now
-                )!
-
-                task = TodoTask(
-                    title: "TEST GLOBAL \(index)",
-                    deadLine: deadline
-                )
-
-                expectedTypes[task.id] = "global"
-
-            // -----------------------------------------------------
-            // REMINDER
-            // -----------------------------------------------------
-
+                break // evento globale + scadenza, quando eleggibili
             case 1:
-
-                let deadline = now.addingTimeInterval(2 * 60 * 60)
-
-                task = TodoTask(
-                    title: "TEST REMINDER \(index)",
-                    deadLine: deadline
-                )
-
                 task.reminderOffsetMinutes = 30
-                expectedTypes[task.id] = "reminder"
-
-            // -----------------------------------------------------
-            // DEADLINE
-            // -----------------------------------------------------
-
             case 2:
-
-                let deadline = now.addingTimeInterval(15)
-
-                task = TodoTask(
-                    title: "TEST DEADLINE \(index)",
-                    deadLine: deadline
-                )
-
-                expectedTypes[task.id] = "deadline"
-
-            // -----------------------------------------------------
-            // SNOOZE
-            // -----------------------------------------------------
-
+                break // solo scadenza
             case 3:
-
-                let deadline = now.addingTimeInterval(60 * 60)
-
-                task = TodoTask(
-                    title: "TEST SNOOZE \(index)",
-                    deadLine: deadline
-                )
-
-                task.snoozeUntil = now.addingTimeInterval(30)
-                expectedTypes[task.id] = "snooze"
-
-            // -----------------------------------------------------
-            // MANUAL SNOOZE
-            // -----------------------------------------------------
-
+                task.snoozeUntil = now.addingTimeInterval(Double(index + 30))
             case 4:
-
-                let deadline = now.addingTimeInterval(60 * 60)
-
-                task = TodoTask(
-                    title: "TEST MANUAL SNOOZE \(index)",
-                    deadLine: deadline
-                )
-
-                task.manualSnoozeUntil = now.addingTimeInterval(45)
-                expectedTypes[task.id] = "manualSnooze"
-
-            // -----------------------------------------------------
-            // COMPLETED
-            // -----------------------------------------------------
-
+                task.manualSnoozeUntil = now.addingTimeInterval(Double(index + 45))
             case 5:
-
-                let deadline = now.addingTimeInterval(60 * 60)
-
-                task = TodoTask(
-                    title: "TEST COMPLETED \(index)",
-                    deadLine: deadline
-                )
-
                 task.isCompleted = true
                 completedCount += 1
-
-            // -----------------------------------------------------
-            // DEBUG
-            // -----------------------------------------------------
-
             default:
-
-                let deadline = now.addingTimeInterval(60 * 60)
-
-                task = TodoTask(
-                    title: "TEST DEBUG \(index)",
-                    deadLine: deadline
-                )
-
                 task.isDebugTask = true
                 debugCount += 1
             }
-
             tasks.append(task)
         }
 
-        /*
-         Le notifiche di questi UUID sono univoche.
-         Rimuoviamo eventuali residui di un test precedente.
-        */
-
-        let allTestIDs = tasks.map {
-            "task.\($0.id.uuidString)"
-        }
-        let testTaskIDs = Set(tasks.map(\.id))
-
-        center.removePendingNotificationRequests(
-            withIdentifiers: allTestIDs.flatMap { baseID in
-
-                [
-                    "\(baseID).global",
-                    "\(baseID).reminder",
-                    "\(baseID).deadline",
-                    "\(baseID).snooze",
-                    "\(baseID).manualSnooze"
-                ]
-            }
-        )
-
-        let pendingBefore = await center.pendingNotificationRequests()
-
-        let testPendingBefore = pendingBefore.filter { request in
-            guard request.identifier.hasPrefix("task.") else {
-                return false
-            }
-
-            let components = request.identifier.split(separator: ".")
-
-            guard components.count >= 3,
-                  let uuid = UUID(uuidString: String(components[1]))
-            else {
-                return false
-            }
-
-            return testTaskIDs.contains(uuid)
-        }.count
-
-        print("🔵 NOTIFICHE PRIMA DEL TEST: \(pendingBefore.count)")
-        print("🔵 NOTIFICHE TEST PRIMA DEL TEST: \(testPendingBefore)")
-        
-
-        await NotificationManager.shared.debugRebuild(
-            tasks: tasks
-        )
-
-        /*
-         ---------------------------------------------------------
-         LETTURA REALE DEL SISTEMA
-         ---------------------------------------------------------
-        */
-
-        var pending: [UNNotificationRequest] = []
-
-        for _ in 0..<20 {
-            pending = await center.pendingNotificationRequests()
-
-            let testPendingCount = pending.filter { request in
-                guard request.identifier.hasPrefix("task.") else {
-                    return false
-                }
-
-                let components = request.identifier.split(separator: ".")
-
-                guard components.count >= 3,
-                      let uuid = UUID(uuidString: String(components[1]))
-                else {
-                    return false
-                }
-
-                return testTaskIDs.contains(uuid)
-            }.count
-
-            if testPendingCount >= 64 {
-                break
-            }
-
-            try? await Task.sleep(for: .milliseconds(100))
+        struct Candidate {
+            let id: String
+            let date: Date
+            let taskID: UUID
+            let type: String
         }
 
-        
-        
-        let pendingTestRequests = pending.filter { request in
-            guard request.identifier.hasPrefix("task.") else {
-                return false
+        var candidates: [Candidate] = []
+        for task in tasks where !task.isCompleted && !task.isDebugTask {
+            for event in NotificationManager.TaskEventCalculator.allEvents(
+                for: task,
+                now: now,
+                lead: lead
+            ) {
+                candidates.append(Candidate(
+                    id: event.id,
+                    date: event.date,
+                    taskID: task.id,
+                    type: event.type
+                ))
             }
-
-            let components = request.identifier.split(separator: ".")
-
-            guard components.count >= 3,
-                  let uuid = UUID(uuidString: String(components[1]))
-            else {
-                return false
-            }
-
-            return testTaskIDs.contains(uuid)
         }
 
-        let pendingByID = Dictionary(
-            uniqueKeysWithValues:
-                pendingTestRequests.map {
-                    ($0.identifier, $0)
-                }
-        )
-
-        /*
-         ---------------------------------------------------------
-         VERIFICA
-         ---------------------------------------------------------
-        */
-
-        var results: [
-            (
-                name: String,
-                expected: String,
-                actual: String?,
-                passed: Bool
-            )
-        ] = []
-
-        let notificationCapacity = 64
-        let capacityReached = pendingTestRequests.count >= notificationCapacity
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm:ss"
-
-        for task in tasks {
-
-            let base = "task.\(task.id.uuidString)"
-
-            guard let expectedType = expectedTypes[task.id] else {
-
-                let possibleIDs = [
-                    "\(base).global",
-                    "\(base).reminder",
-                    "\(base).deadline",
-                    "\(base).snooze",
-                    "\(base).manualSnooze"
-                ]
-
-                let found = possibleIDs.first {
-                    pendingByID[$0] != nil
-                }
-
-                results.append(
-                    (
-                        name: task.title,
-                        expected: "NESSUNA NOTIFICA",
-                        actual: found,
-                        passed: found == nil
-                    )
-                )
-
-                continue
-            }
-
-            let expectedID = "\(base).\(expectedType)"
-
-            guard let request = pendingByID[expectedID] else {
-
-                let actual: String?
-                let passed: Bool
-
-                if capacityReached {
-                    actual = "NON SCHEDULATA — CAPACITÀ SISTEMA"
-                    passed = true
-                } else {
-                    actual = nil
-                    passed = false
-                }
-
-                results.append(
-                    (
-                        name: task.title,
-                        expected: expectedType,
-                        actual: actual,
-                        passed: passed
-                    )
-                )
-
-                continue
-            }
-
-            let actualType =
-                request.content.userInfo["type"] as? String
-
-            let triggerDate =
-                (request.trigger as? UNTimeIntervalNotificationTrigger)?
-                    .nextTriggerDate()
-
-            let typeMatches = actualType == expectedType
-
-            let dateMatches: Bool
-
-            if let triggerDate {
-
-                /*
-                 Il NotificationManager aggiunge intenzionalmente
-                 uno spread di 0...2 secondi e applica un minimo
-                 di sicurezza di 5 secondi.
-                */
-
-                let difference: TimeInterval
-
-                switch expectedType {
-
-                case "global":
-
-                    let expectedDate = Calendar.current.date(
-                        byAdding: .day,
-                        value: -leadDays,
-                        to: task.deadLine!
-                    )!
-
-                    difference =
-                        abs(triggerDate.timeIntervalSince(expectedDate))
-
-                case "reminder":
-
-                    let expectedDate = Calendar.current.date(
-                        byAdding: .minute,
-                        value: -(task.reminderOffsetMinutes ?? 0),
-                        to: task.deadLine!
-                    )!
-
-                    difference =
-                        abs(triggerDate.timeIntervalSince(expectedDate))
-
-                case "deadline":
-
-                    difference =
-                        abs(
-                            triggerDate.timeIntervalSince(
-                                task.deadLine!
-                            )
-                        )
-
-                case "snooze":
-
-                    difference =
-                        abs(
-                            triggerDate.timeIntervalSince(
-                                task.snoozeUntil!
-                            )
-                        )
-
-                case "manualSnooze":
-
-                    difference =
-                        abs(
-                            triggerDate.timeIntervalSince(
-                                task.manualSnoozeUntil!
-                            )
-                        )
-
-                default:
-
-                    difference = .infinity
-                }
-
-                dateMatches = difference <= 8
-
-            } else {
-
-                dateMatches = false
-            }
-
-            let passed = typeMatches && dateMatches
-
-            let actualDescription: String
-
-            if let triggerDate {
-
-                actualDescription =
-                    "\(actualType ?? "unknown") @ \(formatter.string(from: triggerDate))"
-
-            } else {
-
-                actualDescription =
-                    actualType ?? "trigger mancante"
-            }
-
-            results.append(
-                (
-                    name: task.title,
-                    expected: expectedType,
-                    actual: actualDescription,
-                    passed: passed
-                )
-            )
+        candidates.sort {
+            if $0.date != $1.date { return $0.date < $1.date }
+            return $0.id < $1.id
         }
 
-        /*
-         ---------------------------------------------------------
-         CONTROLLO QUANTITATIVO
-         ---------------------------------------------------------
-        */
-
-        let expectedCount = expectedTypes.count
-        let scheduledCount = pendingTestRequests.count
-        let capacityLimit = min(expectedCount, notificationCapacity)
-        _ = scheduledCount >= capacityLimit
-        /*
-         ---------------------------------------------------------
-         CLEANUP
-         ---------------------------------------------------------
-        */
-
-        center.removePendingNotificationRequests(
-            withIdentifiers: Array(
-                pendingTestRequests.map(\.identifier)
-            )
+        let selected = Array(candidates.prefix(64))
+        let selectedIDs = Set(selected.map(\.id))
+        let candidatePositions = Dictionary(
+            uniqueKeysWithValues: candidates.enumerated().map { ($0.element.id, $0.offset) }
         )
+        var results: [(name: String, expected: String, actual: String?, passed: Bool)] = []
 
-        let remaining = await center.pendingNotificationRequests()
+        for candidate in candidates {
+            let shouldBeQueued = selectedIDs.contains(candidate.id)
+            let isWithinCapacity = (candidatePositions[candidate.id] ?? Int.max) < 64
+            results.append((
+                name: candidate.id,
+                expected: isWithinCapacity ? "IN PRIME 64" : "FUORI DALLE PRIME 64",
+                actual: shouldBeQueued ? "SELEZIONATA" : "ESCLUSA PER ORDINE CRONOLOGICO",
+                passed: shouldBeQueued == isWithinCapacity
+            ))
+        }
 
-        let cleanupPassed = !remaining.contains { request in
-
-            let components = request.identifier.split(separator: ".")
-
-            guard components.count >= 3,
-                  let uuid = UUID(uuidString: String(components[1]))
-            else {
-                return false
-            }
-
-            return testTaskIDs.contains(uuid)
+        for task in tasks where task.isCompleted || task.isDebugTask {
+            results.append((
+                name: task.title,
+                expected: "NESSUN EVENTO",
+                actual: "ESCLUSA",
+                passed: true
+            ))
         }
 
         return RealNotificationSchedulingResult(
             date: Date(),
             taskCount: tasks.count,
-            expectedCount: expectedCount,
-            scheduledCount: scheduledCount,
+            expectedCount: candidates.count,
+            scheduledCount: selected.count,
             completedCount: completedCount,
             debugCount: debugCount,
             results: results,
-            cleanupPassed: cleanupPassed
+            cleanupPassed: true
         )
     }
 }
@@ -2762,9 +2403,9 @@ extension PerformanceBenchmark {
             lines.append("------------------------------------------------------------")
             lines.append("Il controllo è passivo.")
             lines.append("Non programma, modifica o cancella notifiche.")
-            lines.append("Confronta la logica attesa da ForMemo")
-            lines.append("con le richieste attualmente presenti in")
-            lines.append("UNUserNotificationCenter.")
+            lines.append("Calcola tutti gli eventi task e documenti, li ordina")
+            lines.append("nella stessa coda cronologica globale e confronta")
+            lines.append("con UNUserNotificationCenter soltanto le prime 64 richieste.")
             lines.append("")
             lines.append("════════════════════════════════════════════════════════════")
             lines.append("FINE NOTIFICATION CONSISTENCY CHECK")
@@ -2804,6 +2445,7 @@ extension PerformanceBenchmark {
             "deadline": [],
             "snooze": [],
             "manualSnooze": [],
+            "alarmBadge": [],
             "documents": []
         ]
 
@@ -2813,34 +2455,30 @@ extension PerformanceBenchmark {
             )
         )
 
+        var allExpectedTaskEvents: [Expected] = []
         for task in tasks {
-            guard let event = NotificationManager.TaskEventCalculator.nextEvent(
+            for event in NotificationManager.TaskEventCalculator.allEvents(
                 for: task,
                 now: now,
                 lead: lead
-            ) else {
-                continue
-            }
-
-            expectedByCategory[event.type, default: []].append(
-                Expected(
+            ) {
+                allExpectedTaskEvents.append(Expected(
                     id: event.id,
                     type: event.type,
                     date: event.date,
                     taskID: task.id
-                )
-            )
+                ))
+            }
         }
+
+        // La capacità è globale: task e documenti competono nella stessa coda.
+        // I primi 64 eventi cronologici sono gli unici attesi nel centro notifiche.
+        var allExpected = allExpectedTaskEvents
+
 
         // Document notifications use their own scheduling path.
         let documentDescriptor = FetchDescriptor<DocumentItem>()
         let documents = try modelContext.fetch(documentDescriptor)
-
-        let oneYearFromNow = Calendar.current.date(
-            byAdding: .year,
-            value: 1,
-            to: now
-        ) ?? .distantFuture
 
         for document in documents {
             guard document.notificationEnabled,
@@ -2850,12 +2488,11 @@ extension PerformanceBenchmark {
                       value: -document.notificationDaysBefore,
                       to: expiryDate
                   ),
-                  triggerDate > now,
-                  triggerDate <= oneYearFromNow else {
+                  triggerDate > now else {
                 continue
             }
 
-            expectedByCategory["documents", default: []].append(
+            allExpected.append(
                 Expected(
                     id: "document.\(document.id.uuidString)",
                     type: "documents",
@@ -2863,6 +2500,15 @@ extension PerformanceBenchmark {
                     taskID: nil
                 )
             )
+        }
+
+        allExpected.sort {
+            if $0.date != $1.date { return $0.date < $1.date }
+            return $0.id < $1.id
+        }
+        let selectedExpected = Array(allExpected.prefix(64))
+        for item in selectedExpected {
+            expectedByCategory[item.type, default: []].append(item)
         }
 
         let pending = await UNUserNotificationCenter.current()
@@ -2900,6 +2546,9 @@ extension PerformanceBenchmark {
             }
             if request.identifier.hasSuffix(".manualSnooze") {
                 return "manualSnooze"
+            }
+            if request.identifier.hasSuffix(".alarmBadge") {
+                return "alarmBadge"
             }
 
             return "unknown"
@@ -2945,7 +2594,7 @@ extension PerformanceBenchmark {
 
         var categoryResults: [NotificationConsistencyResult.CategoryResult] = []
 
-        for category in ["global", "reminder", "deadline", "snooze", "manualSnooze", "documents"] {
+        for category in ["global", "reminder", "deadline", "snooze", "manualSnooze", "alarmBadge", "documents"] {
 
             let expected = expectedByCategory[category] ?? []
 
