@@ -64,6 +64,10 @@ struct SettingsView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var soundPickerContext: SoundPickerContext?
     @State private var showDisclaimer = false
+
+    private var privacyPolicyURL: URL? {
+        URL(string: "https://armandocorradini.github.io/formemo/privacy.html")
+    }
     
     @State private var showOpenSourceLicenses = false
     
@@ -130,6 +134,19 @@ struct SettingsView: View {
                         }
                         .sheet(isPresented: $showDisclaimer) {
                             DisclaimerView()
+                        }
+
+                        if let privacyPolicyURL {
+                            Link(destination: privacyPolicyURL) {
+                                Label {
+                                    Text("Privacy Policy")
+                                        .tint(.primary)
+                                } icon: {
+                                    Image(systemName: "hand.raised")
+                                        .foregroundStyle(.blue)
+                                        .frame(width: iconWidth)
+                                }
+                            }
                         }
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))

@@ -230,11 +230,19 @@ func deleteRecurringTaskAndFutureOccurrences(
         operation: "DeleteRecurringTaskAndFutureOccurrences.sharedAttachments"
     )
 
-    let remainingTasks = (try? context.fetch(FetchDescriptor<TodoTask>())) ?? []
+    do {
+        let remainingTasks = try context.fetch(FetchDescriptor<TodoTask>())
 
-    await ForMemoAlarmManager.shared.removeOrphanedAlarms(
-        tasks: remainingTasks
-    )
+        await ForMemoAlarmManager.shared.removeOrphanedAlarms(
+            tasks: remainingTasks
+        )
+    } catch {
+        // Do not run orphan cleanup with an empty fallback list: a fetch failure
+        // must not be interpreted as proof that every AlarmKit alarm is orphaned.
+        AppLogger.notifications.error(
+            "AlarmKit cleanup after recurring-task deletion skipped because task fetch failed: \(error.localizedDescription)"
+        )
+    }
 
     NotificationManager.shared.refresh()
 }

@@ -250,9 +250,15 @@ final class ForMemoAlarmManager {
     }
 
     func cancelAlarmIfNeeded(id: UUID) {
-        Task {
-            try? await cancelAlarm(id: id)
-            logScheduledAlarmsCount()
+        Task { @MainActor in
+            do {
+                try await cancelAlarm(id: id)
+                logScheduledAlarmsCount()
+            } catch {
+                AppLogger.notifications.error(
+                    "AlarmKit cancellation failed for task \(id.uuidString): \(error.localizedDescription)"
+                )
+            }
         }
     }
 
@@ -321,12 +327,23 @@ final class ForMemoAlarmManager {
         
         do {
             let scheduledAlarms = try alarmManager.alarms
-            let validTaskIDs = Set(tasks.map(\.id))
+            let referenceDate = Date.now
+            let eligibleTaskIDs = Set(
+                tasks.compactMap { task -> UUID? in
+                    guard task.alarmEnabled,
+                          !task.isCompleted,
+                          let deadline = task.deadLine,
+                          deadline > referenceDate else {
+                        return nil
+                    }
+                    return task.id
+                }
+            )
 
             var removedCount = 0
 
             for alarm in scheduledAlarms {
-                guard !validTaskIDs.contains(alarm.id) else {
+                guard !eligibleTaskIDs.contains(alarm.id) else {
                     continue
                 }
 
@@ -370,19 +387,26 @@ final class ForMemoAlarmManager {
                 return
             }
 
-            let descriptor = FetchDescriptor<TodoTask>(
-                predicate: #Predicate<TodoTask> {
-                    !$0.isCompleted
+            // A failed SwiftData fetch must never be interpreted as an empty task list,
+            // otherwise the cleanup could cancel every AlarmKit alarm.
+            let tasks = try context.fetch(FetchDescriptor<TodoTask>())
+            let referenceDate = Date.now
+            let eligibleTaskIDs = Set(
+                tasks.compactMap { task -> UUID? in
+                    guard task.alarmEnabled,
+                          !task.isCompleted,
+                          let deadline = task.deadLine,
+                          deadline > referenceDate else {
+                        return nil
+                    }
+                    return task.id
                 }
             )
-
-            let tasks = (try? context.fetch(descriptor)) ?? []
-            let validTaskIDs = Set(tasks.map(\.id))
 
             var removedCount = 0
 
             for alarm in scheduledAlarms {
-                guard !validTaskIDs.contains(alarm.id) else {
+                guard !eligibleTaskIDs.contains(alarm.id) else {
                     continue
                 }
 
