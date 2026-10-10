@@ -1214,7 +1214,7 @@ struct TaskDetailView: View {
         isMigratingLegacyRecurrence = true
 
         do {
-            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+            let createdOccurrences = try RecurrenceEngine.migrateLegacyRecurrence(
                 for: task,
                 futureCount: futureCount,
                 endDate: endDate,keepCurrentOccurrenceActive: keepCurrentOccurrenceActive,
@@ -1229,13 +1229,20 @@ struct TaskDetailView: View {
                 object: nil
             )
 
-            NotificationManager.shared.refresh(force: false)
+            // The migration bypasses saveTask(), so synchronize AlarmKit for
+            // the original task and every new occurrence. Then force and await
+            // the global notification rebuild so Global events are not lost
+            // when a non-forced refresh is throttled or already pending.
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(
+                    tasks: [task] + createdOccurrences
+                )
 
-            legacyRecurrenceTask = nil
-            isMigratingLegacyRecurrence = false
-            showingLegacyRecurrenceMigration = false
+                await NotificationManager.shared.refreshAndWait(force: true)
 
-            DispatchQueue.main.async {
+                legacyRecurrenceTask = nil
+                isMigratingLegacyRecurrence = false
+                showingLegacyRecurrenceMigration = false
                 dismiss()
             }
 
@@ -1514,10 +1521,18 @@ struct TaskDetailView: View {
                     )
                 )
 
-                for occurrence in occurrences where
+                let futureOccurrencesToDelete = occurrences.filter { occurrence in
                     occurrence.id != task.id &&
-                    (occurrence.occurrenceIndex ?? 1) > currentIndex {
+                    (occurrence.occurrenceIndex ?? 1) > currentIndex
+                }
 
+                // Cancel AlarmKit entries before deleting their TodoTask records.
+                // Alarm IDs are the corresponding task IDs.
+                await ForMemoAlarmManager.shared.cancelAlarms(
+                    ids: futureOccurrencesToDelete.map(\.id)
+                )
+
+                for occurrence in futureOccurrencesToDelete {
                     RecurringAttachmentManager.prepareLinksBeforeTaskDeletion(
                         occurrence,
                         preserveAnchors: false,

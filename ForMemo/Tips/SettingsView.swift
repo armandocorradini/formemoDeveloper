@@ -866,6 +866,11 @@ Attivazione: \(triggerInfo)
                         } label: {
                             Label("Performance Benchmark", systemImage: "speedometer")
                         }
+                        NavigationLink {
+                            DebugDiagnosticsView()
+                        } label: {
+                            Label("Diagnostica e test automatici", systemImage: "stethoscope")
+                        }
                         
                         Button(role: .destructive) {
                             DebugTools.resetPreferences()

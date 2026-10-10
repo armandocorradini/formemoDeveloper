@@ -110,6 +110,12 @@ enum TaskRescheduler {
         do {
             try modelContext.save()
             modelContext.processPendingChanges()
+
+            // Keep the AlarmKit alarm aligned with the updated deadline.
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+            }
+
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
             NotificationCenter.default.post(name: .attachmentsShouldRefresh, object: nil)
             NotificationManager.shared.refresh(force: true)

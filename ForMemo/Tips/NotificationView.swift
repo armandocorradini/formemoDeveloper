@@ -13,6 +13,7 @@ struct PendingNotificationInfo: Identifiable {
     let categoryIdentifier: String
     let taskID: UUID?
     let deadlineDate: Date?
+    let alarmEnabled: Bool
     
     var notificationType: String {
         let lower = identifier.lowercased()
@@ -438,7 +439,8 @@ struct NotificationView: View {
                     request.content.categoryIdentifier,
                 taskID: taskID,
                 deadlineDate:
-                    matchingDocument?.expiryDate ?? matchingTask?.deadLine
+                    matchingDocument?.expiryDate ?? matchingTask?.deadLine,
+                alarmEnabled: matchingTask?.alarmEnabled ?? false
             )
         }
         .sorted {
@@ -476,7 +478,8 @@ struct NotificationView: View {
                     identifier: "alarm.\(alarm.id.uuidString)",
                     categoryIdentifier: "ALARM",
                     taskID: task.id,
-                    deadlineDate: deadline
+                    deadlineDate: deadline,
+                    alarmEnabled: true
                 )
             )
         }
@@ -548,6 +551,13 @@ private struct NotificationRow: View {
                         
                         Text(item.notificationEmoji)
                             .font(.title3)
+
+                        if item.alarmEnabled
+                            && item.identifier.lowercased().contains("alarm") {
+                            Text("⏰")
+                                .font(.title3)
+                                .accessibilityLabel(String(localized: "Alarm enabled"))
+                        }
                     }
                     
                     HStack(spacing: 4) {

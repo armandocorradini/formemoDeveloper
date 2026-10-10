@@ -13,8 +13,8 @@ final class NotificationManager: NSObject {
     
     private var lastTasksSignature: String = ""
     private var rebuildTask: Task<Void, Never>?
+    private var refreshGeneration: UInt64 = 0
     private var lastRebuild: Date = .distantPast
-    @MainActor
     private var pendingRefresh = false
   
     private var isAppLaunching = true
@@ -155,98 +155,98 @@ final class NotificationManager: NSObject {
         let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
         applyBadge(showBadge ? badge : 0)
 
-        // 🔥 Prevent overlapping rebuilds.
-        // A force refresh must invalidate the current rebuild.
-        if pendingRefresh {
+        // Prevent overlapping rebuilds. A forced refresh invalidates the previous
+        // generation; only the newest generation may release the pending flag.
+        if pendingRefresh && !force { return }
+        let previousTask = rebuildTask
+        previousTask?.cancel()
 
-            if force {
-                rebuildTask?.cancel()
-                pendingRefresh = false
-            } else {
-                return
-            }
-        }
-
+        refreshGeneration &+= 1
+        let generation = refreshGeneration
         pendingRefresh = true
 
-        rebuildTask?.cancel()
-
         rebuildTask = Task(priority: .utility) { [weak self] in
-
             guard let self else { return }
 
-            try? await Task.sleep(for: .milliseconds(force ? 150 : 400))
+            do {
+                try await Task.sleep(for: .milliseconds(force ? 150 : 400))
+            } catch {
+                // Cancellation is expected when a newer refresh supersedes this one.
+            }
 
-            guard !Task.isCancelled else {
+            // Serialize rebuilds: a previous UNUserNotificationCenter.add call may
+            // still be in flight when its task is cancelled. Wait for it to finish
+            // before taking the next pending-request snapshot.
+            await previousTask?.value
 
-                await MainActor.run {
+            guard !Task.isCancelled, generation == self.refreshGeneration else {
+                if generation == self.refreshGeneration {
                     self.pendingRefresh = false
                 }
-
                 return
             }
 
-            // --- MAIN ACTOR: fetch + signature ---
-            var tasks: [TodoTask] = []
-            var shouldRebuild = false
-
-            await MainActor.run {
-#if DEBUG
-                AppLogger.notifications.debug("Optimized refresh")
-#endif
-
-                guard let context = self.modelContainer?.mainContext else {
-                    return
-                }
-
-                let tSecondFetch = ContinuousClock.now
-
-                let fetched = self.fetchNotificationTasks(using: context)
-
-                AppLogger.notifications.debug(
-                    "⏱️ REFRESH notification fetch: \(ContinuousClock.now - tSecondFetch)"
-                )
-
-                let tSignature = ContinuousClock.now
-
-                let signature = self.signature(for: fetched)
-
-                AppLogger.notifications.debug(
-                    "⏱️ REFRESH signature: \(ContinuousClock.now - tSignature)"
-                )
-
-                if !force && signature == self.lastTasksSignature {
+            guard let context = self.modelContainer?.mainContext else {
+                if generation == self.refreshGeneration {
                     self.pendingRefresh = false
-                    return
                 }
-
-                self.lastTasksSignature = signature
-                tasks = fetched
-                shouldRebuild = true
+                return
             }
 
-            // --- Notification rebuild ---
-            if shouldRebuild {
+#if DEBUG
+            AppLogger.notifications.debug("Optimized refresh")
+#endif
+            let tSecondFetch = ContinuousClock.now
+            let fetched = self.fetchNotificationTasks(using: context)
+            AppLogger.notifications.debug(
+                "⏱️ REFRESH notification fetch: \(ContinuousClock.now - tSecondFetch)"
+            )
 
-                await self.rebuild(tasks)
+            let tSignature = ContinuousClock.now
+            let signature = self.signature(for: fetched)
+            AppLogger.notifications.debug(
+                "⏱️ REFRESH signature: \(ContinuousClock.now - tSignature)"
+            )
 
+            guard !Task.isCancelled, generation == self.refreshGeneration else {
+                if generation == self.refreshGeneration {
+                    self.pendingRefresh = false
+                }
+                return
             }
 
-            // --- CLEANUP ---
-            await MainActor.run {
+            if !force && signature == self.lastTasksSignature {
+                self.pendingRefresh = false
+                self.lastRebuild = Date()
+                return
+            }
+
+            self.lastTasksSignature = signature
+            await self.rebuild(fetched, expectedGeneration: generation)
+
+            // A superseded task must never clear the state of its replacement.
+            if generation == self.refreshGeneration {
                 self.pendingRefresh = false
                 self.lastRebuild = Date()
             }
         }
     }
-    
+
     func refreshAndWait(force: Bool = false) async {
         refresh(force: force)
 
-        let task = rebuildTask
-        await task?.value
+        // A forced refresh may supersede the task we're currently awaiting.
+        // Wait until the latest generation has completed.
+        while true {
+            let generation = refreshGeneration
+            let task = rebuildTask
+            await task?.value
+            if generation == refreshGeneration && !pendingRefresh {
+                return
+            }
+        }
     }
-    
+
     func forceFullRefresh(using context: ModelContext) {
         refresh(force: true)
     }
@@ -539,7 +539,8 @@ func refreshFromCloudKit() {
     private func rebuild(
         _ tasks: [TodoTask],
         cleanupStale: Bool = true,
-        syncBadge: Bool = true
+        syncBadge: Bool = true,
+        expectedGeneration: UInt64? = nil
     ) async {
         let rebuildStart = Date()
         let center = UNUserNotificationCenter.current()
@@ -633,11 +634,13 @@ func refreshFromCloudKit() {
         let selectedIDs = Set(selected.map(\.id))
 
         guard rebuildStart >= self.lastRebuild else { return }
+        guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return }
 
         // Synchronize removals before additions.
         // This is important when the notification queue changes substantially
         // after a recurrence is created, migrated, changed, completed or deleted.
         if cleanupStale {
+            guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return }
             let managedPrefixes = ["task.", "document."]
             let staleIDs = existing.keys.filter { id in
                 managedPrefixes.contains(where: { id.hasPrefix($0) }) &&
@@ -656,6 +659,8 @@ func refreshFromCloudKit() {
         }
 
         for item in selected {
+            guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return }
+            guard !Task.isCancelled || expectedGeneration == nil else { return }
             let trigger = calendarTrigger(for: item.date)
 
             if let old = existing[item.id],
@@ -689,6 +694,7 @@ func refreshFromCloudKit() {
                 )
 #endif
             }
+            guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return }
         }
 
         if syncBadge {
