@@ -148,7 +148,7 @@ struct NewTaskSheetView: View {
     
     @State private var validationMessage: String? = nil
     
-    // Recurrence generation confirmation (>150 future occurrences)
+    // Centralized confirmation threshold: 0 asks whenever at least one future occurrence will be generated.
     @State private var recurrenceGenerationConfirmation = false
     @State private var recurrenceGenerationCreateCount = 0
     @State private var recurrenceGenerationWasCapped = false
@@ -408,7 +408,7 @@ struct NewTaskSheetView: View {
                     }
                 } message: {
                     if recurrenceGenerationWasCapped {
-                        Text("This recurrence requires more than 2,000 tasks. Only the first 2,000 tasks will be created.")
+                        Text("This recurrence requires more than \(RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation) future occurrences. Only the first \(RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation) future occurrences will be created in this operation.")
                     } else {
                         Text("This recurrence will create \(recurrenceGenerationCreateCount + 1) tasks.")
                     }
@@ -696,19 +696,13 @@ struct NewTaskSheetView: View {
                             
                         } else {
                             
-                            Stepper(
-                                value: $recurrenceCount,
-                                in: 1...2_000
-                            ) {
-                                HStack {
-                                    Text(String(localized: "Total Occurrences"))
-                                    
-                                    Spacer()
-                                    
-                                    Text("\(recurrenceCount)")
-                                        .monospacedDigit()
-                                        .foregroundStyle(.secondary)
-                                }
+                            HStack {
+                                Text(String(localized: "Total Occurrences"))
+                                Spacer()
+                                AcceleratingStepper(
+                                    selection: $recurrenceCount,
+                                    range: 1...RecurrenceEngine.maximumGeneratedOccurrencesPerOperation
+                                )
                             }
                         }
                     }
@@ -962,7 +956,7 @@ struct NewTaskSheetView: View {
         // The first date is the task itself (#1).
         let futureCount = max(0, dates.count - 1)
         
-        guard futureCount > 150 else {
+        guard futureCount > RecurrenceGenerationConfiguration.confirmationThreshold else {
             await saveTask()
             dismiss()
             return

@@ -235,6 +235,8 @@ final class AppSettings {
         badgeMode = defaults.object(forKey: "badgeMode") as? Int ?? 1
         showAppBadge = defaults.object(forKey: "showAppBadge") as? Bool ?? true
         selectedTheme = AppTheme(rawValue: defaults.integer(forKey: "selectedTheme")) ?? .system
+        maximumOccurrencesPerOperation = RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation
+        confirmationThreshold = RecurrenceGenerationConfiguration.confirmationThreshold
         autoDeleteCompletedAttachments = defaults.object(forKey: "autoDeleteCompletedAttachments") as? Bool ?? true
         attachmentRetentionDays = defaults.object(forKey: "attachmentRetentionDays") as? Int ?? 30
         recentlyDeletedRetentionDays = defaults.object(forKey: "recentlyDeletedRetentionDays") as? Int ?? 30
@@ -606,6 +608,31 @@ final class AppSettings {
         }
     }
     
+    var maximumOccurrencesPerOperation: Int {
+        didSet {
+            let normalized = min(max(maximumOccurrencesPerOperation, 1), 2_000)
+            if maximumOccurrencesPerOperation != normalized {
+                maximumOccurrencesPerOperation = normalized
+                return
+            }
+            RecurrenceGenerationConfiguration.setMaximumOccurrencesPerOperation(normalized)
+            if confirmationThreshold > normalized {
+                confirmationThreshold = normalized
+            }
+        }
+    }
+
+    var confirmationThreshold: Int {
+        didSet {
+            let normalized = min(max(confirmationThreshold, 1), maximumOccurrencesPerOperation)
+            if confirmationThreshold != normalized {
+                confirmationThreshold = normalized
+                return
+            }
+            RecurrenceGenerationConfiguration.setConfirmationThreshold(normalized)
+        }
+    }
+
     var autoDeleteCompletedAttachments: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -726,6 +753,8 @@ final class AppSettings {
         badgeMode = 1
         showAppBadge = true
         selectedTheme = .system
+        maximumOccurrencesPerOperation = RecurrenceGenerationConfiguration.defaultMaximumOccurrencesPerOperation
+        confirmationThreshold = RecurrenceGenerationConfiguration.defaultConfirmationThreshold
         autoDeleteCompletedAttachments = true
         attachmentRetentionDays = 30
         recentlyDeletedRetentionDays = 30

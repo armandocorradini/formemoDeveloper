@@ -545,7 +545,7 @@ struct DebugDiagnosticsView: View {
             interval: 1,
             limit: .unlimited
         )
-        let expectedMaximum = RecurrenceEngine.maximumGeneratedTasks + 2
+        let expectedMaximum = RecurrenceEngine.maximumGeneratedOccurrencesPerOperation + 2
         guard !dates.isEmpty,
               dates.count <= expectedMaximum,
               zip(dates, dates.dropFirst()).allSatisfy({ $0.0 < $0.1 }) else {

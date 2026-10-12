@@ -197,7 +197,8 @@ struct TaskCalendarView: View {
                                             .year(.twoDigits)
                                     )
                                 )
-                                .foregroundStyle(.primary)
+                                .fontWeight(calendar.isDateInToday(selectedDate) ? .semibold : .regular)
+                                .foregroundStyle(calendar.isDateInToday(selectedDate) ? .blue : .primary)
                             }
                             .buttonStyle(.plain)
 
@@ -269,6 +270,13 @@ struct TaskCalendarView: View {
                     
                     DayTasksInlineView(
                         tasks: tasksForDay(selectedDate),
+                        onDaySwipe: changeSelectedDay,
+                        onCalendarSwipe: { shouldHideCalendar in
+                            guard !isLandscape else { return }
+                            withAnimation(.snappy(duration: 0.25)) {
+                                isCalendarHidden = shouldHideCalendar
+                            }
+                        },
                         onLegacyRecurrenceCompletion: { task in
                             legacyRecurrenceTask = task
                         }
@@ -475,6 +483,19 @@ struct TaskCalendarView: View {
             .presentationDetents([.medium])
         }
 
+    }
+
+    private func changeSelectedDay(by offset: Int) {
+        guard let newDate = calendar.date(byAdding: .day, value: offset, to: selectedDate) else {
+            return
+        }
+
+        withAnimation(.snappy(duration: 0.2)) {
+            selectedDate = newDate
+            displayedMonth = calendar.date(
+                from: calendar.dateComponents([.year, .month], from: newDate)
+            ) ?? newDate
+        }
     }
 
     private func prepareNewTask(on date: Date) {
@@ -1805,6 +1826,8 @@ private struct DayTasksInlineView: View {
     @State private var isDeletingRecurrence = false
 
     let tasks: [TodoTask]
+    let onDaySwipe: (Int) -> Void
+    let onCalendarSwipe: (Bool) -> Void
     let onLegacyRecurrenceCompletion: (TodoTask) -> Void
 
     private var uniqueTasks: [TodoTask] {
@@ -2111,7 +2134,7 @@ private struct DayTasksInlineView: View {
 
                     .listRowBackground(Color.clear)
 
-                    .swipeActions(edge: .leading) {
+                    .swipeActions( edge: .leading, allowsFullSwipe: false) {
 
                         Button {
 
@@ -2405,8 +2428,22 @@ private struct DayTasksInlineView: View {
 
             }
 
-            .contentMargins(.bottom,70, for:.scrollContent)
+            .contentMargins(.bottom, 90, for: .scrollContent)
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 60, coordinateSpace: .local)
+                    .onEnded { value in
+                        let horizontal = abs(value.translation.width)
+                        let vertical = abs(value.translation.height)
 
+                        if horizontal > 45 && horizontal > vertical {
+                            // Swipe left/right: navigate between days.
+                            onDaySwipe(value.translation.width < 0 ? 1 : -1)
+                        } else if vertical > 170 && vertical > horizontal * 2 {
+                            // Require a deliberate, predominantly vertical swipe to toggle the calendar.
+                            onCalendarSwipe(value.translation.height < 0)
+                        }
+                    }
+            )
             .listStyle(.plain)
 
             .scrollContentBackground(.hidden)

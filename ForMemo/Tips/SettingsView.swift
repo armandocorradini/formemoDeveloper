@@ -376,6 +376,35 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
+                    // MARK: - Recurring Tasks
+                    Section {
+                        Stepper(
+                            "Maximum occurrences: \(settings.maximumOccurrencesPerOperation)",
+                            value: Binding(
+                                get: { settings.maximumOccurrencesPerOperation },
+                                set: { settings.maximumOccurrencesPerOperation = $0 }
+                            ),
+                            in: 50...2_000,
+                            step: 50
+                        )
+
+                        Stepper(
+                            "Ask for confirmation above: \(settings.confirmationThreshold)",
+                            value: Binding(
+                                get: { settings.confirmationThreshold },
+                                set: { settings.confirmationThreshold = $0 }
+                            ),
+                            in: 10...settings.maximumOccurrencesPerOperation,
+                            step: 10
+                        )
+                        .disabled(settings.maximumOccurrencesPerOperation < 10)
+                    } header: {
+                        Text("Recurring Tasks")
+                    } footer: {
+                        Text("For a single operation, ForMemo creates up to the selected maximum number of future occurrences. It asks for confirmation when the operation exceeds the confirmation threshold.")
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+
                     // MARK: - Notifications
                     Section {
                         

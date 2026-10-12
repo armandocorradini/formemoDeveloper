@@ -1,5 +1,45 @@
 import SwiftUI
 
+/// Central configuration for recurring-task generation and its confirmation UI.
+/// Change these two values to adjust the per-operation cap and confirmation threshold
+/// throughout the app without changing the recurrence logic or messages individually.
+///
+enum RecurrenceGenerationConfiguration {
+    static let defaultMaximumOccurrencesPerOperation = 500
+    static let defaultConfirmationThreshold = 50
+
+    private static let maximumOccurrencesKey = "recurrence.maximumOccurrencesPerOperation"
+    private static let confirmationThresholdKey = "recurrence.confirmationThreshold"
+
+    static var maximumOccurrencesPerOperation: Int {
+        let storedValue = UserDefaults.standard.object(forKey: maximumOccurrencesKey) as? Int
+            ?? defaultMaximumOccurrencesPerOperation
+        return min(max(storedValue, 1), 2_000)
+    }
+
+    static var confirmationThreshold: Int {
+        let storedValue = UserDefaults.standard.object(forKey: confirmationThresholdKey) as? Int
+            ?? defaultConfirmationThreshold
+        return min(max(storedValue, 1), maximumOccurrencesPerOperation)
+    }
+
+    static func setMaximumOccurrencesPerOperation(_ value: Int) {
+        let maximum = min(max(value, 1), 2_000)
+        UserDefaults.standard.set(maximum, forKey: maximumOccurrencesKey)
+
+        let threshold = confirmationThreshold
+        if threshold > maximum {
+            UserDefaults.standard.set(maximum, forKey: confirmationThresholdKey)
+        }
+    }
+
+    static func setConfirmationThreshold(_ value: Int) {
+        let threshold = min(max(value, 1), maximumOccurrencesPerOperation)
+        UserDefaults.standard.set(threshold, forKey: confirmationThresholdKey)
+    }
+}
+
+
 let defaultBackColor1 = Color(uiColor: UIColor { trait in
     if trait.userInterfaceStyle == .dark {
         return UIColor(

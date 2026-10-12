@@ -4807,6 +4807,34 @@
         }
       }
     },
+    "Ask for confirmation above: %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bestätigung anfordern ab: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solicitar confirmación a partir de: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demander confirmation au-delà de : %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Richiedi conferma oltre: %lld"
+          }
+        }
+      }
+    },
     "Ask to Siri" : {
       "localizations" : {
         "de" : {
@@ -9142,6 +9170,34 @@
         }
       }
     },
+    "Choose an end date that includes at least one additional occurrence." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle ein Enddatum, das mindestens eine weitere Wiederholung einschließt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige una fecha de finalización que incluya al menos una ocurrencia adicional."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez une date de fin qui inclut au moins une occurrence supplémentaire."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli una data di fine che includa almeno un’altra occorrenza."
+          }
+        }
+      }
+    },
     "Choose Every Time" : {
       "localizations" : {
         "de" : {
@@ -12347,6 +12403,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scadenza: %@"
+          }
+        }
+      }
+    },
+    "Decrease occurrences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anzahl der Wiederholungen verringern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reducir el número de repeticiones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diminuer le nombre d’occurrences"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riduci il numero di occorrenze"
           }
         }
       }
@@ -16269,6 +16353,34 @@
         }
       }
     },
+    "Extend series?" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serie verlängern?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Ampliar la serie?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prolonger la série ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estendere la serie?"
+          }
+        }
+      }
+    },
     "Extending series…" : {
       "localizations" : {
         "de" : {
@@ -16293,6 +16405,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estensione della serie…"
+          }
+        }
+      }
+    },
+    "Extension method" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Methode zur Verlängerung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Método de ampliación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Méthode de prolongation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metodo di estensione"
           }
         }
       }
@@ -16993,6 +17133,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scorte alimentari"
+          }
+        }
+      }
+    },
+    "For a single operation, ForMemo creates up to the selected maximum number of future occurrences. It asks for confirmation when the operation exceeds the confirmation threshold." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei einem einzelnen Vorgang erstellt ForMemo bis zu der ausgewählten maximalen Anzahl zukünftiger Wiederholungen. Wird der Bestätigungsschwellenwert überschritten, wird eine Bestätigung angefordert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En una sola operación, ForMemo crea hasta el número máximo seleccionado de ocurrencias futuras. Solicita confirmación cuando la operación supera el umbral establecido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demander confirmation au-delà de : %lld\nPour une seule opération, ForMemo crée jusqu’au nombre maximal d’occurrences futures sélectionné. Une confirmation est demandée lorsque l’opération dépasse le seuil défini."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In una singola operazione, ForMemo crea fino al numero massimo selezionato di occorrenze future. Richiede una conferma quando l’operazione supera la soglia impostata."
           }
         }
       }
@@ -20109,6 +20277,34 @@
         }
       }
     },
+    "Increase occurrences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anzahl der Wiederholungen erhöhen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aumentar el número de repeticiones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Augmenter le nombre d’occurrences"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aumenta il numero di occorrenze"
+          }
+        }
+      }
+    },
     "Independent from iCloud Sync" : {
       "localizations" : {
         "de" : {
@@ -21901,6 +22097,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Materiale"
+          }
+        }
+      }
+    },
+    "Maximum occurrences: %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximale Anzahl an Wiederholungen: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número máximo de ocurrencias: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre maximal d’occurrences : %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Numero massimo di occorrenze: %lld"
           }
         }
       }
@@ -24623,6 +24847,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Occorrenze"
+          }
+        }
+      }
+    },
+    "Occurrences will be generated through the selected date. If more than %lld are required, you can choose to create the first %lld." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederholungen werden bis zum ausgewählten Datum erstellt.\nWenn mehr als %Ild Wiederholungen erforderlich sind, können Sie festlegen, dass nur die ersten %lld erstellt werden."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Occurrences will be generated through the selected date. If more than %1$lld are required, you can choose to create the first %2$lld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las ocurrencias se generarán hasta la fecha seleccionada.\nSi se necesitan más de %Ild ocurrencias, puedes elegir crear solo las primeras %lld."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les occurrences seront générées jusqu’à la date sélectionnée.\nSi plus de %Ild occurrences sont nécessaires, vous pouvez choisir de créer les %lld premières."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le occorrenze verranno generate fino alla data selezionata.\nSe sono necessarie più di %Ild occorrenze, puoi scegliere di creare solo le prime %lld."
           }
         }
       }
@@ -36210,70 +36468,70 @@
         }
       }
     },
-    "The new recurrence requires %lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %lld occurrences, up to the maximum limit of 2.000." : {
+    "The new recurrence requires %lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %lld occurrences, up to the maximum limit of %lld." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nouvelle récurrence nécessite %lld occurrences futures.\nLes occurrences futures actuellement programmées seront supprimées et remplacées par les %lld premières occurrences, dans la limite maximale de 2.000."
+            "value" : "Für die neuen Wiederholungen sind %lld zukünftige Wiederholungen erforderlich.\nDie derzeit geplanten zukünftigen Wiederholungen werden gelöscht und durch die ersten %lld Wiederholungen ersetzt, bis zur Höchstgrenze von %lld."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "The new recurrence requires %1$lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %2$lld occurrences, up to the maximum limit of 2.000."
+            "value" : "The new recurrence requires %1$lld future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first %2$lld occurrences, up to the maximum limit of %3$lld."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nueva recurrencia requiere %lld ocurrencias futuras.\nLas ocurrencias futuras actualmente programadas se eliminarán y sustituirán por las primeras %lldocurrencias, hasta el límite máximo de 2.000."
+            "value" : "La nueva recurrencia requiere %lld ocurrencias futuras.\nLas ocurrencias futuras programadas actualmente se eliminarán y se sustituirán por las primeras %lld ocurrencias, hasta el límite máximo de %lld."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nouvelle récurrence nécessite %lld occurrences futures. Les occurrences futures actuellement programmées seront supprimées et remplacées par les %lld premières occurrences, dans la limite maximale de 2.000."
+            "value" : "La nouvelle récurrence nécessite %lld occurrences futures.\nLes occurrences futures actuellement planifiées seront supprimées et remplacées par les %lld premières occurrences, dans la limite maximale de %lld."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nuova ricorrenza richiede %lld occorrenze future.\nLe occorrenze future attualmente programmate verranno eliminate e sostituite dalle prime %lld occorrenze, fino al limite massimo di 2.000."
+            "value" : "La nuova ricorrenza richiede %lld occorrenze future.\nLe occorrenze future attualmente programmate verranno eliminate e sostituite dalle prime %lld occorrenze, fino al limite massimo di %lld."
           }
         }
       }
     },
-    "The new recurrence requires %lld future occurrences. The first %lld occurrences will be created, up to the maximum limit of 2,000." : {
+    "The new recurrence requires %lld future occurrences. The first %lld occurrences will be created, up to the maximum limit of %lld." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die neue Wiederholung erfordert %lld zukünftige Vorkommen. Die ersten %lld Vorkommen werden bis zum maximalen Limit von 2.000 erstellt."
+            "value" : "Für die neuen Wiederholungen sind %lld zukünftige Wiederholungen erforderlich.\nDie ersten %lld Wiederholungen werden erstellt, bis zur Höchstgrenze von %Ild."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "The new recurrence requires %1$lld future occurrences. The first %2$lld occurrences will be created, up to the maximum limit of 2,000."
+            "value" : "The new recurrence requires %1$lld future occurrences. The first %2$lld occurrences will be created, up to the maximum limit of %3$lld."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nueva recurrencia requiere %lld ocurrencias futuras. Se crearán las primeras %lld ocurrencias, hasta el límite máximo de 2.000."
+            "value" : "La nueva recurrencia requiere %lld ocurrencias futuras.\nSe crearán las primeras %lld ocurrencias, hasta el límite máximo de %Ild."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nouvelle récurrence nécessite %lld occurrences futures. Les %lld premières occurrences seront créées, jusqu’à la limite maximale de 2.000."
+            "value" : "La nouvelle récurrence nécessite %lld occurrences futures.\nLes %lld premières occurrences seront créées, dans la limite maximale de %Ild."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La nuova ricorrenza richiede %lld occorrenze future. Verranno create le prime %lld occorrenze, fino al limite massimo di 2.000."
+            "value" : "La nuova ricorrenza richiede %lld occorrenze future.\nVerranno create le prime %lld occorrenze, fino al limite massimo di %Ild."
           }
         }
       }
@@ -36470,6 +36728,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il segreto selezionato, inclusi etichetta e valore, verrà rimosso definitivamente da questa credenziale. Questa azione non può essere annullata."
+          }
+        }
+      }
+    },
+    "The series could not be extended. No changes were saved." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Serie konnte nicht verlängert werden. Es wurden keine Änderungen gespeichert."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido ampliar la serie. No se ha guardado ningún cambio.\n\n"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de prolonger la série. Aucune modification n’a été enregistrée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile estendere la serie. Non è stata salvata alcuna modifica."
           }
         }
       }
@@ -37022,6 +37308,68 @@
         }
       }
     },
+    "This extension requires more than %lld occurrences. Only the first %lld additional occurrences will be created." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für diese Erweiterung sind mehr als %Ild Wiederholungen erforderlich. Es werden nur die ersten %lld zusätzlichen Wiederholungen erstellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This extension requires more than %1$lld occurrences. Only the first %2$lld additional occurrences will be created."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta ampliación requiere más de %Ild ocurrencias. Solo se crearán las primeras %lld ocurrencias adicionales."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette extension nécessite plus de %Ild occurrences. Seules les %lld premières occurrences supplémentaires seront créées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa estensione richiede più di %Ild occorrenze. Verranno create solo le prime %lld occorrenze aggiuntive."
+          }
+        }
+      }
+    },
+    "This extension will create %lld additional occurrences." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Durch diese Verlängerung werden %lld zusätzliche Wiederholungen erstellt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta ampliación creará %lld ocurrencias adicionales."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette prolongation créera %lld occurrences supplémentaires."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa estensione creerà %lld occorrenze aggiuntive."
+          }
+        }
+      }
+    },
     "This feature applies only to tasks created with Siri. The app analyzes the task title using a multilingual keyword system. Each category has its own keywords, and the best match is applied automatically." : {
       "localizations" : {
         "de" : {
@@ -37220,30 +37568,36 @@
         }
       }
     },
-    "This recurrence requires more than 2,000 tasks. Only the first 2,000 tasks will be created." : {
+    "This recurrence requires more than %lld future occurrences. Only the first %lld future occurrences will be created in this operation." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diese Wiederholung erfordert mehr als 2.000 Aufgaben. Es werden nur die ersten 2.000 Aufgaben erstellt."
+            "value" : "Für diese Wiederholung sind mehr als %lld zukünftige Wiederholungen erforderlich. Bei diesem Vorgang werden nur die ersten %lld zukünftigen Wiederholungen erstellt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This recurrence requires more than %1$lld future occurrences. Only the first %2$lld future occurrences will be created in this operation."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta recurrencia requiere más de 2.000 tareas. Solo se crearán las primeras 2.000 tareas."
+            "value" : "Esta recurrencia requiere más de %lld ocurrencias futuras. En esta operación solo se crearán las primeras %lld ocurrencias futuras."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette récurrence nécessite plus de 2.000 tâches. Seules les 2.000 premières tâches seront créées."
+            "value" : "Cette récurrence nécessite plus de %lld occurrences futures. Seules les %lld premières occurrences futures seront créées lors de cette opération."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa ricorrenza richiede più di 2.000 attività. Verranno create solo le prime 2.000 attività."
+            "value" : "Questa ricorrenza richiede più di %lld occorrenze future. In questa operazione verranno create solo le prime %lld occorrenze future."
           }
         }
       }

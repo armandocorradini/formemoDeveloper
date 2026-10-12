@@ -59,26 +59,63 @@ struct RecurrenceSeriesExtensionPresenter: ViewModifier {
 }
 
 private struct RecurrenceSeriesExtensionSheet: View {
+    private enum ExtensionMode: String {
+        case count
+        case endDate
+    }
+
+    private enum ExtensionRequest {
+        case count(Int)
+        case endDate(Date)
+    }
+
+    private enum ActiveAlert: Identifiable {
+        case confirmation(additionalOccurrences: Int, capped: Bool)
+        case error(String)
+
+        var id: String {
+            switch self {
+            case .confirmation:
+                return "confirmation"
+            case .error(let message):
+                return "error-\(message)"
+            }
+        }
+    }
+
     let task: TodoTask
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
+    @State private var extensionMode: ExtensionMode = .count
     @State private var additionalOccurrences: Int
+    @State private var extensionEndDate: Date
+    @State private var pendingExtensionRequest: ExtensionRequest?
+    @State private var activeAlert: ActiveAlert?
     @State private var isExtending = false
-    @State private var errorMessage: String?
 
     private var maximumAdditionalOccurrences: Int {
-        max(1, RecurrenceEngine.maximumGeneratedTasks - (task.occurrenceIndex ?? 1))
+        RecurrenceEngine.maximumGeneratedFutureOccurrences
+    }
+
+    private var minimumExtensionEndDate: Date {
+        let nextDate = RecurrenceEngine.nextScheduledOccurrenceDate(after: task)
+            ?? task.deadLine
+            ?? .now
+        return Calendar.current.startOfDay(for: nextDate)
     }
 
     init(task: TodoTask) {
         self.task = task
         let currentIndex = max(1, task.occurrenceIndex ?? 1)
-        let available = max(1, RecurrenceEngine.maximumGeneratedTasks - currentIndex)
         _additionalOccurrences = State(
-            initialValue: min(currentIndex, available)
+            initialValue: min(currentIndex, RecurrenceEngine.maximumGeneratedFutureOccurrences)
         )
+        let firstAdditionalDate = RecurrenceEngine.nextScheduledOccurrenceDate(after: task)
+            ?? task.deadLine
+            ?? .now
+        _extensionEndDate = State(initialValue: firstAdditionalDate)
     }
 
     var body: some View {
@@ -91,14 +128,35 @@ private struct RecurrenceSeriesExtensionSheet: View {
                 }
 
                 Section("Continue this series") {
-                    Stepper(value: $additionalOccurrences, in: 1...maximumAdditionalOccurrences) {
+                    Picker("Extension method", selection: $extensionMode) {
+                        Text("Additional occurrences")
+                            .tag(ExtensionMode.count)
+                        Text("End date")
+                            .tag(ExtensionMode.endDate)
+                    }
+                    .pickerStyle(.segmented)
+
+                    switch extensionMode {
+                    case .count:
                         HStack {
                             Text("Additional occurrences")
                             Spacer()
-                            Text(additionalOccurrences.formatted())
-                                .monospacedDigit()
-                                .foregroundStyle(.secondary)
+                            AcceleratingStepper(
+                                selection: $additionalOccurrences,
+                                range: 1...maximumAdditionalOccurrences
+                            )
                         }
+
+                    case .endDate:
+                        DatePicker(
+                            "End date",
+                            selection: $extensionEndDate,
+                            in: minimumExtensionEndDate...,
+                            displayedComponents: .date
+                        )
+                        Text("Occurrences will be generated through the selected date. If more than \(RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation) are required, you can choose to create the first \(RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation).")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
                     }
 
                     Text("The recurrence rule and interval will be preserved. Past tasks and their completion status will remain unchanged.")
@@ -106,6 +164,7 @@ private struct RecurrenceSeriesExtensionSheet: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .contentMargins(.bottom, 70, for: .scrollContent)
             .navigationTitle("Series completed")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -114,7 +173,7 @@ private struct RecurrenceSeriesExtensionSheet: View {
                         .disabled(isExtending)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Extend") { extendSeries() }
+                    Button("Extend") { requestExtension() }
                         .disabled(isExtending)
                 }
             }
@@ -125,30 +184,117 @@ private struct RecurrenceSeriesExtensionSheet: View {
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
                 }
             }
-            .alert("Unable to extend series", isPresented: Binding(
-                get: { errorMessage != nil },
-                set: { if !$0 { errorMessage = nil } }
-            )) {
-                Button("OK", role: .cancel) { errorMessage = nil }
-            } message: {
-                Text(errorMessage ?? "The series could not be extended. No changes were saved.")
+            .alert(item: $activeAlert) { alert in
+                switch alert {
+                case .confirmation(let count, let capped):
+                    let message: Text = capped
+                        ? Text("This extension requires more than \(RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation) occurrences. Only the first \(RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation) additional occurrences will be created.")
+                        : Text("This extension will create \(count) additional occurrences.")
+
+                    return Alert(
+                        title: Text("Extend series?"),
+                        message: message,
+                        primaryButton: .default(Text("Extend"), action: performPendingExtension),
+                        secondaryButton: .cancel(Text("Cancel"), action: {
+                            pendingExtensionRequest = nil
+                        })
+                    )
+
+                case .error(let message):
+                    return Alert(
+                        title: Text("Unable to extend series"),
+                        message: Text(message),
+                        dismissButton: .default(Text("OK"), action: {
+                            activeAlert = nil
+                        })
+                    )
+                }
             }
         }
         .presentationDetents([.medium, .large])
     }
 
     @MainActor
-    private func extendSeries() {
+    private func requestExtension() {
         guard !isExtending else { return }
+
+        do {
+            let request: ExtensionRequest
+            let requestedCount: Int
+            let isCapped: Bool
+
+            switch extensionMode {
+            case .count:
+                request = .count(additionalOccurrences)
+                requestedCount = additionalOccurrences
+                isCapped = false
+
+            case .endDate:
+                let preview = try RecurrenceEngine.previewExtension(
+                    after: task,
+                    until: extensionEndDate,
+                    in: modelContext
+                )
+                request = .endDate(extensionEndDate)
+                requestedCount = preview.additionalOccurrences
+                isCapped = preview.exceedsOperationLimit
+            }
+
+            guard requestedCount > 0 else {
+                activeAlert = .error(
+                    String(localized: "Choose an end date that includes at least one additional occurrence.")
+                )
+                return
+            }
+
+            pendingExtensionRequest = request
+
+            // Match initial recurrence creation: ask before generating large
+            // batches, and make the cap explicit before any model mutation.
+            if requestedCount > RecurrenceGenerationConfiguration.confirmationThreshold || isCapped {
+                activeAlert = .confirmation(
+                    additionalOccurrences: min(requestedCount, maximumAdditionalOccurrences),
+                    capped: isCapped
+                )
+            } else {
+                performPendingExtension()
+            }
+        } catch let error as RecurrenceEngine.ExtensionError {
+            presentPreviewError(error)
+        } catch {
+            AppLogger.persistence.error(
+                "Recurrence extension preview failed: \(error.localizedDescription)"
+            )
+            activeAlert = .error(
+                String(localized: "The series could not be extended. No changes were saved.")
+            )
+        }
+    }
+
+    @MainActor
+    private func performPendingExtension() {
+        guard !isExtending, let request = pendingExtensionRequest else { return }
+        activeAlert = nil
         isExtending = true
 
         Task { @MainActor in
             do {
-                let createdOccurrences = try RecurrenceEngine.extendSeries(
-                    after: task,
-                    by: additionalOccurrences,
-                    in: modelContext
-                )
+                let createdOccurrences: [TodoTask]
+                switch request {
+                case .count(let count):
+                    createdOccurrences = try RecurrenceEngine.extendSeries(
+                        after: task,
+                        by: count,
+                        in: modelContext
+                    )
+
+                case .endDate(let endDate):
+                    createdOccurrences = try RecurrenceEngine.extendSeries(
+                        after: task,
+                        until: endDate,
+                        in: modelContext
+                    )
+                }
 
                 try modelContext.save()
                 modelContext.processPendingChanges()
@@ -163,16 +309,39 @@ private struct RecurrenceSeriesExtensionSheet: View {
                     object: nil
                 )
 
+                pendingExtensionRequest = nil
                 dismiss()
+            } catch let error as RecurrenceEngine.ExtensionError {
+                modelContext.rollback()
+                AppLogger.persistence.error(
+                    "Recurrence extension failed: \(String(describing: error))"
+                )
+                presentPreviewError(error)
             } catch {
                 modelContext.rollback()
                 AppLogger.persistence.error(
                     "Recurrence extension failed: \(error.localizedDescription)"
                 )
-                errorMessage = "The series could not be extended. No changes were saved."
+                activeAlert = .error(
+                    String(localized: "The series could not be extended. No changes were saved.")
+                )
             }
 
             isExtending = false
+        }
+    }
+
+    @MainActor
+    private func presentPreviewError(_ error: RecurrenceEngine.ExtensionError) {
+        switch error {
+        case .invalidExtension:
+            activeAlert = .error(
+                String(localized: "Choose an end date that includes at least one additional occurrence.")
+            )
+        case .invalidSeries, .notFinalOccurrence, .maximumReached:
+            activeAlert = .error(
+                String(localized: "The series could not be extended. No changes were saved.")
+            )
         }
     }
 }

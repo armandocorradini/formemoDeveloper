@@ -180,7 +180,7 @@ struct TaskDetailView: View {
         
         if let count = task.recurrenceCount {
             self._recurrenceLimitMode = State(initialValue: .count)
-            self._recurrenceCount = State(initialValue: min(max(count, 1), 2_000))
+            self._recurrenceCount = State(initialValue: min(max(count, 1), RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation))
             self._recurrenceEndDate = State(initialValue: task.recurrenceEndDate ?? .now)
         } else {
             self._recurrenceLimitMode = State(initialValue: .until)
@@ -212,6 +212,17 @@ struct TaskDetailView: View {
     }
     
     
+    private var recurrenceCountPicker: some View {
+        HStack {
+            Text(String(localized: "Total Occurrences"))
+            Spacer()
+            AcceleratingStepper(
+                selection: $recurrenceCount,
+                range: 1...RecurrenceEngine.maximumGeneratedOccurrencesPerOperation
+            )
+        }
+    }
+
     private var recurrenceSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 14) {
@@ -329,18 +340,7 @@ struct TaskDetailView: View {
                             )
                             .frame(maxWidth: .infinity)
                         } else {
-                            Stepper(
-                                value: $recurrenceCount,
-                                in: 1...2_000
-                            ) {
-                                HStack {
-                                    Text(String(localized: "Total Occurrences"))
-                                    Spacer()
-                                    Text("\(recurrenceCount)")
-                                        .monospacedDigit()
-                                        .foregroundStyle(.secondary)
-                                }
-                            }
+                            recurrenceCountPicker
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -366,7 +366,7 @@ struct TaskDetailView: View {
                     task.recurrenceEndDate = recurrenceEndDate
                 case .count:
                     task.recurrenceEndDate = nil
-                    task.recurrenceCount = min(max(recurrenceCount, 1), 2_000)
+                    task.recurrenceCount = min(max(recurrenceCount, 1), RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation)
                 }
             }
             .onChange(of: recurrenceEndDate) { _, newValue in
@@ -378,7 +378,7 @@ struct TaskDetailView: View {
             .onChange(of: recurrenceCount) { _, newValue in
                 guard selectedRecurrence != .none,
                       recurrenceLimitMode == .count else { return }
-                let clamped = min(max(newValue, 1), 2_000)
+                let clamped = min(max(newValue, 1), RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation)
                 if clamped != newValue {
                     recurrenceCount = clamped
                 }
@@ -422,13 +422,7 @@ struct TaskDetailView: View {
     
     
     
-    // MARK: - Body
-    
-    var body: some View {
-        
-        
-        
-        
+    private var mainLayout: some View {
         ZStack {
             AppGlassBackground()
             
@@ -520,6 +514,16 @@ struct TaskDetailView: View {
             .scrollEdgeEffectHidden(true, for: .top)
             .scrollDismissesKeyboard(.interactively)
         }
+    }
+
+    // MARK: - Body
+    
+    var body: some View {
+        
+        
+        
+        
+        mainLayout
         .confirmationDialog(
             "Share Options:",
             isPresented: $showingShareOptions, titleVisibility: .visible
@@ -858,7 +862,7 @@ struct TaskDetailView: View {
             if initialEditSnapshot?.recurrenceID == nil {
                 if recurrenceGenerationWasCapped {
                     Text(
-                        "The new recurrence requires \(recurrenceGenerationRequestedCount) future occurrences. The first \(recurrenceGenerationCreateCount) occurrences will be created, up to the maximum limit of 2,000."
+                        "The new recurrence requires \(recurrenceGenerationRequestedCount) future occurrences. The first \(recurrenceGenerationCreateCount) occurrences will be created, up to the maximum limit of \(RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation)."
                     )
                 } else {
                     Text(
@@ -867,7 +871,7 @@ struct TaskDetailView: View {
                 }
             } else if recurrenceGenerationWasCapped {
                 Text(
-                    "The new recurrence requires \(recurrenceGenerationRequestedCount) future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first \(recurrenceGenerationCreateCount) occurrences, up to the maximum limit of 2.000."
+                    "The new recurrence requires \(recurrenceGenerationRequestedCount) future occurrences. The currently scheduled future occurrences will be deleted and replaced with the first \(recurrenceGenerationCreateCount) occurrences, up to the maximum limit of \(RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation)."
                 )
             } else {
                 Text(
@@ -925,29 +929,35 @@ struct TaskDetailView: View {
         //            saveTask()
         //        }
         .onChange(of: task.isCompleted) { _, newValue in
-            
-            if newValue,
-               task.recurrenceRule != nil,
-               task.occurrenceIndex == nil,
-               !isMigratingLegacyRecurrence {
-                
-                // Do not complete the legacy task before the migration choice.
-                task.isCompleted = false
-                task.completedAt = nil
-                task.snoozeUntil = nil
-                
-                legacyRecurrenceTask = task
-                showingLegacyRecurrenceMigration = true
-                return
-            }
-            
-            saveTask(userInitiated: true)
+            handleCompletionChange(newValue)
         }
         .onDisappear {
             saveTaskDebounce?.cancel()
             saveTask(userInitiated: false)
         }
     }
+    @MainActor
+    private func handleCompletionChange(_ newValue: Bool) {
+        let isLegacyRecurrence = task.recurrenceRule != nil
+            && task.occurrenceIndex == nil
+        let shouldPresentLegacyMigration = newValue
+            && isLegacyRecurrence
+            && !isMigratingLegacyRecurrence
+
+        guard shouldPresentLegacyMigration else {
+            saveTask(userInitiated: true)
+            return
+        }
+
+        // Do not complete the legacy task before the migration choice.
+        task.isCompleted = false
+        task.completedAt = nil
+        task.snoozeUntil = nil
+
+        legacyRecurrenceTask = task
+        showingLegacyRecurrenceMigration = true
+    }
+
     @MainActor
     private func saveCompletedRecurringOccurrence() {
         guard saveTask(userInitiated: true) != nil else {
@@ -1186,7 +1196,16 @@ struct TaskDetailView: View {
         recurrenceGenerationCreateCount = preview.createCount
         recurrenceGenerationWasCapped = preview.wasCapped
         pendingRecurrenceRegeneration = true
-        recurrenceGenerationConfirmation = true
+
+        // Use the shared threshold for every recurrence-generation flow.
+        // Existing series with future occurrences still require confirmation,
+        // including when the new definition removes recurrence or generates none.
+        if preview.createCount > RecurrenceGenerationConfiguration.confirmationThreshold
+            || initial.recurrenceID != nil {
+            recurrenceGenerationConfirmation = true
+        } else {
+            performConfirmedRecurrenceRegeneration()
+        }
     }
 
     @MainActor
@@ -1210,7 +1229,7 @@ struct TaskDetailView: View {
         selectedRecurrence = RecurrenceUI(rawValue: initial.recurrenceRule ?? "") ?? .none
         if let count = initial.recurrenceCount {
             recurrenceLimitMode = .count
-            recurrenceCount = min(max(count, 1), 2_000)
+            recurrenceCount = min(max(count, 1), RecurrenceGenerationConfiguration.maximumOccurrencesPerOperation)
         } else {
             recurrenceLimitMode = .until
             recurrenceEndDate = initial.recurrenceEndDate ?? .now
