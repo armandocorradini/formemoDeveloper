@@ -1718,81 +1718,69 @@ private struct DayCell: View {
 
                 NavigationLink(value: task) {
 
-                    HStack(spacing: 3) {
-                        if isLandscape {
-                        Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                        
-                            .font(.system(
-                                size: isExpanded ? 7 : 5,
-                                weight: .medium
-                            ))
-                        
-                            .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
-                        
-                            .foregroundStyle(iconColor(for: task), .primary)
-                    }
-                        HStack(spacing: 3) {
+                    VStack(alignment: .leading, spacing: 1) {
 
-                            Text(task.title)
-
+                        if let deadline = task.deadLine {
+                            Text(deadline.formatted(.dateTime.hour().minute()))
                                 .font(.system(
-                                    size: isExpanded ? 7 : 4,
-                                    weight: .regular
+                                    size: isExpanded ? 7 : 5,
+                                    weight: .medium
                                 ))
-                                .lineLimit(isExpanded ? 2 : 1)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .foregroundStyle(task.isCompleted ? .secondary : .primary)
-
-                                .overlay(alignment: .bottomLeading) {
-
-                                    if settings.showTodayExpiredLabel && isOverdue(task) {
-
-                                        Rectangle()
-
-                                            .fill(Color.red.opacity(0.75))
-
-                                            .frame(height: 0.8)
-
-                                            .offset(y: 1.5)
-
-                                    }
-
-                                }
-
-                                .strikethrough(task.isCompleted, color: .secondary)
-
-                            if isLandscape &&  task.recurrenceRule != nil {
-
-                                Image(systemName: "arrow.triangle.2.circlepath")
-
-                                    .font(.system(size: 5))
-
-                                    .foregroundStyle(
-                                        task.occurrenceIndex == nil ? .red : .blue
-                                    )
-
-                            }
-
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                                .underline()
+                                .lineLimit(1)
                         }
 
-                        Spacer(minLength: 0)
+                        HStack(spacing: 3) {
+                            if isLandscape {
+                                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
+                                    .font(.system(
+                                        size: isExpanded ? 7 : 5,
+                                        weight: .medium
+                                    ))
+                                    .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
+                                    .foregroundStyle(iconColor(for: task), .primary)
+                            }
 
+                            HStack(spacing: 3) {
+                                Text(task.title)
+                                    .font(.system(
+                                        size: isExpanded ? 7 : 4,
+                                        weight: .regular
+                                    ))
+                                    .lineLimit(isExpanded ? 2 : 1)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .foregroundStyle(task.isCompleted ? .secondary : .primary)
+                                    .overlay(alignment: .bottomLeading) {
+                                        if settings.showTodayExpiredLabel && isOverdue(task) {
+                                            Rectangle()
+                                                .fill(Color.red.opacity(0.75))
+                                                .frame(height: 0.8)
+                                                .offset(y: 1.5)
+                                        }
+                                    }
+                                    .strikethrough(task.isCompleted, color: .secondary)
+
+                                if isLandscape && task.recurrenceRule != nil {
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                        .font(.system(size: 5))
+                                        .foregroundStyle(
+                                            task.occurrenceIndex == nil ? .red : .blue
+                                        )
+                                }
+                            }
+
+                            Spacer(minLength: 0)
+                        }
                     }
-
                     .frame(maxWidth: .infinity, alignment: .leading)
-
                     .padding(.vertical, isExpanded ? 2 : 1)
-
                     .contentShape(Rectangle())
-
                 }
-
                 .buttonStyle(.plain)
-
                 .frame(maxWidth: .infinity, alignment: .leading)
-
                 .contentShape(Rectangle())
-
             }
 
             if !isExpanded && tasks.count > 3 {
@@ -2438,7 +2426,7 @@ private struct DayTasksInlineView: View {
                         if horizontal > 45 && horizontal > vertical {
                             // Swipe left/right: navigate between days.
                             onDaySwipe(value.translation.width < 0 ? 1 : -1)
-                        } else if vertical > 170 && vertical > horizontal * 2 {
+                        } else if vertical > 140 && vertical > horizontal * 2 {
                             // Require a deliberate, predominantly vertical swipe to toggle the calendar.
                             onCalendarSwipe(value.translation.height < 0)
                         }

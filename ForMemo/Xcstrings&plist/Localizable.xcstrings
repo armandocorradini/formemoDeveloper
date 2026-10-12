@@ -21466,6 +21466,9 @@
         }
       }
     },
+    "Location Access Required" : {
+
+    },
     "Location accuracy, permissions, or system limits may affect this. Make sure location access is set to Always and that the task is actively monitored." : {
       "localizations" : {
         "de" : {
@@ -41053,6 +41056,9 @@
           }
         }
       }
+    },
+    "Weather Forecast requires location access. Enable location access in Settings, then return to ForMemo to turn it on." : {
+
     },
     "Weather forecasts are available for today, tomorrow and the day after tomorrow directly inside task views and weekly planning. Tap the weather information to open the detailed forecast view with weekly and hourly conditions." : {
       "localizations" : {

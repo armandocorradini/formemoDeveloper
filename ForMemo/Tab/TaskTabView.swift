@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 import SwiftData
 import os
 
@@ -6,6 +7,7 @@ struct TaskTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(AppSettings.self) private var settings
+    @Environment(\.scenePhase) private var scenePhase
 
 //    @Query private var tasks: [TodoTask]
 //    @Query private var documents: [DocumentItem]
@@ -43,6 +45,7 @@ struct TaskTabView: View {
     var body: some View {
         rootLayout
             .onAppear {
+                syncWeatherLocationPermission()
 
                 selectedTab = 0
 
@@ -129,6 +132,16 @@ struct TaskTabView: View {
             .onChange(of: settings.showWeatherForecast) { _, enabled in
                 if !enabled && selectedTab == 9 {
                     selectedTab = 0
+                }
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(for: .locationPermissionChanged)
+            ) { _ in
+                syncWeatherLocationPermission()
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                if newPhase == .active {
+                    syncWeatherLocationPermission()
                 }
             }
         
@@ -604,6 +617,19 @@ struct TaskTabView: View {
         .buttonStyle(.plain)
     }
     
+    private func syncWeatherLocationPermission() {
+        let status = CLLocationManager().authorizationStatus
+        let hasWeatherPermission =
+            status == .authorizedAlways || status == .authorizedWhenInUse
+
+        guard !hasWeatherPermission else {
+            return
+        }
+
+        settings.showWeatherForecast = false
+        WeatherManager.shared.locationPermissionWasRevoked()
+    }
+
     private func resetTab(_ tab: Int) {
         
         switch tab {

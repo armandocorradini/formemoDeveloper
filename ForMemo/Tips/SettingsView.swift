@@ -89,6 +89,7 @@ struct SettingsView: View {
         settings.backgroundColor2Hex
     }
     @State private var showLocationPermissionAlert = false
+    @State private var showWeatherPermissionAlert = false
     @State private var showAutoFillDisableAlert = false
     @State private var showImportReminders = false
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
@@ -320,36 +321,61 @@ struct SettingsView: View {
                             Label("Navigation app", systemImage: "iphone.badge.location")
                         }
                         
-                        if locationAuthorizationStatus == .authorizedAlways
-                            || locationAuthorizationStatus == .authorizedWhenInUse {
-                            
-                            Toggle(
-                                isOn: Binding(
-                                    get: { settings.showWeatherForecast },
-                                    set: { newValue in
+                        Toggle(
+                            isOn: Binding(
+                                get: { settings.showWeatherForecast },
+                                set: { newValue in
+                                    let status = CLLocationManager().authorizationStatus
+                                    let hasWeatherPermission =
+                                        status == .authorizedAlways ||
+                                        status == .authorizedWhenInUse
 
-                                        settings.showWeatherForecast = newValue
+                                    locationAuthorizationStatus = status
 
-                                        if newValue {
-                                            Task {
-                                                await WeatherManager.shared.refresh()
-                                            }
-                                        }
+                                    guard newValue else {
+                                        settings.showWeatherForecast = false
+                                        WeatherManager.shared.disableForecast()
+                                        return
                                     }
-                                )
-                            ) {
-                                Label {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("Weather Forecast")
+
+                                    guard hasWeatherPermission else {
+                                        settings.showWeatherForecast = false
+                                        WeatherManager.shared.disableForecast()
+                                        showWeatherPermissionAlert = true
+                                        return
                                     }
-                                } icon: {
-                                    Image(systemName: "cloud.sun")
-                                        .foregroundStyle(.blue)
-                                        .frame(width: iconWidth)
+
+                                    settings.showWeatherForecast = true
+                                    Task {
+                                        await WeatherManager.shared.refresh()
+                                    }
                                 }
+                            )
+                        ) {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Weather Forecast")
+                                }
+                            } icon: {
+                                Image(systemName: "cloud.sun")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
                             }
                         }
-                        
+                        .alert(
+                            "Location Access Required",
+                            isPresented: $showWeatherPermissionAlert
+                        ) {
+                            Button("Open Settings") {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                            Button("Cancel", role: .cancel) {}
+                        } message: {
+                            Text("Weather Forecast requires location access. Enable location access in Settings, then return to ForMemo to turn it on.")
+                        }
+
                         Toggle(
                             isOn: Binding(
                                 get: { settings.showVault },
@@ -1021,6 +1047,13 @@ Attivazione: \(triggerInfo)
         let hasPermission =
             status == .authorizedAlways
         settings.locationRemindersEnabled = hasPermission
+
+        let hasWeatherPermission =
+            status == .authorizedAlways || status == .authorizedWhenInUse
+        if !hasWeatherPermission {
+            settings.showWeatherForecast = false
+            WeatherManager.shared.locationPermissionWasRevoked()
+        }
     }
     
     private func handleLocationReminderToggle(_ newValue: Bool) {

@@ -120,8 +120,32 @@ private struct OpenMeteoHourly: Decodable {
     private let refreshInterval: TimeInterval = 1800
 
     private var retryCount = 0
+    private var refreshGeneration = UUID()
 
     private init() {}
+
+    private var hasWeatherLocationPermission: Bool {
+        let status = CLLocationManager().authorizationStatus
+        return status == .authorizedAlways || status == .authorizedWhenInUse
+    }
+
+    /// Invalidates in-flight weather requests without touching location reminders.
+    func locationPermissionWasRevoked() {
+        refreshGeneration = UUID()
+        retryCount = 0
+        weatherByDay = [:]
+        hourlyWeatherByDay = [:]
+        isAvailable = false
+        isLoading = false
+        lastLoadFailed = false
+        lastRefresh = .distantPast
+        refreshID = UUID()
+    }
+
+    /// Clears cached weather when the forecast is explicitly disabled.
+    func disableForecast() {
+        locationPermissionWasRevoked()
+    }
 
     // MARK: - Public
 
@@ -217,12 +241,8 @@ private struct OpenMeteoHourly: Decodable {
 
     func refreshIfNeeded() async {
 
-        guard showWeatherForecast else {
-            weatherByDay = [:]
-            refreshID = UUID()
-            isAvailable = false
-            isLoading = false
-            lastLoadFailed = false
+        guard showWeatherForecast, hasWeatherLocationPermission else {
+            locationPermissionWasRevoked()
             return
         }
         guard Date().timeIntervalSince(lastRefresh) > refreshInterval else {
@@ -234,12 +254,19 @@ private struct OpenMeteoHourly: Decodable {
 
     func refresh() async {
 
+        guard showWeatherForecast, hasWeatherLocationPermission else {
+            locationPermissionWasRevoked()
+            return
+        }
+
+        let requestGeneration = refreshGeneration
         isLoading = true
         lastLoadFailed = false
 
         guard let location = LocationReminderManager.shared.currentLocation else {
 
             guard retryCount < 3 else {
+                guard requestGeneration == refreshGeneration else { return }
                 isAvailable = false
                 isLoading = false
                 lastLoadFailed = true
@@ -254,11 +281,16 @@ private struct OpenMeteoHourly: Decodable {
             isAvailable = false
             isLoading = false
 
-            // Retry automatically after CoreLocation has time
-            // to deliver a fresh location update.
-            Task {
+            // Retry only while this request generation remains valid.
+            Task { @MainActor [weak self] in
                 try? await Task.sleep(for: .seconds(2))
-                await refresh()
+                guard let self,
+                      self.refreshGeneration == requestGeneration,
+                      self.showWeatherForecast,
+                      self.hasWeatherLocationPermission else {
+                    return
+                }
+                await self.refresh()
             }
 
             return
@@ -292,6 +324,14 @@ private struct OpenMeteoHourly: Decodable {
             let (data, _) = try await forecastResponse
             let (airQualityData, _) = try await airQualityResponse
 
+            guard requestGeneration == refreshGeneration else {
+                return
+            }
+            guard showWeatherForecast, hasWeatherLocationPermission else {
+                locationPermissionWasRevoked()
+                return
+            }
+
             let decoded = try JSONDecoder().decode(OpenMeteoResponse.self, from: data)
 
             let airQualityDecoded = try JSONSerialization.jsonObject(with: airQualityData) as? [String: Any]
@@ -308,6 +348,14 @@ private struct OpenMeteoHourly: Decodable {
                 )
             }.value
 
+            guard requestGeneration == refreshGeneration else {
+                return
+            }
+            guard showWeatherForecast, hasWeatherLocationPermission else {
+                locationPermissionWasRevoked()
+                return
+            }
+
             weatherByDay = processingResult.weatherByDay
             hourlyWeatherByDay = processingResult.hourlyWeatherByDay
             refreshID = UUID()
@@ -317,6 +365,11 @@ private struct OpenMeteoHourly: Decodable {
             lastRefresh = Date()
 
         } catch {
+            guard requestGeneration == refreshGeneration else { return }
+            guard showWeatherForecast, hasWeatherLocationPermission else {
+                locationPermissionWasRevoked()
+                return
+            }
 
             refreshID = UUID()
             isAvailable = false
