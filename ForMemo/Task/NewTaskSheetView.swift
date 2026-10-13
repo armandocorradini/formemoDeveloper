@@ -162,6 +162,7 @@ struct NewTaskSheetView: View {
     @State private var showingRecurringAttachmentScope = false
     
     @State private var isSynchronizing = false
+    @State private var showingAlarmAuthorizationAlert = false
     
     init(draftTask: TodoTask) {
         self._draftTask = Bindable(wrappedValue: draftTask)
@@ -517,13 +518,18 @@ struct NewTaskSheetView: View {
                                 if newValue {
                                     Task { @MainActor in
                                         do {
-                                            try await ForMemoAlarmManager.shared.requestAuthorization()
-                                            
+                                            let isAuthorized = try await ForMemoAlarmManager.shared.requestAuthorization()
+                                            guard isAuthorized else {
+                                                showingAlarmAuthorizationAlert = true
+                                                return
+                                            }
+
                                             draftTask.alarmEnabled = true
                                         } catch {
                                             AppLogger.notifications.error(
                                                 "AlarmKit authorization failed: \(error.localizedDescription)"
                                             )
+                                            showingAlarmAuthorizationAlert = true
                                         }
                                     }
                                 } else {
@@ -533,6 +539,19 @@ struct NewTaskSheetView: View {
                         )
                     )
                     .padding(.vertical, 10)
+                    .alert(
+                        "Alarm Unavailable",
+                        isPresented: $showingAlarmAuthorizationAlert
+                    ) {
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        Button("OK", role: .cancel) {}
+                    } message: {
+                        Text("AlarmKit access is not enabled. Check your alarm permissions in Settings.")
+                    }
                     
                     Text(String(localized: "AlarmFootnote"))
                         .font(.footnote)

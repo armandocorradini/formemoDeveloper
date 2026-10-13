@@ -3813,6 +3813,34 @@
         }
       }
     },
+    "Alarm Unavailable" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wecker nicht verfügbar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarma no disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alarme indisponible"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sveglia non disponibile"
+          }
+        }
+      }
+    },
     "AlarmFootnote" : {
       "localizations" : {
         "de" : {
@@ -3843,6 +3871,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quando è attiva, la sveglia sostituisce la notifica e ti avvisa all’ora programmata."
+          }
+        }
+      }
+    },
+    "AlarmKit access is not enabled. Check your alarm permissions in Settings." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Der Zugriff auf AlarmKit ist nicht aktiviert.\nÜberprüfe die Weckerberechtigungen in den Einstellungen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El acceso a AlarmKit no está activado.\nComprueba los permisos de alarma en Ajustes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’accès à AlarmKit n’est pas activé.\nVérifiez les autorisations d’alarme dans Réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’accesso ad AlarmKit non è abilitato.\nControlla i permessi della sveglia in Impostazioni"
           }
         }
       }
@@ -21467,7 +21523,32 @@
       }
     },
     "Location Access Required" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standortzugriff erforderlich"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se necesita acceso a la ubicación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accès à la localisation requis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accesso alla posizione richiesto"
+          }
+        }
+      }
     },
     "Location accuracy, permissions, or system limits may affect this. Make sure location access is set to Always and that the task is actively monitored." : {
       "localizations" : {
@@ -41058,7 +41139,32 @@
       }
     },
     "Weather Forecast requires location access. Enable location access in Settings, then return to ForMemo to turn it on." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für die Wettervorhersage ist der Standortzugriff erforderlich. Aktiviere den Standortzugriff in den Einstellungen und kehre dann zu ForMemo zurück, um ihn einzuschalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La previsión meteorológica necesita acceso a la ubicación. Activa el acceso a la ubicación en Ajustes y vuelve a ForMemo para habilitarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les prévisions météo nécessitent l’accès à la localisation. Activez l’accès à la localisation dans Réglages, puis revenez dans ForMemo pour l’activer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le previsioni meteo richiedono l’accesso alla posizione. Abilita l’accesso alla posizione in Impostazioni, poi torna in ForMemo per attivarlo."
+          }
+        }
+      }
     },
     "Weather forecasts are available for today, tomorrow and the day after tomorrow directly inside task views and weekly planning. Tap the weather information to open the detailed forecast view with weekly and hourly conditions." : {
       "localizations" : {

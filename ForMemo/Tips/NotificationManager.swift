@@ -3,6 +3,7 @@ import UIKit
 import SwiftData
 @preconcurrency import UserNotifications
 import os
+import AlarmKit
 
 @MainActor
 final class NotificationManager: NSObject {
@@ -391,17 +392,22 @@ func refreshFromCloudKit() {
     // MARK: - SIGNATURE
     
     private func signature(for tasks: [TodoTask]) -> String {
-        
-        guard !tasks.isEmpty else { return "EMPTY" }
-        
+
+        let alarmAuthorizationAvailable =
+            ForMemoAlarmManager.shared.authorizationState() == .authorized
+
+        guard !tasks.isEmpty else {
+            return "EMPTY-alarmAuthorization:\(alarmAuthorizationAvailable)"
+        }
+
         let body = tasks
             .sorted { $0.id.uuidString < $1.id.uuidString }
             .map {
                 "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.alarmEnabled)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)-\($0.manualSnoozeUntil?.timeIntervalSince1970 ?? 0)"
             }
             .joined(separator: "|")
-        
-        return "\(tasks.count)-" + body
+
+        return "\(tasks.count)-alarmAuthorization:\(alarmAuthorizationAvailable)-" + body
     }
     
     // MARK: - PURE LOGIC (Event Calculation)
@@ -420,7 +426,8 @@ func refreshFromCloudKit() {
         static func allEvents(
             for task: TodoTask,
             now: Date,
-            lead: NotificationLeadTime
+            lead: NotificationLeadTime,
+            alarmAuthorizationAvailable: Bool = true
         ) -> [Event] {
             guard let deadline = task.deadLine else {
                 return []
@@ -479,7 +486,7 @@ func refreshFromCloudKit() {
                 ))
             }
 
-            if task.alarmEnabled {
+            if task.alarmEnabled && alarmAuthorizationAvailable {
                 // AlarmKit is the user-facing deadline alert.
                 // Keep one silent UN notification at the same time only to update
                 // the app badge when the AlarmKit alarm fires.
@@ -489,6 +496,8 @@ func refreshFromCloudKit() {
                     type: "alarmBadge"
                 ))
             } else {
+                // AlarmKit authorization is unavailable: use the normal deadline
+                // notification without changing the task's saved alarm setting.
                 candidates.append(Event(
                     id: "task.\(task.id.uuidString).deadline",
                     date: deadline,
@@ -508,9 +517,15 @@ func refreshFromCloudKit() {
         static func nextEvent(
             for task: TodoTask,
             now: Date,
-            lead: NotificationLeadTime
+            lead: NotificationLeadTime,
+            alarmAuthorizationAvailable: Bool = true
         ) -> Event? {
-            allEvents(for: task, now: now, lead: lead).first
+            allEvents(
+                for: task,
+                now: now,
+                lead: lead,
+                alarmAuthorizationAvailable: alarmAuthorizationAvailable
+            ).first
         }
     }
 
@@ -529,7 +544,9 @@ func refreshFromCloudKit() {
         return TaskEventCalculator.nextEvent(
             for: task,
             now: now,
-            lead: lead
+            lead: lead,
+            alarmAuthorizationAvailable:
+                ForMemoAlarmManager.shared.authorizationState() == .authorized
         )
     }
 
@@ -575,7 +592,9 @@ func refreshFromCloudKit() {
             for event in TaskEventCalculator.allEvents(
                 for: task,
                 now: now,
-                lead: lead
+                lead: lead,
+                alarmAuthorizationAvailable:
+                    ForMemoAlarmManager.shared.authorizationState() == .authorized
             ) {
                 let content = taskNotificationContent(
                     for: task,

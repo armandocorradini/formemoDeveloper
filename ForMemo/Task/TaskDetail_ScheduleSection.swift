@@ -1,5 +1,6 @@
 import SwiftUI
 import os
+import AlarmKit
 
 // MARK: - ScheduleSection
 //
@@ -10,6 +11,10 @@ import os
 struct ScheduleSection: View {
 
     @Bindable var task: TodoTask
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var showingAlarmAuthorizationAlert = false
+    @State private var alarmAuthorizationAvailable =
+        ForMemoAlarmManager.shared.authorizationState() == .authorized
 
     let notificationLeadTimeDays: Int
     let validationMessage: String?
@@ -110,23 +115,36 @@ struct ScheduleSection: View {
                         isOn: Binding(
                             get: { task.alarmEnabled },
                             set: { newValue in
-
-                                isSynchronizing.wrappedValue = true
-
                                 Task { @MainActor in
                                     if newValue {
                                         do {
-                                            try await ForMemoAlarmManager.shared.requestAuthorization()
+                                            let isAuthorized = try await ForMemoAlarmManager.shared.requestAuthorization()
+                                            alarmAuthorizationAvailable = isAuthorized
+                                            guard isAuthorized else {
+                                                showingAlarmAuthorizationAlert = true
+                                                return
+                                            }
 
+                                            isSynchronizing.wrappedValue = true
                                             task.alarmEnabled = true
                                             await saveAndWaitForScheduling()
-
                                         } catch {
+                                            alarmAuthorizationAvailable =
+                                                ForMemoAlarmManager.shared.authorizationState() == .authorized
                                             AppLogger.notifications.error(
                                                 "AlarmKit authorization failed: \(error.localizedDescription)"
                                             )
+                                            showingAlarmAuthorizationAlert = true
                                         }
                                     } else {
+                                        // Keep a configured alarm enabled if its permission was revoked.
+                                        // The tap opens the explanation instead of deleting the saved setting.
+                                        guard !(task.alarmEnabled && !alarmAuthorizationAvailable) else {
+                                            showingAlarmAuthorizationAlert = true
+                                            return
+                                        }
+
+                                        isSynchronizing.wrappedValue = true
                                         task.alarmEnabled = false
                                         await saveAndWaitForScheduling()
                                     }
@@ -136,7 +154,21 @@ struct ScheduleSection: View {
                             }
                         )
                     )
+                    .tint(task.alarmEnabled && !alarmAuthorizationAvailable ? .gray : .green)
                     .padding(.vertical, 10)
+                    .alert(
+                        "Alarm Unavailable",
+                        isPresented: $showingAlarmAuthorizationAlert
+                    ) {
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        Button("OK", role: .cancel) {}
+                    } message: {
+                        Text("AlarmKit access is not enabled. Check your alarm permissions in Settings.")
+                    }
 
                     Text(String(localized: "AlarmFootnote"))
                         .font(.footnote)
@@ -175,6 +207,15 @@ struct ScheduleSection: View {
         .listRowBackground(
             Color(.systemBackground).opacity(0.3)
         )
+        .onAppear {
+            alarmAuthorizationAvailable =
+                ForMemoAlarmManager.shared.authorizationState() == .authorized
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            alarmAuthorizationAvailable =
+                ForMemoAlarmManager.shared.authorizationState() == .authorized
+        }
         .onChange(of: task.deadLine) { _, _ in
             validateReminder()
         }

@@ -250,19 +250,14 @@ struct TaskCalendarView: View {
                         isLandscape ? nil :
                             DragGesture(minimumDistance: 20)
                                 .onEnded { value in
+                                    let horizontal = abs(value.translation.width)
+                                    let vertical = abs(value.translation.height)
 
-                                    guard abs(value.translation.height)
-                                            > abs(value.translation.width),
-                                          abs(value.translation.height) > 40
-                                    else {
-                                        return
-                                    }
-
-                                    withAnimation(.snappy(duration: 0.25)) {
-                                        if value.translation.height < 0 {
-                                            isCalendarHidden = true
-                                        } else {
-                                            isCalendarHidden = false
+                                    if horizontal > 45 && horizontal > vertical {
+                                        changeSelectedDay(by: value.translation.width < 0 ? 1 : -1)
+                                    } else if vertical > 40 && vertical > horizontal {
+                                        withAnimation(.snappy(duration: 0.25)) {
+                                            isCalendarHidden = value.translation.height < 0
                                         }
                                     }
                                 }
@@ -1329,7 +1324,13 @@ private extension TaskCalendarView {
                 return
             }
 
-            task.completeRecurringTask()
+            if wasCompleted {
+                task.isCompleted = false
+                task.completedAt = nil
+                task.snoozeUntil = nil
+            } else {
+                task.completeRecurringTask()
+            }
 
         } else {
 
@@ -2122,7 +2123,7 @@ private struct DayTasksInlineView: View {
 
                     .listRowBackground(Color.clear)
 
-                    .swipeActions( edge: .leading, allowsFullSwipe: false) {
+                    .swipeActions( edge: .leading, allowsFullSwipe: true) {
 
                         Button {
 
@@ -2135,9 +2136,14 @@ private struct DayTasksInlineView: View {
                                     return
                                 }
 
-                                // Complete and reschedule recurring task
-
-                                task.completeRecurringTask()
+                                if wasCompleted {
+                                    task.isCompleted = false
+                                    task.completedAt = nil
+                                    task.snoozeUntil = nil
+                                } else {
+                                    // Complete and reschedule recurring task
+                                    task.completeRecurringTask()
+                                }
 
                             } else {
 
@@ -2232,7 +2238,13 @@ private struct DayTasksInlineView: View {
                                     return
                                 }
 
-                                task.completeRecurringTask()
+                                if wasCompleted {
+                                    task.isCompleted = false
+                                    task.completedAt = nil
+                                    task.snoozeUntil = nil
+                                } else {
+                                    task.completeRecurringTask()
+                                }
                                     
                             } else {
                                 task.isCompleted.toggle()
@@ -2423,11 +2435,10 @@ private struct DayTasksInlineView: View {
                         let horizontal = abs(value.translation.width)
                         let vertical = abs(value.translation.height)
 
-                        if horizontal > 45 && horizontal > vertical {
-                            // Swipe left/right: navigate between days.
+                        if uniqueTasks.isEmpty && horizontal > 60 && horizontal > vertical {
+                            // Enable day navigation only when there are no rows to swipe.
                             onDaySwipe(value.translation.width < 0 ? 1 : -1)
                         } else if vertical > 140 && vertical > horizontal * 2 {
-                            // Require a deliberate, predominantly vertical swipe to toggle the calendar.
                             onCalendarSwipe(value.translation.height < 0)
                         }
                     }

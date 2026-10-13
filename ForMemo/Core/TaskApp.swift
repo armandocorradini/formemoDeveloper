@@ -6,6 +6,7 @@ import AppIntents
 import os
 import CoreLocation
 import AuthenticationServices
+import AlarmKit
 
 #if canImport(AppKit)
 import AppKit
@@ -307,6 +308,31 @@ struct ForMemoApp: App {
                         object: nil
                     )
                     
+                    // Restore configured alarms that are missing after AlarmKit authorization changes.
+                    // When authorization is unavailable, invoke the manager's cleanup path too.
+                    // Saved task alarmEnabled settings are preserved by the manager.
+                    let alarmManager = ForMemoAlarmManager.shared
+                    if alarmManager.authorizationState() == .authorized {
+                        do {
+                            let configuredAlarmTasks = try context.fetch(
+                                FetchDescriptor<TodoTask>(
+                                    predicate: #Predicate<TodoTask> { $0.alarmEnabled }
+                                )
+                            )
+                            await alarmManager.restoreMissingConfiguredAlarms(
+                                tasks: configuredAlarmTasks
+                            )
+                        } catch {
+                            AppLogger.notifications.error(
+                                "Failed to fetch configured tasks for AlarmKit restoration: \(error.localizedDescription)"
+                            )
+                        }
+                    } else {
+                        // This cancels any alarms still registered with AlarmKit without
+                        // changing the user's saved alarm preferences on tasks.
+                        await alarmManager.restoreMissingConfiguredAlarms(tasks: [])
+                    }
+
                     // 4️⃣ refresh notifiche (con piccolo delay SAFE)
                     let tNotificationRefresh = ContinuousClock.now
 

@@ -75,6 +75,7 @@ final class ForMemoAlarmManager {
 
             for task in tasks {
                 let shouldBeScheduled =
+                    authorizationState() == .authorized &&
                     task.alarmEnabled &&
                     !task.isCompleted &&
                     task.deadLine.map { $0 > .now } ?? false
@@ -111,6 +112,7 @@ final class ForMemoAlarmManager {
             let alarms = try alarmManager.alarms
 
             let shouldBeScheduled =
+                authorizationState() == .authorized &&
                 task.alarmEnabled &&
                 !task.isCompleted &&
                 task.deadLine.map { $0 > .now } ?? false
@@ -149,6 +151,20 @@ final class ForMemoAlarmManager {
     
     private func performSynchronization(task: TodoTask) async {
         let alarmID = task.id
+
+        guard authorizationState() == .authorized else {
+            do {
+                try await cancelAlarm(id: alarmID)
+                AppLogger.notifications.info(
+                    "AlarmKit authorization unavailable; cancelled alarm for task \(alarmID.uuidString)"
+                )
+            } catch {
+                AppLogger.notifications.error(
+                    "Unable to cancel AlarmKit alarm without authorization for task \(alarmID.uuidString): \(error.localizedDescription)"
+                )
+            }
+            return
+        }
 
         guard task.alarmEnabled,
               let deadline = task.deadLine,
@@ -189,10 +205,15 @@ final class ForMemoAlarmManager {
     
     private init() {}
 
+    private enum AlarmSchedulingError: Error {
+        case authorizationUnavailable
+    }
+
     // MARK: - Authorization
 
-    func requestAuthorization() async throws {
-        _ = try await alarmManager.requestAuthorization()
+    func requestAuthorization() async throws -> Bool {
+        let state = try await alarmManager.requestAuthorization()
+        return state == .authorized
     }
 
     func authorizationState() -> AlarmManager.AuthorizationState {
@@ -206,6 +227,9 @@ final class ForMemoAlarmManager {
         date: Date,
         title: String
     ) async throws {
+        guard authorizationState() == .authorized else {
+            throw AlarmSchedulingError.authorizationUnavailable
+        }
 
         let stopButton = AlarmButton(
             text: "Stop",
@@ -306,6 +330,93 @@ final class ForMemoAlarmManager {
     }
     
 
+    /// Cancels alarms still registered with AlarmKit while authorization is unavailable.
+    /// Saved task settings are not modified.
+    private func cancelAllAlarmsWhenUnauthorized() async {
+        guard authorizationState() != .authorized else {
+            return
+        }
+
+        do {
+            let alarms = try alarmManager.alarms
+            for alarm in alarms {
+                do {
+                    try await cancelAlarm(id: alarm.id)
+                } catch {
+                    AppLogger.notifications.error(
+                        "Unable to cancel AlarmKit alarm while authorization is unavailable (\(alarm.id.uuidString)): \(error.localizedDescription)"
+                    )
+                }
+            }
+        } catch {
+            AppLogger.notifications.error(
+                "Unable to inspect AlarmKit alarms while authorization is unavailable: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    /// Restores configured future alarms that are missing from AlarmKit.
+    /// Existing scheduled alarms are left untouched.
+    func restoreMissingConfiguredAlarms(tasks: [TodoTask]) async {
+        guard authorizationState() == .authorized else {
+            await cancelAllAlarmsWhenUnauthorized()
+            return
+        }
+
+        do {
+            let alarms = try alarmManager.alarms
+            let existingAlarmIDs = Set(alarms.map(\.id))
+            let scheduledAlarmIDs = Set(
+                alarms.compactMap { alarm -> UUID? in
+                    if case .scheduled = alarm.state {
+                        return alarm.id
+                    }
+                    return nil
+                }
+            )
+
+            let now = Date.now
+            var restoredCount = 0
+
+            for task in tasks {
+                guard task.alarmEnabled,
+                      !task.isCompleted,
+                      let deadline = task.deadLine,
+                      deadline > now,
+                      !scheduledAlarmIDs.contains(task.id) else {
+                    continue
+                }
+
+                do {
+                    if existingAlarmIDs.contains(task.id) {
+                        try await cancelAlarm(id: task.id)
+                    }
+
+                    try await scheduleAlarm(
+                        id: task.id,
+                        date: deadline,
+                        title: task.title
+                    )
+                    restoredCount += 1
+                } catch {
+                    AppLogger.notifications.error(
+                        "Failed to restore AlarmKit alarm for task \(task.id.uuidString): \(error.localizedDescription)"
+                    )
+                }
+            }
+
+            if restoredCount > 0 {
+                AppLogger.notifications.info(
+                    "Restored \(restoredCount) configured AlarmKit alarms"
+                )
+            }
+        } catch {
+            AppLogger.notifications.error(
+                "Unable to inspect AlarmKit alarms for restoration: \(error.localizedDescription)"
+            )
+        }
+    }
+
     func cancelAlarms(ids: [UUID]) async {
         await withTaskGroup(of: Void.self) { group in
             for id in ids {
@@ -317,6 +428,11 @@ final class ForMemoAlarmManager {
     }
     
     func removeOrphanedAlarms(tasks: [TodoTask]) async {
+        guard authorizationState() == .authorized else {
+            await cancelAllAlarmsWhenUnauthorized()
+            return
+        }
+
         
 //        let startTime = Date()
 //
@@ -380,6 +496,11 @@ final class ForMemoAlarmManager {
     
     
     func removeOrphanedAlarmsAtStartup(context: ModelContext) async {
+        guard authorizationState() == .authorized else {
+            await cancelAllAlarmsWhenUnauthorized()
+            return
+        }
+
         do {
             let scheduledAlarms = try alarmManager.alarms
 
