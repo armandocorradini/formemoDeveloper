@@ -266,6 +266,13 @@ struct TaskCalendarView: View {
                     DayTasksInlineView(
                         tasks: tasksForDay(selectedDate),
                         onDaySwipe: changeSelectedDay,
+                        onDoubleTapToday: {
+                            let startOfToday = calendar.startOfDay(for: .now)
+                            withAnimation(.snappy) {
+                                displayedMonth = startOfToday
+                                selectedDate = startOfToday
+                            }
+                        },
                         onCalendarSwipe: { shouldHideCalendar in
                             guard !isLandscape else { return }
                             withAnimation(.snappy(duration: 0.25)) {
@@ -1800,12 +1807,21 @@ private struct DayCell: View {
 
 // MARK: - DayTasksInlineView
 
+private struct TaskCalendarRowFramesKey: PreferenceKey {
+    static var defaultValue: [CGRect] = []
+
+    static func reduce(value: inout [CGRect], nextValue: () -> [CGRect]) {
+        value.append(contentsOf: nextValue())
+    }
+}
+
 private struct DayTasksInlineView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var hasAnyTasks: Bool? = nil
+    @State private var taskRowFrames: [CGRect] = []
 
     @Environment(AppSettings.self) private var settings
 
@@ -1816,6 +1832,7 @@ private struct DayTasksInlineView: View {
 
     let tasks: [TodoTask]
     let onDaySwipe: (Int) -> Void
+    let onDoubleTapToday: () -> Void
     let onCalendarSwipe: (Bool) -> Void
     let onLegacyRecurrenceCompletion: (TodoTask) -> Void
 
@@ -1953,13 +1970,13 @@ private struct DayTasksInlineView: View {
 
         Group {
 
-        if tasks.isEmpty && hasAnyTasks == false {
+        if tasks.isEmpty {
 
             ContentUnavailableView {
 
                 Label {
 
-                    Text("No tasks")
+                    Text("")
 
                         .font(.subheadline)
 
@@ -1969,7 +1986,7 @@ private struct DayTasksInlineView: View {
 
                         .resizable()
 
-                        .frame(width: 30, height: 30)
+                        .frame(width: 25, height: 25)
 
                         .foregroundStyle(.secondary)
 
@@ -1977,11 +1994,29 @@ private struct DayTasksInlineView: View {
 
             } description: {
 
-                Text("Tap the green button to add a task.")
+                Text(hasAnyTasks == false ? "Tap the green button to add a task." : "")
 
                     .font(.subheadline)
 
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 60)
+                    .onEnded { value in
+                        let horizontal = abs(value.translation.width)
+                        let vertical = abs(value.translation.height)
+                        if horizontal > 60 && horizontal > vertical {
+                            onDaySwipe(value.translation.width < 0 ? 1 : -1)
+                        } else if vertical > 140 && vertical > horizontal * 2 {
+                            onCalendarSwipe(value.translation.height < 0)
+                        }
+                    }
+            )
+            .simultaneousGesture(
+                TapGesture(count: 2)
+                    .onEnded { onDoubleTapToday() }
+            )
 
         } else {
 
@@ -2120,10 +2155,17 @@ private struct DayTasksInlineView: View {
                     .buttonStyle(.plain)
 
                     .contentShape(Rectangle())
-
+                    .background {
+                        GeometryReader { proxy in
+                            Color.clear.preference(
+                                key: TaskCalendarRowFramesKey.self,
+                                value: [proxy.frame(in: .global)]
+                            )
+                        }
+                    }
                     .listRowBackground(Color.clear)
 
-                    .swipeActions( edge: .leading, allowsFullSwipe: true) {
+                    .swipeActions( edge: .leading, allowsFullSwipe: false) {
 
                         Button {
 
@@ -2429,26 +2471,51 @@ private struct DayTasksInlineView: View {
             }
 
             .contentMargins(.bottom, 90, for: .scrollContent)
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 60, coordinateSpace: .local)
-                    .onEnded { value in
-                        let horizontal = abs(value.translation.width)
-                        let vertical = abs(value.translation.height)
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .coordinateSpace(name: "dayTasksList")
+            .onPreferenceChange(TaskCalendarRowFramesKey.self) { taskRowFrames = $0 }
+            .overlay(alignment: .bottom) {
+                GeometryReader { proxy in
+                    let listFrame = proxy.frame(in: .global)
+                    let visibleRowBottom = taskRowFrames
+                        .filter { $0.maxY > listFrame.minY && $0.minY < listFrame.maxY }
+                        .map(\.maxY)
+                        .max() ?? listFrame.minY
+                    let blankAreaTop = min(
+                        max(visibleRowBottom - listFrame.minY, 0),
+                        proxy.size.height
+                    )
+                    let blankAreaHeight = proxy.size.height - blankAreaTop
 
-                        if uniqueTasks.isEmpty && horizontal > 60 && horizontal > vertical {
-                            // Enable day navigation only when there are no rows to swipe.
-                            onDaySwipe(value.translation.width < 0 ? 1 : -1)
-                        } else if vertical > 140 && vertical > horizontal * 2 {
-                            onCalendarSwipe(value.translation.height < 0)
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+
+                        if !taskRowFrames.isEmpty && blankAreaHeight > 1 {
+                            Color.clear
+                                .contentShape(Rectangle())
+                                .frame(height: blankAreaHeight)
+                                .gesture(
+                                    DragGesture(minimumDistance: 60)
+                                        .onEnded { value in
+                                            let horizontal = abs(value.translation.width)
+                                            let vertical = abs(value.translation.height)
+                                            if horizontal > 60 && horizontal > vertical {
+                                                onDaySwipe(value.translation.width < 0 ? 1 : -1)
+                                            } else if vertical > 140 && vertical > horizontal * 2 {
+                                                onCalendarSwipe(value.translation.height < 0)
+                                            }
+                                        }
+                                )
+                                .simultaneousGesture(
+                                    TapGesture(count: 2)
+                                        .onEnded { onDoubleTapToday() }
+                                )
                         }
                     }
-            )
-            .listStyle(.plain)
-
-            .scrollContentBackground(.hidden)
-
-            .background(Color.clear)
-
+                    .frame(width: proxy.size.width, height: proxy.size.height, alignment: .bottom)
+                }
+            }
             .alert("Delete task?",
                    isPresented: Binding(
                     get: { taskPendingDeletion != nil },

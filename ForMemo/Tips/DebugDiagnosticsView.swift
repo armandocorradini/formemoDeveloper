@@ -107,6 +107,12 @@ struct DebugDiagnosticsView: View {
         await runTest("File allegato temporaneo: lettura e pulizia") { try await testAttachmentImportAndCleanup() }
         await runTest("Coda notifiche di sistema") { try await testPendingNotifications() }
         await runTest("Stato AlarmKit") { try testAlarmKitReadableState() }
+        await runTest("Calcolo eventi successivi di un task (puro)") { try testNextEventProgression() }
+        await runTest("Coda globale: limite 64 e refill simulato") { try testGlobalQueueLimitAndRefillSimulation() }
+        await runTest("Fallback sveglia senza autorizzazione AlarmKit") { try testAlarmAuthorizationFallback() }
+        await runTest("Allegati ricorrenti: configurazione idempotente") { try testAttachmentPropagationIdempotency() }
+        await runTest("Ricorrenze mensili: date valide e crescenti") { try testMonthlyRecurrenceBoundaries() }
+        await runTest("Opzioni riprogrammazione: mapping temporale") { try testRescheduleOptionMapping() }
     }
 
     /// Ogni test con persistenza usa un database SwiftData in-memory indipendente.
@@ -606,6 +612,228 @@ struct DebugDiagnosticsView: View {
         return "20 ripetizioni dello stesso calcolo di ricorrenza hanno prodotto risultati identici; non equivale a rieseguire l'intera suite."
     }
 
+    /// Verifica soltanto il calcolo puro degli eventi successivi di un task.
+    /// Non descrive la regola della coda globale e non modifica notifiche di sistema.
+    private func testNextEventProgression() throws -> String {
+        let calendar = Calendar.current
+        let now = Date()
+        let deadline = calendar.date(byAdding: .day, value: 8, to: now)!
+        let task = TodoTask(
+            title: "DEBUG-ONLY next event progression",
+            deadLine: deadline,
+            reminderOffsetMinutes: 120
+        )
+        task.isDebugTask = true
+
+        let lead: NotificationLeadTime = .threeDays
+        let all = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: lead)
+        guard all.count == 3 else {
+            throw DiagnosticFailure.assertion("Attesi global, reminder e deadline; ottenuti: \(all.map(\.type)).")
+        }
+        guard let first = NotificationManager.TaskEventCalculator.nextEvent(for: task, now: now, lead: lead),
+              first.type == "global" else {
+            throw DiagnosticFailure.assertion("Il primo evento deve essere global.")
+        }
+
+        let afterGlobal = first.date.addingTimeInterval(1)
+        guard let second = NotificationManager.TaskEventCalculator.nextEvent(for: task, now: afterGlobal, lead: lead),
+              second.type == "reminder" else {
+            throw DiagnosticFailure.assertion("Dopo global, il prossimo evento deve essere reminder.")
+        }
+
+        let afterReminder = second.date.addingTimeInterval(1)
+        guard let third = NotificationManager.TaskEventCalculator.nextEvent(for: task, now: afterReminder, lead: lead),
+              third.type == "deadline" else {
+            throw DiagnosticFailure.assertion("Dopo reminder, il prossimo evento deve essere deadline.")
+        }
+        return "Il calcolatore puro restituisce global → reminder → deadline avanzando l'ora di riferimento. Non verifica né modifica la coda globale di sistema."
+    }
+
+    /// Simula la Regola di Programmazione Cronologica Completa senza toccare
+    /// UNUserNotificationCenter, SwiftData reale o AlarmKit: tutti gli eventi
+    /// task vengono uniti, ordinati globalmente e limitati alle prime 64 richieste.
+    /// Dopo il primo evento, ricalcola gli eventi ancora futuri e verifica che
+    /// il precedente evento #65 possa entrare nella nuova selezione.
+    private func testGlobalQueueLimitAndRefillSimulation() throws -> String {
+        let calendar = Calendar.current
+        let now = Date()
+        let lead: NotificationLeadTime = .threeDays
+        var tasks: [TodoTask] = []
+        tasks.reserveCapacity(30)
+
+        for index in 0..<30 {
+            guard let deadline = calendar.date(byAdding: .day, value: 10 + index, to: now) else {
+                throw DiagnosticFailure.assertion("Impossibile generare la scadenza per il task #\(index).")
+            }
+            let task = TodoTask(
+                title: "DEBUG-ONLY global queue #\(index)",
+                deadLine: deadline,
+                reminderOffsetMinutes: 120
+            )
+            task.isDebugTask = true
+            tasks.append(task)
+        }
+
+        func globallySortedEvents(asOf referenceDate: Date) -> [NotificationManager.TaskEventCalculator.Event] {
+            tasks.flatMap {
+                NotificationManager.TaskEventCalculator.allEvents(
+                    for: $0,
+                    now: referenceDate,
+                    lead: lead,
+                    alarmAuthorizationAvailable: false
+                )
+            }.sorted {
+                if $0.date != $1.date { return $0.date < $1.date }
+                return $0.id < $1.id
+            }
+        }
+
+        let allEvents = globallySortedEvents(asOf: now)
+        guard allEvents.count > 64 else {
+            throw DiagnosticFailure.assertion("La simulazione deve generare più di 64 eventi; ottenuti \(allEvents.count).")
+        }
+        let firstQueue = Array(allEvents.prefix(64))
+        guard firstQueue.count == 64,
+              zip(firstQueue, firstQueue.dropFirst()).allSatisfy({
+                  $0.0.date < $0.1.date || ($0.0.date == $0.1.date && $0.0.id <= $0.1.id)
+              }) else {
+            throw DiagnosticFailure.assertion("La selezione iniziale non contiene esattamente i 64 eventi più cronologici.")
+        }
+
+        let excluded65 = allEvents[64]
+        let afterFirstEvent = firstQueue[0].date.addingTimeInterval(1)
+        let remainingEvents = globallySortedEvents(asOf: afterFirstEvent)
+        let refilledQueue = Array(remainingEvents.prefix(64))
+        guard refilledQueue.count == 64 else {
+            throw DiagnosticFailure.assertion("Dopo il primo evento la coda simulata contiene \(refilledQueue.count) richieste, anziché 64.")
+        }
+        guard refilledQueue.contains(where: { $0.id == excluded65.id }) else {
+            throw DiagnosticFailure.assertion("L'evento precedentemente escluso #65 non è entrato nella nuova selezione dopo la liberazione dello slot.")
+        }
+        guard !refilledQueue.contains(where: { $0.id == firstQueue[0].id }) else {
+            throw DiagnosticFailure.assertion("L'evento già trascorso è rimasto nella selezione dopo il refill simulato.")
+        }
+
+        return "\(allEvents.count) eventi uniti in un'unica coda; selezionate le prime 64 richieste. Dopo il primo evento, la nuova selezione include l'evento precedentemente escluso #65. Simulazione isolata: nessuna notifica reale o sveglia modificata."
+    }
+
+    private func testAlarmAuthorizationFallback() throws -> String {
+        let now = Date()
+        let deadline = Calendar.current.date(byAdding: .day, value: 4, to: now)!
+        let task = TodoTask(title: "DEBUG-ONLY alarm fallback", deadLine: deadline)
+        task.isDebugTask = true
+        task.alarmEnabled = true
+
+        let unavailable = NotificationManager.TaskEventCalculator.allEvents(
+            for: task,
+            now: now,
+            lead: .none,
+            alarmAuthorizationAvailable: false
+        )
+        guard unavailable.count == 1,
+              unavailable.first?.type == "deadline",
+              !unavailable.contains(where: { $0.type == "alarmBadge" }) else {
+            throw DiagnosticFailure.assertion("Senza autorizzazione AlarmKit è attesa la sola notifica deadline ordinaria.")
+        }
+
+        let authorized = NotificationManager.TaskEventCalculator.allEvents(
+            for: task,
+            now: now,
+            lead: .none,
+            alarmAuthorizationAvailable: true
+        )
+        guard authorized.count == 1,
+              authorized.first?.type == "alarmBadge",
+              !authorized.contains(where: { $0.type == "deadline" }) else {
+            throw DiagnosticFailure.assertion("Con autorizzazione AlarmKit è atteso alarmBadge e non deadline ordinaria.")
+        }
+        return "Alarm ON: autorizzazione assente → deadline; autorizzazione presente → alarmBadge, mai entrambi. Test solo sul calcolo puro."
+    }
+
+    private func testAttachmentPropagationIdempotency() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let recurrenceID = UUID()
+        let start = Calendar.current.date(byAdding: .day, value: 4, to: Date())!
+        let task = TodoTask(title: "DEBUG-ONLY propagation idempotency", deadLine: start)
+        task.isDebugTask = true
+        task.recurrenceID = recurrenceID
+        task.occurrenceIndex = 2
+        task.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        task.recurrenceInterval = 1
+        task.recurrenceStartDate = start
+
+        let attachment = TaskAttachment(
+            originalName: "DEBUG-ONLY-idempotency.txt",
+            relativePath: "diagnostics-only/\(UUID().uuidString).txt",
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+
+        for _ in 0..<3 {
+            try RecurringAttachmentManager.configurePropagation(for: [attachment], from: task, in: context)
+        }
+        RecurringAttachmentManager.invalidateRuleCache(for: recurrenceID, in: context)
+        let links = try context.fetch(FetchDescriptor<RecurringAttachmentLink>())
+            .filter { $0.recurrenceID == recurrenceID && $0.attachmentID == attachment.id && $0.isActive }
+        guard links.count == 1,
+              links.first?.propagationStartIndex == 2,
+              links.first?.propagationEndIndex == nil else {
+            throw DiagnosticFailure.assertion("Tre configurazioni identiche devono lasciare una sola regola attiva, a partire dall'occorrenza #2.")
+        }
+        return "Tre chiamate a configurePropagation producono una sola regola attiva con inizio #2; SwiftData in-memory, nessun file fisico creato."
+    }
+
+    private func testMonthlyRecurrenceBoundaries() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let components = DateComponents(year: 2026, month: 1, day: 31, hour: 12, minute: 0)
+        guard let start = calendar.date(from: components) else {
+            throw DiagnosticFailure.assertion("Impossibile creare la data di riferimento mensile.")
+        }
+        let dates = RecurrenceEngine.occurrenceDates(
+            startDate: start,
+            rule: .monthly,
+            interval: 1,
+            limit: .count(8),
+            calendar: calendar
+        )
+        guard dates.count == 8 else {
+            throw DiagnosticFailure.assertion("Attese 8 occorrenze mensili incluse l'ancora; ottenute \(dates.count).")
+        }
+        guard zip(dates, dates.dropFirst()).allSatisfy({ $0.0 < $0.1 }) else {
+            throw DiagnosticFailure.assertion("La ricorrenza mensile ha prodotto date non strettamente crescenti.")
+        }
+        guard dates.first == start else {
+            throw DiagnosticFailure.assertion("La prima occorrenza non coincide con la data di ancoraggio.")
+        }
+        return "Otto date mensili da un'ancora al 31 gennaio 2026, con calendario gregoriano UTC, sono valide e strettamente crescenti."
+    }
+
+    private func testRescheduleOptionMapping() throws -> String {
+        let cases: [(TaskRescheduleOption, Calendar.Component, Int)] = [
+            (.plusOneHour, .hour, 1), (.plusTwoHours, .hour, 2), (.plusThreeHours, .hour, 3),
+            (.plusOneDay, .day, 1), (.plusTwoDays, .day, 2), (.plusThreeDays, .day, 3),
+            (.minusOneHour, .hour, -1), (.minusTwoHours, .hour, -2), (.minusThreeHours, .hour, -3),
+            (.minusOneDay, .day, -1), (.minusTwoDays, .day, -2), (.minusThreeDays, .day, -3)
+        ]
+        for (option, expectedComponent, expectedValue) in cases {
+            guard option.component == expectedComponent,
+                  option.signedValue == expectedValue else {
+                throw DiagnosticFailure.assertion("Mapping errato per l'opzione \(option): componente \(option.component), valore \(option.signedValue).")
+            }
+        }
+        guard Set(TaskRescheduleOption.positive).count == 6,
+              Set(TaskRescheduleOption.negative).count == 6,
+              Set(TaskRescheduleOption.positive).isDisjoint(with: Set(TaskRescheduleOption.negative)) else {
+            throw DiagnosticFailure.assertion("Le liste di riprogrammazione positiva e negativa contengono duplicati o sovrapposizioni.")
+        }
+        return "Verificate tutte le 12 opzioni di riprogrammazione e l'assenza di sovrapposizioni tra le liste positive e negative; nessun task riprogrammato."
+    }
+
     private func makeReport() -> String {
         let formatter = ISO8601DateFormatter()
         let passed = results.filter { $0.status == .passed }.count
@@ -615,6 +843,7 @@ struct DebugDiagnosticsView: View {
             "Data: \(formatter.string(from: .now))",
             "Ambiente: \(ProcessInfo.processInfo.operatingSystemVersionString)",
             "Esito: \(passed) superati, \(failed) falliti, \(results.count) totali",
+            "Ambito: i test AlarmKit e notifiche di sistema sono di sola lettura; i test di pianificazione verificano la logica pura e non provano il refill effettivo della coda di sistema.",
             "Sicurezza: SwiftData in-memory senza save(); file temporanei isolati; notifiche e AlarmKit solo in lettura.",
             "Nessuna chiamata a save() nei test SwiftData; nessuna modifica intenzionale ai dati persistenti dell’utente.",
             "I test SwiftData usano contesti in-memory; nessuna chiamata a save() e nessun file reale di allegati creato.",

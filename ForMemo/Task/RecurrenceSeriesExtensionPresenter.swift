@@ -52,7 +52,7 @@ struct RecurrenceSeriesExtensionPresenter: ViewModifier {
                     }
                 }
             }
-            .sheet(item: $pendingRecurrenceExtensionTask) { task in
+            .fullScreenCover(item: $pendingRecurrenceExtensionTask) { task in
                 RecurrenceSeriesExtensionSheet(task: task)
             }
     }
@@ -129,10 +129,13 @@ private struct RecurrenceSeriesExtensionSheet: View {
 
                 Section("Continue this series") {
                     Picker("Extension method", selection: $extensionMode) {
-                        Text("Additional occurrences")
-                            .tag(ExtensionMode.count)
+                        
                         Text("End date")
                             .tag(ExtensionMode.endDate)
+                        
+                        Text("Additional occurrences")
+                            .tag(ExtensionMode.count)
+
                     }
                     .pickerStyle(.segmented)
 
@@ -165,7 +168,8 @@ private struct RecurrenceSeriesExtensionSheet: View {
                 }
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
-            .navigationTitle("Series completed")
+            .navigationTitle("Series end")
+            
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

@@ -24003,34 +24003,6 @@
         }
       }
     },
-    "No tasks" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keine Aufgaben"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No hay tareas"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucune tâche"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessuna attività"
-          }
-        }
-      }
-    },
     "No Tasks" : {
       "localizations" : {
         "de" : {
@@ -31368,30 +31340,30 @@
         }
       }
     },
-    "Series completed" : {
+    "Series end" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Serie abgeschlossen"
+            "value" : "Serienende"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Serie completada"
+            "value" : "Fin de serie"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Série terminée"
+            "value" : "Fin de série"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Serie completata"
+            "value" : "Fine serie"
           }
         }
       }
