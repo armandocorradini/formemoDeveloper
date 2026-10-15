@@ -1711,6 +1711,7 @@ struct TaskListView: View {
           ) {
 
               if let task = taskPendingDeletion,
+                 !task.isCompleted,
                  task.recurrenceID != nil,
                  hasFutureOccurrenceForDeletion(task) {
 
@@ -2341,6 +2342,7 @@ struct TaskListView: View {
     
     @MainActor
     private func hasFutureOccurrenceForDeletion(_ task: TodoTask) -> Bool {
+        guard !task.isCompleted else { return false }
         do {
             return try RecurrenceEngine.hasFutureOccurrence(
                 for: task,
@@ -4163,6 +4165,26 @@ struct TodoSectionView: View {
 
 
 
+/// Shared production logic for reactivating a completed task.
+/// Kept independent of UI and system services so it can be exercised against
+/// an isolated SwiftData ModelContext by diagnostic integration tests.
+@MainActor
+enum CompletedTaskReactivation {
+    @discardableResult
+    static func reactivate(_ task: TodoTask, in context: ModelContext) throws -> Bool {
+        guard task.isCompleted else { return false }
+
+        task.isCompleted = false
+        task.completedAt = nil
+        task.snoozeUntil = nil
+
+        try context.save()
+        context.processPendingChanges()
+        return true
+    }
+}
+
+
 struct CompletedTasksContainerView: View {
     
     @Environment(AppSettings.self)
@@ -4225,7 +4247,8 @@ struct CompletedSectionView: View {
     
   @MainActor
   private func requestTaskDeletion(_ task: TodoTask) {
-    guard task.recurrenceID != nil else {
+    // Completed occurrences are deleted individually, like standalone tasks.
+    guard task.recurrenceID != nil, !task.isCompleted else {
       if confirmTaskDeletion {
         taskPendingDeletion = task
       } else {
@@ -4418,16 +4441,10 @@ struct CompletedSectionView: View {
 
     @MainActor
     private func toggleCompleted(_ task: TodoTask) {
-        guard task.isCompleted else {
-            return
-        }
-
-        task.isCompleted = false
-        task.completedAt = nil
-        task.snoozeUntil = nil
-
         do {
-            try modelContext.save()
+            guard try CompletedTaskReactivation.reactivate(task, in: modelContext) else {
+                return
+            }
         } catch {
             AppLogger.persistence.error(
                 "Failed to reactivate task: \(error.localizedDescription)"
@@ -4435,13 +4452,14 @@ struct CompletedSectionView: View {
             return
         }
 
-        modelContext.processPendingChanges()
+        // Re-fetch after SwiftData has processed the completion-state change so
+        // this occurrence is removed from the completed datasource immediately.
+        refreshCompletedTasks()
 
         Task { @MainActor in
             _ = await ForMemoAlarmManager.shared.synchronize(task: task)
         }
 
-        refreshCompletedTasks()
 
         NotificationCenter.default.post(
             name: .taskDidChange,

@@ -1918,7 +1918,8 @@ private struct DayTasksInlineView: View {
 
     @MainActor
     private func requestTaskDeletion(_ task: TodoTask) {
-        guard task.recurrenceID != nil else {
+        // A completed occurrence is historical data: delete only this task.
+        guard task.recurrenceID != nil, !task.isCompleted else {
             pendingDeletionHasFutureOccurrences = false
             if settings.confirmTaskDeletion {
                 taskPendingDeletion = task

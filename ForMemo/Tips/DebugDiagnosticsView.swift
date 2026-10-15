@@ -30,7 +30,7 @@ struct DebugDiagnosticsView: View {
                 }
                 .disabled(isRunning)
             } footer: {
-                Text("Tutti i test sono non distruttivi: SwiftData usa un contesto isolato in memoria senza chiamate a save(), i file una cartella temporanea dedicata, notifiche e stato AlarmKit vengono soltanto letti. Nessuna sveglia reale viene pianificata.")
+                Text("Tutti i test sono non distruttivi: SwiftData usa contesti isolati in memoria (i test di integrazione salvano solo nello store temporaneo), i file una cartella temporanea dedicata, notifiche e stato AlarmKit vengono soltanto letti. Nessuna sveglia reale viene pianificata.")
             }
 
             if !results.isEmpty {
@@ -95,6 +95,8 @@ struct DebugDiagnosticsView: View {
         await runTest("Limiti e intervallo ricorrenze") { try testRecurrenceLimitsAndInterval() }
         await runTest("Eventi senza scadenza o già scaduti") { try testNotificationBoundaryCases() }
         await runTest("CRUD task SwiftData") { try testTaskCRUD() }
+        await runTest("Riattivazione occorrenza ricorrente: identità e stato") { try testReactivateCompletedRecurringOccurrence() }
+        await runTest("Riattivazione task singolo: reset stato") { try testReactivateCompletedStandaloneTask() }
         await runTest("Materializzazione ricorrenze") { try testRecurrenceMaterialization() }
         await runTest("Ricorrenze: sveglia, reminder e globale") { try testRecurrenceNotificationMatrix() }
         await runTest("Ricorrenza: idempotenza materializzazione") { try testRecurrenceIdempotency() }
@@ -242,6 +244,145 @@ struct DebugDiagnosticsView: View {
 
         context.delete(task)
         return "Inserimento, modifica e richiesta di eliminazione verificate sull'istanza in-memory; nessuna fetch SwiftData eseguita in questo test e nessun save()."
+    }
+
+    /// Integration test: invokes the exact production reactivation operation,
+    /// persists to an isolated in-memory store, then fetches the saved state.
+    private func testReactivateCompletedRecurringOccurrence() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let recurrenceID = UUID()
+        let start = Calendar.current.date(byAdding: .day, value: -2, to: Date())!
+        let completedAt = Date().addingTimeInterval(-3_600)
+        let snoozeUntil = Date().addingTimeInterval(900)
+
+        let target = TodoTask(
+            title: "DEBUG-ONLY completed recurring occurrence",
+            deadLine: start,
+            isCompleted: true,
+            completedAt: completedAt
+        )
+        target.isDebugTask = true
+        target.snoozeUntil = snoozeUntil
+        target.recurrenceID = recurrenceID
+        target.occurrenceIndex = 2
+        target.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        target.recurrenceInterval = 2
+        target.recurrenceStartDate = start
+        target.recurrenceCount = 5
+        target.recurrenceEndDate = Calendar.current.date(byAdding: .day, value: 8, to: start)
+        target.alarmEnabled = true
+
+        let future = TodoTask(
+            title: "DEBUG-ONLY future occurrence",
+            deadLine: Calendar.current.date(byAdding: .day, value: 2, to: Date())!,
+            isCompleted: false
+        )
+        future.isDebugTask = true
+        future.recurrenceID = recurrenceID
+        future.occurrenceIndex = 3
+        future.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        future.recurrenceInterval = 2
+        future.recurrenceStartDate = start
+        future.recurrenceCount = 5
+
+        context.insert(target)
+        context.insert(future)
+
+        let originalID = target.id
+        let originalDeadline = target.deadLine
+        let originalRule = target.recurrenceRule
+        let originalInterval = target.recurrenceInterval
+        let originalStartDate = target.recurrenceStartDate
+        let originalEndDate = target.recurrenceEndDate
+        let originalCount = target.recurrenceCount
+        let originalAlarmEnabled = target.alarmEnabled
+        let originalFutureID = future.id
+        let originalFutureCompletedAt = future.completedAt
+        let originalFutureDeadline = future.deadLine
+
+        guard try CompletedTaskReactivation.reactivate(target, in: context) else {
+            throw DiagnosticFailure.assertion("L'operazione condivisa non ha riattivato il task completato.")
+        }
+
+        // Fetch after save verifies the persisted snapshot, not only the live object.
+        let savedSeries = try context.fetch(FetchDescriptor<TodoTask>())
+            .filter { $0.recurrenceID == recurrenceID }
+        guard savedSeries.count == 2,
+              let savedTarget = savedSeries.first(where: { $0.id == originalID }),
+              let savedFuture = savedSeries.first(where: { $0.id == originalFutureID }) else {
+            throw DiagnosticFailure.assertion("Dopo il salvataggio la serie non contiene esattamente le due occorrenze attese.")
+        }
+
+        guard !savedTarget.isCompleted,
+              savedTarget.completedAt == nil,
+              savedTarget.snoozeUntil == nil else {
+            throw DiagnosticFailure.assertion("Lo stato riattivato non è stato salvato correttamente.")
+        }
+        guard savedTarget.id == originalID,
+              savedTarget.recurrenceID == recurrenceID,
+              savedTarget.occurrenceIndex == 2,
+              savedTarget.recurrenceRule == originalRule,
+              savedTarget.recurrenceInterval == originalInterval,
+              savedTarget.recurrenceStartDate == originalStartDate,
+              savedTarget.recurrenceEndDate == originalEndDate,
+              savedTarget.recurrenceCount == originalCount,
+              savedTarget.deadLine == originalDeadline,
+              savedTarget.alarmEnabled == originalAlarmEnabled else {
+            throw DiagnosticFailure.assertion("La riattivazione ha alterato identità o parametri della ricorrenza.")
+        }
+        guard !savedFuture.isCompleted,
+              savedFuture.completedAt == originalFutureCompletedAt,
+              savedFuture.deadLine == originalFutureDeadline,
+              savedFuture.recurrenceID == recurrenceID,
+              savedFuture.occurrenceIndex == 3 else {
+            throw DiagnosticFailure.assertion("La riattivazione ha alterato l'occorrenza futura.")
+        }
+
+        return "Operazione di produzione eseguita; save() e rilettura SwiftData in-memory verificati. Identità e parametri della #2 conservati, completamento/snooze azzerati, #3 invariata e nessun duplicato. Nessun dato persistente reale o servizio di sistema toccato."
+    }
+
+    private func testReactivateCompletedStandaloneTask() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let task = TodoTask(
+            title: "DEBUG-ONLY completed standalone",
+            deadLine: Calendar.current.date(byAdding: .day, value: 1, to: Date())!,
+            isCompleted: true,
+            completedAt: Date().addingTimeInterval(-600)
+        )
+        task.isDebugTask = true
+        task.snoozeUntil = Date().addingTimeInterval(300)
+        context.insert(task)
+
+        let originalID = task.id
+        let originalDeadline = task.deadLine
+        guard try CompletedTaskReactivation.reactivate(task, in: context) else {
+            throw DiagnosticFailure.assertion("L'operazione condivisa non ha riattivato il task singolo.")
+        }
+
+        let savedTasks = try context.fetch(FetchDescriptor<TodoTask>())
+        guard let savedTask = savedTasks.first(where: { $0.id == originalID }) else {
+            throw DiagnosticFailure.assertion("Il task riattivato non è stato trovato dopo il salvataggio.")
+        }
+        guard !savedTask.isCompleted,
+              savedTask.completedAt == nil,
+              savedTask.snoozeUntil == nil,
+              savedTask.id == originalID,
+              savedTask.recurrenceID == nil,
+              savedTask.occurrenceIndex == nil,
+              savedTask.deadLine == originalDeadline else {
+            throw DiagnosticFailure.assertion("Il task singolo salvato non rispetta le invarianti della riattivazione.")
+        }
+
+        // An already-active task must be a no-op.
+        guard try CompletedTaskReactivation.reactivate(savedTask, in: context) == false else {
+            throw DiagnosticFailure.assertion("La riattivazione di un task già attivo non doveva effettuare operazioni.")
+        }
+
+        return "Operazione di produzione, save() e rilettura verificati per task singolo; campi resettati, identità/scadenza conservate e seconda chiamata idempotente. Store esclusivamente in-memory."
     }
 
     private func testRecurrenceMaterialization() throws -> String {
@@ -845,8 +986,8 @@ struct DebugDiagnosticsView: View {
             "Esito: \(passed) superati, \(failed) falliti, \(results.count) totali",
             "Ambito: i test AlarmKit e notifiche di sistema sono di sola lettura; i test di pianificazione verificano la logica pura e non provano il refill effettivo della coda di sistema.",
             "Sicurezza: SwiftData in-memory senza save(); file temporanei isolati; notifiche e AlarmKit solo in lettura.",
-            "Nessuna chiamata a save() nei test SwiftData; nessuna modifica intenzionale ai dati persistenti dell’utente.",
-            "I test SwiftData usano contesti in-memory; nessuna chiamata a save() e nessun file reale di allegati creato.",
+            "I test di integrazione della riattivazione chiamano save() esclusivamente su store SwiftData in-memory isolati; nessuna modifica ai dati persistenti dell’utente.",
+            "Gli altri test SwiftData usano contesti in-memory; nessun file reale di allegati creato.",
             "I test di propagazione e troncamento usano RecurrenceEngine e RecurringAttachmentManager; il test di stabilità ripete 20 volte un calcolo deterministico, ma non sostituisce la ripetizione manuale dell'intera suite.",
             ""
         ]

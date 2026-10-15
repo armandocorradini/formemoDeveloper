@@ -167,6 +167,29 @@ struct TaskDetailView: View {
             self.recurrenceCount = task.recurrenceCount
             self.attachmentIDs = (task.attachments ?? []).map(\.id).sorted { $0.uuidString < $1.uuidString }
         }
+
+        func differsOnlyByCompletion(from other: TaskEditSnapshot) -> Bool {
+            isCompleted != other.isCompleted &&
+            title == other.title &&
+            taskDescription == other.taskDescription &&
+            deadLine == other.deadLine &&
+            reminderOffsetMinutes == other.reminderOffsetMinutes &&
+            alarmEnabled == other.alarmEnabled &&
+            locationName == other.locationName &&
+            locationLatitude == other.locationLatitude &&
+            locationLongitude == other.locationLongitude &&
+            locationReminderEnabled == other.locationReminderEnabled &&
+            priorityRaw == other.priorityRaw &&
+            mainTagRaw == other.mainTagRaw &&
+            recurrenceID == other.recurrenceID &&
+            occurrenceIndex == other.occurrenceIndex &&
+            recurrenceRule == other.recurrenceRule &&
+            recurrenceInterval == other.recurrenceInterval &&
+            recurrenceStartDate == other.recurrenceStartDate &&
+            recurrenceEndDate == other.recurrenceEndDate &&
+            recurrenceCount == other.recurrenceCount &&
+            attachmentIDs == other.attachmentIDs
+        }
     }
     
     @State private var initialEditSnapshot: TaskEditSnapshot?
@@ -1078,9 +1101,26 @@ struct TaskDetailView: View {
             return
         }
         
+        // Changing only the completion state is an operation on this occurrence,
+        // not an edit to the recurrence series. Save it without the scope dialog.
+        if let initialEditSnapshot,
+           initialEditSnapshot.differsOnlyByCompletion(from: TaskEditSnapshot(task: task)) {
+            finishDetailExit()
+            return
+        }
+
         // A change to any recurrence definition has its own flow.
         if recurrenceDefinitionChanged() {
             prepareRecurrenceDefinitionChange()
+            return
+        }
+
+        // A completed occurrence is historical data. Ordinary edits apply only
+        // to this occurrence and must not prompt to propagate values forward.
+        // Its recurrence identity remains unchanged, so it can be reactivated
+        // later without becoming a standalone task.
+        if task.isCompleted {
+            finishDetailExit()
             return
         }
 
@@ -1334,8 +1374,14 @@ struct TaskDetailView: View {
     private func finishDetailExit() {
         guard !isExitingDetail else { return }
 
+        let completionStateChanged = initialEditSnapshot?.isCompleted != task.isCompleted
         isExitingDetail = true
         saveTask(userInitiated: false)
+
+        if completionStateChanged {
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        }
 
         initialEditSnapshot = TaskEditSnapshot(task: task)
         recurrenceEditScopeResolved = true
