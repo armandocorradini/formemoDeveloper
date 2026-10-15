@@ -1335,6 +1335,16 @@ enum DebugLog {
         write("Missing files: \(missingFiles.count)")
         write("Orphan files: \(orphanFiles.count)")
 
+        // Keep the normal privacy redactor enabled. Encode only orphan filenames
+        // so the exact names can be compared during a local diagnostic review
+        // without the redactor replacing their extensions with "[File]".
+        for orphanName in orphanFiles.sorted() {
+            let encodedName = Data(orphanName.utf8).base64EncodedString()
+            let fileURL = attachmentsDirectory.appendingPathComponent(orphanName)
+            let size = (try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+            write("ORPHAN_FILENAME_BASE64=\(encodedName) SIZE_BYTES=\(size)")
+        }
+
         if !missingFiles.isEmpty {
 
             write("❌ Missing Files: \(missingFiles.count)")
