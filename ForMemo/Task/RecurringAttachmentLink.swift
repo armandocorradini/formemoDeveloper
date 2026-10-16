@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import os
 
 /// One logical propagation rule for a physical `TaskAttachment`.
 ///
@@ -422,7 +423,16 @@ enum RecurringAttachmentManager {
             }
         )
 
-        return ((try? context.fetchCount(descriptor)) ?? 0) > 0
+        do {
+            return try context.fetchCount(descriptor) > 0
+        } catch {
+            // Unknown propagation state must be treated as propagated so callers
+            // do not detach or delete a possibly shared physical attachment.
+            AppLogger.persistence.error(
+                "Attachment propagation check failed: \(error.localizedDescription)"
+            )
+            return true
+        }
     }
 
     /// Returns true when another materialized occurrence of a recurrence still
@@ -441,8 +451,18 @@ enum RecurringAttachmentManager {
             }
         )
 
-        guard let links = try? context.fetch(linkDescriptor),
-              !links.isEmpty else {
+        let links: [RecurringAttachmentLink]
+        do {
+            links = try context.fetch(linkDescriptor)
+        } catch {
+            // Fail closed: a failed reference check must never authorize deletion.
+            AppLogger.persistence.error(
+                "Attachment reference check failed while fetching propagation links: \(error.localizedDescription)"
+            )
+            return true
+        }
+
+        guard !links.isEmpty else {
             return false
         }
 
@@ -459,8 +479,15 @@ enum RecurringAttachmentManager {
                     }
                 )
 
-                tasksByRecurrence[recurrenceID] =
-                    (try? context.fetch(taskDescriptor)) ?? []
+                do {
+                    tasksByRecurrence[recurrenceID] = try context.fetch(taskDescriptor)
+                } catch {
+                    // Unknown usage is treated as in-use to prevent data loss.
+                    AppLogger.persistence.error(
+                        "Attachment reference check failed while fetching recurrence tasks: \(error.localizedDescription)"
+                    )
+                    return true
+                }
             }
 
             guard let recurrenceTasks = tasksByRecurrence[recurrenceID] else {
@@ -613,18 +640,32 @@ enum RecurringAttachmentManager {
         return try context.fetch(descriptor).map(snapshot)
     }
 
-    static func deleteLinks(
-        for attachment: TaskAttachment,
+    static func linksForDeletion(
+        of attachment: TaskAttachment,
         in context: ModelContext
-    ) throws {
+    ) throws -> [RecurringAttachmentLink] {
         let attachmentID = attachment.id
         let descriptor = FetchDescriptor<RecurringAttachmentLink>(
             predicate: #Predicate<RecurringAttachmentLink> { link in
                 link.attachmentID == attachmentID
             }
         )
+        return try context.fetch(descriptor)
+    }
 
-        for link in try context.fetch(descriptor) {
+    static func deleteLinks(
+        for attachment: TaskAttachment,
+        in context: ModelContext,
+        preFetchedLinks: [RecurringAttachmentLink]? = nil
+    ) throws {
+        let links: [RecurringAttachmentLink]
+        if let preFetchedLinks {
+            links = preFetchedLinks
+        } else {
+            links = try linksForDeletion(of: attachment, in: context)
+        }
+
+        for link in links {
             context.delete(link)
         }
 

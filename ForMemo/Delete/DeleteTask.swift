@@ -109,21 +109,6 @@ func deleteRecurringTaskAndFutureOccurrences(
     
     await ForMemoAlarmManager.shared.waitForPendingSynchronizations()
     
-    // Store the deletion range once.
-    DeletedFingerprintStore.markDeletedFromOccurrence(
-        recurrenceID: recurrenceID,
-        occurrenceIndex: occurrenceIndex
-    )
-
-    // Stop every propagation rule at the last surviving past occurrence.
-    try? RecurringAttachmentManager.truncatePropagation(
-        for: recurrenceID,
-        attachmentIDs: [],
-        endingAt: occurrenceIndex - 1,
-        in: context
-    )
-
-
     let descriptor = FetchDescriptor<TodoTask>(
         predicate: #Predicate<TodoTask> { candidate in
             candidate.recurrenceID == recurrenceID
@@ -133,7 +118,15 @@ func deleteRecurringTaskAndFutureOccurrences(
         ]
     )
 
-    let recurrenceTasks = (try? context.fetch(descriptor)) ?? []
+    let recurrenceTasks: [TodoTask]
+    do {
+        recurrenceTasks = try context.fetch(descriptor)
+    } catch {
+        AppLogger.persistence.error(
+            "Recurring-task deletion aborted because occurrence fetch failed: \(error.localizedDescription)"
+        )
+        return
+    }
 
     let tasksToDelete = recurrenceTasks.filter { recurrenceTask in
         guard let index = recurrenceTask.occurrenceIndex else {
@@ -147,6 +140,27 @@ func deleteRecurringTaskAndFutureOccurrences(
         NotificationManager.shared.refresh()
         return
     }
+
+    // Do not change deletion fingerprints or attachment propagation until the
+    // occurrence fetch succeeds and the propagation update can be applied.
+    do {
+        try RecurringAttachmentManager.truncatePropagation(
+            for: recurrenceID,
+            attachmentIDs: [],
+            endingAt: occurrenceIndex - 1,
+            in: context
+        )
+    } catch {
+        AppLogger.persistence.error(
+            "Recurring-task deletion aborted because attachment propagation could not be updated: \(error.localizedDescription)"
+        )
+        return
+    }
+
+    DeletedFingerprintStore.markDeletedFromOccurrence(
+        recurrenceID: recurrenceID,
+        occurrenceIndex: occurrenceIndex
+    )
 
     var sharedAttachmentsToReconcile: [TaskAttachment] = []
     var sharedAttachmentIDs = Set<UUID>()

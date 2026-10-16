@@ -30,7 +30,7 @@ struct DebugDiagnosticsView: View {
                 }
                 .disabled(isRunning)
             } footer: {
-                Text("Tutti i test sono non distruttivi: SwiftData usa contesti isolati in memoria (i test di integrazione salvano solo nello store temporaneo), i file una cartella temporanea dedicata, notifiche e stato AlarmKit vengono soltanto letti. Nessuna sveglia reale viene pianificata.")
+                Text("I test usano dati isolati. I test di integrazione creano notifiche e, se AlarmKit è autorizzato, una sveglia di prova con identificativo univoco e scadenza lontana; al termine eliminano esclusivamente gli identificativi creati dal test. Nessun task o allarme personale viene cancellato.")
             }
 
             if !results.isEmpty {
@@ -107,14 +107,20 @@ struct DebugDiagnosticsView: View {
         await runTest("Calcoli ripetuti: stabilità diagnostica") { try testRepeatedDeterministicCalculations() }
         await runTest("CRUD documento SwiftData") { try testDocumentCRUD() }
         await runTest("File allegato temporaneo: lettura e pulizia") { try await testAttachmentImportAndCleanup() }
-        await runTest("Coda notifiche di sistema") { try await testPendingNotifications() }
-        await runTest("Stato AlarmKit") { try testAlarmKitReadableState() }
+        await runTest("Coda notifiche di sistema (sola lettura)") { try await testPendingNotifications() }
+        await runTest("Integrazione notifiche: crea, verifica, elimina") { try await testNotificationCreateAndCleanup() }
+        await runTest("Refill reale notifiche: libera slot e inserisce prossimo evento") { try await testNotificationRefillIntegration() }
+        await runTest("Stato AlarmKit (sola lettura)") { try testAlarmKitReadableState() }
+        await runTest("Integrazione AlarmKit: pianifica, verifica, cancella") { try await testAlarmKitCreateAndCancel() }
         await runTest("Calcolo eventi successivi di un task (puro)") { try testNextEventProgression() }
-        await runTest("Coda globale: limite 64 e refill simulato") { try testGlobalQueueLimitAndRefillSimulation() }
+        await runTest("Coda globale produzione: limite 64 e refill") { try testGlobalQueueLimitAndRefillSimulation() }
         await runTest("Fallback sveglia senza autorizzazione AlarmKit") { try testAlarmAuthorizationFallback() }
         await runTest("Allegati ricorrenti: configurazione idempotente") { try testAttachmentPropagationIdempotency() }
         await runTest("Ricorrenze mensili: date valide e crescenti") { try testMonthlyRecurrenceBoundaries() }
         await runTest("Opzioni riprogrammazione: mapping temporale") { try testRescheduleOptionMapping() }
+        await runTest("Rebuild produzione: errore fetch task") { try await testInjectedTaskFetchFailure() }
+        await runTest("Rebuild produzione: errore fetch documenti") { try await testInjectedDocumentFetchFailure() }
+        await runTest("Rebuild produzione: errore add notifica") { try await testInjectedNotificationAddFailure() }
     }
 
     /// Ogni test con persistenza usa un database SwiftData in-memory indipendente.
@@ -130,7 +136,8 @@ struct DebugDiagnosticsView: View {
         let configuration = ModelConfiguration(
             "ForMemoDiagnostics-\(UUID().uuidString)",
             schema: schema,
-            isStoredInMemoryOnly: true
+            isStoredInMemoryOnly: true,
+            cloudKitDatabase: .none
         )
         let container = try ModelContainer(for: schema, configurations: [configuration])
         return (container, ModelContext(container))
@@ -144,6 +151,110 @@ struct DebugDiagnosticsView: View {
         } catch {
             results.append(.init(title: title, status: .failed, details: error.localizedDescription, duration: start.duration(to: .now).secondsValue))
         }
+    }
+
+    // Questi test attraversano il percorso di rebuild di produzione con store
+    // SwiftData isolato e fault injection limitata ai confini di errore.
+    private func testInjectedTaskFetchFailure() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let center = UNUserNotificationCenter.current()
+        let before = Set((await center.pendingNotificationRequests()).map(\.identifier))
+        var addAttempts = 0
+
+        let succeeded = await NotificationManager.shared.debugRebuildAfterTaskFetch(
+            using: context,
+            fetchOperation: {
+                throw DiagnosticFailure.assertion("Errore fetch task iniettato dal test.")
+            },
+            addOperation: { request in
+                addAttempts += 1
+                try await center.add(request)
+            }
+        )
+
+        let after = Set((await center.pendingNotificationRequests()).map(\.identifier))
+        guard !succeeded, before == after, addAttempts == 0 else {
+            throw DiagnosticFailure.assertion(
+                "Il fetch task fallito deve interrompere il rebuild senza modificare la coda né tentare add."
+            )
+        }
+        return "Percorso di fetch di produzione: errore intercettato e rebuild interrotto; coda UNUserNotificationCenter invariata, nessun add tentato. Il fetch fallito è iniettato, non generato da SwiftData."
+    }
+
+    private func testInjectedDocumentFetchFailure() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let center = UNUserNotificationCenter.current()
+        let before = Set((await center.pendingNotificationRequests()).map(\.identifier))
+        let task = TodoTask(
+            title: "DEBUG-ONLY document fetch failure",
+            deadLine: Date().addingTimeInterval(7_200)
+        )
+        var addAttempts = 0
+
+        let succeeded = await NotificationManager.shared.debugRebuild(
+            tasks: [task],
+            using: context,
+            documentFetchOperation: {
+                throw DiagnosticFailure.assertion("Errore fetch documenti iniettato dal test.")
+            },
+            addOperation: { request in
+                addAttempts += 1
+                try await center.add(request)
+            }
+        )
+
+        let after = Set((await center.pendingNotificationRequests()).map(\.identifier))
+        guard !succeeded, before == after, addAttempts == 0 else {
+            throw DiagnosticFailure.assertion(
+                "Il fetch documenti fallito deve interrompere il rebuild prima di cleanup/add."
+            )
+        }
+        return "Rebuild di produzione eseguito con contesto isolato: l'errore fetch documenti è intercettato prima dello snapshot/cleanup e degli add; coda di sistema invariata. L'errore è iniettato, non generato da SwiftData."
+    }
+
+    private func testInjectedNotificationAddFailure() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let center = UNUserNotificationCenter.current()
+        let before = Set((await center.pendingNotificationRequests()).map(\.identifier))
+        let task = TodoTask(
+            title: "DEBUG-ONLY notification add failure",
+            deadLine: Date().addingTimeInterval(7_200)
+        )
+        task.isDebugTask = false
+        let ownedPrefix = "task.\(task.id.uuidString)."
+        var addAttempts = 0
+
+        let succeeded = await NotificationManager.shared.debugRebuild(
+            tasks: [task],
+            using: context,
+            addOperation: { request in
+                guard request.identifier.hasPrefix(ownedPrefix) else {
+                    throw DiagnosticFailure.assertion(
+                        "Il rebuild ha prodotto un identificativo inatteso: \(request.identifier)"
+                    )
+                }
+                addAttempts += 1
+                // Inject a failure at the production add boundary. Do not call
+                // UNUserNotificationCenter.add for this request.
+                throw DiagnosticFailure.assertion("Errore add iniettato dal test.")
+            }
+        )
+
+        let afterRequests = await center.pendingNotificationRequests()
+        let after = Set(afterRequests.map(\.identifier))
+        let leakedIDs = Set(after.filter { $0.hasPrefix(ownedPrefix) })
+        guard !succeeded,
+              before == after,
+              addAttempts > 0,
+              leakedIDs.isEmpty else {
+            throw DiagnosticFailure.assertion(
+                "L'add fallito deve rendere il rebuild non riuscito e non lasciare richieste del test nella coda."
+            )
+        }
+        return "Rebuild di produzione eseguito con contesto isolato; l'errore è iniettato al confine add, il rebuild restituisce esito negativo e la coda di sistema resta invariata. Nessuna richiesta personale rimossa. Non simula un errore generato internamente da UNUserNotificationCenter."
     }
 
     private func testNotificationEventCalculation() throws -> String {
@@ -795,6 +906,8 @@ struct DebugDiagnosticsView: View {
     /// task vengono uniti, ordinati globalmente e limitati alle prime 64 richieste.
     /// Dopo il primo evento, ricalcola gli eventi ancora futuri e verifica che
     /// il precedente evento #65 possa entrare nella nuova selezione.
+    /// Verifica una simulazione locale della selezione cronologica.
+    /// Non invoca rebuild() e non legge, cancella o rischedula notifiche reali.
     private func testGlobalQueueLimitAndRefillSimulation() throws -> String {
         let calendar = Calendar.current
         let now = Date()
@@ -815,7 +928,7 @@ struct DebugDiagnosticsView: View {
             tasks.append(task)
         }
 
-        func globallySortedEvents(asOf referenceDate: Date) -> [NotificationManager.TaskEventCalculator.Event] {
+        func allEvents(asOf referenceDate: Date) -> [NotificationManager.TaskEventCalculator.Event] {
             tasks.flatMap {
                 NotificationManager.TaskEventCalculator.allEvents(
                     for: $0,
@@ -823,39 +936,67 @@ struct DebugDiagnosticsView: View {
                     lead: lead,
                     alarmAuthorizationAvailable: false
                 )
-            }.sorted {
-                if $0.date != $1.date { return $0.date < $1.date }
-                return $0.id < $1.id
             }
         }
 
-        let allEvents = globallySortedEvents(asOf: now)
-        guard allEvents.count > 64 else {
-            throw DiagnosticFailure.assertion("La simulazione deve generare più di 64 eventi; ottenuti \(allEvents.count).")
-        }
-        let firstQueue = Array(allEvents.prefix(64))
-        guard firstQueue.count == 64,
-              zip(firstQueue, firstQueue.dropFirst()).allSatisfy({
-                  $0.0.date < $0.1.date || ($0.0.date == $0.1.date && $0.0.id <= $0.1.id)
-              }) else {
-            throw DiagnosticFailure.assertion("La selezione iniziale non contiene esattamente i 64 eventi più cronologici.")
+        let candidates = allEvents(asOf: now)
+        guard candidates.count > 64 else {
+            throw DiagnosticFailure.assertion("Il test deve generare più di 64 eventi; ottenuti \(candidates.count).")
         }
 
-        let excluded65 = allEvents[64]
+        let firstQueue = NotificationManager.selectChronologicalQueue(
+            from: candidates,
+            limit: 64,
+            date: { $0.date },
+            id: { $0.id }
+        )
+        guard firstQueue.count == 64 else {
+            throw DiagnosticFailure.assertion("Il selettore locale non ha restituito esattamente 64 eventi.")
+        }
+
+        for index in 1..<firstQueue.count {
+            let previous = firstQueue[index - 1]
+            let current = firstQueue[index]
+            let isChronological = previous.date < current.date
+                || (previous.date == current.date && previous.id <= current.id)
+            guard isChronological else {
+                throw DiagnosticFailure.assertion("Gli eventi selezionati non sono in ordine cronologico al posto \(index).")
+            }
+        }
+
+        let first65 = NotificationManager.selectChronologicalQueue(
+            from: candidates,
+            limit: 65,
+            date: { $0.date },
+            id: { $0.id }
+        )
+        guard let excluded65 = first65.last,
+              !firstQueue.contains(where: { $0.id == excluded65.id }) else {
+            throw DiagnosticFailure.assertion("Impossibile identificare l'evento #65 escluso dalla prima coda.")
+        }
+
+        // Simula il momento successivo al primo evento: il calcolatore esclude
+        // gli eventi già trascorsi e il selettore locale ricalcola i 64 slot.
         let afterFirstEvent = firstQueue[0].date.addingTimeInterval(1)
-        let remainingEvents = globallySortedEvents(asOf: afterFirstEvent)
-        let refilledQueue = Array(remainingEvents.prefix(64))
+        let remainingEvents = allEvents(asOf: afterFirstEvent)
+        let refilledQueue = NotificationManager.selectChronologicalQueue(
+            from: remainingEvents,
+            limit: 64,
+            date: { $0.date },
+            id: { $0.id }
+        )
+
         guard refilledQueue.count == 64 else {
-            throw DiagnosticFailure.assertion("Dopo il primo evento la coda simulata contiene \(refilledQueue.count) richieste, anziché 64.")
+            throw DiagnosticFailure.assertion("Dopo il primo evento la nuova selezione contiene \(refilledQueue.count) richieste, anziché 64.")
         }
         guard refilledQueue.contains(where: { $0.id == excluded65.id }) else {
-            throw DiagnosticFailure.assertion("L'evento precedentemente escluso #65 non è entrato nella nuova selezione dopo la liberazione dello slot.")
+            throw DiagnosticFailure.assertion("L'evento #65 non è entrato nella nuova selezione dopo la liberazione dello slot.")
         }
         guard !refilledQueue.contains(where: { $0.id == firstQueue[0].id }) else {
-            throw DiagnosticFailure.assertion("L'evento già trascorso è rimasto nella selezione dopo il refill simulato.")
+            throw DiagnosticFailure.assertion("L'evento già trascorso è rimasto nella selezione successiva.")
         }
 
-        return "\(allEvents.count) eventi uniti in un'unica coda; selezionate le prime 64 richieste. Dopo il primo evento, la nuova selezione include l'evento precedentemente escluso #65. Simulazione isolata: nessuna notifica reale o sveglia modificata."
+        return "\(candidates.count) eventi generati; limite 64 e ordinamento verificati usando lo stesso selettore cronologico puro impiegato da rebuild() in produzione. Dopo il primo evento, la nuova selezione include l'evento precedentemente escluso #65. Nessuna notifica reale modificata; il refill operativo di produzione non viene invocato."
     }
 
     private func testAlarmAuthorizationFallback() throws -> String {
@@ -984,8 +1125,8 @@ struct DebugDiagnosticsView: View {
             "Data: \(formatter.string(from: .now))",
             "Ambiente: \(ProcessInfo.processInfo.operatingSystemVersionString)",
             "Esito: \(passed) superati, \(failed) falliti, \(results.count) totali",
-            "Ambito: i test AlarmKit e notifiche di sistema sono di sola lettura; i test di pianificazione verificano la logica pura e non provano il refill effettivo della coda di sistema.",
-            "Sicurezza: SwiftData in-memory senza save(); file temporanei isolati; notifiche e AlarmKit solo in lettura.",
+            "Ambito: test di integrazione con notifiche di prova a ID univoci e sveglia AlarmKit temporanea, se autorizzata. Limite globale 64 e ordinamento verificati tramite il selettore condiviso con il rebuild di produzione; il rebuild non viene invocato per non modificare notifiche personali.",
+            "Sicurezza: nessuna cancellazione globale; la pulizia agisce esclusivamente sugli ID creati dal test. SwiftData usa store in-memory isolati.",
             "I test di integrazione della riattivazione chiamano save() esclusivamente su store SwiftData in-memory isolati; nessuna modifica ai dati persistenti dell’utente.",
             "Gli altri test SwiftData usano contesti in-memory; nessun file reale di allegati creato.",
             "I test di propagazione e troncamento usano RecurrenceEngine e RecurringAttachmentManager; il test di stabilità ripete 20 volte un calcolo deterministico, ma non sostituisce la ripetizione manuale dell'intera suite.",
@@ -1057,6 +1198,162 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Sono stati trovati identificativi di notifica duplicati.")
         }
         return "Lettura non distruttiva: \(pending.count) richieste pendenti; identificativi univoci. Nessuna notifica è stata modificata."
+    }
+
+    private func testNotificationCreateAndCleanup() async throws -> String {
+        let center = UNUserNotificationCenter.current()
+        let testPrefix = "formemo.diagnostics.\(UUID().uuidString)."
+        let identifiers = (0..<3).map { "\(testPrefix)notification.\($0)" }
+        var cleanupErrors: [String] = []
+
+        do {
+            for (index, identifier) in identifiers.enumerated() {
+                let content = UNMutableNotificationContent()
+                content.title = "ForMemo diagnostica"
+                content.body = "Notifica di prova \(index + 1)"
+                content.sound = nil
+                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3_600 + Double(index * 60), repeats: false)
+                try await center.add(UNNotificationRequest(identifier: identifier, content: content, trigger: trigger))
+            }
+
+            let pending = await center.pendingNotificationRequests()
+            let found = Set(pending.map(\.identifier).filter { $0.hasPrefix(testPrefix) })
+            guard found == Set(identifiers) else {
+                throw DiagnosticFailure.assertion("Le notifiche di prova create non corrispondono a quelle recuperate. Attese 3, trovate \(found.count).")
+            }
+        } catch {
+            center.removePendingNotificationRequests(withIdentifiers: identifiers)
+            throw error
+        }
+
+        center.removePendingNotificationRequests(withIdentifiers: identifiers)
+        let remaining = await center.pendingNotificationRequests()
+        let stillPresent = remaining.filter { identifiers.contains($0.identifier) }
+        if !stillPresent.isEmpty {
+            cleanupErrors.append("\(stillPresent.count) notifiche di prova ancora pendenti")
+            center.removePendingNotificationRequests(withIdentifiers: identifiers)
+        }
+        guard cleanupErrors.isEmpty else {
+            throw DiagnosticFailure.assertion(cleanupErrors.joined(separator: "; "))
+        }
+        return "Create 3 notifiche con trigger futuro, verificate nella coda di sistema e rimosse per ID esatto. Nessuna richiesta preesistente è stata modificata."
+    }
+
+    /// Esegue un refill reale tramite UNUserNotificationCenter con ID isolati.
+    /// Per non mettere a rischio le notifiche personali, non crea 65 richieste
+    /// simultanee: verifica il ciclo operativo add -> verifica -> rimozione dello
+    /// slot precedente -> add del prossimo evento -> verifica -> cleanup.
+    /// Il limite globale di 64 e la selezione cronologica restano coperti dal test
+    /// deterministico separato; questo test verifica l'integrazione di sistema.
+    private func testNotificationRefillIntegration() async throws -> String {
+        let center = UNUserNotificationCenter.current()
+        let prefix = "formemo.diagnostics.refill.\(UUID().uuidString)."
+        let firstID = prefix + "event.001"
+        let secondID = prefix + "event.002"
+        let nextID = prefix + "event.003"
+        let identifiers = [firstID, secondID, nextID]
+
+        // Evita collisioni con richieste preesistenti, anche in caso di UUID
+        // improbabilmente duplicato.
+        let before = await center.pendingNotificationRequests()
+        let beforeIDs = Set(before.map(\.identifier))
+        guard identifiers.allSatisfy({ !beforeIDs.contains($0) }) else {
+            throw DiagnosticFailure.assertion("Collisione con un identificativo di notifica già presente; test interrotto senza modifiche.")
+        }
+
+        do {
+            try await center.add(makeDiagnosticNotification(identifier: firstID, offset: 7_200, title: "Evento cronologico 1"))
+            try await center.add(makeDiagnosticNotification(identifier: secondID, offset: 7_260, title: "Evento cronologico 2"))
+
+            var pendingIDs = Set((await center.pendingNotificationRequests()).map(\.identifier))
+            guard pendingIDs.contains(firstID), pendingIDs.contains(secondID) else {
+                throw DiagnosticFailure.assertion("I primi due eventi di prova non risultano entrambi pendenti.")
+            }
+
+            // Simula la consegna del primo evento liberando solo il suo ID.
+            // Il test non invoca removeAllPendingNotificationRequests.
+            center.removePendingNotificationRequests(withIdentifiers: [firstID])
+            try await Task.sleep(for: .milliseconds(150))
+            pendingIDs = Set((await center.pendingNotificationRequests()).map(\.identifier))
+            guard !pendingIDs.contains(firstID), pendingIDs.contains(secondID) else {
+                throw DiagnosticFailure.assertion("La rimozione del primo evento non ha liberato lo slot atteso o ha alterato il secondo.")
+            }
+
+            try await center.add(makeDiagnosticNotification(identifier: nextID, offset: 7_320, title: "Evento cronologico 3 — refill"))
+            pendingIDs = Set((await center.pendingNotificationRequests()).map(\.identifier))
+            guard pendingIDs.contains(secondID), pendingIDs.contains(nextID), !pendingIDs.contains(firstID) else {
+                throw DiagnosticFailure.assertion("Dopo il refill non risultano pendenti esattamente gli eventi successivi attesi.")
+            }
+        } catch {
+            center.removePendingNotificationRequests(withIdentifiers: identifiers)
+            throw error
+        }
+
+        center.removePendingNotificationRequests(withIdentifiers: identifiers)
+        try await Task.sleep(for: .milliseconds(150))
+        let afterCleanup = await center.pendingNotificationRequests()
+        let leftovers = afterCleanup.filter { identifiers.contains($0.identifier) }
+        guard leftovers.isEmpty else {
+            center.removePendingNotificationRequests(withIdentifiers: identifiers)
+            throw DiagnosticFailure.assertion("Pulizia incompleta: \(leftovers.count) notifiche di prova ancora pendenti.")
+        }
+
+        return "Refill verificato tramite UNUserNotificationCenter: due eventi reali di prova sono stati programmati; rimosso il primo, il terzo è stato aggiunto mentre il secondo è rimasto pendente. Tutti gli ID di prova sono stati rimossi. Nessuna richiesta personale è stata cancellata. Il limite 64 e l'ordinamento globale sono verificati separatamente dalla simulazione, non da questo test."
+    }
+
+    private func makeDiagnosticNotification(identifier: String, offset: TimeInterval, title: String) -> UNNotificationRequest {
+        let content = UNMutableNotificationContent()
+        content.title = "ForMemo diagnostica"
+        content.body = title
+        content.sound = nil
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: offset, repeats: false)
+        return UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+    }
+
+    private func testAlarmKitCreateAndCancel() async throws -> String {
+        let manager = ForMemoAlarmManager.shared
+        guard manager.authorizationState() == .authorized else {
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato. Nessuna sveglia è stata creata.")
+        }
+
+        let alarmID = UUID()
+        let fireDate = Date.now.addingTimeInterval(7_200)
+        let alarmManager = AlarmManager.shared
+
+        do {
+            try await manager.scheduleAlarm(
+                id: alarmID,
+                date: fireDate,
+                title: "ForMemo test diagnostico"
+            )
+
+            let scheduledAfterCreate = try alarmManager.alarms.contains { alarm in
+                alarm.id == alarmID && {
+                    if case .scheduled = alarm.state { return true }
+                    return false
+                }()
+            }
+            guard scheduledAfterCreate else {
+                throw DiagnosticFailure.assertion("AlarmKit non mostra la sveglia di prova come programmata dopo la creazione.")
+            }
+
+            try await manager.cancelAlarm(id: alarmID)
+            let stillScheduled = try alarmManager.alarms.contains { alarm in
+                alarm.id == alarmID && {
+                    if case .scheduled = alarm.state { return true }
+                    return false
+                }()
+            }
+            guard !stillScheduled else {
+                throw DiagnosticFailure.assertion("La sveglia di prova risulta ancora programmata dopo la cancellazione.")
+            }
+        } catch {
+            // Pulizia circoscritta all'UUID generato da questo test.
+            try? await manager.cancelAlarm(id: alarmID)
+            throw error
+        }
+
+        return "Sveglia AlarmKit di prova creata con UUID dedicato, verificata come programmata e cancellata; controllo finale senza sveglia di prova residua. Data prevista: \(ISO8601DateFormatter().string(from: fireDate))."
     }
 
     private func testAlarmKitReadableState() throws -> String {

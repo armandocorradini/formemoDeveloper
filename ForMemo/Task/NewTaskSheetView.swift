@@ -659,6 +659,14 @@ struct NewTaskSheetView: View {
                         .tint(.primary)
                         
                         Menu {
+                            Button {
+                                selectedRecurrence = .none
+                            } label: {
+                                Text(recurrenceUnitTitle(for: .none))
+                            }
+
+                            Divider()
+
                             ForEach(RecurrenceUI.allCases.filter { $0 != .none }) { option in
                                 Button {
                                     selectedRecurrence = option

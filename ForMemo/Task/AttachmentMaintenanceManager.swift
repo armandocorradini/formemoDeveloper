@@ -71,17 +71,23 @@ final class AttachmentMaintenanceManager {
                 }
 
                 do {
+                    // Resolve all rule links before deleting the physical asset.
+                    // Once the file is gone, removing this already-fetched set
+                    // cannot fail because of a second SwiftData fetch.
+                    let links = try RecurringAttachmentManager.linksForDeletion(
+                        of: attachment,
+                        in: context
+                    )
+
                     try permanentlyDeletePhysicalAsset(
                         attachment,
                         in: context
                     )
 
-                    // Remove the recurrence rule together with the physical
-                    // attachment so no orphaned propagation rule can keep the
-                    // attachment visible in task lists.
                     try RecurringAttachmentManager.deleteLinks(
                         for: attachment,
-                        in: context
+                        in: context,
+                        preFetchedLinks: links
                     )
                 } catch {
                     AppLogger.persistence.error(
@@ -133,17 +139,22 @@ final class AttachmentMaintenanceManager {
                     continue
                 }
                 
+                // Resolve all rule links before deleting the physical asset.
+                let links = try RecurringAttachmentManager.linksForDeletion(
+                    of: attachment,
+                    in: context
+                )
+
                 try permanentlyDeletePhysicalAsset(
                     attachment,
                     in: context
                 )
 
-                // Remove any recurrence rule that referenced the attachment.
-                // Otherwise a stale link could keep the paperclip visible even
-                // after the TaskAttachment was permanently deleted.
+                // Removing the pre-fetched links requires no additional fetch.
                 try RecurringAttachmentManager.deleteLinks(
                     for: attachment,
-                    in: context
+                    in: context,
+                    preFetchedLinks: links
                 )
                 
                 task.attachments?.removeAll {

@@ -198,7 +198,13 @@ final class NotificationManager: NSObject {
             AppLogger.notifications.debug("Optimized refresh")
 #endif
             let tSecondFetch = ContinuousClock.now
-            let fetched = self.fetchNotificationTasks(using: context)
+            guard let fetched = self.fetchNotificationTasks(using: context) else {
+                if generation == self.refreshGeneration {
+                    self.lastTasksSignature = ""
+                    self.pendingRefresh = false
+                }
+                return
+            }
             AppLogger.notifications.debug(
                 "⏱️ REFRESH notification fetch: \(ContinuousClock.now - tSecondFetch)"
             )
@@ -222,13 +228,21 @@ final class NotificationManager: NSObject {
                 return
             }
 
-            self.lastTasksSignature = signature
-            await self.rebuild(fetched, expectedGeneration: generation)
+            let rebuildSucceeded = await self.rebuild(
+                fetched,
+                expectedGeneration: generation
+            )
 
-            // A superseded task must never clear the state of its replacement.
+            // Do not cache a signature for an incomplete rebuild. A later refresh
+            // must be able to retry after a SwiftData or scheduling failure.
             if generation == self.refreshGeneration {
                 self.pendingRefresh = false
-                self.lastRebuild = Date()
+                if rebuildSucceeded {
+                    self.lastTasksSignature = signature
+                    self.lastRebuild = Date()
+                } else {
+                    self.lastTasksSignature = ""
+                }
             }
         }
     }
@@ -371,7 +385,10 @@ func refreshFromCloudKit() {
     }
     
     
-    private func fetchNotificationTasks(using context: ModelContext) -> [TodoTask] {
+    private func fetchNotificationTasks(
+        using context: ModelContext,
+        fetchOperation: (() throws -> [TodoTask])? = nil
+    ) -> [TodoTask]? {
         let descriptor = FetchDescriptor<TodoTask>(
             predicate: #Predicate<TodoTask> {
                 !$0.isCompleted &&
@@ -384,7 +401,17 @@ func refreshFromCloudKit() {
             }
         )
 
-        return (try? context.fetch(descriptor)) ?? []
+        do {
+            if let fetchOperation {
+                return try fetchOperation()
+            }
+            return try context.fetch(descriptor)
+        } catch {
+            AppLogger.notifications.error(
+                "Notification rebuild skipped because task fetch failed: \(error.localizedDescription)"
+            )
+            return nil
+        }
     }
     
     
@@ -550,6 +577,29 @@ func refreshFromCloudKit() {
         )
     }
 
+    // MARK: - CHRONOLOGICAL QUEUE SELECTION
+
+    /// Shared deterministic selection logic for production scheduling and diagnostics.
+    /// This pure helper does not access or mutate notification services.
+    static func selectChronologicalQueue<T>(
+        from candidates: [T],
+        limit: Int,
+        date: (T) -> Date,
+        id: (T) -> String
+    ) -> [T] {
+        guard limit > 0 else { return [] }
+
+        let sorted = candidates.sorted { lhs, rhs in
+            let lhsDate = date(lhs)
+            let rhsDate = date(rhs)
+            if lhsDate != rhsDate {
+                return lhsDate < rhsDate
+            }
+            return id(lhs) < id(rhs)
+        }
+        return Array(sorted.prefix(limit))
+    }
+
     // MARK: - REBUILD
 
     
@@ -557,13 +607,39 @@ func refreshFromCloudKit() {
         _ tasks: [TodoTask],
         cleanupStale: Bool = true,
         syncBadge: Bool = true,
-        expectedGeneration: UInt64? = nil
-    ) async {
+        expectedGeneration: UInt64? = nil,
+        contextOverride: ModelContext? = nil,
+        documentFetchOperation: (() throws -> [DocumentItem])? = nil,
+        addOperation: ((UNNotificationRequest) async throws -> Void)? = nil
+    ) async -> Bool {
         let rebuildStart = Date()
         let center = UNUserNotificationCenter.current()
         let now = Date()
-        let badgeIndex = TaskBadgePolicy.Index(tasks: tasks)
 
+        // Tasks and documents share one chronological queue. If document data
+        // cannot be read, abort before removing or replacing any pending request.
+        guard let context = contextOverride ?? modelContainer?.mainContext else {
+            AppLogger.notifications.error(
+                "Notification rebuild skipped because the model context is unavailable."
+            )
+            return false
+        }
+
+        let documents: [DocumentItem]
+        do {
+            if let documentFetchOperation {
+                documents = try documentFetchOperation()
+            } else {
+                documents = try context.fetch(FetchDescriptor<DocumentItem>())
+            }
+        } catch {
+            AppLogger.notifications.error(
+                "Notification rebuild skipped because document fetch failed: \(error.localizedDescription)"
+            )
+            return false
+        }
+
+        let badgeIndex = TaskBadgePolicy.Index(tasks: tasks)
         let pending = await center.pendingNotificationRequests()
         var existing: [String: UNNotificationRequest] = [:]
         existing.reserveCapacity(pending.count)
@@ -612,54 +688,48 @@ func refreshFromCloudKit() {
         }
 
         // Documents are part of the same global chronological queue.
-        if let context = modelContainer?.mainContext {
-            let documents = (try? context.fetch(FetchDescriptor<DocumentItem>())) ?? []
-
-            for document in documents {
-                guard document.notificationEnabled,
-                      let expiryDate = document.expiryDate,
-                      let triggerDate = Calendar.current.date(
-                        byAdding: .day,
-                        value: -document.notificationDaysBefore,
-                        to: expiryDate
-                      ),
-                      triggerDate > now else {
-                    continue
-                }
-
-                let content = documentNotificationContent(title: document.name)
-                candidates.append(
-                    ScheduledEvent(
-                        id: "document.\(document.id.uuidString)",
-                        date: triggerDate,
-                        content: content
-                    )
-                )
+        for document in documents {
+            guard document.notificationEnabled,
+                  let expiryDate = document.expiryDate,
+                  let triggerDate = Calendar.current.date(
+                    byAdding: .day,
+                    value: -document.notificationDaysBefore,
+                    to: expiryDate
+                  ),
+                  triggerDate > now else {
+                continue
             }
+
+            let content = documentNotificationContent(title: document.name)
+            candidates.append(
+                ScheduledEvent(
+                    id: "document.\(document.id.uuidString)",
+                    date: triggerDate,
+                    content: content
+                )
+            )
         }
 
         // The queue is global: task + document notifications compete by date.
-        // Only the 64 earliest requests are installed in UNUserNotificationCenter.
-        // Everything after #64 remains represented by the model and will enter
-        // the pending queue on the next rebuild when earlier requests disappear.
-        candidates.sort {
-            if $0.date != $1.date {
-                return $0.date < $1.date
-            }
-            return $0.id < $1.id
-        }
-
-        let selected = Array(candidates.prefix(64))
+        // Keep production and diagnostics on the same deterministic selector.
+        // Only the 64 earliest requests are installed in UNUserNotificationCenter;
+        // later candidates can enter on a subsequent rebuild.
+        let selected = Self.selectChronologicalQueue(
+            from: candidates,
+            limit: 64,
+            date: { $0.date },
+            id: { $0.id }
+        )
         let selectedIDs = Set(selected.map(\.id))
 
-        guard rebuildStart >= self.lastRebuild else { return }
-        guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return }
+        guard rebuildStart >= self.lastRebuild else { return false }
+        guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return false }
 
         // Synchronize removals before additions.
         // This is important when the notification queue changes substantially
         // after a recurrence is created, migrated, changed, completed or deleted.
         if cleanupStale {
-            guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return }
+            guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return false }
             let managedPrefixes = ["task.", "document."]
             let staleIDs = existing.keys.filter { id in
                 managedPrefixes.contains(where: { id.hasPrefix($0) }) &&
@@ -677,9 +747,10 @@ func refreshFromCloudKit() {
             }
         }
 
+        var schedulingSucceeded = true
         for item in selected {
-            guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return }
-            guard !Task.isCancelled || expectedGeneration == nil else { return }
+            guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return false }
+            guard !Task.isCancelled || expectedGeneration == nil else { return false }
             let trigger = calendarTrigger(for: item.date)
 
             if let old = existing[item.id],
@@ -691,13 +762,6 @@ func refreshFromCloudKit() {
                 continue
             }
 
-            if existing[item.id] != nil {
-                center.removePendingNotificationRequests(
-                    withIdentifiers: [item.id]
-                )
-                existing.removeValue(forKey: item.id)
-            }
-
             let request = UNNotificationRequest(
                 identifier: item.id,
                 content: item.content,
@@ -705,15 +769,19 @@ func refreshFromCloudKit() {
             )
 
             do {
-                try await center.add(request)
+                if let addOperation {
+                    try await addOperation(request)
+                } else {
+                    try await center.add(request)
+                }
+                existing[item.id] = request
             } catch {
-#if DEBUG
+                schedulingSucceeded = false
                 AppLogger.notifications.error(
                     "Notification scheduling failed [\(item.id)]: \(error.localizedDescription)"
                 )
-#endif
             }
-            guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return }
+            guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return false }
         }
 
         if syncBadge {
@@ -721,6 +789,8 @@ func refreshFromCloudKit() {
             let showBadge = UserDefaults.standard.bool(forKey: "showAppBadge")
             applyBadge(showBadge ? finalBadge : 0)
         }
+
+        return schedulingSucceeded
     }
 
     private func calendarTrigger(for date: Date) -> UNCalendarNotificationTrigger {
@@ -832,13 +902,52 @@ func refreshFromCloudKit() {
     }
 
 #if DEBUG
-func debugRebuild(tasks: [TodoTask]) async {
-    await rebuild(
-        tasks,
-        cleanupStale: false,
-        syncBadge: false
-    )
-}
+    /// Exercises the production task-fetch guard with an injected fetch error.
+    func debugRebuildAfterTaskFetch(
+        using context: ModelContext,
+        fetchOperation: @escaping () throws -> [TodoTask],
+        addOperation: ((UNNotificationRequest) async throws -> Void)? = nil
+    ) async -> Bool {
+        guard let tasks = fetchNotificationTasks(
+            using: context,
+            fetchOperation: fetchOperation
+        ) else {
+            return false
+        }
+
+        return await rebuild(
+            tasks,
+            cleanupStale: false,
+            syncBadge: false,
+            contextOverride: context,
+            addOperation: addOperation
+        )
+    }
+
+    /// Runs the production rebuild against an isolated SwiftData context.
+    func debugRebuild(
+        tasks: [TodoTask],
+        using context: ModelContext,
+        documentFetchOperation: (() throws -> [DocumentItem])? = nil,
+        addOperation: ((UNNotificationRequest) async throws -> Void)? = nil
+    ) async -> Bool {
+        await rebuild(
+            tasks,
+            cleanupStale: false,
+            syncBadge: false,
+            contextOverride: context,
+            documentFetchOperation: documentFetchOperation,
+            addOperation: addOperation
+        )
+    }
+
+    func debugRebuild(tasks: [TodoTask]) async {
+        _ = await rebuild(
+            tasks,
+            cleanupStale: false,
+            syncBadge: false
+        )
+    }
 #endif
     
     
