@@ -60,6 +60,8 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
         case createdAt
         case completedAt
         case snoozeUntil
+        case alarmEnabled
+        case manualSnoozeUntil
         case priority
     }
 
@@ -94,6 +96,8 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
     let createdAt: Date?
     let completedAt: Date?
     let snoozeUntil: Date?
+    let alarmEnabled: Bool
+    let manualSnoozeUntil: Date?
     
     let priority: Int
     
@@ -235,6 +239,16 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
                 from: container
             )
 
+        // Legacy backups do not contain alarmEnabled; preserve their historical
+        // behavior by defaulting to a normal notification.
+        alarmEnabled = try container.decodeIfPresent(Bool.self, forKey: .alarmEnabled) ?? false
+
+        manualSnoozeUntil =
+            try Self.decodeLegacyDate(
+                .manualSnoozeUntil,
+                from: container
+            )
+
         priority =
             try container.decode(
                 Int.self,
@@ -265,6 +279,8 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
         createdAt: Date?,
         completedAt: Date?,
         snoozeUntil: Date?,
+        alarmEnabled: Bool = false,
+        manualSnoozeUntil: Date? = nil,
         priority: Int
     ) {
         self.id = id
@@ -289,6 +305,8 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
         self.createdAt = createdAt
         self.completedAt = completedAt
         self.snoozeUntil = snoozeUntil
+        self.alarmEnabled = alarmEnabled
+        self.manualSnoozeUntil = manualSnoozeUntil
         self.priority = priority
     }
 }
@@ -331,6 +349,8 @@ extension TaskTransferObject {
             createdAt: task.createdAt,
             completedAt: task.completedAt,
             snoozeUntil: task.snoozeUntil,
+            alarmEnabled: task.alarmEnabled,
+            manualSnoozeUntil: task.manualSnoozeUntil,
             priority: task.priorityRaw
         )
     }
@@ -377,6 +397,8 @@ extension TaskTransferObject {
             createdAt: task.createdAt,
             completedAt: task.completedAt,
             snoozeUntil: task.snoozeUntil,
+            alarmEnabled: task.alarmEnabled,
+            manualSnoozeUntil: task.manualSnoozeUntil,
             priority: task.priorityRaw
         )
     }
@@ -425,6 +447,8 @@ extension TodoTask {
         
         self.completedAt = dto.completedAt
         self.snoozeUntil = dto.snoozeUntil
+        self.alarmEnabled = dto.alarmEnabled
+        self.manualSnoozeUntil = dto.manualSnoozeUntil
 
         if let attachmentDTOs = dto.attachments {
 

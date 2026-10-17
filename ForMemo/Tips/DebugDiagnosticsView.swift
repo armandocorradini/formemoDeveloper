@@ -121,6 +121,7 @@ struct DebugDiagnosticsView: View {
         await runTest("Rebuild produzione: errore fetch task") { try await testInjectedTaskFetchFailure() }
         await runTest("Rebuild produzione: errore fetch documenti") { try await testInjectedDocumentFetchFailure() }
         await runTest("Rebuild produzione: errore add notifica") { try await testInjectedNotificationAddFailure() }
+        await runTest("Coordinatore persistenza: esclusività e rilascio") { try testPersistenceOperationCoordinator() }
     }
 
     /// Ogni test con persistenza usa un database SwiftData in-memory indipendente.
@@ -1114,6 +1115,63 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Le liste di riprogrammazione positiva e negativa contengono duplicati o sovrapposizioni.")
         }
         return "Verificate tutte le 12 opzioni di riprogrammazione e l'assenza di sovrapposizioni tra le liste positive e negative; nessun task riprogrammato."
+    }
+
+    /// Verifica il coordinatore reale senza avviare operazioni di persistenza,
+    /// modificare SwiftData, notifiche, AlarmKit o dati CloudKit.
+    private func testPersistenceOperationCoordinator() throws -> String {
+        let coordinator = PersistenceOperationCoordinator.shared
+
+        // If another real operation is active, begin throws and this test must
+        // not call finish() on an operation it does not own.
+        try coordinator.begin(.delete)
+        var ownsOperation = true
+        defer {
+            if ownsOperation {
+                coordinator.finish()
+            }
+        }
+
+        do {
+            try coordinator.begin(.restore)
+            // Defensive cleanup if exclusivity is broken and begin unexpectedly succeeds.
+            coordinator.finish()
+            ownsOperation = false
+            throw DiagnosticFailure.assertion(
+                "Il coordinatore ha accettato .restore mentre .delete era attivo."
+            )
+        } catch let error as PersistenceOperationCoordinator.CoordinatorError {
+            guard case .operationAlreadyRunning = error else {
+                throw DiagnosticFailure.assertion(
+                    "Seconda operazione rifiutata con errore inatteso: \(error.localizedDescription)"
+                )
+            }
+        }
+
+        // A second rejected begin must not have released or replaced .delete.
+        do {
+            try coordinator.begin(.reset)
+            coordinator.finish()
+            ownsOperation = false
+            throw DiagnosticFailure.assertion(
+                "Il coordinatore ha accettato .reset dopo aver già rifiutato .restore."
+            )
+        } catch let error as PersistenceOperationCoordinator.CoordinatorError {
+            guard case .operationAlreadyRunning = error else {
+                throw DiagnosticFailure.assertion(
+                    "Il rifiuto di .reset ha restituito un errore inatteso: \(error.localizedDescription)"
+                )
+            }
+        }
+
+        coordinator.finish()
+        ownsOperation = false
+
+        // After releasing the operation we own, a new operation must be accepted.
+        try coordinator.begin(.restore)
+        coordinator.finish()
+
+        return "Verificato: .delete acquisita; .restore e .reset rifiutate mentre è attiva; i rifiuti non liberano l'operazione originale; dopo finish() .restore viene accettata. Nessun dato, CloudKit, notifica o sveglia modificati."
     }
 
     private func makeReport() -> String {

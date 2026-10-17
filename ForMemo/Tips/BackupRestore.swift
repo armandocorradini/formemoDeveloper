@@ -553,10 +553,10 @@ struct BackupRestoreView: View {
                                     restoreArchive = nil
                                     backupPassword = ""
                                     Task {
+                                        isRestoringBackup = true
+                                        defer { isRestoringBackup = false }
                                         do {
-                                            isRestoringBackup = true
                                             guard let archive = archiveToRestore else {
-                                                isRestoringBackup = false
                                                 return
                                             }
             
@@ -573,10 +573,7 @@ struct BackupRestoreView: View {
                                                 backupPassword: "",
                                                 restoreSettings: selectedSettings
                                             )
-                                            isRestoringBackup = false
                                         } catch {
-                                            isRestoringBackup = false
-
                                             if case VaultBackupCryptoError.invalidPassword = error {
                                                 showVaultPasswordError = true
                                             } else {
@@ -662,6 +659,7 @@ struct BackupRestoreView: View {
                 showBackupPasswordPrompt = false
 
                 Task {
+                    defer { isRestoringBackup = false }
                     do {
                         guard let archive = archiveToRestore else {
                             backupPassword = ""
@@ -688,11 +686,8 @@ struct BackupRestoreView: View {
                             backupPassword: backupPassword,
                             restoreSettings: selectedSettings
                         )
-                        isRestoringBackup = false
                         
                     } catch {
-                        isRestoringBackup = false
-
                         if case VaultBackupCryptoError.invalidPassword = error {
                             showVaultPasswordError = true
                         } else {
@@ -823,6 +818,7 @@ struct BackupRestoreView: View {
 
         Task {
             defer {
+                isRestoringBackup = false
                 pendingRestoreArchive = nil
                 pendingRestoreActiveTasks = false
                 pendingRestoreCompletedTasks = false
@@ -848,10 +844,7 @@ struct BackupRestoreView: View {
                     backupPassword: "",
                     restoreSettings: selectedSettings
                 )
-
-                isRestoringBackup = false
             } catch {
-                isRestoringBackup = false
                 restoreError = error.localizedDescription
             }
         }
@@ -2840,9 +2833,7 @@ private enum BackupManager {
                 restoredSettings[key] = value
             }
 
-            await MainActor.run {
-                AppSettings.shared.importSettings(from: restoredSettings)
-            }
+            AppSettings.shared.importSettings(from: restoredSettings)
         }
 
         modelContext.processPendingChanges()
@@ -2853,9 +2844,9 @@ private enum BackupManager {
             try VaultCrypto.installKey(vaultKeyToInstall)
         }
 
-        try await PersistenceOperationCoordinator.shared.waitForSettlement(
-            requireExport: Persistence.hasICloudIdentity
-        )
+        // The local restore is complete once the model context has been saved.
+        // CloudKit synchronization continues independently and must not keep
+        // the restore progress indicator active.
 
         NotificationCenter.default.post(
             name: .taskDidChange,

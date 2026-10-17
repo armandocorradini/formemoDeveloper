@@ -104,9 +104,23 @@ func deleteRecurringTaskAndFutureOccurrences(
         return
     }
 
+    // Treat this multi-batch deletion as an exclusive persistence operation.
+    // It yields to the MainActor between batches, so restore/reset must not
+    // start while the recurrence is only partially deleted.
+    do {
+        try PersistenceOperationCoordinator.shared.begin(.delete)
+    } catch {
+        AppLogger.persistence.error(
+            "Recurring-task deletion refused because another persistence operation is active: \(error.localizedDescription)"
+        )
+        return
+    }
+    defer {
+        PersistenceOperationCoordinator.shared.finish()
+    }
+
     let batchSize = 250
 
-    
     await ForMemoAlarmManager.shared.waitForPendingSynchronizations()
     
     let descriptor = FetchDescriptor<TodoTask>(
