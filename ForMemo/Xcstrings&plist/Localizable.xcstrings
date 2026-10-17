@@ -2463,6 +2463,62 @@
         }
       }
     },
+    "🔴 Open ForMemo now: later alerts may be missed!" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🔴 Öffne ForMemo jetzt: Weitere Hinweise könnten fehlen!"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🔴 Abre ForMemo ahora: ¡podrían faltar avisos posteriores!"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🔴 Ouvrez ForMemo : des alertes pourraient manquer !"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🔴 Apri ForMemo ora: gli avvisi successivi potrebbero mancare!"
+          }
+        }
+      }
+    },
+    "🟡 Open ForMemo to refresh alerts." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🟡 Öffne ForMemo, um Hinweise zu aktualisieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🟡 Abre ForMemo para actualizar los avisos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🟡 Ouvrez ForMemo pour actualiser les alertes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "🟡 Apri ForMemo per aggiornare gli avvisi."
+          }
+        }
+      }
+    },
     "1 day before" : {
       "localizations" : {
         "de" : {

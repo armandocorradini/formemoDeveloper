@@ -710,16 +710,43 @@ func refreshFromCloudKit() {
             )
         }
 
-        // The queue is global: task + document notifications compete by date.
-        // Keep production and diagnostics on the same deterministic selector.
-        // Only the 64 earliest requests are installed in UNUserNotificationCenter;
-        // later candidates can enter on a subsequent rebuild.
+        // Keep the existing global chronological queue and its 64-request limit.
+        // Warnings are appended to real, user-visible notifications, so they do
+        // not consume additional notification slots or alter delivery times.
         let selected = Self.selectChronologicalQueue(
             from: candidates,
             limit: 64,
             date: { $0.date },
             id: { $0.id }
         )
+
+        let visibleSelected = selected.filter {
+            ($0.content.userInfo["type"] as? String) != "alarmBadge"
+        }
+        let firstWarning = String(localized: "🟡 Open ForMemo to refresh alerts.")
+        let secondWarning = String(localized: "🔴 Open ForMemo now: later alerts may be missed!")
+
+        // Trigger warnings by global queue position, not by visible-notification count.
+        // Attach each warning to the first visible notification at or after its
+        // threshold. If none exists after that position, use the last visible one.
+        let warningTargets: [(threshold: Int, warning: String)] = [
+            (40, firstWarning),
+            (50, secondWarning)
+        ]
+
+        for item in warningTargets where selected.count >= item.threshold {
+            let startIndex = item.threshold - 1
+            let target = selected[startIndex...].first(where: {
+                ($0.content.userInfo["type"] as? String) != "alarmBadge"
+            })
+
+            if let target {
+                appendQueueWarning(item.warning, to: target.content)
+            } else if let lastVisible = visibleSelected.last {
+                appendQueueWarning(item.warning, to: lastVisible.content)
+            }
+        }
+
         let selectedIDs = Set(selected.map(\.id))
 
         guard rebuildStart >= self.lastRebuild else { return false }
@@ -730,7 +757,7 @@ func refreshFromCloudKit() {
         // after a recurrence is created, migrated, changed, completed or deleted.
         if cleanupStale {
             guard expectedGeneration == nil || expectedGeneration == self.refreshGeneration else { return false }
-            let managedPrefixes = ["task.", "document."]
+            let managedPrefixes = ["task.", "document.", "queueWarning."]
             let staleIDs = existing.keys.filter { id in
                 managedPrefixes.contains(where: { id.hasPrefix($0) }) &&
                 !selectedIDs.contains(id)
@@ -881,6 +908,16 @@ func refreshFromCloudKit() {
         content.badge = NSNumber(value: badge)
         content.userInfo["type"] = event.type
         return content
+    }
+
+    private func appendQueueWarning(
+        _ warning: String,
+        to content: UNMutableNotificationContent
+    ) {
+        let existingBody = content.body.trimmingCharacters(in: .whitespacesAndNewlines)
+        content.body = existingBody.isEmpty
+            ? warning
+            : existingBody + "\n\n" + warning
     }
 
     private func documentNotificationContent(title: String) -> UNMutableNotificationContent {

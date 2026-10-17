@@ -494,160 +494,160 @@ enum DebugLog {
         write(message())
     }
     
-    static func writeAppLaunch() {
-        
-        if !FileManager.default.fileExists(atPath: logURL.path) {
-            FileManager.default.createFile(
-                atPath: logURL.path,
-                contents: nil
-            )
-        }
-        
-        write("🚀 APP LAUNCH")
-        write("🆔 Session: \(sessionID)")
-        let device = UIDevice.current.model
-        let system = UIDevice.current.systemVersion
-
-        write("📱 Device: \(device)")
-        write("📱 iOS: \(system)")
-        
-        let memoryGB = Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824
-        write("💾 Device Memory: \(String(format: "%.1f", memoryGB)) GB")
-
-        if let values = try? URL(fileURLWithPath: NSHomeDirectory())
-            .resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]),
-           let available = values.volumeAvailableCapacityForImportantUsage {
-
-            let availableGB = Double(available) / 1_073_741_824
-
-            write(
-                "📦 Free Storage: \(String(format: "%.1f", availableGB)) GB"
-            )
-        }
-
-        do {
-            let alarms = try AlarmManager.shared.alarms
-
-            let scheduledAlarms = alarms.filter { alarm in
-                if case .scheduled = alarm.state {
-                    return true
-                }
-                return false
-            }
-
-            DebugLog.write(
-                "🔔 🔔 🔔 🔔 AlarmKit alarms: \(scheduledAlarms.count)"
-            )
-
-            DebugLog.write(
-                "   AlarmKit total: \(alarms.count)"
-            )
-        } catch {
-            DebugLog.write(
-                "❌ AlarmKit alarms unavailable: \(error.localizedDescription)"
-            )
-        }
-        
-        UNUserNotificationCenter.current()
-            .getPendingNotificationRequests { requests in
-                
-                DebugLog.write(
-                    "🔔 Pending notifications: \(requests.count)"
-                )
-                
-                var counts: [String: Int] = [:]
-                
-                for request in requests {
-                    if let type = request.content.userInfo["type"] as? String {
-                        counts[type, default: 0] += 1
-                    } else if request.identifier.hasPrefix("document.") {
-                        counts["documents", default: 0] += 1
-                    } else {
-                        counts["other", default: 0] += 1
-                    }
-                }
-                
-                let orderedTypes = [
-                    ("global", "Global"),
-                    ("reminder", "Reminder"),
-                    ("deadline", "Deadline"),
-                    ("alarmBadge", "Alarm badge"),
-                    ("snooze", "Snooze"),
-                    ("manualSnooze", "Manual snooze"),
-                    ("documents", "Documents"),
-                    ("other", "Other")
-                ]
-                
-                for (key, title) in orderedTypes {
-                    DebugLog.write(
-                        "   \(title): \(counts[key, default: 0])"
-                    )
-                }
-                
-                UNUserNotificationCenter.current()
-                    .getNotificationSettings { settings in
-
-                        let status: String
-
-                        switch settings.authorizationStatus {
-                        case .authorized:
-                            status = "authorized"
-                        case .denied:
-                            status = "denied"
-                        case .notDetermined:
-                            status = "notDetermined"
-                        case .provisional:
-                            status = "provisional"
-                        case .ephemeral:
-                            status = "ephemeral"
-                        @unknown default:
-                            status = "unknown"
-                        }
-
-                        DebugLog.write(
-                            "🔔 Notification authorization: \(status)"
-                        )
-                    }
-            }
-
-        CKContainer.default().accountStatus { status, error in
-
-            if error != nil {
-                DebugLog.write(
-                    "☁️ iCloud account status unavailable"
-                )
-                return
-            }
-
-            let description: String
-
-            switch status {
-            case .available:
-                description = "available"
-
-            case .noAccount:
-                description = "noAccount"
-
-            case .restricted:
-                description = "restricted"
-
-            case .couldNotDetermine:
-                description = "couldNotDetermine"
-
-            case .temporarilyUnavailable:
-                description = "temporarilyUnavailable"
-
-            @unknown default:
-                description = "unknown"
-            }
-
-            DebugLog.write(
-                "☁️ iCloud account status: \(description)"
-            )
-            
-            DebugLog.write("══════════════════════════════════════════")
-        }
-    }
+//    static func writeAppLaunch() {
+//        
+//        if !FileManager.default.fileExists(atPath: logURL.path) {
+//            FileManager.default.createFile(
+//                atPath: logURL.path,
+//                contents: nil
+//            )
+//        }
+//        
+//        write("🚀 APP LAUNCH")
+//        write("🆔 Session: \(sessionID)")
+//        let device = UIDevice.current.model
+//        let system = UIDevice.current.systemVersion
+//
+//        write("📱 Device: \(device)")
+//        write("📱 iOS: \(system)")
+//        
+//        let memoryGB = Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824
+//        write("💾 Device Memory: \(String(format: "%.1f", memoryGB)) GB")
+//
+//        if let values = try? URL(fileURLWithPath: NSHomeDirectory())
+//            .resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]),
+//           let available = values.volumeAvailableCapacityForImportantUsage {
+//
+//            let availableGB = Double(available) / 1_073_741_824
+//
+//            write(
+//                "📦 Free Storage: \(String(format: "%.1f", availableGB)) GB"
+//            )
+//        }
+//
+//        do {
+//            let alarms = try AlarmManager.shared.alarms
+//
+//            let scheduledAlarms = alarms.filter { alarm in
+//                if case .scheduled = alarm.state {
+//                    return true
+//                }
+//                return false
+//            }
+//
+//            DebugLog.write(
+//                "🔔 🔔 🔔 🔔 AlarmKit alarms: \(scheduledAlarms.count)"
+//            )
+//
+//            DebugLog.write(
+//                "   AlarmKit total: \(alarms.count)"
+//            )
+//        } catch {
+//            DebugLog.write(
+//                "❌ AlarmKit alarms unavailable: \(error.localizedDescription)"
+//            )
+//        }
+//        
+//        UNUserNotificationCenter.current()
+//            .getPendingNotificationRequests { requests in
+//                
+//                DebugLog.write(
+//                    "🔔 Pending notifications: \(requests.count)"
+//                )
+//                
+//                var counts: [String: Int] = [:]
+//                
+//                for request in requests {
+//                    if let type = request.content.userInfo["type"] as? String {
+//                        counts[type, default: 0] += 1
+//                    } else if request.identifier.hasPrefix("document.") {
+//                        counts["documents", default: 0] += 1
+//                    } else {
+//                        counts["other", default: 0] += 1
+//                    }
+//                }
+//                
+//                let orderedTypes = [
+//                    ("global", "Global"),
+//                    ("reminder", "Reminder"),
+//                    ("deadline", "Deadline"),
+//                    ("alarmBadge", "Alarm badge"),
+//                    ("snooze", "Snooze"),
+//                    ("manualSnooze", "Manual snooze"),
+//                    ("documents", "Documents"),
+//                    ("other", "Other")
+//                ]
+//                
+//                for (key, title) in orderedTypes {
+//                    DebugLog.write(
+//                        "   \(title): \(counts[key, default: 0])"
+//                    )
+//                }
+//                
+//                UNUserNotificationCenter.current()
+//                    .getNotificationSettings { settings in
+//
+//                        let status: String
+//
+//                        switch settings.authorizationStatus {
+//                        case .authorized:
+//                            status = "authorized"
+//                        case .denied:
+//                            status = "denied"
+//                        case .notDetermined:
+//                            status = "notDetermined"
+//                        case .provisional:
+//                            status = "provisional"
+//                        case .ephemeral:
+//                            status = "ephemeral"
+//                        @unknown default:
+//                            status = "unknown"
+//                        }
+//
+//                        DebugLog.write(
+//                            "🔔 Notification authorization: \(status)"
+//                        )
+//                    }
+//            }
+//
+//        CKContainer.default().accountStatus { status, error in
+//
+//            if error != nil {
+//                DebugLog.write(
+//                    "☁️ iCloud account status unavailable"
+//                )
+//                return
+//            }
+//
+//            let description: String
+//
+//            switch status {
+//            case .available:
+//                description = "available"
+//
+//            case .noAccount:
+//                description = "noAccount"
+//
+//            case .restricted:
+//                description = "restricted"
+//
+//            case .couldNotDetermine:
+//                description = "couldNotDetermine"
+//
+//            case .temporarilyUnavailable:
+//                description = "temporarilyUnavailable"
+//
+//            @unknown default:
+//                description = "unknown"
+//            }
+//
+//            DebugLog.write(
+//                "☁️ iCloud account status: \(description)"
+//            )
+//            
+//            DebugLog.write("══════════════════════════════════════════")
+//        }
+//    }
     static func writeCloudKitEvent(_ message: String) {
         write("☁️ CLOUDKIT: \(message)")
     }
