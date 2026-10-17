@@ -122,6 +122,10 @@ struct DebugDiagnosticsView: View {
         await runTest("Rebuild produzione: errore fetch documenti") { try await testInjectedDocumentFetchFailure() }
         await runTest("Rebuild produzione: errore add notifica") { try await testInjectedNotificationAddFailure() }
         await runTest("Coordinatore persistenza: esclusività e rilascio") { try testPersistenceOperationCoordinator() }
+        await runTest("Concorrenza eliminazione a batch: blocco restore/reset") { try await testConcurrentBatchDeletionExclusion() }
+        await runTest("Ingresso eliminazione reale: rifiuto durante restore") { try await testProductionDeletionEntryPointBlocked() }
+        await runTest("Coordinatore: rilascio dopo errore") { try testCoordinatorReleasedAfterError() }
+        await runTest("Coordinatore: rilascio dopo cancellazione asincrona") { try await testCoordinatorReleasedAfterCancellation() }
     }
 
     /// Ogni test con persistenza usa un database SwiftData in-memory indipendente.
@@ -1172,6 +1176,192 @@ struct DebugDiagnosticsView: View {
         coordinator.finish()
 
         return "Verificato: .delete acquisita; .restore e .reset rifiutate mentre è attiva; i rifiuti non liberano l'operazione originale; dopo finish() .restore viene accettata. Nessun dato, CloudKit, notifica o sveglia modificati."
+    }
+
+    /// Esegue una cancellazione a batch su uno store SwiftData in-memory e
+    /// tenta restore/reset mentre il coordinatore è effettivamente occupato.
+    /// Non invoca i servizi di produzione che modificano notifiche, AlarmKit o CloudKit.
+    private func testConcurrentBatchDeletionExclusion() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let recurrenceID = UUID()
+        let total = 1_200
+        for index in 1...total {
+            let task = TodoTask(
+                title: "DEBUG-ONLY concurrency \(index)",
+                deadLine: Date().addingTimeInterval(Double(index) * 60)
+            )
+            task.isDebugTask = true
+            task.recurrenceID = recurrenceID
+            task.occurrenceIndex = index
+            context.insert(task)
+        }
+        try context.save()
+
+        let coordinator = PersistenceOperationCoordinator.shared
+        var deletionStarted = false
+        let deletion = Task { @MainActor () throws -> Int in
+            try coordinator.begin(.delete)
+            deletionStarted = true
+            defer { coordinator.finish() }
+
+            let descriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.recurrenceID == recurrenceID },
+                sortBy: [SortDescriptor(\TodoTask.occurrenceIndex)]
+            )
+            let tasks = try context.fetch(descriptor)
+            guard tasks.count == total else {
+                throw DiagnosticFailure.assertion(
+                    "Preparazione incompleta: attesi \(total) task, trovati \(tasks.count)."
+                )
+            }
+
+            let batchSize = 100
+            for start in stride(from: 0, to: tasks.count, by: batchSize) {
+                let end = min(start + batchSize, tasks.count)
+                for task in tasks[start..<end] {
+                    context.delete(task)
+                }
+                try context.save()
+                await Task.yield()
+            }
+            return tasks.count
+        }
+
+        // Yield until the worker has acquired .delete. A bounded wait prevents
+        // a broken worker from hanging the diagnostic suite indefinitely.
+        for _ in 0..<100 where !deletionStarted {
+            await Task.yield()
+        }
+        guard deletionStarted else {
+            _ = try? await deletion.value
+            throw DiagnosticFailure.assertion(
+                "La cancellazione di prova non è riuscita ad acquisire il coordinatore."
+            )
+        }
+
+        for operation in [PersistenceOperationCoordinator.Operation.restore,
+                          PersistenceOperationCoordinator.Operation.reset] {
+            do {
+                try coordinator.begin(operation)
+                coordinator.finish()
+                throw DiagnosticFailure.assertion(
+                    "Il coordinatore ha accettato .\(operation.rawValue) durante la cancellazione a batch."
+                )
+            } catch let error as PersistenceOperationCoordinator.CoordinatorError {
+                guard case .operationAlreadyRunning = error else {
+                    throw DiagnosticFailure.assertion(
+                        "Rifiuto inatteso di .\(operation.rawValue): \(error.localizedDescription)"
+                    )
+                }
+            }
+        }
+
+        let deletedCount = try await deletion.value
+        let remaining = try context.fetchCount(FetchDescriptor<TodoTask>())
+        guard deletedCount == total, remaining == 0 else {
+            throw DiagnosticFailure.assertion(
+                "Eliminazione incompleta: rimossi \(deletedCount)/\(total), residui \(remaining)."
+            )
+        }
+
+        // The worker's defer must release the coordinator after the operation.
+        try coordinator.begin(.restore)
+        coordinator.finish()
+
+        return "Verificati \(total) task di sviluppo in 12 batch su store in-memory: .restore e .reset rifiutate mentre .delete era attiva; tutti i task eliminati; dopo il rilascio .restore viene accettata. Nessun dato persistente, CloudKit, notifica o sveglia modificati."
+    }
+
+    /// Esercita il vero entry point di eliminazione delle ricorrenze mentre il
+    /// coordinatore è occupato da .restore. Il task vive in uno store isolato;
+    /// l'entry point deve rifiutare l'operazione prima di toccare dati o servizi.
+    private func testProductionDeletionEntryPointBlocked() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let recurrenceID = UUID()
+        let task = TodoTask(
+            title: "DEBUG-ONLY production deletion guard",
+            deadLine: Date().addingTimeInterval(3_600)
+        )
+        task.isDebugTask = true
+        task.recurrenceID = recurrenceID
+        task.occurrenceIndex = 1
+        context.insert(task)
+        try context.save()
+
+        let coordinator = PersistenceOperationCoordinator.shared
+        try coordinator.begin(.restore)
+        defer { coordinator.finish() }
+
+        await deleteRecurringTaskAndFutureOccurrences(task, in: context)
+
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> { $0.recurrenceID == recurrenceID }
+        )
+        let remaining = try context.fetch(descriptor)
+        guard remaining.count == 1,
+              remaining.first?.id == task.id else {
+            throw DiagnosticFailure.assertion(
+                "L'entry point di produzione ha modificato il task nonostante .restore fosse attiva."
+            )
+        }
+
+        return "Entry point reale deleteRecurringTaskAndFutureOccurrences invocato mentre .restore era attiva: la cancellazione è stata rifiutata e il task è rimasto intatto. Store SwiftData in-memory; nessun refresh notifiche, modifica AlarmKit o CloudKit avviato dal percorso rifiutato."
+    }
+
+    /// Verifica che un'operazione che possiede il coordinatore lo rilasci
+    /// quando il lavoro asincrono/throwing termina con errore. Non invoca reset,
+    /// restore o cancellazioni reali: esercita esclusivamente la gestione del lease.
+    private func testCoordinatorReleasedAfterError() throws -> String {
+        let coordinator = PersistenceOperationCoordinator.shared
+        do {
+            try coordinator.begin(.restore)
+            defer { coordinator.finish() }
+            throw DiagnosticFailure.assertion("Errore controllato per il test del rilascio.")
+        } catch let error as DiagnosticFailure {
+            guard case .assertion = error else { throw error }
+        }
+
+        try coordinator.begin(.delete)
+        coordinator.finish()
+        return "Errore controllato intercettato; il defer ha rilasciato .restore e una nuova .delete è stata acquisita e rilasciata. Nessun dato o servizio esterno modificato."
+    }
+
+    /// Avvia un'operazione che possiede il coordinatore, la annulla mentre è
+    /// sospesa e verifica che il defer liberi il coordinatore dopo CancellationError.
+    /// È un test del ciclo di vita del lease, non l'esecuzione del reset UI reale.
+    private func testCoordinatorReleasedAfterCancellation() async throws -> String {
+        let coordinator = PersistenceOperationCoordinator.shared
+        var operationStarted = false
+        let operation = Task { @MainActor () throws -> Void in
+            try coordinator.begin(.restore)
+            defer { coordinator.finish() }
+            operationStarted = true
+            try await Task.sleep(for: .seconds(30))
+        }
+
+        for _ in 0..<100 where !operationStarted {
+            await Task.yield()
+        }
+        guard operationStarted else {
+            operation.cancel()
+            _ = try? await operation.value
+            throw DiagnosticFailure.assertion("L'operazione di prova non ha acquisito il coordinatore.")
+        }
+
+        operation.cancel()
+        do {
+            try await operation.value
+            throw DiagnosticFailure.assertion("L'operazione sospesa non ha restituito CancellationError.")
+        } catch is CancellationError {
+            // Expected: the operation's defer must have released the coordinator.
+        }
+
+        try coordinator.begin(.reset)
+        coordinator.finish()
+        return "Task sospeso annullato con CancellationError; dopo il defer .reset è stata acquisita e rilasciata. Nessun reset reale, dato, CloudKit, notifica o sveglia modificati."
     }
 
     private func makeReport() -> String {

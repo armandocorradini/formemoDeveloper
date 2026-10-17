@@ -1511,7 +1511,7 @@ struct TaskListView: View {
         keepCurrentOccurrenceActive: Bool
     ) {
         do {
-            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+            let createdOccurrences = try RecurrenceEngine.migrateLegacyRecurrence(
                 for: task,
                 futureCount: futureCount,
                 endDate: endDate,keepCurrentOccurrenceActive: keepCurrentOccurrenceActive,
@@ -1520,6 +1520,13 @@ struct TaskListView: View {
 
             try modelContext.save()
             modelContext.processPendingChanges()
+
+            // Synchronize AlarmKit for the migrated task and all generated occurrences.
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(
+                    tasks: [task] + createdOccurrences
+                )
+            }
 
             NotificationCenter.default.post(
                 name: .taskDidChange,
