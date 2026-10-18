@@ -136,54 +136,14 @@ struct WalletView: View {
 
                     List {
                         ForEach(filteredCards) { card in
-
-                            let logoData: Data? = {
-                                if let asset = card.logoAsset,
-                                   let data = WalletAssetStore.loadData(
-                                       relativePath: asset.relativePath
-                                   ) {
-                                    return data
-                                }
-
-                                if let relativePath = card.loyaltyLogoRelativePath,
-                                   let data = WalletAssetStore.loadData(
-                                       relativePath: relativePath
-                                   ) {
-                                    return data
-                                }
-
-                                return nil
-                            }()
-
-                            NavigationLink(value: card) {
+NavigationLink(value: card) {
 
                                 HStack(spacing: 14) {
 
-                                    Group {
-                                        if let data = logoData,
-                                           let uiImage = UIImage(data: data) {
-
-                                            Image(uiImage: uiImage)
-                                                .resizable()
-                                                .scaledToFill()
-
-                                        } else {
-
-                                            Image(
-                                                systemName: card.itemType == "ticket"
-                                                ? "ticket.fill"
-                                                : "creditcard"
-                                            )
-                                            .resizable()
-                                            .scaledToFit()
-                                            .padding(12)
-                                            .foregroundStyle(
-                                                isLightCardColor(card.colorHex)
-                                                ? Color.black.opacity(0.82)
-                                                : Color.white.opacity(0.92)
-                                            )
-                                        }
-                                    }
+                                    WalletCardLogoView(
+                                        card: card,
+                                        isLightColor: isLightCardColor(card.colorHex)
+                                    )
                                     .frame(width: 52, height: 52)
                                     .background(
                                         RoundedRectangle(
@@ -606,3 +566,45 @@ private struct WalletRowAppearanceModifier: ViewModifier {
     }
 }
 
+
+
+private struct WalletCardLogoView: View {
+    let card: LoyaltyCard
+    let isLightColor: Bool
+    @State private var image: UIImage?
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                Image(systemName: card.itemType == "ticket" ? "ticket.fill" : "creditcard")
+                    .resizable()
+                    .scaledToFit()
+                    .padding(12)
+                    .foregroundStyle(
+                        isLightColor ? Color.black.opacity(0.82) : Color.white.opacity(0.92)
+                    )
+            }
+        }
+        .task(id: logoPath) {
+            image = nil
+            let paths = [card.logoAsset?.relativePath, card.loyaltyLogoRelativePath]
+                .compactMap { $0 }
+            for path in paths {
+                if let data = await WalletAssetStore.loadDataAsync(relativePath: path),
+                   let loadedImage = UIImage(data: data) {
+                    guard !Task.isCancelled else { return }
+                    image = loadedImage
+                    return
+                }
+            }
+        }
+    }
+
+    private var logoPath: String? {
+        card.logoAsset?.relativePath ?? card.loyaltyLogoRelativePath
+    }
+}

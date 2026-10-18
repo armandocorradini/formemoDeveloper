@@ -14,6 +14,10 @@ struct WalletAssetDetailView: View {
 
     @State
     private var showingDeleteConfirmation = false
+    @State
+    private var image: UIImage?
+    @State
+    private var loadFinished = false
 
     var body: some View {
 
@@ -21,20 +25,18 @@ struct WalletAssetDetailView: View {
 
             Group {
 
-                if let data = WalletAssetStore.loadData(
-                    relativePath: asset.relativePath
-                ),
-                let image = UIImage(data: data) {
-
+                if let image {
                     ZoomableImageView(image: image)
                         .background(.black)
-
-                } else {
-
+                } else if loadFinished {
                     ContentUnavailableView(
                         "Unable to Open",
                         systemImage: "exclamationmark.triangle"
                     )
+                } else {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(.black)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -65,6 +67,18 @@ struct WalletAssetDetailView: View {
                     }
                 }
             }
+        }
+        .task(id: asset.relativePath) {
+            image = nil
+            loadFinished = false
+            if let data = await WalletAssetStore.loadDataAsync(
+                relativePath: asset.relativePath
+            ), let loadedImage = UIImage(data: data) {
+                guard !Task.isCancelled else { return }
+                image = loadedImage
+            }
+            guard !Task.isCancelled else { return }
+            loadFinished = true
         }
         .confirmationDialog(
             "Delete Image",

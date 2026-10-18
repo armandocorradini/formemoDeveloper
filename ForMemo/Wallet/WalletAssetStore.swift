@@ -268,6 +268,63 @@ enum WalletAssetStore {
     
     
     
+    /// Loads a Wallet asset after allowing iCloud Drive time to materialize it.
+    /// The synchronous loader remains available for existing non-UI workflows.
+    static func loadDataAsync(
+        relativePath: String,
+        timeout: TimeInterval = 8
+    ) async -> Data? {
+        guard let url = fileURL(relativePath: relativePath) else {
+            return nil
+        }
+
+        let fileManager = FileManager.default
+        let resourceKeys: Set<URLResourceKey> = [
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey,
+            .ubiquitousItemIsDownloadingKey
+        ]
+
+        if let values = try? url.resourceValues(forKeys: resourceKeys),
+           values.isUbiquitousItem == true,
+           values.ubiquitousItemDownloadingStatus == .notDownloaded {
+            do {
+                try fileManager.startDownloadingUbiquitousItem(at: url)
+                AppLogger.persistence.notice(
+                    "WalletAsset async download requested: \(relativePath)"
+                )
+            } catch {
+                AppLogger.persistence.error(
+                    "WalletAsset async download request failed: \(relativePath) — \(error.localizedDescription)"
+                )
+            }
+        }
+
+        let deadline = Date().addingTimeInterval(max(0, timeout))
+        repeat {
+            if fileManager.fileExists(atPath: url.path) {
+                if let values = try? url.resourceValues(forKeys: resourceKeys),
+                   values.isUbiquitousItem == true {
+                    if values.ubiquitousItemDownloadingStatus == .current ||
+                        values.ubiquitousItemDownloadingStatus == .downloaded {
+                        break
+                    }
+                } else {
+                    break
+                }
+            }
+
+            guard Date() < deadline else { break }
+            try? await Task.sleep(nanoseconds: 200_000_000)
+        } while Date() < deadline
+
+        guard fileManager.fileExists(atPath: url.path) else {
+            return nil
+        }
+
+        return loadData(relativePath: relativePath)
+    }
+
     // MARK: - Exists
 
     static func exists(

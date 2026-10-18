@@ -11,6 +11,7 @@ struct LoyaltyCardDetailView: View {
     @State private var zoomScale: CGFloat = 1
     @State private var lastZoomScale: CGFloat = 1
     @State private var previewImage: PreviewImage?
+    @State private var loadedLogoImage: UIImage?
     private var cardBackgroundColor: Color {
         Color(
             hex: card.colorHex ?? "#3B82F6"
@@ -52,25 +53,10 @@ struct LoyaltyCardDetailView: View {
     }
 
     
-    private var logoData: Data? {
-
-        if let asset = card.logoAsset,
-           let data = WalletAssetStore.loadData(
-               relativePath: asset.relativePath
-           ) {
-            return data
-        }
-
-        if let relativePath = card.loyaltyLogoRelativePath,
-           let data = WalletAssetStore.loadData(
-               relativePath: relativePath
-           ) {
-            return data
-        }
-
-        return nil
+    private var logoPath: String? {
+        card.logoAsset?.relativePath ?? card.loyaltyLogoRelativePath
     }
-    
+
     private var galleryAssets: [WalletAsset] {
         card.galleryAssets
     }
@@ -94,8 +80,7 @@ struct LoyaltyCardDetailView: View {
 
                         HStack(alignment: .top, spacing: 14) {
 
-                            if let data = logoData,
-                               let uiImage = UIImage(data: data) {
+                            if let uiImage = loadedLogoImage {
 
                                 Image(uiImage: uiImage)
                                     .resizable()
@@ -284,29 +269,8 @@ struct LoyaltyCardDetailView: View {
                             LazyHStack(spacing: 12) {
 
                                 ForEach(galleryAssets) { asset in
-
-                                    if let data = WalletAssetStore.loadData(
-                                        relativePath: asset.relativePath
-                                    ),
-                                    let uiImage = UIImage(data: data) {
-
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 140, height: 90)
-                                            .clipped()
-                                            .clipShape(
-                                                RoundedRectangle(
-                                                    cornerRadius: 12,
-                                                    style: .continuous
-                                                )
-                                            )
-                                            .contentShape(Rectangle())
-                                            .onTapGesture {
-                                                previewImage = PreviewImage(
-                                                    image: uiImage
-                                                )
-                                            }
+                                    WalletGalleryImage(asset: asset) { uiImage in
+                                        previewImage = PreviewImage(image: uiImage)
                                     }
                                 }
                             }
@@ -382,6 +346,19 @@ struct LoyaltyCardDetailView: View {
             .padding(.bottom, 40)
         }
         }
+        .task(id: logoPath) {
+            loadedLogoImage = nil
+            let paths = [card.logoAsset?.relativePath, card.loyaltyLogoRelativePath]
+                .compactMap { $0 }
+            for path in paths {
+                if let data = await WalletAssetStore.loadDataAsync(relativePath: path),
+                   let image = UIImage(data: data) {
+                    guard !Task.isCancelled else { return }
+                    loadedLogoImage = image
+                    return
+                }
+            }
+        }
         .onAppear {
 
   
@@ -437,5 +414,40 @@ private extension UIColor {
         ) / 1000
 
         return brightness > 0.68
+    }
+}
+
+
+private struct WalletGalleryImage: View {
+    let asset: WalletAsset
+    let onTap: (UIImage) -> Void
+    @State private var image: UIImage?
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 140, height: 90)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .contentShape(Rectangle())
+                    .onTapGesture { onTap(image) }
+            } else {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.quaternary)
+                    .frame(width: 140, height: 90)
+                    .overlay { ProgressView() }
+            }
+        }
+        .task(id: asset.relativePath) {
+            image = nil
+            guard let data = await WalletAssetStore.loadDataAsync(
+                relativePath: asset.relativePath
+            ), let loadedImage = UIImage(data: data) else { return }
+            guard !Task.isCancelled else { return }
+            image = loadedImage
+        }
     }
 }
