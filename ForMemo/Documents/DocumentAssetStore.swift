@@ -278,6 +278,47 @@ enum DocumentAssetStore {
     }
 
 
+    /// Loads an asset while allowing an iCloud download to finish.
+    /// Returns nil only when the asset remains unavailable after the retry window.
+    static func loadDataAsync(
+        relativePath: String,
+        timeout: Duration = .seconds(60)
+    ) async -> Data? {
+        let start = ContinuousClock.now
+
+        while !Task.isCancelled {
+            if let data = loadData(relativePath: relativePath) {
+                return data
+            }
+
+            guard ContinuousClock.now - start < timeout else {
+                return nil
+            }
+
+            do {
+                try await Task.sleep(for: .milliseconds(500))
+            } catch {
+                return nil
+            }
+        }
+
+        return nil
+    }
+
+    static func loadImageAsync(
+        relativePath: String,
+        timeout: Duration = .seconds(60)
+    ) async -> UIImage? {
+        guard let data = await loadDataAsync(
+            relativePath: relativePath,
+            timeout: timeout
+        ) else {
+            return nil
+        }
+
+        return UIImage(data: data)
+    }
+
     // MARK: - Exists
 
     static func exists(

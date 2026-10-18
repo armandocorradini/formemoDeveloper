@@ -15,6 +15,9 @@ struct DocumentAssetDetailView: View {
     @State
     private var showingDeleteConfirmation = false
 
+    @State private var shareURL: URL?
+    @State private var isPreparingShare = true
+
     var body: some View {
 
         NavigationStack {
@@ -34,10 +37,22 @@ struct DocumentAssetDetailView: View {
 
                 ToolbarItemGroup(placement: .topBarTrailing) {
 
-                    ShareLink(
-                        item: asset.fileURL ?? URL(fileURLWithPath: "")
-                    ) {
-                        Image(systemName: "square.and.arrow.up")
+                    if let shareURL {
+                        ShareLink(item: shareURL) {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                    } else if isPreparingShare {
+                        ProgressView()
+                            .accessibilityLabel(Text("Preparing attachment"))
+                    } else {
+                        Button {
+                            Task {
+                                await prepareShareURL()
+                            }
+                        } label: {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        .accessibilityLabel(Text("Retry preparing attachment"))
                     }
 
                     Button(role: .destructive) {
@@ -50,6 +65,9 @@ struct DocumentAssetDetailView: View {
                     }
                 }
             }
+        }
+        .task(id: asset.relativePath) {
+            await prepareShareURL()
         }
         .confirmationDialog(
             String(localized: "Delete Page"),
@@ -75,5 +93,26 @@ struct DocumentAssetDetailView: View {
                 role: .cancel
             ) { }
         }
+    }
+
+    @MainActor
+    private func prepareShareURL() async {
+        isPreparingShare = true
+        shareURL = nil
+        defer { isPreparingShare = false }
+
+        guard asset.isImage || asset.isPDF else { return }
+
+        guard await DocumentAssetStore.loadDataAsync(
+            relativePath: asset.relativePath
+        ) != nil,
+        let url = DocumentAssetStore.fileURL(
+            relativePath: asset.relativePath
+        ),
+        FileManager.default.fileExists(atPath: url.path) else {
+            return
+        }
+
+        shareURL = url
     }
 }
