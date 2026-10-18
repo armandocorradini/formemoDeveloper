@@ -5,14 +5,18 @@ import SwiftData
 import UserNotifications
 import AlarmKit
 import UniformTypeIdentifiers
+import os
 
 @MainActor
 struct DebugDiagnosticsView: View {
+
+    @Environment(\.modelContext) private var modelContext
 
     @State private var results: [DiagnosticTestResult] = []
     @State private var isRunning = false
     @State private var shareReport: ShareableDiagnosticReport?
     @State private var reportExportError: String?
+    @State private var currentTestScope = "isolato"
 
     private var passedCount: Int { results.filter { $0.status == .passed }.count }
     private var failedCount: Int { results.filter { $0.status == .failed }.count }
@@ -20,18 +24,30 @@ struct DebugDiagnosticsView: View {
     var body: some View {
         List {
             Section {
+
+                Button {
+                    Task { await runRealDatabaseTests() }
+                } label: {
+                    HStack {
+                        Label("Test su database reale", systemImage: "externaldrive.badge.checkmark")
+                        Spacer()
+                        if isRunning { ProgressView() }
+                    }
+                }
+                .disabled(isRunning)
+
                 Button {
                     Task { await runAllTests() }
                 } label: {
                     HStack {
-                        Label("Esegui tutti i test", systemImage: "play.circle.fill")
+                        Label("Test su database isolato", systemImage: "externaldrive")
                         Spacer()
                         if isRunning { ProgressView() }
                     }
                 }
                 .disabled(isRunning)
             } footer: {
-                Text("I test usano dati isolati. I test di integrazione creano notifiche e, se AlarmKit è autorizzato, una sveglia di prova con identificativo univoco e scadenza lontana; al termine eliminano esclusivamente gli identificativi creati dal test. Nessun task o allarme personale viene cancellato.")
+                Text("Test su database reale: inseriscono e salvano temporaneamente record diagnostici nel database persistente dell’app, verificano i percorsi di produzione compatibili e rimuovono esclusivamente i record creati dal test. Non eseguono rebuild globale delle notifiche né cancellazioni globali. Se iCloud è attivo, i record di prova potrebbero sincronizzarsi brevemente prima della pulizia. Test su database isolato: esegue la suite esistente su store temporanei, oltre ai test mirati delle notifiche e di AlarmKit.")
             }
 
             if !results.isEmpty {
@@ -39,7 +55,7 @@ struct DebugDiagnosticsView: View {
                     Button {
                         prepareReportForSharing()
                     } label: {
-                        Label("Condividi rapporto (.txt)", systemImage: "square.and.arrow.up")
+                        Label("Condividi archivio rapporti (.txt)", systemImage: "square.and.arrow.up")
                     }
                 }
 
@@ -88,21 +104,378 @@ struct DebugDiagnosticsView: View {
 
     }
 
-    private func prepareReportForSharing() {
-        let url = FileManager.default.temporaryDirectory
-            .appendingPathComponent("ForMemo-Diagnostica-\(UUID().uuidString).txt")
+    /// Tutte le esecuzioni vengono accodate nello stesso file persistente dell'app.
+    /// Il file viene conservato tra un'apertura della schermata e l'altra e può essere condiviso.
+    private func unifiedReportURL() throws -> URL {
+        let documents = try FileManager.default.url(
+            for: .documentDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )
+        return documents.appendingPathComponent("ForMemo-Diagnostica.txt", isDirectory: false)
+    }
+
+    private func appendCurrentReportToUnifiedFile() {
         do {
-            try Data(makeReport().utf8).write(to: url, options: .atomic)
+            let url = try unifiedReportURL()
+            let fileManager = FileManager.default
+            let existing = fileManager.fileExists(atPath: url.path)
+                ? try String(contentsOf: url, encoding: .utf8)
+                : ""
+            let separator = existing.isEmpty ? "" : "\n\n\n============================================================\n\n"
+            let combined = existing + separator + makeReport()
+            try Data(combined.utf8).write(to: url, options: .atomic)
+        } catch {
+            reportExportError = "Impossibile aggiornare il file unico dei rapporti: \(error.localizedDescription)"
+        }
+    }
+
+    private func prepareReportForSharing() {
+        do {
+            let url = try unifiedReportURL()
+            if !FileManager.default.fileExists(atPath: url.path) {
+                // Consente di condividere anche un rapporto se la schermata è stata
+                // ripristinata senza che il file aggregato sia ancora presente.
+                try Data(makeReport().utf8).write(to: url, options: .atomic)
+            }
             shareReport = ShareableDiagnosticReport(url: url)
         } catch {
             reportExportError = error.localizedDescription
         }
     }
 
+    /// Suite di integrazione sulla persistenza reale. Ogni prova usa ID univoci,
+    /// non modifica record preesistenti e ripulisce soltanto gli oggetti creati.
+    /// Non chiama il rebuild globale delle notifiche né deleteTask().
+    private func runRealDatabaseTests() async {
+        guard !isRunning else { return }
+        isRunning = true
+        results = []
+        currentTestScope = "reale"
+        defer { isRunning = false }
+
+        await runTest("Database reale: task CRUD e riattivazione produzione") {
+            try testRealDatabaseCRUDAndProductionPath()
+        }
+        await runTest("Database reale: materializzazione ricorrenza e idempotenza") {
+            try testRealRecurrenceMaterialization()
+        }
+        await runTest("Database reale: allegato e propagazione ricorrente") {
+            try testRealRecurringAttachmentPropagation()
+        }
+        await runTest("Database reale: nota, contenuto e stato") {
+            try testRealNotePersistence()
+        }
+        await runTest("Database reale: documento e asset collegati") {
+            try testRealDocumentAndAssetsPersistence()
+        }
+        await runTest("Database reale: Wallet e asset collegati") {
+            try testRealWalletAndAssetsPersistence()
+        }
+        await runTest("Database reale: Vault e relazione segreti sintetici") {
+            try testRealVaultPersistence()
+        }
+        appendCurrentReportToUnifiedFile()
+    }
+
+    private func testRealDatabaseCRUDAndProductionPath() throws -> String {
+        let context = modelContext
+        let id = UUID()
+        let originalTitle = "DEBUG-REAL-DB-\(id.uuidString)"
+        let updatedTitle = "DEBUG-REAL-DB-UPDATED-\(id.uuidString)"
+        let task = TodoTask(id: id, title: originalTitle)
+        task.isDebugTask = true
+        context.insert(task)
+        defer {
+            context.delete(task)
+            do { try context.save(); context.processPendingChanges() }
+            catch { AppLogger.persistence.error("Cleanup task diagnostico fallito: \(error.localizedDescription, privacy: .public)") }
+        }
+
+        try context.save()
+        guard let inserted = try fetchDiagnosticTask(id: id, in: context),
+              inserted.title == originalTitle, inserted.isDebugTask else {
+            throw DiagnosticFailure.assertion("Il task diagnostico non è stato riletto dal database persistente dopo l'inserimento.")
+        }
+        inserted.title = updatedTitle
+        inserted.isCompleted = true
+        inserted.completedAt = .now
+        try context.save()
+        guard let completed = try fetchDiagnosticTask(id: id, in: context),
+              completed.title == updatedTitle, completed.isCompleted, completed.completedAt != nil else {
+            throw DiagnosticFailure.assertion("Modifica e completamento non persistiti.")
+        }
+        guard try CompletedTaskReactivation.reactivate(completed, in: context) else {
+            throw DiagnosticFailure.assertion("Il percorso di produzione non ha riattivato il task diagnostico.")
+        }
+        guard let reactivated = try fetchDiagnosticTask(id: id, in: context),
+              reactivated.title == updatedTitle, !reactivated.isCompleted, reactivated.completedAt == nil else {
+            throw DiagnosticFailure.assertion("Lo stato riattivato non è stato salvato correttamente.")
+        }
+        return "Database persistente: inserimento, rilettura per UUID, modifica, completamento e riattivazione tramite CompletedTaskReactivation verificati. Il task creato viene eliminato dal cleanup dedicato; nessun record preesistente viene selezionato."
+    }
+
+    private func testRealRecurrenceMaterialization() throws -> String {
+        let context = modelContext
+        let seriesID = UUID()
+        let start = Calendar.current.date(byAdding: .day, value: 10, to: Date())!
+        let base = TodoTask(title: "DEBUG-REAL-RECURRENCE-\(seriesID.uuidString)", deadLine: start)
+        base.isDebugTask = true
+        base.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        base.recurrenceInterval = 1
+        base.recurrenceID = seriesID
+        base.occurrenceIndex = 1
+        base.recurrenceStartDate = start
+        base.recurrenceCount = 4
+        context.insert(base)
+        var created: [TodoTask] = []
+        defer {
+            created.forEach { context.delete($0) }
+            context.delete(base)
+            do { try context.save(); context.processPendingChanges() }
+            catch { AppLogger.persistence.error("Cleanup ricorrenza diagnostica fallito: \(error.localizedDescription, privacy: .public)") }
+        }
+        try context.save()
+        created = try RecurrenceEngine.materializeFutureOccurrences(for: base, in: context)
+        created.forEach { $0.isDebugTask = true }
+        try context.save()
+        let descriptor = FetchDescriptor<TodoTask>(predicate: #Predicate<TodoTask> { $0.recurrenceID == seriesID })
+        let saved = try context.fetch(descriptor)
+        guard saved.count == 4,
+              Set(saved.compactMap(\.occurrenceIndex)) == Set([1, 2, 3, 4]) else {
+            throw DiagnosticFailure.assertion("La serie persistita non contiene esattamente le quattro occorrenze con indici univoci.")
+        }
+        let secondPass = try RecurrenceEngine.materializeFutureOccurrences(for: base, in: context)
+        guard secondPass.isEmpty else {
+            throw DiagnosticFailure.assertion("La seconda materializzazione ha creato \(secondPass.count) duplicati.")
+        }
+        return "Creata e salvata una serie di quattro occorrenze nel database persistente; fetch per recurrenceID, indici 1–4 e idempotenza della materializzazione verificati."
+    }
+
+    private func testRealRecurringAttachmentPropagation() throws -> String {
+        let context = modelContext
+        let seriesID = UUID()
+        let start = Calendar.current.date(byAdding: .day, value: 10, to: Date())!
+        let base = TodoTask(title: "DEBUG-REAL-ATTACHMENT-\(seriesID.uuidString)", deadLine: start)
+        base.isDebugTask = true
+        base.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        base.recurrenceInterval = 1
+        base.recurrenceID = seriesID
+        base.occurrenceIndex = 1
+        base.recurrenceStartDate = start
+        base.recurrenceCount = 3
+        let attachment = TaskAttachment(
+            originalName: "DEBUG-REAL-ONLY.txt",
+            relativePath: "diagnostics-only/\(UUID().uuidString).txt",
+            contentType: "text/plain",
+            task: base
+        )
+        base.attachments = [attachment]
+        context.insert(base)
+        context.insert(attachment)
+        var created: [TodoTask] = []
+        defer {
+            created.forEach { context.delete($0) }
+            context.delete(base)
+            context.delete(attachment)
+            do { try context.save(); context.processPendingChanges() }
+            catch { AppLogger.persistence.error("Cleanup allegato ricorrente diagnostico fallito: \(error.localizedDescription, privacy: .public)") }
+        }
+        try context.save()
+        try RecurringAttachmentManager.configurePropagation(for: [attachment], from: base, in: context)
+        created = try RecurrenceEngine.materializeFutureOccurrences(for: base, in: context)
+        created.forEach { $0.isDebugTask = true }
+        try context.save()
+        RecurringAttachmentManager.invalidateRuleCache(for: seriesID, in: context)
+        let descriptor = FetchDescriptor<TodoTask>(predicate: #Predicate<TodoTask> { $0.recurrenceID == seriesID })
+        let occurrences = try context.fetch(descriptor)
+        guard occurrences.count == 3 else {
+            throw DiagnosticFailure.assertion("Attese tre occorrenze persistite; trovate \(occurrences.count).")
+        }
+        for occurrence in occurrences {
+            let visible = RecurringAttachmentManager.visibleAttachments(for: occurrence, in: context)
+            guard visible.filter({ $0.id == attachment.id }).count == 1 else {
+                throw DiagnosticFailure.assertion("Allegato condiviso assente o duplicato nell'occorrenza #\(occurrence.occurrenceIndex ?? -1).")
+            }
+        }
+        let links = try context.fetch(FetchDescriptor<RecurringAttachmentLink>(predicate: #Predicate<RecurringAttachmentLink> { $0.recurrenceID == seriesID }))
+            .filter(\.isActive)
+        guard links.count == 1, links.first?.attachmentID == attachment.id else {
+            throw DiagnosticFailure.assertion("La regola persistita di propagazione non è unica o non punta all'allegato di prova.")
+        }
+        return "Task, allegato e regola di propagazione salvati nel database persistente; tre occorrenze rilette e stesso ID allegato visibile una sola volta per ciascuna. Nessun file fisico è stato creato."
+    }
+
+    private func testRealNotePersistence() throws -> String {
+        let context = modelContext
+        let id = UUID()
+        let now = Date()
+        let payload = Data("ForMemo diagnostics synthetic note \(id.uuidString)".utf8)
+        let note = Note(id: id, title: "DEBUG-REAL-NOTE-\(id.uuidString)", content: payload,
+                        createdAt: now, modifiedAt: now, isPinned: true, isArchived: false,
+                        color: "blue", sortOrder: 987654)
+        context.insert(note)
+        defer {
+            context.delete(note)
+            do { try context.save(); context.processPendingChanges() }
+            catch { AppLogger.persistence.error("Cleanup nota diagnostica fallito: \(error.localizedDescription, privacy: .public)") }
+        }
+        try context.save()
+        guard let saved = try context.fetch(FetchDescriptor<Note>(predicate: #Predicate<Note> { $0.id == id })).first,
+              saved.content == payload, saved.isPinned, !saved.isArchived else {
+            throw DiagnosticFailure.assertion("Contenuto, pin o stato iniziale della nota non persistiti.")
+        }
+        let openedAt = Date()
+        saved.title = "DEBUG-REAL-NOTE-UPDATED-\(id.uuidString)"
+        saved.content = Data("updated \(id.uuidString)".utf8)
+        saved.modifiedAt = openedAt
+        saved.lastOpenedAt = openedAt
+        saved.isPinned = false
+        saved.isArchived = true
+        saved.archivedAt = openedAt
+        try context.save()
+        guard let updated = try context.fetch(FetchDescriptor<Note>(predicate: #Predicate<Note> { $0.id == id })).first,
+              updated.title == "DEBUG-REAL-NOTE-UPDATED-\(id.uuidString)",
+              String(data: updated.content, encoding: .utf8) == "updated \(id.uuidString)",
+              updated.lastOpenedAt == openedAt, updated.archivedAt == openedAt,
+              !updated.isPinned, updated.isArchived else {
+            throw DiagnosticFailure.assertion("Aggiornamento, apertura o archiviazione della nota non persistiti.")
+        }
+        return "Nota persistita e riletta dopo create/update: contenuto Data, pin, archiviazione, date e lastOpenedAt verificati."
+    }
+
+    private func testRealDocumentAndAssetsPersistence() throws -> String {
+        let context = modelContext
+        let id = UUID()
+        let document = DocumentItem(name: "DEBUG-REAL-DOCUMENT-\(id.uuidString)", notificationEnabled: false)
+        document.id = id
+        let asset = DocumentAsset(relativePath: "diagnostics-only/\(id.uuidString).pdf", kind: .pdf,
+                                  pageIndex: 1, fileSize: 123, document: document)
+        document.assets = [asset]
+        context.insert(document)
+        context.insert(asset)
+        defer {
+            context.delete(document)
+            context.delete(asset)
+            do { try context.save(); context.processPendingChanges() }
+            catch { AppLogger.persistence.error("Cleanup documento diagnostico fallito: \(error.localizedDescription, privacy: .public)") }
+        }
+        try context.save()
+        guard let saved = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate<DocumentItem> { $0.id == id })).first,
+              saved.name == "DEBUG-REAL-DOCUMENT-\(id.uuidString)", saved.assets?.contains(where: { $0.id == asset.id }) == true,
+              saved.primaryAsset?.id == asset.id, saved.pdfAssets.count == 1 else {
+            throw DiagnosticFailure.assertion("Documento, asset PDF o relazione non persistiti correttamente.")
+        }
+        saved.name = "DEBUG-REAL-DOCUMENT-UPDATED-\(id.uuidString)"
+        try context.save()
+        guard try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate<DocumentItem> { $0.id == id })).first?.name == "DEBUG-REAL-DOCUMENT-UPDATED-\(id.uuidString)" else {
+            throw DiagnosticFailure.assertion("La modifica del documento non è persistita.")
+        }
+        return "Documento e asset sintetico salvati e riletti; relazione, PDF primario e modifica del nome verificati. Nessun file fisico è stato creato."
+    }
+
+    private func testRealWalletAndAssetsPersistence() throws -> String {
+        let context = modelContext
+        let id = UUID()
+        let card = LoyaltyCard(id: id, storeName: "DEBUG-REAL-WALLET-\(id.uuidString)",
+                               cardHolder: "Synthetic diagnostics", barcodeValue: "DEBUG-\(id.uuidString)",
+                               barcodeFormat: "code128", itemType: "loyaltyCard", notes: "synthetic",
+                               colorHex: "#123456", sortOrder: 987654)
+        let logo = WalletAsset(kind: .logo, relativePath: "diagnostics-only/\(id.uuidString).jpg", fileSize: 123)
+        logo.card = card
+        card.assets = [logo]
+        card.loyaltyLogoRelativePath = logo.relativePath
+        context.insert(card)
+        context.insert(logo)
+        defer {
+            context.delete(card)
+            context.delete(logo)
+            do { try context.save(); context.processPendingChanges() }
+            catch { AppLogger.persistence.error("Cleanup Wallet diagnostico fallito: \(error.localizedDescription, privacy: .public)") }
+        }
+        try context.save()
+        guard let saved = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate<LoyaltyCard> { $0.id == id })).first,
+              saved.storeName == "DEBUG-REAL-WALLET-\(id.uuidString)",
+              saved.barcodeValue == "DEBUG-\(id.uuidString)", saved.logoAsset?.id == logo.id,
+              saved.asset(for: .logo)?.id == logo.id else {
+            throw DiagnosticFailure.assertion("Carta Wallet, barcode o relazione con logo non persistiti correttamente.")
+        }
+        saved.storeName = "DEBUG-REAL-WALLET-UPDATED-\(id.uuidString)"
+        try context.save()
+        guard try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate<LoyaltyCard> { $0.id == id })).first?.storeName == "DEBUG-REAL-WALLET-UPDATED-\(id.uuidString)" else {
+            throw DiagnosticFailure.assertion("La modifica della carta Wallet non è persistita.")
+        }
+        return "Carta Wallet e asset logo sintetico salvati e riletti; barcode, relazione asset e modifica persistente verificati. Nessun file fisico o immagine barcode creati."
+    }
+
+    private func testRealVaultPersistence() throws -> String {
+        let context = modelContext
+        let id = UUID()
+        let item = VaultItem(title: "DEBUG-REAL-VAULT-\(id.uuidString)", category: .website)
+        item.id = id
+        item.username = "debug-user"
+        item.email = "debug@example.invalid"
+        item.website = "https://example.invalid"
+        item.notes = "Synthetic diagnostics only"
+        item.tags = ["diagnostics", "test"]
+        let secret = VaultSecret(encryptedLabel: Data("synthetic-label".utf8), encryptedValue: Data("synthetic-value".utf8), sortOrder: 0)
+        secret.vaultItem = item
+        item.secrets = [secret]
+        context.insert(item)
+        context.insert(secret)
+        defer {
+            context.delete(item)
+            context.delete(secret)
+            do { try context.save(); context.processPendingChanges() }
+            catch { AppLogger.persistence.error("Cleanup Vault diagnostico fallito: \(error.localizedDescription, privacy: .public)") }
+        }
+        try context.save()
+        guard let saved = try context.fetch(FetchDescriptor<VaultItem>(predicate: #Predicate<VaultItem> { $0.id == id })).first else {
+            throw DiagnosticFailure.assertion("Vault: la voce non è stata ritrovata tramite UUID dopo context.save().")
+        }
+        guard saved.title == "DEBUG-REAL-VAULT-\(id.uuidString)" else {
+            throw DiagnosticFailure.assertion("Vault: titolo non persistito; valore riletto: \(saved.title).")
+        }
+        guard saved.username == "debug-user" else {
+            throw DiagnosticFailure.assertion("Vault: username non persistito; valore riletto: \(saved.username).")
+        }
+        guard saved.email == "debug@example.invalid" else {
+            throw DiagnosticFailure.assertion("Vault: email non persistita; valore riletto: \(saved.email).")
+        }
+        guard saved.website == "https://example.invalid", saved.notes == "Synthetic diagnostics only" else {
+            throw DiagnosticFailure.assertion("Vault: website o notes non persistiti correttamente.")
+        }
+        guard saved.tags == ["diagnostics", "test"] else {
+            throw DiagnosticFailure.assertion("Vault: tags non persistiti; valore riletto: \(saved.tags).")
+        }
+        guard let savedSecrets = saved.secrets, savedSecrets.contains(where: { $0.id == secret.id }) else {
+            let relatedSecrets = try context.fetch(FetchDescriptor<VaultSecret>()).filter { $0.vaultItem?.id == id }
+            throw DiagnosticFailure.assertion("Vault: relazione secrets assente o incompleta. Relazione item.secrets=\(saved.secrets?.count.description ?? "nil"); segreti con inverse verso la voce=\(relatedSecrets.count); segreto atteso presente nel fetch globale=\(try context.fetch(FetchDescriptor<VaultSecret>()).contains(where: { $0.id == secret.id })).")
+        }
+        guard saved.encryptedPassword == nil, saved.encryptedPIN == nil else {
+            throw DiagnosticFailure.assertion("Vault: il test ha rilevato encryptedPassword o encryptedPIN valorizzato, benché non debbano essere impostati.")
+        }
+        saved.title = "DEBUG-REAL-VAULT-UPDATED-\(id.uuidString)"
+        try context.save()
+        guard try context.fetch(FetchDescriptor<VaultItem>(predicate: #Predicate<VaultItem> { $0.id == id })).first?.title == "DEBUG-REAL-VAULT-UPDATED-\(id.uuidString)" else {
+            throw DiagnosticFailure.assertion("La modifica della voce Vault non è persistita.")
+        }
+        return "Voce Vault e segreto esclusivamente sintetico salvati e riletti; metadati, relazione e aggiornamento verificati. Nessuna password reale, PIN o chiave Keychain utilizzati."
+    }
+
+    private func fetchDiagnosticTask(id: UUID, in context: ModelContext) throws -> TodoTask? {
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> { $0.id == id }
+        )
+        return try context.fetch(descriptor).first
+    }
+
     private func runAllTests() async {
         guard !isRunning else { return }
         isRunning = true
         results = []
+        currentTestScope = "isolato"
         defer { isRunning = false }
 
         await runTest("Calcolo eventi notifiche") { try testNotificationEventCalculation() }
@@ -170,6 +543,7 @@ struct DebugDiagnosticsView: View {
         await runTest("AlarmKit produzione: serie ricorrente e cancellazione occorrenze obsolete") { try await testAlarmRecurringSeriesAndObsoleteOccurrences() }
         await runTest("AlarmKit produzione: sincronizzazione batch idempotente") { try await testAlarmBatchSynchronizationIdempotency() }
         await runTest("AlarmKit produzione: eleggibilità task e cancellazione mirata") { try await testAlarmEligibilityTransitions() }
+        appendCurrentReportToUnifiedFile()
     }
 
     /// Ogni test con persistenza usa un database SwiftData in-memory indipendente.
@@ -1422,11 +1796,11 @@ struct DebugDiagnosticsView: View {
             "Data: \(formatter.string(from: .now))",
             "Ambiente: \(ProcessInfo.processInfo.operatingSystemVersionString)",
             "Esito: \(passed) superati, \(failed) falliti, \(results.count) totali",
-            "Ambito: test di integrazione con notifiche di prova a ID univoci e sveglia AlarmKit temporanea, se autorizzata. Limite globale 64 e ordinamento verificati tramite il selettore condiviso con il rebuild di produzione; il rebuild non viene invocato per non modificare notifiche personali.",
-            "Sicurezza: nessuna cancellazione globale; la pulizia agisce esclusivamente sugli ID creati dal test. SwiftData usa store in-memory isolati.",
-            "I test di integrazione della riattivazione chiamano save() esclusivamente su store SwiftData in-memory isolati; nessuna modifica ai dati persistenti dell’utente.",
-            "Gli altri test SwiftData usano contesti in-memory; nessun file reale di allegati creato.",
-            "I test di propagazione e troncamento usano RecurrenceEngine e RecurringAttachmentManager; il test di stabilità ripete 20 volte un calcolo deterministico, ma non sostituisce la ripetizione manuale dell'intera suite.",
+            "Ambito: \(currentTestScope == "reale" ? "suite di persistenza sul ModelContext dell'app: task, ricorrenze, allegati collegati, note, documenti, Wallet e Vault" : "suite diagnostica su store SwiftData isolati, con test mirati di notifiche e AlarmKit").",
+            "Sicurezza: nessuna cancellazione globale; i test sul database reale usano ID univoci e rimuovono soltanto gli oggetti creati. Nessun rebuild globale delle notifiche viene eseguito.",
+            currentTestScope == "reale" ? "ATTENZIONE: se iCloud è attivo, i record diagnostici sul database persistente possono sincronizzarsi brevemente prima della pulizia." : "I test SwiftData usano store in-memory; nessun dato persistente dell'utente viene modificato.",
+            "I test che usano allegati, asset o segreti creano soltanto metadati e payload sintetici; non scrivono file fisici e non usano credenziali o chiavi personali.",
+            "I test di propagazione usano RecurrenceEngine e RecurringAttachmentManager; il test di stabilità ripete 20 volte un calcolo deterministico, ma non sostituisce la ripetizione manuale dell'intera suite.",
             ""
         ]
         for (index, result) in results.enumerated() {
