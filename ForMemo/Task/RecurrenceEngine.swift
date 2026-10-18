@@ -649,7 +649,9 @@ struct RecurrenceEngine {
         }
 
         task.snoozeUntil = nil
-
+        task.manualSnoozeUntil = nil
+        
+        
         return try materializeFutureOccurrences(
             for: task,
             in: context,

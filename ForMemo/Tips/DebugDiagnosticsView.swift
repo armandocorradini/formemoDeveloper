@@ -1,5 +1,6 @@
 #if DEBUG
 import SwiftUI
+import UIKit
 import SwiftData
 import UserNotifications
 import AlarmKit
@@ -10,8 +11,8 @@ struct DebugDiagnosticsView: View {
 
     @State private var results: [DiagnosticTestResult] = []
     @State private var isRunning = false
-    @State private var isExportingReport = false
-    @State private var exportDocument = DiagnosticReportDocument(text: "")
+    @State private var shareReport: ShareableDiagnosticReport?
+    @State private var reportExportError: String?
 
     private var passedCount: Int { results.filter { $0.status == .passed }.count }
     private var failedCount: Int { results.filter { $0.status == .failed }.count }
@@ -34,12 +35,11 @@ struct DebugDiagnosticsView: View {
             }
 
             if !results.isEmpty {
-                Section("Esporta rapporto") {
+                Section("Rapporto diagnostica") {
                     Button {
-                        exportDocument = DiagnosticReportDocument(text: makeReport())
-                        isExportingReport = true
+                        prepareReportForSharing()
                     } label: {
-                        Label("Esporta rapporto test (.txt)", systemImage: "square.and.arrow.up")
+                        Label("Condividi rapporto (.txt)", systemImage: "square.and.arrow.up")
                     }
                 }
 
@@ -73,13 +73,30 @@ struct DebugDiagnosticsView: View {
         }
         .navigationTitle("Diagnostica ForMemo")
         .navigationBarTitleDisplayMode(.inline)
-        .fileExporter(
-            isPresented: $isExportingReport,
-            document: exportDocument,
-            contentType: .plainText,
-            defaultFilename: "ForMemo-Diagnostica"
-        ) { _ in }
+        .sheet(item: $shareReport) { report in
+            DiagnosticReportActivityView(activityItems: [report.url])
+                .ignoresSafeArea()
+        }
+        .alert("Impossibile creare il rapporto", isPresented: Binding(
+            get: { reportExportError != nil },
+            set: { if !$0 { reportExportError = nil } }
+        )) {
+            Button("OK", role: .cancel) { reportExportError = nil }
+        } message: {
+            Text(reportExportError ?? "Errore sconosciuto.")
+        }
 
+    }
+
+    private func prepareReportForSharing() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ForMemo-Diagnostica-\(UUID().uuidString).txt")
+        do {
+            try Data(makeReport().utf8).write(to: url, options: .atomic)
+            shareReport = ShareableDiagnosticReport(url: url)
+        } catch {
+            reportExportError = error.localizedDescription
+        }
     }
 
     private func runAllTests() async {
@@ -126,6 +143,33 @@ struct DebugDiagnosticsView: View {
         await runTest("Ingresso eliminazione reale: rifiuto durante restore") { try await testProductionDeletionEntryPointBlocked() }
         await runTest("Coordinatore: rilascio dopo errore") { try testCoordinatorReleasedAfterError() }
         await runTest("Coordinatore: rilascio dopo cancellazione asincrona") { try await testCoordinatorReleasedAfterCancellation() }
+        await runTest("Migrazione legacy ricorrenza: stato e occorrenze generate") { try testLegacyRecurrenceMigration() }
+        await runTest("Estensione ricorrenza finita: conteggio e indici") { try testFiniteRecurrenceExtension() }
+        await runTest("Ultima occorrenza pianificata: serie coerente e incoerente") { try testFinalPlannedOccurrenceDetection() }
+        await runTest("Ricorrenza: propagazione completa dei metadati") { try testRecurrenceMetadataPropagation() }
+        await runTest("Rebuild produzione: esclude task completati") { try await testProductionRebuildSkipsCompletedTasks() }
+        await runTest("Note: CRUD, contenuto e stato") { try testNoteCRUDAndState() }
+        await runTest("Documenti: scadenza, stato e ordinamento allegati") { try testDocumentExpiryAndAssets() }
+        await runTest("Wallet: CRUD, barcode e metadati carta") { try testWalletCardCRUD() }
+        await runTest("Wallet: relazione e ordinamento asset") { try testWalletAssetRelationship() }
+        await runTest("Vault: modello, segreti e campi organizzativi") { try testVaultModelAndSecrets() }
+        await runTest("Vault: cifratura backup e password errata") { try testVaultBackupCryptoRoundTrip() }
+        await runTest("Scadenza assente: nessun evento automatico") { try testNoDeadlineProducesNoEvents() }
+        await runTest("Scadenza passata: nessun evento ordinario") { try testPastDeadlineProducesNoOrdinaryEvents() }
+        await runTest("Snooze manuale prioritario rispetto allo snooze standard") { try testManualSnoozePriority() }
+        await runTest("AlarmKit non autorizzato: fallback senza alterare la preferenza") { try testAlarmFallbackPreservesPreference() }
+        await runTest("Ricorrenza: limite fino alla fine del giorno") { try testRecurrenceUntilIncludesEndOfDay() }
+        await runTest("Ricorrenza: conteggio nullo e negativo") { try testRecurrenceNonPositiveCount() }
+        await runTest("Ricorrenza: intervallo non valido normalizzato") { try testRecurrenceInvalidIntervalIsClamped() }
+        await runTest("Ricorrenza giornaliera: continuità attraversando cambio anno") { try testDailyRecurrenceAcrossYearBoundary() }
+        await runTest("Eventi: identificativi distinti tra task") { try testEventIdentifiersAreTaskScoped() }
+        await runTest("Eventi: reminder fuori intervallo non duplicato") { try testReminderAtOrAfterDeadlineIsExcluded() }
+        await runTest("Coda eventi: parità temporale ordinata deterministicamente") { try testEqualTimeEventsHaveStableOrdering() }
+        await runTest("Eventi: scadenza normale quando AlarmKit non è disponibile") { try testAlarmAuthorizationEventMatrix() }
+        await runTest("AlarmKit produzione: sincronizzazione e modifica scadenza") { try await testAlarmSynchronizationAndDeadlineEdit() }
+        await runTest("AlarmKit produzione: serie ricorrente e cancellazione occorrenze obsolete") { try await testAlarmRecurringSeriesAndObsoleteOccurrences() }
+        await runTest("AlarmKit produzione: sincronizzazione batch idempotente") { try await testAlarmBatchSynchronizationIdempotency() }
+        await runTest("AlarmKit produzione: eleggibilità task e cancellazione mirata") { try await testAlarmEligibilityTransitions() }
     }
 
     /// Ogni test con persistenza usa un database SwiftData in-memory indipendente.
@@ -136,7 +180,12 @@ struct DebugDiagnosticsView: View {
             TaskAttachment.self,
             RecurringAttachmentLink.self,
             DocumentItem.self,
-            DocumentAsset.self
+            DocumentAsset.self,
+            Note.self,
+            LoyaltyCard.self,
+            WalletAsset.self,
+            VaultItem.self,
+            VaultSecret.self
         ])
         let configuration = ModelConfiguration(
             "ForMemoDiagnostics-\(UUID().uuidString)",
@@ -1613,25 +1662,1000 @@ struct DebugDiagnosticsView: View {
     }
 
 
+
+
+    private func testLegacyRecurrenceMigration() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let start = Calendar.current.date(byAdding: .day, value: 3, to: Date())!
+        let task = TodoTask(
+            title: "DEBUG-ONLY legacy migration",
+            deadLine: start,
+            reminderOffsetMinutes: 45
+        )
+        task.isDebugTask = true
+        task.taskDescription = "Descrizione da preservare"
+        task.priorityRaw = 2
+        task.mainTagRaw = "work"
+        task.alarmEnabled = true
+        task.locationReminderEnabled = true
+        task.locationName = "Luogo diagnostico"
+        task.locationLatitude = 44.5
+        task.locationLongitude = 11.3
+        task.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        task.recurrenceInterval = 2
+        task.recurrenceCount = nil
+        task.snoozeUntil = Date().addingTimeInterval(600)
+        task.manualSnoozeUntil = Date().addingTimeInterval(900)
+        context.insert(task)
+
+        let originalID = task.id
+        let generated = try RecurrenceEngine.migrateLegacyRecurrence(
+            for: task,
+            futureCount: 3,
+            endDate: nil,
+            keepCurrentOccurrenceActive: false,
+            in: context
+        )
+        try context.save()
+
+        guard generated.count == 3,
+              task.id == originalID,
+              task.recurrenceID != nil,
+              task.occurrenceIndex == 1,
+              task.recurrenceCount == 4,
+              task.isCompleted,
+              task.completedAt != nil,
+              task.snoozeUntil == nil,
+              task.manualSnoozeUntil == nil else {
+            throw DiagnosticFailure.assertion("La migrazione non ha mantenuto l'identità o applicato correttamente stato e limite.")
+        }
+
+        let all = try context.fetch(FetchDescriptor<TodoTask>())
+            .filter { $0.recurrenceID == task.recurrenceID }
+            .sorted { ($0.occurrenceIndex ?? 0) < ($1.occurrenceIndex ?? 0) }
+        guard all.count == 4,
+              all.compactMap(\.occurrenceIndex) == [1, 2, 3, 4],
+              all.dropFirst().allSatisfy({ !$0.isCompleted }) else {
+            throw DiagnosticFailure.assertion("La serie migrata non contiene le quattro occorrenze attese o gli indici/stati sono errati.")
+        }
+        guard generated.allSatisfy({
+            $0.title == task.title &&
+            $0.taskDescription == task.taskDescription &&
+            $0.priorityRaw == task.priorityRaw &&
+            $0.alarmEnabled == task.alarmEnabled &&
+            $0.reminderOffsetMinutes == task.reminderOffsetMinutes &&
+            $0.locationReminderEnabled == task.locationReminderEnabled &&
+            $0.locationName == task.locationName
+        }) else {
+            throw DiagnosticFailure.assertion("Una o più occorrenze non hanno ereditato i metadati essenziali del task legacy.")
+        }
+
+        do {
+            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+                for: task,
+                futureCount: 3,
+                endDate: nil,
+                keepCurrentOccurrenceActive: false,
+                in: context
+            )
+            throw DiagnosticFailure.assertion("La seconda migrazione avrebbe dovuto rifiutare un task già migrato.")
+        } catch RecurrenceEngine.MigrationError.notLegacyRecurrence {
+            // Expected: migration must not be applied twice.
+        }
+
+        return "Migrazione eseguita su store in-memory: identità originale conservata, 3 occorrenze create, indici 1–4, stato completato e snooze azzerato; seconda migrazione rifiutata."
+    }
+
+    private func testFiniteRecurrenceExtension() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let calendar = Calendar(identifier: .gregorian)
+        let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 10, hour: 12))!
+        let seriesID = UUID()
+        let first = TodoTask(title: "DEBUG-ONLY extend finite series", deadLine: start)
+        first.isDebugTask = true
+        first.recurrenceID = seriesID
+        first.occurrenceIndex = 1
+        first.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        first.recurrenceInterval = 1
+        first.recurrenceStartDate = start
+        first.recurrenceCount = 2
+
+        let secondDate = calendar.date(byAdding: .day, value: 1, to: start)!
+        let last = TodoTask(title: first.title, deadLine: secondDate, isCompleted: true, completedAt: secondDate)
+        last.isDebugTask = true
+        last.recurrenceID = seriesID
+        last.occurrenceIndex = 2
+        last.recurrenceRule = first.recurrenceRule
+        last.recurrenceInterval = first.recurrenceInterval
+        last.recurrenceStartDate = start
+        last.recurrenceCount = 2
+
+        context.insert(first)
+        context.insert(last)
+        let created = try RecurrenceEngine.extendSeries(
+            after: last,
+            by: 2,
+            in: context,
+            calendar: calendar
+        )
+        try context.save()
+
+        let series = try context.fetch(FetchDescriptor<TodoTask>())
+            .filter { $0.recurrenceID == seriesID }
+            .sorted { ($0.occurrenceIndex ?? 0) < ($1.occurrenceIndex ?? 0) }
+
+        guard created.count == 2,
+              series.count == 4,
+              series.compactMap(\.occurrenceIndex) == [1, 2, 3, 4],
+              series.allSatisfy({ $0.recurrenceCount == 4 }),
+              series[0].id == first.id,
+              series[1].id == last.id,
+              series[1].isCompleted,
+              !series[2].isCompleted,
+              !series[3].isCompleted else {
+            throw DiagnosticFailure.assertion("L'estensione non ha preservato le due occorrenze esistenti o sincronizzato count/indici/stati.")
+        }
+        guard zip(series, series.dropFirst()).allSatisfy({
+            guard let left = $0.deadLine, let right = $1.deadLine else { return false }
+            return left < right
+        }) else {
+            throw DiagnosticFailure.assertion("Le scadenze della serie estesa non sono strettamente crescenti.")
+        }
+
+        return "Estensione verificata su store in-memory: le occorrenze esistenti mantengono identità e stato; create #3 e #4; recurrenceCount aggiornato a 4 su tutta la serie."
+    }
+
+    private func testFinalPlannedOccurrenceDetection() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let start = Calendar.current.date(byAdding: .day, value: -2, to: Date())!
+        let seriesID = UUID()
+        let final = TodoTask(title: "DEBUG-ONLY final occurrence", deadLine: start, isCompleted: true, completedAt: Date())
+        final.isDebugTask = true
+        final.recurrenceID = seriesID
+        final.occurrenceIndex = 3
+        final.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        final.recurrenceInterval = 1
+        final.recurrenceStartDate = Calendar.current.date(byAdding: .day, value: -4, to: start)
+        final.recurrenceCount = 3
+        context.insert(final)
+
+        guard try RecurrenceEngine.isFinalPlannedOccurrence(final, in: context) else {
+            throw DiagnosticFailure.assertion("L'ultima occorrenza completata di una serie finita coerente doveva essere riconosciuta come finale.")
+        }
+
+        let extra = TodoTask(title: final.title, deadLine: Date().addingTimeInterval(86_400))
+        extra.isDebugTask = true
+        extra.recurrenceID = seriesID
+        extra.occurrenceIndex = 4
+        extra.recurrenceRule = final.recurrenceRule
+        extra.recurrenceInterval = 1
+        extra.recurrenceStartDate = final.recurrenceStartDate
+        extra.recurrenceCount = 3
+        context.insert(extra)
+
+        let inconsistentSeriesIsFinal = try RecurrenceEngine.isFinalPlannedOccurrence(final, in: context)
+        guard !inconsistentSeriesIsFinal else {
+            throw DiagnosticFailure.assertion("Una serie con un'occorrenza materializzata oltre il limite dichiarato non deve essere considerata coerente/finale.")
+        }
+
+        let unlimited = TodoTask(title: "DEBUG-ONLY unlimited occurrence", deadLine: start, isCompleted: true, completedAt: Date())
+        unlimited.isDebugTask = true
+        unlimited.recurrenceID = UUID()
+        unlimited.occurrenceIndex = 1
+        unlimited.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        unlimited.recurrenceStartDate = start
+        unlimited.recurrenceCount = nil
+        context.insert(unlimited)
+        let unlimitedSeriesIsFinal = try RecurrenceEngine.isFinalPlannedOccurrence(unlimited, in: context)
+        guard !unlimitedSeriesIsFinal else {
+            throw DiagnosticFailure.assertion("Una serie illimitata non deve essere classificata come ultima occorrenza pianificata.")
+        }
+
+        return "Rilevamento verificato per serie finita coerente, serie con indice oltre il limite e serie illimitata."
+    }
+
+    private func testRecurrenceMetadataPropagation() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let calendar = Calendar(identifier: .gregorian)
+        let start = calendar.date(from: DateComponents(year: 2026, month: 2, day: 1, hour: 9, minute: 30))!
+        let task = TodoTask(title: "DEBUG-ONLY metadata", deadLine: start, reminderOffsetMinutes: 75)
+        task.isDebugTask = true
+        task.taskDescription = "Descrizione completa"
+        task.priorityRaw = 3
+        task.mainTagRaw = "personal"
+        task.locationName = "Bologna"
+        task.locationLatitude = 44.4949
+        task.locationLongitude = 11.3426
+        task.locationReminderEnabled = true
+        task.alarmEnabled = true
+        task.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        task.recurrenceInterval = 2
+        task.recurrenceID = UUID()
+        task.occurrenceIndex = 1
+        task.recurrenceStartDate = start
+        task.recurrenceCount = 3
+        task.snoozeUntil = Date().addingTimeInterval(600)
+        task.manualSnoozeUntil = Date().addingTimeInterval(900)
+        context.insert(task)
+
+        let generated = try RecurrenceEngine.materializeFutureOccurrences(for: task, in: context, calendar: calendar)
+        guard generated.count == 2 else {
+            throw DiagnosticFailure.assertion("Attese due occorrenze generate, ottenute \(generated.count).")
+        }
+        for occurrence in generated {
+            guard occurrence.title == task.title,
+                  occurrence.taskDescription == task.taskDescription,
+                  occurrence.priorityRaw == task.priorityRaw,
+                  occurrence.mainTagRaw == task.mainTagRaw,
+                  occurrence.locationName == task.locationName,
+                  occurrence.locationLatitude == task.locationLatitude,
+                  occurrence.locationLongitude == task.locationLongitude,
+                  occurrence.locationReminderEnabled == task.locationReminderEnabled,
+                  occurrence.alarmEnabled == task.alarmEnabled,
+                  occurrence.reminderOffsetMinutes == task.reminderOffsetMinutes,
+                  occurrence.snoozeUntil == nil,
+                  occurrence.manualSnoozeUntil == nil else {
+                throw DiagnosticFailure.assertion("L'occorrenza #\(occurrence.occurrenceIndex ?? -1) ha perso metadati o ereditato uno snooze che deve essere azzerato.")
+            }
+        }
+
+        return "Verificata la propagazione di descrizione, priorità, tag, coordinate, promemoria, sveglia e reset degli snooze sulle occorrenze future."
+    }
+
+
+    private func testNoteCRUDAndState() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let id = UUID()
+        let created = Date(timeIntervalSince1970: 1_800_000_000)
+        let richTextPayload = Data("DEBUG-ONLY nota\nTitolo in grassetto".utf8)
+        let note = Note(
+            id: id,
+            title: "DEBUG-ONLY nota iniziale",
+            content: richTextPayload,
+            createdAt: created,
+            modifiedAt: created,
+            isPinned: true,
+            isArchived: false,
+            color: "blue",
+            sortOrder: 7
+        )
+        context.insert(note)
+        try context.save()
+
+        guard let saved = try context.fetch(FetchDescriptor<Note>()).first(where: { $0.id == id }),
+              saved.content == richTextPayload,
+              saved.isPinned,
+              !saved.isArchived,
+              saved.sortOrder == 7 else {
+            throw DiagnosticFailure.assertion("La nota non conserva contenuto, pin o ordinamento dopo il salvataggio.")
+        }
+
+        let openedAt = Date()
+        saved.title = "DEBUG-ONLY nota aggiornata"
+        saved.content = Data("Contenuto aggiornato".utf8)
+        saved.modifiedAt = openedAt
+        saved.lastOpenedAt = openedAt
+        saved.isPinned = false
+        saved.isArchived = true
+        saved.archivedAt = openedAt
+        try context.save()
+
+        guard let updated = try context.fetch(FetchDescriptor<Note>()).first(where: { $0.id == id }),
+              updated.title == "DEBUG-ONLY nota aggiornata",
+              String(data: updated.content, encoding: .utf8) == "Contenuto aggiornato",
+              updated.lastOpenedAt == openedAt,
+              updated.archivedAt == openedAt,
+              !updated.isPinned,
+              updated.isArchived else {
+            throw DiagnosticFailure.assertion("Modifica, apertura o archiviazione della nota non sono state salvate correttamente.")
+        }
+
+        context.delete(updated)
+        try context.save()
+        guard try context.fetch(FetchDescriptor<Note>()).allSatisfy({ $0.id != id }) else {
+            throw DiagnosticFailure.assertion("La nota è ancora presente dopo l'eliminazione nello store temporaneo.")
+        }
+        return "CRUD completo con save e rilettura: contenuto Data preservato, pin, archiviazione, date e lastOpenedAt verificati esclusivamente in SwiftData in-memory."
+    }
+
+    private func testDocumentExpiryAndAssets() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        guard let expiredDate = calendar.date(byAdding: .day, value: -1, to: today),
+              let warningDate = calendar.date(byAdding: .day, value: 15, to: today),
+              let upcomingDate = calendar.date(byAdding: .day, value: 60, to: today),
+              let validDate = calendar.date(byAdding: .day, value: 120, to: today) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire le date di verifica scadenza.")
+        }
+
+        let expired = DocumentItem(name: "DEBUG-ONLY scaduto", documentType: .passport, expiryDate: expiredDate)
+        let warning = DocumentItem(name: "DEBUG-ONLY in scadenza", documentType: .idCard, expiryDate: warningDate)
+        let upcoming = DocumentItem(name: "DEBUG-ONLY prossimo", documentType: .drivingLicence, expiryDate: upcomingDate)
+        let valid = DocumentItem(name: "DEBUG-ONLY valido", documentType: .healthCard, expiryDate: validDate)
+        let noExpiry = DocumentItem(name: "DEBUG-ONLY senza scadenza")
+        let expected: [(DocumentItem, ExpiryStatus, Bool)] = [
+            (expired, .expired, true), (warning, .warning, false),
+            (upcoming, .upcoming, false), (valid, .valid, false),
+            (noExpiry, .valid, false)
+        ]
+        for (document, status, isExpired) in expected {
+            guard document.expiryStatus == status, document.isExpired == isExpired else {
+                throw DiagnosticFailure.assertion("Stato scadenza errato per \(document.name): isExpired=\(document.isExpired).")
+            }
+            context.insert(document)
+        }
+
+        let document = DocumentItem(name: "DEBUG-ONLY asset ordering")
+        let pdf = DocumentAsset(relativePath: "diagnostics-only/second.pdf", kind: .pdf, pageIndex: 2, fileSize: 200, document: document)
+        let image = DocumentAsset(relativePath: "diagnostics-only/first.jpg", kind: .image, pageIndex: 1, fileSize: 100, document: document)
+        document.assets = [pdf, image]
+        context.insert(document)
+        context.insert(pdf)
+        context.insert(image)
+        try context.save()
+
+        guard document.sortedAssets.map(\.pageIndex) == [1, 2],
+              document.primaryAsset?.id == image.id,
+              document.imageAssets.count == 1,
+              document.pdfAssets.count == 1,
+              document.hasAssets,
+              pdf.isPDF,
+              image.isImage else {
+            throw DiagnosticFailure.assertion("Relazioni, ordinamento o filtri degli allegati documento non coerenti.")
+        }
+        return "Verificati 5 stati di scadenza (scaduto, warning, upcoming, valido e senza scadenza) e gli asset ordinati per pagina con filtri immagine/PDF. Nessun file fisico creato."
+    }
+
+    private func testWalletCardCRUD() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let id = UUID()
+        let card = LoyaltyCard(
+            id: id,
+            storeName: "DEBUG-ONLY negozio",
+            cardHolder: "Test User",
+            barcodeValue: "5901234123457",
+            barcodeFormat: "ean13",
+            itemType: "loyaltyCard",
+            notes: "Nota di prova",
+            colorHex: "#123456",
+            sortOrder: 4
+        )
+        context.insert(card)
+        try context.save()
+
+        guard let saved = try context.fetch(FetchDescriptor<LoyaltyCard>()).first(where: { $0.id == id }),
+              saved.storeName == "DEBUG-ONLY negozio",
+              saved.cardHolder == "Test User",
+              saved.barcodeValue == "5901234123457",
+              saved.barcodeFormat == "ean13",
+              saved.itemType == "loyaltyCard",
+              saved.colorHex == "#123456",
+              saved.sortOrder == 4 else {
+            throw DiagnosticFailure.assertion("La carta Wallet non conserva identità, barcode o metadati.")
+        }
+
+        saved.storeName = "DEBUG-ONLY negozio aggiornato"
+        saved.barcodeValue = "TEST-12345"
+        saved.barcodeFormat = "code128"
+        saved.notes = "Nota aggiornata"
+        saved.lastOpenedAt = Date()
+        try context.save()
+        guard let updated = try context.fetch(FetchDescriptor<LoyaltyCard>()).first(where: { $0.id == id }),
+              updated.storeName == "DEBUG-ONLY negozio aggiornato",
+              updated.barcodeValue == "TEST-12345",
+              updated.barcodeFormat == "code128",
+              updated.notes == "Nota aggiornata",
+              updated.lastOpenedAt != nil else {
+            throw DiagnosticFailure.assertion("Aggiornamento carta/barcode/lastOpenedAt non persistito.")
+        }
+        context.delete(updated)
+        try context.save()
+        guard try context.fetch(FetchDescriptor<LoyaltyCard>()).allSatisfy({ $0.id != id }) else {
+            throw DiagnosticFailure.assertion("La carta Wallet è ancora presente dopo l'eliminazione temporanea.")
+        }
+        return "CRUD con save e rilettura: barcode, formato, titolare, note, colore, ordinamento e lastOpenedAt verificati in store isolato. Non è stata generata né scansionata un'immagine barcode."
+    }
+
+    private func testWalletAssetRelationship() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let card = LoyaltyCard(storeName: "DEBUG-ONLY asset card", barcodeValue: "123456", barcodeFormat: "code128")
+        let logo = WalletAsset(kind: .logo, relativePath: "diagnostics-only/logo.jpg", fileSize: 120)
+        let galleryLater = WalletAsset(kind: .gallery, relativePath: "diagnostics-only/gallery-2.jpg", fileSize: 220)
+        galleryLater.createdAt = Date(timeIntervalSince1970: 200)
+        let galleryEarlier = WalletAsset(kind: .gallery, relativePath: "diagnostics-only/gallery-1.jpg", fileSize: 110)
+        galleryEarlier.createdAt = Date(timeIntervalSince1970: 100)
+        logo.card = card
+        galleryLater.card = card
+        galleryEarlier.card = card
+        card.assets = [galleryLater, logo, galleryEarlier]
+        card.loyaltyLogoRelativePath = logo.relativePath
+        context.insert(card)
+        context.insert(logo)
+        context.insert(galleryLater)
+        context.insert(galleryEarlier)
+        try context.save()
+
+        let fetchedCards = try context.fetch(FetchDescriptor<LoyaltyCard>())
+        guard let saved = fetchedCards.first(where: { $0.id == card.id }),
+              saved.logoAsset?.id == logo.id,
+              saved.asset(for: .logo)?.relativePath == "diagnostics-only/logo.jpg",
+              saved.galleryAssets.count == 2,
+              saved.galleryAssets.allSatisfy({ $0.kind == .gallery }),
+              saved.galleryAssets.first?.relativePath == "diagnostics-only/gallery-1.jpg",
+              saved.assets?.count == 3 else {
+            throw DiagnosticFailure.assertion("Relazioni WalletAsset, logo o ordinamento della galleria non coerenti.")
+        }
+        try WalletAsset.verifyPersisted([logo, galleryLater, galleryEarlier], in: context)
+        context.delete(saved)
+        try context.save()
+        let remainingAssets = try context.fetch(FetchDescriptor<WalletAsset>())
+        guard remainingAssets.allSatisfy({ ![logo.id, galleryLater.id, galleryEarlier.id].contains($0.id) }) else {
+            throw DiagnosticFailure.assertion("La cancellazione della carta non ha eliminato gli asset collegati tramite cascade.")
+        }
+        return "Relazione carta-asset salvata e riletta; logo distinto dalla galleria, ordinamento verificato e helper verifyPersisted superato. Eliminando la carta, gli asset collegati sono stati rimossi dallo store temporaneo. Nessun file fisico scritto."
+    }
+
+    private func testVaultModelAndSecrets() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let item = VaultItem(title: "DEBUG-ONLY account", category: .website)
+        item.username = "debug-user"
+        item.email = "debug@example.invalid"
+        item.website = "https://example.invalid"
+        item.notes = "Nota non sensibile di test"
+        item.favorite = true
+        item.tags = ["diagnostics", "test"]
+        item.icon = .globe
+        item.color = .teal
+        item.requireBiometricEveryTime = true
+        item.passwordExpiresAt = Date(timeIntervalSince1970: 1_900_000_000)
+
+        let secret = VaultSecret(encryptedLabel: Data("label-placeholder".utf8), encryptedValue: Data("value-placeholder".utf8), sortOrder: 0)
+        secret.vaultItem = item
+        item.secrets = [secret]
+        context.insert(item)
+        context.insert(secret)
+        try context.save()
+
+        guard let saved = try context.fetch(FetchDescriptor<VaultItem>()).first(where: { $0.id == item.id }),
+              saved.syncIdentifier == item.syncIdentifier,
+              saved.version == 1,
+              saved.category == .website,
+              saved.username == "debug-user",
+              saved.email == "debug@example.invalid",
+              saved.favorite,
+              saved.tags == ["diagnostics", "test"],
+              saved.icon == .globe,
+              saved.color == .teal,
+              saved.requireBiometricEveryTime,
+              saved.secrets?.count == 1,
+              saved.secrets?.first?.vaultItem?.id == saved.id else {
+            throw DiagnosticFailure.assertion("Il modello Vault o la relazione VaultSecret non è stata conservata correttamente.")
+        }
+        guard saved.encryptedPassword == nil, saved.encryptedPIN == nil else {
+            throw DiagnosticFailure.assertion("Il test del modello non deve inserire password o PIN in chiaro/cifrati con la chiave reale.")
+        }
+        context.delete(saved)
+        try context.save()
+        guard try context.fetch(FetchDescriptor<VaultSecret>()).allSatisfy({ $0.vaultItem?.id != item.id }) else {
+            throw DiagnosticFailure.assertion("La cancellazione della voce Vault non ha rimosso i segreti collegati.")
+        }
+        return "Modello Vault e relazione VaultSecret salvati e riletti in store isolato; campi organizzativi, tag, preferito e richiesta biometrica verificati. Cascade dei segreti verificato. Non viene usata la chiave Keychain reale né salvata una credenziale."
+    }
+
+    private func testVaultBackupCryptoRoundTrip() throws -> String {
+        let keyMaterial = Data((0..<32).map { UInt8($0) })
+        let password = "DEBUG-ONLY backup password 123!"
+        let package = try VaultBackupCrypto.makePackage(vaultKey: keyMaterial, password: password)
+        guard package.version == VaultBackupCrypto.currentVersion,
+              package.kdf == VaultBackupCrypto.kdfName,
+              package.salt.count == 32,
+              !package.wrappedVaultKey.isEmpty else {
+            throw DiagnosticFailure.assertion("Il pacchetto backup Vault non rispetta versione, KDF, salt o payload attesi.")
+        }
+        let recovered = try VaultBackupCrypto.unwrapKey(from: package, password: password)
+        guard recovered == keyMaterial else {
+            throw DiagnosticFailure.assertion("Il round-trip della chiave Vault non ha restituito gli stessi byte.")
+        }
+        do {
+            _ = try VaultBackupCrypto.unwrapKey(from: package, password: "password-errata-debug")
+            throw DiagnosticFailure.assertion("La password errata ha sbloccato il pacchetto Vault.")
+        } catch VaultBackupCryptoError.invalidPassword {
+            // Expected: authentication must reject a wrong password.
+        }
+        return "Backup Vault: pacchetto creato, chiave recuperata byte-per-byte e password errata rifiutata. Usa soltanto dati sintetici; nessuna chiave personale o voce Vault è stata letta."
+    }
+
+    private func testProductionRebuildSkipsCompletedTasks() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let task = TodoTask(
+            title: "DEBUG-ONLY completed rebuild task",
+            deadLine: Calendar.current.date(byAdding: .day, value: 2, to: Date())!,
+            isCompleted: true,
+            completedAt: Date()
+        )
+        task.isDebugTask = false
+        task.reminderOffsetMinutes = 60
+        task.alarmEnabled = false
+
+        var addAttempts = 0
+        let succeeded = await NotificationManager.shared.debugRebuild(
+            tasks: [task],
+            using: context,
+            documentFetchOperation: { [] },
+            addOperation: { _ in addAttempts += 1 }
+        )
+        guard succeeded, addAttempts == 0 else {
+            throw DiagnosticFailure.assertion("Il rebuild di produzione deve ignorare il task completato senza tentare di programmare notifiche.")
+        }
+        return "Il percorso reale di rebuild ha ignorato il task completato; nessuna richiesta di notifica è stata aggiunta e nessuna coda personale è stata modificata."
+    }
+
+    // Test di confine puri: non accedono alla coda notifiche di sistema.
+    private func testNoDeadlineProducesNoEvents() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY no deadline")
+        task.isDebugTask = true
+        let events = NotificationManager.TaskEventCalculator.allEvents(
+            for: task, now: .now, lead: .threeDays
+        )
+        guard events.isEmpty else {
+            throw DiagnosticFailure.assertion("Un task senza scadenza ha generato eventi: \(events.map(\.type)).")
+        }
+        return "Un task senza data di scadenza non genera eventi automatici."
+    }
+
+    private func testPastDeadlineProducesNoOrdinaryEvents() throws -> String {
+        let now = Date.now
+        let task = TodoTask(title: "DEBUG-ONLY past deadline", deadLine: now.addingTimeInterval(-60))
+        task.isDebugTask = true
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        guard events.isEmpty else {
+            throw DiagnosticFailure.assertion("Una scadenza passata ha generato eventi ordinari: \(events.map(\.type)).")
+        }
+        return "Una scadenza passata non genera nuovi eventi ordinari quando non è attivo uno snooze."
+    }
+
+    private func testManualSnoozePriority() throws -> String {
+        let now = Date.now
+        guard let deadline = Calendar.current.date(byAdding: .day, value: 5, to: now) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data di test.")
+        }
+        let task = TodoTask(title: "DEBUG-ONLY snooze priority", deadLine: deadline)
+        task.isDebugTask = true
+        task.snoozeUntil = now.addingTimeInterval(900)
+        task.manualSnoozeUntil = now.addingTimeInterval(1_800)
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        guard events.count == 1,
+              events[0].type == "manualSnooze",
+              events[0].date == task.manualSnoozeUntil else {
+            throw DiagnosticFailure.assertion("Lo snooze manuale non è risultato esclusivo e prioritario.")
+        }
+        return "Con entrambi gli snooze attivi viene restituito solo manualSnooze, con la sua data."
+    }
+
+    private func testAlarmFallbackPreservesPreference() throws -> String {
+        let now = Date.now
+        guard let deadline = Calendar.current.date(byAdding: .day, value: 4, to: now) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data di test.")
+        }
+        let task = TodoTask(title: "DEBUG-ONLY alarm fallback", deadLine: deadline)
+        task.isDebugTask = true
+        task.alarmEnabled = true
+        let events = NotificationManager.TaskEventCalculator.allEvents(
+            for: task, now: now, lead: .none, alarmAuthorizationAvailable: false
+        )
+        guard events.count == 1, events[0].type == "deadline", !events.contains(where: { $0.type == "alarmBadge" }) else {
+            throw DiagnosticFailure.assertion("Senza autorizzazione AlarmKit era atteso solo deadline, senza alarmBadge.")
+        }
+        guard task.alarmEnabled else {
+            throw DiagnosticFailure.assertion("Il calcolo di fallback ha modificato la preferenza alarmEnabled del task.")
+        }
+        return "Senza autorizzazione viene calcolato deadline al posto di alarmBadge; la preferenza salvata resta attiva."
+    }
+
+    private func testRecurrenceUntilIncludesEndOfDay() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        guard let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 1, hour: 12)),
+              let end = calendar.date(from: DateComponents(year: 2026, month: 1, day: 3, hour: 0)) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire le date Gregoriane di test.")
+        }
+        let dates = RecurrenceEngine.occurrenceDates(
+            startDate: start, rule: .daily, interval: 1, limit: .until(end), calendar: calendar
+        )
+        guard dates.count == 3,
+              calendar.component(.day, from: dates[2]) == 3 else {
+            throw DiagnosticFailure.assertion("Il limite until deve includere anche l'occorrenza del giorno finale.")
+        }
+        return "Il limite until include l'intera giornata finale, non soltanto la mezzanotte."
+    }
+
+    private func testRecurrenceNonPositiveCount() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        guard let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 1, hour: 12)) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data di test.")
+        }
+        for count in [0, -1, -10] {
+            let dates = RecurrenceEngine.occurrenceDates(
+                startDate: start, rule: .daily, interval: 1, limit: .count(count), calendar: calendar
+            )
+            guard dates.isEmpty else {
+                throw DiagnosticFailure.assertion("Il conteggio \(count) ha prodotto \(dates.count) date.")
+            }
+        }
+        return "Conteggi zero e negativi non generano occorrenze."
+    }
+
+    private func testRecurrenceInvalidIntervalIsClamped() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        guard let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 1, hour: 12)) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data di test.")
+        }
+        let normal = RecurrenceEngine.occurrenceDates(
+            startDate: start, rule: .daily, interval: 1, limit: .count(5), calendar: calendar
+        )
+        for invalidInterval in [0, -1, -100] {
+            let result = RecurrenceEngine.occurrenceDates(
+                startDate: start, rule: .daily, interval: invalidInterval, limit: .count(5), calendar: calendar
+            )
+            guard result == normal else {
+                throw DiagnosticFailure.assertion("Intervallo \(invalidInterval) non normalizzato come intervallo 1.")
+            }
+        }
+        return "Intervalli zero e negativi vengono normalizzati a 1 e non bloccano la progressione."
+    }
+
+    private func testDailyRecurrenceAcrossYearBoundary() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        guard let start = calendar.date(from: DateComponents(year: 2026, month: 12, day: 30, hour: 12)) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data di test.")
+        }
+        let dates = RecurrenceEngine.occurrenceDates(
+            startDate: start, rule: .daily, interval: 1, limit: .count(5), calendar: calendar
+        )
+        let components = dates.map { calendar.dateComponents([.year, .month, .day], from: $0) }
+        guard dates.count == 5,
+              components[0].year == 2026, components[0].month == 12, components[0].day == 30,
+              components[1].year == 2026, components[1].month == 12, components[1].day == 31,
+              components[2].year == 2027, components[2].month == 1, components[2].day == 1,
+              zip(dates, dates.dropFirst()).allSatisfy({ $0.0 < $0.1 }) else {
+            throw DiagnosticFailure.assertion("La progressione giornaliera non attraversa correttamente il cambio anno.")
+        }
+        return "La sequenza giornaliera attraversa il 31 dicembre e il 1° gennaio mantenendo l'ordine crescente."
+    }
+
+    private func testEventIdentifiersAreTaskScoped() throws -> String {
+        let now = Date.now
+        guard let deadline = Calendar.current.date(byAdding: .day, value: 8, to: now) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data di test.")
+        }
+        let first = TodoTask(title: "DEBUG-ONLY event scope A", deadLine: deadline)
+        let second = TodoTask(title: "DEBUG-ONLY event scope B", deadLine: deadline)
+        first.isDebugTask = true
+        second.isDebugTask = true
+        let firstEvents = NotificationManager.TaskEventCalculator.allEvents(for: first, now: now, lead: .threeDays)
+        let secondEvents = NotificationManager.TaskEventCalculator.allEvents(for: second, now: now, lead: .threeDays)
+        let firstIDs = Set(firstEvents.map(\.id))
+        let secondIDs = Set(secondEvents.map(\.id))
+        guard !firstIDs.isEmpty, !secondIDs.isEmpty, firstIDs.isDisjoint(with: secondIDs) else {
+            throw DiagnosticFailure.assertion("Due task diversi hanno prodotto identificativi evento sovrapposti o vuoti.")
+        }
+        return "Gli eventi di due task distinti con la stessa scadenza hanno identificativi indipendenti."
+    }
+
+    private func testReminderAtOrAfterDeadlineIsExcluded() throws -> String {
+        let now = Date.now
+        guard let deadline = Calendar.current.date(byAdding: .day, value: 5, to: now) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data di test.")
+        }
+        for offset in [0, -30, -120] {
+            let task = TodoTask(title: "DEBUG-ONLY invalid reminder \(offset)", deadLine: deadline, reminderOffsetMinutes: offset)
+            task.isDebugTask = true
+            let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .none)
+            guard events.filter({ $0.type == "reminder" }).isEmpty else {
+                throw DiagnosticFailure.assertion("Un reminder con offset \(offset) è stato generato pur non precedendo la scadenza.")
+            }
+        }
+        return "Offset zero o negativi non producono reminder separati alla scadenza o dopo di essa."
+    }
+
+    private func testEqualTimeEventsHaveStableOrdering() throws -> String {
+        let now = Date.now
+        guard let deadline = Calendar.current.date(byAdding: .day, value: 5, to: now) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data di test.")
+        }
+        let task = TodoTask(title: "DEBUG-ONLY equal time", deadLine: deadline, reminderOffsetMinutes: 60)
+        task.isDebugTask = true
+        let first = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .none)
+        let second = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .none)
+        guard first.map(\.id) == second.map(\.id),
+              zip(first, first.dropFirst()).allSatisfy({
+                  $0.0.date < $0.1.date || ($0.0.date == $0.1.date && $0.0.id <= $0.1.id)
+              }) else {
+            throw DiagnosticFailure.assertion("Ordinamento eventi non ripetibile o non deterministico a parità di data.")
+        }
+        return "Il calcolo ripetuto mantiene gli stessi ID e ordina deterministicamente gli eventi a parità di data."
+    }
+
+    private func testAlarmAuthorizationEventMatrix() throws -> String {
+        let now = Date.now
+        guard let deadline = Calendar.current.date(byAdding: .day, value: 6, to: now) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data di test.")
+        }
+        let task = TodoTask(title: "DEBUG-ONLY authorization matrix", deadLine: deadline)
+        task.isDebugTask = true
+        task.alarmEnabled = true
+        let authorized = NotificationManager.TaskEventCalculator.allEvents(
+            for: task, now: now, lead: .none, alarmAuthorizationAvailable: true
+        )
+        let unauthorized = NotificationManager.TaskEventCalculator.allEvents(
+            for: task, now: now, lead: .none, alarmAuthorizationAvailable: false
+        )
+        guard authorized.map(\.type) == ["alarmBadge"],
+              unauthorized.map(\.type) == ["deadline"],
+              task.alarmEnabled else {
+            throw DiagnosticFailure.assertion("Matrice autorizzazione incoerente: authorized=\(authorized.map(\.type)), unauthorized=\(unauthorized.map(\.type)).")
+        }
+        return "AlarmKit autorizzato: solo alarmBadge; non autorizzato: solo deadline; preferenza del task invariata."
+    }
+
+
+
+    // MARK: - AlarmKit production-path diagnostics
+
+    /// Exercises the real production synchronizer using only a unique diagnostic UUID.
+    /// Cleanup is always scoped to that UUID; global orphan cleanup is deliberately not called.
+    private func testAlarmSynchronizationAndDeadlineEdit() async throws -> String {
+        let manager = ForMemoAlarmManager.shared
+        guard manager.authorizationState() == .authorized else {
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; nessuna sveglia creata.")
+        }
+
+        let id = UUID()
+        let task = TodoTask(id: id, title: "DEBUG-ONLY AlarmKit deadline edit", deadLine: .now.addingTimeInterval(7_200))
+        task.isDebugTask = true
+        task.alarmEnabled = true
+
+        do {
+            guard await manager.synchronize(task: task) else {
+                throw DiagnosticFailure.assertion("Fase 1 — prima sincronizzazione: synchronize(task:) ha restituito false.")
+            }
+            do {
+                try assertDiagnosticAlarm(id: id, shouldBeScheduled: true)
+            } catch {
+                throw DiagnosticFailure.assertion("Fase 2 — verifica della prima sveglia (lettura AlarmKit): \(error.localizedDescription)")
+            }
+
+            task.deadLine = .now.addingTimeInterval(10_800)
+            guard await manager.synchronize(task: task) else {
+                throw DiagnosticFailure.assertion("Fase 3 — riprogrammazione dopo la modifica della scadenza: synchronize(task:) ha restituito false.")
+            }
+            do {
+                try assertDiagnosticAlarm(id: id, shouldBeScheduled: true)
+            } catch {
+                throw DiagnosticFailure.assertion("Fase 4 — verifica dopo la modifica della scadenza (lettura AlarmKit): \(error.localizedDescription)")
+            }
+
+            task.isCompleted = true
+            guard await manager.synchronize(task: task) else {
+                throw DiagnosticFailure.assertion("Fase 5 — sincronizzazione dopo il completamento: synchronize(task:) ha restituito false.")
+            }
+            do {
+                try assertDiagnosticAlarm(id: id, shouldBeScheduled: false)
+            } catch {
+                throw DiagnosticFailure.assertion("Fase 6 — verifica della cancellazione per completamento (lettura AlarmKit): \(error.localizedDescription)")
+            }
+        } catch {
+            // Cleanup circoscritto all'UUID del test; non deve mascherare l'errore della fase originale.
+            try? await manager.cancelAlarm(id: id)
+            throw error
+        }
+
+        return "Percorso reale synchronize(task:): sveglia creata, sincronizzazione ripetuta dopo modifica della scadenza e cancellazione dopo il completamento, verificata tramite lo stato AlarmKit. Verificato esclusivamente l'UUID sintetico del test; nessuna pulizia globale eseguita."
+    }
+
+    /// Models a recurrence whose future occurrences become obsolete after a rule edit.
+    /// The test invokes production synchronization for each affected occurrence, not the UI edit flow.
+    private func testAlarmRecurringSeriesAndObsoleteOccurrences() async throws -> String {
+        let manager = ForMemoAlarmManager.shared
+        guard manager.authorizationState() == .authorized else {
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; nessuna sveglia creata.")
+        }
+
+        let base = Date.now.addingTimeInterval(7_200)
+        let recurrenceID = UUID()
+        let tasks: [TodoTask] = (1...6).map { index in
+            let task = TodoTask(
+                id: UUID(),
+                title: "DEBUG-ONLY recurrence occurrence #\(index)",
+                deadLine: base.addingTimeInterval(TimeInterval(index * 600))
+            )
+            task.isDebugTask = true
+            task.alarmEnabled = true
+            task.recurrenceID = recurrenceID // Synthetic recurrence metadata; no persisted series is created.
+            task.occurrenceIndex = index
+            return task
+        }
+        let ids = tasks.map(\.id)
+
+        do {
+            for task in tasks {
+                guard await manager.synchronize(task: task) else {
+                    throw DiagnosticFailure.assertion("Fallita la sincronizzazione della ricorrenza sintetica #\(task.occurrenceIndex ?? 0).")
+                }
+            }
+            for id in ids { try assertDiagnosticAlarm(id: id, shouldBeScheduled: true) }
+
+            // Simulate three future occurrences being removed/invalidated by a rule change.
+            let obsolete = Array(tasks.suffix(3))
+            for task in obsolete {
+                task.isCompleted = true
+                guard await manager.synchronize(task: task) else {
+                    throw DiagnosticFailure.assertion("Fallita la sincronizzazione dell'occorrenza resa obsoleta.")
+                }
+            }
+
+            for task in tasks.prefix(3) { try assertDiagnosticAlarm(id: task.id, shouldBeScheduled: true) }
+            for task in obsolete { try assertDiagnosticAlarm(id: task.id, shouldBeScheduled: false) }
+        } catch {
+            await manager.cancelAlarms(ids: ids)
+            throw error
+        }
+
+        await manager.cancelAlarms(ids: ids)
+        for id in ids { try assertDiagnosticAlarm(id: id, shouldBeScheduled: false) }
+        return "Sei sveglie sintetiche programmate tramite synchronize(task:); tre occorrenze rese obsolete sono state cancellate tramite il percorso reale di sincronizzazione, mentre le altre tre sono rimaste programmate. Non verifica l'entry point UI che modifica la regola né invoca il cleanup globale degli orfani."
+    }
+
+    private func testAlarmBatchSynchronizationIdempotency() async throws -> String {
+        let manager = ForMemoAlarmManager.shared
+        guard manager.authorizationState() == .authorized else {
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; nessuna sveglia creata.")
+        }
+
+        let base = Date.now.addingTimeInterval(7_200)
+        let tasks: [TodoTask] = (0..<8).map { index in
+            let task = TodoTask(
+                id: UUID(),
+                title: "DEBUG-ONLY AlarmKit batch #\(index + 1)",
+                deadLine: base.addingTimeInterval(TimeInterval(index * 300))
+            )
+            task.isDebugTask = true
+            task.alarmEnabled = true
+            return task
+        }
+        let ids = Set(tasks.map(\.id))
+
+        do {
+            guard await manager.synchronize(tasks: tasks) else {
+                throw DiagnosticFailure.assertion("Il batch di produzione non è stato verificato al primo passaggio.")
+            }
+            try assertDiagnosticAlarmIDs(ids, allShouldBeScheduled: true)
+
+            guard await manager.synchronize(tasks: tasks) else {
+                throw DiagnosticFailure.assertion("Il secondo batch non è stato verificato.")
+            }
+            try assertDiagnosticAlarmIDs(ids, allShouldBeScheduled: true)
+        } catch {
+            await manager.cancelAlarms(ids: Array(ids))
+            throw error
+        }
+
+        await manager.cancelAlarms(ids: Array(ids))
+        try assertDiagnosticAlarmIDs(ids, allShouldBeScheduled: false)
+        return "Otto task sintetici sincronizzati tramite synchronize(tasks:) due volte; tutte le otto sveglie risultano programmate dopo entrambi i passaggi e nessuna rimane dopo la pulizia mirata. Verifica batch/idempotenza su un campione sicuro, non il limite massimo di AlarmKit."
+    }
+
+    private func testAlarmEligibilityTransitions() async throws -> String {
+        let manager = ForMemoAlarmManager.shared
+        guard manager.authorizationState() == .authorized else {
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; nessuna sveglia creata.")
+        }
+
+        let now = Date.now
+        let future = now.addingTimeInterval(7_200)
+        let eligible = TodoTask(id: UUID(), title: "DEBUG-ONLY eligible", deadLine: future)
+        eligible.isDebugTask = true
+        eligible.alarmEnabled = true
+
+        let noAlarmPreference = TodoTask(id: UUID(), title: "DEBUG-ONLY alarm disabled", deadLine: future)
+        noAlarmPreference.isDebugTask = true
+        noAlarmPreference.alarmEnabled = false
+
+        let completed = TodoTask(id: UUID(), title: "DEBUG-ONLY completed", deadLine: future, isCompleted: true)
+        completed.isDebugTask = true
+        completed.alarmEnabled = true
+
+        let past = TodoTask(id: UUID(), title: "DEBUG-ONLY past deadline", deadLine: now.addingTimeInterval(-600))
+        past.isDebugTask = true
+        past.alarmEnabled = true
+
+        let noDeadline = TodoTask(id: UUID(), title: "DEBUG-ONLY no deadline")
+        noDeadline.isDebugTask = true
+        noDeadline.alarmEnabled = true
+
+        let tasks = [eligible, noAlarmPreference, completed, past, noDeadline]
+        let ids = tasks.map(\.id)
+        do {
+            guard await manager.synchronize(tasks: tasks) else {
+                throw DiagnosticFailure.assertion("La verifica batch dell'eleggibilità AlarmKit è fallita.")
+            }
+            try assertDiagnosticAlarm(id: eligible.id, shouldBeScheduled: true)
+            for task in tasks.dropFirst() {
+                try assertDiagnosticAlarm(id: task.id, shouldBeScheduled: false)
+            }
+        } catch {
+            await manager.cancelAlarms(ids: ids)
+            throw error
+        }
+
+        await manager.cancelAlarms(ids: ids)
+        try assertDiagnosticAlarmIDs(Set(ids), allShouldBeScheduled: false)
+        return "Il percorso batch reale ha programmato soltanto il task con sveglia attiva, non completato e scadenza futura. Preferenza disattivata, task completato, scadenza passata e scadenza assente non hanno lasciato sveglie. Pulizia limitata ai cinque UUID sintetici."
+    }
+
+    private func assertDiagnosticAlarm(id: UUID, shouldBeScheduled: Bool) throws {
+        let alarms = try AlarmManager.shared.alarms
+        let isScheduled = alarms.contains { alarm in
+            guard alarm.id == id else { return false }
+            if case .scheduled = alarm.state { return true }
+            return false
+        }
+        guard isScheduled == shouldBeScheduled else {
+            throw DiagnosticFailure.assertion(
+                "Stato AlarmKit inatteso per UUID di test \(id.uuidString): atteso scheduled=\(shouldBeScheduled), effettivo=\(isScheduled)."
+            )
+        }
+    }
+
+    private func assertDiagnosticAlarmIDs(_ ids: Set<UUID>, allShouldBeScheduled: Bool) throws {
+        let alarms = try AlarmManager.shared.alarms
+        let scheduledIDs = Set(alarms.compactMap { alarm -> UUID? in
+            if case .scheduled = alarm.state { return alarm.id }
+            return nil
+        })
+        let matching = scheduledIDs.intersection(ids)
+        guard allShouldBeScheduled ? matching == ids : matching.isEmpty else {
+            throw DiagnosticFailure.assertion(
+                "Stato batch AlarmKit inatteso: richieste \(ids.count), programmate tra gli ID di test \(matching.count), atteso scheduled=\(allShouldBeScheduled)."
+            )
+        }
+    }
+
 }
 
-private struct DiagnosticReportDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.plainText] }
-    var text: String
+private struct ShareableDiagnosticReport: Identifiable {
+    let id = UUID()
+    let url: URL
+}
 
-    init(text: String) { self.text = text }
+private struct DiagnosticReportActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
 
-    init(configuration: ReadConfiguration) throws {
-        guard let data = configuration.file.regularFileContents,
-              let value = String(data: data, encoding: .utf8) else {
-            throw CocoaError(.fileReadCorruptFile)
-        }
-        text = value
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
 
-    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        FileWrapper(regularFileWithContents: Data(text.utf8))
-    }
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 private struct DiagnosticTestResult: Identifiable {
@@ -1642,6 +2666,7 @@ private struct DiagnosticTestResult: Identifiable {
     let details: String
     let duration: Double
 }
+
 
 private enum DiagnosticFailure: LocalizedError {
     case assertion(String)
