@@ -1,6 +1,12 @@
 import WidgetKit
 import SwiftUI
 
+private func forMemoCalendarWidgetTimeString(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "HH:mm"
+    return formatter.string(from: date)
+}
+
 private let calendarWidgetKind = "ForMemoCalendarTasksWidget"
 
 private struct CalendarTasksEntry: TimelineEntry {
@@ -313,7 +319,7 @@ private struct CalendarTasksWidgetView: View {
 
                         HStack(alignment: .firstTextBaseline, spacing: 4) {
                             if let deadline = task.deadline {
-                                Text(deadline.formatted(date: .omitted, time: .shortened))
+                                Text(forMemoCalendarWidgetTimeString(deadline))
                                     .font(.system(size: 11, weight: .medium))
                                     .foregroundStyle(deadline < entry.date ? Color.red : Color.primary)
                                     .fixedSize(horizontal: true, vertical: false)

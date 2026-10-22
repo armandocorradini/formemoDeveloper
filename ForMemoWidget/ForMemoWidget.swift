@@ -2,6 +2,12 @@ import WidgetKit
 import SwiftUI
 import UIKit
 
+private func forMemoWidgetTimeString(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "HH:mm"
+    return formatter.string(from: date)
+}
+
 struct ForMemoWidgetEntry: TimelineEntry {
     let date: Date
     let snapshot: TaskWidgetSnapshot?
@@ -251,7 +257,7 @@ struct ForMemoWidgetEntryView: View {
             VStack(alignment: .leading, spacing: family == .systemSmall ? 0 : 1) {
                 if let deadline = task.deadline {
                     HStack(alignment: .firstTextBaseline, spacing: family == .systemSmall ? 5 : 6) {
-                        Text(deadline.formatted(date: .omitted, time: .shortened))
+                        Text(forMemoWidgetTimeString(deadline))
                             .font(.system(size: family == .systemSmall ? 10 : 13, weight: .medium))
                             .foregroundStyle(deadline < entry.date ? .red : .secondary)
                             .lineLimit(1)
@@ -563,7 +569,7 @@ struct ForMemoAgendaEntryView: View {
                 .frame(width: 3)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 if let deadline = task.deadline {
-                    Text(deadline.formatted(date: .omitted, time: .shortened))
+                    Text(forMemoWidgetTimeString(deadline))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(
                             Calendar.current.isDateInToday(entry.date) && deadline < entry.date

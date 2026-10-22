@@ -1705,6 +1705,51 @@ private struct TripListTransferObject: Codable {
 
 private enum BackupManager {
 
+    private enum RestorePathError: LocalizedError {
+        case invalidAssetPath
+
+        var errorDescription: String? {
+            "The backup contains an invalid asset path."
+        }
+    }
+
+    /// Resolve an archive path without allowing it to escape its asset directory.
+    /// Use lexical containment because iCloud URLs can resolve to different path
+    /// aliases during file-provider access. Existing symlinks below the trusted
+    /// asset root are rejected separately.
+    private static func restoreDestination(
+        for relativePath: String,
+        under directory: URL
+    ) throws -> URL {
+        guard !relativePath.isEmpty,
+              !(relativePath as NSString).isAbsolutePath,
+              !relativePath.split(separator: "/").contains("..") else {
+            throw RestorePathError.invalidAssetPath
+        }
+
+        let root = directory.standardizedFileURL
+        let destination = root
+            .appendingPathComponent(relativePath)
+            .standardizedFileURL
+        let rootPrefix = root.path.hasSuffix("/") ? root.path : root.path + "/"
+
+        guard destination.path.hasPrefix(rootPrefix) else {
+            throw RestorePathError.invalidAssetPath
+        }
+
+        var componentURL = root
+        for component in destination.pathComponents.dropFirst(root.pathComponents.count) {
+            componentURL.appendPathComponent(component)
+            if let values = try? componentURL.resourceValues(
+                forKeys: [.isSymbolicLinkKey]
+            ), values.isSymbolicLink == true {
+                throw RestorePathError.invalidAssetPath
+            }
+        }
+
+        return destination
+    }
+
     @MainActor
     static func createBackup(
         tasks: [TodoTask],
@@ -2072,6 +2117,43 @@ private enum BackupManager {
         defer {
             PersistenceOperationCoordinator.shared.finish()
         }
+
+        // Validate every selected asset path before changing SwiftData or writing
+        // any files. Older backups use relative asset paths, which remain valid
+        // as long as their standardized destination stays inside its asset root.
+        let attachmentRestoreFiles: [(url: URL, data: Data)]
+        if restoreActiveTasks || restoreCompletedTasks {
+            let directory = try TaskAttachment.ensureAttachmentsDirectoryForWrite()
+            attachmentRestoreFiles = try archive.attachmentFiles.map { entry in
+                (try restoreDestination(for: entry.key, under: directory), entry.value)
+            }
+        } else {
+            attachmentRestoreFiles = []
+        }
+
+        let walletRestoreFiles: [(url: URL, data: Data)]
+        if restoreWalletCards {
+            let directory = try AssetDirectoryCoordinator.ensureCanonicalDirectory(
+                for: .walletAssets
+            )
+            walletRestoreFiles = try archive.loyaltyCardLogoFiles.map { entry in
+                (try restoreDestination(for: entry.key, under: directory), entry.value)
+            }
+        } else {
+            walletRestoreFiles = []
+        }
+
+        let documentRestoreFiles: [(url: URL, data: Data)]
+        if restoreDocuments {
+            let directory = try AssetDirectoryCoordinator.ensureCanonicalDirectory(
+                for: .documentAssets
+            )
+            documentRestoreFiles = try archive.documentFiles.map { entry in
+                (try restoreDestination(for: entry.key, under: directory), entry.value)
+            }
+        } else {
+            documentRestoreFiles = []
+        }
         
         var vaultKeyToInstall: SymmetricKey?
         
@@ -2147,16 +2229,9 @@ private enum BackupManager {
             }
         }
         if restoreActiveTasks || restoreCompletedTasks {
-
-            let attachmentsDirectory =
-                try TaskAttachment.ensureAttachmentsDirectoryForWrite()
-            
             var createdAttachmentParents = Set<String>()
 
-            for (relativePath, fileData) in archive.attachmentFiles {
-
-                let destinationURL = attachmentsDirectory
-                    .appendingPathComponent(relativePath)
+            for (destinationURL, fileData) in attachmentRestoreFiles {
 
                 let parent = destinationURL.deletingLastPathComponent()
                 let parentKey = parent.standardizedFileURL.path
@@ -2191,19 +2266,9 @@ private enum BackupManager {
         }
 
         if restoreWalletCards {
-
-            let walletDirectory =
-                try AssetDirectoryCoordinator
-                    .ensureCanonicalDirectory(
-                        for: .walletAssets
-                    )
-
             var createdWalletParents = Set<String>()
 
-            for (relativePath, fileData) in archive.loyaltyCardLogoFiles {
-
-                let destinationURL = walletDirectory
-                     .appendingPathComponent(relativePath)
+            for (destinationURL, fileData) in walletRestoreFiles {
 
                 let parent = destinationURL.deletingLastPathComponent()
                 let parentKey = parent.standardizedFileURL.path
@@ -2224,19 +2289,9 @@ private enum BackupManager {
         }
 
         if restoreDocuments {
-
-            let documentDirectory =
-                try AssetDirectoryCoordinator
-                    .ensureCanonicalDirectory(
-                        for: .documentAssets
-                    )
-
             var createdDocumentParents = Set<String>()
 
-            for (relativePath, fileData) in archive.documentFiles {
-
-                let destinationURL = documentDirectory
-                    .appendingPathComponent(relativePath)
+            for (destinationURL, fileData) in documentRestoreFiles {
 
                 let parent = destinationURL.deletingLastPathComponent()
                 let parentKey = parent.standardizedFileURL.path
