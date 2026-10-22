@@ -46,6 +46,17 @@ struct DebugDiagnosticsView: View {
                     }
                 }
                 .disabled(isRunning)
+
+                Button {
+                    Task { await runReadOnlySchedulingAudit() }
+                } label: {
+                    HStack {
+                        Label("Confronta eventi configurati e programmati", systemImage: "calendar.badge.clock")
+                        Spacer()
+                        if isRunning { ProgressView() }
+                    }
+                }
+                .disabled(isRunning)
             } footer: {
                 Text("Test su database reale: inseriscono e salvano temporaneamente record diagnostici nel database persistente dell’app, verificano i percorsi di produzione compatibili e rimuovono esclusivamente i record creati dal test. Non eseguono rebuild globale delle notifiche né cancellazioni globali. Se iCloud è attivo, i record di prova potrebbero sincronizzarsi brevemente prima della pulizia. Test su database isolato: esegue la suite esistente su store temporanei, oltre ai test mirati delle notifiche e di AlarmKit.")
             }
@@ -2985,6 +2996,255 @@ struct DebugDiagnosticsView: View {
         await manager.cancelAlarms(ids: ids)
         try assertDiagnosticAlarmIDs(Set(ids), allShouldBeScheduled: false)
         return "Il percorso batch reale ha programmato soltanto il task con sveglia attiva, non completato e scadenza futura. Preferenza disattivata, task completato, scadenza passata e scadenza assente non hanno lasciato sveglie. Pulizia limitata ai cinque UUID sintetici."
+    }
+
+    /// Confronta lo stato persistito con le richieste già registrate in iOS.
+    /// Non salva SwiftData, non cancella richieste e non programma/cancella sveglie.
+    private func runReadOnlySchedulingAudit() async {
+        guard !isRunning else { return }
+        isRunning = true
+        results = []
+        currentTestScope = "sola lettura"
+        defer { isRunning = false }
+
+        await runTest("Confronto eventi configurati e programmati (sola lettura)") {
+            try await auditActualSchedulingState()
+        }
+        appendCurrentReportToUnifiedFile()
+    }
+
+    private func auditActualSchedulingState() async throws -> String {
+        let now = Date.now
+        let context = modelContext
+
+        // Fetch puro: a differenza di NotificationManager.fetchTasks(), non esegue cleanup.
+        let allTasks = try context.fetch(FetchDescriptor<TodoTask>())
+        let tasks = allTasks.filter { !$0.isCompleted && !$0.isDebugTask }
+        let documents = try context.fetch(FetchDescriptor<DocumentItem>())
+
+        let lead = NotificationLeadTime(
+            safeRawValue: UserDefaults.standard.integer(forKey: "notificationLeadTimeDays")
+        )
+        let alarmAuthorized =
+            ForMemoAlarmManager.shared.authorizationState() == .authorized
+
+        struct ExpectedNotification {
+            let id: String
+            let date: Date
+            let type: String
+        }
+
+        var candidates: [ExpectedNotification] = []
+        candidates.reserveCapacity(tasks.count * 3 + documents.count)
+
+        for task in tasks {
+            for event in NotificationManager.TaskEventCalculator.allEvents(
+                for: task,
+                now: now,
+                lead: lead,
+                alarmAuthorizationAvailable: alarmAuthorized
+            ) {
+                candidates.append(
+                    ExpectedNotification(id: event.id, date: event.date, type: event.type)
+                )
+            }
+        }
+
+        for document in documents {
+            guard document.notificationEnabled,
+                  let expiryDate = document.expiryDate,
+                  let triggerDate = Calendar.current.date(
+                    byAdding: .day,
+                    value: -document.notificationDaysBefore,
+                    to: expiryDate
+                  ),
+                  triggerDate > now else {
+                continue
+            }
+
+            candidates.append(
+                ExpectedNotification(
+                    id: "document.\(document.id.uuidString)",
+                    date: triggerDate,
+                    type: "document"
+                )
+            )
+        }
+
+        // Il limite di 64 è applicato alla coda globale, non separatamente per task/documenti.
+        let orderedCandidates = candidates.sorted {
+            if $0.date != $1.date { return $0.date < $1.date }
+            return $0.id < $1.id
+        }
+        let expectedByID = Dictionary(
+            orderedCandidates.reduce(into: [(String, ExpectedNotification)]()) { output, event in
+                if !output.contains(where: { $0.0 == event.id }) {
+                    output.append((event.id, event))
+                }
+            },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let selected = Array(orderedCandidates.prefix(64))
+        let selectedByID = Dictionary(
+            selected.map { ($0.id, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let allCandidateIDs = Set(expectedByID.keys)
+        let selectedIDs = Set(selectedByID.keys)
+
+        let center = UNUserNotificationCenter.current()
+        let pendingRequests = await center.pendingNotificationRequests()
+        let ownedPending = pendingRequests.filter {
+            $0.identifier.hasPrefix("task.") || $0.identifier.hasPrefix("document.")
+        }
+
+        let pendingByID = Dictionary(
+            ownedPending.map { ($0.identifier, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let pendingIDs = Set(pendingByID.keys)
+
+        let missingNotifications = selectedIDs.subtracting(pendingIDs).sorted()
+        let unexpectedNotifications = pendingIDs.subtracting(allCandidateIDs).sorted()
+        let pendingBeyondLimit = pendingIDs.intersection(allCandidateIDs).subtracting(selectedIDs).sorted()
+
+        var wrongDateNotifications: [String] = []
+        for id in selectedIDs.intersection(pendingIDs) {
+            guard let expected = selectedByID[id],
+                  let request = pendingByID[id],
+                  let trigger = request.trigger else {
+                continue
+            }
+
+            // nextTriggerDate() è disponibile sui trigger concreti, non su
+            // UNNotificationTrigger. I trigger di posizione non espongono una data.
+            let actualDate: Date?
+            if let calendarTrigger = trigger as? UNCalendarNotificationTrigger {
+                actualDate = calendarTrigger.nextTriggerDate()
+            } else if let intervalTrigger = trigger as? UNTimeIntervalNotificationTrigger {
+                actualDate = intervalTrigger.nextTriggerDate()
+            } else {
+                actualDate = nil
+            }
+
+            guard let actualDate else { continue }
+            if abs(actualDate.timeIntervalSince(expected.date)) > 2 {
+                wrongDateNotifications.append(
+                    "\(id): attesa \(Self.diagnosticDate(expected.date)), iOS \(Self.diagnosticDate(actualDate))"
+                )
+            }
+        }
+
+        // Gli ID UN sono normalmente univoci; il controllo rileva comunque eventuali
+        // duplicati semantici se più richieste rappresentano lo stesso task e tipo.
+        let duplicateNotificationGroups = Dictionary(grouping: ownedPending) { request -> String in
+            let type = request.content.userInfo["type"] as? String ?? "?"
+            let taskID = request.content.userInfo["taskID"] as? String
+                ?? request.identifier.components(separatedBy: ".").dropFirst().first
+                ?? request.identifier
+            return "\(taskID)|\(type)"
+        }.filter { $0.value.count > 1 }
+
+        let alarmSnapshot = try AlarmManager.shared.alarms
+        let scheduledAlarms = alarmSnapshot.filter {
+            if case .scheduled = $0.state { return true }
+            return false
+        }
+        let scheduledAlarmIDs = scheduledAlarms.map(\.id)
+        let scheduledAlarmIDSet = Set(scheduledAlarmIDs)
+
+        let eligibleAlarmTasks = tasks.filter {
+            $0.alarmEnabled && $0.deadLine.map { $0 > now } == true
+        }
+        let eligibleAlarmIDs = Set(eligibleAlarmTasks.map(\.id))
+        let missingAlarms = eligibleAlarmIDs.subtracting(scheduledAlarmIDSet).sorted {
+            $0.uuidString < $1.uuidString
+        }
+        let orphanedAlarms = scheduledAlarmIDSet.subtracting(eligibleAlarmIDs).sorted {
+            $0.uuidString < $1.uuidString
+        }
+        let duplicateAlarmIDs = Dictionary(grouping: scheduledAlarmIDs, by: { $0 })
+            .filter { $0.value.count > 1 }
+            .keys
+            .sorted { $0.uuidString < $1.uuidString }
+
+        let queuedOutsideCapacity = orderedCandidates.count > 64
+            ? orderedCandidates.count - 64
+            : 0
+        let coherentNotificationIDs = selectedIDs
+            .intersection(pendingIDs)
+            .subtracting(Set(wrongDateNotifications.compactMap {
+                $0.components(separatedBy: ":").first
+            }))
+        let coherentAlarmIDs = eligibleAlarmIDs.intersection(scheduledAlarmIDSet)
+            .subtracting(Set(duplicateAlarmIDs))
+
+        var lines: [String] = []
+        lines.append("Esecuzione: \(Self.diagnosticDate(now)); modalità esclusivamente di lettura.")
+        lines.append("Task aperti considerati: \(tasks.count); documenti letti: \(documents.count).")
+        lines.append("Notifiche UN: \(pendingRequests.count) richieste pending totali; \(ownedPending.count) richieste ForMemo (task/documenti).")
+        lines.append("Coda globale attesa: \(orderedCandidates.count) eventi futuri unici; selezionati i primi \(selected.count)/64. Eventi oltre il limite: \(queuedOutsideCapacity).")
+        lines.append("Eventi notifiche coerenti (ID atteso presente e data compatibile): \(coherentNotificationIDs.count).")
+        lines.append("Notifiche mancanti nella selezione dei primi 64: \(missingNotifications.count).")
+        if !missingNotifications.isEmpty {
+            lines.append("  Mancanti: " + missingNotifications.prefix(30).joined(separator: ", "))
+        }
+        lines.append("Richieste ForMemo non più attese/orfane: \(unexpectedNotifications.count).")
+        if !unexpectedNotifications.isEmpty {
+            lines.append("  Orfane: " + unexpectedNotifications.prefix(30).joined(separator: ", "))
+        }
+        lines.append("Richieste ancora pending ma fuori dai primi 64: \(pendingBeyondLimit.count).")
+        if !pendingBeyondLimit.isEmpty {
+            lines.append("  Fuori limite: " + pendingBeyondLimit.prefix(30).joined(separator: ", "))
+        }
+        lines.append("Richieste selezionate con data diversa: \(wrongDateNotifications.count).")
+        if !wrongDateNotifications.isEmpty {
+            lines.append(contentsOf: wrongDateNotifications.prefix(20).map { "  Data: \($0)" })
+        }
+        lines.append("Gruppi di notifiche duplicate per task/tipo: \(duplicateNotificationGroups.count).")
+        for (key, requests) in duplicateNotificationGroups.sorted(by: { $0.key < $1.key }).prefix(20) {
+            lines.append("  Duplicato \(key): " + requests.map(\.identifier).joined(separator: ", "))
+        }
+        lines.append("AlarmKit: autorizzazione \(alarmAuthorized ? "autorizzata" : "non autorizzata"); sveglie scheduled lette: \(scheduledAlarms.count); task eleggibili: \(eligibleAlarmIDs.count).")
+        lines.append("Sveglie AlarmKit coerenti (task eleggibile e ID scheduled presente): \(coherentAlarmIDs.count).")
+        lines.append("Sveglie AlarmKit mancanti: \(missingAlarms.count).")
+        if !missingAlarms.isEmpty {
+            lines.append("  Mancanti: " + missingAlarms.prefix(30).map(\.uuidString).joined(separator: ", "))
+        }
+        lines.append("Sveglie AlarmKit orfane/non eleggibili: \(orphanedAlarms.count).")
+        if !orphanedAlarms.isEmpty {
+            lines.append("  Orfane: " + orphanedAlarms.prefix(30).map(\.uuidString).joined(separator: ", "))
+        }
+        lines.append("ID AlarmKit duplicati nello snapshot: \(duplicateAlarmIDs.count).")
+        if !duplicateAlarmIDs.isEmpty {
+            lines.append("  Duplicati: " + duplicateAlarmIDs.map(\.uuidString).joined(separator: ", "))
+        }
+        lines.append("Limite AlarmKit: l'API di lettura usata qui non espone un numero massimo/capacità residua affidabile; un ID mancante è quindi segnalato come assente, senza attribuirne automaticamente la causa al codice o al limite di sistema.")
+        lines.append("Coerenza notifiche: \(missingNotifications.isEmpty && unexpectedNotifications.isEmpty && pendingBeyondLimit.isEmpty && wrongDateNotifications.isEmpty && duplicateNotificationGroups.isEmpty ? "nessuna anomalia rilevata" : "sono presenti differenze").")
+        lines.append("Coerenza AlarmKit: \(missingAlarms.isEmpty && orphanedAlarms.isEmpty && duplicateAlarmIDs.isEmpty ? "nessuna anomalia rilevata" : "sono presenti differenze").")
+        lines.append("Nessuna richiesta UN è stata aggiunta/rimossa; nessuna sveglia AlarmKit è stata programmata/cancellata; nessun dato SwiftData è stato salvato o modificato.")
+
+        let report = lines.joined(separator: "\n")
+        let hasAnomalies =
+            !missingNotifications.isEmpty ||
+            !unexpectedNotifications.isEmpty ||
+            !pendingBeyondLimit.isEmpty ||
+            !wrongDateNotifications.isEmpty ||
+            !duplicateNotificationGroups.isEmpty ||
+            !missingAlarms.isEmpty ||
+            !orphanedAlarms.isEmpty ||
+            !duplicateAlarmIDs.isEmpty
+
+        if hasAnomalies {
+            throw DiagnosticFailure.assertion(report)
+        }
+        return report
+    }
+
+    private static func diagnosticDate(_ date: Date) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter.string(from: date)
     }
 
     private func assertDiagnosticAlarm(id: UUID, shouldBeScheduled: Bool) throws {
