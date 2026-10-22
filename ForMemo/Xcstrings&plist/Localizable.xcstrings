@@ -3118,6 +3118,34 @@
         }
       }
     },
+    "Activities grouped by day with time and timeline." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktivitäten nach Tagen gruppiert, mit Uhrzeiten und Zeitachse."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actividades agrupadas por día, con horarios y cronología."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activités regroupées par jour avec horaires et chronologie."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività raggruppate per giorno, con orari e sequenza temporale."
+          }
+        }
+      }
+    },
     "Activity" : {
       "localizations" : {
         "de" : {
@@ -17425,34 +17453,6 @@
         }
       }
     },
-    "ForMemo — Agenda" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ForMemo — Agenda"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ForMemo — Agenda"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ForMemo — Agenda"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ForMemo — Agenda"
-          }
-        }
-      }
-    },
     "ForMemo — Calendar" : {
       "localizations" : {
         "de" : {
@@ -23809,6 +23809,34 @@
         }
       }
     },
+    "No activities due in the coming days" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In den nächsten Tagen stehen keine Aktivitäten an."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay actividades previstas para los próximos días."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune activité prévue dans les prochains jours."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna attività in scadenza nei prossimi giorni."
+          }
+        }
+      }
+    },
     "No attachments" : {
       "localizations" : {
         "de" : {
@@ -25592,6 +25620,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apri ForMemo per aggiornare"
+          }
+        }
+      }
+    },
+    "Open ForMemo to refresh activities." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffne ForMemo, um die Aktivitäten zu aktualisieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre ForMemo para actualizar las actividades."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrez ForMemo pour actualiser les activités."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri ForMemo per aggiornare le attività."
           }
         }
       }
@@ -33014,34 +33070,6 @@
         }
       }
     },
-    "Shows upcoming tasks grouped by day." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zeigt anstehende Aufgaben, gruppiert nach Tag."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muestra las próximas tareas agrupadas por día."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Affiche les tâches à venir regroupées par jour."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostra le attività in programma, raggruppate per giorno."
-          }
-        }
-      }
-    },
     "Signed in with Apple ID" : {
       "localizations" : {
         "de" : {
@@ -40408,6 +40436,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Successivi"
+          }
+        }
+      }
+    },
+    "Upcoming Activities" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anstehende Aktivitäten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próximas actividades"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activités à venir"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prossime attività"
           }
         }
       }
