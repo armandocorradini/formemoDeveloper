@@ -2166,7 +2166,7 @@ private struct DayTasksInlineView: View {
                     }
                     .listRowBackground(Color.clear)
 
-                    .swipeActions( edge: .leading, allowsFullSwipe: false) {
+                    .swipeActions( edge: .leading, allowsFullSwipe: true) {
 
                         Button {
 

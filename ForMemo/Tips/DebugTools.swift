@@ -429,6 +429,12 @@ enum DebugLog {
     private static let logQueue = DispatchQueue(
         label: "ForMemo.Diagnostics"
     )
+
+    /// Waits for all previously queued diagnostic writes to reach the log file.
+    static func flush() {
+        logQueue.sync {}
+    }
+
     static var logURL: URL {
         FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -1633,7 +1639,7 @@ enum DebugLog {
 
         writeSystemEventHistory()
     }
-    
+
     private static func writeSystemEventHistory() {
 
 
@@ -1805,6 +1811,7 @@ struct ExportDiagnosticsView: View {
     
     
     private func refreshDiagnostics() {
+        DebugLog.flush()
         logExists = FileManager.default.fileExists(
             atPath: DebugLog.logURL.path
         )

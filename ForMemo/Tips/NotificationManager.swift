@@ -23,7 +23,6 @@ final class NotificationManager: NSObject {
     private var requiresUpgradeNotificationRebuild = false
 
     private var cloudKitRefreshTask: Task<Void, Never>?
-    private var lastCloudKitRefresh = Date.distantPast
     private override init() {
         super.init()
     }
@@ -268,42 +267,31 @@ final class NotificationManager: NSObject {
     
     // MARK: - CloudKit Optimized Refresh (coalescing)
 
-func refreshFromCloudKit() {
-    let now = Date()
-    guard Date().timeIntervalSince(lastCloudKitRefresh) > 2 else {
-
-        return
-
-    }
-    lastCloudKitRefresh = now
-    
+    func refreshFromCloudKit() {
         guard !isAppLaunching else { return }
 
+        // Trailing debounce: each imported store change restarts the timer.
+        // Rebuild only after the remote transaction burst has settled.
         cloudKitRefreshTask?.cancel()
-
         cloudKitRefreshTask = Task { [weak self] in
-
             guard let self else { return }
 
-            try? await Task.sleep(for: .seconds(30))
-
-            guard !Task.isCancelled else { return }
-
-            await MainActor.run {
-                self.lastCloudKitRefresh = Date()
-                self.refresh(force: true)
-
-
-                NotificationCenter.default.post(
-                    name: .cloudKitDidStabilize,
-                    object: nil
-                )
+            do {
+                try await Task.sleep(for: .seconds(30))
+                try Task.checkCancellation()
+            } catch {
+                // A newer persistent-store event superseded this refresh.
+                return
             }
+
+            self.refresh(force: true)
+            NotificationCenter.default.post(
+                name: .cloudKitDidStabilize,
+                object: nil
+            )
         }
     }
-    
 
-    
     // MARK: - FETCH
     
     private func fetchTasks(using context: ModelContext) -> [TodoTask] {

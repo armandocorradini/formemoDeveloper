@@ -140,6 +140,11 @@ private struct OpenMeteoHourly: Decodable {
         lastLoadFailed = false
         lastRefresh = .distantPast
         refreshID = UUID()
+        TaskWidgetSnapshotStore.updateWeather(
+            symbolName: nil,
+            minTemperature: nil,
+            maxTemperature: nil
+        )
     }
 
     /// Clears cached weather when the forecast is explicitly disabled.
@@ -363,6 +368,14 @@ private struct OpenMeteoHourly: Decodable {
             isLoading = false
             lastLoadFailed = false
             lastRefresh = Date()
+
+            let now = Date()
+            let todayWeather = weather(for: now)
+            TaskWidgetSnapshotStore.updateWeather(
+                symbolName: todayWeather.map { _ in representativeSymbol(for: now) },
+                minTemperature: todayWeather?.minTemperature,
+                maxTemperature: todayWeather?.maxTemperature
+            )
 
         } catch {
             guard requestGeneration == refreshGeneration else { return }

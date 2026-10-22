@@ -864,6 +864,7 @@ struct Dashboard: View {
             try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled else { return }
             await weatherManager.refreshIfNeeded()
+            TaskWidgetSnapshotStore.scheduleRefresh(from: modelContext)
         }
         .onReceive(
             NotificationCenter.default.publisher(

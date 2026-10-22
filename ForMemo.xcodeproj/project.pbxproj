@@ -16,7 +16,6 @@
 		1C62D1703054230500E97C02 /* ZXingCpp in Frameworks */ = {isa = PBXBuildFile; productRef = 1C62D16F3054230500E97C02 /* ZXingCpp */; };
 		1C62D173305423C100E97C02 /* OpenSourceLicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C62D172305423A600E97C02 /* OpenSourceLicensesView.swift */; };
 		1C634D8C30220C9C0092DB89 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1C634CF630220C9C0092DB89 /* InfoPlist.xcstrings */; };
-		1C634D8D30220C9C0092DB89 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1C634CFA30220C9C0092DB89 /* Localizable.xcstrings */; };
 		1C634D8E30220C9C0092DB89 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1C634D0530220C9C0092DB89 /* PrivacyInfo.xcprivacy */; };
 		1C634D8F30220C9C0092DB89 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1C634D8830220C9C0092DB89 /* Assets.xcassets */; };
 		1C634D9130220C9C0092DB89 /* AddTaskIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CD430220C9C0092DB89 /* AddTaskIntent.swift */; };
@@ -212,6 +211,11 @@
 		1CF49EAB306FECB8000BA744 /* ForMemoAlarmManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF49EAA306FECB8000BA744 /* ForMemoAlarmManager.swift */; };
 		1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */; };
 		1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1CFE8F0D3085631B00915A76 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CFE8F0C3085631B00915A76 /* WidgetKit.framework */; };
+		1CFE8F0F3085631B00915A76 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CFE8F0E3085631B00915A76 /* SwiftUI.framework */; };
+		1CFE8F1A3085631D00915A76 /* ForMemoWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1CFE8F0B3085631B00915A76 /* ForMemoWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1CFE8F3E308634DD00915A76 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1CFE8F3D308634DD00915A76 /* Localizable.xcstrings */; };
+		1CFE8F3F3086352900915A76 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1CFE8F3D308634DD00915A76 /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -229,6 +233,13 @@
 			remoteGlobalIDString = 1CF984783000EBA300E1D1A9;
 			remoteInfo = ForMemoCredentialProvider;
 		};
+		1CFE8F183085631D00915A76 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1C1C22F82F7E983A00A77282 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1CFE8F0A3085631B00915A76;
+			remoteInfo = ForMemoWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -239,6 +250,7 @@
 			files = (
 				1C8226003040960600B77EC7 /* ForMemoShareExtension.appex in Embed Foundation Extensions */,
 				1CF984873000EBA300E1D1A9 /* ForMemoCredentialProvider.appex in Embed Foundation Extensions */,
+				1CFE8F1A3085631D00915A76 /* ForMemoWidgetExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 		};
@@ -291,7 +303,6 @@
 		1C634CF730220C9C0092DB89 /* LaunchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchCoordinator.swift; sourceTree = "<group>"; };
 		1C634CF830220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyLoyaltyCardLogoStore.swift; sourceTree = "<group>"; };
 		1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyTaskRecovery.swift; sourceTree = "<group>"; };
-		1C634CFA30220C9C0092DB89 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		1C634CFB30220C9C0092DB89 /* LocationReminderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationReminderManager.swift; sourceTree = "<group>"; };
 		1C634CFC30220C9C0092DB89 /* LoyaltyCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoyaltyCard.swift; sourceTree = "<group>"; };
 		1C634CFD30220C9C0092DB89 /* ModelContext+SafeSave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelContext+SafeSave.swift"; sourceTree = "<group>"; };
@@ -452,6 +463,11 @@
 		1CF49EAA306FECB8000BA744 /* ForMemoAlarmManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForMemoAlarmManager.swift; sourceTree = "<group>"; };
 		1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoCredentialProvider.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
+		1CFE8F0B3085631B00915A76 /* ForMemoWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ForMemoWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CFE8F0C3085631B00915A76 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		1CFE8F0E3085631B00915A76 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		1CFE8F1F3085645A00915A76 /* ForMemoWidgetExtensionRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ForMemoWidgetExtensionRelease.entitlements; sourceTree = "<group>"; };
+		1CFE8F3D308634DD00915A76 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -468,6 +484,34 @@
 				Info.plist,
 			);
 			target = 1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */;
+		};
+		1CFE8F253085715200915A76 /* Exceptions for "Widget" folder in "ForMemoWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				TaskWidgetSnapshot.swift,
+			);
+			target = 1CFE8F0A3085631B00915A76 /* ForMemoWidgetExtension */;
+		};
+		1CFE8F3B30860CE000915A76 /* Exceptions for "ForMemoWidget" folder in "ForMemoShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+				ForMemoCalendarTasksWidget.swift,
+				ForMemoWidget.swift,
+				ForMemoWidgetBundle.swift,
+				Info.plist,
+			);
+			target = 1C8225F53040960600B77EC7 /* ForMemoShareExtension */;
+		};
+		1CFE8F3C30860CE000915A76 /* Exceptions for "ForMemoWidget" folder in "ForMemoWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Assets.xcassets,
+				ForMemoCalendarTasksWidget.swift,
+				ForMemoWidget.swift,
+				ForMemoWidgetBundle.swift,
+			);
+			target = 1CFE8F0A3085631B00915A76 /* ForMemoWidgetExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -493,6 +537,23 @@
 			path = ForMemoCredentialProvider;
 			sourceTree = "<group>";
 		};
+		1CFE8F203085694B00915A76 /* Widget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1CFE8F253085715200915A76 /* Exceptions for "Widget" folder in "ForMemoWidgetExtension" target */,
+			);
+			path = Widget;
+			sourceTree = "<group>";
+		};
+		1CFE8F3730860CDF00915A76 /* ForMemoWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1CFE8F3B30860CE000915A76 /* Exceptions for "ForMemoWidget" folder in "ForMemoShareExtension" target */,
+				1CFE8F3C30860CE000915A76 /* Exceptions for "ForMemoWidget" folder in "ForMemoWidgetExtension" target */,
+			);
+			path = ForMemoWidget;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -513,14 +574,23 @@
 				1CF9847C3000EBA300E1D1A9 /* AuthenticationServices.framework in Frameworks */,
 			);
 		};
+		1CFE8F083085631B00915A76 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				1CFE8F0F3085631B00915A76 /* SwiftUI.framework in Frameworks */,
+				1CFE8F0D3085631B00915A76 /* WidgetKit.framework in Frameworks */,
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		1C1C22F72F7E983A00A77282 = {
 			isa = PBXGroup;
 			children = (
+				1CFE8F1F3085645A00915A76 /* ForMemoWidgetExtensionRelease.entitlements */,
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
 				1C634D8B30220C9C0092DB89 /* ForMemo */,
+				1CFE8F3730860CDF00915A76 /* ForMemoWidget */,
 				1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */,
 				1C8225F73040960600B77EC7 /* ForMemoShareExtension */,
 				1CF9847A3000EBA300E1D1A9 /* Frameworks */,
@@ -534,6 +604,7 @@
 				1C1C23002F7E983A00A77282 /* ForMemo.app */,
 				1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */,
 				1C8225F63040960600B77EC7 /* ForMemoShareExtension.appex */,
+				1CFE8F0B3085631B00915A76 /* ForMemoWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -550,8 +621,8 @@
 			isa = PBXGroup;
 			children = (
 				1C634CF630220C9C0092DB89 /* InfoPlist.xcstrings */,
-				1C634CFA30220C9C0092DB89 /* Localizable.xcstrings */,
 				1C634D0530220C9C0092DB89 /* PrivacyInfo.xcprivacy */,
+				1CFE8F3D308634DD00915A76 /* Localizable.xcstrings */,
 			);
 			path = "Xcstrings&plist";
 			sourceTree = "<group>";
@@ -656,6 +727,7 @@
 				1C634D8830220C9C0092DB89 /* Assets.xcassets */,
 				1C634D8930220C9C0092DB89 /* ForMemo.entitlements */,
 				1C634D8A30220C9C0092DB89 /* Info.plist */,
+				1CFE8F203085694B00915A76 /* Widget */,
 			);
 			path = ForMemo;
 			sourceTree = "<group>";
@@ -896,6 +968,8 @@
 			isa = PBXGroup;
 			children = (
 				1CF9847B3000EBA300E1D1A9 /* AuthenticationServices.framework */,
+				1CFE8F0C3085631B00915A76 /* WidgetKit.framework */,
+				1CFE8F0E3085631B00915A76 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -917,9 +991,11 @@
 			dependencies = (
 				1CF984863000EBA300E1D1A9 /* PBXTargetDependency */,
 				1C8225FF3040960600B77EC7 /* PBXTargetDependency */,
+				1CFE8F193085631D00915A76 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1C1C23DB2F7E9A1E00A77282 /* Sound */,
+				1CFE8F203085694B00915A76 /* Widget */,
 			);
 			name = ForMemo;
 			packageProductDependencies = (
@@ -941,6 +1017,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				1C8225F73040960600B77EC7 /* ForMemoShareExtension */,
+				1CFE8F3730860CDF00915A76 /* ForMemoWidget */,
 			);
 			name = ForMemoShareExtension;
 			productName = ForMemoShareExtension;
@@ -965,6 +1042,21 @@
 			productReference = 1CF984793000EBA300E1D1A9 /* ForMemoCredentialProvider.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		1CFE8F0A3085631B00915A76 /* ForMemoWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1CFE8F1C3085631D00915A76 /* Build configuration list for PBXNativeTarget "ForMemoWidgetExtension" */;
+			buildPhases = (
+				1CFE8F073085631B00915A76 /* Sources */,
+				1CFE8F083085631B00915A76 /* Frameworks */,
+				1CFE8F093085631B00915A76 /* Resources */,
+			);
+			buildRules = (
+			);
+			name = ForMemoWidgetExtension;
+			productName = ForMemoWidgetExtension;
+			productReference = 1CFE8F0B3085631B00915A76 /* ForMemoWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -972,17 +1064,25 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2660;
+				LastSwiftUpdateCheck = 2710;
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					1C1C22FF2F7E983A00A77282 = {
 						CreatedOnToolsVersion = 26.4;
+						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 					1C8225F53040960600B77EC7 = {
 						CreatedOnToolsVersion = 26.6;
 					};
 					1CF984783000EBA300E1D1A9 = {
 						CreatedOnToolsVersion = 26.6;
+					};
+					1CFE8F0A3085631B00915A76 = {
+						CreatedOnToolsVersion = 27.1;
 					};
 				};
 			};
@@ -1006,6 +1106,7 @@
 				1C1C22FF2F7E983A00A77282 /* ForMemo */,
 				1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */,
 				1C8225F53040960600B77EC7 /* ForMemoShareExtension */,
+				1CFE8F0A3085631B00915A76 /* ForMemoWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -1015,9 +1116,9 @@
 			isa = PBXResourcesBuildPhase;
 			files = (
 				1C634D8C30220C9C0092DB89 /* InfoPlist.xcstrings in Resources */,
-				1C634D8D30220C9C0092DB89 /* Localizable.xcstrings in Resources */,
 				1C634D8E30220C9C0092DB89 /* PrivacyInfo.xcprivacy in Resources */,
 				1C634D8F30220C9C0092DB89 /* Assets.xcassets in Resources */,
+				1CFE8F3E308634DD00915A76 /* Localizable.xcstrings in Resources */,
 			);
 		};
 		1C8225F43040960600B77EC7 /* Resources */ = {
@@ -1028,6 +1129,12 @@
 		1CF984773000EBA300E1D1A9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+			);
+		};
+		1CFE8F093085631B00915A76 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				1CFE8F3F3086352900915A76 /* Localizable.xcstrings in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -1245,6 +1352,11 @@
 			files = (
 			);
 		};
+		1CFE8F073085631B00915A76 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1257,6 +1369,11 @@
 			isa = PBXTargetDependency;
 			target = 1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */;
 			targetProxy = 1CF984853000EBA300E1D1A9 /* PBXContainerItemProxy */;
+		};
+		1CFE8F193085631D00915A76 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1CFE8F0A3085631B00915A76 /* ForMemoWidgetExtension */;
+			targetProxy = 1CFE8F183085631D00915A76 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1631,6 +1748,76 @@
 			};
 			name = Release;
 		};
+		1CFE8F1D3085631D00915A76 /* Debug configuration for PBXNativeTarget "ForMemoWidgetExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ForMemoWidgetExtensionRelease.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 7L454SWB7H;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ForMemoWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ForMemoWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.2;
+				PRODUCT_BUNDLE_IDENTIFIER = corradini.armando.NewTask.ForMemoWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1CFE8F1E3085631D00915A76 /* Release configuration for PBXNativeTarget "ForMemoWidgetExtension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = ForMemoWidgetExtensionRelease.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
+				DEVELOPMENT_TEAM = 7L454SWB7H;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ForMemoWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ForMemoWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.2;
+				PRODUCT_BUNDLE_IDENTIFIER = corradini.armando.NewTask.ForMemoWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1663,6 +1850,14 @@
 			buildConfigurations = (
 				1CF984893000EBA300E1D1A9 /* Debug configuration for PBXNativeTarget "ForMemoCredentialProvider" */,
 				1CF9848A3000EBA300E1D1A9 /* Release configuration for PBXNativeTarget "ForMemoCredentialProvider" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		1CFE8F1C3085631D00915A76 /* Build configuration list for PBXNativeTarget "ForMemoWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1CFE8F1D3085631D00915A76 /* Debug configuration for PBXNativeTarget "ForMemoWidgetExtension" */,
+				1CFE8F1E3085631D00915A76 /* Release configuration for PBXNativeTarget "ForMemoWidgetExtension" */,
 			);
 			defaultConfigurationName = Release;
 		};

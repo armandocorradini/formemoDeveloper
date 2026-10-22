@@ -60,6 +60,7 @@ struct ForMemoApp: App {
     init() {
         CrashDetector.markLaunchStarted()
         LaunchCoordinator.shared.launchDate = Date()
+
         
         let defaults = UserDefaults.standard
 
@@ -174,6 +175,9 @@ struct ForMemoApp: App {
             
             // 2️⃣ Applica azioni da notifiche (app chiusa/background)
             NotificationActionProcessor.shared.processAll(using: context)
+
+            // Aggiorna il riepilogo condiviso del widget dopo le operazioni iniziali.
+            TaskWidgetSnapshotStore.scheduleRefresh(from: context)
             
             // 3️⃣ Aggiorna subito UI
             NotificationCenter.default.post(
@@ -289,7 +293,10 @@ struct ForMemoApp: App {
                     
                     // 1️⃣ Applica azioni notifiche
                     NotificationActionProcessor.shared.processAll(using: context)
- 
+
+                    // Coalesce this refresh with any CloudKit store-change refresh
+                    // arriving as the app becomes active.
+                    scheduleWidgetSnapshotRefresh()
 
                     // 2️⃣ 🔥 CLEANUP RECENTLY DELETED (task + attachments)
                     
@@ -354,6 +361,9 @@ struct ForMemoApp: App {
 //                VaultLock.shared.lock()
                 try? container.mainContext.save()
                 
+                // Write immediately before suspension/background execution.
+                TaskWidgetSnapshotStore.refresh(from: container.mainContext)
+                
             @unknown default:
                 break
             }
@@ -366,13 +376,19 @@ struct ForMemoApp: App {
     // MARK: - iCLOUD IDENTITY
 
     private func startRemoteChangeObserver() {
-      
+
         NotificationCenter.default.addObserver(
             forName: .NSPersistentStoreRemoteChange,
             object: nil,
             queue: .main
         ) { _ in
             Task { @MainActor in
+                self.scheduleWidgetSnapshotRefresh()
+
+                // Every store event extends the trailing debounce. Keep this
+                // outside the heavier-work throttle so the final refresh is not
+                // scheduled from an earlier event in a burst.
+                NotificationManager.shared.refreshFromCloudKit()
 
                 let now = Date()
 
@@ -386,8 +402,6 @@ struct ForMemoApp: App {
                 AppLogger.notifications.debug("📡 CloudKit push ricevuto")
 #endif
 
-                NotificationManager.shared.refreshFromCloudKit()
-
                 let context = self.container.mainContext
 
                 // Local First: a remote deletion removes the SwiftData record,
@@ -400,6 +414,12 @@ struct ForMemoApp: App {
                     using: context
                 )
                 VaultAutoFillManager.shared.synchronize(using: context)
+
+                // Refresh task lists after SwiftData reports a persistent-store change.
+                NotificationCenter.default.post(
+                    name: .taskDidChange,
+                    object: nil
+                )
 
                 // ✅ trigger UI
                 NotificationCenter.default.post(
@@ -441,6 +461,16 @@ struct ForMemoApp: App {
         center.setBadgeCount(count)
     }
     // MARK: - REMOTE ASSET CLEANUP
+
+    @MainActor
+    private func scheduleWidgetSnapshotRefresh() {
+        // CloudKit can emit several store-change notifications in a burst.
+        // The shared coordinator keeps only the final refresh after the store settles.
+        TaskWidgetSnapshotStore.scheduleRefresh(
+            from: container.mainContext,
+            delay: .milliseconds(400)
+        )
+    }
 
     @MainActor
     private static func scheduleRemoteAssetCleanup(
