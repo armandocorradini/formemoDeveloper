@@ -445,16 +445,20 @@ struct ForMemoAgendaEntryView: View {
                 Text(String(localized: "Open ForMemo to refresh activities."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
-            } else if (family == .systemSmall ? smallVisibleDays.isEmpty : visibleDays.isEmpty) {
+            } else if ((family == .systemSmall || family == .systemMedium) ? smallVisibleDays.isEmpty : visibleDays.isEmpty) {
                 Text(String(localized: "No activities due in the coming days"))
                     .font(family == .systemSmall ? .caption : .subheadline)
                     .foregroundStyle(.secondary)
                     .frame(maxHeight: .infinity, alignment: .topLeading)
             } else {
-                VStack(alignment: .leading, spacing: family == .systemSmall ? 4 : (family == .systemLarge ? 6 : 4)) {
-                    if family == .systemSmall {
+                VStack(alignment: .leading, spacing: family == .systemLarge ? 6 : 3) {
+                    if family == .systemSmall || family == .systemMedium {
                         ForEach(smallVisibleDays) { section in
-                            daySection(section.day, isLast: section.id == smallVisibleDays.last?.id, taskLimitOverride: section.taskLimit)
+                            daySection(
+                                section.day,
+                                isLast: section.id == smallVisibleDays.last?.id,
+                                taskLimitOverride: section.taskLimit
+                            )
                         }
                     } else {
                         ForEach(Array(visibleDays.enumerated()), id: \.element.id) { index, day in
@@ -486,7 +490,7 @@ struct ForMemoAgendaEntryView: View {
                 .textCase(.uppercase)
                 .lineLimit(1)
 
-            VStack(alignment: .leading, spacing: family == .systemLarge ? 3 : (family == .systemSmall ? 3 : 2)) {
+            VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(day.tasks.prefix(taskLimit).enumerated()), id: \.element.id) { index, task in
                     HStack(alignment: .top, spacing: family == .systemSmall ? 4 : 7) {
                         VStack(spacing: 0.5) {
@@ -497,7 +501,7 @@ struct ForMemoAgendaEntryView: View {
 
                             if index < min(day.tasks.count, taskLimit) - 1 {
                                 Rectangle()
-                                    .fill(Color.primary.opacity(0.16))
+                                    .fill(Color.primary.opacity(0.50))//colore linea tra i pallini
                                     .frame(width: 1)
                                     .frame(maxHeight: .infinity)
                             }
@@ -520,6 +524,7 @@ struct ForMemoAgendaEntryView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.vertical, -2)
                 }
 
                 if family != .systemSmall && day.tasks.count > taskLimit {

@@ -403,6 +403,9 @@ struct AddTaskIntent: AppIntent {
         try context.save()
             
             context.processPendingChanges()
+        
+        // Update widgets after Siri creates the task.
+        TaskWidgetSnapshotStore.refresh(from: context)
 
             NotificationCenter.default.post(
                 name: .taskDidChange,
