@@ -25312,7 +25312,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wiederholungen werden bis zum ausgewählten Datum erstellt.\nWenn mehr als %Ild Wiederholungen erforderlich sind, können Sie festlegen, dass nur die ersten %lld erstellt werden."
+            "value" : "Wiederholungen werden bis zum ausgewählten Datum erstellt.\nWenn mehr als %lld Wiederholungen erforderlich sind, können Sie festlegen, dass nur die ersten %lld erstellt werden."
           }
         },
         "en" : {
@@ -25324,19 +25324,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las ocurrencias se generarán hasta la fecha seleccionada.\nSi se necesitan más de %Ild ocurrencias, puedes elegir crear solo las primeras %lld."
+            "value" : "Las ocurrencias se generarán hasta la fecha seleccionada.\nSi se necesitan más de %lld ocurrencias, puedes elegir crear solo las primeras %lld."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les occurrences seront générées jusqu’à la date sélectionnée.\nSi plus de %Ild occurrences sont nécessaires, vous pouvez choisir de créer les %lld premières."
+            "value" : "Les occurrences seront générées jusqu’à la date sélectionnée.\nSi plus de %lld occurrences sont nécessaires, vous pouvez choisir de créer les %lld premières."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le occorrenze verranno generate fino alla data selezionata.\nSe sono necessarie più di %Ild occorrenze, puoi scegliere di creare solo le prime %lld."
+            "value" : "Le occorrenze verranno generate fino alla data selezionata.\nSe sono necessarie più di %lld occorrenze, puoi scegliere di creare solo le prime %lld."
           }
         }
       }
@@ -37937,7 +37937,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Für diese Erweiterung sind mehr als %Ild Wiederholungen erforderlich. Es werden nur die ersten %lld zusätzlichen Wiederholungen erstellt."
+            "value" : "Für diese Erweiterung sind mehr als %lld Wiederholungen erforderlich. Es werden nur die ersten %lld zusätzlichen Wiederholungen erstellt."
           }
         },
         "en" : {
@@ -37949,19 +37949,19 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta ampliación requiere más de %Ild ocurrencias. Solo se crearán las primeras %lld ocurrencias adicionales."
+            "value" : "Esta ampliación requiere más de %lld ocurrencias. Solo se crearán las primeras %lld ocurrencias adicionales."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette extension nécessite plus de %Ild occurrences. Seules les %lld premières occurrences supplémentaires seront créées."
+            "value" : "Cette extension nécessite plus de %lld occurrences. Seules les %lld premières occurrences supplémentaires seront créées."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa estensione richiede più di %Ild occorrenze. Verranno create solo le prime %lld occorrenze aggiuntive."
+            "value" : "Questa estensione richiede più di %lld occorrenze. Verranno create solo le prime %lld occorrenze aggiuntive."
           }
         }
       }

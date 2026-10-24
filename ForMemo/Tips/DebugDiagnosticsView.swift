@@ -2236,6 +2236,7 @@ struct DebugDiagnosticsView: View {
         unlimited.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
         unlimited.recurrenceStartDate = start
         unlimited.recurrenceCount = nil
+        unlimited.recurrenceEndDate = nil
         context.insert(unlimited)
         let unlimitedSeriesIsFinal = try RecurrenceEngine.isFinalPlannedOccurrence(unlimited, in: context)
         guard !unlimitedSeriesIsFinal else {

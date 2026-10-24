@@ -48,8 +48,13 @@ struct Provider: TimelineProvider {
         }
 
         let entries = entryDates.sorted().map { ForMemoWidgetEntry(date: $0, snapshot: snapshot) }
-        let nextRefresh = calendar.date(byAdding: .hour, value: 24, to: now)
-            ?? now.addingTimeInterval(86_400)
+        // Refresh at the next local day boundary so date-relative labels
+        // (Today/Tomorrow) do not remain stale after midnight.
+        let nextRefresh = calendar.date(
+            byAdding: .day,
+            value: 1,
+            to: calendar.startOfDay(for: now)
+        ) ?? now.addingTimeInterval(86_400)
         completion(Timeline(entries: entries, policy: .after(nextRefresh)))
     }
 }
@@ -334,8 +339,13 @@ struct ForMemoAgendaProvider: TimelineProvider {
         }
 
         let entries = dates.sorted().map { ForMemoAgendaEntry(date: $0, snapshot: snapshot) }
-        let refresh = calendar.date(byAdding: .hour, value: 24, to: now)
-            ?? now.addingTimeInterval(86_400)
+        // Refresh at the next local day boundary so date-relative labels
+        // (Today/Tomorrow) do not remain stale after midnight.
+        let refresh = calendar.date(
+            byAdding: .day,
+            value: 1,
+            to: calendar.startOfDay(for: now)
+        ) ?? now.addingTimeInterval(86_400)
         completion(Timeline(entries: entries, policy: .after(refresh)))
     }
 }
@@ -344,6 +354,12 @@ private struct ForMemoUpcomingDay: Identifiable {
     let date: Date
     let tasks: [TaskWidgetItem]
     var id: Date { date }
+}
+
+private struct ForMemoVisibleUpcomingDay: Identifiable {
+    let day: ForMemoUpcomingDay
+    let taskLimit: Int
+    var id: Date { day.date }
 }
 
 struct ForMemoAgendaEntryView: View {
@@ -385,6 +401,24 @@ struct ForMemoAgendaEntryView: View {
         return Array(nonEmptyDays.prefix(family == .systemLarge ? 7 : 3))
     }
 
+    // The Small widget spends its limited vertical space on today's tasks first.
+    // Each day heading uses one row; remaining rows are filled with tasks in date order.
+    private var smallVisibleDays: [ForMemoVisibleUpcomingDay] {
+        var remainingRows = 6
+        var result: [ForMemoVisibleUpcomingDay] = []
+
+        for day in days where !day.tasks.isEmpty {
+            guard remainingRows >= 2 else { break }
+            remainingRows -= 1 // Day heading
+            let taskLimit = min(day.tasks.count, remainingRows)
+            guard taskLimit > 0 else { break }
+            result.append(ForMemoVisibleUpcomingDay(day: day, taskLimit: taskLimit))
+            remainingRows -= taskLimit
+        }
+
+        return result
+    }
+
     private var hasOverdueTasksFromPreviousDays: Bool {
         guard let snapshot = entry.snapshot else { return false }
         let todayStart = calendar.startOfDay(for: entry.date)
@@ -397,29 +431,35 @@ struct ForMemoAgendaEntryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(String(localized: "Upcoming Activities"))
-                .font(.system(size: family == .systemLarge ? 17 : 15, weight: .bold, design: .rounded))
+                .font(.system(size: family == .systemSmall ? 15 : (family == .systemLarge ? 17 : 15), weight: .bold, design: .rounded))
                 .lineLimit(1)
                 .foregroundStyle(.primary)
-                .padding(.bottom, 8)
+                .padding(.bottom, family == .systemSmall ? 7 : 8)
 
             Rectangle()
                 .fill(hasOverdueTasksFromPreviousDays ? Color.red.opacity(0.85) : Color.primary.opacity(0.14))
                 .frame(height: 1)
-                .padding(.bottom, 7)
+                .padding(.bottom, family == .systemSmall ? 6 : 7)
 
             if entry.snapshot == nil {
                 Text(String(localized: "Open ForMemo to refresh activities."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
-            } else if visibleDays.isEmpty {
+            } else if (family == .systemSmall ? smallVisibleDays.isEmpty : visibleDays.isEmpty) {
                 Text(String(localized: "No activities due in the coming days"))
-                    .font(.subheadline)
+                    .font(family == .systemSmall ? .caption : .subheadline)
                     .foregroundStyle(.secondary)
                     .frame(maxHeight: .infinity, alignment: .topLeading)
             } else {
-                VStack(alignment: .leading, spacing: family == .systemLarge ? 6 : 4) {
-                    ForEach(Array(visibleDays.enumerated()), id: \.element.id) { index, day in
-                        daySection(day, isLast: index == visibleDays.count - 1)
+                VStack(alignment: .leading, spacing: family == .systemSmall ? 4 : (family == .systemLarge ? 6 : 4)) {
+                    if family == .systemSmall {
+                        ForEach(smallVisibleDays) { section in
+                            daySection(section.day, isLast: section.id == smallVisibleDays.last?.id, taskLimitOverride: section.taskLimit)
+                        }
+                    } else {
+                        ForEach(Array(visibleDays.enumerated()), id: \.element.id) { index, day in
+                            daySection(day, isLast: index == visibleDays.count - 1)
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -427,7 +467,7 @@ struct ForMemoAgendaEntryView: View {
 
             Spacer(minLength: 0)
         }
-        .padding(family == .systemLarge ? 16 : 12)
+        .padding(family == .systemLarge ? 16 : (family == .systemSmall ? 11 : 12))
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .containerBackground(for: .widget) {
             Color(uiColor: UIColor { traits in
@@ -437,43 +477,44 @@ struct ForMemoAgendaEntryView: View {
     }
 
     @ViewBuilder
-    private func daySection(_ day: ForMemoUpcomingDay, isLast: Bool) -> some View {
-        VStack(alignment: .leading, spacing: family == .systemLarge ? 4 : 3) {
+    private func daySection(_ day: ForMemoUpcomingDay, isLast: Bool, taskLimitOverride: Int? = nil) -> some View {
+        let taskLimit = taskLimitOverride ?? taskLimitPerDay
+        VStack(alignment: .leading, spacing: family == .systemLarge ? 4 : (family == .systemSmall ? 3 : 3)) {
             Text(dayHeading(day.date))
-                .font(.system(size: family == .systemLarge ? 12 : 11, weight: .bold, design: .rounded))
+                .font(.system(size: family == .systemSmall ? 11 : (family == .systemLarge ? 12 : 11), weight: .bold, design: .rounded))
                 .foregroundStyle(isToday(day.date) ? Color.accentColor : Color.secondary)
                 .textCase(.uppercase)
                 .lineLimit(1)
 
-            VStack(alignment: .leading, spacing: family == .systemLarge ? 3 : 2) {
-                ForEach(Array(day.tasks.prefix(taskLimitPerDay).enumerated()), id: \.element.id) { index, task in
-                    HStack(alignment: .top, spacing: 7) {
+            VStack(alignment: .leading, spacing: family == .systemLarge ? 3 : (family == .systemSmall ? 3 : 2)) {
+                ForEach(Array(day.tasks.prefix(taskLimit).enumerated()), id: \.element.id) { index, task in
+                    HStack(alignment: .top, spacing: family == .systemSmall ? 4 : 7) {
                         VStack(spacing: 0.5) {
                             Circle()
                                 .fill(timelineColor(for: task))
-                                .frame(width: 8, height: 8)
-                                .padding(.top, 4)
+                                .frame(width: family == .systemSmall ? 6 : 8, height: family == .systemSmall ? 6 : 8)
+                                .padding(.top, family == .systemSmall ? 4 : 4)
 
-                            if index < min(day.tasks.count, taskLimitPerDay) - 1 {
+                            if index < min(day.tasks.count, taskLimit) - 1 {
                                 Rectangle()
                                     .fill(Color.primary.opacity(0.16))
                                     .frame(width: 1)
                                     .frame(maxHeight: .infinity)
                             }
                         }
-                        .frame(width: 6)
+                        .frame(width: family == .systemSmall ? 5 : 6)
 
                         if let deadline = task.deadline {
                             Text(forMemoWidgetTimeString(deadline))
-                                .font(.system(size: family == .systemLarge ? 12 : 11, weight: .medium, design: .rounded))
+                                .font(.system(size: family == .systemSmall ? 11 : (family == .systemLarge ? 12 : 11), weight: .medium, design: .rounded))
                                 .monospacedDigit()
                                 .foregroundStyle(deadline < entry.date ? Color.red : Color.secondary)
                                 .fixedSize(horizontal: true, vertical: false)
-                                .frame(minWidth: family == .systemLarge ? 42 : 38, alignment: .leading)
+                                .frame(minWidth: family == .systemLarge ? 42 : (family == .systemSmall ? 39 : 38), alignment: .leading)
                         }
 
                         Text(task.title)
-                            .font(.system(size: family == .systemLarge ? 13 : 11, weight: .medium))
+                            .font(.system(size: family == .systemSmall ? 11 : (family == .systemLarge ? 13 : 11), weight: .medium))
                             .foregroundStyle(.primary)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -481,8 +522,8 @@ struct ForMemoAgendaEntryView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 }
 
-                if day.tasks.count > taskLimitPerDay {
-                    Text("+\(day.tasks.count - taskLimitPerDay) more")
+                if family != .systemSmall && day.tasks.count > taskLimit {
+                    Text("+\(day.tasks.count - taskLimit) more")
                         .font(.system(size: 9, weight: .medium))
                         .foregroundStyle(.secondary)
                         .padding(.leading, 13)
@@ -523,7 +564,7 @@ struct ForMemoAgendaWidget: Widget {
         }
         .configurationDisplayName("Upcoming Activities")
         .description("Activities grouped by day with time and timeline.")
-        .supportedFamilies([.systemMedium, .systemLarge])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         .contentMarginsDisabled()
     }
 }

@@ -1499,7 +1499,10 @@ private extension TaskCalendarView {
 
         }
 
-        .id(displayedMonth)
+        .id(
+            calendar.component(.year, from: displayedMonth) * 100
+                + calendar.component(.month, from: displayedMonth)
+        )
 
         .transition(
 

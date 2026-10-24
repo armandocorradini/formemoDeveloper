@@ -21,6 +21,8 @@ struct RecurrenceSeriesExtensionPresenter: ViewModifier {
 
                 // Wait for the completing view to finish its dismissal before
                 // presenting, especially when completion starts in TaskDetailView.
+                // The engine checks the last materialized occurrence, not the
+                // original recurrence count or end date.
                 Task { @MainActor in
                     await Task.yield()
 
@@ -108,14 +110,26 @@ private struct RecurrenceSeriesExtensionSheet: View {
 
     init(task: TodoTask) {
         self.task = task
-        let currentIndex = max(1, task.occurrenceIndex ?? 1)
         _additionalOccurrences = State(
-            initialValue: min(currentIndex, RecurrenceEngine.maximumGeneratedFutureOccurrences)
+            initialValue: min(2, RecurrenceEngine.maximumGeneratedFutureOccurrences)
+        )
+        _extensionMode = State(
+            initialValue: task.recurrenceCount == nil && task.recurrenceEndDate != nil
+                ? .endDate
+                : .count
         )
         let firstAdditionalDate = RecurrenceEngine.nextScheduledOccurrenceDate(after: task)
             ?? task.deadLine
             ?? .now
-        _extensionEndDate = State(initialValue: firstAdditionalDate)
+        let initialEndDate: Date
+        if let existingEndDate = task.recurrenceEndDate,
+           Calendar.current.startOfDay(for: existingEndDate)
+                >= Calendar.current.startOfDay(for: firstAdditionalDate) {
+            initialEndDate = existingEndDate
+        } else {
+            initialEndDate = firstAdditionalDate
+        }
+        _extensionEndDate = State(initialValue: initialEndDate)
     }
 
     var body: some View {

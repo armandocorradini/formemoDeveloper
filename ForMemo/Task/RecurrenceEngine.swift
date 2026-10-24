@@ -142,19 +142,21 @@ struct RecurrenceEngine {
         rule: Rule,
         interval: Int,
         limit: Limit,
-        calendar: Calendar = .autoupdatingCurrent
+        calendar: Calendar = .autoupdatingCurrent,
+        maximumDateCount: Int? = nil
     ) -> [Date] {
 
         let safeInterval = max(1, interval)
+        let dateLimit = max(0, maximumDateCount ?? maximumGeneratedDates)
 
         var dates: [Date] = []
         dates.reserveCapacity(
-            limitCapacity(for: limit)
+            min(limitCapacity(for: limit), dateLimit)
         )
 
         var currentDate = startDate
 
-        while dates.count < maximumGeneratedDates {
+        while dates.count < dateLimit {
 
             switch limit {
             case .until(let endDate):
@@ -374,15 +376,19 @@ struct RecurrenceEngine {
         )
     }
 
-    /// True only when this completed occurrence is the actual last occurrence
-    /// defined by a finite recurrence. Unlimited series are deliberately excluded.
+    /// True when this completed occurrence is the last one currently materialized
+    /// in its series. The original count or end date does not prevent offering an
+    /// extension; further occurrences can be generated in subsequent batches.
     static func isFinalPlannedOccurrence(
         _ task: TodoTask,
         in context: ModelContext
     ) throws -> Bool {
-        guard isFinalDefinedOccurrence(task),
+        guard task.isCompleted,
+              task.recurrenceRule != nil,
+              task.recurrenceCount != nil || task.recurrenceEndDate != nil,
               let recurrenceID = task.recurrenceID,
-              let currentIndex = task.occurrenceIndex else {
+              let currentIndex = task.occurrenceIndex,
+              currentIndex > 0 else {
             return false
         }
 
@@ -398,8 +404,8 @@ struct RecurrenceEngine {
             return false
         }
 
-        // Refuse to extend if inconsistent records exist beyond the configured
-        // final index. This avoids treating a malformed series as completed.
+        // Refuse to extend if another materialized occurrence exists at a
+        // higher index. This avoids treating a non-final batch item as the end.
         return !occurrences.contains { occurrence in
             guard occurrence.id != task.id,
                   let occurrenceIndex = occurrence.occurrenceIndex else {
@@ -407,60 +413,6 @@ struct RecurrenceEngine {
             }
             return occurrenceIndex > currentIndex
         }
-    }
-
-    private static func isFinalDefinedOccurrence(
-        _ task: TodoTask,
-        calendar: Calendar = .autoupdatingCurrent
-    ) -> Bool {
-        guard task.isCompleted,
-              task.recurrenceRule != nil,
-              let occurrenceIndex = task.occurrenceIndex,
-              occurrenceIndex > 0,
-              let rawRule = task.recurrenceRule,
-              let rule = Rule(rawValue: rawRule),
-              let startDate = task.recurrenceStartDate ?? task.deadLine else {
-            return false
-        }
-
-        if let count = task.recurrenceCount {
-            // recurrenceCount includes occurrence #1. Its value and the
-            // current index can exceed the per-operation generation limit.
-            return count > 0 && occurrenceIndex == count
-        }
-
-        guard let endDate = task.recurrenceEndDate,
-              let scheduledDate = scheduledOccurrenceDate(
-                  at: occurrenceIndex,
-                  startDate: startDate,
-                  rule: rule,
-                  interval: max(1, task.recurrenceInterval),
-                  calendar: calendar
-              ) else {
-            // An unlimited series or an unresolvable schedule has no proven end.
-            return false
-        }
-
-        let endOfDay = calendar.date(
-            bySettingHour: 23,
-            minute: 59,
-            second: 59,
-            of: endDate
-        ) ?? endDate
-
-        guard scheduledDate <= endOfDay,
-              let nextScheduledDate = nextDate(
-                  from: scheduledDate,
-                  rule: rule,
-                  interval: max(1, task.recurrenceInterval),
-                  calendar: calendar
-              ) else {
-            return false
-        }
-
-        // Looking only at the next scheduled date avoids treating the per-operation
-        // generation cap as the end of a much longer series.
-        return nextScheduledDate > endOfDay
     }
 
     /// Extends the same recurrence definition without recreating existing tasks.
@@ -483,12 +435,12 @@ struct RecurrenceEngine {
             throw ExtensionError.maximumReached
         }
 
-        guard isFinalDefinedOccurrence(completedTask, calendar: calendar),
+        guard try isFinalPlannedOccurrence(completedTask, in: context),
               let recurrenceID = completedTask.recurrenceID,
               let currentIndex = completedTask.occurrenceIndex,
               let rawRule = completedTask.recurrenceRule,
-              let rule = Rule(rawValue: rawRule),
-              let startDate = completedTask.recurrenceStartDate ?? completedTask.deadLine else {
+              let _ = Rule(rawValue: rawRule),
+              let _ = completedTask.recurrenceStartDate ?? completedTask.deadLine else {
             throw ExtensionError.invalidSeries
         }
 
@@ -519,49 +471,50 @@ struct RecurrenceEngine {
             throw ExtensionError.notFinalOccurrence
         }
 
-        let newTotalCount = currentIndex + additionalOccurrences
-        let newCount: Int?
-        let newEndDate: Date?
+        // Count new, non-deleted occurrence indexes rather than simply adding
+        // the requested quantity to the current index. A deleted occurrence
+        // keeps its index reserved, so the next valid occurrence must be used.
+        var newTotalCount = currentIndex
+        var validAdditionalOccurrences = 0
 
-        if let existingCount = completedTask.recurrenceCount {
-            guard existingCount == currentIndex else {
-                throw ExtensionError.notFinalOccurrence
+        while validAdditionalOccurrences < additionalOccurrences {
+            let (nextIndex, overflow) = newTotalCount.addingReportingOverflow(1)
+            guard !overflow else {
+                throw ExtensionError.maximumReached
             }
-            newCount = newTotalCount
-            newEndDate = completedTask.recurrenceEndDate
-        } else if completedTask.recurrenceEndDate != nil {
-            guard let currentScheduledDate = scheduledOccurrenceDate(
-                at: currentIndex,
-                startDate: startDate,
-                rule: rule,
-                interval: max(1, completedTask.recurrenceInterval),
-                calendar: calendar
+
+            // "This and future" deletion permanently blocks the remainder of
+            // the series; do not search indefinitely for an available index.
+            guard !DeletedFingerprintStore.isDeletedFromOccurrence(
+                recurrenceID: recurrenceID,
+                occurrenceIndex: nextIndex
             ) else {
-                throw ExtensionError.invalidExtension
+                throw ExtensionError.invalidSeries
             }
 
-            // Calculate only the appended block, rather than requesting dates
-            // from occurrence #1 through the lifetime total (which may exceed
-            // the per-operation safety limit).
-            let extendedDates = occurrenceDates(
-                startDate: currentScheduledDate,
-                rule: rule,
-                interval: max(1, completedTask.recurrenceInterval),
-                limit: .count(additionalOccurrences + 1),
-                calendar: calendar
-            )
-
-            guard extendedDates.count == additionalOccurrences + 1,
-                  let finalDate = extendedDates.last else {
-                throw ExtensionError.invalidExtension
+            newTotalCount = nextIndex
+            if !DeletedFingerprintStore.isDeletedOccurrence(
+                recurrenceID: recurrenceID,
+                occurrenceIndex: nextIndex
+            ) {
+                validAdditionalOccurrences += 1
             }
+        }
 
-            newCount = nil
-            newEndDate = finalDate
-        } else {
+        // "Additional occurrences" is an exact-count request regardless of
+        // whether the series was originally bounded by a count or an end date.
+        // Keeping recurrenceCount non-nil makes materializeFutureOccurrences
+        // use the count limit (which takes precedence over the end-of-day
+        // semantics of .until). Otherwise an hourly series can create many
+        // more occurrences than requested on the final calendar day.
+        guard completedTask.recurrenceCount != nil ||
+              completedTask.recurrenceEndDate != nil else {
             // Unlimited series are not eligible for this interaction.
             throw ExtensionError.invalidSeries
         }
+
+        let newCount: Int? = newTotalCount
+        let newEndDate = completedTask.recurrenceEndDate
 
         // Each occurrence stores a copy of the recurrence definition. Keep these
         // fields synchronized so editing any occurrence later sees the extension.
@@ -573,7 +526,8 @@ struct RecurrenceEngine {
         return try materializeFutureOccurrences(
             for: completedTask,
             in: context,
-            calendar: calendar
+            calendar: calendar,
+            maximumDateCount: newTotalCount - currentIndex + 1
         )
     }
 
@@ -670,7 +624,8 @@ struct RecurrenceEngine {
     static func materializeFutureOccurrences(
         for task: TodoTask,
         in context: ModelContext,
-        calendar: Calendar = .autoupdatingCurrent
+        calendar: Calendar = .autoupdatingCurrent,
+        maximumDateCount: Int? = nil
     ) throws -> [TodoTask] {
 
         guard let recurrenceRule = task.recurrenceRule,
@@ -721,7 +676,8 @@ struct RecurrenceEngine {
             rule: rule,
             interval: safeInterval,
             limit: limit,
-            calendar: calendar
+            calendar: calendar,
+            maximumDateCount: maximumDateCount
         )
 
         guard dates.count > 1 else {
@@ -746,9 +702,11 @@ struct RecurrenceEngine {
 
         var createdTasks: [TodoTask] = []
 
-        for (offset, occurrenceDate) in dates.dropFirst()
-            .prefix(maximumGeneratedFutureOccurrences)
-            .enumerated() {
+        for (offset, occurrenceDate) in dates.dropFirst().enumerated() {
+            guard createdTasks.count < maximumGeneratedFutureOccurrences else {
+                break
+            }
+
             let (occurrenceIndex, overflow) = anchorIndex.addingReportingOverflow(offset + 1)
             guard !overflow else {
                 break

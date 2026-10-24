@@ -740,7 +740,6 @@
 				1CF0C782307AAB6F0083664A /* RecurrenceSeriesExtensionPresenter.swift */,
 				1C716EF13059795B006C6178 /* TaskSingleCalendarExport.swift */,
 				1C62D168304FDC9B00E97C02 /* TaskRescheduler.swift */,
-				1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */,
 				1C634D1030220C9C0092DB89 /* TaskAttachment.swift */,
 				1C634D1830220C9C0092DB89 /* TodoTask.swift */,
 				1CF0C72F3076AE7B0083664A /* RecurringAttachmentLink.swift */,
@@ -798,6 +797,7 @@
 				1C634CF230220C9C0092DB89 /* RemindersImportView.swift */,
 				1C634CF130220C9C0092DB89 /* ICSExporter.swift */,
 				1C634CF530220C9C0092DB89 /* ImportExportCSV.swift */,
+				1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */,
 			);
 			path = Task;
 			sourceTree = "<group>";
