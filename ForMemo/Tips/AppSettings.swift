@@ -205,6 +205,10 @@ final class AppSettings {
             rawValue: walletViewRawValue ?? WalletViewStyle.cards.rawValue
         ) ?? .cards
         
+        let savedTimelineInterval = defaults.object(forKey: "dayTimelineIntervalMinutes") as? Int ?? 30
+        dayTimelineIntervalMinutes = [30, 60, 120].contains(savedTimelineInterval) ? savedTimelineInterval : 30
+        dayEmptySlotHeight = defaults.object(forKey: "dayEmptySlotHeight") as? Double ?? 24
+        dayHideEmptyNightHours = defaults.object(forKey: "dayHideEmptyNightHours") as? Bool ?? false
         showDateEveryRow = defaults.object(forKey: "TaskListShowDateEveryRow") as? Bool ?? false
         confirmTaskDeletion = defaults.object(forKey: "confirmTaskDeletion") as? Bool ?? true
         taskWeekDays = defaults.object(forKey: "TaskWeekDays") as? Int ?? 3
@@ -254,6 +258,36 @@ final class AppSettings {
         loadFromUserDefaults(defaults)
     }
     
+    // MARK: - Day View
+
+    var dayTimelineIntervalMinutes: Int {
+        didSet {
+            let normalized = [30, 60, 120].contains(dayTimelineIntervalMinutes) ? dayTimelineIntervalMinutes : 30
+            if dayTimelineIntervalMinutes != normalized {
+                dayTimelineIntervalMinutes = normalized
+                return
+            }
+            UserDefaults.standard.set(dayTimelineIntervalMinutes, forKey: "dayTimelineIntervalMinutes")
+        }
+    }
+
+    var dayEmptySlotHeight: Double {
+        didSet {
+            let normalized = min(max(dayEmptySlotHeight, 44), 80)
+            if dayEmptySlotHeight != normalized {
+                dayEmptySlotHeight = normalized
+                return
+            }
+            UserDefaults.standard.set(dayEmptySlotHeight, forKey: "dayEmptySlotHeight")
+        }
+    }
+
+    var dayHideEmptyNightHours: Bool {
+        didSet {
+            UserDefaults.standard.set(dayHideEmptyNightHours, forKey: "dayHideEmptyNightHours")
+        }
+    }
+
     // MARK: - Task List Appearance
     
     var iconStyle: TaskIconStyle {
@@ -734,6 +768,9 @@ final class AppSettings {
         dueIconEffectRaw = DueIconEffect.blink.rawValue
         taskListStyle = .plain
         walletViewStyle = .cards
+        dayTimelineIntervalMinutes = 30
+        dayEmptySlotHeight = 24
+        dayHideEmptyNightHours = false
         showDateEveryRow = false
         confirmTaskDeletion = true
         taskWeekDays = 3

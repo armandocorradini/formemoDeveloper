@@ -2723,6 +2723,34 @@
         }
       }
     },
+    "2 hours" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 Stunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 horas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 heures"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2 ore"
+          }
+        }
+      }
+    },
     "2 min" : {
       "localizations" : {
         "de" : {
@@ -3681,6 +3709,34 @@
         }
       }
     },
+    "Add task" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgabe hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir tarea"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une tâche"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi attività"
+          }
+        }
+      }
+    },
     "Add Task" : {
       "localizations" : {
         "de" : {
@@ -3705,6 +3761,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aggiungi attività"
+          }
+        }
+      }
+    },
+    "Add task at %@" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgabe um %@ hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir tarea a las %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une tâche à %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi attività alle %@"
           }
         }
       }
@@ -3742,25 +3826,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zum Kalender hinzufügen"
+            "value" : "Zum Apple Kalender hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to Calendar Apple"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir al calendario"
+            "value" : "Añadir al calendario Apple"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter au calendrier"
+            "value" : "Ajouter au calendrier Apple"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi al calendario"
+            "value" : "Aggiungi al calendario Apple"
           }
         }
       }
@@ -4134,6 +4224,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tutti gli allegati"
+          }
+        }
+      }
+    },
+    "All day" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ganztägig"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo el día"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toute la journée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutto il giorno"
           }
         }
       }
@@ -9430,6 +9548,34 @@
         }
       }
     },
+    "Choose date" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum auswählen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir fecha"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir une date"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli una data"
+          }
+        }
+      }
+    },
     "Choose Every Time" : {
       "localizations" : {
         "de" : {
@@ -12370,14 +12516,31 @@
     "Day" : {
       "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Día"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "jour"
+          }
+        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Giorno/i"
+            "value" : "Giorno"
           }
         }
-      },
-      "shouldTranslate" : false
+      }
     },
     "day after tomorrow" : {
       "localizations" : {
@@ -12463,6 +12626,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’altro ieri"
+          }
+        }
+      }
+    },
+    "Day view options" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionen der Tagesansicht"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de la vista diaria"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options de la vue journalière"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opzioni vista giornaliera"
           }
         }
       }
@@ -13181,6 +13372,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Supprimer cette occurrence et les occurrences futures"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina questa e le occorrenze future"
+          }
+        }
+      }
+    },
+    "Delete This and Future Occurrences" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese und zukünftige Wiederholungen löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar esta y las siguientes ocurrencias"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer cette occurrence et les suivantes"
           }
         },
         "it" : {
@@ -18873,6 +19093,34 @@
         }
       }
     },
+    "Hide empty night hours (00:00–06:00)" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leere Nachtstunden ausblenden (00:00–06:00)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar las horas nocturnas vacías (00:00–06:00)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer les heures nocturnes sans tâches (00:00–06:00)"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nascondi le ore notturne vuote (00:00–06:00)"
+          }
+        }
+      }
+    },
     "Hide Password" : {
       "localizations" : {
         "de" : {
@@ -21754,6 +22002,34 @@
         }
       }
     },
+    "Location" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ort"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ubicación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lieu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posizione"
+          }
+        }
+      }
+    },
     "Location Access Required" : {
       "localizations" : {
         "de" : {
@@ -23509,6 +23785,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nuova sezione"
+          }
+        }
+      }
+    },
+    "New task" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neue Aufgabe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva tarea"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouvelle tâche"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuova attività"
           }
         }
       }
@@ -38652,6 +38956,34 @@
         }
       }
     },
+    "Timeline interval" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeitachsenintervall"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervalo de la línea de tiempo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervalle de la chronologie"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intervallo della cronologia"
+          }
+        }
+      }
+    },
     "Titanium" : {
       "localizations" : {
         "de" : {
@@ -40408,6 +40740,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Senza titolo"
+          }
+        }
+      }
+    },
+    "Untitled task" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unbenannte Aufgabe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarea sin título"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâche sans titre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attività senza titolo"
           }
         }
       }

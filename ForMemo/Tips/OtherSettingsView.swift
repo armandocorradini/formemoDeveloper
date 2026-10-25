@@ -46,6 +46,9 @@ struct OtherSettingsView: View {
                         Text(String(localized: "Calendar"))
                             .tag(3)
 
+                        Text(String(localized: "Day"))
+                            .tag(14)
+
                         Text(String(localized: "Wallet"))
                             .tag(6)
 

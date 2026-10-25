@@ -200,6 +200,7 @@
 		1CC0DE7E30483D4F001EB9C2 /* TaskDuplicationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */; };
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
+		1CCC7892308DEEBB00E6E653 /* TaskDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CCC7891308DEEBB00E6E653 /* TaskDayView.swift */; };
 		1CED325B302619D600B16A50 /* AssetRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */; };
 		1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325C30268F8300B16A50 /* SystemEventHistory.swift */; };
 		1CED325F30276D7C00B16A50 /* RecoveryStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */; };
@@ -452,6 +453,7 @@
 		1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDuplicationService.swift; sourceTree = "<group>"; };
 		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
 		1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDirectoryCoordinator.swift; sourceTree = "<group>"; };
+		1CCC7891308DEEBB00E6E653 /* TaskDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDayView.swift; sourceTree = "<group>"; };
 		1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetRecoveryCoordinator.swift; sourceTree = "<group>"; };
 		1CED325C30268F8300B16A50 /* SystemEventHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemEventHistory.swift; sourceTree = "<group>"; };
 		1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryStatistics.swift; sourceTree = "<group>"; };
@@ -776,6 +778,7 @@
 				1C634D4C30220C9C0092DB89 /* Detail_ResourcesSection.swift */,
 				1C634D6F30220C9C0092DB89 /* TaskDetail_ScheduleSection.swift */,
 				1C634D4D30220C9C0092DB89 /* Detail_Share.swift */,
+				1CCC7891308DEEBB00E6E653 /* TaskDayView.swift */,
 				1C634D6C30220C9C0092DB89 /* TaskCalendarView.swift */,
 				1C634D7030220C9C0092DB89 /* TaskDetailView.swift */,
 				1C634D7330220C9C0092DB89 /* TaskListView.swift */,
@@ -1277,6 +1280,7 @@
 				1C634E0030220C9C0092DB89 /* Detail_QuickLookPreview.swift in Sources */,
 				1C634E0130220C9C0092DB89 /* Detail_ResourcesSection.swift in Sources */,
 				1C634E0230220C9C0092DB89 /* Detail_Share.swift in Sources */,
+				1CCC7892308DEEBB00E6E653 /* TaskDayView.swift in Sources */,
 				1C634E0330220C9C0092DB89 /* DisclaimerView.swift in Sources */,
 				1C634E0430220C9C0092DB89 /* DocumentAssetDetailView.swift in Sources */,
 				1C634E0530220C9C0092DB89 /* DocumentAssetThumbnail.swift in Sources */,

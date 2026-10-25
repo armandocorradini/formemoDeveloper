@@ -30,6 +30,7 @@ struct TaskTabView: View {
     @State private var listPath = NavigationPath()
     @State private var weeklyPath = NavigationPath()
     @State private var calendarPath = NavigationPath()
+    @State private var dayPath = NavigationPath()
     @State private var mapPath = NavigationPath()
     @State private var walletPath = NavigationPath()
     @State private var vaultPath = NavigationPath()
@@ -431,6 +432,11 @@ struct TaskTabView: View {
             NavigationStack(path: $calendarPath) {
                 TaskCalendarView()
             }
+
+        case 14:
+            NavigationStack(path: $dayPath) {
+                TaskDayView()
+            }
             
         case 5:
             NavigationStack(path: $mapPath) {
@@ -660,6 +666,10 @@ struct TaskTabView: View {
         case 3:
             if !calendarPath.isEmpty {
                 calendarPath = NavigationPath()
+            }
+        case 14:
+            if !dayPath.isEmpty {
+                dayPath = NavigationPath()
             }
             
         case 5:
