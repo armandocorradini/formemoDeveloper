@@ -209,6 +209,7 @@ final class AppSettings {
         dayTimelineIntervalMinutes = [30, 60, 120].contains(savedTimelineInterval) ? savedTimelineInterval : 30
         dayEmptySlotHeight = defaults.object(forKey: "dayEmptySlotHeight") as? Double ?? 24
         dayHideEmptyNightHours = defaults.object(forKey: "dayHideEmptyNightHours") as? Bool ?? false
+        dayHideCompletedTasks = defaults.object(forKey: "dayHideCompletedTasks") as? Bool ?? false
         showDateEveryRow = defaults.object(forKey: "TaskListShowDateEveryRow") as? Bool ?? false
         confirmTaskDeletion = defaults.object(forKey: "confirmTaskDeletion") as? Bool ?? true
         taskWeekDays = defaults.object(forKey: "TaskWeekDays") as? Int ?? 3
@@ -285,6 +286,12 @@ final class AppSettings {
     var dayHideEmptyNightHours: Bool {
         didSet {
             UserDefaults.standard.set(dayHideEmptyNightHours, forKey: "dayHideEmptyNightHours")
+        }
+    }
+
+    var dayHideCompletedTasks: Bool {
+        didSet {
+            UserDefaults.standard.set(dayHideCompletedTasks, forKey: "dayHideCompletedTasks")
         }
     }
 
@@ -771,6 +778,7 @@ final class AppSettings {
         dayTimelineIntervalMinutes = 30
         dayEmptySlotHeight = 24
         dayHideEmptyNightHours = false
+        dayHideCompletedTasks = false
         showDateEveryRow = false
         confirmTaskDeletion = true
         taskWeekDays = 3

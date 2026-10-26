@@ -13382,35 +13382,6 @@
         }
       }
     },
-    "Delete This and Future Occurrences" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Diese und zukünftige Wiederholungen löschen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminar esta y las siguientes ocurrencias"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supprimer cette occurrence et les suivantes"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elimina questa e le occorrenze future"
-          }
-        }
-      }
-    },
     "Delete This Occurrence" : {
       "localizations" : {
         "de" : {
@@ -19089,6 +19060,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nascondi archiviate"
+          }
+        }
+      }
+    },
+    "Hide completed tasks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erledigte Aufgaben ausblenden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar tareas completadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer les tâches terminées"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nascondi attività completate"
           }
         }
       }

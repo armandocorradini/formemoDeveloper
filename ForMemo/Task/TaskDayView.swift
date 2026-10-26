@@ -3,6 +3,7 @@ import SwiftData
 import os
 
 struct TaskDayView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @Environment(AppSettings.self) private var settings
     @Query(sort: \TodoTask.deadLine) private var tasks: [TodoTask]
@@ -16,6 +17,9 @@ struct TaskDayView: View {
     @State private var showDayOptions = false
     @State private var showCalendarPicker = false
     @State private var isDeletingRecurrence = false
+    @State private var openSwipeTaskID: String?
+    @State private var selectedTaskForNavigation: TodoTask?
+    @State private var foregroundRefreshDate = Date.now
 
     private let calendar = Calendar.current
     private var timelineSlots: [Int] {
@@ -35,7 +39,8 @@ struct TaskDayView: View {
     private var dayTasks: [TodoTask] {
         tasks.filter { task in
             guard let deadline = task.deadLine else { return false }
-            return calendar.isDate(deadline, inSameDayAs: selectedDate)
+            guard calendar.isDate(deadline, inSameDayAs: selectedDate) else { return false }
+            return !settings.dayHideCompletedTasks || !task.isCompleted
         }
         .sorted {
             guard let first = $0.deadLine, let second = $1.deadLine else { return false }
@@ -134,6 +139,9 @@ struct TaskDayView: View {
                             }
                             .frame(maxWidth: .infinity, minHeight: slotTasks.isEmpty ? 24 : nil, alignment: .topLeading)
                         }
+                        .anchorPreference(key: TimelineSlotBoundsKey.self, value: .bounds) {
+                            [slotMinutes: $0]
+                        }
                         .padding(.horizontal, 10)
                         .popover(
                             isPresented: addTaskPopoverBinding(for: slotMinutes),
@@ -148,6 +156,24 @@ struct TaskDayView: View {
                 .padding(.bottom, 20)
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
+            .backgroundPreferenceValue(TimelineSlotBoundsKey.self) { anchors in
+                TimelineView(.periodic(from: .now, by: 60)) { timelineContext in
+                    GeometryReader { proxy in
+                        currentTimeIndicator(
+                            in: proxy,
+                            anchors: anchors,
+                            now: max(timelineContext.date, foregroundRefreshDate)
+                        )
+                    }
+                }
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                foregroundRefreshDate = .now
+            }
         }
         .background(AppGlassBackground())
         .overlay {
@@ -294,8 +320,45 @@ struct TaskDayView: View {
         } message: {
             Text(String(localized: "This action cannot be undone."))
         }
-        .navigationDestination(for: TodoTask.self) { task in
+        .navigationDestination(item: $selectedTaskForNavigation) { task in
             TaskDetailView(task: task)
+        }
+    }
+
+    @ViewBuilder
+    private func currentTimeIndicator(
+        in proxy: GeometryProxy,
+        anchors: [Int: Anchor<CGRect>],
+        now: Date
+    ) -> some View {
+        let nowMinutes = calendar.component(.hour, from: now) * 60
+            + calendar.component(.minute, from: now)
+        let interval = normalizedTimelineInterval(settings.dayTimelineIntervalMinutes)
+        let lowerSlot = (nowMinutes / interval) * interval
+        let upperSlot = lowerSlot + interval
+        let isToday = calendar.isDate(selectedDate, inSameDayAs: now)
+
+        if isToday,
+           nowMinutes < 24 * 60,
+           let lowerAnchor = anchors[lowerSlot],
+           let upperAnchor = anchors[upperSlot] {
+            let lowerY = proxy[lowerAnchor].minY
+            let upperY = proxy[upperAnchor].minY
+            let fraction = CGFloat(nowMinutes - lowerSlot) / CGFloat(interval)
+            let y = lowerY + (upperY - lowerY) * fraction
+
+            ZStack(alignment: .leading) {
+                Rectangle()
+                    .fill(Color.blue)
+                    .frame(height: 2.5)
+                    .frame(width: 54)
+                    .offset(x: 8, y: y)
+
+//                Circle()
+//                    .fill(Color.blue)
+//                    .frame(width: 8, height: 8)
+//                    .offset(x: 4, y: y - 3)
+            }
         }
     }
 
@@ -333,24 +396,23 @@ struct TaskDayView: View {
             }
             .buttonStyle(.plain)
 
-            Button(String(localized: "Cancel"), role: .cancel) {
-                showAddTaskMenu = false
-            }
-            .buttonStyle(.plain)
+//            Button(String(localized: "Cancel"), role: .cancel) {
+//                showAddTaskMenu = false
+//            }
+//            .buttonStyle(.plain)
         }
         .padding(16)
         .frame(minWidth: 160, alignment: .leading)
     }
 
     private func makeNewTask(hour: Int, minute: Int) -> TodoTask {
-        let now = Date()
-        var components = calendar.dateComponents([.year, .month, .day], from: now)
+        var components = calendar.dateComponents([.year, .month, .day], from: selectedDate)
         components.hour = hour
         components.minute = minute
         components.second = 0
 
         let task = TodoTask()
-        task.deadLine = calendar.date(from: components) ?? now
+        task.deadLine = calendar.date(from: components) ?? selectedDate
         return task
     }
 
@@ -393,6 +455,12 @@ struct TaskDayView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .lineLimit(2)
             }
+
+            Toggle(isOn: hideCompletedTasksBinding) {
+                Text(String(localized: "Hide completed tasks"))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
         .padding(16)
         .frame(minWidth: 260, alignment: .leading)
@@ -427,6 +495,13 @@ struct TaskDayView: View {
         )
     }
 
+    private var hideCompletedTasksBinding: Binding<Bool> {
+        Binding(
+            get: { settings.dayHideCompletedTasks },
+            set: { settings.dayHideCompletedTasks = $0 }
+        )
+    }
+
     private var dateStrip: some View {
         let dates = (-3...3).compactMap { offset in
             calendar.date(byAdding: .day, value: offset, to: selectedDate)
@@ -436,7 +511,8 @@ struct TaskDayView: View {
             ForEach(dates, id: \.self) { date in
                 let dateTasks = tasks.filter { task in
                     guard let deadline = task.deadLine else { return false }
-                    return calendar.isDate(deadline, inSameDayAs: date)
+                    guard calendar.isDate(deadline, inSameDayAs: date) else { return false }
+                    return !settings.dayHideCompletedTasks || !task.isCompleted
                 }
                 let isToday = calendar.isDateInToday(date)
                 let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
@@ -506,19 +582,29 @@ struct TaskDayView: View {
         let isOverdue = !task.isCompleted && (task.deadLine.map { $0 < .now } ?? false)
         let criticalColor = Color(hex: settings.highlightColorHex) ?? .red
 
-        return NavigationLink(value: task) {
+        return TaskDaySwipeRow(
+            taskID: String(describing: task.persistentModelID),
+            rowHeight: max(44, settings.dayEmptySlotHeight),
+            completionTitle: String(localized: task.isCompleted ? "To do" : "Complete"),
+            completionIcon: task.isCompleted ? "arrow.uturn.backward.circle" : "checkmark.circle",
+            openRowID: $openSwipeTaskID,
+            onComplete: { toggleCompleted(task) },
+            onDelete: { requestDeletion(of: task) }
+        ) {
             HStack(spacing: 7) {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(task.priority == .critical ? criticalColor : Color.clear)
                     .frame(width: 3)
                     .padding(.vertical, 2)
 
-                Image(systemName: task.mainTag?.mainIcon ??  task.status.icon)
+                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
                     .font(.system(size: 15, weight: .medium))
+                    .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
                     .foregroundStyle(
                         settings.iconStyle == .monochrome
                             ? Color.primary
-                            : (task.mainTag?.color ?? task.status.color)
+                            : (task.mainTag?.color ?? task.status.color),
+                        .primary
                     )
                     .frame(width: 20, height: 20, alignment: .center)
                     .frame(width: 20, alignment: .center)
@@ -562,7 +648,7 @@ struct TaskDayView: View {
                 HStack(spacing: 7) {
                     if task.mainTag != nil, let priorityIcon = task.priority.systemImage {
                         Image(systemName: priorityIcon)
-                            .foregroundStyle(task.mainTag?.color ?? .secondary)
+                            .foregroundStyle(task.priority == .critical ? Color.red : (task.mainTag?.color ?? .secondary))
                             .accessibilityLabel(String(localized: "Priority"))
                     }
 
@@ -587,8 +673,14 @@ struct TaskDayView: View {
             .contentShape(Rectangle())
             .opacity(task.isCompleted ? 0.55 : 1)
             .strikethrough(task.isCompleted, color: .secondary)
-        }
-        .buttonStyle(.plain)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if openSwipeTaskID != nil {
+                    openSwipeTaskID = nil
+                    return
+                }
+                selectedTaskForNavigation = task
+            }
         .contextMenu {
             Button(role: .destructive) {
                 requestDeletion(of: task)
@@ -626,6 +718,7 @@ struct TaskDayView: View {
                 }
             } label: {
                 Label(String(localized: "Duplicate"), systemImage: "plus.square.on.square")
+            }
             }
         }
     }
@@ -754,5 +847,167 @@ struct TaskDayView: View {
         if tasks.allSatisfy(\.isCompleted) { return .green }
         if tasks.contains(where: { !$0.isCompleted }) { return .blue }
         return .clear
+    }
+}
+
+
+private struct TimelineSlotBoundsKey: PreferenceKey {
+    static var defaultValue: [Int: Anchor<CGRect>] = [:]
+
+    static func reduce(
+        value: inout [Int: Anchor<CGRect>],
+        nextValue: () -> [Int: Anchor<CGRect>]
+    ) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
+private struct TaskDaySwipeRow<Content: View>: View {
+    let taskID: String
+    let rowHeight: CGFloat
+    let completionTitle: String
+    let completionIcon: String
+    @Binding var openRowID: String?
+    let onComplete: () -> Void
+    let onDelete: () -> Void
+    @ViewBuilder let content: Content
+
+    @State private var offset: CGFloat = 0
+    @State private var swipeDirection: Int = 0
+    @State private var gestureStartedWithClosedRow = false
+
+    private let deleteRevealWidth: CGFloat = 132
+    private let actionCapsuleHeight: CGFloat = 40
+    private let completionCommitRatio: CGFloat = 0.42
+
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                // Green action is a capsule revealed progressively beneath the row.
+                HStack {
+                    if offset > 0 {
+                        Label(completionTitle, systemImage: completionIcon)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                            .padding(.horizontal, 14)
+                            .frame(height: actionCapsuleHeight)
+                            .frame(width: min(max(0, offset - 12), min(geometry.size.width * 0.72, 180)))
+                            .background(Color.green, in: Capsule())
+                            .opacity(offset >= 76 ? 1 : 0.85)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .frame(height: rowHeight)
+
+                // The row's transparent surface reveals the glass background while sliding.
+                content
+                    .frame(maxWidth: .infinity)
+                    .frame(height: rowHeight)
+                    .offset(x: offset)
+                    .contentShape(Rectangle())
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 12)
+                            .onChanged { value in
+                                let horizontal = value.translation.width
+                                let vertical = value.translation.height
+                                guard abs(horizontal) > abs(vertical) * 1.15 else { return }
+
+                                // Lock the gesture's initial horizontal direction. Reversing a
+                                // left swipe must not turn it into a completion gesture.
+                                if swipeDirection == 0, abs(horizontal) > 12 {
+                                    swipeDirection = horizontal > 0 ? 1 : -1
+                                    gestureStartedWithClosedRow = offset == 0 && openRowID != taskID
+                                }
+
+                                if openRowID == taskID {
+                                    offset = min(0, max(-deleteRevealWidth, -deleteRevealWidth + horizontal))
+                                } else if horizontal < 0 {
+                                    offset = max(-deleteRevealWidth, horizontal)
+                                } else {
+                                    offset = min(geometry.size.width, horizontal)
+                                }
+                            }
+                            .onEnded { value in
+                                let horizontal = value.translation.width
+                                let vertical = value.translation.height
+                                guard abs(horizontal) > abs(vertical) * 1.15 else {
+                                    withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+                                        offset = openRowID == taskID ? -deleteRevealWidth : 0
+                                    }
+                                    swipeDirection = 0
+                                    gestureStartedWithClosedRow = false
+                                    return
+                                }
+
+                                let shouldComplete = swipeDirection == 1
+                                    && gestureStartedWithClosedRow
+                                    && horizontal > geometry.size.width * completionCommitRatio
+                                swipeDirection = 0
+                                gestureStartedWithClosedRow = false
+
+                                if shouldComplete {
+                                    withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+                                        offset = 0
+                                        openRowID = nil
+                                    }
+                                    onComplete()
+                                } else if openRowID == taskID && horizontal > 24 {
+                                    withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+                                        offset = 0
+                                        openRowID = nil
+                                    }
+                                } else if horizontal < -44 {
+                                    withAnimation(.snappy(duration: 0.22)) {
+                                        offset = -deleteRevealWidth
+                                        openRowID = taskID
+                                    }
+                                } else {
+                                    withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+                                        offset = openRowID == taskID ? -deleteRevealWidth : 0
+                                    }
+                                }
+                            }
+                    )
+
+                // Keep Delete above the shifted row so the capsule remains tappable.
+                HStack {
+                    Spacer(minLength: 0)
+                    Button {
+                        withAnimation(.snappy(duration: 0.22)) {
+                            offset = 0
+                            if openRowID == taskID {
+                                openRowID = nil
+                            }
+                        }
+                        onDelete()
+                    } label: {
+                        Label(String(localized: "Delete"), systemImage: "trash")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .padding(.horizontal, 15)
+                            .frame(height: actionCapsuleHeight)
+                            .background(Color.red, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .frame(width: deleteRevealWidth, height: rowHeight)
+                    .opacity(offset < -8 ? 1 : 0)
+                    .allowsHitTesting(offset < -8)
+                }
+                .frame(height: rowHeight)
+            }
+            .clipped()
+            .onChange(of: openRowID) { _, newValue in
+                if newValue != taskID {
+                    withAnimation(.snappy(duration: 0.2)) {
+                        offset = 0
+                    }
+                }
+            }
+        }
+        .frame(height: rowHeight)
+        .clipped()
     }
 }

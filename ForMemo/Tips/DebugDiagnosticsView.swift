@@ -3094,7 +3094,11 @@ struct DebugDiagnosticsView: View {
         let selectedIDs = Set(selectedByID.keys)
 
         let center = UNUserNotificationCenter.current()
-        let pendingRequests = await center.pendingNotificationRequests()
+        // L'audit non avvia un refresh: attende soltanto che lo snapshot delle
+        // richieste ForMemo risulti stabile in letture consecutive. Questo riduce
+        // i falsi positivi se iOS sta ancora applicando aggiunte/rimozioni già
+        // richieste da un rebuild indipendente.
+        let pendingRequests = await readStablePendingNotificationRequests(using: center)
         let ownedPending = pendingRequests.filter {
             $0.identifier.hasPrefix("task.") || $0.identifier.hasPrefix("document.")
         }
@@ -3240,6 +3244,60 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion(report)
         }
         return report
+    }
+
+    /// Legge la coda senza modificarla e attende fino a circa 2 secondi che
+    /// ID e date dei trigger ForMemo siano invariati in tre snapshot consecutivi.
+    /// Non chiama NotificationManager.refresh() e non aggiunge/rimuove richieste.
+    private func readStablePendingNotificationRequests(
+        using center: UNUserNotificationCenter
+    ) async -> [UNNotificationRequest] {
+        let maximumReads = 8
+        let requiredStableReads = 3
+        var previousSignature: [String]?
+        var stableReads = 0
+        var latestRequests: [UNNotificationRequest] = []
+
+        for readIndex in 0..<maximumReads {
+            let requests = await center.pendingNotificationRequests()
+            latestRequests = requests
+
+            let signature = requests
+                .filter {
+                    $0.identifier.hasPrefix("task.") || $0.identifier.hasPrefix("document.")
+                }
+                .map { request -> String in
+                    let triggerDate: Date?
+                    if let trigger = request.trigger as? UNCalendarNotificationTrigger {
+                        triggerDate = trigger.nextTriggerDate()
+                    } else if let trigger = request.trigger as? UNTimeIntervalNotificationTrigger {
+                        triggerDate = trigger.nextTriggerDate()
+                    } else {
+                        triggerDate = nil
+                    }
+                    return "\(request.identifier)|\(triggerDate?.timeIntervalSince1970 ?? -1)"
+                }
+                .sorted()
+
+            if signature == previousSignature {
+                stableReads += 1
+            } else {
+                previousSignature = signature
+                stableReads = 1
+            }
+
+            if stableReads >= requiredStableReads {
+                return requests
+            }
+
+            if readIndex < maximumReads - 1 {
+                try? await Task.sleep(for: .milliseconds(250))
+            }
+        }
+
+        // In caso di attività continua, restituisce comunque l'ultimo snapshot:
+        // il rapporto rifletterà lo stato letto senza alterare la coda di sistema.
+        return latestRequests
     }
 
     private static func diagnosticDate(_ date: Date) -> String {
