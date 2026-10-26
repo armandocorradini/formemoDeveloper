@@ -346,6 +346,11 @@ struct BackgroundCustomizationView: View {
                             )
                             
                             patternButton(
+                                pattern: .time,
+                                title: "Time"
+                            )
+                            
+                            patternButton(
                                 pattern: .balanced,
                                 title: "Balanced"
                             )

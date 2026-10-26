@@ -20,6 +20,8 @@ struct TaskDayView: View {
     @State private var openSwipeTaskID: String?
     @State private var selectedTaskForNavigation: TodoTask?
     @State private var foregroundRefreshDate = Date.now
+    @State private var dateStripHoldTask: Task<Void, Never>?
+    @State private var dateStripDidHoldEdge = false
 
     private let calendar = Calendar.current
     private var timelineSlots: [Int] {
@@ -200,12 +202,12 @@ struct TaskDayView: View {
                     showCalendarPicker = true
                 } label: {
                     HStack(spacing: 5) {
-                        Text(selectedDate.formatted(.dateTime.month(.wide).year(.twoDigits)))
+                        Text(selectedDate.formatted(.dateTime.month(.wide).year(.twoDigits)).capitalized)
                             .font(.headline)
                         Image(systemName: "chevron.down")
                             .font(.caption2.weight(.semibold))
                     }
-                    .fixedSize()
+                    .frame(minWidth: 160, minHeight: 44)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -349,8 +351,13 @@ struct TaskDayView: View {
 
             ZStack(alignment: .leading) {
                 Rectangle()
+                    .fill(Color.red)
+                    .frame(height: 1.5)
+                    .frame(width: 54)
+                    .offset(x: 8, y: y-2.0)
+                Rectangle()
                     .fill(Color.blue)
-                    .frame(height: 2.5)
+                    .frame(height: 1.5)
                     .frame(width: 54)
                     .offset(x: 8, y: y)
 
@@ -383,16 +390,30 @@ struct TaskDayView: View {
             let hour = selectedSlotMinutes / 60
             let minute = selectedSlotMinutes % 60
 
+            let slotDate = calendar.date(
+                bySettingHour: hour,
+                minute: minute,
+                second: 0,
+                of: selectedDate
+            ) ?? selectedDate
+            let isPastDateTime = slotDate < .now
+
             Text(String(format: "%02d:%02d", hour, minute))
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(isPastDateTime ? .red : .blue)
 
             Button {
                 draftTask = makeNewTask(hour: hour, minute: minute)
                 showAddTaskMenu = false
             } label: {
-                Label(String(localized: "Add task"), systemImage: "plus")
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Label {
+                    Text(String(localized: "Add task"))
+                        .foregroundStyle(.primary)
+                } icon: {
+                    Image(systemName: "plus.circle.fill")
+                        .foregroundStyle(.green)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.plain)
 
@@ -503,68 +524,123 @@ struct TaskDayView: View {
     }
 
     private var dateStrip: some View {
-        let dates = (-3...3).compactMap { offset in
-            calendar.date(byAdding: .day, value: offset, to: selectedDate)
-        }
+        GeometryReader { geometry in
+            let dates = (-3...3).compactMap { offset in
+                calendar.date(byAdding: .day, value: offset, to: selectedDate)
+            }
 
-        return HStack(spacing: 5) {
-            ForEach(dates, id: \.self) { date in
-                let dateTasks = tasks.filter { task in
-                    guard let deadline = task.deadLine else { return false }
-                    guard calendar.isDate(deadline, inSameDayAs: date) else { return false }
-                    return !settings.dayHideCompletedTasks || !task.isCompleted
-                }
-                let isToday = calendar.isDateInToday(date)
-                let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
-
-                Button {
-                    withAnimation(.snappy(duration: 0.2)) {
-                        selectedDate = calendar.startOfDay(for: date)
+            HStack(spacing: 5) {
+                ForEach(Array(dates.enumerated()), id: \.element) { _, date in
+                    let dateTasks = tasks.filter { task in
+                        guard let deadline = task.deadLine else { return false }
+                        guard calendar.isDate(deadline, inSameDayAs: date) else { return false }
+                        return !settings.dayHideCompletedTasks || !task.isCompleted
                     }
-                } label: {
-                    VStack(spacing: 5) {
-                        Text(date.formatted(.dateTime.weekday(.narrow)))
-                            .font(.caption2)
-                            .foregroundStyle(isToday ? .primary : .secondary)
-                        Text(date.formatted(.dateTime.day()))
-                            .font(.body.weight(isSelected ? .semibold : .regular))
-                            .foregroundStyle(isToday ? .white : .primary)
-                            .frame(width: 34, height: 34)
-                            .background {
-                                if isToday {
-                                    Circle().fill(Color.blue)
-                                } else if isSelected {
-                                    Circle().stroke(Color.primary, lineWidth: 1.5)
+                    let isToday = calendar.isDateInToday(date)
+                    let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
+
+                    Button {
+                        if dateStripDidHoldEdge {
+                            dateStripDidHoldEdge = false
+                            return
+                        }
+                        withAnimation(.snappy(duration: 0.2)) {
+                            selectedDate = calendar.startOfDay(for: date)
+                        }
+                    } label: {
+                        VStack(spacing: 5) {
+                            Text(date.formatted(.dateTime.weekday(.narrow)))
+                                .font(.caption2)
+                                .foregroundStyle(isToday ? .primary : .secondary)
+                            Text(date.formatted(.dateTime.day()))
+                                .font(.body.weight(isSelected ? .semibold : .regular))
+                                .foregroundStyle(isToday ? .white : .primary)
+                                .frame(width: 34, height: 34)
+                                .background {
+                                    if isToday {
+                                        Circle().fill(Color.blue)
+                                    } else if isSelected {
+                                        Circle().stroke(Color.primary, lineWidth: 1.5)
+                                    }
                                 }
-                            }
-                        Circle()
-                            .fill(dayIndicatorColor(for: dateTasks))
-                            .frame(width: 6, height: 6)
+                            Circle()
+                                .fill(dayIndicatorColor(for: dateTasks))
+                                .frame(width: 6, height: 6)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
                     }
-                    .frame(maxWidth: .infinity)
-                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 8)
+            .padding(.top, 10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                    .onChanged { value in
+                        let edgeWidth = min(54, geometry.size.width * 0.18)
+                        let direction: Int
+                        if value.startLocation.x <= edgeWidth {
+                            direction = -1
+                        } else if value.startLocation.x >= geometry.size.width - edgeWidth {
+                            direction = 1
+                        } else {
+                            return
+                        }
+                        handleDateStripEdgePress(direction: direction, isPressing: true)
+                    }
+                    .onEnded { _ in
+                        handleDateStripEdgePress(direction: 0, isPressing: false)
+                    }
+            )
+        }
+        .frame(height: 65)
+        .onDisappear {
+            dateStripHoldTask?.cancel()
+            dateStripHoldTask = nil
+        }
+    }
+
+    private func handleDateStripEdgePress(direction: Int, isPressing: Bool) {
+        if isPressing {
+            guard dateStripHoldTask == nil else { return }
+            dateStripHoldTask = Task { @MainActor in
+                do {
+                    // Wait briefly so a normal tap remains a tap.
+                    try await Task.sleep(for: .milliseconds(350))
+                    guard !Task.isCancelled else { return }
+                    dateStripDidHoldEdge = true
+
+                    while !Task.isCancelled {
+                        withAnimation(.linear(duration: 0.16)) {
+                            if let nextDate = calendar.date(
+                                byAdding: .day,
+                                value: direction,
+                                to: selectedDate
+                            ) {
+                                selectedDate = calendar.startOfDay(for: nextDate)
+                            }
+                        }
+                        try await Task.sleep(for: .milliseconds(240))
+                    }
+                } catch {
+                    // Cancellation is expected when the finger is released.
+                }
+            }
+        } else {
+            dateStripHoldTask?.cancel()
+            dateStripHoldTask = nil
+            // Keep the flag briefly so the Button action generated by a long press
+            // cannot jump the selection to the edge date after the repeated scrolling.
+            if dateStripDidHoldEdge {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(150))
+                    dateStripDidHoldEdge = false
+                }
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.top, 10)
-        .contentShape(Rectangle())
-        .gesture(
-            DragGesture(minimumDistance: 18)
-                .onEnded { value in
-                    let horizontal = value.translation.width
-                    guard abs(horizontal) > 35 else { return }
-                    let velocity = abs(value.predictedEndTranslation.width - horizontal)
-                    let baseDays = max(1, Int(abs(horizontal) / 80))
-                    let acceleratedDays = min(31, baseDays + Int(velocity / 180))
-                    let dayDelta = horizontal < 0 ? acceleratedDays : -acceleratedDays
-                    guard let newDate = calendar.date(byAdding: .day, value: dayDelta, to: selectedDate) else { return }
-                    withAnimation(.snappy(duration: 0.2)) {
-                        selectedDate = calendar.startOfDay(for: newDate)
-                    }
-                }
-        )
     }
 
     private func tasks(in hour: Int, minute: Int) -> [TodoTask] {

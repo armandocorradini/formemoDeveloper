@@ -9,6 +9,7 @@ enum AppBackgroundStyle: String, Codable {
 
 enum AppBackgroundPattern: String, Codable {
     case none
+    case time
     case essential
     case organizer
     case geometric
@@ -33,6 +34,8 @@ enum AppBackgroundPattern: String, Codable {
         switch self {
         case .none:
             return nil
+        case .time:
+            return "TimePattern"
         case .essential:
             return "EssentialPattern"
         case .organizer:
@@ -78,6 +81,8 @@ enum AppBackgroundPattern: String, Codable {
         switch self {
         case .none:
             return String(localized: "None")
+        case .time:
+            return String(localized: "Time")
         case .essential:
             return String(localized: "Essential")
         case .organizer:
