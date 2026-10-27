@@ -147,7 +147,7 @@ struct TaskDayView: View {
                         .padding(.horizontal, 10)
                         .popover(
                             isPresented: addTaskPopoverBinding(for: slotMinutes),
-                            attachmentAnchor: .rect(.bounds),
+                            attachmentAnchor: .point(.center),
                             arrowEdge: .top
                         ) {
                             addTaskPopoverContent
@@ -551,7 +551,7 @@ struct TaskDayView: View {
                         VStack(spacing: 5) {
                             Text(date.formatted(.dateTime.weekday(.narrow)))
                                 .font(.caption2)
-                                .foregroundStyle(isToday ? .primary : .secondary)
+                                .foregroundStyle(calendar.component(.weekday, from: date) == 1 ? .red : (isToday ? .primary : .secondary))
                             Text(date.formatted(.dateTime.day()))
                                 .font(.body.weight(isSelected ? .semibold : .regular))
                                 .foregroundStyle(isToday ? .white : .primary)
@@ -952,7 +952,7 @@ private struct TaskDaySwipeRow<Content: View>: View {
     @State private var swipeDirection: Int = 0
     @State private var gestureStartedWithClosedRow = false
 
-    private let deleteRevealWidth: CGFloat = 132
+    private let deleteRevealWidth: CGFloat = 60
     private let actionCapsuleHeight: CGFloat = 40
     private let completionCommitRatio: CGFloat = 0.42
 
@@ -1059,7 +1059,7 @@ private struct TaskDaySwipeRow<Content: View>: View {
                         }
                         onDelete()
                     } label: {
-                        Label(String(localized: "Delete"), systemImage: "trash")
+                        Label(String(localized: ""), systemImage: "trash")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.white)
                             .lineLimit(1)
