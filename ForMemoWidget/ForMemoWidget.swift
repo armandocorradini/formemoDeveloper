@@ -579,3 +579,78 @@ struct ForMemoAgendaWidget: Widget {
 } timeline: {
     ForMemoAgendaEntry(date: .now, snapshot: nil)
 }
+
+
+// MARK: - AlarmKit Snooze Live Activity
+
+import AlarmKit
+import ActivityKit
+
+// Keep this metadata type identical to the one used by the app target.
+struct ForMemoAlarmMetadata: AlarmMetadata {}
+
+struct ForMemoAlarmLiveActivity: Widget {
+    var body: some WidgetConfiguration {
+        ActivityConfiguration(for: AlarmAttributes<ForMemoAlarmMetadata>.self) { context in
+            VStack(alignment: .leading, spacing: 8) {
+//                Text("ForMemo")
+//                    .font(.headline.weight(.bold))
+//                    .foregroundStyle(.blue)
+//                    .lineLimit(1)
+
+                Text("⏰ \(context.attributes.presentation.alert.title)")
+                    .font(.headline.weight(.medium))
+                    .foregroundStyle(.orange)
+                    .lineLimit(2)
+
+                switch context.state.mode {
+                case .countdown(let countdown):
+                    Text(timerInterval: Date.now...countdown.fireDate, countsDown: true)
+                        .font(.system(size: 38, weight: .semibold, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(.orange)
+                case .paused:
+                    Text(String(localized: "Paused"))
+                        .font(.title2.weight(.semibold))
+                case .alert:
+                    Text(String(localized: "Alarm"))
+                        .font(.title2.weight(.semibold))
+                @unknown default:
+                    Text(String(localized: "Alarm"))
+                }
+            }
+            .padding()
+            .activityBackgroundTint(Color.black)
+            .activitySystemActionForegroundColor(.white)
+        } dynamicIsland: { context in
+            DynamicIsland {
+                DynamicIslandExpandedRegion(.leading) {
+                    Image(systemName: "alarm.fill")
+                }
+                DynamicIslandExpandedRegion(.trailing) {
+                    if case .countdown(let countdown) = context.state.mode {
+                        Text(timerInterval: Date.now...countdown.fireDate, countsDown: true)
+                            .monospacedDigit()
+                    } else {
+                        Text(String(localized: "ForMemo Alarm"))
+                    }
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    Text("⏰ \(context.attributes.presentation.alert.title)")
+                        .lineLimit(1)
+                }
+            } compactLeading: {
+                Image(systemName: "alarm.fill")
+            } compactTrailing: {
+                if case .countdown(let countdown) = context.state.mode {
+                    Text(timerInterval: Date.now...countdown.fireDate, countsDown: true)
+                        .monospacedDigit()
+                } else {
+                    Image(systemName: "alarm.fill")
+                }
+            } minimal: {
+                Image(systemName: "alarm.fill")
+            }
+        }
+    }
+}

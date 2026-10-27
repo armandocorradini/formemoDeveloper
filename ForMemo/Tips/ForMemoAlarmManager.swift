@@ -6,7 +6,7 @@ import ActivityKit
 import os
 
 
-private struct ForMemoAlarmMetadata: AlarmMetadata {}
+struct ForMemoAlarmMetadata: AlarmMetadata {}
 
 @MainActor
 final class ForMemoAlarmManager {
@@ -237,23 +237,40 @@ final class ForMemoAlarmManager {
             systemImageName: "stop.circle"
         )
 
+        let snoozeButton = AlarmButton(
+            text: LocalizedStringResource("Alarm.Snooze"),
+            textColor: .white,
+            systemImageName: "repeat.circle"
+        )
+
         let alertPresentation = AlarmPresentation.Alert(
             title: LocalizedStringResource(stringLiteral: title),
-            stopButton: stopButton
+            stopButton: stopButton,
+            secondaryButton: snoozeButton,
+            secondaryButtonBehavior: .countdown
+        )
+
+        let countdownPresentation = AlarmPresentation.Countdown(
+            title: LocalizedStringResource(stringLiteral: title)
         )
 
         let attributes = AlarmAttributes<ForMemoAlarmMetadata>(
             presentation: AlarmPresentation(
-                alert: alertPresentation
+                alert: alertPresentation,
+                countdown: countdownPresentation,
+                paused: nil
             ),
             metadata: nil,
             tintColor: Color.accentColor
         )
 
-        typealias AlarmConfiguration =
-            AlarmManager.AlarmConfiguration<ForMemoAlarmMetadata>
-
-        let configuration = AlarmConfiguration.alarm(
+        // AlarmKit handles snoozing natively. postAlert is the interval until
+        // the alarm rings again after the secondary countdown action.
+        let configuration: AlarmManager.AlarmConfiguration<ForMemoAlarmMetadata> = .init(
+            countdownDuration: Alarm.CountdownDuration(
+                preAlert: nil,
+                postAlert: 9 * 60
+            ),
             schedule: .fixed(date),
             attributes: attributes,
             stopIntent: nil,

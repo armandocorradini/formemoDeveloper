@@ -14,5 +14,6 @@ struct ForMemoWidgetBundle: WidgetBundle {
         ForMemoWidget()
         ForMemoAgendaWidget()
         ForMemoCalendarTasksWidget()
+        ForMemoAlarmLiveActivity()
     }
 }

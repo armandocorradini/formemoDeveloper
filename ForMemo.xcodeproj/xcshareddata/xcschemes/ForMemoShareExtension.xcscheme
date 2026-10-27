@@ -30,6 +30,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1C1C22FF2F7E983A00A77282"
                BuildableName = "ForMemo.app"
+               BlueprintName = "ForMemo"
                ReferencedContainer = "container:ForMemo.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -61,6 +62,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1C1C22FF2F7E983A00A77282"
             BuildableName = "ForMemo.app"
+            BlueprintName = "ForMemo"
             ReferencedContainer = "container:ForMemo.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -79,6 +81,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1C1C22FF2F7E983A00A77282"
             BuildableName = "ForMemo.app"
+            BlueprintName = "ForMemo"
             ReferencedContainer = "container:ForMemo.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
