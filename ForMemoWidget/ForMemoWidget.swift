@@ -592,7 +592,7 @@ struct ForMemoAlarmMetadata: AlarmMetadata {}
 struct ForMemoAlarmLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: AlarmAttributes<ForMemoAlarmMetadata>.self) { context in
-            VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .center, spacing: 12) {
 //                Text("ForMemo")
 //                    .font(.headline.weight(.bold))
 //                    .foregroundStyle(.blue)
@@ -601,14 +601,20 @@ struct ForMemoAlarmLiveActivity: Widget {
                 Text("⏰ \(context.attributes.presentation.alert.title)")
                     .font(.headline.weight(.medium))
                     .foregroundStyle(.orange)
-                    .lineLimit(2)
+                    .lineLimit(1)
+//                    .minimumScaleFactor(0.8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .layoutPriority(0)
 
                 switch context.state.mode {
                 case .countdown(let countdown):
                     Text(timerInterval: Date.now...countdown.fireDate, countsDown: true)
-                        .font(.system(size: 38, weight: .semibold, design: .rounded))
+                        .font(.system(size: 48, weight: .regular, design: .rounded))
                         .monospacedDigit()
                         .foregroundStyle(.orange)
+                        .frame(width: 150, alignment: .trailing)
+                        .layoutPriority(1)
+                    
                 case .paused:
                     Text(String(localized: "Paused"))
                         .font(.title2.weight(.semibold))

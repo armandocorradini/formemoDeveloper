@@ -240,7 +240,7 @@ final class ForMemoAlarmManager {
         let snoozeButton = AlarmButton(
             text: LocalizedStringResource("Alarm.Snooze"),
             textColor: .white,
-            systemImageName: "repeat.circle"
+            systemImageName: "zzz"
         )
 
         let alertPresentation = AlarmPresentation.Alert(
@@ -261,7 +261,7 @@ final class ForMemoAlarmManager {
                 paused: nil
             ),
             metadata: nil,
-            tintColor: Color.accentColor
+            tintColor: Color.orange
         )
 
         // AlarmKit handles snoozing natively. postAlert is the interval until
