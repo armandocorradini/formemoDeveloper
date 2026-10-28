@@ -66,12 +66,33 @@ struct TaskDayView: View {
         }
     }
 
+    private var hasOverdueTasks: Bool {
+        tasks.contains { task in
+            guard let deadline = task.deadLine else { return false }
+            return calendar.isDate(deadline, inSameDayAs: selectedDate)
+                && deadline < .now
+                && !task.isCompleted
+        }
+    }
+    
+    private var hasOverdueTasksInPreviousDays: Bool {
+        let startOfSelectedDay = calendar.startOfDay(for: selectedDate)
+
+        return tasks.contains { task in
+            guard let deadline = task.deadLine else { return false }
+            return deadline < startOfSelectedDay && !task.isCompleted
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             dateStrip
-                .padding(.bottom,5)
-            Divider()
-                .padding(.bottom, 15)
+                .padding(.bottom,20)
+            Rectangle()
+                .fill(hasOverdueTasksInPreviousDays ? Color.red : Color.clear)
+                .frame(height: 0.2)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 20)
 
             ScrollView {
                 LazyVStack(spacing: 0) {
@@ -350,13 +371,13 @@ struct TaskDayView: View {
             let y = lowerY + (upperY - lowerY) * fraction
 
             ZStack(alignment: .leading) {
+//                Rectangle()
+//                    .fill(Color.red)
+//                    .frame(height: 3.5)
+//                    .frame(width: 54)
+//                    .offset(x: 8, y: y-3.5)
                 Rectangle()
-                    .fill(Color.red)
-                    .frame(height: 1.5)
-                    .frame(width: 54)
-                    .offset(x: 8, y: y-2.0)
-                Rectangle()
-                    .fill(Color.blue)
+                    .fill(hasOverdueTasks ? Color.red : Color.blue)
                     .frame(height: 1.5)
                     .frame(width: 54)
                     .offset(x: 8, y: y)
