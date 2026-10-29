@@ -179,6 +179,7 @@ struct ForMemoApp: App {
             // Aggiorna il riepilogo condiviso del widget dopo le operazioni iniziali.
             TaskWidgetSnapshotStore.scheduleRefresh(from: context)
             
+            
             // 3️⃣ Aggiorna subito UI
             NotificationCenter.default.post(
                 name: .attachmentsShouldRefresh,
