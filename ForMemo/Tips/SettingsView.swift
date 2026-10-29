@@ -89,8 +89,6 @@ struct SettingsView: View {
         settings.backgroundColor2Hex
     }
     @State private var showLocationPermissionAlert = false
-    @State private var showWeatherPermissionAlert = false
-    @State private var showAutoFillDisableAlert = false
     @State private var showImportReminders = false
     @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
 
@@ -302,6 +300,24 @@ struct SettingsView: View {
                                     .frame(width: iconWidth)
                             }
                         }
+                        
+                        NavigationLink {
+                            TabVisibilitySettingsView()
+                        } label: {
+                            Label {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Tab Visibility")
+                                    Text("Choose which tabs appear in tab bar")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: "rectangle.3.group.dashed")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                            }
+                        }
+                        
                         LabeledContent {
                             Picker(
                                 "",
@@ -320,85 +336,6 @@ struct SettingsView: View {
                         } label: {
                             Label("Navigation app", systemImage: "iphone.badge.location")
                         }
-                        
-                        Toggle(
-                            isOn: Binding(
-                                get: { settings.showWeatherForecast },
-                                set: { newValue in
-                                    let status = CLLocationManager().authorizationStatus
-                                    let hasWeatherPermission =
-                                        status == .authorizedAlways ||
-                                        status == .authorizedWhenInUse
-
-                                    locationAuthorizationStatus = status
-
-                                    guard newValue else {
-                                        settings.showWeatherForecast = false
-                                        WeatherManager.shared.disableForecast()
-                                        return
-                                    }
-
-                                    guard hasWeatherPermission else {
-                                        settings.showWeatherForecast = false
-                                        WeatherManager.shared.disableForecast()
-                                        showWeatherPermissionAlert = true
-                                        return
-                                    }
-
-                                    settings.showWeatherForecast = true
-                                    Task {
-                                        await WeatherManager.shared.refresh()
-                                    }
-                                }
-                            )
-                        ) {
-                            Label {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Weather Forecast")
-                                }
-                            } icon: {
-                                Image(systemName: "cloud.sun")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
-                        }
-                        .alert(
-                            "Location Access Required",
-                            isPresented: $showWeatherPermissionAlert
-                        ) {
-                            Button("Open Settings") {
-                                if let url = URL(string: UIApplication.openSettingsURLString) {
-                                    UIApplication.shared.open(url)
-                                }
-                            }
-                            Button("Cancel", role: .cancel) {}
-                        } message: {
-                            Text("Weather Forecast requires location access. Enable location access in Settings, then return to ForMemo to turn it on.")
-                        }
-
-                        Toggle(
-                            isOn: Binding(
-                                get: { settings.showVault },
-                                set: { newValue in
-                                    updateVaultVisibility(to: newValue)
-                                }
-                            )
-                        ) {
-                            Label {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Vault")
-                                    
-                                    Text("Show or hide the Vault and its credentials")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                }
-                            } icon: {
-                                Image(systemName: "key.shield")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
-                        }
-                        
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
@@ -1030,11 +967,6 @@ Attivazione: \(triggerInfo)
                 }
             }
             .id(backgroundColor1Hex + backgroundColor2Hex)
-            .alert("Disable AutoFill first", isPresented: $showAutoFillDisableAlert) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text("To hide the Vault, first go to Settings > General > AutoFill & Passwords and turn off AutoFill Passwords and Passkeys. Then return here and turn off Vault.")
-            }
         }
         
     }
@@ -1191,25 +1123,6 @@ Attivazione: \(triggerInfo)
 
 
 
-    private func updateVaultVisibility(to isVisible: Bool) {
-        guard !isVisible else {
-            settings.showVault = true
-            return
-        }
-
-        ASCredentialIdentityStore.shared.getState { state in
-            Task { @MainActor in
-                if state.isEnabled {
-                    // Keep the Vault available while its credentials can still
-                    // be offered by the system's Password AutoFill service.
-                    showAutoFillDisableAlert = true
-                } else {
-                    settings.showVault = false
-                }
-            }
-        }
-    }
-    
     private func syncVaultWithAutoFill() {
         ASCredentialIdentityStore.shared.getState { state in
             Task { @MainActor in
@@ -1220,6 +1133,238 @@ Attivazione: \(triggerInfo)
         }
     }
     
+}
+
+// MARK: - Tab Visibility Settings
+struct TabVisibilitySettingsView: View {
+    @Environment(AppSettings.self) private var settings
+    @Environment(\.dismiss) private var dismiss
+    @State private var showWeatherPermissionAlert = false
+    @State private var showAutoFillDisableAlert = false
+    @State private var showStartupTabVisibilityAlert = false
+    @State private var startupTabVisibilityAlertName = ""
+
+    private let iconWidth: CGFloat = 28
+
+    var body: some View {
+        List {
+            Section {
+                startupProtectedToggle(tag: AppTab.dashboard.rawValue) {
+                    Toggle(isOn: Binding(
+                        get: { settings.showDashboardTab },
+                        set: { updateTabVisibility($0, tag: AppTab.dashboard.rawValue) { settings.showDashboardTab = $0 } }
+                    )) {
+                        tabLabel("Dashboard", icon: "rectangle.grid.3x1")
+                    }
+                }
+
+                startupProtectedToggle(tag: AppTab.today.rawValue) {
+                    Toggle(isOn: Binding(
+                        get: { settings.showWeekTab },
+                        set: { updateTabVisibility($0, tag: AppTab.today.rawValue) { settings.showWeekTab = $0 } }
+                    )) {
+                        Label {
+                            Text(settings.taskWeekDays == 1
+                                 ? String(localized: "today_tab")
+                                 : String(localized: "\(settings.taskWeekDays) days_tab"))
+                        } icon: {
+                            Image(systemName: "calendar.day.timeline.right")
+                                .foregroundStyle(.blue)
+                                .frame(width: iconWidth)
+                        }
+                    }
+                }
+
+                startupProtectedToggle(tag: AppTab.map.rawValue) {
+                    Toggle(isOn: Binding(
+                        get: { settings.showMapTab },
+                        set: { updateTabVisibility($0, tag: AppTab.map.rawValue) { settings.showMapTab = $0 } }
+                    )) {
+                        tabLabel("Map", icon: "map")
+                    }
+                }
+
+                startupProtectedToggle(tag: AppTab.tasks.rawValue) {
+                    Toggle(isOn: Binding(
+                        get: { settings.showTasksTab },
+                        set: { updateTabVisibility($0, tag: AppTab.tasks.rawValue) { settings.showTasksTab = $0 } }
+                    )) {
+                        tabLabel("Task", icon: "checklist")
+                    }
+                }
+
+                startupProtectedToggle(tag: AppTab.day.rawValue) {
+                    Toggle(isOn: Binding(
+                        get: { settings.showDayTab },
+                        set: { updateTabVisibility($0, tag: AppTab.day.rawValue) { settings.showDayTab = $0 } }
+                    )) {
+                        tabLabel("Day", icon: "sun.horizon")
+                    }
+                }
+
+                startupProtectedToggle(tag: AppTab.forecast.rawValue) {
+                    Toggle(isOn: Binding(
+                        get: { settings.showWeatherForecast },
+                        set: { updateTabVisibility($0, tag: AppTab.forecast.rawValue) { updateWeatherVisibility(to: $0) } }
+                    )) {
+                        tabLabel("Weather Forecast", icon: "cloud.sun")
+                    }
+                    .alert("Location Access Required", isPresented: $showWeatherPermissionAlert) {
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("Weather Forecast requires location access. Enable location access in Settings, then return to ForMemo to turn it on.")
+                    }
+                }
+
+                startupProtectedToggle(tag: AppTab.vault.rawValue) {
+                    Toggle(isOn: Binding(
+                        get: { settings.showVault },
+                        set: { updateTabVisibility($0, tag: AppTab.vault.rawValue) { updateVaultVisibility(to: $0) } }
+                    )) {
+                        tabLabel("Vault", icon: "key.shield")
+                    }
+                    .alert("Disable AutoFill first", isPresented: $showAutoFillDisableAlert) {
+                        Button("OK", role: .cancel) {}
+                    } message: {
+                        Text("To hide the Vault, first go to Settings > General > AutoFill & Passwords and turn off AutoFill Passwords and Passkeys. Then return here and turn off Vault.")
+                    }
+                }
+            } header: {
+                Text("Tabs")
+            } footer: {
+                Text("Choose which tabs are shown in the navigation bar and More menu.")
+            }
+        }
+        .alert("Startup Tab Cannot Be Hidden", isPresented: $showStartupTabVisibilityAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            if settings.startupTab == -1 {
+                Text("\(startupTabVisibilityAlertName) can be opened automatically at launch. Choose a specific startup tab in General before hiding it.")
+            } else {
+                Text("\(startupTabVisibilityAlertName) is set as the startup tab. Choose another startup tab in General before hiding it.")
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background { AppGlassBackground() }
+        .navigationTitle("Tab Visibility")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Done") { dismiss() }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func startupProtectedToggle<Content: View>(
+        tag: Int,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        let isStartupTab = isStartupProtected(tag)
+        ZStack {
+            content()
+                .disabled(isStartupTab)
+                .opacity(isStartupTab ? 0.55 : 1)
+
+            if isStartupTab {
+                Button {
+                    startupTabVisibilityAlertName = startupTabName(for: tag)
+                    showStartupTabVisibilityAlert = true
+                } label: {
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("\(startupTabName(for: tag)) is the startup tab"))
+            }
+        }
+    }
+
+    private func tabLabel(_ title: LocalizedStringKey, icon: String) -> some View {
+        Label {
+            Text(title)
+        } icon: {
+            Image(systemName: icon)
+                .foregroundStyle(.blue)
+                .frame(width: iconWidth)
+        }
+    }
+
+    private func isStartupProtected(_ tag: Int) -> Bool {
+        if settings.startupTab == tag {
+            return true
+        }
+
+        // Automatic startup chooses Dashboard when content exists, otherwise List.
+        // Keep both possible destinations visible until a specific startup tab is selected.
+        return settings.startupTab == -1
+            && (tag == AppTab.dashboard.rawValue || tag == AppTab.tasks.rawValue)
+    }
+
+    private func updateTabVisibility(_ newValue: Bool, tag: Int, apply: (Bool) -> Void) {
+        if !newValue && isStartupProtected(tag) {
+            startupTabVisibilityAlertName = startupTabName(for: tag)
+            showStartupTabVisibilityAlert = true
+            return
+        }
+        apply(newValue)
+    }
+
+    private func startupTabName(for tag: Int) -> String {
+        switch tag {
+        case AppTab.dashboard.rawValue: return String(localized: "Dashboard")
+        case AppTab.tasks.rawValue: return String(localized: "List")
+        case AppTab.today.rawValue: return String(localized: "\(settings.taskWeekDays) days")
+        case AppTab.map.rawValue: return String(localized: "Map")
+        case AppTab.day.rawValue: return String(localized: "Day")
+        case AppTab.forecast.rawValue: return String(localized: "Weather Forecast")
+        case AppTab.vault.rawValue: return String(localized: "Vault")
+        default: return String(localized: "Tab")
+        }
+    }
+
+    private func updateWeatherVisibility(to isVisible: Bool) {
+        guard isVisible else {
+            settings.showWeatherForecast = false
+            WeatherManager.shared.disableForecast()
+            return
+        }
+
+        let status = CLLocationManager().authorizationStatus
+        let hasWeatherPermission = status == .authorizedAlways || status == .authorizedWhenInUse
+        guard hasWeatherPermission else {
+            settings.showWeatherForecast = false
+            WeatherManager.shared.disableForecast()
+            showWeatherPermissionAlert = true
+            return
+        }
+
+        settings.showWeatherForecast = true
+        Task { await WeatherManager.shared.refresh() }
+    }
+
+    private func updateVaultVisibility(to isVisible: Bool) {
+        guard !isVisible else {
+            settings.showVault = true
+            return
+        }
+
+        ASCredentialIdentityStore.shared.getState { state in
+            Task { @MainActor in
+                if state.isEnabled {
+                    showAutoFillDisableAlert = true
+                } else {
+                    settings.showVault = false
+                }
+            }
+        }
+    }
 }
 
 // MARK: - App Theme

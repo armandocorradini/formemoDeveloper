@@ -245,6 +245,118 @@
       },
       "shouldTranslate" : false
     },
+    "%@ can be opened automatically at launch. Choose a specific startup tab in General before hiding it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ kann beim Start automatisch geöffnet werden. Wähle unter „Allgemein“ einen bestimmten Start-Tab aus, bevor du diesen Tab ausblendest."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ puede abrirse automáticamente al iniciar la app. Elige una pestaña de inicio específica en General antes de ocultarla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ peut être ouvert automatiquement au démarrage. Choisissez un onglet de démarrage spécifique dans Général avant de le masquer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ può essere aperto automaticamente all’avvio. Scegli una tab di avvio specifica in Generali prima di nasconderla."
+          }
+        }
+      }
+    },
+    "%@ is hidden. Make it visible in Tab Visibility before setting it as the startup tab." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ist ausgeblendet. Blende den Tab unter „Tab-Sichtbarkeit“ ein, bevor du ihn als Start-Tab festlegst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ está oculta. Hazla visible en Visibilidad de pestañas antes de establecerla como pestaña de inicio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est masqué. Rendez-le visible dans Visibilité des onglets avant de le définir comme onglet de démarrage."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ è nascosta. Rendila visibile in Visibilità tab prima di impostarla come tab di avvio."
+          }
+        }
+      }
+    },
+    "%@ is set as the startup tab. Choose another startup tab in General before hiding it." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ist als Start-Tab festgelegt. Wähle unter „Allgemein“ einen anderen Start-Tab aus, bevor du diesen Tab ausblendest."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ está establecida como pestaña de inicio. Elige otra pestaña de inicio en General antes de ocultarla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est défini comme onglet de démarrage. Choisissez un autre onglet de démarrage dans Général avant de le masquer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ è impostata come tab di avvio. Scegli un’altra tab di avvio in Generali prima di nasconderla."
+          }
+        }
+      }
+    },
+    "%@ is the startup tab" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ist der Start-Tab"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ es la pestaña de inicio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ est l’onglet de démarrage"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ è la tab di avvio"
+          }
+        }
+      }
+    },
     "%@, %@" : {
       "localizations" : {
         "de" : {
@@ -6069,6 +6181,62 @@
         }
       }
     },
+    "Automatic startup requires both Dashboard and List to be visible. Open Tab Visibility and make both tabs visible first." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für den automatischen Start müssen sowohl Dashboard als auch Aufgaben sichtbar sein. Öffne „Tab-Sichtbarkeit“ und blende beide Tabs ein."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para usar el inicio automático, tanto Dashboard como Actividades deben estar visibles. Abre Visibilidad de pestañas y haz visibles ambas pestañas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le démarrage automatique nécessite que Dashboard et Activités soient tous deux visibles. Ouvrez Visibilité des onglets et rendez ces deux onglets visibles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per usare l’avvio automatico, Dashboard e Attività devono essere entrambe visibili. Apri Visibilità tab e rendi visibili entrambe le tab."
+          }
+        }
+      }
+    },
+    "Automatic Startup Unavailable" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatischer Start nicht verfügbar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicio automático no disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrage automatique indisponible"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvio automatico non disponibile"
+          }
+        }
+      }
+    },
     "Back Images" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9812,6 +9980,34 @@
         }
       }
     },
+    "Choose Visible Tabs" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichtbare Tabs auswählen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elegir pestañas visibles"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir les onglets visibles"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli le tab visibili"
+          }
+        }
+      }
+    },
     "Choose what the app icon badge displays: overdue tasks or tasks that reached the global notification time. Inside the app, each task shows how many days are left." : {
       "localizations" : {
         "de" : {
@@ -9920,6 +10116,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scegli se applicare le modifiche solo a questa occorrenza oppure anche alle occorrenze future."
+          }
+        }
+      }
+    },
+    "Choose which tabs appear in tab bar" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle die Tabs aus, die in der Tableiste angezeigt werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige qué pestañas aparecen en la barra de pestañas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez les onglets à afficher dans la barre d’onglets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli quali tab mostrare nella barra delle tabs"
+          }
+        }
+      }
+    },
+    "Choose which tabs are shown in the navigation bar and More menu." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle die Tabs aus, die in der Navigationsleiste und im Menü „Mehr“ angezeigt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige qué pestañas se muestran en la barra de navegación y en el menú Más."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez les onglets affichés dans la barre de navigation et le menu Plus."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli quali tabs mostrare nella barra delle tabs e nel menu Altro."
           }
         }
       }
@@ -12198,7 +12450,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Personalizza la barra delle tab"
+            "value" : "Personalizza barra tabs"
           }
         }
       }
@@ -12367,6 +12619,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dashboard"
+          }
+        }
+      }
+    },
+    "Dashboard when content exists; otherwise List." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard, wenn Inhalte vorhanden sind, andernfalls Aufgaben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard si hay contenido; de lo contrario, Actividades."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard lorsqu’il existe du contenu ; sinon, Activités."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dashboard se sono presenti contenuti; altrimenti, Attività"
           }
         }
       }
@@ -22664,6 +22944,34 @@
         }
       }
     },
+    "Map" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mapa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mappa"
+          }
+        }
+      }
+    },
     "Map View" : {
       "comment" : "View that shows tasks on a map.",
       "isCommentAutoGenerated" : true,
@@ -23288,6 +23596,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Altro"
+          }
+        }
+      }
+    },
+    "More Colors…" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weitere Farben …"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más colores…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus de couleurs…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altri colori…"
           }
         }
       }
@@ -33243,34 +33579,6 @@
         }
       }
     },
-    "Show or hide the Vault and its credentials" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Den Tresor und seine Zugangsdaten ein- oder ausblenden"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muestra u oculta la Caja fuerte y sus credenciales"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afficher ou masquer le coffre-fort et ses identifiants"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mostra o nascondi la cassaforte e le sue credenziali"
-          }
-        }
-      }
-    },
     "Show Password" : {
       "localizations" : {
         "de" : {
@@ -34703,6 +35011,34 @@
         }
       }
     },
+    "Startup Tab Cannot Be Hidden" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start-Tab kann nicht ausgeblendet werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede ocultar la pestaña de inicio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de masquer l’onglet de démarrage"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile nascondere la tab di avvio"
+          }
+        }
+      }
+    },
     "Stop" : {
       "localizations" : {
         "de" : {
@@ -35741,6 +36077,118 @@
         }
       }
     },
+    "Tab" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pestaña"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onglet"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab"
+          }
+        }
+      }
+    },
+    "Tab Bar Options" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionen der Tab-Leiste"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de la barra de pestañas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options de la barre des onglets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opzioni della barra delle tab"
+          }
+        }
+      }
+    },
+    "Tab Is Hidden" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab ausgeblendet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pestaña oculta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onglet masqué"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab nascosta"
+          }
+        }
+      }
+    },
+    "Tab Visibility" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab-Sichtbarkeit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visibilidad de las pestañas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visibilité des onglets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visibilità tab"
+          }
+        }
+      }
+    },
     "Tablet" : {
       "localizations" : {
         "de" : {
@@ -35765,6 +36213,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tablet"
+          }
+        }
+      }
+    },
+    "Tabs" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabs"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pestañas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Onglets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tabs"
           }
         }
       }

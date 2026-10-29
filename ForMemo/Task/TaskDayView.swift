@@ -127,7 +127,7 @@ struct TaskDayView: View {
                                 Text(String(format: "%02d:%02d", hour, minute))
                                     .font(.caption2.monospacedDigit())
                                     .foregroundStyle(.secondary)
-                                    .frame(width: 52, height: slotTasks.isEmpty ? settings.dayEmptySlotHeight : 16, alignment: .topTrailing)
+                                    .frame(width: 52, height: 16, alignment: .trailing)
                                     .contentShape(Rectangle())
                             }
                             .buttonStyle(.plain)
@@ -137,30 +137,35 @@ struct TaskDayView: View {
                                 Button {
                                     selectTimelineSlot(slotMinutes)
                                 } label: {
-                                    ZStack(alignment: .top) {
+                                    ZStack {
                                         Rectangle().fill(Color.clear)
                                         Rectangle()
-                                            .fill(Color.secondary.opacity(0.22))
+                                            .fill(Color.secondary.opacity(0.32))
                                             .frame(height: 1)
                                     }
                                     .frame(maxWidth: .infinity)
-                                    .frame(height: slotTasks.isEmpty ? settings.dayEmptySlotHeight : 8)
+                                    .frame(height: 16)
                                     .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel(String(format: String(localized: "Add task at %@"), String(format: "%02d:%02d", hour, minute)))
 
-                                ForEach(Array(slotTasks.enumerated()), id: \.element.id) { item in
-                                    taskRow(item.element)
-                                    if item.offset < slotTasks.count - 1 {
-                                        Rectangle()
-                                            .fill(Color.secondary.opacity(0.16))
-                                            .frame(height: 0.5)
-                                            .padding(.leading, 27)
+                                if slotTasks.isEmpty {
+                                    Color.clear
+                                        .frame(height: max(0, settings.dayEmptySlotHeight - 16))
+                                } else {
+                                    ForEach(Array(slotTasks.enumerated()), id: \.element.id) { item in
+                                        taskRow(item.element)
+                                        if item.offset < slotTasks.count - 1 {
+                                            Rectangle()
+                                                .fill(Color.secondary.opacity(0.2))
+                                                .frame(height: 1)
+                                                .padding(.leading, 27)
+                                        }
                                     }
                                 }
                             }
-                            .frame(maxWidth: .infinity, minHeight: slotTasks.isEmpty ? 24 : nil, alignment: .topLeading)
+                            .frame(maxWidth: .infinity, minHeight: settings.dayEmptySlotHeight, alignment: .topLeading)
                         }
                         .anchorPreference(key: TimelineSlotBoundsKey.self, value: .bounds) {
                             [slotMinutes: $0]
@@ -738,7 +743,7 @@ struct TaskDayView: View {
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
-                .padding(.bottom, 8)
+//                .padding(.bottom, 8)
 
                 Spacer(minLength: 4)
 

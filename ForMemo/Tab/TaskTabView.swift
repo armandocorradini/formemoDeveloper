@@ -80,9 +80,9 @@ struct TaskTabView: View {
 
                         withAnimation(.easeInOut(duration: 0.18)) {
                             if settings.startupTab == -1 {
-                                selectedTab = hasContent ? 10 : 1
+                                selectedTab = normalizedTabSelection(hasContent ? 10 : 1)
                             } else {
-                                selectedTab = settings.startupTab
+                                selectedTab = normalizedTabSelection(settings.startupTab)
                             }
                         }
                     }
@@ -131,8 +131,33 @@ struct TaskTabView: View {
                 }
             }
             .onChange(of: settings.showWeatherForecast) { _, enabled in
-                if !enabled && selectedTab == 9 {
-                    selectedTab = 0
+                if !enabled && selectedTab == AppTab.forecast.rawValue {
+                    selectedTab = fallbackVisibleTab()
+                }
+            }
+            .onChange(of: settings.showDashboardTab) { _, enabled in
+                if !enabled && selectedTab == AppTab.dashboard.rawValue {
+                    selectedTab = fallbackVisibleTab()
+                }
+            }
+            .onChange(of: settings.showWeekTab) { _, enabled in
+                if !enabled && selectedTab == AppTab.today.rawValue {
+                    selectedTab = fallbackVisibleTab()
+                }
+            }
+            .onChange(of: settings.showMapTab) { _, enabled in
+                if !enabled && selectedTab == AppTab.map.rawValue {
+                    selectedTab = fallbackVisibleTab()
+                }
+            }
+            .onChange(of: settings.showTasksTab) { _, enabled in
+                if !enabled && selectedTab == AppTab.tasks.rawValue {
+                    selectedTab = fallbackVisibleTab()
+                }
+            }
+            .onChange(of: settings.showDayTab) { _, enabled in
+                if !enabled && selectedTab == AppTab.day.rawValue {
+                    selectedTab = fallbackVisibleTab()
                 }
             }
             .onReceive(
@@ -147,8 +172,8 @@ struct TaskTabView: View {
             }
         
             .onChange(of: settings.showVault) { _, enabled in
-                if !enabled && selectedTab == 11 {
-                    selectedTab = 0
+                if !enabled && selectedTab == AppTab.vault.rawValue {
+                    selectedTab = fallbackVisibleTab()
                 }
             }
         
@@ -312,6 +337,18 @@ struct TaskTabView: View {
 
     private var visibleTabs: [AppTab] {
         settings.orderedTabs.filter { $0.isVisible(using: settings) }
+    }
+
+    private func fallbackVisibleTab() -> Int {
+        visibleTabs.first?.rawValue ?? AppTab.settings.rawValue
+    }
+
+    private func normalizedTabSelection(_ requestedTab: Int) -> Int {
+        guard let tab = AppTab(rawValue: requestedTab),
+              tab.isVisible(using: settings) else {
+            return fallbackVisibleTab()
+        }
+        return requestedTab
     }
 
     private var primaryTabs: [AppTab] {

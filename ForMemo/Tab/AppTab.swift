@@ -74,6 +74,11 @@ enum AppTab: Int, CaseIterable, Identifiable {
         switch self {
         case .vault: settings.showVault
         case .forecast: settings.showWeatherForecast
+        case .dashboard: settings.showDashboardTab
+        case .today: settings.showWeekTab
+        case .map: settings.showMapTab
+        case .tasks: settings.showTasksTab
+        case .day: settings.showDayTab
         default: true
         }
     }

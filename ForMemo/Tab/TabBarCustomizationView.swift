@@ -4,11 +4,14 @@ import UniformTypeIdentifiers
 struct TabBarCustomizationView: View {
 
     @Environment(AppSettings.self) private var settings
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     @State private var tabs: [AppTab] = []
     @State private var selectedPreviewTab: AppTab = .dashboard
     @State private var draggedTab: AppTab?
     @State private var lastDropTarget: AppTab?
+    @State private var showTabVisibility = false
+    @State private var showIconColorPicker = false
 
     var body: some View {
         ZStack {
@@ -16,31 +19,53 @@ struct TabBarCustomizationView: View {
 
             ScrollView {
                 VStack(spacing: 0) {
+//                    Text("Customize Tab Bar")
+//                        .font(.system(size: 16, weight: .semibold))
+//                        .multilineTextAlignment(.center)
+//                        .frame(maxWidth: .infinity)
+//                        .padding(.bottom, 20)
 
-                    // MARK: - Preview
+                    if horizontalSizeClass == .regular {
+                        // iPad: reproduce the vertical sidebar used for navigation.
+                        HStack(alignment: .top, spacing: 36) {
+                            iPadSidebarPreview
+                                .frame(width: 320, alignment: .leading)
 
-                    VStack(spacing: 0) {
-                        morePopupPreview
-                        tabBarPreview
+                            VStack(alignment: .leading, spacing: 20) {
+                                Text("Drag the items to change their order.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                                hiddenTabsSection
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.top, 8)
+                        }
+                        .frame(maxWidth: 1000, alignment: .leading)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.horizontal, 32)
+                    } else {
+                        // Keep the existing iPhone preview unchanged.
+                        // MARK: - Preview
+                        VStack(spacing: 0) {
+                            morePopupPreview
+                            tabBarPreview
+                        }
+                        .padding(.horizontal, 16)
+
+                        // MARK: - Instructions
+                        Text("Drag the items to change their order.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 18)
+                            .padding(.horizontal, 24)
+
+                        // MARK: - Hidden Tabs
+                        hiddenTabsSection
                     }
-                    .padding(.horizontal, 16)
-
-                    // MARK: - Instructions
-
-                    Text("Drag the items to change their order.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 18)
-                        .padding(.horizontal, 24)
-
-                    // MARK: - Icon Color
-
-                    iconColorSection
-
-                    // MARK: - Hidden Tabs
-
-                    hiddenTabsSection
                 }
                 .padding(.top, 20)
                 .padding(.bottom, 40)
@@ -50,11 +75,35 @@ struct TabBarCustomizationView: View {
         .navigationTitle("Customize Tab Bar")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Reset") {
-                    resetCustomization()
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button("Reset", systemImage: "arrow.counterclockwise") {
+                        resetCustomization()
+                    }
+
+                    Button("Icon color", systemImage: "paintpalette") {
+                        showIconColorPicker = true
+                    }
+
+                    Button("Tab Visibility", systemImage: "rectangle.3.group.dashed") {
+                        showTabVisibility = true
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .frame(minWidth: 30, minHeight: 30)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel(Text("Tab Bar Options"))
+                .popover(isPresented: $showIconColorPicker, arrowEdge: .top) {
+                    iconColorPalette
+                        .padding(16)
+                        .frame(width: 260)
+                        .presentationCompactAdaptation(.popover)
                 }
             }
+        }
+        .navigationDestination(isPresented: $showTabVisibility) {
+            TabVisibilitySettingsView()
         }
         .onAppear {
             tabs = settings.orderedTabs
@@ -82,9 +131,178 @@ struct TabBarCustomizationView: View {
         .onChange(of: settings.showWeatherForecast) { _, _ in
             tabs = settings.orderedTabs
         }
+        .onChange(of: settings.showDashboardTab) { _, _ in
+            tabs = settings.orderedTabs
+        }
+        .onChange(of: settings.showWeekTab) { _, _ in
+            tabs = settings.orderedTabs
+        }
+        .onChange(of: settings.showMapTab) { _, _ in
+            tabs = settings.orderedTabs
+        }
+        .onChange(of: settings.showTasksTab) { _, _ in
+            tabs = settings.orderedTabs
+        }
+        .onChange(of: settings.showDayTab) { _, _ in
+            tabs = settings.orderedTabs
+        }
     }
 
 
+
+
+    // MARK: - iPad Sidebar Preview
+
+    private var iPadSidebarPreview: some View {
+        let visibleTabs = tabs.filter { $0.isVisible(using: settings) }
+        let iconColor = Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue
+
+        return VStack(alignment: .leading, spacing: 4) {
+            ForEach(visibleTabs) { tab in
+                Button {
+                    withAnimation(.snappy) {
+                        selectedPreviewTab = tab
+                    }
+                } label: {
+                    HStack(spacing: 14) {
+                        Image(systemName: tab.icon)
+                            .font(.system(size: 21, weight: .regular))
+                            .foregroundStyle(iconColor)
+                            .frame(width: 26, alignment: .center)
+
+                        Text(tab.title(using: settings))
+                            .font(.system(size: 17, weight: .regular))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background {
+                        RoundedRectangle(cornerRadius: 9, style: .continuous)
+                            .fill(selectedPreviewTab == tab ? iconColor.opacity(0.15) : .clear)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                // iPad: reorder when the drop is completed, avoiding unstable
+                // repeated dropEntered callbacks while the sidebar rows move.
+                .draggable(String(tab.rawValue))
+                .dropDestination(for: String.self) { items, _ in
+                    guard
+                        let rawValue = items.first.flatMap(Int.init),
+                        let dragged = AppTab(rawValue: rawValue),
+                        dragged != tab,
+                        let fromIndex = tabs.firstIndex(of: dragged),
+                        let targetIndex = tabs.firstIndex(of: tab)
+                    else {
+                        return false
+                    }
+
+                    withAnimation(.snappy) {
+                        tabs.move(
+                            fromOffsets: IndexSet(integer: fromIndex),
+                            toOffset: fromIndex < targetIndex ? targetIndex + 1 : targetIndex
+                        )
+                        settings.tabOrder = tabs.map(\.rawValue)
+                    }
+                    draggedTab = nil
+                    lastDropTarget = nil
+                    return true
+                }
+            }
+        }
+        .padding(12)
+        .background {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.regularMaterial)
+        }
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(.white.opacity(0.08), lineWidth: 0.6)
+        }
+    }
+
+    private var iconColorBinding: Binding<Color> {
+        Binding(
+            get: { Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue },
+            set: { newColor in
+                settings.tabBarCustomizationIconColorHex =
+                    newColor.toHex() ?? settings.tabBarCustomizationIconColorHex
+            }
+        )
+    }
+
+    private var iconColorPalette: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Icon color")
+                .font(.headline)
+
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 5),
+                spacing: 12
+            ) {
+                ForEach(iconPalette, id: \.name) { item in
+                    Button {
+                        settings.tabBarCustomizationIconColorHex = item.color.toHex()
+                            ?? settings.tabBarCustomizationIconColorHex
+                    } label: {
+                        Circle()
+                            .fill(item.color)
+                            .frame(width: 28, height: 28)
+                            .overlay {
+                                if isSelectedPaletteColor(item.color) {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundStyle(.white)
+                                        .shadow(color: .black.opacity(0.35), radius: 1)
+                                }
+                            }
+                            .overlay {
+                                Circle().strokeBorder(.primary.opacity(0.15), lineWidth: 1)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(item.name))
+                    .accessibilityAddTraits(isSelectedPaletteColor(item.color) ? .isSelected : [])
+                }
+            }
+
+            Divider()
+
+            ColorPicker(
+                "More Colors…",
+                selection: iconColorBinding,
+                supportsOpacity: false
+            )
+            .font(.body)
+        }
+    }
+
+    private var iconPalette: [(name: String, color: Color)] {
+        [
+            ("Blue", .blue),
+            ("Purple", .purple),
+            ("Pink", .pink),
+            ("Red", .red),
+            ("Orange", .orange),
+            ("Yellow", .yellow),
+            ("Green", .green),
+            ("Teal", .teal),
+            ("Mint", .mint),
+            ("Gray", .gray)
+        ]
+    }
+
+    private func isSelectedPaletteColor(_ color: Color) -> Bool {
+        let selectedHex = settings.tabBarCustomizationIconColorHex.uppercased()
+        let colorHex = (color.toHex() ?? "").uppercased()
+        return !selectedHex.isEmpty && selectedHex == colorHex
+    }
 
     // MARK: - Popup Preview
 
@@ -353,40 +571,6 @@ struct TabBarCustomizationView: View {
         .contentShape(Rectangle())
     }
 
-    // MARK: - Icon Color
-
-    private var iconColorSection: some View {
-
-        HStack {
-            Text("Icon color")
-                .font(.callout)
-            Spacer()
-
-            ColorPicker(
-                "",
-                selection: Binding(
-                    get: {
-                        Color(
-                            hex:
-                                settings
-                                    .tabBarCustomizationIconColorHex
-                        ) ?? .blue
-                    },
-                    set: { newColor in
-                        settings
-                            .tabBarCustomizationIconColorHex =
-                            newColor.toHex()
-                            ?? settings
-                                .tabBarCustomizationIconColorHex
-                    }
-                )
-            )
-            .labelsHidden()
-        }
-        .padding(.horizontal, 24)
-        .padding(.top, 26)
-    }
-
     // MARK: - Hidden Tabs
 
     @ViewBuilder
@@ -417,7 +601,7 @@ struct TabBarCustomizationView: View {
                             Spacer()
                         }
                         .foregroundStyle(.secondary)
-                        .frame(height: 44)
+                        .frame(height: 34)
                     }
                 }
             }

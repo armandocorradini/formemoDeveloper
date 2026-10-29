@@ -14,7 +14,17 @@ struct OtherSettingsView: View {
     @State private var path = NavigationPath()
     
     @State private var showShort = false
-    
+
+    private func startupTabTitle(for tag: Int) -> String {
+        if tag == -1 {
+            return String(localized: "Automatic")
+        }
+        if let tab = AppTab(rawValue: tag) {
+            return tab.title(using: settings)
+        }
+        return String(localized: "Tab")
+    }
+
     var body: some View {
         ZStack {
             AppGlassBackground()
@@ -24,44 +34,16 @@ struct OtherSettingsView: View {
                     header: Text(String(localized: "Open at launch"))
                 ) {
                     
-                    Picker(
-                        String(localized: "View"),
-                        selection: Binding(
-                            get: { settings.startupTab },
-                            set: { settings.startupTab = $0 }
-                        )
-                    ) {
-                        Text("Automatic")
-                            .tag(-1)
-
-                        Text("Dashboard")
-                            .tag(10)
-
-                        Text(String(localized: "List"))
-                            .tag(1)
-
-                        Text(String(localized: "\(settings.taskWeekDays) days"))
-                            .tag(4)
-
-                        Text(String(localized: "Calendar"))
-                            .tag(3)
-
-                        Text(String(localized: "Day"))
-                            .tag(14)
-
-                        Text(String(localized: "Wallet"))
-                            .tag(6)
-
-                        Text("Checklists")
-                            .tag(7)
-
-                        Text(String(localized: "Documents"))
-                            .tag(8)
-                        
-                        Text(String(localized: "Notes"))
-                            .tag(12)
+                    NavigationLink {
+                        StartupTabSelectionView()
+                    } label: {
+                        HStack {
+                            Text(String(localized: "View"))
+                            Spacer()
+                            Text(startupTabTitle(for: settings.startupTab))
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                    .pickerStyle(.navigationLink)
                   
                 }
                 
@@ -189,5 +171,120 @@ struct OtherSettingsView: View {
                 badgeIncludeExpiredMigrated = true
             }
         }
+    }
+}
+
+
+private struct StartupTabSelectionView: View {
+    @Environment(AppSettings.self) private var settings
+    @Environment(\.dismiss) private var dismiss
+    @State private var showHiddenStartupTabAlert = false
+    @State private var hiddenStartupTabName = ""
+    @State private var showAutomaticUnavailableAlert = false
+
+    var body: some View {
+        List {
+            Section {
+                Button {
+                    guard settings.showDashboardTab && settings.showTasksTab else {
+                        showAutomaticUnavailableAlert = true
+                        return
+                    }
+                    settings.startupTab = -1
+                    dismiss()
+                } label: {
+                    VStack(alignment: .leading, spacing: 3) {
+                        startupOptionLabel("Automatic", tag: -1)
+                        Text("Dashboard when content exists; otherwise List.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .foregroundStyle(
+                    settings.showDashboardTab && settings.showTasksTab
+                        ? Color.primary
+                        : Color.secondary
+                )
+                .buttonStyle(.plain)
+
+                startupOption("Dashboard", tag: AppTab.dashboard.rawValue)
+                startupOption(String(localized: "list_tab"), tag: AppTab.tasks.rawValue)
+                startupOption(String(localized: "\(settings.taskWeekDays) days"), tag: AppTab.today.rawValue)
+                startupOption(String(localized: "Calendar"), tag: AppTab.calendar.rawValue)
+                startupOption(String(localized: "Day"), tag: AppTab.day.rawValue)
+                startupOption(String(localized: "Wallet"), tag: AppTab.wallet.rawValue)
+                startupOption("Checklists", tag: AppTab.trips.rawValue)
+                startupOption(String(localized: "Documents"), tag: AppTab.documents.rawValue)
+                startupOption(String(localized: "Notes"), tag: AppTab.notes.rawValue)
+                startupOption(String(localized: "Map"), tag: AppTab.map.rawValue)
+                startupOption(String(localized: "Weather Forecast"), tag: AppTab.forecast.rawValue)
+                startupOption(String(localized: "Vault"), tag: AppTab.vault.rawValue)
+            }
+        }
+        .scrollContentBackground(.hidden)
+        .background { AppGlassBackground() }
+        .navigationTitle("Open at launch")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("Tab Is Hidden", isPresented: $showHiddenStartupTabAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("\(hiddenStartupTabName) is hidden. Make it visible in Tab Visibility before setting it as the startup tab.")
+        }
+        .alert("Automatic Startup Unavailable", isPresented: $showAutomaticUnavailableAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Automatic startup requires both Dashboard and List to be visible. Open Tab Visibility and make both tabs visible first.")
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    TabVisibilitySettingsView()
+                } label: {
+                    Image(systemName: "rectangle.3.group.dashed")
+                }
+                .accessibilityLabel(Text("Choose Visible Tabs"))
+            }
+        }
+    }
+
+    private func startupOption(_ title: String, tag: Int) -> some View {
+        Button {
+            guard isVisible(tag) else {
+                hiddenStartupTabName = title
+                showHiddenStartupTabAlert = true
+                return
+            }
+            settings.startupTab = tag
+            dismiss()
+        } label: {
+            HStack {
+                Text(title)
+                    .foregroundStyle(isVisible(tag) ? Color.primary : Color.secondary)
+                Spacer()
+                if settings.startupTab == tag {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.tint)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func startupOptionLabel(_ title: String, tag: Int) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            if settings.startupTab == tag {
+                Image(systemName: "checkmark")
+                    .foregroundStyle(.tint)
+            }
+        }
+    }
+
+    private func isVisible(_ tag: Int) -> Bool {
+        guard let tab = AppTab(rawValue: tag) else { return true }
+        return tab.isVisible(using: settings)
     }
 }

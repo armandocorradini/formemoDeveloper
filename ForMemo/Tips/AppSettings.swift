@@ -226,6 +226,11 @@ final class AppSettings {
         )
         
         showVault = defaults.object(forKey: "showVault") as? Bool ?? true
+        showDashboardTab = defaults.object(forKey: "showDashboardTab") as? Bool ?? true
+        showWeekTab = defaults.object(forKey: "showWeekTab") as? Bool ?? true
+        showMapTab = defaults.object(forKey: "showMapTab") as? Bool ?? true
+        showTasksTab = defaults.object(forKey: "showTasksTab") as? Bool ?? true
+        showDayTab = defaults.object(forKey: "showDayTab") as? Bool ?? true
         
         showDashboardTomorrow = defaults.object(forKey: "showDashboardTomorrow") as? Bool ?? true
         showDashboardContinue = defaults.object(forKey: "showDashboardContinue") as? Bool ?? true
@@ -536,6 +541,26 @@ final class AppSettings {
         }
     }
     
+    var showDashboardTab: Bool {
+        didSet { UserDefaults.standard.set(showDashboardTab, forKey: "showDashboardTab") }
+    }
+
+    var showWeekTab: Bool {
+        didSet { UserDefaults.standard.set(showWeekTab, forKey: "showWeekTab") }
+    }
+
+    var showMapTab: Bool {
+        didSet { UserDefaults.standard.set(showMapTab, forKey: "showMapTab") }
+    }
+
+    var showTasksTab: Bool {
+        didSet { UserDefaults.standard.set(showTasksTab, forKey: "showTasksTab") }
+    }
+
+    var showDayTab: Bool {
+        didSet { UserDefaults.standard.set(showDayTab, forKey: "showDayTab") }
+    }
+
     var showDashboardTomorrow: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -791,6 +816,11 @@ final class AppSettings {
         notificationLeadTimeDays = 1
         showWeatherForecast = true
         showVault = true
+        showDashboardTab = true
+        showWeekTab = true
+        showMapTab = true
+        showTasksTab = true
+        showDayTab = true
         showDashboardTomorrow = true
         showDashboardContinue = true
         siriAutoReminderEnabled = true
