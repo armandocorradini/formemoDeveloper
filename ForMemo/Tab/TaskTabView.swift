@@ -14,8 +14,6 @@ struct TaskTabView: View {
 //    @Query private var cards: [LoyaltyCard]
 //    @Query private var trips: [TripList]
     
-    @State private var hasContent = false
-    
     @State private var selectedTab: Int = 0
     @State private var previousTab = 0
     @State private var showSnoozeAlert = false
@@ -50,21 +48,6 @@ struct TaskTabView: View {
 
                 selectedTab = 0
 
-                let context = modelContext
-
-                hasContent =
-                    ((try? context.fetchCount(
-                        FetchDescriptor<TodoTask>()
-                    )) ?? 0) > 0 ||
-                    ((try? context.fetchCount(
-                        FetchDescriptor<DocumentItem>()
-                    )) ?? 0) > 0 ||
-                    ((try? context.fetchCount(
-                        FetchDescriptor<LoyaltyCard>()
-                    )) ?? 0) > 0 ||
-                    ((try? context.fetchCount(
-                        FetchDescriptor<TripList>()
-                    )) ?? 0) > 0
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     NotificationCenter.default.post(
@@ -80,7 +63,7 @@ struct TaskTabView: View {
 
                         withAnimation(.easeInOut(duration: 0.18)) {
                             if settings.startupTab == -1 {
-                                selectedTab = normalizedTabSelection(hasContent ? 10 : 1)
+                                selectedTab = normalizedTabSelection(shouldOpenDashboardAutomatically() ? AppTab.dashboard.rawValue : AppTab.tasks.rawValue)
                             } else {
                                 selectedTab = normalizedTabSelection(settings.startupTab)
                             }
@@ -96,9 +79,9 @@ struct TaskTabView: View {
 
                     withAnimation(.easeInOut(duration: 0.18)) {
                         if settings.startupTab == -1 {
-                            selectedTab = hasContent ? 10 : 1
+                            selectedTab = normalizedTabSelection(shouldOpenDashboardAutomatically() ? AppTab.dashboard.rawValue : AppTab.tasks.rawValue)
                         } else {
-                            selectedTab = settings.startupTab
+                            selectedTab = normalizedTabSelection(settings.startupTab)
                         }
                     }
                 }
@@ -323,6 +306,36 @@ struct TaskTabView: View {
         
     }
     
+    /// Automatic startup opens Dashboard only when an active task is due today or tomorrow.
+    /// Tasks without a deadline, completed tasks, and tasks due later do not qualify.
+    private func shouldOpenDashboardAutomatically() -> Bool {
+        let calendar = Calendar.current
+        let todayStart = calendar.startOfDay(for: .now)
+        guard
+            let dayAfterTomorrowStart = calendar.date(byAdding: .day, value: 2, to: todayStart)
+        else {
+            return false
+        }
+
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted &&
+                $0.deadLine != nil &&
+                $0.deadLine! >= todayStart &&
+                $0.deadLine! < dayAfterTomorrowStart
+            }
+        )
+
+        do {
+            return try modelContext.fetchCount(descriptor) > 0
+        } catch {
+            AppLogger.persistence.error(
+                "Automatic startup task check failed: \\(error.localizedDescription)"
+            )
+            return false
+        }
+    }
+
     @ViewBuilder
     private var rootLayout: some View {
         

@@ -12623,30 +12623,30 @@
         }
       }
     },
-    "Dashboard when content exists; otherwise List." : {
+    "Dashboard if activities exist; otherwise Activities." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dashboard, wenn Inhalte vorhanden sind, andernfalls Aufgaben."
+            "value" : "Dashboard, wenn Aktivitäten vorhanden sind; andernfalls Aktivitäten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dashboard si hay contenido; de lo contrario, Actividades."
+            "value" : "Dashboard si hay actividades; de lo contrario, Actividades."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dashboard lorsqu’il existe du contenu ; sinon, Activités."
+            "value" : "Dashboard s’il existe des activités ; sinon, Activités."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dashboard se sono presenti contenuti; altrimenti, Attività"
+            "value" : "Dashboard se ci sono attività; altrimenti Attività."
           }
         }
       }

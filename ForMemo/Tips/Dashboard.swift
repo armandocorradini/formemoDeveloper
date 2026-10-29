@@ -22,22 +22,22 @@ struct Dashboard: View {
     @State private var showRecoveryConfirmation = false
     
     @State private var showNoRecoveryNeededAlert = false
-
+    
     @State private var dashboardTodayTasks: [TodoTask] = []
     @State private var dashboardTodayTasksCount = 0
     @State private var dashboardTomorrowTasks: [TodoTask] = []
     @State private var dashboardTomorrowTasksCount = 0
-
-
+    
+    
     private let weatherManager = WeatherManager.shared
-
+    
     private enum ContinueDestination {
         case trip(TripList)
         case document(DocumentItem)
         case loyaltyCard(LoyaltyCard)
         case note(Note)
     }
-
+    
     private struct ContinueItem: Identifiable {
         let id: String
         let title: String
@@ -47,8 +47,8 @@ struct Dashboard: View {
         let lastOpenedAt: Date
         let destination: ContinueDestination
     }
-
-
+    
+    
     @MainActor
     private func refreshContinueItems() {
         var tripDescriptor = FetchDescriptor<TripList>(
@@ -59,9 +59,9 @@ struct Dashboard: View {
                 SortDescriptor(\TripList.lastOpenedAt, order: .reverse)
             ]
         )
-
+        
         tripDescriptor.fetchLimit = 3
-
+        
         var documentDescriptor = FetchDescriptor<DocumentItem>(
             predicate: #Predicate<DocumentItem> {
                 $0.lastOpenedAt != nil
@@ -70,9 +70,9 @@ struct Dashboard: View {
                 SortDescriptor(\DocumentItem.lastOpenedAt, order: .reverse)
             ]
         )
-
+        
         documentDescriptor.fetchLimit = 3
-
+        
         var cardDescriptor = FetchDescriptor<LoyaltyCard>(
             predicate: #Predicate<LoyaltyCard> {
                 $0.lastOpenedAt != nil
@@ -81,9 +81,9 @@ struct Dashboard: View {
                 SortDescriptor(\LoyaltyCard.lastOpenedAt, order: .reverse)
             ]
         )
-
+        
         cardDescriptor.fetchLimit = 3
-
+        
         var noteDescriptor = FetchDescriptor<Note>(
             predicate: #Predicate<Note> {
                 $0.lastOpenedAt != nil
@@ -92,20 +92,20 @@ struct Dashboard: View {
                 SortDescriptor(\Note.lastOpenedAt, order: .reverse)
             ]
         )
-
+        
         noteDescriptor.fetchLimit = 3
-
+        
         do {
             let trips = try modelContext.fetch(tripDescriptor)
             let documents = try modelContext.fetch(documentDescriptor)
             let loyaltyCards = try modelContext.fetch(cardDescriptor)
             let notes = try modelContext.fetch(noteDescriptor)
-
+            
             let tripItems: [ContinueItem] = trips.compactMap { trip in
                 guard let lastOpenedAt = trip.lastOpenedAt else {
                     return nil
                 }
-
+                
                 return ContinueItem(
                     id: "trip-\(trip.id)",
                     title: trip.name,
@@ -116,12 +116,12 @@ struct Dashboard: View {
                     destination: .trip(trip)
                 )
             }
-
+            
             let documentItems: [ContinueItem] = documents.compactMap { document in
                 guard let lastOpenedAt = document.lastOpenedAt else {
                     return nil
                 }
-
+                
                 return ContinueItem(
                     id: "document-\(document.id)",
                     title: document.name,
@@ -132,37 +132,37 @@ struct Dashboard: View {
                     destination: .document(document)
                 )
             }
-
+            
             let cardItems: [ContinueItem] = loyaltyCards.compactMap { card in
                 guard let lastOpenedAt = card.lastOpenedAt else {
                     return nil
                 }
-
+                
                 return ContinueItem(
                     id: "card-\(card.id)",
                     title: card.storeName,
                     type: String(localized: "Wallet"),
                     systemImage: card.itemType == "ticket"
-                        ? "ticket.fill"
-                        : "creditcard",
+                    ? "ticket.fill"
+                    : "creditcard",
                     logoRelativePath:
                         card.logoAsset?.relativePath
-                        ?? card.loyaltyLogoRelativePath,
+                    ?? card.loyaltyLogoRelativePath,
                     lastOpenedAt: lastOpenedAt,
                     destination: .loyaltyCard(card)
                 )
             }
-
+            
             let noteItems: [ContinueItem] = notes.compactMap { note in
                 guard let lastOpenedAt = note.lastOpenedAt else {
                     return nil
                 }
-
+                
                 return ContinueItem(
                     id: "note-\(note.id)",
                     title: note.title.isEmpty
-                        ? String(localized: "Untitled")
-                        : note.title,
+                    ? String(localized: "Untitled")
+                    : note.title,
                     type: String(localized: "Notes"),
                     systemImage: "note.text",
                     logoRelativePath: nil,
@@ -170,26 +170,37 @@ struct Dashboard: View {
                     destination: .note(note)
                 )
             }
-
+            
             dashboardContinueItems = Array(
                 (tripItems + documentItems + cardItems + noteItems)
                     .sorted { $0.lastOpenedAt > $1.lastOpenedAt }
                     .prefix(3)
             )
-
+            
         } catch {
             AppLogger.persistence.error(
                 "Dashboard recent items fetch failed: \(error.localizedDescription)"
             )
-
+            
             dashboardContinueItems = []
         }
     }
     
+    private var tomorrowScheduledTasksText: String {
+        String(localized: "^[\(dashboardTomorrowTasksCount) tasks scheduled](inflect: true)")
+    }
+
+    private var todayTasksDescription: String {
+        if dashboardTodayTasksCount == 1 {
+            return String(localized: "task to complete")
+        }
+        return String(localized: "tasks to complete")
+    }
+
     private var todayStart: Date {
         Calendar.current.startOfDay(for: .now)
     }
-
+    
     private var tomorrowStart: Date {
         Calendar.current.date(
             byAdding: .day,
@@ -197,7 +208,7 @@ struct Dashboard: View {
             to: todayStart
         ) ?? todayStart
     }
-
+    
     private var dayAfterTomorrowStart: Date {
         Calendar.current.date(
             byAdding: .day,
@@ -205,7 +216,7 @@ struct Dashboard: View {
             to: todayStart
         ) ?? tomorrowStart
     }
-
+    
     @MainActor
     private func fetchDashboardTasks(
         from start: Date,
@@ -223,9 +234,9 @@ struct Dashboard: View {
                 SortDescriptor(\TodoTask.id, order: .forward)
             ]
         )
-
+        
         descriptor.fetchLimit = 100
-
+        
         do {
             return try modelContext.fetch(descriptor)
         } catch {
@@ -235,17 +246,17 @@ struct Dashboard: View {
             return []
         }
     }
-
+    
     @MainActor
     private func refreshTodayDashboard() {
         let start = todayStart
         let end = tomorrowStart
-
+        
         dashboardTodayTasks = fetchDashboardTasks(
             from: start,
             to: end
         )
-
+        
         dashboardTodayTasksCount = countDashboardTasks(
             from: start,
             to: end
@@ -257,12 +268,12 @@ struct Dashboard: View {
     private func refreshTomorrowDashboard() {
         let start = tomorrowStart
         let end = dayAfterTomorrowStart
-
+        
         dashboardTomorrowTasks = fetchDashboardTasks(
             from: start,
             to: end
         )
-
+        
         dashboardTomorrowTasksCount = countDashboardTasks(
             from: start,
             to: end
@@ -281,7 +292,7 @@ struct Dashboard: View {
                 $0.deadLine! < end
             }
         )
-
+        
         do {
             return try modelContext.fetchCount(descriptor)
         } catch {
@@ -291,12 +302,12 @@ struct Dashboard: View {
             return 0
         }
     }
-
-
+    
+    
     @MainActor
     private func fetchOverduePreviousDaysCount() -> Int {
         let startOfToday = todayStart
-
+        
         let descriptor = FetchDescriptor<TodoTask>(
             predicate: #Predicate<TodoTask> {
                 !$0.isCompleted &&
@@ -304,7 +315,7 @@ struct Dashboard: View {
                 $0.deadLine! < startOfToday
             }
         )
-
+        
         do {
             return try modelContext.fetchCount(descriptor)
         } catch {
@@ -314,12 +325,16 @@ struct Dashboard: View {
             return 0
         }
     }
-
+    
     private var overduePreviousDaysCount: Int {
         fetchOverduePreviousDaysCount()
     }
     
     private func hide(_ item: ContinueItem) {
+        // Remove the card from the visible dashboard immediately.
+        // Updating lastOpenedAt alone does not refresh this in-memory array.
+        dashboardContinueItems.removeAll { $0.id == item.id }
+        
         switch item.destination {
         case .trip(let trip):
             trip.lastOpenedAt = nil
@@ -330,19 +345,38 @@ struct Dashboard: View {
         case .note(let note):
             note.lastOpenedAt = nil
         }
+        
+        do {
+            try modelContext.save()
+        } catch {
+            AppLogger.persistence.error(
+                "Dashboard recent item hide failed: \\(error.localizedDescription)"
+            )
+            refreshContinueItems()
+        }
+    }
+    
+    private var todayWeatherIcon: some View {
+        let symbol = weatherManager.representativeSymbol(for: .now)
+        let saturation: Double = colorScheme == .light ? 1.25 : 1.0
+        let brightness: Double = colorScheme == .light ? -0.2 : 0.0
 
-        try? modelContext.save()
+        return Image(systemName: symbol)
+            .symbolRenderingMode(.multicolor)
+            .saturation(saturation)
+            .brightness(brightness)
+            .font(.title.weight(.medium))
     }
 
     var body: some View {
         ZStack {
             AppGlassBackground()
-
+            
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-
+                    
                     // MARK: - Oggi
-
+                    
                     Button {
                         NotificationCenter.default.post(
                             name: Notification.Name("DashboardOpenList"),
@@ -350,64 +384,53 @@ struct Dashboard: View {
                         )
                     } label: {
                         VStack(alignment: .leading, spacing: 0) {
-
+                            
                             // Header Oggi
                             HStack(alignment: .top) {
                                 Text("Today")
                                     .font(.largeTitle.bold())
-
+                                
                                 Spacer()
-
+                                
                                 if settings.showWeatherForecast,
                                    let weather = weatherManager.weather(for: Date()) {
-
+                                    
                                     VStack(alignment: .trailing, spacing: 4) {
                                         Button {
                                             selectedWeatherDate = .now
                                         } label: {
-                                            Image(
-                                                systemName:
-                                                    weatherManager.representativeSymbol(for: Date())
-                                            )
-                                            .symbolRenderingMode(.multicolor)
-                                            .saturation(
-                                                colorScheme == .light ? 1.25 : 1.0
-                                            )
-                                            .brightness(
-                                                colorScheme == .light ? -0.2 : 0.0
-                                            )
-                                            .font(.title.weight(.medium))
+                                            todayWeatherIcon
                                         }
                                         .buttonStyle(.plain)
-
+                                        
                                         HStack(spacing: 4) {
                                             Text("\(weather.minTemperature)°")
                                                 .foregroundStyle(
                                                     weather.minTemperature >= 35 ? .red :
-                                                    weather.minTemperature >= 30 ? .orange :
-                                                    weather.minTemperature <= 0
-                                                        ? Color(
-                                                            red: 0.65,
-                                                            green: 0.88,
-                                                            blue: 1.00
-                                                        )
-                                                        : .primary.opacity(0.75)
+                                                        weather.minTemperature >= 30 ? .orange :
+                                                        weather.minTemperature <= 0
+                                                    ? Color(
+                                                        red: 0.65,
+                                                        green: 0.88,
+                                                        blue: 1.00
+                                                    )
+                                                    : .primary.opacity(0.75)
                                                 )
-
+                                            
                                             Text("/")
                                                 .foregroundStyle(.secondary)
-
+                                            
                                             Text("\(weather.maxTemperature)°")
                                                 .foregroundStyle(
                                                     weather.maxTemperature >= 35 ? .red :
-                                                    weather.maxTemperature >= 30 ? .orange :
-                                                    weather.maxTemperature <= 0
-                                                        ? Color(
-                                                            red: 0.65,
-                                                            green: 0.88,
-                                                            blue: 1.00
-                                                        )
-                                                        : .primary
+                                                        weather.maxTemperature >= 30 ? .orange :
+                                                        weather.maxTemperature <= 0
+                                                    ? Color(
+                                                        red: 0.65,
+                                                        green: 0.88,
+                                                        blue: 1.00
+                                                    )
+                                                    : .primary
                                                 )
                                         }
                                         .font(.caption)
@@ -415,20 +438,18 @@ struct Dashboard: View {
                                 }
                             }
                             .foregroundStyle(.primary)
-
+                            
                             // Numero attività
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
                                 Text("\(dashboardTodayTasksCount)")
                                     .font(.system(size: 58, weight: .bold, design: .rounded))
-
-                                Text(dashboardTodayTasksCount == 1
-                                     ? "task to complete"
-                                     : "tasks to complete")
+                                
+                                Text(todayTasksDescription)
                                     .font(.title3)
-                                    .foregroundStyle(.primary.opacity(0.9))
+                                .foregroundStyle(.primary.opacity(0.9))
                             }
                             .padding(.top, 2)
-
+                            
                             // Attività
                             if !dashboardTodayTasks.isEmpty {
                                 VStack(alignment: .leading, spacing: 6) {
@@ -441,7 +462,7 @@ struct Dashboard: View {
                                 }
                                 .padding(.top, 4)
                             }
-
+                            
                             if overduePreviousDaysCount > 0 {
                                 Text(
                                     "\(overduePreviousDaysCount) overdue from previous days"
@@ -472,13 +493,13 @@ struct Dashboard: View {
                         }
                     }
                     .buttonStyle(.plain)
-
-
+                    
+                    
                     // MARK: - Domani
-
+                    
                     if settings.showDashboardTomorrow &&
                         dashboardTomorrowTasksCount > 0 {
-
+                        
                         Button {
                             NotificationCenter.default.post(
                                 name: Notification.Name("DashboardOpenList"),
@@ -486,54 +507,47 @@ struct Dashboard: View {
                             )
                         } label: {
                             VStack(alignment: .leading, spacing: 10) {
-
+                                
                                 HStack(alignment: .firstTextBaseline) {
                                     Text("Tomorrow")
                                         .font(.title3.weight(.semibold))
-
+                                    
                                     Spacer()
-
+                                    
                                     if settings.showWeatherForecast,
+                                       let tomorrowDate = Calendar.current.date(
+                                        byAdding: .day,
+                                        value: 1,
+                                        to: Date()
+                                       ),
                                        let tomorrowWeather = weatherManager.weather(
-                                           for: Calendar.current.date(
-                                               byAdding: .day,
-                                               value: 1,
-                                               to: Date()
-                                           ) ?? Date()
+                                        for: tomorrowDate
                                        ) {
-
+                                        
                                         HStack(spacing: 5) {
-                                            Image(
-                                                systemName:
-                                                    weatherManager.representativeSymbol(
-                                                        for: Calendar.current.date(
-                                                            byAdding: .day,
-                                                            value: 1,
-                                                            to: Date()
-                                                        ) ?? Date()
-                                                    )
+                                            let tomorrowSymbol = weatherManager.representativeSymbol(
+                                                for: tomorrowDate
                                             )
+                                            Image(systemName: tomorrowSymbol)
                                             .symbolRenderingMode(.multicolor)
                                             .font(.subheadline)
-
+                                            
                                             Text("\(tomorrowWeather.minTemperature)°")
                                                 .foregroundStyle(.secondary)
-
+                                            
                                             Text("/")
                                                 .foregroundStyle(.secondary)
-
+                                            
                                             Text("\(tomorrowWeather.maxTemperature)°")
                                         }
                                         .font(.caption)
                                     }
                                 }
-
-                                Text(
-                                    "^[\(dashboardTomorrowTasksCount) tasks scheduled](inflect: true)"
-                                )
-                                .font(.subheadline)
+                                
+                                Text(tomorrowScheduledTasksText)
+                                    .font(.subheadline)
                                 .foregroundStyle(.secondary)
-
+                                
                                 if !dashboardTomorrowTasks.isEmpty {
                                     VStack(alignment: .leading, spacing: 6) {
                                         ForEach(
@@ -550,16 +564,16 @@ struct Dashboard: View {
                         }
                         .buttonStyle(.plain)
                     }
-
+                    
                     Divider()
                         .overlay(.white.opacity(0.3))
                     // MARK: - Recenti
-
+                    
                     if settings.showDashboardContinue &&
                         !dashboardContinueItems.isEmpty {
-
+                        
                         VStack(alignment: .leading, spacing: 12) {
-
+                            
                             HStack {
                                 Label(
                                     "Recent",
@@ -568,7 +582,7 @@ struct Dashboard: View {
                                 )
                                 .font(.headline)
                             }
-
+                            
                             LazyVGrid(
                                 columns: Array(
                                     repeating: GridItem(.flexible(), spacing: 8),
@@ -577,127 +591,8 @@ struct Dashboard: View {
                                 spacing: 8
                             ) {
                                 ForEach(dashboardContinueItems) { item in
-
-                                    switch item.destination {
-
-                                    case .trip(let trip):
-                                        Button {
-                                            selectedTrip = trip
-                                        } label: {
-                                            sectionCard(
-                                                title: item.title,
-                                                type: item.type,
-                                                systemImage: item.systemImage,
-                                                logoData: nil,
-                                                isCompleted: isTripComplete(trip),
-                                                remainingItems:
-                                                    remainingTripItems(for: trip),
-                                                iconColor: dashboardTripIconColors(for: trip.icon).0,
-                                                iconSecondaryColor: dashboardTripIconColors(for: trip.icon).1                                          )
-                                        }
-                                        .buttonStyle(.plain)
-                                        .contextMenu {
-                                            Button {
-                                                hide(item)
-                                            } label: {
-                                                Label(
-                                                    "Hide",
-                                                    systemImage: "eye.slash"
-                                                )
-                                            }
-                                        }
-
-                                    case .note(let note):
-                                        Button {
-                                            selectedNote = note
-                                        } label: {
-                                            sectionCard(
-                                                title: item.title,
-                                                type: item.type,
-                                                systemImage: item.systemImage,
-                                                logoData: nil,
-                                                iconColor: .primary,
-                                                iconSecondaryColor: note.color != nil ? noteColor(for: note.color) : nil ?? Color(uiColor: .systemBackground)
-                                            )
-                                        }
-                                        .buttonStyle(.plain)
-                                        .contextMenu {
-                                            Button {
-                                                hide(item)
-                                            } label: {
-                                                Label(
-                                                    "Hide",
-                                                    systemImage: "eye.slash"
-                                                )
-                                            }
-                                        }
-
-                                    case .document(let document):
-                                        Button {
-                                            selectedDocument = document
-                                        } label: {
-                                            let documentIconColors = dashboardDocumentIconColors(for: document)
-
-                                            sectionCard(
-                                                title: item.title,
-                                                type: item.type,
-                                                systemImage: item.systemImage,
-                                                logoData: nil,
-                                                iconColor: documentIconColors.0,
-                                                iconSecondaryColor: documentIconColors.1
-                                            )
-                                        }
-                                        .buttonStyle(.plain)
-                                        .contextMenu {
-                                            Button {
-                                                hide(item)
-                                            } label: {
-                                                Label(
-                                                    "Hide",
-                                                    systemImage: "eye.slash"
-                                                )
-                                            }
-                                        }
-
-                                    case .loyaltyCard(let card):
-                                        Button {
-                                            selectedLoyaltyCard = card
-                                        } label: {
-                                            sectionCard(
-                                                title: item.title,
-                                                type: item.type,
-                                                systemImage: item.systemImage,
-                                                logoData: recentWalletLogos[item.id],
-                                                iconColor: .primary,
-                                                iconBackgroundColor: Color(hex: card.colorHex ?? "#3B82F6") ?? .blue
-                                            )
-                                        }
-                                        .buttonStyle(.plain)
-                                        .task(id: item.id) {
-                                            guard let relativePath = item.logoRelativePath else {
-                                                return
-                                            }
-
-                                            let data = WalletAssetStore.loadData(
-                                                relativePath: relativePath
-                                            )
-
-                                            guard !Task.isCancelled, let data else {
-                                                return
-                                            }
-
-                                            recentWalletLogos[item.id] = data
-                                        }
-                                        .contextMenu {
-                                            Button {
-                                                hide(item)
-                                            } label: {
-                                                Label(
-                                                    "Hide",
-                                                    systemImage: "eye.slash"
-                                                )
-                                            }
-                                        }                                    }
+                                    
+                                    dashboardContinueItemView(item)
                                 }
                             }
                         }
@@ -713,74 +608,74 @@ struct Dashboard: View {
             "Attachment Recovery",
             isPresented: $showNoRecoveryNeededAlert
         ) {
-
+            
             Button("OK") { }
-
+            
         } message: {
-
+            
             Text(
                 String(
                     localized:
                         "No duplicate asset folders were found."
                 )
             )
-
+            
         }
         .alert(
             "Attachment Recovery",
             isPresented: $showRecoveryConfirmation,
             presenting: recoveryCheck
         ) { check in
-
+            
             Button(
                 String(localized: "Repair")
             ) {
-
+                
                 recoveryResult = AssetRecoveryCoordinator.repairAll(context: modelContext)
-
+                
                 showRecoveryAlert = true
-
+                
             }
-
+            
             Button(
                 String(localized: "Cancel"),
                 role: .cancel
             ) {
             }
-
+            
         } message: { check in
-
+            
             Text(
                 """
                 \(check.duplicateFolders.count) duplicate asset folder(s) detected.
-
+                
                 Automatic recovery has been suspended because Asset Recovery Diagnostics is enabled.
-
+                
                 Press Repair to merge the folders.
                 """
             )
-
+            
         }
         
         .alert(
             "Attachment Recovery",
             isPresented: $showRecoveryAlert
         ) {
-
+            
             Button("OK") { }
-
+            
         } message: {
-
+            
             if let result = recoveryResult {
-
+                
                 Text("""
                 Recovery folders: \(result.folders)
-
+                
                 Copied: \(result.copied)
                 Skipped: \(result.skipped)
                 Errors: \(result.errors)
                 """)
-
+                
             }
         }
         .contentMargins(.bottom, 70, for: .scrollContent)
@@ -793,23 +688,23 @@ struct Dashboard: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     
                     Button {
-
+                        
                         let result = AssetRecoveryCoordinator.checkIfNeeded()
-
+                        
                         guard result.needsRepair else {
-
+                            
                             showNoRecoveryNeededAlert = true
                             return
-
+                            
                         }
-
+                        
                         recoveryCheck = result
                         showRecoveryConfirmation = true
-
+                        
                     } label: {
-
+                        
                         Image(systemName: "wrench.and.screwdriver")
-
+                        
                     }
                     
                 }
@@ -829,7 +724,7 @@ struct Dashboard: View {
                     Image(systemName: "line.3.horizontal.button.angledtop.vertical.right")
                 }
             }
-
+            
         }
         .navigationDestination(item: $selectedTask) { task in
             TaskDetailView(task: task)
@@ -859,7 +754,7 @@ struct Dashboard: View {
             refreshTodayDashboard()
             refreshTomorrowDashboard()
         }
-
+        
         .task {
             try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled else { return }
@@ -878,18 +773,142 @@ struct Dashboard: View {
             selectedWeatherDate = nil
         }
     }
-
+    
     
     
     @ViewBuilder
+    private func dashboardContinueItemView(_ item: ContinueItem) -> some View {
+                                    switch item.destination {
+                                        
+                                    case .trip(let trip):
+                                        Button {
+                                            selectedTrip = trip
+                                        } label: {
+                                            sectionCard(
+                                                title: item.title,
+                                                type: item.type,
+                                                systemImage: item.systemImage,
+                                                logoData: nil,
+                                                isCompleted: isTripComplete(trip),
+                                                remainingItems:
+                                                    remainingTripItems(for: trip),
+                                                iconColor: dashboardTripIconColors(for: trip.icon).0,
+                                                iconSecondaryColor: dashboardTripIconColors(for: trip.icon).1                                          )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .contextMenu {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label(
+                                                    "Hide",
+                                                    systemImage: "eye.slash"
+                                                )
+                                            }
+                                        }
+                                        
+                                    case .note(let note):
+                                        Button {
+                                            selectedNote = note
+                                        } label: {
+                                            sectionCard(
+                                                title: item.title,
+                                                type: item.type,
+                                                systemImage: item.systemImage,
+                                                logoData: nil,
+                                                iconColor: .primary,
+                                                iconSecondaryColor: note.color != nil ? noteColor(for: note.color) : nil ?? Color(uiColor: .systemBackground)
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .contextMenu {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label(
+                                                    "Hide",
+                                                    systemImage: "eye.slash"
+                                                )
+                                            }
+                                        }
+                                        
+                                    case .document(let document):
+                                        Button {
+                                            selectedDocument = document
+                                        } label: {
+                                            let documentIconColors = dashboardDocumentIconColors(for: document)
+                                            
+                                            sectionCard(
+                                                title: item.title,
+                                                type: item.type,
+                                                systemImage: item.systemImage,
+                                                logoData: nil,
+                                                iconColor: documentIconColors.0,
+                                                iconSecondaryColor: documentIconColors.1
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .contextMenu {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label(
+                                                    "Hide",
+                                                    systemImage: "eye.slash"
+                                                )
+                                            }
+                                        }
+                                        
+                                    case .loyaltyCard(let card):
+                                        Button {
+                                            selectedLoyaltyCard = card
+                                        } label: {
+                                            sectionCard(
+                                                title: item.title,
+                                                type: item.type,
+                                                systemImage: item.systemImage,
+                                                logoData: recentWalletLogos[item.id],
+                                                iconColor: .primary,
+                                                iconBackgroundColor: Color(hex: card.colorHex ?? "#3B82F6") ?? .blue
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                        .task(id: item.id) {
+                                            guard let relativePath = item.logoRelativePath else {
+                                                return
+                                            }
+                                            
+                                            let data = WalletAssetStore.loadData(
+                                                relativePath: relativePath
+                                            )
+                                            
+                                            guard !Task.isCancelled, let data else {
+                                                return
+                                            }
+                                            
+                                            recentWalletLogos[item.id] = data
+                                        }
+                                        .contextMenu {
+                                            Button {
+                                                hide(item)
+                                            } label: {
+                                                Label(
+                                                    "Hide",
+                                                    systemImage: "eye.slash"
+                                                )
+                                            }
+                                        }                                    }
+    }
+
+    @ViewBuilder
     private func dashboardTaskRow(_ task: TodoTask) -> some View {
         let isOverdue = (task.deadLine ?? .now) < .now
-
+        
         Button {
             selectedTask = task
         } label: {
             HStack(spacing: 8) {
-
+                
                 if settings.highlightEnabled,
                    task.priority == .critical {
                     RoundedRectangle(
@@ -909,24 +928,24 @@ struct Dashboard: View {
                             height: TaskRowMetrics.highlightBarHeight - 12
                         )
                 }
-
+                
                 Image(
                     systemName: task.mainTag?.mainIcon ?? task.status.icon
                 )
                 .symbolRenderingMode(
                     settings.iconStyle == .polychrome && task.mainTag != nil
-                        ? .palette
-                        : .monochrome
+                    ? .palette
+                    : .monochrome
                 )
                 .foregroundStyle(
                     settings.iconStyle == .polychrome
-                        ? task.iconColor
-                        : .primary,
+                    ? task.iconColor
+                    : .primary,
                     .primary
                 )
                 .opacity(0.9)
                 .frame(width: 18)
-
+                
                 if let deadline = task.deadLine {
                     Text(
                         deadline.formatted(
@@ -938,7 +957,7 @@ struct Dashboard: View {
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
                 }
-
+                
                 Text(task.title)
                     .lineLimit(1)
                     .foregroundStyle(.secondary)
@@ -950,7 +969,7 @@ struct Dashboard: View {
                                 .offset(y: 2)
                         }
                     }
-
+                
                 if task.recurrenceRule != nil && task.occurrenceIndex == nil {
                     Image(systemName: "arrow.triangle.2.circlepath")
                         .font(.caption)
@@ -969,19 +988,19 @@ struct Dashboard: View {
     private func noteColor(for value: String?) -> Color? {
         switch value {
         case "red":
-            .red
+                .red
         case "orange":
-            .orange
+                .orange
         case "yellow":
-            .yellow
+                .yellow
         case "green":
-            .green
+                .green
         case "blue":
-            .blue
+                .blue
         case "purple":
-            .purple
+                .purple
         case "pink":
-            .pink
+                .pink
         default:
             nil
         }
@@ -1040,9 +1059,9 @@ struct Dashboard: View {
         iconSecondaryColor: Color? = nil,
         iconBackgroundColor: Color? = nil
     ) -> some View {
-
+        
         VStack(alignment: .center, spacing: 0) {
-
+            
             // Categoria
             Text(type)
                 .font(.caption.weight(.medium))
@@ -1051,14 +1070,14 @@ struct Dashboard: View {
                 .lineLimit(1)
                 .frame(maxWidth: .infinity)
                 .frame(height: 18)
-
+            
             Spacer(minLength: 0)
-
+            
             // Immagine / icona
             Group {
                 if let logoData,
                    let uiImage = UIImage(data: logoData) {
-
+                    
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
@@ -1069,9 +1088,9 @@ struct Dashboard: View {
                                 style: .continuous
                             )
                         )
-
+                    
                 } else if let systemImage {
-
+                    
                     Image(systemName: systemImage)
                         .font(.system(size: 30))
                         .symbolRenderingMode(
@@ -1094,10 +1113,10 @@ struct Dashboard: View {
             )
             .offset(y: 6)
             Spacer(minLength: 0)
-
+            
             // Area titolo + dettaglio
             VStack(alignment: .center, spacing: 2) {
-
+                
                 if let remainingItems {
                     Text(
                         "\(remainingItems) \(String(localized: "remaining"))"
@@ -1141,16 +1160,16 @@ struct Dashboard: View {
             )
         }
     }
-
+    
     private func isTripComplete(_ trip: TripList) -> Bool {
         let items = trip.sections.flatMap(\.items)
         return !items.isEmpty && items.allSatisfy(\.isChecked)
     }
-
+    
     private func remainingTripItems(for trip: TripList) -> Int {
         trip.sections.flatMap(\.items).filter { !$0.isChecked }.count
     }
-
+    
     @ViewBuilder
     private func navigationCard(title: String, systemImage: String) -> some View {
         HStack(spacing: 16) {

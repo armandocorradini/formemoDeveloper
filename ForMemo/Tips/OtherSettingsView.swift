@@ -195,7 +195,7 @@ private struct StartupTabSelectionView: View {
                 } label: {
                     VStack(alignment: .leading, spacing: 3) {
                         startupOptionLabel("Automatic", tag: -1)
-                        Text("Dashboard when content exists; otherwise List.")
+                        Text("Dashboard if activities exist; otherwise Activities.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
