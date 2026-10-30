@@ -3860,6 +3860,8 @@ struct TodoSectionView: View {
 
       }
 
+        Divider()
+        
       Button {
 
         toggleCompleted(t)
@@ -3869,7 +3871,7 @@ struct TodoSectionView: View {
         Label("Complete", systemImage: "checkmark.circle")
 
       }
-
+      .tint(.green)
 
 
       if t.deadLine != nil {
@@ -3882,7 +3884,7 @@ struct TodoSectionView: View {
 
           Label(
 
-            "Add to Calendar",
+            "Add to Calendar Apple",
 
             systemImage: "calendar.badge.plus"
 

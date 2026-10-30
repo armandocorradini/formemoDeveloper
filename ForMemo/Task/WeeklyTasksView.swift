@@ -753,19 +753,22 @@ private struct WeeklyTaskRow: View {
             } label: {
                 Label("Delete", systemImage: "trash")
             }
+            
+            Divider()
 
             Button {
                 completeTask()
             } label: {
                 Label("Complete", systemImage: "checkmark.circle")
             }
-
+            .tint(.green)
+            
             if task.deadLine != nil {
                 Button {
                     TaskSingleCalendarExport.shared.present(for: task)
                 } label: {
                     Label(
-                        "Add to Calendar",
+                        "Add to Calendar Apple",
                         systemImage: "calendar.badge.plus"
                     )
                 }

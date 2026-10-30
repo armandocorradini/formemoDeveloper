@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import os
+import UIKit
 
 struct TaskDayView: View {
     @Environment(\.scenePhase) private var scenePhase
@@ -22,6 +23,9 @@ struct TaskDayView: View {
     @State private var foregroundRefreshDate = Date.now
     @State private var dateStripHoldTask: Task<Void, Never>?
     @State private var dateStripDidHoldEdge = false
+    @State private var taskRowFrames: [String: CGRect] = [:]
+    @State private var centralizedSwipeDrag: TaskDaySwipeDrag?
+    @State private var centralizedSwipeAxis: TaskDaySwipeAxis?
 
     private let calendar = Calendar.current
     private var timelineSlots: [Int] {
@@ -77,10 +81,13 @@ struct TaskDayView: View {
     
     private var hasOverdueTasksInPreviousDays: Bool {
         let startOfSelectedDay = calendar.startOfDay(for: selectedDate)
+        let now = Date.now
 
         return tasks.contains { task in
             guard let deadline = task.deadLine else { return false }
-            return deadline < startOfSelectedDay && !task.isCompleted
+            return deadline < now
+                && deadline < startOfSelectedDay
+                && !task.isCompleted
         }
     }
     
@@ -90,7 +97,8 @@ struct TaskDayView: View {
                 .padding(.bottom,20)
             Rectangle()
                 .fill(hasOverdueTasksInPreviousDays ? Color.red : Color.clear)
-                .frame(height: 0.2)
+                .frame(
+                    height: UIDevice.current.userInterfaceIdiom == .pad ? 1.0 : 0.2)
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 20)
 
@@ -184,6 +192,64 @@ struct TaskDayView: View {
                 .padding(.bottom, 20)
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
+            .coordinateSpace(name: "TaskDayScrollSpace")
+            .onPreferenceChange(TaskDaySwipeRowBoundsKey.self) { taskRowFrames = $0 }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 8, coordinateSpace: .named("TaskDayScrollSpace"))
+                    .onChanged { value in
+                        let horizontal = abs(value.translation.width)
+                        let vertical = abs(value.translation.height)
+
+                        // Lock the gesture to one axis. Vertical scrolling must not
+                        // publish drag snapshots to every task row.
+                        if centralizedSwipeAxis == nil {
+                            guard max(horizontal, vertical) >= 14 else { return }
+
+                            if vertical >= horizontal * 1.2 {
+                                centralizedSwipeAxis = .vertical
+                                return
+                            }
+
+                            guard horizontal >= vertical * 1.35 else { return }
+                            centralizedSwipeAxis = .horizontal
+                        }
+
+                        guard centralizedSwipeAxis == .horizontal else { return }
+
+                        let taskID = centralizedSwipeDrag?.isEnded == false
+                            ? centralizedSwipeDrag?.taskID
+                            : taskRowFrames.first(where: { $0.value.contains(value.startLocation) })?.key
+                        guard let taskID else { return }
+
+                        centralizedSwipeDrag = TaskDaySwipeDrag(
+                            taskID: taskID,
+                            startLocation: value.startLocation,
+                            translation: value.translation,
+                            isEnded: false
+                        )
+                    }
+                    .onEnded { value in
+                        defer { centralizedSwipeAxis = nil }
+
+                        guard centralizedSwipeAxis == .horizontal,
+                              let taskID = centralizedSwipeDrag?.taskID else {
+                            centralizedSwipeDrag = nil
+                            return
+                        }
+
+                        centralizedSwipeDrag = TaskDaySwipeDrag(
+                            taskID: taskID,
+                            startLocation: value.startLocation,
+                            translation: value.translation,
+                            isEnded: true
+                        )
+
+                        Task { @MainActor in
+                            await Task.yield()
+                            centralizedSwipeDrag = nil
+                        }
+                    }
+            )
             .backgroundPreferenceValue(TimelineSlotBoundsKey.self) { anchors in
                 TimelineView(.periodic(from: .now, by: 60)) { timelineContext in
                     GeometryReader { proxy in
@@ -690,6 +756,7 @@ struct TaskDayView: View {
             completionTitle: String(localized: task.isCompleted ? "To do" : "Complete"),
             completionIcon: task.isCompleted ? "arrow.uturn.backward.circle" : "checkmark.circle",
             openRowID: $openSwipeTaskID,
+            dragSnapshot: centralizedSwipeDrag,
             onComplete: { toggleCompleted(task) },
             onDelete: { requestDeletion(of: task) }
         ) {
@@ -789,16 +856,27 @@ struct TaskDayView: View {
             } label: {
                 Label(String(localized: "Delete"), systemImage: "trash")
             }
+            
+            Divider()
+            
             Button {
                 toggleCompleted(task)
             } label: {
-                Label(task.isCompleted ? String(localized: "To do") : String(localized: "Complete"), systemImage: task.isCompleted ? "arrow.uturn.backward.circle" : "checkmark.circle")
+                Label(
+                    task.isCompleted ? String(localized: "To do") : String(localized: "Complete"),
+                    systemImage: task.isCompleted
+                        ? "arrow.uturn.backward.circle"
+                        : "checkmark.circle"
+                )
+            
             }
+            .tint(.green)
+            
             if task.deadLine != nil {
                 Button {
                     TaskSingleCalendarExport.shared.present(for: task)
                 } label: {
-                    Label(String(localized: "Add to Calendar"), systemImage: "calendar.badge.plus")
+                    Label(String(localized: "Add to Calendar Apple"), systemImage: "calendar.badge.plus")
                 }
             }
             TaskRescheduleMenu(task: task)
@@ -953,6 +1031,26 @@ struct TaskDayView: View {
 }
 
 
+private enum TaskDaySwipeAxis {
+    case horizontal
+    case vertical
+}
+
+private struct TaskDaySwipeDrag: Equatable {
+    let taskID: String
+    let startLocation: CGPoint
+    let translation: CGSize
+    let isEnded: Bool
+}
+
+private struct TaskDaySwipeRowBoundsKey: PreferenceKey {
+    static var defaultValue: [String: CGRect] = [:]
+
+    static func reduce(value: inout [String: CGRect], nextValue: () -> [String: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
 private struct TimelineSlotBoundsKey: PreferenceKey {
     static var defaultValue: [Int: Anchor<CGRect>] = [:]
 
@@ -970,6 +1068,7 @@ private struct TaskDaySwipeRow<Content: View>: View {
     let completionTitle: String
     let completionIcon: String
     @Binding var openRowID: String?
+    let dragSnapshot: TaskDaySwipeDrag?
     let onComplete: () -> Void
     let onDelete: () -> Void
     @ViewBuilder let content: Content
@@ -977,10 +1076,75 @@ private struct TaskDaySwipeRow<Content: View>: View {
     @State private var offset: CGFloat = 0
     @State private var swipeDirection: Int = 0
     @State private var gestureStartedWithClosedRow = false
+    @State private var dragStartOffset: CGFloat = 0
 
     private let deleteRevealWidth: CGFloat = 60
     private let actionCapsuleHeight: CGFloat = 40
     private let completionCommitRatio: CGFloat = 0.42
+
+    private func handleCentralizedDrag(_ snapshot: TaskDaySwipeDrag, rowWidth: CGFloat) {
+        let horizontal = snapshot.translation.width
+        let vertical = snapshot.translation.height
+
+        // Vertical movement is left entirely to the ScrollView.
+        guard abs(horizontal) > abs(vertical) * 1.15 else {
+            if snapshot.isEnded {
+                swipeDirection = 0
+                gestureStartedWithClosedRow = false
+                dragStartOffset = 0
+            }
+            return
+        }
+
+        if swipeDirection == 0, abs(horizontal) > 12 {
+            swipeDirection = horizontal > 0 ? 1 : -1
+            dragStartOffset = openRowID == taskID ? -deleteRevealWidth : 0
+            gestureStartedWithClosedRow = dragStartOffset == 0
+        }
+
+        guard swipeDirection != 0 else { return }
+
+        if !snapshot.isEnded {
+            if dragStartOffset < 0 {
+                offset = min(0, max(-deleteRevealWidth, dragStartOffset + horizontal))
+            } else if horizontal < 0 {
+                offset = max(-deleteRevealWidth, horizontal)
+            } else {
+                offset = min(rowWidth, horizontal)
+            }
+            return
+        }
+
+        let shouldComplete = swipeDirection == 1
+            && gestureStartedWithClosedRow
+            && horizontal > rowWidth * completionCommitRatio
+
+        swipeDirection = 0
+        gestureStartedWithClosedRow = false
+        dragStartOffset = 0
+
+        if shouldComplete {
+            withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+                offset = 0
+                openRowID = nil
+            }
+            onComplete()
+        } else if openRowID == taskID && horizontal > 24 {
+            withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+                offset = 0
+                openRowID = nil
+            }
+        } else if horizontal < -44 {
+            withAnimation(.snappy(duration: 0.22)) {
+                offset = -deleteRevealWidth
+                openRowID = taskID
+            }
+        } else {
+            withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+                offset = openRowID == taskID ? -deleteRevealWidth : 0
+            }
+        }
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -1009,69 +1173,7 @@ private struct TaskDaySwipeRow<Content: View>: View {
                     .frame(height: rowHeight)
                     .offset(x: offset)
                     .contentShape(Rectangle())
-                    .simultaneousGesture(
-                        DragGesture(minimumDistance: 12)
-                            .onChanged { value in
-                                let horizontal = value.translation.width
-                                let vertical = value.translation.height
-                                guard abs(horizontal) > abs(vertical) * 1.15 else { return }
 
-                                // Lock the gesture's initial horizontal direction. Reversing a
-                                // left swipe must not turn it into a completion gesture.
-                                if swipeDirection == 0, abs(horizontal) > 12 {
-                                    swipeDirection = horizontal > 0 ? 1 : -1
-                                    gestureStartedWithClosedRow = offset == 0 && openRowID != taskID
-                                }
-
-                                if openRowID == taskID {
-                                    offset = min(0, max(-deleteRevealWidth, -deleteRevealWidth + horizontal))
-                                } else if horizontal < 0 {
-                                    offset = max(-deleteRevealWidth, horizontal)
-                                } else {
-                                    offset = min(geometry.size.width, horizontal)
-                                }
-                            }
-                            .onEnded { value in
-                                let horizontal = value.translation.width
-                                let vertical = value.translation.height
-                                guard abs(horizontal) > abs(vertical) * 1.15 else {
-                                    withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
-                                        offset = openRowID == taskID ? -deleteRevealWidth : 0
-                                    }
-                                    swipeDirection = 0
-                                    gestureStartedWithClosedRow = false
-                                    return
-                                }
-
-                                let shouldComplete = swipeDirection == 1
-                                    && gestureStartedWithClosedRow
-                                    && horizontal > geometry.size.width * completionCommitRatio
-                                swipeDirection = 0
-                                gestureStartedWithClosedRow = false
-
-                                if shouldComplete {
-                                    withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
-                                        offset = 0
-                                        openRowID = nil
-                                    }
-                                    onComplete()
-                                } else if openRowID == taskID && horizontal > 24 {
-                                    withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
-                                        offset = 0
-                                        openRowID = nil
-                                    }
-                                } else if horizontal < -44 {
-                                    withAnimation(.snappy(duration: 0.22)) {
-                                        offset = -deleteRevealWidth
-                                        openRowID = taskID
-                                    }
-                                } else {
-                                    withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
-                                        offset = openRowID == taskID ? -deleteRevealWidth : 0
-                                    }
-                                }
-                            }
-                    )
 
                 // Keep Delete above the shifted row so the capsule remains tappable.
                 HStack {
@@ -1101,6 +1203,18 @@ private struct TaskDaySwipeRow<Content: View>: View {
                 .frame(height: rowHeight)
             }
             .clipped()
+            .background {
+                GeometryReader { proxy in
+                    Color.clear.preference(
+                        key: TaskDaySwipeRowBoundsKey.self,
+                        value: [taskID: proxy.frame(in: .named("TaskDayScrollSpace"))]
+                    )
+                }
+            }
+            .onChange(of: dragSnapshot) { _, snapshot in
+                guard let snapshot, snapshot.taskID == taskID else { return }
+                handleCentralizedDrag(snapshot, rowWidth: geometry.size.width)
+            }
             .onChange(of: openRowID) { _, newValue in
                 if newValue != taskID {
                     withAnimation(.snappy(duration: 0.2)) {

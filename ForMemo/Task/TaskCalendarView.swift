@@ -2275,6 +2275,8 @@ private struct DayTasksInlineView: View {
                             Label("Delete", systemImage: "trash")
                         }
 
+                        Divider()
+                        
                         Button {
                             let wasCompleted = task.isCompleted
                             if task.recurrenceRule != nil {
@@ -2333,13 +2335,14 @@ private struct DayTasksInlineView: View {
                                       : "checkmark.circle"
                               )
                         }
-
+                        .tint(.green)
+                        
                         if task.deadLine != nil {
                             Button {
                                 TaskSingleCalendarExport.shared.present(for: task)
                             } label: {
                                 Label(
-                                    "Add to Calendar",
+                                    "Add to Calendar Apple",
                                     systemImage: "calendar.badge.plus"
                                 )
                             }

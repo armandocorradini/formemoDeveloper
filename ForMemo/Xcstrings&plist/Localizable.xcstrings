@@ -3936,36 +3936,30 @@
         }
       }
     },
-    "Add to Calendar" : {
+    "Add to Calendar Apple" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zum Apple Kalender hinzufügen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add to Calendar Apple"
+            "value" : "Zu Apple Kalender hinzufügen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Añadir al calendario Apple"
+            "value" : "Añadir a Calendario de Apple"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajouter au calendrier Apple"
+            "value" : "Ajouter à Calendrier Apple"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aggiungi al calendario Apple"
+            "value" : "Aggiungi a Calendario Apple"
           }
         }
       }
