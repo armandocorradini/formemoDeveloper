@@ -569,15 +569,25 @@ struct TaskTabView: View {
         Button {
             selectedTab = tag
         } label: {
-            Label(title, systemImage: image)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 6)
-                .background(
-                    selectedTab == tag
-                    ? Color.accentColor.opacity(0.15)
-                    : Color.clear
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+            HStack(spacing: 10) {
+                Image(systemName: image)
+                    .foregroundStyle(
+                        Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue
+                    )
+
+                Text(title)
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 6)
+            .background(
+                selectedTab == tag
+                ? Color.accentColor.opacity(0.15)
+                : Color.clear
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
