@@ -85,7 +85,7 @@ struct TabBarCustomizationView: View {
                         showIconColorPicker = true
                     }
 
-                    Button("Tab Visibility", systemImage: "rectangle.3.group.dashed") {
+                    Button("Tab Visibility", systemImage: "square.on.square.dashed") {
                         showTabVisibility = true
                     }
                 } label: {

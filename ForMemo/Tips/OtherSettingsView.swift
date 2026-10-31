@@ -240,7 +240,7 @@ private struct StartupTabSelectionView: View {
                 NavigationLink {
                     TabVisibilitySettingsView()
                 } label: {
-                    Image(systemName: "rectangle.3.group.dashed")
+                    Image(systemName: "square.on.square.dashed")
                 }
                 .accessibilityLabel(Text("Choose Visible Tabs"))
             }

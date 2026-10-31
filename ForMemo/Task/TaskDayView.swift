@@ -12,8 +12,6 @@ struct TaskDayView: View {
     @State private var selectedDate = Calendar.current.startOfDay(for: .now)
     @State private var taskPendingDeletion: TodoTask?
     @State private var showDeleteConfirmation = false
-    @State private var showAddTaskMenu = false
-    @State private var selectedSlotMinutes = 8 * 60
     @State private var draftTask: TodoTask?
     @State private var showDayOptions = false
     @State private var showCalendarPicker = false
@@ -26,7 +24,7 @@ struct TaskDayView: View {
     @State private var taskRowFrames: [String: CGRect] = [:]
     @State private var centralizedSwipeDrag: TaskDaySwipeDrag?
     @State private var centralizedSwipeAxis: TaskDaySwipeAxis?
-
+    
     private let calendar = Calendar.current
     private var timelineSlots: [Int] {
         let interval = normalizedTimelineInterval(settings.dayTimelineIntervalMinutes)
@@ -129,38 +127,38 @@ struct TaskDayView: View {
                         let slotTasks = tasks(in: hour, minute: minute)
 
                         HStack(alignment: .top, spacing: 8) {
-                            Button {
-                                selectTimelineSlot(slotMinutes)
-                            } label: {
-                                Text(String(format: "%02d:%02d", hour, minute))
-                                    .font(.caption2.monospacedDigit())
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 52, height: 16, alignment: .trailing)
-                                    .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(String(format: String(localized: "Add task at %@"), String(format: "%02d:%02d", hour, minute)))
+                            Text(String(format: "%02d:%02d", hour, minute))
+                                .font(.caption2.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                                .frame(width: 52, height: 16, alignment: .trailing)
+                                .contentShape(Rectangle())
+                                .contextMenu {
+                                    addTaskMenuContent(for: slotMinutes)
+                                }
+                                .accessibilityLabel(String(format: String(localized: "Add task at %@"), String(format: "%02d:%02d", hour, minute)))
 
                             VStack(alignment: .leading, spacing: slotTasks.isEmpty ? 0 : 1) {
-                                Button {
-                                    selectTimelineSlot(slotMinutes)
-                                } label: {
-                                    ZStack {
-                                        Rectangle().fill(Color.clear)
-                                        Rectangle()
-                                            .fill(Color.secondary.opacity(0.32))
-                                            .frame(height: 1)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 16)
-                                    .contentShape(Rectangle())
+                                ZStack {
+                                    Rectangle().fill(Color.clear)
+                                    Rectangle()
+                                        .fill(Color.secondary.opacity(0.32))
+                                        .frame(height: 1)
                                 }
-                                .buttonStyle(.plain)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 16)
+                                .contentShape(Rectangle())
+                                .contextMenu {
+                                    addTaskMenuContent(for: slotMinutes)
+                                }
                                 .accessibilityLabel(String(format: String(localized: "Add task at %@"), String(format: "%02d:%02d", hour, minute)))
 
                                 if slotTasks.isEmpty {
                                     Color.clear
                                         .frame(height: max(0, settings.dayEmptySlotHeight - 16))
+                                        .contentShape(Rectangle())
+                                        .contextMenu {
+                                            addTaskMenuContent(for: slotMinutes)
+                                        }
                                 } else {
                                     ForEach(Array(slotTasks.enumerated()), id: \.element.id) { item in
                                         taskRow(item.element)
@@ -179,20 +177,20 @@ struct TaskDayView: View {
                             [slotMinutes: $0]
                         }
                         .padding(.horizontal, 10)
-                        .popover(
-                            isPresented: addTaskPopoverBinding(for: slotMinutes),
-                            attachmentAnchor: .point(.center),
-                            arrowEdge: .top
-                        ) {
-                            addTaskPopoverContent
-                                .presentationCompactAdaptation(.popover)
-                        }
                     }
                 }
                 .padding(.bottom, 20)
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
             .coordinateSpace(name: "TaskDayScrollSpace")
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    guard openSwipeTaskID != nil else { return }
+                    withAnimation(.snappy(duration: 0.2)) {
+                        openSwipeTaskID = nil
+                    }
+                }
+            )
             .onPreferenceChange(TaskDaySwipeRowBoundsKey.self) { taskRowFrames = $0 }
             .simultaneousGesture(
                 DragGesture(minimumDistance: 8, coordinateSpace: .named("TaskDayScrollSpace"))
@@ -210,7 +208,7 @@ struct TaskDayView: View {
                                 return
                             }
 
-                            guard horizontal >= vertical * 1.35 else { return }
+                            guard horizontal >= vertical * 1.2 else { return }
                             centralizedSwipeAxis = .horizontal
                         }
 
@@ -461,61 +459,43 @@ struct TaskDayView: View {
         }
     }
 
-    private func selectTimelineSlot(_ minutes: Int) {
-        selectedSlotMinutes = minutes
-        showAddTaskMenu = true
-    }
+    @ViewBuilder
+    private func addTaskMenuContent(for slotMinutes: Int) -> some View {
+        let hour = slotMinutes / 60
+        let minute = slotMinutes % 60
+        let timeTitle = String(format: "%02d:%02d", hour, minute)
+        let slotDate = calendar.date(
+            bySettingHour: hour,
+            minute: minute,
+            second: 0,
+            of: selectedDate
+        ) ?? selectedDate
+        let timeColor: Color = slotDate < .now ? .red : .blue
 
-    private func addTaskPopoverBinding(for slotMinutes: Int) -> Binding<Bool> {
-        Binding(
-            get: { showAddTaskMenu && selectedSlotMinutes == slotMinutes },
-            set: { isPresented in
-                if !isPresented {
-                    showAddTaskMenu = false
-                }
+        Button {
+            // Informational row; intentionally has no action.
+        } label: {
+            Label {
+                Text(timeTitle)
+            } icon: {
+                Image(systemName: "clock")
+                    .foregroundStyle(timeColor)
             }
-        )
-    }
-
-    private var addTaskPopoverContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            let hour = selectedSlotMinutes / 60
-            let minute = selectedSlotMinutes % 60
-
-            let slotDate = calendar.date(
-                bySettingHour: hour,
-                minute: minute,
-                second: 0,
-                of: selectedDate
-            ) ?? selectedDate
-            let isPastDateTime = slotDate < .now
-
-            Text(String(format: "%02d:%02d", hour, minute))
-                .font(.caption)
-                .foregroundStyle(isPastDateTime ? .red : .blue)
-
-            Button {
-                draftTask = makeNewTask(hour: hour, minute: minute)
-                showAddTaskMenu = false
-            } label: {
-                Label {
-                    Text(String(localized: "Add task"))
-                        .foregroundStyle(.primary)
-                } icon: {
-                    Image(systemName: "plus.circle.fill")
-                        .foregroundStyle(.green)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .buttonStyle(.plain)
-
-//            Button(String(localized: "Cancel"), role: .cancel) {
-//                showAddTaskMenu = false
-//            }
-//            .buttonStyle(.plain)
         }
-        .padding(16)
-        .frame(minWidth: 160, alignment: .leading)
+        .tint(timeColor)
+
+        Button {
+            draftTask = makeNewTask(hour: hour, minute: minute)
+        } label: {
+            Label {
+                Text(String(localized: "Add task"))
+            } icon: {
+                Image(systemName: "plus.circle.fill")
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(.green)
+            }
+        }
+        .tint(.green)
     }
 
     private func makeNewTask(hour: Int, minute: Int) -> TodoTask {
@@ -1080,7 +1060,7 @@ private struct TaskDaySwipeRow<Content: View>: View {
 
     private let deleteRevealWidth: CGFloat = 60
     private let actionCapsuleHeight: CGFloat = 40
-    private let completionCommitRatio: CGFloat = 0.42
+    private let completionCommitRatio: CGFloat = 0.32
 
     private func handleCentralizedDrag(_ snapshot: TaskDaySwipeDrag, rowWidth: CGFloat) {
         let horizontal = snapshot.translation.width
@@ -1096,7 +1076,7 @@ private struct TaskDaySwipeRow<Content: View>: View {
             return
         }
 
-        if swipeDirection == 0, abs(horizontal) > 12 {
+        if swipeDirection == 0, abs(horizontal) > 8 {
             swipeDirection = horizontal > 0 ? 1 : -1
             dragStartOffset = openRowID == taskID ? -deleteRevealWidth : 0
             gestureStartedWithClosedRow = dragStartOffset == 0
@@ -1117,30 +1097,30 @@ private struct TaskDaySwipeRow<Content: View>: View {
 
         let shouldComplete = swipeDirection == 1
             && gestureStartedWithClosedRow
-            && horizontal > rowWidth * completionCommitRatio
+            && horizontal > min(130, max(88, rowWidth * completionCommitRatio))
 
         swipeDirection = 0
         gestureStartedWithClosedRow = false
         dragStartOffset = 0
 
         if shouldComplete {
-            withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+            withAnimation(.interactiveSpring(response: 0.34, dampingFraction: 0.82, blendDuration: 0.10)) {
                 offset = 0
                 openRowID = nil
             }
             onComplete()
         } else if openRowID == taskID && horizontal > 24 {
-            withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+            withAnimation(.interactiveSpring(response: 0.34, dampingFraction: 0.82, blendDuration: 0.10)) {
                 offset = 0
                 openRowID = nil
             }
-        } else if horizontal < -44 {
-            withAnimation(.snappy(duration: 0.22)) {
+        } else if horizontal < -36 {
+            withAnimation(.interactiveSpring(response: 0.34, dampingFraction: 0.82, blendDuration: 0.10)) {
                 offset = -deleteRevealWidth
                 openRowID = taskID
             }
         } else {
-            withAnimation(.interactiveSpring(response: 0.42, dampingFraction: 0.86, blendDuration: 0.12)) {
+            withAnimation(.interactiveSpring(response: 0.34, dampingFraction: 0.82, blendDuration: 0.10)) {
                 offset = openRowID == taskID ? -deleteRevealWidth : 0
             }
         }
@@ -1161,7 +1141,7 @@ private struct TaskDaySwipeRow<Content: View>: View {
                             .frame(height: actionCapsuleHeight)
                             .frame(width: min(max(0, offset - 12), min(geometry.size.width * 0.72, 180)))
                             .background(Color.green, in: Capsule())
-                            .opacity(offset >= 76 ? 1 : 0.85)
+                            .opacity(min(1, max(0.35, (offset - 18) / 58)))
                     }
                     Spacer(minLength: 0)
                 }
@@ -1197,7 +1177,7 @@ private struct TaskDaySwipeRow<Content: View>: View {
                     }
                     .buttonStyle(.plain)
                     .frame(width: deleteRevealWidth, height: rowHeight)
-                    .opacity(offset < -8 ? 1 : 0)
+                    .opacity(min(1.0, max(0.0, abs(min(0.0, offset)) / CGFloat(24))))
                     .allowsHitTesting(offset < -8)
                 }
                 .frame(height: rowHeight)

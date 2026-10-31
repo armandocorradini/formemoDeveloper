@@ -312,7 +312,7 @@ struct SettingsView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             } icon: {
-                                Image(systemName: "rectangle.3.group.dashed")
+                                Image(systemName: "square.on.square.dashed")
                                     .foregroundStyle(.blue)
                                     .frame(width: iconWidth)
                             }
