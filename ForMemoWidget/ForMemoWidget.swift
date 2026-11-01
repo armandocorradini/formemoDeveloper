@@ -371,13 +371,20 @@ struct ForMemoAgendaEntryView: View {
     private var days: [ForMemoUpcomingDay] {
         guard let snapshot = entry.snapshot else { return [] }
         let today = calendar.startOfDay(for: entry.date)
-        let dayLimit = family == .systemLarge ? 7 : 4
 
-        return (0..<dayLimit).compactMap { offset in
-            guard
-                let day = calendar.date(byAdding: .day, value: offset, to: today),
-                let nextDay = calendar.date(byAdding: .day, value: 1, to: day)
-            else { return nil }
+        // Include every future calendar day that actually contains an activity.
+        // The widget's visible-row budget, rather than an arbitrary date horizon,
+        // determines how many days can be displayed.
+        let dates = Set(snapshot.tasks.compactMap { task -> Date? in
+            guard !task.isCompleted, let deadline = task.deadline else { return nil }
+            let day = calendar.startOfDay(for: deadline)
+            return day >= today ? day : nil
+        }).sorted()
+
+        return dates.compactMap { day in
+            guard let nextDay = calendar.date(byAdding: .day, value: 1, to: day) else {
+                return nil
+            }
 
             let tasks = snapshot.tasks
                 .filter { task in
@@ -396,13 +403,8 @@ struct ForMemoAgendaEntryView: View {
         }
     }
 
-    private var visibleDays: [ForMemoUpcomingDay] {
-        let nonEmptyDays = days.filter { !$0.tasks.isEmpty }
-        return Array(nonEmptyDays.prefix(family == .systemLarge ? 7 : 3))
-    }
-
-    // The Small widget spends its limited vertical space on today's tasks first.
-    // Each day heading uses one row; remaining rows are filled with tasks in date order.
+    // Small and medium widgets have a compact, fixed row budget.
+    // Each day heading uses one row; the remaining rows are filled chronologically.
     private var smallVisibleDays: [ForMemoVisibleUpcomingDay] {
         var remainingRows = 6
         var result: [ForMemoVisibleUpcomingDay] = []
@@ -419,6 +421,52 @@ struct ForMemoAgendaEntryView: View {
         return result
     }
 
+    // Calculates how many future activities fit in the actual large-widget
+    // height. The estimate includes day headings, task rows, section spacing,
+    // and the optional "+ more" line so content does not run outside the widget.
+    private func largeVisibleDays(availableHeight: CGFloat) -> [ForMemoVisibleUpcomingDay] {
+        let headingHeight: CGFloat = 19
+        let taskHeight: CGFloat = 17
+        let moreHeight: CGFloat = 11
+        // Compact spacing between day sections; the separator is now under
+        // the first event time of each new day and does not add a full row.
+        let sectionSpacing: CGFloat = 3
+
+        var remainingHeight = availableHeight
+        var result: [ForMemoVisibleUpcomingDay] = []
+
+        for day in days where !day.tasks.isEmpty {
+            let spacing = result.isEmpty ? 0 : sectionSpacing
+            guard remainingHeight >= spacing + headingHeight + taskHeight else { break }
+            remainingHeight -= spacing + headingHeight
+
+            let tasksThatFitWithoutMore = max(0, Int(remainingHeight / taskHeight))
+            let taskLimit: Int
+
+            if day.tasks.count <= tasksThatFitWithoutMore {
+                taskLimit = day.tasks.count
+            } else {
+                let tasksThatFitWithMore = max(
+                    0,
+                    Int(max(0, remainingHeight - moreHeight) / taskHeight)
+                )
+                taskLimit = min(day.tasks.count, tasksThatFitWithMore)
+            }
+
+            guard taskLimit > 0 else { break }
+
+            result.append(ForMemoVisibleUpcomingDay(day: day, taskLimit: taskLimit))
+            remainingHeight -= CGFloat(taskLimit) * taskHeight
+
+            if day.tasks.count > taskLimit {
+                remainingHeight -= moreHeight
+                break
+            }
+        }
+
+        return result
+    }
+
     private var hasOverdueTasksFromPreviousDays: Bool {
         guard let snapshot = entry.snapshot else { return false }
         let todayStart = calendar.startOfDay(for: entry.date)
@@ -429,50 +477,62 @@ struct ForMemoAgendaEntryView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(String(localized: "Upcoming Activities"))
-                .font(.system(size: family == .systemSmall ? 15 : (family == .systemLarge ? 17 : 15), weight: .bold, design: .rounded))
-                .lineLimit(1)
-                .foregroundStyle(.primary)
-                .padding(.bottom, family == .systemSmall ? 7 : 8)
+        GeometryReader { geometry in
+            let isCompact = family == .systemSmall || family == .systemMedium
+            // Reserve the actual outer padding and fixed title/separator area.
+            let largeContentHeight = max(0, geometry.size.height - 69)
+            let largeSections = largeVisibleDays(availableHeight: largeContentHeight)
 
-            Rectangle()
-                .fill(hasOverdueTasksFromPreviousDays ? Color.red.opacity(0.85) : Color.primary.opacity(0.14))
-                .frame(height: 1)
-                .padding(.bottom, family == .systemSmall ? 6 : 7)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(String(localized: "Upcoming Activities"))
+                    .font(.system(size: family == .systemSmall ? 15 : (family == .systemLarge ? 17 : 15), weight: .bold, design: .rounded))
+                    .lineLimit(1)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(.primary)
+                    .padding(.bottom, family == .systemSmall ? 7 : 8)
 
-            if entry.snapshot == nil {
-                Text(String(localized: "Open ForMemo to refresh activities."))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            } else if ((family == .systemSmall || family == .systemMedium) ? smallVisibleDays.isEmpty : visibleDays.isEmpty) {
-                Text(String(localized: "No activities due in the coming days"))
-                    .font(family == .systemSmall ? .caption : .subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxHeight: .infinity, alignment: .topLeading)
-            } else {
-                VStack(alignment: .leading, spacing: family == .systemLarge ? 6 : 3) {
-                    if family == .systemSmall || family == .systemMedium {
-                        ForEach(smallVisibleDays) { section in
-                            daySection(
-                                section.day,
-                                isLast: section.id == smallVisibleDays.last?.id,
-                                taskLimitOverride: section.taskLimit
-                            )
-                        }
-                    } else {
-                        ForEach(Array(visibleDays.enumerated()), id: \.element.id) { index, day in
-                            daySection(day, isLast: index == visibleDays.count - 1)
+                Rectangle()
+                    .fill(hasOverdueTasksFromPreviousDays ? Color.red.opacity(0.85) : Color.primary.opacity(0.14))
+                    .frame(height: 1)
+                    .padding(.bottom, family == .systemSmall ? 6 : 7)
+
+                if entry.snapshot == nil {
+                    Text(String(localized: "Open ForMemo to refresh activities."))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if (isCompact ? smallVisibleDays.isEmpty : largeSections.isEmpty) {
+                    Text(String(localized: "No activities due in the coming days"))
+                        .font(family == .systemSmall ? .caption : .subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(maxHeight: .infinity, alignment: .topLeading)
+                } else {
+                    VStack(alignment: .leading, spacing: family == .systemLarge ? 2 : 1) {
+                        if isCompact {
+                            ForEach(Array(smallVisibleDays.enumerated()), id: \.element.id) { index, section in
+                                daySection(
+                                    section.day,
+                                    isFirstDay: index == 0,
+                                    taskLimitOverride: section.taskLimit
+                                )
+                            }
+                        } else {
+                            ForEach(Array(largeSections.enumerated()), id: \.element.id) { index, section in
+                                daySection(
+                                    section.day,
+                                    isFirstDay: index == 0,
+                                    taskLimitOverride: section.taskLimit
+                                )
+                            }
                         }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            }
 
-            Spacer(minLength: 0)
+                Spacer(minLength: 0)
+            }
+            .padding(family == .systemLarge ? 16 : (family == .systemSmall ? 11 : 12))
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .topLeading)
         }
-        .padding(family == .systemLarge ? 16 : (family == .systemSmall ? 11 : 12))
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .containerBackground(for: .widget) {
             Color(uiColor: UIColor { traits in
                 traits.userInterfaceStyle == .dark ? .black : .white
@@ -481,13 +541,16 @@ struct ForMemoAgendaEntryView: View {
     }
 
     @ViewBuilder
-    private func daySection(_ day: ForMemoUpcomingDay, isLast: Bool, taskLimitOverride: Int? = nil) -> some View {
+    private func daySection(_ day: ForMemoUpcomingDay, isFirstDay: Bool, taskLimitOverride: Int? = nil) -> some View {
         let taskLimit = taskLimitOverride ?? taskLimitPerDay
         VStack(alignment: .leading, spacing: family == .systemLarge ? 4 : (family == .systemSmall ? 3 : 3)) {
+            
+            
             Text(dayHeading(day.date))
+                .padding(.top, isFirstDay ? 0 : 8)
                 .font(.system(size: family == .systemSmall ? 11 : (family == .systemLarge ? 12 : 11), weight: .bold, design: .rounded))
-                .foregroundStyle(isToday(day.date) ? Color.accentColor : Color.secondary)
-                .textCase(.uppercase)
+                .foregroundStyle(isToday(day.date) ? Color.accentColor : Color.accentColor.opacity(1))
+                .textCase(isToday(day.date) ? .uppercase : .lowercase)
                 .lineLimit(1)
 
             VStack(alignment: .leading, spacing: 0) {
@@ -514,6 +577,8 @@ struct ForMemoAgendaEntryView: View {
                                 .monospacedDigit()
                                 .foregroundStyle(deadline < entry.date ? Color.red : Color.secondary)
                                 .fixedSize(horizontal: true, vertical: false)
+                               
+                            
                                 .frame(minWidth: family == .systemLarge ? 42 : (family == .systemSmall ? 39 : 38), alignment: .leading)
                         }
 
@@ -534,6 +599,7 @@ struct ForMemoAgendaEntryView: View {
                         .padding(.leading, 13)
                 }
             }
+
         }
     }
 

@@ -183,70 +183,13 @@ struct TaskDayView: View {
             }
             .contentMargins(.bottom, 70, for: .scrollContent)
             .coordinateSpace(name: "TaskDayScrollSpace")
-            .simultaneousGesture(
-                TapGesture().onEnded {
-                    guard openSwipeTaskID != nil else { return }
-                    withAnimation(.snappy(duration: 0.2)) {
-                        openSwipeTaskID = nil
-                    }
-                }
-            )
-            .onPreferenceChange(TaskDaySwipeRowBoundsKey.self) { taskRowFrames = $0 }
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 8, coordinateSpace: .named("TaskDayScrollSpace"))
-                    .onChanged { value in
-                        let horizontal = abs(value.translation.width)
-                        let vertical = abs(value.translation.height)
-
-                        // Lock the gesture to one axis. Vertical scrolling must not
-                        // publish drag snapshots to every task row.
-                        if centralizedSwipeAxis == nil {
-                            guard max(horizontal, vertical) >= 14 else { return }
-
-                            if vertical >= horizontal * 1.2 {
-                                centralizedSwipeAxis = .vertical
-                                return
-                            }
-
-                            guard horizontal >= vertical * 1.2 else { return }
-                            centralizedSwipeAxis = .horizontal
-                        }
-
-                        guard centralizedSwipeAxis == .horizontal else { return }
-
-                        let taskID = centralizedSwipeDrag?.isEnded == false
-                            ? centralizedSwipeDrag?.taskID
-                            : taskRowFrames.first(where: { $0.value.contains(value.startLocation) })?.key
-                        guard let taskID else { return }
-
-                        centralizedSwipeDrag = TaskDaySwipeDrag(
-                            taskID: taskID,
-                            startLocation: value.startLocation,
-                            translation: value.translation,
-                            isEnded: false
-                        )
-                    }
-                    .onEnded { value in
-                        defer { centralizedSwipeAxis = nil }
-
-                        guard centralizedSwipeAxis == .horizontal,
-                              let taskID = centralizedSwipeDrag?.taskID else {
-                            centralizedSwipeDrag = nil
-                            return
-                        }
-
-                        centralizedSwipeDrag = TaskDaySwipeDrag(
-                            taskID: taskID,
-                            startLocation: value.startLocation,
-                            translation: value.translation,
-                            isEnded: true
-                        )
-
-                        Task { @MainActor in
-                            await Task.yield()
-                            centralizedSwipeDrag = nil
-                        }
-                    }
+            .modifier(
+                TaskDaySwipeContainerModifier(
+                    openSwipeTaskID: $openSwipeTaskID,
+                    taskRowFrames: $taskRowFrames,
+                    centralizedSwipeDrag: $centralizedSwipeDrag,
+                    centralizedSwipeAxis: $centralizedSwipeAxis
+                )
             )
             .backgroundPreferenceValue(TimelineSlotBoundsKey.self) { anchors in
                 TimelineView(.periodic(from: .now, by: 60)) { timelineContext in
@@ -726,162 +669,191 @@ struct TaskDayView: View {
         }
     }
 
+    @ViewBuilder
     private func taskRow(_ task: TodoTask) -> some View {
+        let rowHeight = max(44, settings.dayEmptySlotHeight)
+        let completionTitle = String(localized: task.isCompleted ? "To do" : "Complete")
+        let completionIcon = task.isCompleted ? "arrow.uturn.backward.circle" : "checkmark.circle"
+        let taskID = String(describing: task.persistentModelID)
+
+        if #available(iOS 27.0, *) {
+            TaskDayNativeSwipeRow(
+                rowHeight: rowHeight,
+                completionTitle: completionTitle,
+                completionIcon: completionIcon,
+                onComplete: { toggleCompleted(task) },
+                onDelete: { requestDeletion(of: task) },
+                onTap: { selectedTaskForNavigation = task }
+            ) {
+                taskRowContent(task, includeTapGesture: false)
+            }
+            // Recreate the native swipe row when completion changes so the
+            // system dismisses the revealed action instead of relabeling it.
+            .id(task.isCompleted)
+        } else {
+            TaskDaySwipeRow(
+                taskID: taskID,
+                rowHeight: rowHeight,
+                completionTitle: completionTitle,
+                completionIcon: completionIcon,
+                openRowID: $openSwipeTaskID,
+                dragSnapshot: centralizedSwipeDrag,
+                onComplete: { toggleCompleted(task) },
+                onDelete: { requestDeletion(of: task) }
+            ) {
+                taskRowContent(task)
+            }
+        }
+    }
+
+    private func taskRowContent(_ task: TodoTask, includeTapGesture: Bool = true) -> some View {
         let isOverdue = !task.isCompleted && (task.deadLine.map { $0 < .now } ?? false)
         let criticalColor = Color(hex: settings.highlightColorHex) ?? .red
 
-        return TaskDaySwipeRow(
-            taskID: String(describing: task.persistentModelID),
-            rowHeight: max(44, settings.dayEmptySlotHeight),
-            completionTitle: String(localized: task.isCompleted ? "To do" : "Complete"),
-            completionIcon: task.isCompleted ? "arrow.uturn.backward.circle" : "checkmark.circle",
-            openRowID: $openSwipeTaskID,
-            dragSnapshot: centralizedSwipeDrag,
-            onComplete: { toggleCompleted(task) },
-            onDelete: { requestDeletion(of: task) }
-        ) {
-            HStack(spacing: 7) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(task.priority == .critical ? criticalColor : Color.clear)
-                    .frame(width: 3)
-                    .padding(.vertical, 2)
+        return HStack(spacing: 7) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(task.priority == .critical ? criticalColor : Color.clear)
+                .frame(width: 3)
+                .padding(.vertical, 2)
 
-                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
-                    .font(.system(size: 15, weight: .medium))
-                    .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
-                    .foregroundStyle(
-                        settings.iconStyle == .monochrome
-                            ? Color.primary
-                            : (task.mainTag?.color ?? task.status.color),
-                        .primary
-                    )
-                    .frame(width: 20, height: 20, alignment: .center)
-                    .frame(width: 20, alignment: .center)
+            Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
+                .font(.system(size: 15, weight: .medium))
+                .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
+                .foregroundStyle(
+                    settings.iconStyle == .monochrome
+                        ? Color.primary
+                        : (task.mainTag?.color ?? task.status.color),
+                    .primary
+                )
+                .frame(width: 20, height: 20, alignment: .center)
+                .frame(width: 20, alignment: .center)
 
-                VStack(alignment: .leading, spacing: 1) {
-                    if let deadline = task.deadLine {
-                        HStack(spacing: 10) {
-                            Image(systemName: "clock")
-                                .font(.caption2)
-                                .foregroundStyle(isOverdue ? Color.red : Color.blue)
-                            Text(deadline.formatted(.dateTime.hour().minute()))
-                                .font(.caption2.monospacedDigit())
-                                .foregroundStyle(isOverdue ? Color.red : Color.blue)
+            VStack(alignment: .leading, spacing: 1) {
+                if let deadline = task.deadLine {
+                    HStack(spacing: 10) {
+                        Image(systemName: "clock")
+                            .font(.caption2)
+                            .foregroundStyle(isOverdue ? Color.red : Color.blue)
+                        Text(deadline.formatted(.dateTime.hour().minute()))
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(isOverdue ? Color.red : Color.blue)
 
-                            if let reminderMinutes = task.reminderOffsetMinutes, reminderMinutes > 0 {
-                                HStack(spacing: 3) {
-                                    Image(systemName: "bell")
-                                    Text(formattedReminderOffset(for: reminderMinutes))
-                                }
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .accessibilityElement(children: .combine)
-                                .accessibilityLabel(
-                                    String(localized: "Reminder") + ": " + formattedReminderOffset(for: reminderMinutes)
-                                )
+                        if let reminderMinutes = task.reminderOffsetMinutes, reminderMinutes > 0 {
+                            HStack(spacing: 3) {
+                                Image(systemName: "bell")
+                                Text(formattedReminderOffset(for: reminderMinutes))
                             }
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel(
+                                String(localized: "Reminder") + ": " + formattedReminderOffset(for: reminderMinutes)
+                            )
                         }
                     }
-
-                    Text(task.title.isEmpty ? String(localized: "Untitled task") : task.title)
-                        .font(.subheadline)
-                        .foregroundStyle(task.isCompleted ? Color.secondary : Color.primary)
-                        .underline(isOverdue, color: .red)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
                 }
+
+                Text(task.title.isEmpty ? String(localized: "Untitled task") : task.title)
+                    .font(.subheadline)
+                    .foregroundStyle(task.isCompleted ? Color.secondary : Color.primary)
+                    .underline(isOverdue, color: .red)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
 //                .padding(.bottom, 8)
 
-                Spacer(minLength: 4)
+            Spacer(minLength: 4)
 
-                HStack(spacing: 7) {
-                    if task.mainTag != nil, let priorityIcon = task.priority.systemImage {
-                        Image(systemName: priorityIcon)
-                            .foregroundStyle(task.priority == .critical ? Color.red : (task.mainTag?.color ?? .secondary))
-                            .accessibilityLabel(String(localized: "Priority"))
-                    }
-
-                    if task.hasVisibleTaskAttachments {
-                        Image(systemName: "paperclip")
-                            .foregroundStyle(.secondary)
-                            .accessibilityLabel(String(localized: "Attachments"))
-                    }
-
-                    if task.locationName != nil || task.locationCoordinate != nil {
-                        Image(systemName: "location.fill")
-                            .foregroundStyle(.secondary)
-                            .accessibilityLabel(String(localized: "Location"))
-                    }
-
+            HStack(spacing: 7) {
+                if task.mainTag != nil, let priorityIcon = task.priority.systemImage {
+                    Image(systemName: priorityIcon)
+                        .foregroundStyle(task.priority == .critical ? Color.red : (task.mainTag?.color ?? .secondary))
+                        .accessibilityLabel(String(localized: "Priority"))
                 }
-                .font(.system(size: 10, weight: .medium))
+
+                if task.hasVisibleTaskAttachments {
+                    Image(systemName: "paperclip")
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel(String(localized: "Attachments"))
+                }
+
+                if task.locationName != nil || task.locationCoordinate != nil {
+                    Image(systemName: "location.fill")
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel(String(localized: "Location"))
+                }
+
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 4)
-            .frame(height: max(44, settings.dayEmptySlotHeight), alignment: .center)
-            .contentShape(Rectangle())
-            .opacity(task.isCompleted ? 0.55 : 1)
-            .strikethrough(task.isCompleted, color: .secondary)
-            .contentShape(Rectangle())
-            .onTapGesture {
+            .font(.system(size: 10, weight: .medium))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 4)
+        .frame(height: max(44, settings.dayEmptySlotHeight), alignment: .center)
+        .contentShape(Rectangle())
+        .opacity(task.isCompleted ? 0.55 : 1)
+        .strikethrough(task.isCompleted, color: .secondary)
+        .contentShape(Rectangle())
+        .modifier(
+            TaskDayRowTapModifier(enabled: includeTapGesture) {
                 if openSwipeTaskID != nil {
                     openSwipeTaskID = nil
                     return
                 }
                 selectedTaskForNavigation = task
             }
-        .contextMenu {
-            Button(role: .destructive) {
-                requestDeletion(of: task)
-            } label: {
-                Label(String(localized: "Delete"), systemImage: "trash")
-            }
-            
-            Divider()
-            
+        )
+    .contextMenu {
+        Button(role: .destructive) {
+            requestDeletion(of: task)
+        } label: {
+            Label(String(localized: "Delete"), systemImage: "trash")
+        }
+        
+        Divider()
+        
+        Button {
+            toggleCompleted(task)
+        } label: {
+            Label(
+                task.isCompleted ? String(localized: "To do") : String(localized: "Complete"),
+                systemImage: task.isCompleted
+                    ? "arrow.uturn.backward.circle"
+                    : "checkmark.circle"
+            )
+        
+        }
+        .tint(.green)
+        
+        if task.deadLine != nil {
             Button {
-                toggleCompleted(task)
+                TaskSingleCalendarExport.shared.present(for: task)
             } label: {
-                Label(
-                    task.isCompleted ? String(localized: "To do") : String(localized: "Complete"),
-                    systemImage: task.isCompleted
-                        ? "arrow.uturn.backward.circle"
-                        : "checkmark.circle"
-                )
-            
-            }
-            .tint(.green)
-            
-            if task.deadLine != nil {
-                Button {
-                    TaskSingleCalendarExport.shared.present(for: task)
-                } label: {
-                    Label(String(localized: "Add to Calendar Apple"), systemImage: "calendar.badge.plus")
-                }
-            }
-            TaskRescheduleMenu(task: task)
-            if let deadline = task.deadLine, deadline < .now {
-                Menu {
-                    snoozeButton(task, minutes: 5, title: String(localized: "5 minutes"), icon: "5.arrow.trianglehead.clockwise")
-                    snoozeButton(task, minutes: 15, title: String(localized: "15 minutes"), icon: "15.arrow.trianglehead.clockwise")
-                    snoozeButton(task, minutes: 30, title: String(localized: "30 minutes"), icon: "30.arrow.trianglehead.clockwise")
-                    snoozeButton(task, minutes: 60, title: String(localized: "1 hour"), icon: "60.arrow.trianglehead.clockwise")
-                    snoozeButton(task, minutes: 180, title: String(localized: "3 hours"), icon: "plus.arrow.trianglehead.clockwise")
-                } label: {
-                    Label(String(localized: "Snooze"), systemImage: "timer")
-                }
-            }
-            Menu {
-                duplicateButton(task, includingAttachments: false, title: String(localized: "Task"), icon: "text.badge.checkmark")
-                if task.hasVisibleTaskAttachments {
-                    duplicateButton(task, includingAttachments: true, title: String(localized: "Task & Attachments"), icon: "rectangle.and.paperclip")
-                }
-            } label: {
-                Label(String(localized: "Duplicate"), systemImage: "plus.square.on.square")
-            }
+                Label(String(localized: "Add to Calendar Apple"), systemImage: "calendar.badge.plus")
             }
         }
+        TaskRescheduleMenu(task: task)
+        if let deadline = task.deadLine, deadline < .now {
+            Menu {
+                snoozeButton(task, minutes: 5, title: String(localized: "5 minutes"), icon: "5.arrow.trianglehead.clockwise")
+                snoozeButton(task, minutes: 15, title: String(localized: "15 minutes"), icon: "15.arrow.trianglehead.clockwise")
+                snoozeButton(task, minutes: 30, title: String(localized: "30 minutes"), icon: "30.arrow.trianglehead.clockwise")
+                snoozeButton(task, minutes: 60, title: String(localized: "1 hour"), icon: "60.arrow.trianglehead.clockwise")
+                snoozeButton(task, minutes: 180, title: String(localized: "3 hours"), icon: "plus.arrow.trianglehead.clockwise")
+            } label: {
+                Label(String(localized: "Snooze"), systemImage: "timer")
+            }
+        }
+        Menu {
+            duplicateButton(task, includingAttachments: false, title: String(localized: "Task"), icon: "text.badge.checkmark")
+            if task.hasVisibleTaskAttachments {
+                duplicateButton(task, includingAttachments: true, title: String(localized: "Task & Attachments"), icon: "rectangle.and.paperclip")
+            }
+        } label: {
+            Label(String(localized: "Duplicate"), systemImage: "plus.square.on.square")
+        }
+        }
     }
+
     private func formattedReminderOffset(for minutes: Int) -> String {
         if minutes < 60 {
             return String(localized: "\(minutes) minutes before")
@@ -1039,6 +1011,125 @@ private struct TimelineSlotBoundsKey: PreferenceKey {
         nextValue: () -> [Int: Anchor<CGRect>]
     ) {
         value.merge(nextValue(), uniquingKeysWith: { _, new in new })
+    }
+}
+
+private struct TaskDaySwipeContainerModifier: ViewModifier {
+    @Binding var openSwipeTaskID: String?
+    @Binding var taskRowFrames: [String: CGRect]
+    @Binding var centralizedSwipeDrag: TaskDaySwipeDrag?
+    @Binding var centralizedSwipeAxis: TaskDaySwipeAxis?
+
+    func body(content: Content) -> some View {
+        if #available(iOS 27.0, *) {
+            content.swipeActionsContainer()
+        } else {
+            content
+                .simultaneousGesture(
+                    TapGesture().onEnded {
+                        guard openSwipeTaskID != nil else { return }
+                        withAnimation(.snappy(duration: 0.2)) {
+                            openSwipeTaskID = nil
+                        }
+                    }
+                )
+                .onPreferenceChange(TaskDaySwipeRowBoundsKey.self) { taskRowFrames = $0 }
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 8, coordinateSpace: .named("TaskDayScrollSpace"))
+                        .onChanged { value in
+                            let horizontal = abs(value.translation.width)
+                            let vertical = abs(value.translation.height)
+
+                            // Lock the gesture to one axis. Vertical scrolling must not
+                            // publish drag snapshots to every task row.
+                            if centralizedSwipeAxis == nil {
+                                guard max(horizontal, vertical) >= 14 else { return }
+                                if vertical >= horizontal * 1.2 {
+                                    centralizedSwipeAxis = .vertical
+                                    return
+                                }
+                                guard horizontal >= vertical * 1.2 else { return }
+                                centralizedSwipeAxis = .horizontal
+                            }
+
+                            guard centralizedSwipeAxis == .horizontal else { return }
+                            let taskID = centralizedSwipeDrag?.isEnded == false
+                                ? centralizedSwipeDrag?.taskID
+                                : taskRowFrames.first(where: { $0.value.contains(value.startLocation) })?.key
+                            guard let taskID else { return }
+
+                            centralizedSwipeDrag = TaskDaySwipeDrag(
+                                taskID: taskID,
+                                startLocation: value.startLocation,
+                                translation: value.translation,
+                                isEnded: false
+                            )
+                        }
+                        .onEnded { value in
+                            defer { centralizedSwipeAxis = nil }
+                            guard centralizedSwipeAxis == .horizontal,
+                                  let taskID = centralizedSwipeDrag?.taskID else {
+                                centralizedSwipeDrag = nil
+                                return
+                            }
+                            centralizedSwipeDrag = TaskDaySwipeDrag(
+                                taskID: taskID,
+                                startLocation: value.startLocation,
+                                translation: value.translation,
+                                isEnded: true
+                            )
+                            Task { @MainActor in
+                                await Task.yield()
+                                centralizedSwipeDrag = nil
+                            }
+                        }
+                )
+        }
+    }
+}
+
+private struct TaskDayRowTapModifier: ViewModifier {
+    let enabled: Bool
+    let action: () -> Void
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if enabled {
+            content.onTapGesture(perform: action)
+        } else {
+            content
+        }
+    }
+}
+
+@available(iOS 27.0, *)
+private struct TaskDayNativeSwipeRow<Content: View>: View {
+    let rowHeight: CGFloat
+    let completionTitle: String
+    let completionIcon: String
+    let onComplete: () -> Void
+    let onDelete: () -> Void
+    let onTap: () -> Void
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        content
+            .frame(maxWidth: .infinity)
+            .frame(height: rowHeight)
+            .contentShape(Rectangle())
+            .simultaneousGesture(TapGesture().onEnded(onTap))
+            .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                Button(action: onComplete) {
+                    Label(completionTitle, systemImage: completionIcon)
+                }
+                .tint(.green)
+            }
+            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                Button(role: .destructive, action: onDelete) {
+                    Label(String(localized: "Delete"), systemImage: "trash")
+                }
+                .tint(.red)
+            }
     }
 }
 
