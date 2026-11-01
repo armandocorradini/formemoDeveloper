@@ -7,15 +7,35 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
     private var isExtensionVisible = false
     private var isAuthenticating = false
 
+    @IBOutlet private weak var navigationBar: UINavigationBar!
+    private var credentialsScrollView: UIScrollView?
+    private var credentialsHeadingLabel: UILabel?
+    private var didLogInitialLayout = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "ForMemo Vault"
+        // Keep the system navigation area free of a second, competing title.
+        title = nil
+        // Keep the AutoFill panel compact. The account list scrolls inside it.
+        preferredContentSize = CGSize(width: 420, height: 200)
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         isExtensionVisible = true
+        view.layoutIfNeeded()
+        logLayoutDiagnostics("viewDidAppear")
+
+
         authenticateSelectedCredentialIfPossible()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        guard !didLogInitialLayout else { return }
+        didLogInitialLayout = true
+        logLayoutDiagnostics("first viewDidLayoutSubviews")
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -42,6 +62,9 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
             return
         }
         selectedCredential = credential
+        // In the direct-selection flow, iOS does not necessarily call
+        // prepareCredentialList. Build the selected account UI explicitly.
+        showCredentials([credential])
         authenticateSelectedCredentialIfPossible()
     }
 
@@ -58,44 +81,120 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
     }
 
     private func showCredentials(_ credentials: [SharedVaultCredential]) {
-        guard !credentials.isEmpty else {
-            let label = UILabel()
-            label.text = "No matching credentials in ForMemo Vault"
-            label.textAlignment = .center
-            label.numberOfLines = 0
-            label.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(label)
-            NSLayoutConstraint.activate([
-                label.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-                label.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-                label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-            ])
-            return
+        credentialsScrollView?.removeFromSuperview()
+        credentialsHeadingLabel?.removeFromSuperview()
+
+        let heading = UILabel()
+        heading.text = String(localized: "Choose an account")
+        heading.font = .systemFont(ofSize: 18, weight: .semibold)
+        heading.textColor = .label
+        heading.numberOfLines = 1
+        heading.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(heading)
+        credentialsHeadingLabel = heading
+
+        let scrollView = UIScrollView()
+        scrollView.alwaysBounceVertical = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(scrollView)
+        credentialsScrollView = scrollView
+
+        let contentStack = UIStackView()
+        contentStack.axis = .vertical
+        contentStack.alignment = .fill
+        contentStack.distribution = .fill
+        contentStack.spacing = 8
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(contentStack)
+
+        let cardHeight: CGFloat = 88
+        if credentials.isEmpty {
+            let message = UILabel()
+            message.text = String(localized: "No matching credentials in ForMemo Vault")
+            message.font = .systemFont(ofSize: 15)
+            message.textColor = .secondaryLabel
+            message.numberOfLines = 0
+            contentStack.addArrangedSubview(message)
+        } else {
+            for credential in credentials {
+                var configuration = UIButton.Configuration.tinted()
+                configuration.title = credential.username
+                configuration.subtitle = credential.domain
+                configuration.image = UIImage(systemName: "key.horizontal")
+                configuration.imagePlacement = .leading
+                configuration.imagePadding = 12
+                configuration.titleAlignment = .leading
+                configuration.contentInsets = NSDirectionalEdgeInsets(
+                    top: 10,
+                    leading: 16,
+                    bottom: 10,
+                    trailing: 16
+                )
+
+                let button = UIButton(configuration: configuration)
+                button.contentHorizontalAlignment = .leading
+                button.translatesAutoresizingMaskIntoConstraints = false
+                button.heightAnchor.constraint(equalToConstant: cardHeight).isActive = true
+                button.addAction(UIAction { [weak self] _ in
+                    self?.selectedCredential = credential
+                    self?.authenticateAndProvide(credential)
+                }, for: .touchUpInside)
+                contentStack.addArrangedSubview(button)
+            }
         }
 
-        let stack = UIStackView()
-        stack.axis = .vertical
-        stack.spacing = 12
-        stack.translatesAutoresizingMaskIntoConstraints = false
-
-        for credential in credentials {
-            var configuration = UIButton.Configuration.filled()
-            configuration.title = credential.username
-            configuration.subtitle = credential.domain
-            let button = UIButton(configuration: configuration)
-            button.addAction(UIAction { [weak self] _ in
-                self?.selectedCredential = credential
-                self?.authenticateAndProvide(credential)
-            }, for: .touchUpInside)
-            stack.addArrangedSubview(button)
-        }
-
-        view.addSubview(stack)
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
-            stack.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            heading.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            heading.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            heading.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: 12),
+
+            scrollView.leadingAnchor.constraint(equalTo: view.layoutMarginsGuide.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.layoutMarginsGuide.trailingAnchor),
+            scrollView.topAnchor.constraint(equalTo: heading.bottomAnchor, constant: 8),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12),
+
+            contentStack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            contentStack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            contentStack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            contentStack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            contentStack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
         ])
+
+        // The panel stays at 210 pt. The scroll view occupies all remaining
+        // vertical space, while the stack keeps its full content height so
+        // additional accounts are reached by scrolling.
+        scrollView.isScrollEnabled = true
+        scrollView.alwaysBounceVertical = credentials.count > 1
+        scrollView.showsVerticalScrollIndicator = credentials.count > 1
+
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+        logLayoutDiagnostics("after showCredentials")
+
+    }
+
+    /// Records the extension's actual geometry without changing its layout.
+    /// The system owns the presentation container; these values help distinguish
+    /// a host-sized panel from excess space inside the extension's own view.
+    private func logLayoutDiagnostics(_ phase: String) {
+        let windowBounds = view.window.map { String(describing: $0.bounds) } ?? "nil"
+        let navigationFrame = navigationBar.map { String(describing: $0.frame) } ?? "nil"
+        let scrollFrame = credentialsScrollView.map { String(describing: $0.frame) } ?? "nil"
+        let headingFrame = credentialsHeadingLabel.map { String(describing: $0.frame) } ?? "nil"
+
+        print(
+            "[ForMemo AutoFill Layout] \(phase) | " +
+            "preferredContentSize=\(preferredContentSize) | " +
+            "view.bounds=\(view.bounds) | " +
+            "window.bounds=\(windowBounds) | " +
+            "safeAreaInsets=\(view.safeAreaInsets) | " +
+            "navigationBar.frame=\(navigationFrame) | " +
+            "heading.frame=\(headingFrame) | " +
+            "scrollView.frame=\(scrollFrame) | " +
+            "sizeClasses=(horizontal: \(traitCollection.horizontalSizeClass.rawValue), " +
+            "vertical: \(traitCollection.verticalSizeClass.rawValue))"
+        )
     }
 
     private func authenticateAndProvide(_ credential: SharedVaultCredential) {
@@ -115,7 +214,7 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
             defer { isAuthenticating = false }
             let context = LAContext()
             do {
-                let reason = "Authenticate to fill your ForMemo Vault credential."
+                let reason = String(localized: "Authenticate to fill your ForMemo Vault credential.")
                 guard try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason) else {
                     throw LAError(.authenticationFailed)
                 }
@@ -136,13 +235,17 @@ final class CredentialProviderViewController: ASCredentialProviderViewController
     private func showFailure(_ error: Error) {
         let message: String
         if case let VaultCredentialError.keyUnavailable(status) = error {
-            message = "The Vault key is not available to AutoFill (Keychain status \(status)). Open ForMemo once, then try again."
+            message = String(localized: "The Vault key is not available to AutoFill (Keychain status \(status)). Open ForMemo once, then try again.")
         } else {
-            message = "ForMemo could not unlock this credential: \(error.localizedDescription)"
+            message = String(localized: "ForMemo could not unlock this credential: \(error.localizedDescription)")
         }
 
-        let alert = UIAlertController(title: "Unable to Fill Credential", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { [weak self] _ in
+        let alert = UIAlertController(
+            title: String(localized: "Unable to Fill Credential"),
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: String(localized: "Cancel"), style: .cancel) { [weak self] _ in
             self?.extensionContext.cancelRequest(withError: self?.extensionError(.failed) ?? NSError())
         })
         present(alert, animated: true)

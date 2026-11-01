@@ -14,6 +14,9 @@
         <scene sceneID="Uma-9u-xWV">
             <objects>
                 <viewController id="Xki-Si-B7m" customClass="CredentialProviderViewController" customModuleProvider="target" sceneMemberID="viewController">
+                    <connections>
+                        <outlet property="navigationBar" destination="3wq-kG-lGu" id="nav-outlet-for-content-layout"/>
+                    </connections>
                     <view key="view" contentMode="scaleToFill" id="BuU-Ak-iZz">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -30,18 +33,11 @@
                                     </navigationItem>
                                 </items>
                             </navigationBar>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="ForMemo Vault" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a7v-ug-QzG">
-                                <rect key="frame" x="87.5" y="327" width="199" height="33"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="20" weight="semibold"/>
-                                <color key="textColor" cocoaTouchSystemColor="labelColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" xcode11CocoaTouchSystemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
                             <constraint firstItem="Ky8-vK-JVj" firstAttribute="top" secondItem="3wq-kG-lGu" secondAttribute="top" id="BIN-jb-uNd"/>
                             <constraint firstItem="3wq-kG-lGu" firstAttribute="width" secondItem="BuU-Ak-iZz" secondAttribute="width" id="UkD-v4-BcH"/>
-                            <constraint firstItem="a7v-ug-QzG" firstAttribute="centerY" secondItem="Ky8-vK-JVj" secondAttribute="centerY" id="fAC-0v-NFE"/>
-                            <constraint firstItem="a7v-ug-QzG" firstAttribute="centerX" secondItem="3wq-kG-lGu" secondAttribute="centerX" id="io1-ZS-gwn"/>
                             <constraint firstItem="3wq-kG-lGu" firstAttribute="centerX" secondItem="BuU-Ak-iZz" secondAttribute="centerX" id="rtV-5c-0bl"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Ky8-vK-JVj"/>

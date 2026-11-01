@@ -187,31 +187,24 @@ struct TabBarCustomizationView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                // iPad: reorder when the drop is completed, avoiding unstable
-                // repeated dropEntered callbacks while the sidebar rows move.
-                .draggable(String(tab.rawValue))
-                .dropDestination(for: String.self) { items, _ in
-                    guard
-                        let rawValue = items.first.flatMap(Int.init),
-                        let dragged = AppTab(rawValue: rawValue),
-                        dragged != tab,
-                        let fromIndex = tabs.firstIndex(of: dragged),
-                        let targetIndex = tabs.firstIndex(of: tab)
-                    else {
-                        return false
-                    }
-
-                    withAnimation(.snappy) {
-                        tabs.move(
-                            fromOffsets: IndexSet(integer: fromIndex),
-                            toOffset: fromIndex < targetIndex ? targetIndex + 1 : targetIndex
-                        )
-                        settings.tabOrder = tabs.map(\.rawValue)
-                    }
-                    draggedTab = nil
+                // iPad: reorder continuously as the dragged row enters each target.
+                .onDrag {
+                    draggedTab = tab
                     lastDropTarget = nil
-                    return true
+                    return NSItemProvider(
+                        object: String(tab.rawValue) as NSString
+                    )
                 }
+                .onDrop(
+                    of: [.text],
+                    delegate: TabPreviewDropDelegate(
+                        target: tab,
+                        draggedTab: $draggedTab,
+                        lastDropTarget: $lastDropTarget,
+                        tabs: $tabs,
+                        settings: settings
+                    )
+                )
             }
         }
         .padding(12)

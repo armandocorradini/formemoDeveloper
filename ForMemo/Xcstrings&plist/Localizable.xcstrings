@@ -9720,6 +9720,35 @@
         }
       }
     },
+    "Choose an account" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account auswählen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige una cuenta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisir un compte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli un account"
+          }
+        }
+      }
+    },
     "Choose an end date that includes at least one additional occurrence." : {
       "localizations" : {
         "de" : {
@@ -24784,6 +24813,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessuna posizione impostata"
+          }
+        }
+      }
+    },
+    "No matching credentials in ForMemo Vault" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine passenden Anmeldedaten in ForMemo Vault"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay credenciales coincidentes en ForMemo Caja fuerte"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun identifiant correspondant dans ForMemo Vault"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine passenden Anmeldedaten in ForMemo Cassaforte"
           }
         }
       }
@@ -46198,7 +46256,123 @@
           }
         }
       }
+    },
+        "The Vault key is not available to AutoFill (Keychain status %d). Open ForMemo once, then try again.": {
+          "extractionState": "manual",
+          "localizations": {
+            "de": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "Der Vault-Schlüssel ist für AutoFill nicht verfügbar (Schlüsselbundstatus: %d). Öffne ForMemo einmal und versuche es erneut."
+              }
+            },
+            "es": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "La clave de Vault no está disponible para Autorrelleno (estado del llavero: %d). Abre ForMemo una vez e inténtalo de nuevo."
+              }
+            },
+            "fr": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "La clé du Vault n’est pas disponible pour le remplissage automatique (état du trousseau : %d). Ouvrez ForMemo une fois, puis réessayez."
+              }
+            },
+            "it": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "La chiave del Vault non è disponibile per il riempimento automatico (stato del Portachiavi: %d). Apri ForMemo una volta e riprova."
+              }
+            }
+          }
+        },
+        "ForMemo could not unlock this credential: %@": {
+          "extractionState": "manual",
+          "localizations": {
+            "de": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "ForMemo konnte diese Anmeldedaten nicht entsperren: %@"
+              }
+            },
+            "es": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "ForMemo no ha podido desbloquear estas credenciales: %@"
+              }
+            },
+            "fr": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "ForMemo n’a pas pu déverrouiller ces identifiants : %@"
+              }
+            },
+            "it": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "ForMemo non è riuscito a sbloccare queste credenziali: %@"
+              }
+            }
+          }
+        },
+        "Unable to Fill Credential": {
+          "extractionState": "manual",
+          "localizations": {
+            "de": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "Anmeldedaten können nicht eingesetzt werden"
+              }
+            },
+            "es": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "No se pueden introducir las credenciales"
+              }
+            },
+            "fr": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "Impossible de remplir les identifiants"
+              }
+            },
+            "it": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "Impossibile inserire le credenziali"
+              }
+            }
+          }
+        },
+        "Authenticate to fill your ForMemo Vault credential.": {
+          "extractionState": "manual",
+          "localizations": {
+            "de": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "Authentifiziere dich, um deine ForMemo-Vault-Anmeldedaten einzusetzen."
+              }
+            },
+            "es": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "Autentícate para introducir tus credenciales de ForMemo Vault."
+              }
+            },
+            "fr": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "Authentifiez-vous pour remplir vos identifiants ForMemo Vault."
+              }
+            },
+            "it": {
+              "stringUnit": {
+                "state": "translated",
+                "value": "Autenticati per inserire le credenziali di ForMemo Vault."
+              }
+            }
+          }
+        }
+      },
+      "version" : "1.1"
     }
-  },
-  "version" : "1.1"
-}
