@@ -245,6 +245,7 @@
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
 		1CCC7892308DEEBB00E6E653 /* TaskDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CCC7891308DEEBB00E6E653 /* TaskDayView.swift */; };
+		1CD4E1E8309875B900C45B27 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 1CFE8F3D308634DD00915A76 /* Localizable.xcstrings */; };
 		1CED325B302619D600B16A50 /* AssetRecoveryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325A302619D200B16A50 /* AssetRecoveryCoordinator.swift */; };
 		1CED325D30268F8E00B16A50 /* SystemEventHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325C30268F8300B16A50 /* SystemEventHistory.swift */; };
 		1CED325F30276D7C00B16A50 /* RecoveryStatistics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CED325E30276D7B00B16A50 /* RecoveryStatistics.swift */; };
@@ -1265,6 +1266,7 @@
 		1CF984773000EBA300E1D1A9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				1CD4E1E8309875B900C45B27 /* Localizable.xcstrings in Resources */,
 			);
 		};
 		1CFE8F093085631B00915A76 /* Resources */ = {
