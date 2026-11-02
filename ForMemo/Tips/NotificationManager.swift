@@ -471,7 +471,8 @@ final class NotificationManager: NSObject {
             var candidates: [Event] = []
             let calendar = Calendar.current
 
-            if !lead.isNone,
+            if !task.excludeGlobalNotification,
+               !lead.isNone,
                let globalDate = calendar.date(
                     byAdding: .day,
                     value: -lead.rawValue,

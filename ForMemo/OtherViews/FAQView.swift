@@ -93,11 +93,11 @@ struct FAQView: View {
         FAQSection(title: String(localized: "Notifications & Reminders"), items: [
             FAQItem(
                 question: String(localized:"How are notifications managed?"),
-                answer: String(localized:"The app schedules a notification at the task’s due time. At the due time, you can choose whether to receive a notification or an alarm. In Settings, you can enable an automatic early notification (from 1 to 7 days before), applied to every task. You can also add a custom reminder for each task. You can also associate a location with a task and receive a notification when you arrive at that place. Only the next relevant notification is placed in the queue for each task. When it fires, the next relevant event for that task is determined and placed in the queue in chronological order with the other scheduled events. Recurring tasks follow the same logic for each occurrence.")
+                answer: String(localized: "Every task with a due date automatically generates an alert at its deadline. At the due time, you can choose whether to receive a notification or an alarm. In Settings, you can enable a global early notification from 1 to 7 days before the deadline. This notification applies to all tasks unless it is excluded for an individual task. You can also add custom reminders and location-based alerts.\n\nForMemo manages all task events through a single global chronological scheduling queue. It schedules the earliest upcoming events first, respecting the maximum number of events the system allows to be scheduled at once. Whenever a scheduled event is delivered and a slot becomes available, ForMemo adds the next earliest event waiting outside the scheduled queue. This rule applies across all tasks and recurring occurrences, ensuring that events are always selected in chronological order.")
             ),
             FAQItem(
                 question: String(localized:"Does every task generate a notification when it becomes overdue?"),
-                answer: String(localized:"Yes. Every task with a due date automatically generates an alert when it reaches its deadline. You can choose whether to receive a notification or an alarm. You can also add custom reminders, location reminders, and an automatic global notification from 1 to 7 days before the deadline.")
+                answer: String(localized: "Yes. Every task with a due date automatically generates an alert at its deadline. You can choose whether to receive a notification or an alarm. The global early notification can be scheduled from 1 to 7 days before the deadline, but it can be excluded for individual tasks. Custom reminders and location-based alerts are managed separately.")
             ),
             FAQItem(
                 question: String(localized:"What is the difference between a due date notification and a reminder?"),
@@ -153,7 +153,7 @@ struct FAQView: View {
         FAQSection(title: String(localized: "Badges & Indicators"), items: [
             FAQItem(
                 question: String(localized:"How is the app badge calculated?"),
-                answer: String(localized:"The app badge shows tasks that require attention based on the selected badge mode. In Settings > General, you can choose whether the badge updates only when tasks become overdue or before the deadline, at the moment the global notification is triggered. The badge updates automatically even if the app is closed.")
+                answer: String(localized: "The app badge shows tasks that require attention based on the selected badge mode. In Settings > General, you can choose whether the badge updates when tasks reach their deadline or when their global early notification is triggered. For tasks excluded from the global early notification, the badge always updates at the deadline. If global early notifications are disabled, the badge updates only when tasks reach their deadlines.")
             ),
             FAQItem(
                 question: String(localized:"Why does the badge change suddenly?"),
@@ -182,11 +182,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"What is the difference between badge modes?"),
-                answer: String(localized:"At deadline updates the badge only when tasks become overdue. With global notification, the badge instead updates at the exact same moment the advance global notification is triggered. You can change this behavior anytime in Settings > General.")
+                answer: String(localized: "At deadline updates the badge when tasks reach their deadlines. With global notification updates the badge when the global early notification is triggered, before the deadline. Tasks excluded from the global early notification still update the badge at their deadline. This option is available only when global early notifications are enabled.")
             ),
             FAQItem(
                 question: String(localized:"Can I choose how the app badge works?"),
-                answer: String(localized:"Yes. In Settings > General, you can choose whether the badge counts overdue tasks or tasks that reached the global notification time.")
+                answer: String(localized: "Yes. In Settings > General, you can choose whether the badge updates at the task deadline or when the global early notification is triggered. The second option is available only when global early notifications are enabled. Tasks excluded from the global early notification always update the badge at their deadline.")
             ),
             FAQItem(
                 question: String(localized:"Why is the badge different from what I expect?"),

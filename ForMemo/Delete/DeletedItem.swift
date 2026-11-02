@@ -22,6 +22,7 @@ final class DeletedItem {
     var isCompleted: Bool?
     var completedAt: Date?
     var reminderOffsetMinutes: Int?
+    var excludeGlobalNotification: Bool = false
     var locationName: String?
     var locationLatitude: Double?
     var locationLongitude: Double?
@@ -166,6 +167,7 @@ extension DeletedItem {
                 isCompleted: isCompleted ?? false,
                 completedAt: completedAt,
                 reminderOffsetMinutes: reminderOffsetMinutes,
+                excludeGlobalNotification: excludeGlobalNotification,
                 locationName: locationName,
                 locationLatitude: locationLatitude,
                 locationLongitude: locationLongitude,

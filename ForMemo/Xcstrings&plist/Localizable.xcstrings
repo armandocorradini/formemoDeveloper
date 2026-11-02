@@ -2427,7 +2427,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "⚠️ Coincide con la notifica predefinita!"
+            "value" : "⚠️ Coincide con la notifica globale impostata!"
           }
         }
       }
@@ -3114,6 +3114,176 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "90 s"
+          }
+        }
+      }
+    },
+    "A global early notification is scheduled %lld days before each deadline, unless excluded for an individual task. A separate alert is always scheduled at the deadline. You can choose below when the app badge updates; for excluded tasks, it updates at the deadline." : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Eine globale Vorabbenachrichtigung wird %lld Tag vor jeder Fälligkeit geplant, sofern sie nicht für eine einzelne Aufgabe ausgeschlossen wurde. Zum Fälligkeitszeitpunkt wird immer eine separate Meldung geplant. Unten können Sie festlegen, wann das App-Symbol aktualisiert wird. Bei ausgenommenen Aufgaben erfolgt die Aktualisierung zum Fälligkeitszeitpunkt."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Eine globale Vorabbenachrichtigung wird %lld Tage vor jeder Fälligkeit geplant, sofern sie nicht für eine einzelne Aufgabe ausgeschlossen wurde. Zum Fälligkeitszeitpunkt wird immer eine separate Meldung geplant. Unten können Sie festlegen, wann das App-Symbol aktualisiert wird. Bei ausgenommenen Aufgaben erfolgt die Aktualisierung zum Fälligkeitszeitpunkt."
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "A global early notification is scheduled %lld day before each deadline, unless excluded for an individual task. A separate alert is always scheduled at the deadline. You can choose below when the app badge updates; for excluded tasks, it updates at the deadline."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "A global early notification is scheduled %lld days before each deadline, unless excluded for an individual task. A separate alert is always scheduled at the deadline. You can choose below when the app badge updates; for excluded tasks, it updates at the deadline."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se programa una notificación anticipada global %lld día antes de cada fecha límite, salvo que se excluya para una tarea concreta. Siempre se programa un aviso independiente para la fecha límite. Puedes elegir abajo cuándo se actualiza el indicador de la app; en las tareas excluidas, se actualiza en la fecha límite."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se programa una notificación anticipada global %lld días antes de cada fecha límite, salvo que se excluya para una tarea concreta. Siempre se programa un aviso independiente para la fecha límite. Puedes elegir abajo cuándo se actualiza el indicador de la app; en las tareas excluidas, se actualiza en la fecha límite."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Une notification anticipée globale est programmée %lld jour avant chaque échéance, sauf si elle est exclue pour une tâche individuelle. Une alerte distincte est toujours programmée à l’échéance. Vous pouvez choisir ci-dessous à quel moment le badge de l’app est mis à jour ; pour les tâches exclues, il est mis à jour à l’échéance."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Une notification anticipée globale est programmée %lld jours avant chaque échéance, sauf si elle est exclue pour une tâche individuelle. Une alerte distincte est toujours programmée à l’échéance. Vous pouvez choisir ci-dessous à quel moment le badge de l’app est mis à jour ; pour les tâches exclues, il est mis à jour à l’échéance."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Una notifica anticipata globale viene programmata %lld giorno prima di ogni scadenza, a meno che non venga esclusa per una singola attività. Alla scadenza viene sempre programmato un avviso separato. Puoi scegliere qui sotto quando aggiornare il badge dell’app; per le attività escluse, il badge si aggiorna alla scadenza."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Una notifica anticipata globale viene programmata %lld giorni prima di ogni scadenza, a meno che non venga esclusa per una singola attività. Alla scadenza viene sempre programmato un avviso separato. Puoi scegliere qui sotto quando aggiornare il badge dell’app; per le attività escluse, il badge si aggiorna alla scadenza."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A global notification is sent %lld days before the deadline. You can change this setting in Settings > General." : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Eine globale Mitteilung wird %lld Tag vor dem Fälligkeitsdatum gesendet. Du kannst diese Einstellung unter Einstellungen > Allgemein ändern."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Eine globale Mitteilung wird %lld Tage vor dem Fälligkeitsdatum gesendet. Du kannst diese Einstellung unter Einstellungen > Allgemein ändern."
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se envía una notificación global %lld día antes de la fecha de vencimiento. Puedes cambiar este ajuste en Ajustes > General."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se envía una notificación global %lld días antes de la fecha de vencimiento. Puedes cambiar este ajuste en Ajustes > General."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Une notification globale est envoyée %lld jour avant la date d’échéance. Vous pouvez modifier ce réglage dans Réglages > Général."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Une notification globale est envoyée %lld jours avant la date d’échéance. Vous pouvez modifier ce réglage dans Réglages > Général."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Una notifica globale viene inviata %lld giorno prima della scadenza. Puoi modificare questa impostazione in Impostazioni > Generali."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Una notifica globale viene inviata %lld giorni prima della scadenza. Puoi modificare questa impostazione in Impostazioni > Generali."
+                }
+              }
+            }
           }
         }
       }
@@ -5499,30 +5669,30 @@
         }
       }
     },
-    "At deadline updates the badge only when tasks become overdue. With global notification, the badge instead updates at the exact same moment the advance global notification is triggered. You can change this behavior anytime in Settings > General." : {
+    "At deadline updates the badge when tasks reach their deadlines. With global notification updates the badge when the global early notification is triggered, before the deadline. Tasks excluded from the global early notification still update the badge at their deadline. This option is available only when global early notifications are enabled." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bei Fälligkeit wird das Badge nur aktualisiert, wenn Aufgaben überfällig werden. Mit globaler Benachrichtigung wird das Badge stattdessen genau in dem Moment aktualisiert, in dem die vorzeitige globale Benachrichtigung ausgelöst wird.\nDu kannst dieses Verhalten jederzeit unter Einstellungen > Allgemein ändern."
+            "value" : "Bei „Zum Fälligkeitszeitpunkt“ wird das App-Symbol aktualisiert, sobald Aufgaben fällig sind. Bei „Mit globaler Benachrichtigung“ wird das App-Symbol aktualisiert, sobald die globale Vorabbenachrichtigung vor dem Fälligkeitszeitpunkt ausgelöst wird. Aufgaben, die von der globalen Vorabbenachrichtigung ausgenommen sind, aktualisieren das App-Symbol weiterhin zum Fälligkeitszeitpunkt. Diese Option ist nur verfügbar, wenn globale Vorabbenachrichtigungen aktiviert sind."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Al vencimiento, la insignia se actualiza solo cuando las tareas pasan a estar vencidas. Con notificación global, la insignia se actualiza exactamente en el mismo momento en que se activa la notificación global anticipada.\nPuedes cambiar este comportamiento en cualquier momento en Ajustes > General."
+            "value" : "Con la opción «En la fecha límite», el indicador se actualiza cuando las tareas llegan a su fecha límite. Con «Con notificación global», el indicador se actualiza cuando se activa la notificación anticipada global, antes de la fecha límite. Las tareas excluidas de la notificación anticipada global siguen actualizando el indicador en su fecha límite. Esta opción solo está disponible cuando las notificaciones anticipadas globales están activadas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "À l’échéance, le badge se met à jour uniquement lorsque les tâches deviennent en retard. Avec notification globale, le badge se met à jour exactement au même moment où la notification globale anticipée est déclenchée.\nVous pouvez modifier ce comportement à tout moment dans Réglages > Général."
+            "value" : "Avec l’option « À l’échéance », le badge est mis à jour lorsque les tâches arrivent à leur échéance. Avec l’option « Avec la notification globale », le badge est mis à jour lorsque la notification anticipée globale est déclenchée, avant l’échéance. Les tâches exclues de la notification anticipée globale continuent de mettre à jour le badge à leur échéance. Cette option est disponible uniquement lorsque les notifications anticipées globales sont activées."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alla scadenza aggiorna il badge solo quando le attività scadono. Con notifica globale il badge invece si aggiorna nello stesso momento in cui viene attivata la notifica globale anticipata.\nPuoi modificare questo comportamento in qualsiasi momento in Impostazioni > Generali."
+            "value" : "Con l’opzione «Alla scadenza», il badge si aggiorna quando le attività raggiungono la scadenza. «Con notifica globale», il badge si aggiorna quando viene attivata la notifica anticipata globale, prima della scadenza. Le attività escluse dalla notifica anticipata globale continuano ad aggiornare il badge alla scadenza. Questa opzione è disponibile solo quando le notifiche anticipate globali sono attive."
           }
         }
       }
@@ -14398,6 +14568,34 @@
         }
       }
     },
+    "Disable global notification" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Globale Benachrichtigung deaktivieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivar notificación global"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactiver la notification globale"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disattiva notifica globale"
+          }
+        }
+      }
+    },
     "Disclaimer" : {
       "localizations" : {
         "de" : {
@@ -16548,30 +16746,58 @@
         }
       }
     },
-    "Every task automatically generates an alert when it reaches its deadline. At the due time, you can choose whether to receive a notification or an alarm. Add additional reminders, location alerts and early notifications up to 7 days in advance." : {
+    "Every task with a due date automatically generates an alert at its deadline. At the due time, you can choose whether to receive a notification or an alarm. In Settings, you can enable a global early notification from 1 to 7 days before the deadline. This notification applies to all tasks unless it is excluded for an individual task. You can also add custom reminders and location-based alerts.\n\nForMemo manages all task events through a single global chronological scheduling queue. It schedules the earliest upcoming events first, respecting the maximum number of events the system allows to be scheduled at once. Whenever a scheduled event is delivered and a slot becomes available, ForMemo adds the next earliest event waiting outside the scheduled queue. This rule applies across all tasks and recurring occurrences, ensuring that events are always selected in chronological order." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jede Aufgabe erzeugt automatisch eine Warnung, sobald sie fällig ist. Zum Fälligkeitszeitpunkt können Sie wählen, ob Sie eine Benachrichtigung oder einen Alarm erhalten möchten. Fügen Sie zusätzliche Erinnerungen, ortsbasierte Warnungen und Benachrichtigungen bis zu 7 Tage im Voraus hinzu."
+            "value" : "Jede Aufgabe mit einem Fälligkeitsdatum erzeugt automatisch eine Meldung zum Fälligkeitszeitpunkt. Sie können wählen, ob Sie dann eine Mitteilung oder einen Alarm erhalten möchten. In den Einstellungen können Sie eine globale Vorabbenachrichtigung aktivieren, die 1 bis 7 Tage vor der Fälligkeit gesendet wird. Sie gilt für alle Aufgaben, sofern sie nicht für einzelne Aufgaben ausgeschlossen wurde. Zusätzlich können Sie eigene Erinnerungen und ortsbezogene Mitteilungen hinzufügen.\n\nForMemo verwaltet alle Aufgabenereignisse in einer einzigen globalen chronologischen Planungswarteschlange. Dabei werden die zeitlich nächsten Ereignisse zuerst eingeplant. Die maximale Anzahl gleichzeitig planbarer Ereignisse wird durch das System begrenzt. Sobald ein geplantes Ereignis zugestellt wurde und dadurch ein Platz frei wird, fügt ForMemo das nächste anstehende Ereignis in chronologischer Reihenfolge zur Warteschlange hinzu. Diese Regel gilt für alle Aufgaben und wiederkehrenden Vorkommen und stellt sicher, dass die Ereignisse stets in chronologischer Reihenfolge ausgewählt werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cada tarea genera automáticamente un aviso cuando llega a su fecha límite. En el momento del vencimiento, puedes elegir si recibir una notificación o una alarma. Puedes añadir recordatorios adicionales, avisos basados en la ubicación y notificaciones anticipadas de hasta 7 días."
+            "value" : "Todas las tareas con una fecha límite generan automáticamente un aviso cuando llega esa fecha. En ese momento, puedes elegir si quieres recibir una notificación o una alarma. En Ajustes, puedes activar una notificación anticipada global de 1 a 7 días antes de la fecha límite. Se aplica a todas las tareas, salvo que se excluya para una tarea concreta. También puedes añadir recordatorios personalizados y avisos basados en la ubicación.\n\nForMemo gestiona todos los eventos de las tareas mediante una única cola global de programación cronológica. Programa primero los eventos próximos más inmediatos, respetando el número máximo de eventos que el sistema permite programar a la vez. Cuando se entrega un evento programado y queda una plaza libre, ForMemo añade a la cola el siguiente evento pendiente según su orden cronológico. Esta regla se aplica a todas las tareas y a todas las repeticiones, para garantizar que los eventos se seleccionen siempre en orden cronológico."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chaque tâche génère automatiquement une alerte lorsqu’elle arrive à échéance. À l’heure prévue, vous pouvez choisir de recevoir une notification ou une alarme. Ajoutez des rappels supplémentaires, des alertes basées sur la localisation et des notifications anticipées jusqu’à 7 jours à l’avance."
+            "value" : "Chaque tâche ayant une date d’échéance génère automatiquement une alerte à cette date. À l’heure prévue, vous pouvez choisir de recevoir une notification ou une alarme. Dans Réglages, vous pouvez activer une notification anticipée globale de 1 à 7 jours avant l’échéance. Cette notification s’applique à toutes les tâches, sauf si elle est exclue pour une tâche individuelle. Vous pouvez également ajouter des rappels personnalisés et des alertes géolocalisées.\n\nForMemo gère tous les événements des tâches dans une seule file de programmation chronologique globale. Les événements à venir les plus proches sont programmés en priorité, dans la limite du nombre maximal d’événements que le système autorise à programmer simultanément. Dès qu’un événement programmé est délivré et qu’une place se libère, ForMemo ajoute à la file le prochain événement en attente, selon son ordre chronologique. Cette règle s’applique à toutes les tâches et à toutes les occurrences récurrentes, afin de garantir que les événements sont toujours sélectionnés dans l’ordre chronologique."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ogni attività genera automaticamente un avviso quando raggiunge la scadenza. Al momento della scadenza, puoi scegliere se ricevere una notifica o una sveglia. Puoi aggiungere ulteriori promemoria, avvisi basati sulla posizione e notifiche anticipate fino a 7 giorni prima."
+            "value" : "Ogni attività con una data di scadenza genera automaticamente un avviso alla scadenza. Al momento della scadenza puoi scegliere se ricevere una notifica o una sveglia. In Impostazioni puoi attivare una notifica anticipata globale da 1 a 7 giorni prima della scadenza. Questa notifica si applica a tutte le attività, a meno che non venga esclusa per una singola attività. Puoi anche aggiungere promemoria personalizzati e avvisi basati sulla posizione.\n\nForMemo gestisce tutti gli eventi delle attività attraverso un’unica coda globale di programmazione cronologica. Programma prima gli eventi imminenti più vicini, rispettando il numero massimo di eventi che il sistema consente di programmare contemporaneamente. Quando un evento programmato viene consegnato e si libera un posto, ForMemo inserisce nella coda il successivo evento in attesa, seguendo l’ordine cronologico. Questa regola si applica a tutte le attività e a tutte le occorrenze ricorrenti, garantendo che gli eventi vengano sempre selezionati in ordine cronologico."
+          }
+        }
+      }
+    },
+    "Every task with a due date automatically generates an alert at its deadline. You can choose whether to receive a notification or an alarm. A global early notification can be scheduled from 1 to 7 days before the deadline and excluded for individual tasks. You can also add custom reminders and location-based alerts." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jede Aufgabe mit einem Fälligkeitsdatum erzeugt automatisch eine Meldung zum Fälligkeitszeitpunkt. Sie können wählen, ob Sie eine Mitteilung oder einen Alarm erhalten möchten. Eine globale Vorabbenachrichtigung kann 1 bis 7 Tage vor der Fälligkeit geplant und für einzelne Aufgaben ausgeschlossen werden. Zusätzlich können Sie eigene Erinnerungen und ortsbezogene Mitteilungen hinzufügen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas las tareas con una fecha límite generan automáticamente un aviso cuando llega esa fecha. Puedes elegir si quieres recibir una notificación o una alarma. Puedes programar una notificación anticipada global de 1 a 7 días antes de la fecha límite y excluirla para tareas concretas. También puedes añadir recordatorios personalizados y avisos basados en la ubicación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque tâche ayant une date d’échéance génère automatiquement une alerte à cette date. Vous pouvez choisir de recevoir une notification ou une alarme. Une notification anticipée globale peut être programmée de 1 à 7 jours avant l’échéance et exclue pour certaines tâches. Vous pouvez également ajouter des rappels personnalisés et des alertes géolocalisées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni attività con una data di scadenza genera automaticamente un avviso alla scadenza. Puoi scegliere se ricevere una notifica o una sveglia. Puoi programmare una notifica anticipata globale da 1 a 7 giorni prima della scadenza ed escluderla per singole attività. Puoi anche aggiungere promemoria personalizzati e avvisi basati sulla posizione."
           }
         }
       }
@@ -18952,6 +19178,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Globale"
+          }
+        }
+      }
+    },
+    "global.None" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna"
           }
         }
       }
@@ -37515,30 +37769,30 @@
         }
       }
     },
-    "The app badge shows tasks that require attention based on the selected badge mode. In Settings > General, you can choose whether the badge updates only when tasks become overdue or before the deadline, at the moment the global notification is triggered. The badge updates automatically even if the app is closed." : {
+    "The app badge shows tasks that require attention based on the selected badge mode. In Settings > General, you can choose whether the badge updates when tasks reach their deadline or when their global early notification is triggered. For tasks excluded from the global early notification, the badge always updates at the deadline. If global early notifications are disabled, the badge updates only when tasks reach their deadlines." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das App-Badge zeigt Aufgaben an, die je nach ausgewähltem Badge-Modus Aufmerksamkeit erfordern. Unter Einstellungen > Allgemein kannst du festlegen, ob das Badge erst aktualisiert wird, wenn Aufgaben überfällig sind, oder bereits vor der Fälligkeit, sobald die globale Benachrichtigung ausgelöst wird. Das Badge wird automatisch aktualisiert, auch wenn die App geschlossen ist."
+            "value" : "Das App-Symbol zeigt abhängig vom ausgewählten Modus Aufgaben an, die Ihre Aufmerksamkeit erfordern. Unter „Einstellungen“ > „Allgemein“ können Sie festlegen, ob das App-Symbol aktualisiert wird, wenn Aufgaben fällig sind oder wenn ihre globale Vorabbenachrichtigung ausgelöst wird. Bei Aufgaben, die von der globalen Vorabbenachrichtigung ausgenommen sind, wird das App-Symbol immer zum Fälligkeitszeitpunkt aktualisiert. Sind globale Vorabbenachrichtigungen deaktiviert, erfolgt die Aktualisierung erst, wenn Aufgaben fällig sind."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La insignia de la aplicación muestra las tareas que requieren atención según el modo de insignia seleccionado. En Ajustes > General, puedes elegir si la insignia debe actualizarse solo cuando las tareas vencen o antes del vencimiento, en el momento en que se activa la notificación global. La insignia se actualiza automáticamente incluso si la aplicación está cerrada."
+            "value" : "El indicador de la app muestra las tareas que requieren atención según el modo seleccionado. En Ajustes > General, puedes elegir si el indicador se actualiza cuando las tareas llegan a su fecha límite o cuando se activa su notificación anticipada global. En las tareas excluidas de la notificación anticipada global, el indicador siempre se actualiza en la fecha límite. Si las notificaciones anticipadas globales están desactivadas, el indicador solo se actualiza cuando las tareas llegan a su fecha límite."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le badge de l’application affiche les tâches qui nécessitent votre attention selon le mode de badge sélectionné. Dans Réglages > Général, vous pouvez choisir si le badge doit se mettre à jour uniquement lorsque les tâches deviennent en retard ou avant l’échéance, au moment où la notification globale est déclenchée. Le badge se met automatiquement à jour même lorsque l’application est fermée."
+            "value" : "Le badge de l’app indique les tâches qui nécessitent votre attention, selon le mode sélectionné. Dans Réglages > Général, vous pouvez choisir si le badge est mis à jour lorsque les tâches arrivent à leur échéance ou lorsque leur notification anticipée globale est déclenchée. Pour les tâches exclues de la notification anticipée globale, le badge est toujours mis à jour à l’échéance. Si les notifications anticipées globales sont désactivées, le badge est mis à jour uniquement lorsque les tâches arrivent à leur échéance."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il badge dell’app mostra le attività che richiedono attenzione in base alla modalità badge selezionata. In Impostazioni > Generali puoi scegliere se il badge deve aggiornarsi solo quando le attività scadono oppure prima della scadenza, nel momento in cui viene attivata la notifica globale. Il badge si aggiorna automaticamente anche se l’app è chiusa."
+            "value" : "Il badge dell’app mostra le attività che richiedono attenzione in base alla modalità selezionata. In Impostazioni > Generali puoi scegliere se aggiornare il badge quando le attività raggiungono la scadenza oppure quando viene attivata la relativa notifica anticipata globale. Per le attività escluse dalla notifica anticipata globale, il badge si aggiorna sempre alla scadenza. Se le notifiche anticipate globali sono disattivate, il badge si aggiorna solo quando le attività raggiungono la scadenza."
           }
         }
       }
@@ -37595,34 +37849,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’app ti avvisa quando arrivi in un luogo. Si concentra sulle attività più rilevanti in base alla distanza e al momento."
-          }
-        }
-      }
-    },
-    "The app schedules a notification at the task’s due time. At the due time, you can choose whether to receive a notification or an alarm. In Settings, you can enable an automatic early notification (from 1 to 7 days before), applied to every task. You can also add a custom reminder for each task. You can also associate a location with a task and receive a notification when you arrive at that place. Only the next relevant notification is placed in the queue for each task. When it fires, the next relevant event for that task is determined and placed in the queue in chronological order with the other scheduled events. Recurring tasks follow the same logic for each occurrence." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die App plant eine Benachrichtigung zum Fälligkeitszeitpunkt der Aufgabe. Zum Fälligkeitszeitpunkt können Sie wählen, ob Sie eine Benachrichtigung oder einen Alarm erhalten möchten. In den Einstellungen können Sie eine automatische frühzeitige Benachrichtigung (1 bis 7 Tage vor dem Fälligkeitsdatum) aktivieren, die auf alle Aufgaben angewendet wird. Sie können auch für jede Aufgabe eine benutzerdefinierte Erinnerung hinzufügen. Außerdem können Sie einer Aufgabe einen Ort zuordnen und eine Benachrichtigung erhalten, wenn Sie dort ankommen. Für jede Aufgabe wird nur die nächste relevante Benachrichtigung in die Warteschlange aufgenommen. Sobald sie ausgelöst wird, wird das nächste relevante Ereignis für diese Aufgabe bestimmt und in chronologischer Reihenfolge zusammen mit den anderen geplanten Ereignissen in die Warteschlange aufgenommen. Wiederkehrende Aufgaben folgen für jede einzelne Aufgabe derselben Logik."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La app programa una notificación para la fecha de vencimiento de la tarea. En el momento del vencimiento, puedes elegir si recibir una notificación o una alarma. En Ajustes puedes activar una notificación anticipada automática (de 1 a 7 días antes del vencimiento), que se aplica a todas las tareas. También puedes añadir un recordatorio personalizado para cada tarea. Además, puedes asociar una ubicación a una tarea y recibir una notificación cuando llegues a ese lugar. Para cada tarea, solo se añade a la cola la siguiente notificación relevante. Cuando se activa, se determina el siguiente evento relevante para esa tarea y se añade a la cola en orden cronológico junto con los demás eventos programados. Las tareas recurrentes siguen la misma lógica para cada ocurrencia."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app programme une notification à l’heure d’échéance de la tâche. À l’heure prévue, vous pouvez choisir de recevoir une notification ou une alarme. Dans Réglages, vous pouvez activer une notification anticipée automatique (de 1 à 7 jours avant l’échéance), appliquée à toutes les tâches. Vous pouvez également ajouter un rappel personnalisé pour chaque tâche. Vous pouvez aussi associer une localisation à une tâche et recevoir une notification lorsque vous arrivez à cet endroit. Seule la prochaine notification pertinente de chaque tâche est placée dans la file d’attente. Lorsqu’elle se déclenche, le prochain événement pertinent pour cette tâche est déterminé et placé dans la file d’attente dans l’ordre chronologique avec les autres événements programmés. Les tâches récurrentes suivent la même logique pour chaque occurrence."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "L’app programma una notifica al momento della scadenza dell’attività. Al momento della scadenza, puoi scegliere se ricevere una notifica o una sveglia. In Impostazioni puoi attivare una notifica anticipata automatica (da 1 a 7 giorni prima della scadenza), applicata a tutte le attività. Puoi anche aggiungere un promemoria personalizzato per ogni attività. Puoi inoltre associare una posizione a un’attività e ricevere una notifica quando arrivi sul posto. Per ogni attività viene inserita in coda solo la prossima notifica rilevante. Quando viene attivata, viene determinato il successivo evento rilevante per quell’attività e inserito in coda in ordine cronologico insieme agli altri eventi programmati. Le attività ricorrenti seguono la stessa logica per ogni occorrenza."
           }
         }
       }
@@ -44769,30 +44995,30 @@
         }
       }
     },
-    "Yes. Every task with a due date automatically generates an alert when it reaches its deadline. You can choose whether to receive a notification or an alarm. You can also add custom reminders, location reminders, and an automatic global notification from 1 to 7 days before the deadline." : {
+    "Yes. Every task with a due date automatically generates an alert at its deadline. You can choose whether to receive a notification or an alarm. The global early notification can be scheduled from 1 to 7 days before the deadline, but it can be excluded for individual tasks. Custom reminders and location-based alerts are managed separately." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Jede Aufgabe mit einem Fälligkeitsdatum erzeugt automatisch eine Warnung, sobald sie fällig ist. Sie können wählen, ob Sie eine Benachrichtigung oder einen Alarm erhalten möchten. Sie können außerdem benutzerdefinierte Erinnerungen, ortsbasierte Erinnerungen und eine automatische globale Benachrichtigung 1 bis 7 Tage vor dem Fälligkeitsdatum hinzufügen."
+            "value" : "Ja. Jede Aufgabe mit einem Fälligkeitsdatum erzeugt automatisch eine Meldung zum Fälligkeitszeitpunkt. Sie können wählen, ob Sie eine Mitteilung oder einen Alarm erhalten möchten. Die globale Vorabbenachrichtigung kann 1 bis 7 Tage vor der Fälligkeit geplant, aber für einzelne Aufgaben ausgeschlossen werden. Eigene Erinnerungen und ortsbezogene Mitteilungen werden separat verwaltet."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Cada tarea con una fecha de vencimiento genera automáticamente un aviso cuando llega a su fecha límite. Puedes elegir si recibir una notificación o una alarma. También puedes añadir recordatorios personalizados, recordatorios basados en la ubicación y una notificación global automática de 1 a 7 días antes del vencimiento."
+            "value" : "Sí. Todas las tareas con una fecha límite generan automáticamente un aviso cuando llega esa fecha. Puedes elegir si quieres recibir una notificación o una alarma. La notificación anticipada global puede programarse de 1 a 7 días antes de la fecha límite, pero se puede excluir para tareas concretas. Los recordatorios personalizados y los avisos basados en la ubicación se gestionan por separado."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Chaque tâche avec une date d’échéance génère automatiquement une alerte lorsqu’elle arrive à échéance. Vous pouvez choisir de recevoir une notification ou une alarme. Vous pouvez également ajouter des rappels personnalisés, des rappels basés sur la localisation et une notification globale automatique de 1 à 7 jours avant l’échéance."
+            "value" : "Oui. Chaque tâche ayant une date d’échéance génère automatiquement une alerte à cette date. Vous pouvez choisir de recevoir une notification ou une alarme. La notification anticipée globale peut être programmée de 1 à 7 jours avant l’échéance, mais elle peut être exclue pour certaines tâches. Les rappels personnalisés et les alertes géolocalisées sont gérés séparément."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. Ogni attività con una data di scadenza genera automaticamente un avviso quando raggiunge la scadenza. Puoi scegliere se ricevere una notifica o una sveglia. Puoi anche aggiungere promemoria personalizzati, promemoria basati sulla posizione e una notifica globale automatica da 1 a 7 giorni prima della scadenza."
+            "value" : "Sì. Ogni attività con una data di scadenza genera automaticamente un avviso alla scadenza. Puoi scegliere se ricevere una notifica o una sveglia. La notifica anticipata globale può essere programmata da 1 a 7 giorni prima della scadenza, ma può essere esclusa per singole attività. I promemoria personalizzati e gli avvisi basati sulla posizione vengono gestiti separatamente."
           }
         }
       }
@@ -45021,30 +45247,30 @@
         }
       }
     },
-    "Yes. In Settings > General, you can choose whether the badge counts overdue tasks or tasks that reached the global notification time." : {
+    "Yes. In Settings > General, you can choose whether the badge updates at the task deadline or when the global early notification is triggered. The second option is available only when global early notifications are enabled. Tasks excluded from the global early notification always update the badge at their deadline." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Unter Einstellungen > Allgemein können Sie festlegen, ob das Badge überfällige Aufgaben oder Aufgaben zählen soll, die den Zeitpunkt der globalen Benachrichtigung erreicht haben."
+            "value" : "Ja. Unter „Einstellungen“ > „Allgemein“ können Sie festlegen, ob das App-Symbol zum Fälligkeitszeitpunkt der Aufgabe oder bei Auslösung der globalen Vorabbenachrichtigung aktualisiert wird. Die zweite Option ist nur verfügbar, wenn globale Vorabbenachrichtigungen aktiviert sind.\nAufgaben, die von der globalen Vorabbenachrichtigung ausgenommen sind, aktualisieren das App-Symbol immer zum Fälligkeitszeitpunkt."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. En Ajustes > General puedes elegir si el distintivo debe contar las tareas vencidas o las tareas que han alcanzado la hora de la notificación global."
+            "value" : "Sí. En Ajustes > General, puedes elegir si el indicador se actualiza en la fecha límite de la tarea o cuando se activa la notificación anticipada global. La segunda opción solo está disponible cuando las notificaciones anticipadas globales están activadas.\nLas tareas excluidas de la notificación anticipada global siempre actualizan el indicador en su fecha límite."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Dans Réglages > Général, vous pouvez choisir si le badge compte les tâches en retard ou les tâches ayant atteint l’heure de la notification globale."
+            "value" : "Oui. Dans Réglages > Général, vous pouvez choisir si le badge est mis à jour à l’échéance de la tâche ou lorsque la notification anticipée globale est déclenchée. La deuxième option est disponible uniquement lorsque les notifications anticipées globales sont activées.\nLes tâches exclues de la notification anticipée globale mettent toujours à jour le badge à leur échéance."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. In Impostazioni > Generali puoi scegliere se il badge deve conteggiare le attività scadute oppure quelle che hanno raggiunto l’orario della notifica globale."
+            "value" : "Sì. In Impostazioni > Generali puoi scegliere se aggiornare il badge alla scadenza dell’attività oppure quando viene attivata la notifica anticipata globale. La seconda opzione è disponibile solo quando le notifiche anticipate globali sono attive.\nLe attività escluse dalla notifica anticipata globale aggiornano sempre il badge alla scadenza."
           }
         }
       }
@@ -46201,62 +46427,30 @@
         }
       }
     },
-    "You’ll receive a notification %lld day(s) before the deadline and another at the time it’s due. You can choose below whether the app badge updates at the deadline or already with the global notification." : {
-      "comment" : "A footnote under the notification picker that explains how the badge works.",
-      "isCommentAutoGenerated" : true,
+    "You’ll receive an alert at the task’s deadline. The app badge updates when tasks reach their deadlines." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Du erhältst eine Benachrichtigung %lld Tag(e) vor der Fälligkeit und eine weitere zum Zeitpunkt der Fälligkeit.\nDu kannst unten auswählen, ob das App-Badge bei der Fälligkeit oder bereits mit der globalen Benachrichtigung aktualisiert wird."
+            "value" : "Sie erhalten zum Fälligkeitszeitpunkt der Aufgabe eine Meldung. Das App-Symbol wird aktualisiert, sobald Aufgaben fällig sind."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recibirás una notificación %lld día(s) antes del vencimiento y otra en el momento del vencimiento.\nPuedes elegir abajo si la insignia de la aplicación se actualiza al vencimiento o ya con la notificación global."
+            "value" : "Recibirás un aviso cuando llegue la fecha límite de la tarea. El indicador de la app se actualiza cuando las tareas llegan a su fecha límite."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous recevrez une notification %lld jour(s) avant l’échéance et une autre au moment de l’échéance.\nVous pouvez choisir ci-dessous si le badge de l’application se met à jour à l’échéance ou déjà avec la notification globale."
+            "value" : "Vous recevrez une alerte à l’échéance de la tâche. Le badge de l’app est mis à jour lorsque les tâches arrivent à leur échéance."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riceverai una notifica %lld giorno/i prima della scadenza e un’altra al momento della scadenza.\nPuoi scegliere qui sotto se il badge dell’app deve aggiornarsi alla scadenza oppure già con la notifica globale."
-          }
-        }
-      }
-    },
-    "You’ll receive a notification only at the exact time of the task. Since global notifications are disabled, the app badge updates only when tasks become overdue." : {
-      "comment" : "A description of the notification and badge time settings.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du erhältst eine Benachrichtigung nur genau zum Zeitpunkt der Aufgabe. Da globale Benachrichtigungen deaktiviert sind, wird das App-Badge nur aktualisiert, wenn Aufgaben überfällig werden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recibirás una notificación solo en el momento exacto de la tarea. Como las notificaciones globales están desactivadas, la insignia de la aplicación se actualiza solo cuando las tareas vencen."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous recevrez une notification uniquement à l’heure exacte de la tâche. Les notifications globales étant désactivées, le badge de l’application se met à jour uniquement lorsque les tâches deviennent en retard."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Riceverai una notifica solo all’orario esatto dell’attività. Poiché le notifiche globali sono disattivate, il badge dell’app si aggiorna solo quando le attività scadono."
+            "value" : "Riceverai un avviso alla scadenza dell’attività. Il badge dell’app si aggiorna quando le attività raggiungono la scadenza."
           }
         }
       }

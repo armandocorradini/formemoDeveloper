@@ -13,6 +13,8 @@ struct ScheduleSection: View {
     @Bindable var task: TodoTask
     @Environment(\.scenePhase) private var scenePhase
     @State private var showingAlarmAuthorizationAlert = false
+    @State private var showingGlobalNotificationExplanation = false
+    @State private var showingAlarmExplanation = false
     @State private var alarmAuthorizationAvailable =
         ForMemoAlarmManager.shared.authorizationState() == .authorized
 
@@ -24,7 +26,6 @@ struct ScheduleSection: View {
     let saveAndWaitForScheduling: () async -> Void
     let isSynchronizing: Binding<Bool>
     
-    let validateReminder: () -> Void
 
     var body: some View {
         Section("Schedule") {
@@ -108,54 +109,112 @@ struct ScheduleSection: View {
                 }
                 .frame(maxWidth: .infinity)
 
+                if notificationLeadTimeDays != -1 {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    showingGlobalNotificationExplanation.toggle()
+                                }
+                            } label: {
+                                Text("Disable global notification")
+                                    .foregroundStyle(.primary)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+
+                            Spacer(minLength: 12)
+
+                            Toggle(
+                                "Disable global notification",
+                                isOn: Binding(
+                                    get: { task.excludeGlobalNotification },
+                                    set: { newValue in
+                                        task.excludeGlobalNotification = newValue
+                                        saveTask()
+                                    }
+                                )
+                            )
+                            .labelsHidden()
+                        }
+                        .padding(.vertical, 4)
+
+                        if showingGlobalNotificationExplanation {
+                            Text("A global notification is sent \(notificationLeadTimeDays) days before the deadline. You can change this setting in Settings > General.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .transition(.opacity)
+                        }
+                    }
+                }
+
                 VStack(alignment: .leading, spacing: 8) {
 
-                    Toggle(
-                        String(localized: "Alarm"),
-                        isOn: Binding(
-                            get: { task.alarmEnabled },
-                            set: { newValue in
-                                Task { @MainActor in
-                                    if newValue {
-                                        do {
-                                            let isAuthorized = try await ForMemoAlarmManager.shared.requestAuthorization()
-                                            alarmAuthorizationAvailable = isAuthorized
-                                            guard isAuthorized else {
+                    HStack {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                showingAlarmExplanation.toggle()
+                            }
+                        } label: {
+                            Text(String(localized: "Alarm"))
+                                .foregroundStyle(.primary)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer(minLength: 12)
+
+                        Toggle(
+                            String(localized: "Alarm"),
+                            isOn: Binding(
+                                get: { task.alarmEnabled },
+                                set: { newValue in
+                                    Task { @MainActor in
+                                        if newValue {
+                                            do {
+                                                let isAuthorized = try await ForMemoAlarmManager.shared.requestAuthorization()
+                                                alarmAuthorizationAvailable = isAuthorized
+                                                guard isAuthorized else {
+                                                    showingAlarmAuthorizationAlert = true
+                                                    return
+                                                }
+
+                                                isSynchronizing.wrappedValue = true
+                                                task.alarmEnabled = true
+                                                await saveAndWaitForScheduling()
+                                            } catch {
+                                                alarmAuthorizationAvailable =
+                                                    ForMemoAlarmManager.shared.authorizationState() == .authorized
+                                                AppLogger.notifications.error(
+                                                    "AlarmKit authorization failed: \(error.localizedDescription)"
+                                                )
+                                                showingAlarmAuthorizationAlert = true
+                                            }
+                                        } else {
+                                            // Keep a configured alarm enabled if its permission was revoked.
+                                            // The tap opens the explanation instead of deleting the saved setting.
+                                            guard !(task.alarmEnabled && !alarmAuthorizationAvailable) else {
                                                 showingAlarmAuthorizationAlert = true
                                                 return
                                             }
 
                                             isSynchronizing.wrappedValue = true
-                                            task.alarmEnabled = true
+                                            task.alarmEnabled = false
                                             await saveAndWaitForScheduling()
-                                        } catch {
-                                            alarmAuthorizationAvailable =
-                                                ForMemoAlarmManager.shared.authorizationState() == .authorized
-                                            AppLogger.notifications.error(
-                                                "AlarmKit authorization failed: \(error.localizedDescription)"
-                                            )
-                                            showingAlarmAuthorizationAlert = true
-                                        }
-                                    } else {
-                                        // Keep a configured alarm enabled if its permission was revoked.
-                                        // The tap opens the explanation instead of deleting the saved setting.
-                                        guard !(task.alarmEnabled && !alarmAuthorizationAvailable) else {
-                                            showingAlarmAuthorizationAlert = true
-                                            return
                                         }
 
-                                        isSynchronizing.wrappedValue = true
-                                        task.alarmEnabled = false
-                                        await saveAndWaitForScheduling()
+                                        isSynchronizing.wrappedValue = false
                                     }
-
-                                    isSynchronizing.wrappedValue = false
                                 }
-                            }
+                            )
                         )
-                    )
+                        .labelsHidden()
+                    }
                     .tint(task.alarmEnabled && !alarmAuthorizationAvailable ? .gray : .green)
                     .padding(.vertical, 10)
+                    
+                   
+                    
                     .alert(
                         "Alarm Unavailable",
                         isPresented: $showingAlarmAuthorizationAlert
@@ -170,13 +229,20 @@ struct ScheduleSection: View {
                         Text("AlarmKit access is not enabled. Check your alarm permissions in Settings.")
                     }
 
-                    Text(String(localized: "AlarmFootnote"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.bottom, 5)
-
-                    Divider()
-
+                    if showingAlarmExplanation {
+                        Text(String(localized: "AlarmFootnote"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.bottom, 5)
+                            .transition(.opacity)
+                    }
+                    
+                    Rectangle()
+                        .fill(Color(uiColor: .separator))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 1)
+                    
+                    
                     ReminderScrubberControl(
                         reminderOffsetMinutes: Binding(
                             get: {
@@ -185,7 +251,6 @@ struct ScheduleSection: View {
                             set: { newValue in
                                 task.reminderOffsetMinutes = newValue
                                 task.snoozeUntil = nil
-                                validateReminder()
                                 saveTask()
                             }
                         ),
@@ -215,9 +280,6 @@ struct ScheduleSection: View {
             guard newPhase == .active else { return }
             alarmAuthorizationAvailable =
                 ForMemoAlarmManager.shared.authorizationState() == .authorized
-        }
-        .onChange(of: task.deadLine) { _, _ in
-            validateReminder()
         }
     }
 }

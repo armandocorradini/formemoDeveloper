@@ -191,7 +191,7 @@ struct AppQuickGuideView: View {
         
         .init(
             title: String(localized: "Smart Notifications"),
-            description: String(localized: "Every task automatically generates an alert when it reaches its deadline. At the due time, you can choose whether to receive a notification or an alarm. Add additional reminders, location alerts and early notifications up to 7 days in advance."),
+            description: String(localized: "Every task with a due date automatically generates an alert at its deadline. You can choose whether to receive a notification or an alarm. A global early notification can be scheduled from 1 to 7 days before the deadline and excluded for individual tasks. You can also add custom reminders and location-based alerts."),
             icon: "deskclock",
             tint: .orange
         ),

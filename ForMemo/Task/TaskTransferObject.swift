@@ -43,6 +43,7 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
         case description
         case deadline
         case reminderOffsetMinutes
+        case excludeGlobalNotification
         case tag
         case attachments
         case latitude
@@ -73,6 +74,7 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
     
     let deadline: Date?
     let reminderOffsetMinutes: Int?
+    let excludeGlobalNotification: Bool
     
     let tag: String?
     let attachments: [AttachmentTransferObject]?
@@ -136,6 +138,12 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
                 Int.self,
                 forKey: .reminderOffsetMinutes
             )
+
+        excludeGlobalNotification =
+            try container.decodeIfPresent(
+                Bool.self,
+                forKey: .excludeGlobalNotification
+            ) ?? false
 
         tag =
             try container.decodeIfPresent(
@@ -262,6 +270,7 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
         description: String,
         deadline: Date?,
         reminderOffsetMinutes: Int?,
+        excludeGlobalNotification: Bool = false,
         tag: String?,
         attachments: [AttachmentTransferObject]?,
         latitude: Double?,
@@ -288,6 +297,7 @@ struct TaskTransferObject: Identifiable, Hashable, Codable {
         self.description = description
         self.deadline = deadline
         self.reminderOffsetMinutes = reminderOffsetMinutes
+        self.excludeGlobalNotification = excludeGlobalNotification
         self.tag = tag
         self.attachments = attachments
         self.latitude = latitude
@@ -325,6 +335,7 @@ extension TaskTransferObject {
             description: task.taskDescription,
             deadline: task.deadLine,
             reminderOffsetMinutes: task.reminderOffsetMinutes,
+            excludeGlobalNotification: task.excludeGlobalNotification,
             tag: task.mainTagRaw,
             attachments: task.attachments?.map {
                 AttachmentTransferObject(
@@ -367,6 +378,7 @@ extension TaskTransferObject {
             description: task.taskDescription,
             deadline: task.deadLine,
             reminderOffsetMinutes: task.reminderOffsetMinutes,
+            excludeGlobalNotification: task.excludeGlobalNotification,
             tag: task.mainTagRaw,
             attachments: task.attachments?
                 .filter {
@@ -422,6 +434,7 @@ extension TodoTask {
         )
         
         self.id = dto.id
+        self.excludeGlobalNotification = dto.excludeGlobalNotification
         
         self.recurrenceRule = dto.recurrenceRule
         

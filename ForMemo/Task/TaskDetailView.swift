@@ -62,7 +62,30 @@ struct TaskDetailView: View {
     @State private var showingShareSheet = false
     @State private var showingAudioRecorder = false
     
-    @State private var validationMessage: String? = nil
+    private var validationMessage: String? {
+        guard let currentDeadline = task.deadLine,
+              let offsetMinutes = task.reminderOffsetMinutes else {
+            return nil
+        }
+
+        let reminderDate = currentDeadline.addingTimeInterval(-Double(offsetMinutes) * 60)
+
+        if reminderDate < .now {
+            return String(localized: "⚠️ This reminder is set in the past.")
+        }
+
+        guard settings.notificationLeadTimeDays != -1,
+              !task.excludeGlobalNotification else {
+            return nil
+        }
+
+        let globalNotificationOffsetMinutes = settings.notificationLeadTimeDays * 24 * 60
+        guard offsetMinutes == globalNotificationOffsetMinutes else {
+            return nil
+        }
+
+        return String(localized: "⚠️ This matches your global default notification.")
+    }
     
     @State private var photoItems: [PhotosPickerItem] = []
     @State private var photoImportMessage: String?
@@ -129,6 +152,7 @@ struct TaskDetailView: View {
         let deadLine: Date?
         let isCompleted: Bool
         let reminderOffsetMinutes: Int?
+        let excludeGlobalNotification: Bool
         let alarmEnabled: Bool
         let locationName: String?
         let locationLatitude: Double?
@@ -151,6 +175,7 @@ struct TaskDetailView: View {
             self.deadLine = task.deadLine
             self.isCompleted = task.isCompleted
             self.reminderOffsetMinutes = task.reminderOffsetMinutes
+            self.excludeGlobalNotification = task.excludeGlobalNotification
             self.alarmEnabled = task.alarmEnabled
             self.locationName = task.locationName
             self.locationLatitude = task.locationLatitude
@@ -174,6 +199,7 @@ struct TaskDetailView: View {
             taskDescription == other.taskDescription &&
             deadLine == other.deadLine &&
             reminderOffsetMinutes == other.reminderOffsetMinutes &&
+            excludeGlobalNotification == other.excludeGlobalNotification &&
             alarmEnabled == other.alarmEnabled &&
             locationName == other.locationName &&
             locationLatitude == other.locationLatitude &&
@@ -469,8 +495,7 @@ struct TaskDetailView: View {
                     saveAndWaitForScheduling: {
                         await saveAndWaitForAlarmScheduling()
                     },
-                    isSynchronizing: $isSynchronizing,
-                    validateReminder: { validateReminder() }
+                    isSynchronizing: $isSynchronizing
                 )
                 
                 if task.deadLine != nil {
@@ -1798,6 +1823,7 @@ struct TaskDetailView: View {
         destination.title = source.title
         destination.taskDescription = source.taskDescription
         destination.reminderOffsetMinutes = source.reminderOffsetMinutes
+        destination.excludeGlobalNotification = source.excludeGlobalNotification
         destination.locationName = source.locationName
         destination.locationLatitude = source.locationLatitude
         destination.locationLongitude = source.locationLongitude
@@ -2422,29 +2448,6 @@ AppLogger.notifications.info(
         NotificationManager.shared.refresh()
     }
     
-    @MainActor
-    private func validateReminder() {
-        
-        guard let currentDeadline = task.deadLine,
-              let offsetMinutes = task.reminderOffsetMinutes else {
-            validationMessage = nil
-            return
-        }
-        
-        let reminderDate = currentDeadline.addingTimeInterval(-Double(offsetMinutes) * 60)
-        
-        let autoNotificationMinutes = settings.notificationLeadTimeDays * 24 * 60
-        
-        if reminderDate < .now {
-            validationMessage = String(localized: "⚠️ This reminder is set in the past.")
-        }
-        else if offsetMinutes == autoNotificationMinutes {
-            validationMessage = String(localized: "⚠️ This matches your global default notification.")
-        }
-        else {
-            validationMessage = nil
-        }
-    }
     
     
     

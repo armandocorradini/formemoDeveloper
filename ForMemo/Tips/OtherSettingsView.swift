@@ -74,10 +74,10 @@ struct OtherSettingsView: View {
                     }
                     .pickerStyle(.menu)
                     
-                  Text(
-                    settings.notificationLeadTimeDays == -1
-                        ? String(localized: "You’ll receive a notification only at the exact time of the task. Since global notifications are disabled, the app badge updates only when tasks become overdue.")
-                        : String(localized: "You’ll receive a notification \(settings.notificationLeadTimeDays) day(s) before the deadline and another at the time it’s due. You can choose below whether the app badge updates at the deadline or already with the global notification.")
+                    Text(
+                        settings.notificationLeadTimeDays == -1
+                            ? String(localized: "You’ll receive an alert at the task’s deadline. The app badge updates when tasks reach their deadlines.")
+                            : String(localized: "A global early notification is scheduled \(settings.notificationLeadTimeDays) days before each deadline, unless excluded for an individual task. A separate alert is always scheduled at the deadline. You can choose below when the app badge updates; for excluded tasks, it updates at the deadline.")
                     )
                     .foregroundStyle(.secondary)
                     .font(.footnote)

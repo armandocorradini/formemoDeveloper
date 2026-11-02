@@ -37,7 +37,7 @@ struct TaskBadgePolicy {
                 }
 
                 // Global notification mode
-                if leadDays > 0 {
+                if leadDays > 0 && !task.excludeGlobalNotification {
                     let triggerDate = Calendar.current.date(
                         byAdding: .day,
                         value: -leadDays,

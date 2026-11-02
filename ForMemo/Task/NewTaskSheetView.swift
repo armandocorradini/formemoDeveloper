@@ -146,7 +146,30 @@ struct NewTaskSheetView: View {
     @State private var showingLocationPicker = false
     @State private var showingAudioRecorder = false
     
-    @State private var validationMessage: String? = nil
+    private var validationMessage: String? {
+        guard let currentDeadline = draftTask.deadLine,
+              let offsetMinutes = draftTask.reminderOffsetMinutes else {
+            return nil
+        }
+
+        let reminderDate = currentDeadline.addingTimeInterval(-Double(offsetMinutes) * 60)
+
+        if reminderDate < .now {
+            return String(localized: "⚠️ This reminder is set in the past.")
+        }
+
+        guard settings.notificationLeadTimeDays != -1,
+              !draftTask.excludeGlobalNotification else {
+            return nil
+        }
+
+        let globalNotificationOffsetMinutes = settings.notificationLeadTimeDays * 24 * 60
+        guard offsetMinutes == globalNotificationOffsetMinutes else {
+            return nil
+        }
+
+        return String(localized: "⚠️ This matches your global default notification.")
+    }
     
     // Centralized confirmation threshold: 0 asks whenever at least one future occurrence will be generated.
     @State private var recurrenceGenerationConfirmation = false
@@ -163,6 +186,8 @@ struct NewTaskSheetView: View {
     
     @State private var isSynchronizing = false
     @State private var showingAlarmAuthorizationAlert = false
+    @State private var showingGlobalNotificationExplanation = false
+    @State private var showingAlarmExplanation = false
     
     init(draftTask: TodoTask) {
         self._draftTask = Bindable(wrappedValue: draftTask)
@@ -309,14 +334,6 @@ struct NewTaskSheetView: View {
                 .scrollContentBackground(.hidden)
                 .scrollDismissesKeyboard(.immediately)
                 .navigationTitle("New Task")
-                
-                // 🔥 VALIDAZIONE LIVE
-                .onChange(of: draftTask.deadLine) { _, _ in
-                    validateReminder()
-                }
-                .onChange(of: draftTask.reminderOffsetMinutes) { _, _ in
-                    validateReminder()
-                }
                 
                 .toolbar {
                     
@@ -485,8 +502,6 @@ struct NewTaskSheetView: View {
                         draftTask.recurrenceRule = nil
                         selectedRecurrence = .none
                     }
-                    
-                    validateReminder()
                 }
             ))
             
@@ -500,7 +515,6 @@ struct NewTaskSheetView: View {
                             get: { deadline },
                             set: {
                                 draftTask.deadLine = $0
-                                validateReminder()
                             }
                         ),
                         displayedComponents: [.date, .hourAndMinute]
@@ -508,36 +522,82 @@ struct NewTaskSheetView: View {
                     .labelsHidden()
                     .padding(.bottom, 5)
                     
+                    if settings.notificationLeadTimeDays != -1 {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        showingGlobalNotificationExplanation.toggle()
+                                    }
+                                } label: {
+                                    Text("Disable global notification")
+                                        .foregroundStyle(.primary)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+
+                                Spacer(minLength: 12)
+
+                                Toggle("Disable global notification", isOn: $draftTask.excludeGlobalNotification)
+                                    .labelsHidden()
+                            }
+                            .padding(.vertical, 8)
+
+                            if showingGlobalNotificationExplanation {
+                                Text("A global notification is sent \(settings.notificationLeadTimeDays) days before the deadline. You can change this setting in Settings > General.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                                    .transition(.opacity)
+                            }
+                        }
+                    }
+
                     Divider()
                     
-                    Toggle(
-                        String(localized: "Alarm"),
-                        isOn: Binding(
-                            get: { draftTask.alarmEnabled },
-                            set: { newValue in
-                                if newValue {
-                                    Task { @MainActor in
-                                        do {
-                                            let isAuthorized = try await ForMemoAlarmManager.shared.requestAuthorization()
-                                            guard isAuthorized else {
-                                                showingAlarmAuthorizationAlert = true
-                                                return
-                                            }
-
-                                            draftTask.alarmEnabled = true
-                                        } catch {
-                                            AppLogger.notifications.error(
-                                                "AlarmKit authorization failed: \(error.localizedDescription)"
-                                            )
-                                            showingAlarmAuthorizationAlert = true
-                                        }
-                                    }
-                                } else {
-                                    draftTask.alarmEnabled = false
-                                }
+                    HStack {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                showingAlarmExplanation.toggle()
                             }
+                        } label: {
+                            Text(String(localized: "Alarm"))
+                                .foregroundStyle(.primary)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer(minLength: 12)
+
+                        Toggle(
+                            String(localized: "Alarm"),
+                            isOn: Binding(
+                                get: { draftTask.alarmEnabled },
+                                set: { newValue in
+                                    if newValue {
+                                        Task { @MainActor in
+                                            do {
+                                                let isAuthorized = try await ForMemoAlarmManager.shared.requestAuthorization()
+                                                guard isAuthorized else {
+                                                    showingAlarmAuthorizationAlert = true
+                                                    return
+                                                }
+
+                                                draftTask.alarmEnabled = true
+                                            } catch {
+                                                AppLogger.notifications.error(
+                                                    "AlarmKit authorization failed: \(error.localizedDescription)"
+                                                )
+                                                showingAlarmAuthorizationAlert = true
+                                            }
+                                        }
+                                    } else {
+                                        draftTask.alarmEnabled = false
+                                    }
+                                }
+                            )
                         )
-                    )
+                        .labelsHidden()
+                    }
                     .padding(.vertical, 10)
                     .alert(
                         "Alarm Unavailable",
@@ -553,10 +613,13 @@ struct NewTaskSheetView: View {
                         Text("AlarmKit access is not enabled. Check your alarm permissions in Settings.")
                     }
                     
-                    Text(String(localized: "AlarmFootnote"))
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.bottom, 5)
+                    if showingAlarmExplanation {
+                        Text(String(localized: "AlarmFootnote"))
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.bottom, 5)
+                            .transition(.opacity)
+                    }
                     
                     Divider()
                     
@@ -1222,30 +1285,6 @@ struct NewTaskSheetView: View {
         
     }
     
-    // MARK: - VALIDATION
-    
-    @MainActor
-    private func validateReminder() {
-        
-        guard let currentDeadline = draftTask.deadLine,
-              let offsetMinutes = draftTask.reminderOffsetMinutes else {
-            validationMessage = nil
-            return
-        }
-        
-        let reminderDate = currentDeadline.addingTimeInterval(-Double(offsetMinutes) * 60)
-        let autoNotificationMinutes = settings.notificationLeadTimeDays * 24 * 60
-        
-        if reminderDate < .now {
-            validationMessage = String(localized:"⚠️ This reminder is set in the past.")
-        }
-        else if offsetMinutes == autoNotificationMinutes {
-            validationMessage = String(localized:"⚠️ This matches your global default notification.")
-        }
-        else {
-            validationMessage = nil
-        }
-    }
 }
 
 extension RecurrenceUI {

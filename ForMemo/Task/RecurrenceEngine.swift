@@ -731,6 +731,7 @@ struct RecurrenceEngine {
                 isCompleted: false,
                 completedAt: nil,
                 reminderOffsetMinutes: task.reminderOffsetMinutes,
+                excludeGlobalNotification: task.excludeGlobalNotification,
                 locationName: task.locationName,
                 locationLatitude: task.locationLatitude,
                 locationLongitude: task.locationLongitude,

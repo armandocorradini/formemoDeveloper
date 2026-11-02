@@ -21,7 +21,7 @@ struct TaskDayView: View {
     @State private var foregroundRefreshDate = Date.now
     @State private var dateStripHoldTask: Task<Void, Never>?
     @State private var dateStripDidHoldEdge = false
-    @State private var taskRowFrames: [String: CGRect] = [:]
+    @State private var taskRowFrameStore = TaskDaySwipeRowFrameStore()
     @State private var centralizedSwipeDrag: TaskDaySwipeDrag?
     @State private var centralizedSwipeAxis: TaskDaySwipeAxis?
     
@@ -68,6 +68,21 @@ struct TaskDayView: View {
         }
     }
 
+    private var tasksByTimelineSlot: [Int: [TodoTask]] {
+        let interval = normalizedTimelineInterval(settings.dayTimelineIntervalMinutes)
+        var groupedTasks: [Int: [TodoTask]] = [:]
+
+        for task in timedTasks {
+            guard let deadline = task.deadLine else { continue }
+            let components = calendar.dateComponents([.hour, .minute], from: deadline)
+            guard let hour = components.hour, let minute = components.minute else { continue }
+            let slotMinutes = ((hour * 60 + minute) / interval) * interval
+            groupedTasks[slotMinutes, default: []].append(task)
+        }
+
+        return groupedTasks
+    }
+
     private var hasOverdueTasks: Bool {
         tasks.contains { task in
             guard let deadline = task.deadLine else { return false }
@@ -102,6 +117,8 @@ struct TaskDayView: View {
 
             ScrollView {
                 LazyVStack(spacing: 0) {
+                    let slotTasksByMinute = tasksByTimelineSlot
+
                     if !allDayTasks.isEmpty {
                         HStack(alignment: .top, spacing: 12) {
                             Text(String(localized: "All day"))
@@ -124,7 +141,7 @@ struct TaskDayView: View {
                     ForEach(timelineSlots, id: \.self) { slotMinutes in
                         let hour = slotMinutes / 60
                         let minute = slotMinutes % 60
-                        let slotTasks = tasks(in: hour, minute: minute)
+                        let slotTasks = slotTasksByMinute[slotMinutes] ?? []
 
                         HStack(alignment: .top, spacing: 8) {
                             Text(String(format: "%02d:%02d", hour, minute))
@@ -186,7 +203,7 @@ struct TaskDayView: View {
             .modifier(
                 TaskDaySwipeContainerModifier(
                     openSwipeTaskID: $openSwipeTaskID,
-                    taskRowFrames: $taskRowFrames,
+                    taskRowFrameStore: taskRowFrameStore,
                     centralizedSwipeDrag: $centralizedSwipeDrag,
                     centralizedSwipeAxis: $centralizedSwipeAxis
                 )
@@ -658,17 +675,6 @@ struct TaskDayView: View {
         }
     }
 
-    private func tasks(in hour: Int, minute: Int) -> [TodoTask] {
-        timedTasks.filter { task in
-            guard let deadline = task.deadLine else { return false }
-            let components = calendar.dateComponents([.hour, .minute], from: deadline)
-            guard let taskHour = components.hour, let taskMinute = components.minute else { return false }
-            let interval = normalizedTimelineInterval(settings.dayTimelineIntervalMinutes)
-            let taskSlot = ((taskHour * 60 + taskMinute) / interval) * interval
-            return taskSlot == hour * 60 + minute
-        }
-    }
-
     @ViewBuilder
     private func taskRow(_ task: TodoTask) -> some View {
         let rowHeight = max(44, settings.dayEmptySlotHeight)
@@ -995,6 +1001,13 @@ private struct TaskDaySwipeDrag: Equatable {
     let isEnded: Bool
 }
 
+@MainActor
+private final class TaskDaySwipeRowFrameStore {
+    // Reference storage avoids invalidating TaskDayView whenever row frames
+    // change during vertical scrolling.
+    var frames: [String: CGRect] = [:]
+}
+
 private struct TaskDaySwipeRowBoundsKey: PreferenceKey {
     static var defaultValue: [String: CGRect] = [:]
 
@@ -1016,7 +1029,7 @@ private struct TimelineSlotBoundsKey: PreferenceKey {
 
 private struct TaskDaySwipeContainerModifier: ViewModifier {
     @Binding var openSwipeTaskID: String?
-    @Binding var taskRowFrames: [String: CGRect]
+    let taskRowFrameStore: TaskDaySwipeRowFrameStore
     @Binding var centralizedSwipeDrag: TaskDaySwipeDrag?
     @Binding var centralizedSwipeAxis: TaskDaySwipeAxis?
 
@@ -1033,7 +1046,7 @@ private struct TaskDaySwipeContainerModifier: ViewModifier {
                         }
                     }
                 )
-                .onPreferenceChange(TaskDaySwipeRowBoundsKey.self) { taskRowFrames = $0 }
+                .onPreferenceChange(TaskDaySwipeRowBoundsKey.self) { taskRowFrameStore.frames = $0 }
                 .simultaneousGesture(
                     DragGesture(minimumDistance: 8, coordinateSpace: .named("TaskDayScrollSpace"))
                         .onChanged { value in
@@ -1055,7 +1068,7 @@ private struct TaskDaySwipeContainerModifier: ViewModifier {
                             guard centralizedSwipeAxis == .horizontal else { return }
                             let taskID = centralizedSwipeDrag?.isEnded == false
                                 ? centralizedSwipeDrag?.taskID
-                                : taskRowFrames.first(where: { $0.value.contains(value.startLocation) })?.key
+                                : taskRowFrameStore.frames.first(where: { $0.value.contains(value.startLocation) })?.key
                             guard let taskID else { return }
 
                             centralizedSwipeDrag = TaskDaySwipeDrag(

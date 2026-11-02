@@ -20,6 +20,7 @@ final class TodoTask {
     var completedAt: Date? = nil
     var createdAt: Date = Date()
     var reminderOffsetMinutes: Int? = nil
+    var excludeGlobalNotification: Bool = false
     var locationName: String? = nil
     var locationLatitude: Double? = nil
     var locationLongitude: Double? = nil
@@ -53,6 +54,7 @@ final class TodoTask {
         isCompleted: Bool = false,
         completedAt: Date? = nil,
         reminderOffsetMinutes: Int? = nil,
+        excludeGlobalNotification: Bool = false,
         locationName: String? = nil,
         locationLatitude: Double? = nil,
         locationLongitude: Double? = nil,
@@ -68,6 +70,7 @@ final class TodoTask {
         self.completedAt = completedAt
         self.createdAt = now
         self.reminderOffsetMinutes = reminderOffsetMinutes
+        self.excludeGlobalNotification = excludeGlobalNotification
         self.locationName = locationName
         self.locationLatitude = locationLatitude
         self.locationLongitude = locationLongitude
@@ -339,6 +342,7 @@ extension TodoTask {
         item.isCompleted = task.isCompleted
         item.completedAt = task.completedAt
         item.reminderOffsetMinutes = task.reminderOffsetMinutes
+        item.excludeGlobalNotification = task.excludeGlobalNotification
         item.locationName = task.locationName
         item.locationLatitude = task.locationLatitude
         item.locationLongitude = task.locationLongitude

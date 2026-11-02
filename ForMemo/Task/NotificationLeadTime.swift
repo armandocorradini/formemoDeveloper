@@ -24,7 +24,7 @@ enum NotificationLeadTime: Int, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .none:
-            return String(localized: "None")
+            return String(localized: "global.None")
         case .oneDay:
             return String(localized: "1 day before")
         default:
