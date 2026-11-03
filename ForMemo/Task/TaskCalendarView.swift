@@ -6,6 +6,8 @@ import os
 
 struct TaskCalendarView: View {
 
+    var initialSelectedDate: Date? = nil
+
     @Environment(AppSettings.self)
 
     private var settings
@@ -327,10 +329,37 @@ struct TaskCalendarView: View {
         .navigationTitle("Calendar")
 
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    NotificationCenter.default.post(
+                        name: Notification.Name("TaskCalendarOpenDay"),
+                        object: calendar.startOfDay(for: selectedDate)
+                    )
+                } label: {
+                    Image(systemName: "sun.horizon")
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.blue, .orange)
+                        .font(.system(size: 19))
+                        .frame(width: 36, height: 36)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Open day view"))
+            }
+        }
 
         .padding(.top, -8)
 
         .onAppear {
+            if let initialSelectedDate {
+                let targetDate = calendar.startOfDay(for: initialSelectedDate)
+                selectedDate = targetDate
+                displayedMonth = calendar.date(
+                    from: calendar.dateComponents([.year, .month], from: targetDate)
+                ) ?? targetDate
+            }
+
             Task { @MainActor in await loadHolidays(for: displayedMonth) }
             fetchCalendarTasks()
         }
@@ -715,6 +744,9 @@ private extension TaskCalendarView {
             } label: {
                 Text(displayedMonth, format: .dateTime.month(.wide).year())
                     .font(.headline.bold())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .allowsTightening(true)
                     .foregroundStyle(.primary)
             }
             .buttonStyle(.plain)

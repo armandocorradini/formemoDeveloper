@@ -139,7 +139,11 @@ struct TaskRescheduleMenu: View {
                 button(for: option)
             }
         } label: {
-            Label("Reschedule", systemImage: "clock")
+            if task.recurrenceRule != nil {
+                Label("Reschedule This Occurrence", systemImage: "clock")
+            } else {
+                Label("Reschedule", systemImage: "clock")
+            }
         }
     }
 

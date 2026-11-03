@@ -12,6 +12,7 @@ struct Dashboard: View {
     @State private var selectedLoyaltyCard: LoyaltyCard?
     @State private var selectedWeatherDate: Date?
     @State private var selectedNote: Note?
+    @State private var draftTask: TodoTask?
     @State private var recentWalletLogos: [String: Data] = [:]
     @State private var dashboardContinueItems: [ContinueItem] = []
     
@@ -718,13 +719,30 @@ struct Dashboard: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink {
-                    OverviewView()
-                } label: {
-                    Image(systemName: "line.3.horizontal.button.angledtop.vertical.right")
+                HStack(spacing: 8) {
+                    NavigationLink {
+                        OverviewView()
+                    } label: {
+                        Image(systemName: "line.3.horizontal.button.angledtop.vertical.right")
+                    }
+
+                    Button {
+                        draftTask = TodoTask()
+                    } label: {
+                        Image(systemName: draftTask == nil ? "plus.circle.fill" : "minus.circle.fill")
+                            .foregroundStyle(draftTask == nil ? .green : .gray)
+                            .font(.system(size: 22))
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "New task"))
                 }
             }
             
+        }
+        .sheet(item: $draftTask) { task in
+            NewTaskSheetView(draftTask: task)
         }
         .navigationDestination(item: $selectedTask) { task in
             TaskDetailView(task: task)
@@ -760,6 +778,12 @@ struct Dashboard: View {
             guard !Task.isCancelled else { return }
             await weatherManager.refreshIfNeeded()
             TaskWidgetSnapshotStore.scheduleRefresh(from: modelContext)
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(for: .taskDidChange)
+        ) { _ in
+            refreshTodayDashboard()
+            refreshTomorrowDashboard()
         }
         .onReceive(
             NotificationCenter.default.publisher(

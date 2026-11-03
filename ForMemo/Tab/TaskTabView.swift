@@ -40,6 +40,8 @@ struct TaskTabView: View {
     @StateObject private var noteEditorCoordinator = NoteEditorCoordinator()
     @State private var showNoteUnsavedChangesAlert = false
     @State private var pendingNoteTab: Int?
+    @State private var calendarNavigationDate: Date?
+    @State private var dayNavigationDate: Date?
     
     var body: some View {
         rootLayout
@@ -99,6 +101,38 @@ struct TaskTabView: View {
 
                 withAnimation(.easeInOut(duration: 0.18)) {
                     selectedTab = 1
+                }
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: Notification.Name("TaskDayOpenCalendar")
+                )
+            ) { notification in
+                guard let date = notification.object as? Date else {
+                    return
+                }
+
+                calendarNavigationDate = Calendar.current.startOfDay(for: date)
+                calendarPath = NavigationPath()
+
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    selectedTab = AppTab.calendar.rawValue
+                }
+            }
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: Notification.Name("TaskCalendarOpenDay")
+                )
+            ) { notification in
+                guard let date = notification.object as? Date else {
+                    return
+                }
+
+                dayNavigationDate = Calendar.current.startOfDay(for: date)
+                dayPath = NavigationPath()
+
+                withAnimation(.easeInOut(duration: 0.18)) {
+                    selectedTab = AppTab.day.rawValue
                 }
             }
             .onReceive(
@@ -480,12 +514,12 @@ struct TaskTabView: View {
             
         case 3:
             NavigationStack(path: $calendarPath) {
-                TaskCalendarView()
+                TaskCalendarView(initialSelectedDate: calendarNavigationDate)
             }
 
         case 14:
             NavigationStack(path: $dayPath) {
-                TaskDayView()
+                TaskDayView(initialSelectedDate: dayNavigationDate)
             }
             
         case 5:

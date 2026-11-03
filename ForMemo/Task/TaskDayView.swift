@@ -4,6 +4,7 @@ import os
 import UIKit
 
 struct TaskDayView: View {
+    var initialSelectedDate: Date? = nil
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @Environment(AppSettings.self) private var settings
@@ -222,6 +223,11 @@ struct TaskDayView: View {
                 .accessibilityHidden(true)
             }
         }
+        .onAppear {
+            if let initialSelectedDate {
+                selectedDate = calendar.startOfDay(for: initialSelectedDate)
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 foregroundRefreshDate = .now
@@ -253,32 +259,63 @@ struct TaskDayView: View {
                 } label: {
                     HStack(spacing: 5) {
                         Text(selectedDate.formatted(.dateTime.month(.wide).year(.twoDigits)).capitalized)
-                            .font(.headline)
-                        Image(systemName: "chevron.down")
-                            .font(.caption2.weight(.semibold))
-                    }
-                    .frame(minWidth: 160, minHeight: 44)
-                    .contentShape(Rectangle())
-                }
+                                        .font(.headline)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                        .allowsTightening(true)
+
+                                    Image(systemName: "chevron.down")
+                                        .font(.caption2.weight(.semibold))
+                                        .fixedSize()
+                                }
+                                .frame(minWidth: 160, minHeight: 44)
+                                .contentShape(Rectangle())
+                            }
                 .buttonStyle(.plain)
                 .accessibilityLabel(String(localized: "Choose date"))
             }
 
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                Button(String(localized: "Today")) {
-                    selectedDate = calendar.startOfDay(for: .now)
-                }
-                .font(.subheadline)
-                .foregroundColor(.blue)
+            ToolbarItem(placement: .topBarTrailing) {
+                HStack(spacing: 6) {
+                    Button {
+                        selectedDate = calendar.startOfDay(for: .now)
+                    } label: {
+                        Image(systemName: "\(Calendar.current.component(.day, from: .now)).calendar")
+                            .font(.system(size: 20))
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.primary , .blue)
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "Today"))
 
-                Button {
-                    draftTask = makeNewTask(hour: 8, minute: 0)
-                } label: {
-                    Image(systemName: draftTask == nil ? "plus.circle.fill" : "minus.circle.fill")
-                        .foregroundStyle(draftTask == nil ? .green : .gray)
-                        .font(.title2)
+                    Button {
+                        NotificationCenter.default.post(
+                            name: Notification.Name("TaskDayOpenCalendar"),
+                            object: calendar.startOfDay(for: selectedDate)
+                        )
+                    } label: {
+                        Image(systemName: "calendar")
+                            .font(.system(size: 19))
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "Open calendar"))
+
+                    Button {
+                        draftTask = makeNewTask(hour: 8, minute: 0)
+                    } label: {
+                        Image(systemName: draftTask == nil ? "plus.circle.fill" : "minus.circle.fill")
+                            .foregroundStyle(draftTask == nil ? .green : .gray)
+                            .font(.system(size: 22))
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "New task"))
                 }
-                .accessibilityLabel(String(localized: "New task"))
             }
 
             ToolbarItem(placement: .topBarLeading) {
@@ -397,7 +434,7 @@ struct TaskDayView: View {
             let lowerY = proxy[lowerAnchor].minY
             let upperY = proxy[upperAnchor].minY
             let fraction = CGFloat(nowMinutes - lowerSlot) / CGFloat(interval)
-            let y = lowerY + (upperY - lowerY) * fraction
+            let y = lowerY + (upperY - lowerY) * fraction + 7.5  //posizione linietta blu orario
 
             ZStack(alignment: .leading) {
 //                Rectangle()
@@ -759,12 +796,20 @@ struct TaskDayView: View {
                     }
                 }
 
-                Text(task.title.isEmpty ? String(localized: "Untitled task") : task.title)
-                    .font(.subheadline)
-                    .foregroundStyle(task.isCompleted ? Color.secondary : Color.primary)
-                    .underline(isOverdue, color: .red)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                HStack(spacing: 6) {
+                    Text(task.title.isEmpty ? String(localized: "Untitled task") : task.title)
+                        .font(.subheadline)
+                        .foregroundStyle(task.isCompleted ? Color.secondary : Color.primary)
+                        .underline(isOverdue, color: .red)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    if task.recurrenceRule != nil {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(task.occurrenceIndex == nil ? .red : .blue)
+                    }
+                }
             }
 //                .padding(.bottom, 8)
 

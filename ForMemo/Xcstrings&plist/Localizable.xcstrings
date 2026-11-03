@@ -26665,6 +26665,62 @@
         }
       }
     },
+    "Open calendar" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalender öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir calendario"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir le calendrier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri calendario"
+          }
+        }
+      }
+    },
+    "Open day view" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagesansicht öffnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir vista diaria"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir la vue journalière"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri vista giornaliera"
+          }
+        }
+      }
+    },
     "Open ForMemo to refresh" : {
       "localizations" : {
         "de" : {
@@ -30767,6 +30823,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Posticipa modifica direttamente la scadenza del task spostandola a una nuova data o ora. Snooze invece ritarda solo la notifica corrente senza cambiare la scadenza originale. Posticipa è utile quando i piani cambiano, mentre Snooze serve per ritardi temporanei."
+          }
+        }
+      }
+    },
+    "Reschedule This Occurrence" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Vorkommen neu planen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprogramar esta ocurrencia"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reprogrammer cette occurrence"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprogramma questa occorrenza"
           }
         }
       }
