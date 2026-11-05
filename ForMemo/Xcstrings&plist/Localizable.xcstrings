@@ -3288,6 +3288,34 @@
         }
       }
     },
+    "A note from the developer" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Nachricht des Entwicklers"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una nota del desarrollador"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une note du développeur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una nota dello sviluppatore"
+          }
+        }
+      }
+    },
     "A-Z" : {
       "shouldTranslate" : false
     },
@@ -3315,6 +3343,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Informazioni"
+          }
+        }
+      }
+    },
+    "About the developer" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Über den Entwickler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sobre el desarrollador"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À propos du développeur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo sviluppatore"
           }
         }
       }
@@ -18409,6 +18465,34 @@
         }
       }
     },
+    "ForMemo is driven by curiosity, a passion for technology, and the joy of learning by creating." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo ist aus Neugier, der Begeisterung für Technologie und der Freude am Lernen durch eigenes Gestalten entstanden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo nace de la curiosidad, la pasión por la tecnología y el placer de aprender creando."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo est né de la curiosité, de la passion pour la technologie et du plaisir d’apprendre en créant."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo nasce dalla curiosità, dalla passione per la tecnologia e dal piacere di imparare creando."
+          }
+        }
+      }
+    },
     "ForMemo is scheduling notifications and alarms." : {
       "localizations" : {
         "de" : {
@@ -19657,6 +19741,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ecco cosa è previsto per %1$@:"
+          }
+        }
+      }
+    },
+    "Hi, I'm Armando. I created ForMemo to build something useful, starting from a personal need and with the help of artificial intelligence." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hallo, ich bin Armando. Ich habe ForMemo entwickelt, um etwas Nützliches zu schaffen – aus einem persönlichen Bedürfnis heraus und mit Unterstützung künstlicher Intelligenz."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hola, soy Armando. He creado ForMemo para desarrollar algo útil, partiendo de una necesidad personal y con la ayuda de la inteligencia artificial."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bonjour, je m’appelle Armando. J’ai créé ForMemo pour concevoir quelque chose d’utile, à partir d’un besoin personnel et avec l’aide de l’intelligence artificielle."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciao, sono Armando. Ho creato ForMemo per realizzare qualcosa di utile, partendo da un'esigenza personale e con l'aiuto dell'intelligenza artificiale."
           }
         }
       }
@@ -38970,6 +39082,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Al momento non ci sono notifiche programmate."
+          }
+        }
+      }
+    },
+    "There are no ads, subscriptions, or in-app purchases. Just the pleasure of sharing a tool that may be useful to others." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Werbung, keine Abonnements und keine In-App-Käufe. Einfach die Freude daran, ein Werkzeug zu teilen, das auch anderen nützlich sein kann."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin publicidad, suscripciones ni compras dentro de la aplicación. Simplemente, el placer de compartir una herramienta que también pueda resultar útil a otras personas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune publicité, aucun abonnement ni achat intégré. Simplement le plaisir de partager un outil qui pourrait être utile à d’autres."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niente pubblicità, abbonamenti o acquisti in-app. Solo il piacere di condividere uno strumento che possa essere utile anche agli altri"
           }
         }
       }

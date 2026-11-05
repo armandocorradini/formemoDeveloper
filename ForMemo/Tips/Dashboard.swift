@@ -379,10 +379,12 @@ struct Dashboard: View {
                     // MARK: - Oggi
                     
                     Button {
-                        NotificationCenter.default.post(
-                            name: Notification.Name("DashboardOpenList"),
-                            object: nil
-                        )
+                        if settings.showTasksTab {
+                            NotificationCenter.default.post(
+                                name: Notification.Name("DashboardOpenList"),
+                                object: nil
+                            )
+                        }
                     } label: {
                         VStack(alignment: .leading, spacing: 0) {
                             
@@ -503,10 +505,12 @@ struct Dashboard: View {
                         dashboardTomorrowTasksCount > 0 {
                         
                         Button {
-                            NotificationCenter.default.post(
-                                name: Notification.Name("DashboardOpenList"),
-                                object: nil
-                            )
+                            if settings.showTasksTab {
+                                NotificationCenter.default.post(
+                                    name: Notification.Name("DashboardOpenList"),
+                                    object: nil
+                                )
+                            }
                         } label: {
                             VStack(alignment: .leading, spacing: 10) {
                                 

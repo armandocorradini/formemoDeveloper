@@ -330,22 +330,24 @@ struct TaskCalendarView: View {
 
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    NotificationCenter.default.post(
-                        name: Notification.Name("TaskCalendarOpenDay"),
-                        object: calendar.startOfDay(for: selectedDate)
-                    )
-                } label: {
-                    Image(systemName: "sun.horizon")
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(.blue, .orange)
-                        .font(.system(size: 19))
-                        .frame(width: 36, height: 36)
-                        .contentShape(Rectangle())
+            if settings.showDayTab {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        NotificationCenter.default.post(
+                            name: Notification.Name("TaskCalendarOpenDay"),
+                            object: calendar.startOfDay(for: selectedDate)
+                        )
+                    } label: {
+                        Image(systemName: "sun.horizon")
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.blue, .orange)
+                            .font(.system(size: 19))
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "Open day view"))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(String(localized: "Open day view"))
             }
         }
 

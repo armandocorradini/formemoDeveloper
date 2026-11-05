@@ -4,6 +4,7 @@ import SwiftData
 struct StartView: View {
     
     @State private var isAnimating = false
+    @State private var isDeveloperPopoverPresented = false
 
     
     var body: some View {
@@ -53,9 +54,37 @@ struct StartView: View {
 //                            .font(.subheadline)
 //                            .tracking(2)
 //                            .foregroundStyle(.secondary)
-                        Text("armando ♾️ corradini")
-                            .font(.system(.body, design: .serif))
-                            .italic()
+                        Button {
+                            isDeveloperPopoverPresented = true
+                        } label: {
+                            Text("armando ♾️ corradini")
+                                .font(.system(.body, design: .serif))
+                                .italic()
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(String(localized: "About the developer"))
+                        .popover(isPresented: $isDeveloperPopoverPresented) {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("A note from the developer")
+                                    .font(.headline)
+
+                                Text("Hi, I'm Armando. I created ForMemo to build something useful, starting from a personal need and with the help of artificial intelligence.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.primary)
+
+                                Text("There are no ads, subscriptions, or in-app purchases. Just the pleasure of sharing a tool that may be useful to others.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+
+                                Text("ForMemo is driven by curiosity, a passion for technology, and the joy of learning by creating.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(20)
+                            .frame(width: 300, alignment: .leading)
+                            .presentationCompactAdaptation(.popover)
+                        }
                         Text(appVersionString)
                             .font(.caption2)
                             .foregroundStyle(.secondary.opacity(0.8))

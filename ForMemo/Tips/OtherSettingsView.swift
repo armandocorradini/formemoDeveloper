@@ -190,15 +190,19 @@ private struct StartupTabSelectionView: View {
                         showAutomaticUnavailableAlert = true
                         return
                     }
+
                     settings.startupTab = -1
                     dismiss()
                 } label: {
                     VStack(alignment: .leading, spacing: 3) {
                         startupOptionLabel("Automatic", tag: -1)
+
                         Text("Dashboard if activities exist; otherwise Activities.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
                 .foregroundStyle(
                     settings.showDashboardTab && settings.showTasksTab
