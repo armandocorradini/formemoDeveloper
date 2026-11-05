@@ -748,6 +748,8 @@ private extension TaskCalendarView {
                     .minimumScaleFactor(0.7)
                     .allowsTightening(true)
                     .foregroundStyle(.primary)
+                
+                Image(systemName: "chevron.down")
             }
             .buttonStyle(.plain)
 
@@ -759,11 +761,9 @@ private extension TaskCalendarView {
 
                 monthNavigationButton(systemName: "chevron.left", direction: -1)
 
-                Button("Today") {
+                Button {
 
                     let startOfToday = calendar.startOfDay(for: .now)
-
-                    // Animated reset to current month
 
                     withAnimation(.snappy) {
 
@@ -773,13 +773,25 @@ private extension TaskCalendarView {
 
                     }
 
+                } label: {
+
+                    Image(systemName: "\(calendar.component(.day, from: .now)).calendar")
+
+                        .font(.system(size: 26))
+
+                        .symbolRenderingMode(.palette)
+
+                        .foregroundStyle(.primary, .blue)
+
+                        .frame(width: 42, height: 42)
+
+                        .contentShape(Rectangle())
+
                 }
 
-                .font(.caption.bold())
+                .buttonStyle(.plain)
 
-                .buttonStyle(.bordered)
-
-                .frame(width: 80)
+                .accessibilityLabel(String(localized: "Today"))
 
                 monthNavigationButton(systemName: "chevron.right", direction: 1)
 

@@ -211,7 +211,7 @@ final class AppSettings {
         ) ?? .cards
         
         let savedTimelineInterval = defaults.object(forKey: "dayTimelineIntervalMinutes") as? Int ?? 30
-        dayTimelineIntervalMinutes = [30, 60, 120].contains(savedTimelineInterval) ? savedTimelineInterval : 30
+        dayTimelineIntervalMinutes = [30, 60, 120, 180].contains(savedTimelineInterval) ? savedTimelineInterval : 30
         dayEmptySlotHeight = defaults.object(forKey: "dayEmptySlotHeight") as? Double ?? 24
         dayHideEmptyNightHours = defaults.object(forKey: "dayHideEmptyNightHours") as? Bool ?? false
         dayHideCompletedTasks = defaults.object(forKey: "dayHideCompletedTasks") as? Bool ?? false
@@ -273,7 +273,7 @@ final class AppSettings {
 
     var dayTimelineIntervalMinutes: Int {
         didSet {
-            let normalized = [30, 60, 120].contains(dayTimelineIntervalMinutes) ? dayTimelineIntervalMinutes : 30
+            let normalized = [30, 60, 120, 180].contains(dayTimelineIntervalMinutes) ? dayTimelineIntervalMinutes : 30
             if dayTimelineIntervalMinutes != normalized {
                 dayTimelineIntervalMinutes = normalized
                 return

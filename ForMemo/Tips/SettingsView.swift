@@ -837,7 +837,7 @@ Attivazione: \(triggerInfo)
                             }
                         }
                     } footer: {
-                        Text("This permanently deletes all tasks, attachments, and data from this device. This action cannot be undone.")
+                        Text("This permanently deletes all ForMemo content from this device and its iCloud database, including tasks, notes, checklists, trips, documents, attachments, cards, tickets, vault items, and recently deleted items. The deletion will sync to your other devices. App settings and preferences are not reset. This action cannot be undone.")
                     }
                     
                     

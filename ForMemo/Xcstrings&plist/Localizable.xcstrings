@@ -39402,30 +39402,30 @@
         }
       }
     },
-    "This permanently deletes all tasks, attachments, and data from this device. This action cannot be undone." : {
+    "This permanently deletes all ForMemo content from this device and its iCloud database, including tasks, notes, checklists, trips, documents, attachments, cards, tickets, vault items, and recently deleted items. The deletion will sync to your other devices. App settings and preferences are not reset. This action cannot be undone." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dadurch werden alle Aufgaben, Anhänge und Daten auf diesem Gerät dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
+            "value" : "Dadurch werden alle ForMemo-Inhalte auf diesem Gerät und in der iCloud-Datenbank endgültig gelöscht. Dazu gehören Aufgaben, Notizen, Checklisten, Reisen, Dokumente, Anhänge, Karten, Tickets, Tresoreinträge und zuletzt gelöschte Elemente. Die Löschung wird mit deinen anderen Geräten synchronisiert. App-Einstellungen und persönliche Anpassungen werden nicht zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esto elimina permanentemente todas las tareas, archivos adjuntos y datos de este dispositivo. Esta acción no se puede deshacer."
+            "value" : "Esta operación elimina permanentemente todo el contenido de ForMemo de este dispositivo y de su base de datos de iCloud, incluidas las tareas, notas, listas de comprobación, viajes, documentos, archivos adjuntos, tarjetas, entradas, elementos de la caja fuerte y elementos eliminados recientemente. La eliminación se sincronizará con tus otros dispositivos. Los ajustes y las preferencias de la app no se restablecerán. Esta acción no se puede deshacer."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cela supprime définitivement toutes les tâches, pièces jointes et données de cet appareil. Cette action est irréversible."
+            "value" : "La suppression définitive de tout le contenu ForMemo de cet appareil et de sa base de données iCloud inclut les tâches, les notes, les listes de contrôle, les voyages, les documents, les pièces jointes, les cartes, les billets, les éléments du coffre-fort et les éléments récemment supprimés. La suppression sera synchronisée sur vos autres appareils. Les réglages et les préférences de l’app ne seront pas réinitialisés. Cette opération est irréversible."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa azione elimina definitivamente tutte le attività, gli allegati e i dati da questo dispositivo. Non può essere annullata."
+            "value" : "Questa operazione elimina definitivamente tutti i contenuti di ForMemo da questo dispositivo e dal relativo database iCloud, inclusi attività, note, checklist, viaggi, documenti, allegati, carte, biglietti, elementi della cassaforte ed elementi eliminati di recente. L'eliminazione verrà sincronizzata con gli altri dispositivi. Le impostazioni e le preferenze dell'app non verranno ripristinate. Questa operazione non può essere annullata."
           }
         }
       }

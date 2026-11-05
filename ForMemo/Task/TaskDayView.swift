@@ -519,6 +519,7 @@ struct TaskDayView: View {
                     Text(String(localized: "30 minutes")).tag(30)
                     Text(String(localized: "1 hour")).tag(60)
                     Text(String(localized: "2 hours")).tag(120)
+                    Text(String(localized: "3 hours")).tag(180)
                 }
                 .pickerStyle(.menu)
             }
@@ -558,6 +559,7 @@ struct TaskDayView: View {
 
     private func normalizedTimelineInterval(_ value: Int) -> Int {
         switch value {
+        case 180: return 180
         case 120: return 120
         case 60: return 60
         default: return 30
@@ -597,6 +599,7 @@ struct TaskDayView: View {
             let dates = (-3...3).compactMap { offset in
                 calendar.date(byAdding: .day, value: offset, to: selectedDate)
             }
+            let holidayDates = HolidayProvider.holidays(in: selectedDate, calendar: calendar)
 
             HStack(spacing: 5) {
                 ForEach(Array(dates.enumerated()), id: \.element) { _, date in
@@ -607,6 +610,7 @@ struct TaskDayView: View {
                     }
                     let isToday = calendar.isDateInToday(date)
                     let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
+                    let isHoliday = holidayDates.contains(calendar.startOfDay(for: date))
 
                     Button {
                         if dateStripDidHoldEdge {
@@ -620,10 +624,10 @@ struct TaskDayView: View {
                         VStack(spacing: 5) {
                             Text(date.formatted(.dateTime.weekday(.narrow)))
                                 .font(.caption2)
-                                .foregroundStyle(calendar.component(.weekday, from: date) == 1 ? .red : (isToday ? .primary : .secondary))
+                                .foregroundStyle(isHoliday || calendar.component(.weekday, from: date) == 1 ? .red : (isToday ? .primary : .secondary))
                             Text(date.formatted(.dateTime.day()))
                                 .font(.body.weight(isSelected ? .semibold : .regular))
-                                .foregroundStyle(isToday ? .white : .primary)
+                                .foregroundStyle(isToday ? (isHoliday ? .red : .white) : (isHoliday || calendar.component(.weekday, from: date) == 1 ? .red : .primary))
                                 .frame(width: 34, height: 34)
                                 .background {
                                     if isToday {

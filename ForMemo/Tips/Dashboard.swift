@@ -389,7 +389,7 @@ struct Dashboard: View {
                             // Header Oggi
                             HStack(alignment: .top) {
                                 Text("Today")
-                                    .font(.largeTitle.bold())
+                                    .font(.title.bold())
                                 
                                 Spacer()
                                 
@@ -443,7 +443,8 @@ struct Dashboard: View {
                             // Numero attività
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
                                 Text("\(dashboardTodayTasksCount)")
-                                    .font(.system(size: 58, weight: .bold, design: .rounded))
+                                    .font(.system(size: 40, weight: .bold, design: .rounded))
+                                    .foregroundStyle(.blue)
                                 
                                 Text(todayTasksDescription)
                                     .font(.title3)

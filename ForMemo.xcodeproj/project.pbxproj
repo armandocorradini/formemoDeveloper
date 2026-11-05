@@ -241,6 +241,9 @@
 		1C97EB383093EB1F00349CCE /* ping.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1C97EB073093EB1F00349CCE /* ping.mp3 */; };
 		1C97EB393093EB1F00349CCE /* pop.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1C97EB093093EB1F00349CCE /* pop.mp3 */; };
 		1C97EB3A3093EB1F00349CCE /* pinball.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1C97EB063093EB1F00349CCE /* pinball.mp3 */; };
+		1CA7F727309C957F008375D8 /* TaskWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CA7F724309C957F008375D8 /* TaskWidgetSnapshot.swift */; };
+		1CA7F728309C957F008375D8 /* TaskWidgetSnapshotWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CA7F725309C957F008375D8 /* TaskWidgetSnapshotWriter.swift */; };
+		1CA7F729309C957F008375D8 /* TaskWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CA7F724309C957F008375D8 /* TaskWidgetSnapshot.swift */; };
 		1CC0DE7E30483D4F001EB9C2 /* TaskDuplicationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */; };
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
@@ -517,6 +520,8 @@
 		1C97EB0B3093EB1F00349CCE /* turn-off.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "turn-off.wav"; sourceTree = "<group>"; };
 		1C97EB0C3093EB1F00349CCE /* two-note.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "two-note.mp3"; sourceTree = "<group>"; };
 		1C97EB0D3093EB1F00349CCE /* xylophone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = xylophone.wav; sourceTree = "<group>"; };
+		1CA7F724309C957F008375D8 /* TaskWidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskWidgetSnapshot.swift; sourceTree = "<group>"; };
+		1CA7F725309C957F008375D8 /* TaskWidgetSnapshotWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskWidgetSnapshotWriter.swift; sourceTree = "<group>"; };
 		1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDuplicationService.swift; sourceTree = "<group>"; };
 		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
 		1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDirectoryCoordinator.swift; sourceTree = "<group>"; };
@@ -553,13 +558,6 @@
 				Info.plist,
 			);
 			target = 1CF984783000EBA300E1D1A9 /* ForMemoCredentialProvider */;
-		};
-		1CFE8F253085715200915A76 /* Exceptions for "Widget" folder in "ForMemoWidgetExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				TaskWidgetSnapshot.swift,
-			);
-			target = 1CFE8F0A3085631B00915A76 /* ForMemoWidgetExtension */;
 		};
 		1CFE8F3B30860CE000915A76 /* Exceptions for "ForMemoWidget" folder in "ForMemoShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -599,14 +597,6 @@
 				1CF9848B3000EBA300E1D1A9 /* Exceptions for "ForMemoCredentialProvider" folder in "ForMemoCredentialProvider" target */,
 			);
 			path = ForMemoCredentialProvider;
-			sourceTree = "<group>";
-		};
-		1CFE8F203085694B00915A76 /* Widget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				1CFE8F253085715200915A76 /* Exceptions for "Widget" folder in "ForMemoWidgetExtension" target */,
-			);
-			path = Widget;
 			sourceTree = "<group>";
 		};
 		1CFE8F3730860CDF00915A76 /* ForMemoWidget */ = {
@@ -791,7 +781,7 @@
 				1C634D8830220C9C0092DB89 /* Assets.xcassets */,
 				1C634D8930220C9C0092DB89 /* ForMemo.entitlements */,
 				1C634D8A30220C9C0092DB89 /* Info.plist */,
-				1CFE8F203085694B00915A76 /* Widget */,
+				1CA7F726309C957F008375D8 /* Widget */,
 			);
 			path = ForMemo;
 			sourceTree = "<group>";
@@ -1047,6 +1037,15 @@
 			path = Sound;
 			sourceTree = "<group>";
 		};
+		1CA7F726309C957F008375D8 /* Widget */ = {
+			isa = PBXGroup;
+			children = (
+				1CA7F724309C957F008375D8 /* TaskWidgetSnapshot.swift */,
+				1CA7F725309C957F008375D8 /* TaskWidgetSnapshotWriter.swift */,
+			);
+			path = Widget;
+			sourceTree = "<group>";
+		};
 		1CC57C083028E8D400E9C79F /* Delete */ = {
 			isa = PBXGroup;
 			children = (
@@ -1086,9 +1085,6 @@
 				1CF984863000EBA300E1D1A9 /* PBXTargetDependency */,
 				1C8225FF3040960600B77EC7 /* PBXTargetDependency */,
 				1CFE8F193085631D00915A76 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				1CFE8F203085694B00915A76 /* Widget */,
 			);
 			name = ForMemo;
 			packageProductDependencies = (
@@ -1315,6 +1311,8 @@
 				1C634DAD30220C9C0092DB89 /* Global.swift in Sources */,
 				1C634DAE30220C9C0092DB89 /* ICSExporter.swift in Sources */,
 				1C634DAF30220C9C0092DB89 /* RemindersImportView.swift in Sources */,
+				1CA7F727309C957F008375D8 /* TaskWidgetSnapshot.swift in Sources */,
+				1CA7F728309C957F008375D8 /* TaskWidgetSnapshotWriter.swift in Sources */,
 				1C634DB030220C9C0092DB89 /* ImportCalendar.swift in Sources */,
 				1CF49EAB306FECB8000BA744 /* ForMemoAlarmManager.swift in Sources */,
 				1C634DB130220C9C0092DB89 /* ImportCard.swift in Sources */,
@@ -1494,6 +1492,7 @@
 		1CFE8F073085631B00915A76 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				1CA7F729309C957F008375D8 /* TaskWidgetSnapshot.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
