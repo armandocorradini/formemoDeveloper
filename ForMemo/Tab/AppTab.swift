@@ -43,7 +43,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .settings: "gear"
         case .notes: "note.text"
         case .recentlyDeleted: "trash"
-        case .day: "sun.horizon"
+        case .day: "sun.horizon" //Agenda
         }
     }
 
@@ -66,7 +66,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .settings: String(localized: "settings_tab")
         case .notes: String(localized: "Notes")
         case .recentlyDeleted: String(localized: "Recently Deleted")
-        case .day: String(localized: "Day")
+        case .day: String(localized: "Agenda")
         }
     }
 
@@ -78,7 +78,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .today: settings.showWeekTab
         case .map: settings.showMapTab
         case .tasks: settings.showTasksTab
-        case .day: settings.showDayTab
+        case .day: settings.showDayTab//Agenda
         default: true
         }
     }

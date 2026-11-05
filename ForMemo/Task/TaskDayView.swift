@@ -324,7 +324,7 @@ struct TaskDayView: View {
                 } label: {
                     Image(systemName: "slider.horizontal.3")
                 }
-                .accessibilityLabel(String(localized: "Day view options"))
+                .accessibilityLabel(String(localized: "Agenda view options"))
                 .popover(isPresented: $showDayOptions, arrowEdge: .top) {
                     dayOptionsPopover
                         .presentationCompactAdaptation(.popover)

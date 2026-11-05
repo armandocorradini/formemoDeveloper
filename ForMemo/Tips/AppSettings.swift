@@ -269,7 +269,7 @@ final class AppSettings {
         loadFromUserDefaults(defaults)
     }
     
-    // MARK: - Day View
+    // MARK: - Day View alias Agenda
 
     var dayTimelineIntervalMinutes: Int {
         didSet {

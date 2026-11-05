@@ -4330,6 +4330,37 @@
         }
       }
     },
+    "Agenda" : {
+      "shouldTranslate" : false
+    },
+    "Agenda view options" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optionen der Agenda"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opciones de la vista Agenda"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Options de la vue Agenda"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opzioni vista Agenda"
+          }
+        }
+      }
+    },
     "Airport" : {
       "localizations" : {
         "de" : {
@@ -13222,34 +13253,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’altro ieri"
-          }
-        }
-      }
-    },
-    "Day view options" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Optionen der Tagesansicht"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opciones de la vista diaria"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Options de la vue journalière"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Opzioni vista giornaliera"
           }
         }
       }
@@ -33535,7 +33538,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "mposta le attività in modo che si ripetano ogni ora, ogni giorno, ogni settimana, ogni mese o ogni anno. Quando crei una ricorrenza, ForMemo crea le occorrenze selezionate come attività singole. Ogni occorrenza può essere completata, modificata, riprogrammata o eliminata indipendentemente. Puoi definire quando inizia e quando termina la ricorrenza oppure quante occorrenze creare. Quando completi l’ultima occorrenza pianificata, puoi estendere la stessa serie aggiungendo altre occorrenze. La regola di ricorrenza e l’intervallo vengono mantenuti, mentre le attività passate e il relativo stato di completamento restano invariati."
+            "value" : "Imposta le attività in modo che si ripetano ogni ora, ogni giorno, ogni settimana, ogni mese o ogni anno. Quando crei una ricorrenza, ForMemo crea le occorrenze selezionate come attività singole. Ogni occorrenza può essere completata, modificata, riprogrammata o eliminata indipendentemente. Puoi definire quando inizia e quando termina la ricorrenza oppure quante occorrenze creare. Quando completi l’ultima occorrenza pianificata, puoi estendere la stessa serie aggiungendo altre occorrenze. La regola di ricorrenza e l’intervallo vengono mantenuti, mentre le attività passate e il relativo stato di completamento restano invariati."
           }
         }
       }
