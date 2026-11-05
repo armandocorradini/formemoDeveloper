@@ -1193,10 +1193,10 @@ struct TabVisibilitySettingsView: View {
                     }
                 }
 
-                startupProtectedToggle(tag: AppTab.day.rawValue) {
+                startupProtectedToggle(tag: AppTab.agenda.rawValue) {
                     Toggle(isOn: Binding(
                         get: { settings.showDayTab },
-                        set: { updateTabVisibility($0, tag: AppTab.day.rawValue) { settings.showDayTab = $0 } }
+                        set: { updateTabVisibility($0, tag: AppTab.agenda.rawValue) { settings.showDayTab = $0 } }
                     )) {
                         tabLabel("Agenda", icon: "sun.horizon")
                     }
@@ -1322,7 +1322,7 @@ struct TabVisibilitySettingsView: View {
         case AppTab.tasks.rawValue: return String(localized: "List")
         case AppTab.today.rawValue: return String(localized: "\(settings.taskWeekDays) days")
         case AppTab.map.rawValue: return String(localized: "Map")
-        case AppTab.day.rawValue: return String(localized: "Agenda")
+        case AppTab.agenda.rawValue: return String(localized: "Agenda")
         case AppTab.forecast.rawValue: return String(localized: "Weather Forecast")
         case AppTab.vault.rawValue: return String(localized: "Vault")
         default: return String(localized: "Tab")

@@ -215,7 +215,7 @@ private struct StartupTabSelectionView: View {
                 startupOption(String(localized: "list_tab"), tag: AppTab.tasks.rawValue)
                 startupOption(String(localized: "\(settings.taskWeekDays) days"), tag: AppTab.today.rawValue)
                 startupOption(String(localized: "Calendar"), tag: AppTab.calendar.rawValue)
-                startupOption(String(localized: "Agenda"), tag: AppTab.day.rawValue)
+                startupOption(String(localized: "Agenda"), tag: AppTab.agenda.rawValue)
                 startupOption(String(localized: "Wallet"), tag: AppTab.wallet.rawValue)
                 startupOption("Checklists", tag: AppTab.trips.rawValue)
                 startupOption(String(localized: "Documents"), tag: AppTab.documents.rawValue)

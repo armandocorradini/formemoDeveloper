@@ -132,7 +132,7 @@ struct TaskTabView: View {
                 dayPath = NavigationPath()
 
                 withAnimation(.easeInOut(duration: 0.18)) {
-                    selectedTab = AppTab.day.rawValue
+                    selectedTab = AppTab.agenda.rawValue
                 }
             }
             .onReceive(
@@ -173,7 +173,7 @@ struct TaskTabView: View {
                 }
             }
             .onChange(of: settings.showDayTab) { _, enabled in
-                if !enabled && selectedTab == AppTab.day.rawValue {
+                if !enabled && selectedTab == AppTab.agenda.rawValue {
                     selectedTab = fallbackVisibleTab()
                 }
             }
