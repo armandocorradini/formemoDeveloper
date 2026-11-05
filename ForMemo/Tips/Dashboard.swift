@@ -395,52 +395,59 @@ struct Dashboard: View {
                                 
                                 Spacer()
                                 
-                                if settings.showWeatherForecast,
-                                   let weather = weatherManager.weather(for: Date()) {
-                                    
-                                    VStack(alignment: .trailing, spacing: 4) {
-                                        Button {
-                                            selectedWeatherDate = .now
-                                        } label: {
-                                            todayWeatherIcon
+                                if settings.showWeatherForecast {
+                                    Group {
+                                        if let weather = weatherManager.weather(for: Date()) {
+                                            VStack(alignment: .trailing, spacing: 4) {
+                                                Button {
+                                                    selectedWeatherDate = .now
+                                                } label: {
+                                                    todayWeatherIcon
+                                                }
+                                                .buttonStyle(.plain)
+                                                
+                                                HStack(spacing: 4) {
+                                                    Text("\(weather.minTemperature)°")
+                                                        .foregroundStyle(
+                                                            weather.minTemperature >= 35 ? .red :
+                                                                weather.minTemperature >= 30 ? .orange :
+                                                                weather.minTemperature <= 0
+                                                            ? Color(
+                                                                red: 0.65,
+                                                                green: 0.88,
+                                                                blue: 1.00
+                                                            )
+                                                            : .primary.opacity(0.75)
+                                                        )
+                                                    
+                                                    Text("/")
+                                                        .foregroundStyle(.secondary)
+                                                    
+                                                    Text("\(weather.maxTemperature)°")
+                                                        .foregroundStyle(
+                                                            weather.maxTemperature >= 35 ? .red :
+                                                                weather.maxTemperature >= 30 ? .orange :
+                                                                weather.maxTemperature <= 0
+                                                            ? Color(
+                                                                red: 0.65,
+                                                                green: 0.88,
+                                                                blue: 1.00
+                                                            )
+                                                            : .primary
+                                                        )
+                                                }
+                                                .font(.caption)
+                                            }
+                                        } else {
+                                            Color.clear
                                         }
-                                        .buttonStyle(.plain)
-                                        
-                                        HStack(spacing: 4) {
-                                            Text("\(weather.minTemperature)°")
-                                                .foregroundStyle(
-                                                    weather.minTemperature >= 35 ? .red :
-                                                        weather.minTemperature >= 30 ? .orange :
-                                                        weather.minTemperature <= 0
-                                                    ? Color(
-                                                        red: 0.65,
-                                                        green: 0.88,
-                                                        blue: 1.00
-                                                    )
-                                                    : .primary.opacity(0.75)
-                                                )
-                                            
-                                            Text("/")
-                                                .foregroundStyle(.secondary)
-                                            
-                                            Text("\(weather.maxTemperature)°")
-                                                .foregroundStyle(
-                                                    weather.maxTemperature >= 35 ? .red :
-                                                        weather.maxTemperature >= 30 ? .orange :
-                                                        weather.maxTemperature <= 0
-                                                    ? Color(
-                                                        red: 0.65,
-                                                        green: 0.88,
-                                                        blue: 1.00
-                                                    )
-                                                    : .primary
-                                                )
-                                        }
-                                        .font(.caption)
                                     }
+                                    .frame(width: 60, height: 48, alignment: .topTrailing)
                                 }
                             }
                             .foregroundStyle(.primary)
+                            
+                            .padding(.bottom,2)
                             
                             // Numero attività
                             HStack(alignment: .firstTextBaseline, spacing: 8) {

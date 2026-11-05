@@ -8,6 +8,43 @@ private func forMemoWidgetTimeString(_ date: Date) -> String {
     return formatter.string(from: date)
 }
 
+/// Builds a bounded timeline containing daily refreshes and upcoming task deadlines.
+/// WidgetKit may delay delivery of individual entries; this is not an exact alarm.
+private func forMemoWidgetTimelineDates(
+    snapshot: TaskWidgetSnapshot?,
+    now: Date,
+    calendar: Calendar
+) -> [Date] {
+    var dates: Set<Date> = [now]
+
+    for offset in 1...7 {
+        if let day = calendar.date(
+            byAdding: .day,
+            value: offset,
+            to: calendar.startOfDay(for: now)
+        ) {
+            dates.insert(day)
+        }
+    }
+
+    let deadlineHorizon = calendar.date(byAdding: .day, value: 7, to: now)
+        ?? now.addingTimeInterval(7 * 86_400)
+
+    if let snapshot {
+        for task in snapshot.tasks {
+            guard !task.isCompleted,
+                  let deadline = task.deadline,
+                  deadline > now,
+                  deadline <= deadlineHorizon else {
+                continue
+            }
+            dates.insert(deadline)
+        }
+    }
+
+    return dates.sorted()
+}
+
 struct ForMemoWidgetEntry: TimelineEntry {
     let date: Date
     let snapshot: TaskWidgetSnapshot?
@@ -32,22 +69,15 @@ struct Provider: TimelineProvider {
         let now = Date()
         let snapshot = TaskWidgetSnapshotStore.load()
         let calendar = Calendar.current
-        var entryDates: Set<Date> = [now]
 
-        // Keep the timeline bounded even when many recurring tasks have deadlines.
-        // Daily entries update day grouping and overdue styling without creating
-        // thousands of entries for frequent recurrences.
-        for offset in 1...7 {
-            if let day = calendar.date(
-                byAdding: .day,
-                value: offset,
-                to: calendar.startOfDay(for: now)
-            ) {
-                entryDates.insert(day)
-            }
-        }
-
-        let entries = entryDates.sorted().map { ForMemoWidgetEntry(date: $0, snapshot: snapshot) }
+        // Include daily entries plus each distinct upcoming deadline within
+        // the next seven days. Set<Date> naturally deduplicates shared deadlines.
+        let entryDates = forMemoWidgetTimelineDates(
+            snapshot: snapshot,
+            now: now,
+            calendar: calendar
+        )
+        let entries = entryDates.map { ForMemoWidgetEntry(date: $0, snapshot: snapshot) }
         // Refresh at the next local day boundary so date-relative labels
         // (Today/Tomorrow) do not remain stale after midnight.
         let nextRefresh = calendar.date(
@@ -264,7 +294,7 @@ struct ForMemoWidgetEntryView: View {
                     HStack(alignment: .firstTextBaseline, spacing: family == .systemSmall ? 5 : 6) {
                         Text(forMemoWidgetTimeString(deadline))
                             .font(.system(size: family == .systemSmall ? 10 : 13, weight: .medium))
-                            .foregroundStyle(deadline < entry.date ? .red : .secondary)
+                            .foregroundStyle(deadline <= entry.date ? .red : .secondary)
                             .lineLimit(1)
                             .fixedSize(horizontal: true, vertical: false)
                         Text(task.title)
@@ -326,19 +356,13 @@ struct ForMemoAgendaProvider: TimelineProvider {
         let now = Date()
         let snapshot = TaskWidgetSnapshotStore.load()
         let calendar = Calendar.current
-        var dates: Set<Date> = [now]
 
-        for offset in 1...7 {
-            if let day = calendar.date(
-                byAdding: .day,
-                value: offset,
-                to: calendar.startOfDay(for: now)
-            ) {
-                dates.insert(day)
-            }
-        }
-
-        let entries = dates.sorted().map { ForMemoAgendaEntry(date: $0, snapshot: snapshot) }
+        let entryDates = forMemoWidgetTimelineDates(
+            snapshot: snapshot,
+            now: now,
+            calendar: calendar
+        )
+        let entries = entryDates.map { ForMemoAgendaEntry(date: $0, snapshot: snapshot) }
         // Refresh at the next local day boundary so date-relative labels
         // (Today/Tomorrow) do not remain stale after midnight.
         let refresh = calendar.date(
@@ -575,7 +599,7 @@ struct ForMemoAgendaEntryView: View {
                             Text(forMemoWidgetTimeString(deadline))
                                 .font(.system(size: family == .systemSmall ? 11 : (family == .systemLarge ? 12 : 11), weight: .medium, design: .rounded))
                                 .monospacedDigit()
-                                .foregroundStyle(deadline < entry.date ? Color.red : Color.secondary)
+                                .foregroundStyle(deadline <= entry.date ? Color.red : Color.secondary)
                                 .fixedSize(horizontal: true, vertical: false)
                                
                             

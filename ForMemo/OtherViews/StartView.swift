@@ -5,6 +5,8 @@ struct StartView: View {
     
     @State private var isAnimating = false
     @State private var isDeveloperPopoverPresented = false
+    @State private var easterEggTapCount = 0
+    @State private var isEasterEggPresented = false
 
     
     var body: some View {
@@ -21,27 +23,39 @@ struct StartView: View {
                         )
                         .padding(.top, 60)
                     
-                    // Animated app symbol
-                    Image(systemName: "checkmark.circle.dotted")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 180, height: 180)
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(.cyan, .blue)
-                        .rotationEffect(.degrees(isAnimating ? 360 : 0))
-                        .animation(
-                            .linear(duration: 0.9),
-                            value: isAnimating
-                        )
-                        .onReceive(
-                            NotificationCenter.default.publisher(
-                                for: Notification.Name("StartStartIconRotationFast")
-                            )
-                        ) { _ in
-                            isAnimating = true
+                    // Animated app symbol and hidden easter egg
+                    Button {
+                        easterEggTapCount += 1
+                        if easterEggTapCount >= 10 {
+                            easterEggTapCount = 0
+                            isEasterEggPresented = true
                         }
-                        .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
-                    
+                    } label: {
+                        Image(systemName: "checkmark.circle.dotted")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 180, height: 180)
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(.cyan, .blue)
+                            .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                            .animation(
+                                .linear(duration: 0.9),
+                                value: isAnimating
+                            )
+                            .onReceive(
+                                NotificationCenter.default.publisher(
+                                    for: Notification.Name("StartStartIconRotationFast")
+                                )
+                            ) { _ in
+                                isAnimating = true
+                            }
+                            .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "ForMemo symbol"))
+                    .accessibilityHint(String(localized: "Tap ten times to reveal a surprise."))
+
                     Text("Manage your tasks with ease.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -75,11 +89,11 @@ struct StartView: View {
 
                                 Text("There are no ads, subscriptions, or in-app purchases. Just the pleasure of sharing a tool that may be useful to others.")
                                     .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.primary.opacity(0.8))
 
                                 Text("ForMemo is driven by curiosity, a passion for technology, and the joy of learning by creating.")
                                     .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.primary.opacity(0.7))
                             }
                             .padding(20)
                             .frame(width: 300, alignment: .leading)
@@ -107,7 +121,32 @@ struct StartView: View {
                 .ignoresSafeArea()
             }
         }
-        
+        .fullScreenCover(isPresented: $isEasterEggPresented) {
+            ZStack(alignment: .topTrailing) {
+                Color.black
+                    .ignoresSafeArea()
+
+                Image("easteregg")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                Button {
+                    isEasterEggPresented = false
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 30))
+                        .symbolRenderingMode(.hierarchical)
+                        .foregroundStyle(.white)
+                        .padding(20)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Close"))
+            }
+            .preferredColorScheme(.dark)
+        }
+
     }
     private var appVersionString: String {
         let version =

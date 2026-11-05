@@ -18605,6 +18605,9 @@
         }
       }
     },
+    "ForMemo symbol" : {
+      "shouldTranslate" : false
+    },
     "ForMemo uses ZXing-C++ for barcode and QR code scanning and generation." : {
       "localizations" : {
         "de" : {
@@ -37375,6 +37378,9 @@
         }
       }
     },
+    "Tap ten times to reveal a surprise." : {
+      "shouldTranslate" : false
+    },
     "Tap the green button to add a task." : {
       "localizations" : {
         "de" : {
@@ -39109,7 +39115,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Niente pubblicità, abbonamenti o acquisti in-app. Solo il piacere di condividere uno strumento che possa essere utile anche agli altri"
+            "value" : "Niente pubblicità, abbonamenti o acquisti in-app. Solo il piacere di condividere uno strumento che possa essere utile anche agli altri."
           }
         }
       }
