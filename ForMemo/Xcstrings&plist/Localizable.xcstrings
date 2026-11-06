@@ -4598,30 +4598,30 @@
         }
       }
     },
-    "Alerts, sounds and location reminders" : {
+    "Alerts, sounds and alarms" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hinweise, Töne und ortsbasierte Erinnerungen"
+            "value" : "Hinweise, Töne und Alarme"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alertas, sonidos y recordatorios basados en la ubicación"
+            "value" : "Alertas, sonidos y alarmas"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alertes, sons et rappels basés sur la position"
+            "value" : "Alerts, sons et alarmes"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avvisi, suoni e promemoria basati sulla posizione"
+            "value" : "Avvisi, suoni e sveglie"
           }
         }
       }
@@ -19328,6 +19328,34 @@
         }
       }
     },
+    "Global Notifications and Badges" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Globale Mitteilungen und Kennzeichen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones globales e indicadores"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications globales et badges"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifiche globali e badge"
+          }
+        }
+      }
+    },
     "global.None" : {
       "localizations" : {
         "de" : {
@@ -26324,34 +26352,6 @@
         }
       }
     },
-    "Notification and badge time" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zeit für Benachrichtigung und Badge"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hora de la notificación e insignia"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Heure de notification et de badge"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tempo di notifica e badge"
-          }
-        }
-      }
-    },
     "Notification Not Found" : {
       "localizations" : {
         "de" : {
@@ -26460,6 +26460,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Notifiche"
+          }
+        }
+      }
+    },
+    "Notifications & Alarms" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mitteilungen & Alarme"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notificaciones y alarmas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifications et alarmes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notifiche e sveglie"
           }
         }
       }
@@ -30516,6 +30544,62 @@
         }
       }
     },
+    "Recurrences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederholungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeticiones"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récurrences"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricorrenze"
+          }
+        }
+      }
+    },
+    "Recurrences and deletion tasks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederholungen und Aufgabenlöschung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeticiones y eliminación tareas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récurrences et suppression tâches"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricorrenze ed eliminazione attività"
+          }
+        }
+      }
+    },
     "Recurring" : {
       "localizations" : {
         "de" : {
@@ -30908,7 +30992,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riordina le schede della barra di navigazione e personalizza le righe delle attività scegliendone lo stile, gli angoli, i bordi, il materiale e l'altezza."
+            "value" : "Riordina le tabs della barra di navigazione e personalizza le righe delle attività scegliendone lo stile, gli angoli, i bordi, il materiale e l'altezza."
           }
         }
       }
@@ -35773,34 +35857,6 @@
         }
       }
     },
-    "Startup, deadlines and task behavior" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start, Fristen und Aufgabenverhalten"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inicio, fechas límite y comportamiento de las tareas"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Démarrage, échéances et comportement des tâches"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avvio, scadenze e comportamento delle attività"
-          }
-        }
-      }
-    },
     "Stop" : {
       "localizations" : {
         "de" : {
@@ -39256,7 +39312,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tema, sfondi e schede"
+            "value" : "Tema, sfondi e tabs"
           }
         }
       }

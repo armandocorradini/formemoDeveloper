@@ -22,7 +22,7 @@ struct OtherSettingsView: View {
 
             Form {
                 Section(
-                    header: Text(String(localized: "Notification and badge time"))
+                    header: Text(String(localized: ""))
                 ) {
                     Picker(
                         "Notify global",
@@ -80,18 +80,7 @@ struct OtherSettingsView: View {
                     )
 
                 }
-                Section("Deletion") {
-                    
-                    Toggle(
-                        "Confirm task deletion",
-                        isOn: Binding(
-                            get: { settings.confirmTaskDeletion },
-                            set: { settings.confirmTaskDeletion = $0 }
-                        )
-                    )
-                }
-
-            }
+}
             .onChange(of: badgeIncludeExpired) { oldValue, newValue in
                 // Questa logica viene eseguita non appena il valore cambia
                 NotificationManager.shared.refresh(force: true)
@@ -116,7 +105,7 @@ struct OtherSettingsView: View {
 
                 NotificationManager.shared.refresh(force: true)
             }
-            .navigationTitle("Recurring Tasks")
+            .navigationTitle("Global Notifications and Badges")
             .scrollContentBackground(.hidden)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

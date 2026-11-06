@@ -35,8 +35,8 @@ private enum SettingsCategory: String, CaseIterable, Identifiable {
         switch self {
         case .general: String(localized: "General")
         case .appearance: String(localized: "Appearance")
-        case .activity: String(localized: "Recurring Tasks")
-        case .notifications: String(localized: "Notifications")
+        case .activity: String(localized: "Recurrences and deletion tasks")
+        case .notifications: String(localized: "Notifications & Alarms")
         case .siri: String(localized: "Siri & Shortcuts")
         case .data: String(localized: "Data Management")
         case .help: String(localized: "Help")
@@ -48,8 +48,8 @@ private enum SettingsCategory: String, CaseIterable, Identifiable {
         switch self {
         case .general: String(localized: "Language, permissions and navigation")
         case .appearance: String(localized: "Theme, backgrounds and tabs")
-        case .activity: String(localized: "Startup, deadlines and task behavior")
-        case .notifications: String(localized: "Alerts, sounds and location reminders")
+        case .activity: String(localized: "Recurrences and deletion tasks")
+        case .notifications: String(localized: "Alerts, sounds and alarms")
         case .siri: String(localized: "Siri and Shortcuts preferences")
         case .data: String(localized: "Import, export, backup and storage")
         case .help: String(localized: "Guides, FAQ and diagnostics")
@@ -74,7 +74,7 @@ private enum SettingsCategory: String, CaseIterable, Identifiable {
         case .general: "Language, permissions and navigation"
         case .appearance: "Theme, backgrounds and tabs"
         case .activity: "Startup, deadlines and task behavior"
-        case .notifications: "Alerts, sounds and location reminders"
+        case .notifications: "Alerts, sounds and alarms"
         case .siri: "Siri and Shortcuts preferences"
         case .data: "Import, export, backup and storage"
         case .help: "Guides, FAQ and diagnostics"
@@ -199,6 +199,14 @@ struct SettingsView: View {
         }
     }
 
+    private var settingsRowChevron: some View {
+        Image(systemName: "chevron.right")
+            .font(.system(size: 14, weight: .semibold))
+            .foregroundStyle(.tertiary)
+            .padding(.trailing, 4)
+            .allowsHitTesting(false)
+    }
+
     var body: some View {
         let _ = backgroundColor1Hex
         let _ = backgroundColor2Hex
@@ -256,6 +264,8 @@ struct SettingsView: View {
                                     .frame(width: iconWidth)
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .trailing) { settingsRowChevron }
                         .sheet(isPresented: $showDisclaimer) {
                             DisclaimerView()
                         }
@@ -264,7 +274,7 @@ struct SettingsView: View {
                             Link(destination: privacyPolicyURL) {
                                 Label {
                                     Text("Privacy Policy")
-                                        .tint(.primary)
+                                        .tint(.blue)
                                 } icon: {
                                     Image(systemName: "hand.raised")
                                         .foregroundStyle(.blue)
@@ -288,9 +298,10 @@ struct SettingsView: View {
                             } icon: {
                                 Image(systemName: "questionmark.circle")
                                     .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                            }
+                                .frame(width: iconWidth)}
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .trailing) { settingsRowChevron }
                         Button {
                             showFAQ = true
                         } label: {
@@ -302,6 +313,8 @@ struct SettingsView: View {
                                     .tint(.primary)
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .trailing) { settingsRowChevron }
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     }
@@ -339,6 +352,8 @@ struct SettingsView: View {
                                     .tint(.primary)
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .trailing) { settingsRowChevron }
                         
                         Button {
                             openLanguageSettings()
@@ -353,6 +368,8 @@ struct SettingsView: View {
                                     .foregroundStyle(.blue).opacity(0.7)
                             }
                         }
+//                        .frame(maxWidth: .infinity, alignment: .leading)
+//                        .overlay(alignment: .trailing) { settingsRowChevron }
                         LabeledContent {
                             Picker(
                                 "",
@@ -434,6 +451,8 @@ struct SettingsView: View {
                                     .frame(width: iconWidth)
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .trailing) { settingsRowChevron }
                         
                         NavigationLink {
                             TabBarCustomizationView()
@@ -497,8 +516,21 @@ struct SettingsView: View {
                             step: 10
                         )
                         .disabled(settings.maximumOccurrencesPerOperation < 10)
+                    } header: {
+                        Text("Recurrences")
                     } footer: {
                         Text("For a single operation, ForMemo creates up to the selected maximum number of future occurrences. It asks for confirmation when the operation exceeds the confirmation threshold.")
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+
+                    Section("Deletion") {
+                        Toggle(
+                            "Confirm task deletion",
+                            isOn: Binding(
+                                get: { settings.confirmTaskDeletion },
+                                set: { settings.confirmTaskDeletion = $0 }
+                            )
+                        )
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
 
@@ -507,7 +539,6 @@ struct SettingsView: View {
                     if selectedCategory == .notifications {
                     // MARK: - Notifications
                     Section {
-                        
                         Button {
                             openNotificationSettings()
                         } label: {
@@ -515,10 +546,12 @@ struct SettingsView: View {
                                 Image(systemName: isNotificationEnabled ? "bell.badge" : "bell.badge.slash")
                                     .foregroundStyle(.blue)
                                     .frame(width: iconWidth)
-                                Text("Notifications")
+                                Text("Notifications & Alarms")
                                     .tint(.primary)
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .trailing) { settingsRowChevron }
                         
                         NavigationLink {
                             NotificationView()
@@ -530,6 +563,18 @@ struct SettingsView: View {
                                 
                                 Text("Scheduled Notifications")
                                     .tint(.primary)
+                            }
+                        }
+                        
+                        NavigationLink {
+                            OtherSettingsView()
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "app.badge.checkmark")
+                                    .foregroundStyle(.blue)
+                                    .frame(width: iconWidth)
+                                Text("Global Notifications and Badges")
+                                    .foregroundStyle(.primary)
                             }
                         }
                         
@@ -550,6 +595,8 @@ struct SettingsView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
+//                        .frame(maxWidth: .infinity, alignment: .leading)
+//                        .overlay(alignment: .trailing) { settingsRowChevron }
                         .buttonStyle(.plain)
                         .disabled(!isNotificationEnabled)
                         
@@ -607,6 +654,8 @@ struct SettingsView: View {
                                             .foregroundStyle(.secondary)
                                     }
                                 }
+//                                .frame(maxWidth: .infinity, alignment: .leading)
+//                        .overlay(alignment: .trailing) { settingsRowChevron }
                                 .buttonStyle(.plain)
                                 .disabled(!isNotificationEnabled)
                             }
@@ -747,6 +796,9 @@ Attivazione: \(triggerInfo)
                                 Text("Use with Siri")
                                     .foregroundStyle(.primary)
                                 Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.tertiary)
                             }
                             .contentShape(Rectangle())
                         }
@@ -884,6 +936,8 @@ Attivazione: \(triggerInfo)
                                     .tint(.primary)
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .trailing) { settingsRowChevron }
 
                         Stepper(
                             "Delete after \(recentlyDeletedRetentionDays) days",
@@ -896,6 +950,8 @@ Attivazione: \(triggerInfo)
                         )
                         .foregroundStyle(.secondary)
                     }
+                        header: {
+                            Text("Data Management")}
                     footer: {
                         Text("Items in Recently Deleted are permanently removed after the selected period. You can restore them before that.")
                     }
@@ -954,6 +1010,8 @@ Attivazione: \(triggerInfo)
                                             .foregroundStyle(.blue)
                                     }
                                 }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        .overlay(alignment: .trailing) { settingsRowChevron }
                                 .tint(.primary)
 
                                 Text("ForMemo uses ZXing-C++ for barcode and QR code scanning and generation.")
@@ -968,12 +1026,13 @@ Attivazione: \(triggerInfo)
                             Link(destination: URL(string: "https://open-meteo.com/")!) {
                                 Label {
                                     Text("Weather Data")
+                                        .tint(.blue)
                                 } icon: {
                                     Image(systemName: "cloud.sun")
                                         .foregroundStyle(.blue)
                                 }
                             }
-                            .foregroundStyle(.primary)
+//                            .foregroundStyle(.primary)
 
                             Text("Weather data provided by Open-Meteo.")
                                 .font(.footnote)
