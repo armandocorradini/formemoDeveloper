@@ -3403,6 +3403,34 @@
         }
       }
     },
+    "Account, privacy and app information" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account, Datenschutz und App-Informationen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuenta, privacidad e información de la app"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compte, confidentialité et informations sur l’app"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Account, privacy e informazioni sull’app"
+          }
+        }
+      }
+    },
     "Active" : {
       "localizations" : {
         "de" : {
@@ -4566,6 +4594,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’accesso ad AlarmKit non è abilitato.\nControlla i permessi della sveglia in Impostazioni"
+          }
+        }
+      }
+    },
+    "Alerts, sounds and location reminders" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hinweise, Töne und ortsbasierte Erinnerungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertas, sonidos y recordatorios basados en la ubicación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alertes, sons et rappels basés sur la position"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvisi, suoni e promemoria basati sulla posizione"
           }
         }
       }
@@ -19442,6 +19498,34 @@
         }
       }
     },
+    "Guides, FAQ and diagnostics" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anleitungen, FAQ und Diagnose"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guías, preguntas frecuentes y diagnóstico"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guides, FAQ et diagnostics"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guide, FAQ e diagnostica"
+          }
+        }
+      }
+    },
     "Gym Card" : {
       "localizations" : {
         "de" : {
@@ -21325,6 +21409,34 @@
         }
       }
     },
+    "Import, export, backup and storage" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import, Export, Backup und Speicher"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importación, exportación, copias de seguridad y almacenamiento"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importation, exportation, sauvegarde et stockage"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importazione, esportazione, backup e archiviazione"
+          }
+        }
+      }
+    },
     "Important tasks" : {
       "localizations" : {
         "de" : {
@@ -22336,6 +22448,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impostazione della lingua"
+          }
+        }
+      }
+    },
+    "Language, permissions and navigation" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprache, Berechtigungen und Navigation"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Idioma, permisos y navegación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langue, autorisations et navigation"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lingua, autorizzazioni e navigazione"
           }
         }
       }
@@ -34425,6 +34565,34 @@
         }
       }
     },
+    "Siri and Shortcuts preferences" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siri- und Kurzbefehle-Einstellungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferencias de Siri y Atajos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préférences de Siri et Raccourcis"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preferenze di Siri e Comandi rapidi"
+          }
+        }
+      }
+    },
     "Siri Notification Announcements" : {
       "localizations" : {
         "de" : {
@@ -35601,6 +35769,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impossibile nascondere la tab di avvio"
+          }
+        }
+      }
+    },
+    "Startup, deadlines and task behavior" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start, Fristen und Aufgabenverhalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inicio, fechas límite y comportamiento de las tareas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrage, échéances et comportement des tâches"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avvio, scadenze e comportamento delle attività"
           }
         }
       }
@@ -39033,6 +39229,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tema"
+          }
+        }
+      }
+    },
+    "Theme, backgrounds and tabs" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Design, Hintergründe und Tabs"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tema, fondos y pestañas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thème, arrière-plans et onglets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tema, sfondi e schede"
           }
         }
       }

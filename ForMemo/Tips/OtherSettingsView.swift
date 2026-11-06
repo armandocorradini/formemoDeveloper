@@ -15,40 +15,12 @@ struct OtherSettingsView: View {
     
     @State private var showShort = false
 
-    private func startupTabTitle(for tag: Int) -> String {
-        if tag == -1 {
-            return String(localized: "Automatic")
-        }
-        if let tab = AppTab(rawValue: tag) {
-            return tab.title(using: settings)
-        }
-        return String(localized: "Tab")
-    }
 
     var body: some View {
         ZStack {
             AppGlassBackground()
 
             Form {
-                Section(
-                    header: Text(String(localized: "Open at launch"))
-                ) {
-                    
-                    NavigationLink {
-                        StartupTabSelectionView()
-                    } label: {
-                        HStack {
-                            Text(String(localized: "View"))
-                            Spacer()
-                            Text(startupTabTitle(for: settings.startupTab))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                  
-                }
-                
-                
-                
                 Section(
                     header: Text(String(localized: "Notification and badge time"))
                 ) {
@@ -144,7 +116,7 @@ struct OtherSettingsView: View {
 
                 NotificationManager.shared.refresh(force: true)
             }
-            .navigationTitle("")
+            .navigationTitle("Recurring Tasks")
             .scrollContentBackground(.hidden)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -175,7 +147,7 @@ struct OtherSettingsView: View {
 }
 
 
-private struct StartupTabSelectionView: View {
+struct StartupTabSelectionView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(\.dismiss) private var dismiss
     @State private var showHiddenStartupTabAlert = false

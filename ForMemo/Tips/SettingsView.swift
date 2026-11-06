@@ -20,12 +20,76 @@ enum SoundPickerContext: Identifiable {
     }
 }
 
+private enum SettingsCategory: String, CaseIterable, Identifiable {
+    case general = "General"
+    case appearance = "Appearance"
+    case activity = "Activity"
+    case notifications = "Notifications"
+    case siri = "Siri & Shortcuts"
+    case data = "Data Management"
+    case help = "Help"
+    case info = "About"
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .general: String(localized: "General")
+        case .appearance: String(localized: "Appearance")
+        case .activity: String(localized: "Recurring Tasks")
+        case .notifications: String(localized: "Notifications")
+        case .siri: String(localized: "Siri & Shortcuts")
+        case .data: String(localized: "Data Management")
+        case .help: String(localized: "Help")
+        case .info: String(localized: "About")
+        }
+    }
+
+    var localizedSubtitle: String {
+        switch self {
+        case .general: String(localized: "Language, permissions and navigation")
+        case .appearance: String(localized: "Theme, backgrounds and tabs")
+        case .activity: String(localized: "Startup, deadlines and task behavior")
+        case .notifications: String(localized: "Alerts, sounds and location reminders")
+        case .siri: String(localized: "Siri and Shortcuts preferences")
+        case .data: String(localized: "Import, export, backup and storage")
+        case .help: String(localized: "Guides, FAQ and diagnostics")
+        case .info: String(localized: "Account, privacy and app information")
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .general: "gearshape"
+        case .appearance: "paintpalette"
+        case .activity: "checklist"
+        case .notifications: "bell.badge"
+        case .siri: "waveform"
+        case .data: "externaldrive"
+        case .help: "questionmark.circle"
+        case .info: "info.circle"
+        }
+    }
+    var subtitle: String {
+        switch self {
+        case .general: "Language, permissions and navigation"
+        case .appearance: "Theme, backgrounds and tabs"
+        case .activity: "Startup, deadlines and task behavior"
+        case .notifications: "Alerts, sounds and location reminders"
+        case .siri: "Siri and Shortcuts preferences"
+        case .data: "Import, export, backup and storage"
+        case .help: "Guides, FAQ and diagnostics"
+        case .info: "Account, privacy and app information"
+        }
+    }
+}
+
 struct SettingsView: View {
     
     @Environment(\.modelContext) private var modelContext
     @Environment(AppSettings.self)
     private var settings
     
+    @State private var selectedCategory: SettingsCategory? = nil
 #if DEBUG
     @State private var hasTestData: Bool = false
     @State private var areTestTasksCompleted: Bool = false
@@ -35,7 +99,6 @@ struct SettingsView: View {
     @State private var showFAQ = false
     @State private var showCustomizationView = false
     @State private var showDataManagement = false
-    @State private var showOtherSettings = false
     @State private var showSiri = false
     @State private var showRecentlyDeleted = false
     @State private var showDeleteAllAlert = false
@@ -101,6 +164,41 @@ struct SettingsView: View {
             }
         }
     }
+    private var startupTabDisplayName: String {
+        switch settings.startupTab {
+        case -1:
+            return String(localized: "Automatic")
+        case AppTab.dashboard.rawValue:
+            return String(localized: "Dashboard")
+        case AppTab.tasks.rawValue:
+            return String(localized: "list_tab")
+        case AppTab.today.rawValue:
+            return settings.taskWeekDays == 1
+                ? String(localized: "today_tab")
+                : String(localized: "\(settings.taskWeekDays) days_tab")
+        case AppTab.calendar.rawValue:
+            return String(localized: "Calendar")
+        case AppTab.agenda.rawValue:
+            return String(localized: "Agenda")
+        case AppTab.wallet.rawValue:
+            return String(localized: "Wallet")
+        case AppTab.trips.rawValue:
+            return String(localized: "Checklists")
+        case AppTab.documents.rawValue:
+            return String(localized: "Documents")
+        case AppTab.notes.rawValue:
+            return String(localized: "Notes")
+        case AppTab.map.rawValue:
+            return String(localized: "Map")
+        case AppTab.forecast.rawValue:
+            return String(localized: "Weather Forecast")
+        case AppTab.vault.rawValue:
+            return String(localized: "Vault")
+        default:
+            return String(localized: "Automatic")
+        }
+    }
+
     var body: some View {
         let _ = backgroundColor1Hex
         let _ = backgroundColor2Hex
@@ -110,6 +208,33 @@ struct SettingsView: View {
                 AppGlassBackground()
                 List {
                     
+                    if selectedCategory == nil {
+                        Section {
+                            ForEach(SettingsCategory.allCases) { category in
+                                Button {
+                                    withAnimation(.snappy) { selectedCategory = category }
+                                } label: {
+                                    HStack(spacing: 14) {
+                                        Image(systemName: category.symbol)
+                                            .font(.system(size: 20, weight: .medium))
+                                            .foregroundStyle(.blue)
+                                            .frame(width: 30)
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(category.title).foregroundStyle(.primary)
+                                            Text(category.localizedSubtitle).font(.caption).foregroundStyle(.secondary)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                                    }
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .listRowBackground(Color(.systemBackground).opacity(0.3))
+                    }
+                    if selectedCategory == .info {
                     // MARK: - Account
                     Section("Account and info") {
                         HStack(spacing: 12){
@@ -150,7 +275,10 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
-                    Section("Help") {
+                    }
+
+                    if selectedCategory == .help {
+                    Section {
                         Button {
                             showQuickGuide = true
                         } label: {
@@ -176,22 +304,26 @@ struct SettingsView: View {
                         }
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
-                    
+                    }
+
+                    if selectedCategory == .general {
                     // MARK: - General
-                    Section("General") {
-                        Button {
-                            showOtherSettings = true
+                    Section {
+                        NavigationLink {
+                            StartupTabSelectionView()
                         } label: {
-                            Label {
-                                Text("General")
-                                    .tint(.primary)
-                            } icon: {
-                                Image(systemName: "gear")
+                            HStack(spacing: 12) {
+                                Image(systemName: "arrowshape.turn.up.right")
                                     .foregroundStyle(.blue)
                                     .frame(width: iconWidth)
+                                Text("Open at launch")
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                Text(startupTabDisplayName)
+                                    .foregroundStyle(.blue)
+                                    .opacity(0.7)
                             }
                         }
-                        
                         Button {
                             if let url = URL(string: UIApplication.openSettingsURLString) {
                                 UIApplication.shared.open(url)
@@ -241,9 +373,11 @@ struct SettingsView: View {
                         }
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
-                    
+                    }
+
+                    if selectedCategory == .appearance {
                     // MARK: - Appearance
-                    Section("Appearance") {
+                    Section {
                         NavigationLink {
                             BackgroundCustomizationView()
                         } label: {
@@ -338,6 +472,9 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
+                    }
+
+                    if selectedCategory == .activity {
                     // MARK: - Recurring Tasks
                     Section {
                         Stepper(
@@ -360,13 +497,14 @@ struct SettingsView: View {
                             step: 10
                         )
                         .disabled(settings.maximumOccurrencesPerOperation < 10)
-                    } header: {
-                        Text("Recurring Tasks")
                     } footer: {
                         Text("For a single operation, ForMemo creates up to the selected maximum number of future occurrences. It asks for confirmation when the operation exceeds the confirmation threshold.")
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
 
+                    }
+
+                    if selectedCategory == .notifications {
                     // MARK: - Notifications
                     Section {
                         
@@ -589,13 +727,14 @@ Attivazione: \(triggerInfo)
                         }
 #endif
                     }
-                    header: {
-                        Text("Notifications")
-                    } footer: {
+                    footer: {
                         Text("Notifications must be enabled in system settings to receive alerts and sounds.")
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
+                    }
+
+                    if selectedCategory == .siri {
                     Section {
                         
                         Button {
@@ -631,11 +770,11 @@ Attivazione: \(triggerInfo)
                         }
                         
                     }
-                    header: {
-                        Text("Siri & Shortcuts")
-                    }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
+                    }
+
+                    if selectedCategory == .data {
                     Section {
                         Toggle(
                             "Auto-delete attachments",
@@ -693,8 +832,8 @@ Attivazione: \(triggerInfo)
                         Text("Attachments of completed tasks are automatically removed after the selected period. To-do tasks are not affected.")
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
-                    Section {
                         
+                    Section {
                         NavigationLink {
                             OverviewView()
                         } label: {
@@ -745,6 +884,7 @@ Attivazione: \(triggerInfo)
                                     .tint(.primary)
                             }
                         }
+
                         Stepper(
                             "Delete after \(recentlyDeletedRetentionDays) days",
                             value: Binding(
@@ -755,16 +895,34 @@ Attivazione: \(triggerInfo)
                             step: 1
                         )
                         .foregroundStyle(.secondary)
-                    } header: {
-                        Text("Data Management")
                     }
                     footer: {
                         Text("Items in Recently Deleted are permanently removed after the selected period. You can restore them before that.")
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
+                        
+                    Section {
+                        Button(role: .destructive) {
+                            showDataManagement = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "trash.circle")
+                                    .foregroundStyle(.red)
+                                    .frame(width: iconWidth)
+                                
+                                Text("Erase all Data")
+                                    .foregroundStyle(.red)
+                            }
+                        }
+                    } footer: {
+                        Text("This permanently deletes all ForMemo content from this device and its iCloud database, including tasks, notes, checklists, trips, documents, attachments, cards, tickets, vault items, and recently deleted items. The deletion will sync to your other devices. App settings and preferences are not reset. This action cannot be undone.")
+                    }
                     
 
-                    Section("Support") {
+                    }
+
+                    if selectedCategory == .help {
+                    Section {
                         NavigationLink {
                             ExportDiagnosticsView()
                         } label: {
@@ -781,6 +939,9 @@ Attivazione: \(triggerInfo)
                     
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
+                    }
+
+                    if selectedCategory == .info {
                     Section {
                             VStack(alignment: .leading, spacing: 6) {
                                 Button {
@@ -822,25 +983,12 @@ Attivazione: \(triggerInfo)
                         Text("About")
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
-                    Section {
-                        Button(role: .destructive) {
-                            showDataManagement = true
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "trash.circle")
-                                    .foregroundStyle(.red)
-                                    .frame(width: iconWidth)
-                                
-                                Text("Erase all Data")
-                                    .foregroundStyle(.red)
-                            }
-                        }
-                    } footer: {
-                        Text("This permanently deletes all ForMemo content from this device and its iCloud database, including tasks, notes, checklists, trips, documents, attachments, cards, tickets, vault items, and recently deleted items. The deletion will sync to your other devices. App settings and preferences are not reset. This action cannot be undone.")
+
+                    
+                    
                     }
-                    
-                    
 #if DEBUG
+                    if selectedCategory == nil {
                     Section("Debug") {
                         Toggle("Always Generate", isOn: $debugKeepGenerateMode)
                         Button {
@@ -897,6 +1045,7 @@ Attivazione: \(triggerInfo)
                         hasTestData = DebugTools.hasTestTasks(context: modelContext)
                         areTestTasksCompleted = DebugTools.areTestTasksCompleted(context: modelContext)
                     }
+                    }
 #endif
                 }
             }
@@ -909,9 +1058,20 @@ Attivazione: \(triggerInfo)
                 cleanupRecentlyDeleted()
                 checkNotificationStatus()
             }
-            .navigationTitle("Settings")
+            .navigationTitle(selectedCategory?.title ?? String(localized: "Settings"))
 
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if selectedCategory != nil {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            withAnimation(.snappy) { selectedCategory = nil }
+                        } label: {
+                            Label("Settings", systemImage: "chevron.left")
+                        }
+                    }
+                }
+            }
             .onAppear {
                 checkNotificationStatus()
             }
@@ -946,11 +1106,6 @@ Attivazione: \(triggerInfo)
             }
             .fullScreenCover(isPresented: $showCustomizationView) {
                 NavigationStack {TaskListAppearanceView()}
-            }
-            .fullScreenCover(isPresented: $showOtherSettings) {
-                NavigationStack {
-                    OtherSettingsView()
-                }
             }
             .fullScreenCover(isPresented: $showSiri) {
                 NavigationStack {
@@ -1318,7 +1473,7 @@ struct TabVisibilitySettingsView: View {
     private func startupTabName(for tag: Int) -> String {
         switch tag {
         case AppTab.dashboard.rawValue: return String(localized: "Dashboard")
-        case AppTab.tasks.rawValue: return String(localized: "List")
+        case AppTab.tasks.rawValue: return String(localized: "Task")
         case AppTab.today.rawValue: return String(localized: "\(settings.taskWeekDays) days")
         case AppTab.map.rawValue: return String(localized: "Map")
         case AppTab.agenda.rawValue: return String(localized: "Agenda")
