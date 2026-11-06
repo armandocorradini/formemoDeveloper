@@ -497,6 +497,7 @@ struct ForMemoApp: App {
                 )
             }
         }
+        
     }
 
     // MARK: - 🔥 CLEANUP RECENTLY DELETED

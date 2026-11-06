@@ -7,6 +7,10 @@ struct StartView: View {
     @State private var isDeveloperPopoverPresented = false
     @State private var easterEggTapCount = 0
     @State private var isEasterEggPresented = false
+    @State private var easterEggScale: CGFloat = 1
+    @State private var lastEasterEggScale: CGFloat = 1
+    @State private var easterEggOffset: CGSize = .zero
+    @State private var lastEasterEggOffset: CGSize = .zero
 
     
     var body: some View {
@@ -130,8 +134,49 @@ struct StartView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .scaleEffect(easterEggScale)
+                    .offset(easterEggOffset)
+                    .contentShape(Rectangle())
+                    .gesture(
+                        SimultaneousGesture(
+                            MagnificationGesture()
+                                .onChanged { value in
+                                    easterEggScale = min(max(lastEasterEggScale * value, 1), 10)
+                                }
+                                .onEnded { _ in
+                                    lastEasterEggScale = easterEggScale
+                                    if easterEggScale <= 1 {
+                                        easterEggOffset = .zero
+                                        lastEasterEggOffset = .zero
+                                    }
+                                },
+                            DragGesture()
+                                .onChanged { value in
+                                    guard easterEggScale > 1 else { return }
+                                    easterEggOffset = CGSize(
+                                        width: lastEasterEggOffset.width + value.translation.width,
+                                        height: lastEasterEggOffset.height + value.translation.height
+                                    )
+                                }
+                                .onEnded { _ in
+                                    lastEasterEggOffset = easterEggOffset
+                                }
+                        )
+                    )
+                    .onTapGesture(count: 2) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            easterEggScale = 1
+                            lastEasterEggScale = 1
+                            easterEggOffset = .zero
+                            lastEasterEggOffset = .zero
+                        }
+                    }
 
                 Button {
+                    easterEggScale = 1
+                    lastEasterEggScale = 1
+                    easterEggOffset = .zero
+                    lastEasterEggOffset = .zero
                     isEasterEggPresented = false
                 } label: {
                     Image(systemName: "xmark.circle.fill")

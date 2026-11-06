@@ -221,6 +221,11 @@ struct SettingsView: View {
                                     .foregroundStyle(.blue).opacity(0.7)
                             }
                         }
+                    }
+                    .listRowBackground(Color(.systemBackground).opacity(0.3))
+                    
+                    // MARK: - Appearance
+                    Section("Appearance") {
                         NavigationLink {
                             BackgroundCustomizationView()
                         } label: {
@@ -264,11 +269,6 @@ struct SettingsView: View {
                             .pickerStyle(.menu)
                             .opacity(0.7)
                         }
-                    }
-                    .listRowBackground(Color(.systemBackground).opacity(0.3))
-                    
-                    // MARK: - Tasks & Appearance
-                    Section("Tasks & Appearance") {
                         
                         Button {
                             showCustomizationView = true
