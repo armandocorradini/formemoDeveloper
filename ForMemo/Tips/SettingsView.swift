@@ -221,6 +221,24 @@ struct SettingsView: View {
                                     .foregroundStyle(.blue).opacity(0.7)
                             }
                         }
+                        LabeledContent {
+                            Picker(
+                                "",
+                                selection: Binding(
+                                    get: { settings.navigationApp },
+                                    set: { settings.navigationApp = $0 }
+                                )
+                            ) {
+                                ForEach(NavigationApp.availableApps){ app in
+                                    Text(app.title).tag(app)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .labelsHidden()
+                            .opacity(0.7)
+                        } label: {
+                            Label("Navigation app", systemImage: "iphone.badge.location")
+                        }
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                     
@@ -316,25 +334,6 @@ struct SettingsView: View {
                                     .foregroundStyle(.blue)
                                     .frame(width: iconWidth)
                             }
-                        }
-                        
-                        LabeledContent {
-                            Picker(
-                                "",
-                                selection: Binding(
-                                    get: { settings.navigationApp },
-                                    set: { settings.navigationApp = $0 }
-                                )
-                            ) {
-                                ForEach(NavigationApp.availableApps){ app in
-                                    Text(app.title).tag(app)
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .labelsHidden()
-                            .opacity(0.7)
-                        } label: {
-                            Label("Navigation app", systemImage: "iphone.badge.location")
                         }
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
