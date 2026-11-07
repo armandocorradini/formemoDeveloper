@@ -283,7 +283,13 @@ struct TaskDayView: View {   //AGENDA
                         Image(systemName: "\(Calendar.current.component(.day, from: .now)).calendar")
                             .font(.system(size: 20))
                             .symbolRenderingMode(.palette)
-                            .foregroundStyle(.primary , .blue)
+                            .foregroundStyle(
+                                HolidayProvider.holidays(in: .now, calendar: calendar)
+                                    .contains(calendar.startOfDay(for: .now))
+                                    ? .red
+                                    : .primary,
+                                .blue
+                            )
                             .frame(width: 36, height: 36)
                             .contentShape(Rectangle())
                     }

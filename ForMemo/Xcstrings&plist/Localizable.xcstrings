@@ -10485,6 +10485,34 @@
         }
       }
     },
+    "Choose which tab ForMemo opens when you launch the app." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wählen Sie aus, welchen Tab ForMemo beim Start der App öffnet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige qué pestaña abre ForMemo al iniciar la app."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez l’onglet que ForMemo affiche au démarrage de l’app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli quale scheda visualizzare all’apertura di ForMemo."
+          }
+        }
+      }
+    },
     "Choose which tabs appear in tab bar" : {
       "localizations" : {
         "de" : {
@@ -30572,6 +30600,34 @@
         }
       }
     },
+    "Recurrences and deletion" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederholungen und Löschen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeticiones y eliminación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Récurrences et suppression"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricorrenze ed eliminazione"
+          }
+        }
+      }
+    },
     "Recurrences and deletion tasks" : {
       "localizations" : {
         "de" : {
@@ -44352,6 +44408,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cosa vuoi cercare?"
+          }
+        }
+      }
+    },
+    "When enabled, you'll be asked to confirm before deleting a task." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn diese Option aktiviert ist, werden Sie vor dem Löschen einer Aufgabe um Bestätigung gebeten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si está activada, se te pedirá que confirmes antes de eliminar una tarea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si cette option est activée, une confirmation vous sera demandée avant de supprimer une tâche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se attivata, verrà richiesta una conferma prima di eliminare un'attività."
           }
         }
       }

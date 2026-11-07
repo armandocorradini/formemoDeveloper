@@ -48,7 +48,7 @@ private enum SettingsCategory: String, CaseIterable, Identifiable {
         switch self {
         case .general: String(localized: "Language, permissions and navigation")
         case .appearance: String(localized: "Theme, backgrounds and tabs")
-        case .activity: String(localized: "Recurrences and deletion tasks")
+        case .activity: String(localized: "Recurrences and deletion")
         case .notifications: String(localized: "Alerts, sounds and alarms")
         case .siri: String(localized: "Siri and Shortcuts preferences")
         case .data: String(localized: "Import, export, backup and storage")
@@ -207,6 +207,29 @@ struct SettingsView: View {
             .allowsHitTesting(false)
     }
 
+    @ViewBuilder
+    private func settingsCategoryRow(_ category: SettingsCategory) -> some View {
+        Button {
+            withAnimation(.snappy) { selectedCategory = category }
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: category.symbol)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(.blue)
+                    .frame(width: 30)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(category.title).foregroundStyle(.primary)
+                    Text(category.localizedSubtitle).font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
     var body: some View {
         let _ = backgroundColor1Hex
         let _ = backgroundColor2Hex
@@ -218,26 +241,22 @@ struct SettingsView: View {
                     
                     if selectedCategory == nil {
                         Section {
-                            ForEach(SettingsCategory.allCases) { category in
-                                Button {
-                                    withAnimation(.snappy) { selectedCategory = category }
-                                } label: {
-                                    HStack(spacing: 14) {
-                                        Image(systemName: category.symbol)
-                                            .font(.system(size: 20, weight: .medium))
-                                            .foregroundStyle(.blue)
-                                            .frame(width: 30)
-                                        VStack(alignment: .leading, spacing: 3) {
-                                            Text(category.title).foregroundStyle(.primary)
-                                            Text(category.localizedSubtitle).font(.caption).foregroundStyle(.secondary)
-                                        }
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
-                                    }
-                                    .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
+                            ForEach([SettingsCategory.general, .appearance]) { category in
+                                settingsCategoryRow(category)
+                            }
+                        }
+                        .listRowBackground(Color(.systemBackground).opacity(0.3))
+
+                        Section {
+                            ForEach([SettingsCategory.activity, .notifications, .siri]) { category in
+                                settingsCategoryRow(category)
+                            }
+                        }
+                        .listRowBackground(Color(.systemBackground).opacity(0.3))
+
+                        Section {
+                            ForEach([SettingsCategory.data, .help, .info]) { category in
+                                settingsCategoryRow(category)
                             }
                         }
                         .listRowBackground(Color(.systemBackground).opacity(0.3))
@@ -325,16 +344,27 @@ struct SettingsView: View {
                         NavigationLink {
                             StartupTabSelectionView()
                         } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: "arrowshape.turn.up.right")
-                                    .foregroundStyle(.blue)
-                                    .frame(width: iconWidth)
-                                Text("Open at launch")
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                Text(startupTabDisplayName)
-                                    .foregroundStyle(.blue)
-                                    .opacity(0.7)
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "arrowshape.turn.up.right")
+                                        .foregroundStyle(.blue)
+                                        .frame(width: iconWidth)
+
+                                    Text("Open at launch")
+                                        .foregroundStyle(.primary)
+
+                                    Spacer()
+
+                                    Text(startupTabDisplayName)
+                                        .foregroundStyle(.blue)
+                                        .opacity(0.7)
+                                }
+
+                                Text("Choose which tab ForMemo opens when you launch the app.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.leading, iconWidth + 12)
                             }
                         }
                         Button {
@@ -523,15 +553,19 @@ struct SettingsView: View {
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
 
-                    Section("Deletion") {
-                        Toggle(
-                            "Confirm task deletion",
-                            isOn: Binding(
-                                get: { settings.confirmTaskDeletion },
-                                set: { settings.confirmTaskDeletion = $0 }
+                        Section {
+                            Toggle(
+                                "Confirm task deletion",
+                                isOn: Binding(
+                                    get: { settings.confirmTaskDeletion },
+                                    set: { settings.confirmTaskDeletion = $0 }
+                                )
                             )
-                        )
-                    }
+                        } header: {
+                            Text("Deletion")
+                        } footer: {
+                            Text("When enabled, you'll be asked to confirm before deleting a task.")
+                        }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
 
                     }
@@ -957,6 +991,8 @@ Attivazione: \(triggerInfo)
                     }
                     .listRowBackground(Color(.systemBackground).opacity(0.3))
                         
+                        
+                        
                     Section {
                         Button(role: .destructive) {
                             showDataManagement = true
@@ -1108,7 +1144,8 @@ Attivazione: \(triggerInfo)
 #endif
                 }
             }
-
+            .listSectionSpacing(22)// spazio tra le sezioni
+            .contentMargins(.top, 0, for: .scrollContent)
             .contentMargins(.bottom, 70, for: .scrollContent)
 
             .scrollContentBackground(.hidden)

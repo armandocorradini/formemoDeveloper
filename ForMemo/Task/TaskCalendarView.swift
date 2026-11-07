@@ -783,7 +783,13 @@ private extension TaskCalendarView {
 
                         .symbolRenderingMode(.palette)
 
-                        .foregroundStyle(.primary, .blue)
+                        .foregroundStyle(
+                            HolidayProvider.holidays(in: .now, calendar: calendar)
+                                .contains(calendar.startOfDay(for: .now))
+                                ? .red
+                                : .primary,
+                            .blue
+                        )
 
                         .frame(width: 42, height: 42)
 
