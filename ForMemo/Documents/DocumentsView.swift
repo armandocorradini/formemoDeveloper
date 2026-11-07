@@ -11,6 +11,9 @@ struct DocumentsView: View {
     @State private var searchText = ""
     @State private var newDocument: DocumentItem?
 
+    @AppStorage("documentsViewStyle")
+    private var documentsViewStyle: String = "cards"
+
     var filteredDocuments: [DocumentItem] {
 
         guard !searchText.isEmpty else {
@@ -135,8 +138,8 @@ struct DocumentsView: View {
                     }
                     .buttonStyle(.plain)
                     .navigationLinkIndicatorVisibility(.hidden)
-                    .listRowBackground(
-                        Color(.systemBackground).opacity(0.3)
+                    .modifier(
+                        DocumentsRowAppearanceModifier(style: documentsViewStyle)
                     )
                 }
                 .onDelete { indexSet in
@@ -171,6 +174,30 @@ struct DocumentsView: View {
                         )
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                    }
+                }
+
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu {
+                        Picker(
+                            String(localized: "View"),
+                            selection: $documentsViewStyle
+                        ) {
+                            Label(
+                                String(localized: "List"),
+                                systemImage: "list.bullet"
+                            )
+                            .tag("list")
+
+                            Label(
+                                String(localized: "Tiles"),
+                                systemImage: "rectangle.on.rectangle"
+                            )
+                            .tag("cards")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundStyle(.primary.opacity(0.7))
                     }
                 }
 
@@ -263,3 +290,40 @@ struct DocumentsView: View {
 }
 
 
+
+
+private struct DocumentsRowAppearanceModifier: ViewModifier {
+    let style: String
+
+    func body(content: Content) -> some View {
+        if style == "cards" {
+            content
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(
+                    Color(.systemBackground).opacity(0.3)
+                )
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: 20,
+                        style: .continuous
+                    )
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(
+                    EdgeInsets(
+                        top: 3,
+                        leading: 0,
+                        bottom: 3,
+                        trailing: 0
+                    )
+                )
+        } else {
+            content
+                .listRowSeparator(.visible, edges: .bottom)
+                .listRowSeparatorTint(.secondary.opacity(0.38))
+                .listRowBackground(Color.clear)
+        }
+    }
+}

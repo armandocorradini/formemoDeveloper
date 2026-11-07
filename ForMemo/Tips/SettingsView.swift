@@ -1145,7 +1145,8 @@ Attivazione: \(triggerInfo)
                 }
             }
             .listSectionSpacing(22)// spazio tra le sezioni
-            .contentMargins(.top, 0, for: .scrollContent)
+            .contentMargins(.top, 20, for: .scrollContent)//spazio tra navigationtitle e la prima sezione
+            
             .contentMargins(.bottom, 70, for: .scrollContent)
 
             .scrollContentBackground(.hidden)

@@ -34,6 +34,9 @@ struct ChecklistListView: View {
     @State private var exportDocument: FMTripDocument?
     @State private var categoryToExport: TripList?
 
+    @AppStorage("tripsViewStyle")
+    private var tripsViewStyle: String = "cards"
+
     private var visibleCategories: [TripList] {
 
         guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -230,8 +233,8 @@ struct ChecklistListView: View {
                         }
                     }
                     .navigationLinkIndicatorVisibility(.hidden)
-                    .listRowBackground(
-                        Color(.systemBackground).opacity(0.3)
+                    .modifier(
+                        TripsRowAppearanceModifier(style: tripsViewStyle)
                     )
                 }
 
@@ -384,6 +387,30 @@ struct ChecklistListView: View {
                 }
             }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu {
+                        Picker(
+                            String(localized: "View"),
+                            selection: $tripsViewStyle
+                        ) {
+                            Label(
+                                String(localized: "List"),
+                                systemImage: "list.bullet"
+                            )
+                            .tag("list")
+
+                            Label(
+                                String(localized: "Tiles"),
+                                systemImage: "rectangle.on.rectangle"
+                            )
+                            .tag("cards")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundStyle(.primary.opacity(0.7))
+                    }
+                }
+
                 ToolbarItem(placement: .principal) {
                     VStack(spacing: 1) {
                         Text("Checklists")
@@ -2394,3 +2421,41 @@ private func preloadTripLocalizationKeys() {
     _ = String(localized: "Collapse All Sections")
     _ = String(localized: "Expand All Sections")
 }
+
+private struct TripsRowAppearanceModifier: ViewModifier {
+    let style: String
+
+    func body(content: Content) -> some View {
+        if style == "cards" {
+            content
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    Color(.systemBackground).opacity(0.3)
+                )
+                .clipShape(
+                    RoundedRectangle(
+                        cornerRadius: 20,
+                        style: .continuous
+                    )
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+                .listRowInsets(
+                    EdgeInsets(
+                        top: 3,
+                        leading: 0,
+                        bottom: 3,
+                        trailing: 0
+                    )
+                )
+        } else {
+            content
+                .listRowSeparator(.visible, edges: .bottom)
+                .listRowSeparatorTint(.secondary.opacity(0.38))
+                .listRowBackground(Color.clear)
+        }
+    }
+}
+
