@@ -838,13 +838,17 @@ Attivazione: \(triggerInfo)
                         }
                         .buttonStyle(.plain)
                         
-                        Toggle(
-                            "Add reminders automatically",
-                            isOn: Binding(
-                                get: { settings.siriAutoReminderEnabled },
-                                set: { settings.siriAutoReminderEnabled = $0 }
+                        Section {
+                            Toggle(
+                                "Add reminders automatically",
+                                isOn: Binding(
+                                    get: { settings.siriAutoReminderEnabled },
+                                    set: { settings.siriAutoReminderEnabled = $0 }
+                                )
                             )
-                        )
+                        } footer: {
+                            Text("Automatically add a reminder when creating a task with Siri.")
+                        }
                         
                         Toggle(isOn: $siriShortConfirmation) {
                             VStack(alignment: .leading, spacing: 2) {

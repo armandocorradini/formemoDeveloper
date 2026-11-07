@@ -29,7 +29,7 @@ struct ShortList: View {
                                     .font(.headline)
                                     .foregroundStyle(.primary)
                                 
-                                Text(String(localized: "Search tasks, reminders and notes by text using Siri."))
+                                Text(String(localized: "Search tasks by text using Siri."))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
