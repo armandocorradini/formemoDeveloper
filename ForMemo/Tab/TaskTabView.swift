@@ -40,8 +40,7 @@ struct TaskTabView: View {
     @StateObject private var noteEditorCoordinator = NoteEditorCoordinator()
     @State private var showNoteUnsavedChangesAlert = false
     @State private var pendingNoteTab: Int?
-    @State private var calendarNavigationDate: Date?
-    @State private var dayNavigationDate: Date?
+    @State private var sessionSelectedDate = Calendar.current.startOfDay(for: .now)
     
     var body: some View {
         rootLayout
@@ -112,7 +111,7 @@ struct TaskTabView: View {
                     return
                 }
 
-                calendarNavigationDate = Calendar.current.startOfDay(for: date)
+                sessionSelectedDate = Calendar.current.startOfDay(for: date)
                 calendarPath = NavigationPath()
 
                 withAnimation(.easeInOut(duration: 0.18)) {
@@ -128,7 +127,7 @@ struct TaskTabView: View {
                     return
                 }
 
-                dayNavigationDate = Calendar.current.startOfDay(for: date)
+                sessionSelectedDate = Calendar.current.startOfDay(for: date)
                 dayPath = NavigationPath()
 
                 withAnimation(.easeInOut(duration: 0.18)) {
@@ -514,12 +513,12 @@ struct TaskTabView: View {
             
         case 3:
             NavigationStack(path: $calendarPath) {
-                TaskCalendarView(initialSelectedDate: calendarNavigationDate)
+                TaskCalendarView(selectedDate: $sessionSelectedDate)
             }
 
         case 14:
             NavigationStack(path: $dayPath) {
-                TaskDayView(initialSelectedDate: dayNavigationDate)
+                TaskDayView(selectedDate: $sessionSelectedDate)
             }
             
         case 5:

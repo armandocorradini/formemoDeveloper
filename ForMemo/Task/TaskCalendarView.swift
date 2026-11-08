@@ -6,7 +6,7 @@ import os
 
 struct TaskCalendarView: View {
 
-    var initialSelectedDate: Date? = nil
+    @Binding var selectedDate: Date
 
     @Environment(AppSettings.self)
 
@@ -44,7 +44,6 @@ struct TaskCalendarView: View {
     @State private var pickerYear = Calendar.current.component(.year, from: .now)
     
     
-    @State private var selectedDate: Date = Calendar.current.startOfDay(for: .now)
 
     @State private var newTaskSelection: NewTaskSelection?
 
@@ -354,13 +353,10 @@ struct TaskCalendarView: View {
         .padding(.top, -8)
 
         .onAppear {
-            if let initialSelectedDate {
-                let targetDate = calendar.startOfDay(for: initialSelectedDate)
-                selectedDate = targetDate
-                displayedMonth = calendar.date(
-                    from: calendar.dateComponents([.year, .month], from: targetDate)
-                ) ?? targetDate
-            }
+            let selectedMonth = calendar.startOfDay(for: selectedDate)
+            displayedMonth = calendar.date(
+                from: calendar.dateComponents([.year, .month], from: selectedMonth)
+            ) ?? selectedMonth
 
             Task { @MainActor in await loadHolidays(for: displayedMonth) }
             fetchCalendarTasks()

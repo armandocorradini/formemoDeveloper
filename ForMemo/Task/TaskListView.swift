@@ -1331,6 +1331,10 @@ struct TaskListView: View {
     
     @MainActor
     private func fetchCompletedTasks() {
+        // Preserve the number of completed rows already materialized so a
+        // deletion or other refresh does not collapse the list to page one.
+        let refreshLimit = max(100, completedQuery.count)
+
         completedOffset = 0
         completedHasMore = true
         isLoadingMoreCompleted = false
@@ -1399,13 +1403,13 @@ struct TaskListView: View {
                 )
             ]
         )
-        descriptor.fetchOffset = completedOffset
-        descriptor.fetchLimit = 100
+        descriptor.fetchOffset = 0
+        descriptor.fetchLimit = refreshLimit
 
         do {
             completedQuery = try modelContext.fetch(descriptor)
             completedOffset = completedQuery.count
-            completedHasMore = completedQuery.count == 100
+            completedHasMore = completedQuery.count == refreshLimit
 
             AppLogger.persistence.debug(
                 "TaskList fetchCompletedTasks RESULT: \(completedQuery.count) completed tasks"

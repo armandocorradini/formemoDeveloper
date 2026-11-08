@@ -4,13 +4,12 @@ import os
 import UIKit
 
 struct TaskDayView: View {   //AGENDA
-    var initialSelectedDate: Date? = nil
+    @Binding var selectedDate: Date
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.modelContext) private var modelContext
     @Environment(AppSettings.self) private var settings
     @Query(sort: \TodoTask.deadLine) private var tasks: [TodoTask]
 
-    @State private var selectedDate = Calendar.current.startOfDay(for: .now)
     @State private var taskPendingDeletion: TodoTask?
     @State private var showDeleteConfirmation = false
     @State private var draftTask: TodoTask?
@@ -221,11 +220,6 @@ struct TaskDayView: View {   //AGENDA
                 }
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
-            }
-        }
-        .onAppear {
-            if let initialSelectedDate {
-                selectedDate = calendar.startOfDay(for: initialSelectedDate)
             }
         }
         .onChange(of: scenePhase) { _, phase in
