@@ -227,6 +227,11 @@ final class AppSettings {
         
         showVault = defaults.object(forKey: "showVault") as? Bool ?? true
         showDashboardTab = defaults.object(forKey: "showDashboardTab") as? Bool ?? true
+        showSearchTab = defaults.object(forKey: "showSearchTab") as? Bool ?? true
+        let savedTabBarVisibleItemCount = defaults.object(forKey: "tabBarVisibleItemCount") as? Int ?? 5
+        tabBarVisibleItemCount = [5, 6, 7].contains(savedTabBarVisibleItemCount)
+            ? savedTabBarVisibleItemCount
+            : 5
         showWeekTab = defaults.object(forKey: "showWeekTab") as? Bool ?? true
         showMapTab = defaults.object(forKey: "showMapTab") as? Bool ?? true
         showTasksTab = defaults.object(forKey: "showTasksTab") as? Bool ?? true
@@ -545,6 +550,10 @@ final class AppSettings {
         didSet { UserDefaults.standard.set(showDashboardTab, forKey: "showDashboardTab") }
     }
 
+    var showSearchTab: Bool {
+        didSet { UserDefaults.standard.set(showSearchTab, forKey: "showSearchTab") }
+    }
+
     var showWeekTab: Bool {
         didSet { UserDefaults.standard.set(showWeekTab, forKey: "showWeekTab") }
     }
@@ -773,6 +782,17 @@ final class AppSettings {
         }
     }
 
+    var tabBarVisibleItemCount: Int {
+        didSet {
+            let normalized = [5, 6, 7].contains(tabBarVisibleItemCount) ? tabBarVisibleItemCount : 5
+            if tabBarVisibleItemCount != normalized {
+                tabBarVisibleItemCount = normalized
+                return
+            }
+            UserDefaults.standard.set(tabBarVisibleItemCount, forKey: "tabBarVisibleItemCount")
+        }
+    }
+
     var orderedTabs: [AppTab] {
         Self.normalizedTabOrder(tabOrder).compactMap(AppTab.init(rawValue:))
     }
@@ -817,6 +837,7 @@ final class AppSettings {
         showWeatherForecast = true
         showVault = true
         showDashboardTab = true
+        showSearchTab = true
         showWeekTab = true
         showMapTab = true
         showTasksTab = true
@@ -845,6 +866,7 @@ final class AppSettings {
 //        vaultRequireFaceID = true
         vaultAutoHidePasswords = true
         tabOrder = AppTab.defaultOrder.map(\.rawValue)
+        tabBarVisibleItemCount = 5
 
         loadFromUserDefaults(.standard)
         

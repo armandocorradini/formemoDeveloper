@@ -244,6 +244,7 @@
 		1CA7F727309C957F008375D8 /* TaskWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CA7F724309C957F008375D8 /* TaskWidgetSnapshot.swift */; };
 		1CA7F728309C957F008375D8 /* TaskWidgetSnapshotWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CA7F725309C957F008375D8 /* TaskWidgetSnapshotWriter.swift */; };
 		1CA7F729309C957F008375D8 /* TaskWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CA7F724309C957F008375D8 /* TaskWidgetSnapshot.swift */; };
+		1CA7F72B30A0FDFD008375D8 /* GlobalSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CA7F72A30A0FDFD008375D8 /* GlobalSearchView.swift */; };
 		1CC0DE7E30483D4F001EB9C2 /* TaskDuplicationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */; };
 		1CC57C0A302B6E9200E9C79F /* PersistenceOperationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */; };
 		1CC57C0C302DA84000E9C79F /* AssetDirectoryCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */; };
@@ -522,6 +523,7 @@
 		1C97EB0D3093EB1F00349CCE /* xylophone.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = xylophone.wav; sourceTree = "<group>"; };
 		1CA7F724309C957F008375D8 /* TaskWidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskWidgetSnapshot.swift; sourceTree = "<group>"; };
 		1CA7F725309C957F008375D8 /* TaskWidgetSnapshotWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskWidgetSnapshotWriter.swift; sourceTree = "<group>"; };
+		1CA7F72A30A0FDFD008375D8 /* GlobalSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlobalSearchView.swift; sourceTree = "<group>"; };
 		1CC0DE7D30483D4A001EB9C2 /* TaskDuplicationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDuplicationService.swift; sourceTree = "<group>"; };
 		1CC57C09302B6E8A00E9C79F /* PersistenceOperationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceOperationCoordinator.swift; sourceTree = "<group>"; };
 		1CC57C0B302DA83C00E9C79F /* AssetDirectoryCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetDirectoryCoordinator.swift; sourceTree = "<group>"; };
@@ -933,6 +935,7 @@
 			isa = PBXGroup;
 			children = (
 				1CF49EAA306FECB8000BA744 /* ForMemoAlarmManager.swift */,
+				1CA7F72A30A0FDFD008375D8 /* GlobalSearchView.swift */,
 				1C1358C8305C54A80030AC9B /* PerformanceBenchmark.swift */,
 				1C634D5A30220C9C0092DB89 /* ImportExportSettingsView.swift */,
 				1C634D4730220C9C0092DB89 /* Dashboard.swift */,
@@ -1473,6 +1476,7 @@
 				1C634E3530220C9C0092DB89 /* VaultSettingsView.swift in Sources */,
 				1C634E3630220C9C0092DB89 /* VaultView.swift in Sources */,
 				1C634E3730220C9C0092DB89 /* WalletAssetThumbnail.swift in Sources */,
+				1CA7F72B30A0FDFD008375D8 /* GlobalSearchView.swift in Sources */,
 				1C634E3830220C9C0092DB89 /* WalletView.swift in Sources */,
 				1C634E3930220C9C0092DB89 /* WeatherDayView.swift in Sources */,
 				1C634E3A30220C9C0092DB89 /* WeatherForecastView.swift in Sources */,

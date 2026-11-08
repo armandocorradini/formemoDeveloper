@@ -24,6 +24,31 @@ struct TabBarCustomizationView: View {
 //                        .multilineTextAlignment(.center)
 //                        .frame(maxWidth: .infinity)
 //                        .padding(.bottom, 20)
+                    
+                    HStack(spacing: 16) {
+                        Text("Tab Bar Items")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                       //Spacer()
+
+                        Picker(
+                            "Tab Bar Items",
+                            selection: Binding(
+                                get: { settings.tabBarVisibleItemCount },
+                                set: { settings.tabBarVisibleItemCount = $0 }
+                            )
+                        ) {
+                            Text("5").tag(5)
+                            Text("6").tag(6)
+                            Text("7").tag(7)
+                        }
+                        .pickerStyle(.segmented)
+                        .fixedSize()
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, -4)
+                    .padding(.bottom, 10)
 
                     if horizontalSizeClass == .regular {
                         // iPad: reproduce the vertical sidebar used for navigation.
@@ -54,6 +79,8 @@ struct TabBarCustomizationView: View {
                             tabBarPreview
                         }
                         .padding(.horizontal, 16)
+
+
 
                         // MARK: - Instructions
                         Text("Drag the items to change their order.")
@@ -301,9 +328,10 @@ struct TabBarCustomizationView: View {
 
     private var morePopupPreview: some View {
         let visibleTabs = tabs.filter { $0.isVisible(using: settings) }
-        let moreTabs = Array(visibleTabs.dropFirst(4))
+        let primaryTabCount = max(1, settings.tabBarVisibleItemCount - 1)
+        let moreTabs = Array(visibleTabs.dropFirst(primaryTabCount))
 
-        return VStack(alignment: .leading, spacing: 6) {
+        return VStack(alignment: .leading, spacing: 3) {
             ForEach(moreTabs) { tab in
                 previewMoreItem(tab)
             }
@@ -394,8 +422,9 @@ struct TabBarCustomizationView: View {
             $0.isVisible(using: settings)
         }
 
-        let primaryTabs = Array(visibleTabs.prefix(4))
-        let hasMore = visibleTabs.count > 4
+        let primaryTabCount = max(1, settings.tabBarVisibleItemCount - 1)
+        let primaryTabs = Array(visibleTabs.prefix(primaryTabCount))
+        let hasMore = visibleTabs.count > primaryTabCount
 
         return HStack(spacing: 10) {
 
@@ -575,11 +604,11 @@ struct TabBarCustomizationView: View {
 
         if !hiddenTabs.isEmpty {
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
 
                 Text("Hidden")
                     .font(.headline)
-
+                    .padding(.bottom,-6)
                 VStack(spacing: 0) {
 
                     ForEach(hiddenTabs) { tab in
@@ -616,6 +645,7 @@ struct TabBarCustomizationView: View {
 
             settings.tabBarCustomizationIconColorHex =
                 Color.blue.toHex() ?? ""
+            settings.tabBarVisibleItemCount = 5
 
             if let first = tabs.first(
                 where: { $0.isVisible(using: settings) }

@@ -2922,6 +2922,9 @@
         }
       }
     },
+    "5" : {
+      "shouldTranslate" : false
+    },
     "5 minutes" : {
       "localizations" : {
         "de" : {
@@ -2949,6 +2952,12 @@
           }
         }
       }
+    },
+    "6" : {
+      "shouldTranslate" : false
+    },
+    "7" : {
+      "shouldTranslate" : false
     },
     "7 Days" : {
       "localizations" : {
@@ -3455,6 +3464,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Attive"
+          }
+        }
+      }
+    },
+    "Active Notes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktive Notizen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas activas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes actives"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note attive"
           }
         }
       }
@@ -5187,6 +5224,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Archiviata %@"
+          }
+        }
+      }
+    },
+    "Archived Notes" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Archivierte Notizen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notas archivadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Notes archivées"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Note archiviate"
           }
         }
       }
@@ -15789,6 +15854,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sacche impermeabili"
+          }
+        }
+      }
+    },
+    "Due" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fälligkeitsdatum"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vencimiento"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échéance"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scadenza"
           }
         }
       }
@@ -32717,6 +32810,34 @@
         }
       }
     },
+    "Search all content" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alle Inhalte durchsuchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar en todo el contenido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher dans tout le contenu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca in tutti i contenuti"
+          }
+        }
+      }
+    },
     "Search cards and tickets" : {
       "localizations" : {
         "de" : {
@@ -32827,6 +32948,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cerca nelle FAQ"
+          }
+        }
+      }
+    },
+    "Search ForMemo" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo durchsuchen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscar en ForMemo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rechercher dans ForMemo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca in ForMemo"
           }
         }
       }
@@ -33027,6 +33176,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cerca attività tramite parole chiave usando Siri."
+          }
+        }
+      }
+    },
+    "Search tasks, notes, documents, cards, and checklists." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgaben, Notizen, Dokumente, Karten und Checklisten durchsuchen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Busca tareas, notas, documentos, tarjetas, tickets y listas de comprobación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherchez des tâches, des notes, des documents, des cartes et des listes de contrôle."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca attività, note, documenti, carte, tickets e checklist."
           }
         }
       }
@@ -37001,6 +37178,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tab"
+          }
+        }
+      }
+    },
+    "Tab Bar Items" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab-Leistenelemente"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elementos de la barra de pestañas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Éléments de la barre d’onglets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elementi barra tabs"
           }
         }
       }

@@ -1490,6 +1490,13 @@ struct TabVisibilitySettingsView: View {
                         Text("To hide the Vault, first go to Settings > General > AutoFill & Passwords and turn off AutoFill Passwords and Passkeys. Then return here and turn off Vault.")
                     }
                 }
+
+                Toggle(isOn: Binding(
+                    get: { settings.showSearchTab },
+                    set: { settings.showSearchTab = $0 }
+                )) {
+                    tabLabel("Search", icon: "magnifyingglass")
+                }
             } header: {
                 Text("Tabs")
             } footer: {

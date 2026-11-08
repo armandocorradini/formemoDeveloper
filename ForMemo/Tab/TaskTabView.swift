@@ -18,6 +18,7 @@ struct TaskTabView: View {
     @State private var previousTab = 0
     @State private var showSnoozeAlert = false
     @State private var showMorePopover = false
+    @State private var showGlobalSearch = false
     @State
     private var recoveryResult: AssetRecoveryCoordinator.RecoveryCheckResult?
     @State
@@ -44,6 +45,9 @@ struct TaskTabView: View {
     
     var body: some View {
         rootLayout
+            .sheet(isPresented: $showGlobalSearch) {
+                GlobalSearchView(noteEditorCoordinator: noteEditorCoordinator)
+            }
             .onAppear {
                 syncWeatherLocationPermission()
 
@@ -397,12 +401,16 @@ struct TaskTabView: View {
         return requestedTab
     }
 
+    private var primaryTabCount: Int {
+        max(1, settings.tabBarVisibleItemCount - 1)
+    }
+
     private var primaryTabs: [AppTab] {
-        Array(visibleTabs.prefix(4))
+        Array(visibleTabs.prefix(primaryTabCount))
     }
 
     private var moreTabs: [AppTab] {
-        Array(visibleTabs.dropFirst(4))
+        Array(visibleTabs.dropFirst(primaryTabCount))
     }
     
     private var iPhoneLayout: some View {
@@ -478,7 +486,7 @@ struct TaskTabView: View {
                 RoundedRectangle(cornerRadius: 30, style: .continuous)
                     .strokeBorder(.white.opacity(0.08), lineWidth: 0.6)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 16)
             .padding(.bottom, 10)
             .offset(y: 10)
         }
@@ -550,6 +558,8 @@ struct TaskTabView: View {
                 NoteListView(noteEditorCoordinator: noteEditorCoordinator)
                     .environmentObject(noteEditorCoordinator)
             }
+        case 15:
+            GlobalSearchView(noteEditorCoordinator: noteEditorCoordinator)
         case 9:
             NavigationStack(path: $weatherPath) {
                 WeatherForecastView()
@@ -696,7 +706,7 @@ struct TaskTabView: View {
                 Text(title)
                     .font(.system(size: 9, weight: .medium))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.9)
+                    .minimumScaleFactor(0.75)
                 
                 Capsule()
                     .fill(Color(hex: settings.tabBarCustomizationIconColorHex) ?? .blue)
