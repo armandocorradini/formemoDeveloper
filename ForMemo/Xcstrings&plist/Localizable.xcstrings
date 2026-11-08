@@ -27426,7 +27426,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Organizzatore"
+            "value" : "Organizzato"
           }
         }
       }
@@ -40480,7 +40480,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ora"
+            "value" : "Tempo"
           }
         }
       }

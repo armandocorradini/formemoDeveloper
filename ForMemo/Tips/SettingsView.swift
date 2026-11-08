@@ -35,7 +35,7 @@ private enum SettingsCategory: String, CaseIterable, Identifiable {
         switch self {
         case .general: String(localized: "General")
         case .appearance: String(localized: "Appearance")
-        case .activity: String(localized: "Recurrences and deletion tasks")
+        case .activity: String(localized: "Recurrences and deletion")
         case .notifications: String(localized: "Notifications & Alarms")
         case .siri: String(localized: "Siri & Shortcuts")
         case .data: String(localized: "Data Management")
@@ -48,7 +48,7 @@ private enum SettingsCategory: String, CaseIterable, Identifiable {
         switch self {
         case .general: String(localized: "Language, permissions and navigation")
         case .appearance: String(localized: "Theme, backgrounds and tabs")
-        case .activity: String(localized: "Recurrences and deletion")
+        case .activity: String(localized: "Recurrences and deletion tasks")
         case .notifications: String(localized: "Alerts, sounds and alarms")
         case .siri: String(localized: "Siri and Shortcuts preferences")
         case .data: String(localized: "Import, export, backup and storage")
@@ -838,16 +838,17 @@ Attivazione: \(triggerInfo)
                         }
                         .buttonStyle(.plain)
                         
-                        Section {
-                            Toggle(
-                                "Add reminders automatically",
-                                isOn: Binding(
-                                    get: { settings.siriAutoReminderEnabled },
-                                    set: { settings.siriAutoReminderEnabled = $0 }
-                                )
-                            )
-                        } footer: {
-                            Text("Automatically add a reminder when creating a task with Siri.")
+                        Toggle(isOn: Binding(
+                            get: { settings.siriAutoReminderEnabled },
+                            set: { settings.siriAutoReminderEnabled = $0 }
+                        )) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Add reminders automatically")
+
+                                Text("Automatically add a reminder when creating a task with Siri.")
+                                    .font(.footnote)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         
                         Toggle(isOn: $siriShortConfirmation) {

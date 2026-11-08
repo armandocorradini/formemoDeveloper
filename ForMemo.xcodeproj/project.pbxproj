@@ -744,6 +744,7 @@
 				1C634CE130220C9C0092DB89 /* CredentialSavingRequest.swift */,
 				1C634D6330220C9C0092DB89 /* RecentlyDeletedVaultView.swift */,
 				1C634D3A30220C9C0092DB89 /* CredentialExchange */,
+				1C634E41302258620092DB89 /* Trips */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -771,7 +772,6 @@
 				1CC57C083028E8D400E9C79F /* Delete */,
 				1C8225DF303B509100B77EC7 /* Notes */,
 				1C634E3C30220CAE0092DB89 /* Task */,
-				1C634E41302258620092DB89 /* Trips */,
 				1C634E3F302255FC0092DB89 /* Documents */,
 				1C634D3B30220C9C0092DB89 /* Vault */,
 				1C634E3E3022556C0092DB89 /* Wallet */,
@@ -821,6 +821,7 @@
 				1C634D1130220C9C0092DB89 /* TaskBadgePolicy.swift */,
 				1C634D0830220C9C0092DB89 /* RowBackground.swift */,
 				1C634D6B30220C9C0092DB89 /* TaskBadgeView.swift */,
+				1C634D7230220C9C0092DB89 /* TaskListAppearanceView.swift */,
 				1C634D1330220C9C0092DB89 /* TaskRowAppearance.swift */,
 				1C634D6D30220C9C0092DB89 /* TaskDaySection.swift */,
 				1C634D4830220C9C0092DB89 /* Detail_AttachmentList.swift */,
@@ -950,7 +951,6 @@
 				1C634D6130220C9C0092DB89 /* OverviewView.swift */,
 				1C634D6630220C9C0092DB89 /* SettingsView.swift */,
 				1C634D6030220C9C0092DB89 /* OtherSettingsView.swift */,
-				1C634D7230220C9C0092DB89 /* TaskListAppearanceView.swift */,
 				1C634D0F30220C9C0092DB89 /* SurfaceSettings.swift */,
 				1C634D4330220C9C0092DB89 /* BackgroundCustomizationView.swift */,
 				1C634CE430220C9C0092DB89 /* DebugTools.swift */,

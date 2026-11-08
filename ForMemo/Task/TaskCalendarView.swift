@@ -786,6 +786,7 @@ private extension TaskCalendarView {
                         .foregroundStyle(
                             HolidayProvider.holidays(in: .now, calendar: calendar)
                                 .contains(calendar.startOfDay(for: .now))
+                                || calendar.component(.weekday, from: .now) == 1
                                 ? .red
                                 : .primary,
                             .blue
@@ -1642,7 +1643,7 @@ private struct DayCell: View {
 
                         .stroke(.blue, lineWidth: 2)
 
-                        .frame(width: 32, height: 32)
+                        .frame(width: 28, height: 28)
 
                 }
 
@@ -1652,7 +1653,7 @@ private struct DayCell: View {
 
                         .stroke(.primary, lineWidth: 2)
 
-                        .frame(width: 26, height: 26)
+                        .frame(width: 34, height: 34)
 
                 }
 

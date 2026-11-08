@@ -70,18 +70,18 @@ struct TaskListAppearanceView: View {
             .navigationBarTitleDisplayMode(.inline)
             .scrollEdgeEffectHidden(true, for: .top)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button {
                         withAnimation(.snappy) {
                             dismiss()
                         }
                     } label: {
-                        Image(systemName: "checkmark")
+                        Image(systemName: "chevron.left")
                             .foregroundStyle(.primary)
                             .font(.title2)
                     }
                 }
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .confirmationAction) {
                     Button("Default") {
                         reset()
                     }

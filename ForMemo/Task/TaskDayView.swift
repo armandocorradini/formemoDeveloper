@@ -286,6 +286,7 @@ struct TaskDayView: View {   //AGENDA
                             .foregroundStyle(
                                 HolidayProvider.holidays(in: .now, calendar: calendar)
                                     .contains(calendar.startOfDay(for: .now))
+                                    || calendar.component(.weekday, from: .now) == 1
                                     ? .red
                                     : .primary,
                                 .blue
@@ -633,13 +634,25 @@ struct TaskDayView: View {   //AGENDA
                                 .foregroundStyle(isHoliday || calendar.component(.weekday, from: date) == 1 ? .red : (isToday ? .primary : .secondary))
                             Text(date.formatted(.dateTime.day()))
                                 .font(.body.weight(isSelected ? .semibold : .regular))
-                                .foregroundStyle(isToday ? (isHoliday ? .red : .white) : (isHoliday || calendar.component(.weekday, from: date) == 1 ? .red : .primary))
+                                .foregroundStyle(
+                                    isHoliday || calendar.component(.weekday, from: date) == 1
+                                        ? .red
+                                        : (isToday ? .white : .primary)
+                                )
                                 .frame(width: 34, height: 34)
                                 .background {
-                                    if isToday {
-                                        Circle().fill(Color.blue)
-                                    } else if isSelected {
-                                        Circle().stroke(Color.primary, lineWidth: 1.5)
+                                    ZStack {
+                                        if isToday {
+                                            Circle()
+                                                .stroke(.blue, lineWidth: 2)
+                                                .frame(width: 28, height: 28)
+                                        }
+
+                                        if isSelected {
+                                            Circle()
+                                                .stroke(.primary, lineWidth: 2)
+                                                .frame(width: 34, height: 34)
+                                        }
                                     }
                                 }
                             Circle()
