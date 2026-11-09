@@ -1874,34 +1874,6 @@
     "%lld°" : {
       "shouldTranslate" : false
     },
-    "• Change the main task icon style\n• Choose the days badge color\n• Show or hide attachments, location and priority icons\n• Preview changes before applying them" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Ändere den Stil des Hauptsymbols für Aufgaben\n• Wähle die Farbe des Tages-Badges\n• Blende die Symbole für Anhänge, Ort und Priorität ein oder aus\n• Sieh dir eine Vorschau der Änderungen an, bevor du sie anwendest"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Cambia el estilo del icono principal de las tareas\n• Elige el color de la insignia de días\n• Muestra u oculta los iconos de adjuntos, ubicación y prioridad\n• Previsualiza los cambios antes de aplicarlos"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Modifiez le style de l’icône principale des tâches\n• Choisissez la couleur du badge des jours\n• Affichez ou masquez les icônes des pièces jointes, de la localisation et de la priorité\n• Prévisualisez les modifications avant de les appliquer"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "• Cambia lo stile dell’icona principale delle attività\n• Scegli il colore del badge dei giorni\n• Mostra o nascondi le icone di allegati, posizione e priorità\n• Visualizza un’anteprima delle modifiche prima di applicarle"
-          }
-        }
-      }
-    },
     "^[%lld tasks scheduled](inflect: true)" : {
       "localizations" : {
         "de" : {
@@ -3020,7 +2992,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "15 Minuten"
+            "value" : "30 Minuten"
           }
         },
         "es" : {
@@ -10466,30 +10438,30 @@
         }
       }
     },
-    "Choose what the app icon badge displays: overdue tasks or tasks that reached the global notification time. Inside the app, each task shows how many days are left." : {
+    "Choose what the app icon badge displays: overdue tasks or tasks that reached the global notification time in Settings > Notifications & Alarms > Global Notifications and Badges. Inside the app, each task shows how many days are left." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wählen Sie aus, was das App-Symbol-Badge anzeigen soll: überfällige Aufgaben oder Aufgaben, die den Zeitpunkt der globalen Benachrichtigung erreicht haben. Innerhalb der App zeigt jede Aufgabe an, wie viele Tage noch verbleiben."
+            "value" : "Wählen Sie aus, was das App-Symbol-Badge anzeigen soll: überfällige Aufgaben oder Aufgaben, die den Zeitpunkt der globalen Benachrichtigung unter Settings > Mitteilungen & Alarme > Globale Mitteilungen und Kennzeichen erreicht haben. Innerhalb der App zeigt jede Aufgabe an, wie viele Tage noch verbleiben."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Elige qué muestra el distintivo del icono de la aplicación: tareas vencidas o tareas que han alcanzado la hora de la notificación global. Dentro de la aplicación, cada tarea muestra cuántos días quedan."
+            "value" : "Elige qué muestra el distintivo del icono de la aplicación: las tareas vencidas o las tareas que han alcanzado la hora de la notificación global en Settings > Notificaciones y alarmas > Notificaciones globales e indicadores. Dentro de la aplicación, cada tarea muestra cuántos días quedan."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez ce que le badge de l’icône de l’application affiche : les tâches en retard ou les tâches ayant atteint l’heure de la notification globale. Dans l’application, chaque tâche indique le nombre de jours restants."
+            "value" : "Choisissez ce que le badge de l’icône de l’application affiche : les tâches en retard ou les tâches ayant atteint l’heure de la notification globale dans Settings > Notifications et alarmes > Notifications globales et badges. Dans l’application, chaque tâche indique le nombre de jours restants."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Scegli cosa visualizza il badge dell’icona dell’app: attività scadute oppure attività che hanno raggiunto l’orario della notifica globale. All’interno dell’app, ogni attività mostra quanti giorni mancano alla scadenza."
+            "value" : "Scegli cosa visualizzare sul badge dell’icona dell’app: le attività scadute oppure quelle che hanno raggiunto l’orario della notifica globale in Settings > Notifiche e sveglie > Notifiche globali e badge. All’interno dell’app, ogni attività mostra quanti giorni mancano."
           }
         }
       }
@@ -12381,30 +12353,30 @@
         }
       }
     },
-    "Create complete backups including tasks, reminders, attachments, cards, tickets, Checklists, documents, Vault items, and app settings. Vault data in a backup requires a password for restoration. Restore everything or only selected sections on the same or another device." : {
+    "Create complete backups in Settings > Data Management > Backup & Restore, including tasks, reminders, attachments, cards, tickets, Checklists, documents, Vault items, and app settings. Vault data in a backup requires a password for restoration. Restore everything or only selected sections on the same or another device." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Erstelle vollständige Backups mit Aufgaben, Erinnerungen, Anhängen, Karten, Tickets, Checklisten, Dokumenten, Tresorelementen und App-Einstellungen. Für die Wiederherstellung von Tresordaten aus einem Backup ist ein Passwort erforderlich. Stelle alles oder nur ausgewählte Bereiche auf demselben oder einem anderen Gerät wieder her."
+            "value" : "Erstellen Sie vollständige Backups unter Settings > Datenverwaltung > Backup & Wiederherstellung, einschließlich Aufgaben, Erinnerungen, Anhängen, Karten, Tickets, Checklisten, Dokumenten, Tresorelementen und App-Einstellungen. Für die Wiederherstellung von Tresordaten aus einem Backup ist ein Passwort erforderlich. Stellen Sie alles oder nur ausgewählte Bereiche auf demselben oder einem anderen Gerät wieder her."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea copias de seguridad completas que incluyan tareas, recordatorios, archivos adjuntos, tarjetas, entradas, listas de comprobación, documentos, elementos de la Caja fuerte y ajustes de la app. Los datos de la Caja fuerte incluidos en una copia de seguridad requieren una contraseña para restaurarse. Restaura todo o solo las secciones seleccionadas en el mismo dispositivo o en otro."
+            "value" : "Crea copias de seguridad completas en Settings > Gestión de datos > Copia de seguridad y restauración, que incluyan tareas, recordatorios, archivos adjuntos, tarjetas, entradas, listas de comprobación, documentos, elementos de la Caja fuerte y ajustes de la aplicación. Los datos de la Caja fuerte incluidos en una copia de seguridad requieren una contraseña para restaurarse. Restaura todo o solo las secciones seleccionadas en el mismo dispositivo o en otro."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Créez des sauvegardes complètes incluant les tâches, rappels, pièces jointes, cartes, billets, checklists, documents, éléments du Coffre-fort et réglages de l’app. Les données du Coffre-fort d’une sauvegarde nécessitent un mot de passe pour être restaurées. Restaurez tout ou uniquement certaines sections sur le même appareil ou sur un autre appareil."
+            "value" : "Créez des sauvegardes complètes dans Settings > Gestion des données > Sauvegarde et restauration, incluant les tâches, les rappels, les pièces jointes, les cartes, les billets, les checklists, les documents, les éléments du Coffre-fort et les réglages de l’application. Les données du Coffre-fort contenues dans une sauvegarde nécessitent un mot de passe pour être restaurées. Restaurez tout ou uniquement les sections sélectionnées sur le même appareil ou sur un autre appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Crea backup completi che includono attività, promemoria, allegati, carte, biglietti, checklist, documenti, elementi della Cassaforte e impostazioni dell’app. Per ripristinare i dati della Cassaforte da un backup è necessaria una password. Ripristina tutto oppure solo le sezioni selezionate sullo stesso dispositivo o su un altro dispositivo."
+            "value" : "Crea backup completi in Settings > Gestione dati > Backup & Restore, includendo attività, promemoria, allegati, carte, biglietti, checklist, documenti, elementi della Cassaforte e impostazioni dell’app. Per ripristinare i dati della Cassaforte da un backup è necessaria una password. Ripristina tutto oppure solo le sezioni selezionate sullo stesso dispositivo o su un altro dispositivo."
           }
         }
       }
@@ -12993,6 +12965,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Personalizza il tuo elenco attività"
+          }
+        }
+      }
+    },
+    "Customize your task list in Settings > Appearance > Customize Task List.\n\n• Change the main task icon style\n• Choose the days badge color\n• Show or hide attachments, location and priority icons\n• Configure critical task highlighting\n• Preview changes before applying them" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passen Sie Ihre Aufgabenliste unter Settings > Aussehen > Aufgabenliste anpassen an.\n\n• Ändern Sie den Stil des Hauptsymbols für Aufgaben\n• Wählen Sie die Farbe des Tages-Badges\n• Blenden Sie die Symbole für Anhänge, Standort und Priorität ein oder aus\n• Konfigurieren Sie die Hervorhebung kritischer Aufgaben\n• Sehen Sie sich Änderungen vor dem Anwenden in der Vorschau an"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personaliza tu lista de tareas en Settings > Apariencia > Personalizar la lista de tareas.\n\n• Cambia el estilo del icono principal de las tareas\n• Elige el color del distintivo de días\n• Muestra u oculta los iconos de archivos adjuntos, ubicación y prioridad\n• Configura el resaltado de las tareas críticas\n• Previsualiza los cambios antes de aplicarlos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personnalisez votre liste de tâches dans Settings > Apparence > Personnaliser la liste des tâches.\n\n• Modifiez le style de l’icône principale des tâches\n• Choisissez la couleur du badge des jours\n• Affichez ou masquez les icônes des pièces jointes, de la localisation et de la priorité\n• Configurez la mise en évidence des tâches critiques\n• Prévisualisez les modifications avant de les appliquer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizza il tuo elenco di attività in Settings > Aspetto > Personalizza elenco attività.\n\n• Cambia lo stile dell’icona principale delle attività\n• Scegli il colore del badge dei giorni\n• Mostra o nascondi le icone di allegati, posizione e priorità\n• Configura l’evidenziazione delle attività critiche\n• Visualizza un’anteprima delle modifiche prima di applicarle"
           }
         }
       }
@@ -16338,34 +16338,6 @@
         }
       }
     },
-    "Enable ForMemo in Settings > General > AutoFill & Passwords.\n\nOnce enabled, ForMemo can securely suggest credentials stored in the Vault when you sign in to supported apps and websites." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktivieren Sie ForMemo unter Einstellungen > Allgemein > AutoFill & Passwörter.\n\nNach der Aktivierung kann ForMemo die im Tresor gespeicherten Anmeldedaten beim Anmelden in unterstützten Apps und Websites sicher vorschlagen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activa ForMemo en Ajustes > General > Autorrelleno y contraseñas.\n\nUna vez activado, ForMemo podrá sugerir de forma segura las credenciales almacenadas en la Caja fuerte al iniciar sesión en aplicaciones y sitios web compatibles."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Activez ForMemo dans Réglages > Général > Remplissage automatique et mots de passe.\n\nUne fois activé, ForMemo peut proposer en toute sécurité les identifiants enregistrés dans le Coffre-fort lorsque vous vous connectez à des applications et des sites web compatibles."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abilita ForMemo in Impostazioni > Generali > Riempimento automatico e password.\n\nUna volta attivato, ForMemo potrà suggerire in modo sicuro le credenziali salvate nella Cassaforte durante l'accesso ad app e siti web compatibili."
-          }
-        }
-      }
-    },
     "Enable Location Access" : {
       "localizations" : {
         "de" : {
@@ -17010,58 +16982,58 @@
         }
       }
     },
-    "Every task with a due date automatically generates an alert at its deadline. At the due time, you can choose whether to receive a notification or an alarm. In Settings, you can enable a global early notification from 1 to 7 days before the deadline. This notification applies to all tasks unless it is excluded for an individual task. You can also add custom reminders and location-based alerts.\n\nForMemo manages all task events through a single global chronological scheduling queue. It schedules the earliest upcoming events first, respecting the maximum number of events the system allows to be scheduled at once. Whenever a scheduled event is delivered and a slot becomes available, ForMemo adds the next earliest event waiting outside the scheduled queue. This rule applies across all tasks and recurring occurrences, ensuring that events are always selected in chronological order." : {
+    "Every task with a due date automatically generates an alert at its deadline. At the due time, you can choose whether to receive a notification or an alarm. In Settings > Notifications & Alarms > Global Notifications and Badges, you can configure the global early notification from 1 to 7 days before the deadline. This notification applies to all tasks unless it is excluded for an individual task. You can also add custom reminders and location-based alerts.\n\nForMemo manages all task events through a single global chronological scheduling queue. It schedules the earliest upcoming events first, respecting the maximum number of events the system allows to be scheduled at once. Whenever a scheduled event is delivered and a slot becomes available, ForMemo adds the next earliest event waiting outside the scheduled queue. This rule applies across all tasks and recurring occurrences, ensuring that events are always selected in chronological order." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jede Aufgabe mit einem Fälligkeitsdatum erzeugt automatisch eine Meldung zum Fälligkeitszeitpunkt. Sie können wählen, ob Sie dann eine Mitteilung oder einen Alarm erhalten möchten. In den Einstellungen können Sie eine globale Vorabbenachrichtigung aktivieren, die 1 bis 7 Tage vor der Fälligkeit gesendet wird. Sie gilt für alle Aufgaben, sofern sie nicht für einzelne Aufgaben ausgeschlossen wurde. Zusätzlich können Sie eigene Erinnerungen und ortsbezogene Mitteilungen hinzufügen.\n\nForMemo verwaltet alle Aufgabenereignisse in einer einzigen globalen chronologischen Planungswarteschlange. Dabei werden die zeitlich nächsten Ereignisse zuerst eingeplant. Die maximale Anzahl gleichzeitig planbarer Ereignisse wird durch das System begrenzt. Sobald ein geplantes Ereignis zugestellt wurde und dadurch ein Platz frei wird, fügt ForMemo das nächste anstehende Ereignis in chronologischer Reihenfolge zur Warteschlange hinzu. Diese Regel gilt für alle Aufgaben und wiederkehrenden Vorkommen und stellt sicher, dass die Ereignisse stets in chronologischer Reihenfolge ausgewählt werden."
+            "value" : "Jede Aufgabe mit einem Fälligkeitsdatum erzeugt automatisch zum Fälligkeitszeitpunkt eine Benachrichtigung. Zu diesem Zeitpunkt können Sie wählen, ob Sie eine Mitteilung oder einen Alarm erhalten möchten. Unter Settings > Mitteilungen & Alarme > Globale Mitteilungen und Kennzeichen können Sie die globale Vorabbenachrichtigung auf 1 bis 7 Tage vor dem Fälligkeitsdatum einstellen. Diese Benachrichtigung gilt für alle Aufgaben, sofern sie nicht für eine einzelne Aufgabe ausgeschlossen wird. Zusätzlich können Sie eigene Erinnerungen und ortsbezogene Benachrichtigungen hinzufügen.\n\nForMemo verwaltet alle Aufgabenereignisse über eine einzige globale chronologische Planungswarteschlange. Dabei werden zuerst die zeitlich nächsten anstehenden Ereignisse eingeplant, wobei die maximale Anzahl der Ereignisse berücksichtigt wird, die das System gleichzeitig planen kann. Sobald ein geplantes Ereignis zugestellt wird und ein Platz frei wird, fügt ForMemo das nächste chronologisch anstehende Ereignis aus der Warteschlange der noch nicht eingeplanten Ereignisse hinzu. Diese Regel gilt für alle Aufgaben und wiederkehrenden Vorkommen und stellt sicher, dass Ereignisse stets in chronologischer Reihenfolge ausgewählt werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Todas las tareas con una fecha límite generan automáticamente un aviso cuando llega esa fecha. En ese momento, puedes elegir si quieres recibir una notificación o una alarma. En Ajustes, puedes activar una notificación anticipada global de 1 a 7 días antes de la fecha límite. Se aplica a todas las tareas, salvo que se excluya para una tarea concreta. También puedes añadir recordatorios personalizados y avisos basados en la ubicación.\n\nForMemo gestiona todos los eventos de las tareas mediante una única cola global de programación cronológica. Programa primero los eventos próximos más inmediatos, respetando el número máximo de eventos que el sistema permite programar a la vez. Cuando se entrega un evento programado y queda una plaza libre, ForMemo añade a la cola el siguiente evento pendiente según su orden cronológico. Esta regla se aplica a todas las tareas y a todas las repeticiones, para garantizar que los eventos se seleccionen siempre en orden cronológico."
+            "value" : "Todas las tareas con una fecha de vencimiento generan automáticamente un aviso cuando llega esa fecha. En ese momento, puedes elegir si quieres recibir una notificación o una alarma. En Settings > Notificaciones y alarmas > Notificaciones globales e indicadores, puedes configurar la notificación anticipada global de 1 a 7 días antes de la fecha de vencimiento. Esta notificación se aplica a todas las tareas, salvo que se excluya para una tarea concreta. También puedes añadir recordatorios personalizados y avisos basados en la ubicación.\n\nForMemo gestiona todos los eventos de las tareas mediante una única cola global de programación cronológica. Programa primero los eventos próximos más inmediatos, respetando el número máximo de eventos que el sistema permite programar a la vez. Cuando se entrega un evento programado y queda una plaza libre, ForMemo añade a la cola el siguiente evento pendiente según su orden cronológico. Esta regla se aplica a todas las tareas y a todas las repeticiones, para garantizar que los eventos se seleccionen siempre en orden cronológico."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chaque tâche ayant une date d’échéance génère automatiquement une alerte à cette date. À l’heure prévue, vous pouvez choisir de recevoir une notification ou une alarme. Dans Réglages, vous pouvez activer une notification anticipée globale de 1 à 7 jours avant l’échéance. Cette notification s’applique à toutes les tâches, sauf si elle est exclue pour une tâche individuelle. Vous pouvez également ajouter des rappels personnalisés et des alertes géolocalisées.\n\nForMemo gère tous les événements des tâches dans une seule file de programmation chronologique globale. Les événements à venir les plus proches sont programmés en priorité, dans la limite du nombre maximal d’événements que le système autorise à programmer simultanément. Dès qu’un événement programmé est délivré et qu’une place se libère, ForMemo ajoute à la file le prochain événement en attente, selon son ordre chronologique. Cette règle s’applique à toutes les tâches et à toutes les occurrences récurrentes, afin de garantir que les événements sont toujours sélectionnés dans l’ordre chronologique."
+            "value" : "Chaque tâche ayant une date d’échéance génère automatiquement une alerte à cette date. À l’heure prévue, vous pouvez choisir de recevoir une notification ou une alarme. Dans Settings > Notifications et alarmes > Notifications globales et badges, vous pouvez configurer la notification anticipée globale de 1 à 7 jours avant l’échéance. Cette notification s’applique à toutes les tâches, sauf si elle est exclue pour une tâche individuelle. Vous pouvez également ajouter des rappels personnalisés et des alertes basées sur la localisation.\n\nForMemo gère tous les événements des tâches dans une seule file de programmation chronologique globale. Les événements à venir les plus proches sont programmés en priorité, dans la limite du nombre maximal d’événements que le système autorise à programmer simultanément. Dès qu’un événement programmé est délivré et qu’une place se libère, ForMemo ajoute à la file le prochain événement en attente, selon son ordre chronologique. Cette règle s’applique à toutes les tâches et à toutes les occurrences récurrentes, afin de garantir que les événements sont toujours sélectionnés dans l’ordre chronologique."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ogni attività con una data di scadenza genera automaticamente un avviso alla scadenza. Al momento della scadenza puoi scegliere se ricevere una notifica o una sveglia. In Impostazioni puoi attivare una notifica anticipata globale da 1 a 7 giorni prima della scadenza. Questa notifica si applica a tutte le attività, a meno che non venga esclusa per una singola attività. Puoi anche aggiungere promemoria personalizzati e avvisi basati sulla posizione.\n\nForMemo gestisce tutti gli eventi delle attività attraverso un’unica coda globale di programmazione cronologica. Programma prima gli eventi imminenti più vicini, rispettando il numero massimo di eventi che il sistema consente di programmare contemporaneamente. Quando un evento programmato viene consegnato e si libera un posto, ForMemo inserisce nella coda il successivo evento in attesa, seguendo l’ordine cronologico. Questa regola si applica a tutte le attività e a tutte le occorrenze ricorrenti, garantendo che gli eventi vengano sempre selezionati in ordine cronologico."
+            "value" : "Ogni attività con una data di scadenza genera automaticamente un avviso alla scadenza. Al momento della scadenza puoi scegliere se ricevere una notifica o una sveglia. In Settings > Notifiche e sveglie > Notifiche globali e badge puoi configurare la notifica anticipata globale da 1 a 7 giorni prima della scadenza. Questa notifica si applica a tutte le attività, a meno che non venga esclusa per una singola attività. Puoi anche aggiungere promemoria personalizzati e avvisi basati sulla posizione.\n\nForMemo gestisce tutti gli eventi delle attività attraverso un’unica coda globale di programmazione cronologica. Programma prima gli eventi imminenti più vicini, rispettando il numero massimo di eventi che il sistema consente di programmare contemporaneamente. Quando un evento programmato viene consegnato e si libera un posto, ForMemo inserisce nella coda il successivo evento in attesa secondo l’ordine cronologico. Questa regola si applica a tutte le attività e a tutte le occorrenze ricorrenti, garantendo che gli eventi vengano sempre selezionati in ordine cronologico."
           }
         }
       }
     },
-    "Every task with a due date automatically generates an alert at its deadline. You can choose whether to receive a notification or an alarm. A global early notification can be scheduled from 1 to 7 days before the deadline and excluded for individual tasks. You can also add custom reminders and location-based alerts." : {
+    "Every task with a due date automatically generates an alert at its deadline. You can choose whether to receive a notification or an alarm. Configure the global early notification in Settings > Notifications & Alarms > Global Notifications and Badges. It can be scheduled from 1 to 7 days before the deadline and excluded for individual tasks. You can also add custom reminders and location-based alerts." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jede Aufgabe mit einem Fälligkeitsdatum erzeugt automatisch eine Meldung zum Fälligkeitszeitpunkt. Sie können wählen, ob Sie eine Mitteilung oder einen Alarm erhalten möchten. Eine globale Vorabbenachrichtigung kann 1 bis 7 Tage vor der Fälligkeit geplant und für einzelne Aufgaben ausgeschlossen werden. Zusätzlich können Sie eigene Erinnerungen und ortsbezogene Mitteilungen hinzufügen."
+            "value" : "Jede Aufgabe mit einem Fälligkeitsdatum erzeugt automatisch eine Meldung zum Fälligkeitszeitpunkt. Sie können wählen, ob Sie eine Mitteilung oder einen Alarm erhalten möchten. Konfigurieren Sie die globale Vorabbenachrichtigung unter Settings > Mitteilungen & Alarme > Globale Mitteilungen und Kennzeichen. Sie kann 1 bis 7 Tage vor der Fälligkeit geplant und für einzelne Aufgaben ausgeschlossen werden. Zusätzlich können Sie eigene Erinnerungen und ortsbezogene Benachrichtigungen hinzufügen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Todas las tareas con una fecha límite generan automáticamente un aviso cuando llega esa fecha. Puedes elegir si quieres recibir una notificación o una alarma. Puedes programar una notificación anticipada global de 1 a 7 días antes de la fecha límite y excluirla para tareas concretas. También puedes añadir recordatorios personalizados y avisos basados en la ubicación."
+            "value" : "Todas las tareas con una fecha límite generan automáticamente un aviso cuando llega esa fecha. Puedes elegir si quieres recibir una notificación o una alarma. Configura la notificación anticipada global en Settings > Notificaciones y alarmas > Notificaciones globales e indicadores. Puede programarse de 1 a 7 días antes de la fecha límite y excluirse para tareas concretas. También puedes añadir recordatorios personalizados y avisos basados en la ubicación."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chaque tâche ayant une date d’échéance génère automatiquement une alerte à cette date. Vous pouvez choisir de recevoir une notification ou une alarme. Une notification anticipée globale peut être programmée de 1 à 7 jours avant l’échéance et exclue pour certaines tâches. Vous pouvez également ajouter des rappels personnalisés et des alertes géolocalisées."
+            "value" : "Chaque tâche ayant une date d’échéance génère automatiquement une alerte à son échéance. Vous pouvez choisir de recevoir une notification ou une alarme. Configurez la notification anticipée globale dans Settings > Notifications et alarmes > Notifications globales et badges. Elle peut être programmée de 1 à 7 jours avant l’échéance et désactivée pour certaines tâches. Vous pouvez également ajouter des rappels personnalisés et des alertes basées sur la localisation."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ogni attività con una data di scadenza genera automaticamente un avviso alla scadenza. Puoi scegliere se ricevere una notifica o una sveglia. Puoi programmare una notifica anticipata globale da 1 a 7 giorni prima della scadenza ed escluderla per singole attività. Puoi anche aggiungere promemoria personalizzati e avvisi basati sulla posizione."
+            "value" : "Ogni attività con una data di scadenza genera automaticamente un avviso alla scadenza. Puoi scegliere se ricevere una notifica o una sveglia. Configura la notifica anticipata globale in Settings > Notifiche e sveglie > Notifiche globali e badge. Può essere programmata da 1 a 7 giorni prima della scadenza ed esclusa per singole attività. Puoi anche aggiungere promemoria personalizzati e avvisi basati sulla posizione."
           }
         }
       }
@@ -17578,32 +17550,30 @@
         }
       }
     },
-    "Export your tasks to Calendar, CSV or ICS format to share or reuse them in other apps.\n\nNote: attachments are not included in exports." : {
-      "comment" : "Text describing how to export tasks to other apps.",
-      "isCommentAutoGenerated" : true,
+    "Export your tasks to Calendar, CSV or ICS format from Settings > Data Management > Import & Export to share or reuse them in other apps.\n\nNote: attachments are not included in exports." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exportieren Sie Ihre Aufgaben in Kalender, CSV oder ICS, um sie zu teilen oder in anderen Apps weiterzuverwenden.\n\nHinweis: Anhänge werden beim Export nicht berücksichtigt."
+            "value" : "Exportieren Sie Ihre Aufgaben unter Settings > Datenverwaltung > Import & Export in den Kalender oder im CSV- bzw. ICS-Format, um sie zu teilen oder in anderen Apps weiterzuverwenden.\n\nHinweis: Anhänge sind in Exporten nicht enthalten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exporta tus tareas a Calendario, CSV o ICS para compartirlas o reutilizarlas en otras aplicaciones.\n\nNota: los archivos adjuntos no se incluyen en las exportaciones."
+            "value" : "Exporta tus tareas a Calendario o en formato CSV o ICS desde Settings > Gestión de datos > Importar y exportar para compartirlas o reutilizarlas en otras aplicaciones.\n\nNota: los archivos adjuntos no se incluyen en las exportaciones."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Exportez vos tâches vers le Calendrier, CSV ou ICS pour les partager ou les réutiliser dans d’autres applications.\n\nRemarque : les pièces jointes ne sont pas incluses dans les exportations."
+            "value" : "Exportez vos tâches vers Calendrier ou aux formats CSV ou ICS depuis Settings > Gestion des données > Importer et exporter afin de les partager ou de les réutiliser dans d’autres applications.\n\nRemarque : les pièces jointes ne sont pas incluses dans les exportations."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esporta le tue attività su Calendario, CSV o ICS per condividerle o riutilizzarle in altre app.\n\nNota: gli allegati non sono inclusi nelle esportazioni."
+            "value" : "Esporta le tue attività su Calendario, in formato CSV o ICS, da Settings > Gestione dati > Importa ed esporta per condividerle o riutilizzarle in altre app.\n\nNota: gli allegati non sono inclusi nelle esportazioni."
           }
         }
       }
@@ -18785,30 +18755,30 @@
         }
       }
     },
-    "ForMemo supports three main Siri commands:\n\n• “New ForMemo” creates a new task using natural language. The app can automatically assign a category and reminder based on your task title and deadline.\n• “Search ForMemo” lets you search tasks by keyword.\n• “Check ForMemo” reads tasks planned for a date or period such as today, tomorrow, weekends, weeks, or specific dates.\n\nAutomatic category and reminder assignment can be enabled in Settings for Siri-created tasks." : {
+    "ForMemo supports four main Siri commands:\n\n• “New ForMemo” creates a new task using natural language. The app can automatically assign a category and reminder based on your task title and deadline.\n• “Search ForMemo” lets you search tasks by keyword.\n• “Check ForMemo” reads tasks planned for a date or period such as today, tomorrow, weekends, weeks, or specific dates.\n• “Note ForMemo” creates a new note.\n\nAutomatic reminder assignment can be enabled in Settings > Siri & Shortcuts by turning on Add reminders automatically." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo unterstützt drei Hauptbefehle für Siri:\n\n• „Neues ForMemo“ erstellt mit natürlicher Sprache eine neue Aufgabe. Die App kann automatisch eine Kategorie und eine Erinnerung basierend auf Titel und Fälligkeitsdatum zuweisen.\n\n• „ForMemo suchen“ ermöglicht die Suche nach Aufgaben über Schlüsselwörter.\n\n• „ForMemo prüfen“ liest Aufgaben für einen bestimmten Tag oder Zeitraum wie heute, morgen, Wochenenden, Wochen oder bestimmte Daten vor.\n\nDie automatische Zuweisung von Kategorien und Erinnerungen kann in den Einstellungen für mit Siri erstellte Aufgaben aktiviert werden."
+            "value" : "ForMemo unterstützt vier Hauptbefehle für Siri:\n\n• „Neu ForMemo“ erstellt mithilfe natürlicher Sprache eine neue Aufgabe. Die App kann anhand des Aufgabentitels und des Fälligkeitsdatums automatisch eine Kategorie und eine Erinnerung zuweisen.\n• „Suchen ForMemo“ ermöglicht die Suche nach Aufgaben anhand von Schlüsselwörtern.\n• „Prüfen ForMemo“ liest Aufgaben vor, die für ein Datum oder einen Zeitraum geplant sind, beispielsweise heute, morgen, Wochenenden, Wochen oder bestimmte Daten.\n• „Notiz ForMemo“ erstellt eine neue Notiz.\n\nDie automatische Zuweisung von Erinnerungen kann unter Settings > Siri & Kurzbefehle aktiviert werden, indem Sie Erinnerungen automatisch hinzufügen einschalten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo admite tres comandos principales de Siri:\n\n• «Nuevo ForMemo» crea una nueva tarea utilizando lenguaje natural. La aplicación puede asignar automáticamente una categoría y un recordatorio según el título y la fecha de vencimiento.\n\n• «Buscar ForMemo» permite buscar tareas mediante palabras clave.\n\n• «Comprobar ForMemo» lee las tareas programadas para una fecha o período como hoy, mañana, fines de semana, semanas o fechas específicas.\n\nLa asignación automática de categorías y recordatorios puede activarse en Ajustes para las tareas creadas con Siri."
+            "value" : "ForMemo admite cuatro comandos principales de Siri:\n\n• «Nueva ForMemo» crea una nueva tarea utilizando lenguaje natural. La aplicación puede asignar automáticamente una categoría y un recordatorio según el título y la fecha de vencimiento de la tarea.\n• «Buscar ForMemo» permite buscar tareas mediante palabras clave.\n• «Comprobar ForMemo» lee las tareas programadas para una fecha o un período, como hoy, mañana, fines de semana, semanas o fechas concretas.\n• «Nota ForMemo» crea una nueva nota.\n\nLa asignación automática de recordatorios puede activarse en Settings > Siri y Atajos habilitando Añadir recordatorios automáticamente."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo prend en charge trois principales commandes Siri :\n\n• « Nouveau ForMemo » crée une nouvelle tâche en langage naturel. L’application peut attribuer automatiquement une catégorie et un rappel selon le titre et l’échéance.\n\n• « Rechercher ForMemo » permet de rechercher des tâches par mot-clé.\n\n• « Vérifier ForMemo » lit les tâches prévues pour une date ou une période donnée, comme aujourd’hui, demain, les week-ends, les semaines ou des dates spécifiques.\n\nL’attribution automatique des catégories et des rappels peut être activée dans les Réglages pour les tâches créées avec Siri."
+            "value" : "ForMemo prend en charge quatre commandes principales de Siri :\n\n• « Nouveau ForMemo » crée une nouvelle tâche en utilisant le langage naturel. L’app peut attribuer automatiquement une catégorie et un rappel en fonction du titre et de la date d’échéance de la tâche.\n• « Rechercher ForMemo » permet de rechercher des tâches par mot-clé.\n• « Vérifier ForMemo » lit les tâches prévues pour une date ou une période, comme aujourd’hui, demain, les week-ends, les semaines ou des dates précises.\n• « Note ForMemo » crée une nouvelle note.\n\nL’attribution automatique des rappels peut être activée dans Settings > Siri et Raccourcis en activant Ajouter automatiquement des rappels."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo supporta tre principali comandi Siri:\n\n• “Nuovo ForMemo” crea una nuova attività utilizzando il linguaggio naturale. L’app può assegnare automaticamente una categoria e un promemoria in base al titolo e alla scadenza dell’attività.\n\n• “Cerca ForMemo” consente di cercare attività tramite parole chiave.\n\n• “Controlla ForMemo” legge le attività pianificate per una data o un periodo come oggi, domani, fine settimana, settimane o date specifiche.\n\nL’assegnazione automatica di categorie e promemoria può essere attivata nelle Impostazioni per le attività create con Siri."
+            "value" : "ForMemo supporta quattro principali comandi Siri:\n\n• “Nuovo ForMemo” crea una nuova attività utilizzando il linguaggio naturale. L’app può assegnare automaticamente una categoria e un promemoria in base al titolo e alla scadenza dell’attività.\n• “Cerca ForMemo” consente di cercare attività tramite parole chiave.\n• “Controlla ForMemo” legge le attività pianificate per una data o un periodo, come oggi, domani, fine settimana, settimane o date specifiche.\n• “Nota ForMemo” crea una nuova nota.\n\nL’assegnazione automatica dei promemoria può essere attivata in Settings > Siri e Comandi rapidi abilitando Aggiungi promemoria automaticamente."
           }
         }
       }
@@ -21526,32 +21496,30 @@
         }
       }
     },
-    "Import tasks from Apple Reminders, Calendar or CSV files. Avoid duplicates and keep everything in one place.\n\nNote: attachments are not included in imports." : {
-      "comment" : "Text describing how to import tasks from Apple Reminders, Calendar or CSV files, including instructions on avoiding duplicates and how to keep everything in one place. Note: attachments are not included in imports.",
-      "isCommentAutoGenerated" : true,
+    "Import tasks from Apple Reminders, Calendar or CSV files in Settings > Data Management > Import & Export. Avoid duplicates and keep everything in one place.\n\nNote: attachments are not included in imports." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importieren Sie Aufgaben aus Apple Erinnerungen, Kalender oder CSV-Dateien. Vermeiden Sie Duplikate und behalten Sie alles an einem Ort.\n\nHinweis: Anhänge werden beim Import nicht berücksichtigt."
+            "value" : "Importieren Sie Aufgaben aus Apple Erinnerungen, dem Kalender oder CSV-Dateien unter Settings > Datenverwaltung > Import & Export. Vermeiden Sie Duplikate und behalten Sie alles an einem Ort.\n\nHinweis: Anhänge sind in Importen nicht enthalten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importa tareas desde Recordatorios de Apple, Calendario o archivos CSV. Evita duplicados y mantén todo en un solo lugar.\n\nNota: los archivos adjuntos no se incluyen en las importaciones."
+            "value" : "Importa tareas desde Recordatorios de Apple, Calendario o archivos CSV en Settings > Gestión de datos > Importar y exportar. Evita duplicados y mantén todo en un solo lugar.\n\nNota: los archivos adjuntos no se incluyen en las importaciones."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importez des tâches depuis Apple Rappels, Calendrier ou des fichiers CSV. Évitez les doublons et gardez tout au même endroit.\n\nRemarque : les pièces jointes ne sont pas incluses dans les importations."
+            "value" : "Importez des tâches depuis Apple Rappels, Calendrier ou des fichiers CSV dans Settings > Gestion des données > Importer et exporter. Évitez les doublons et conservez tout au même endroit.\n\nRemarque : les pièces jointes ne sont pas incluses dans les importations."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Importa attività da Apple Promemoria, Calendario o file CSV. Evita duplicati e tieni tutto in un unico posto.\n\nNota: gli allegati non sono inclusi nelle importazioni."
+            "value" : "Importa attività da Apple Promemoria, Calendario o file CSV in Settings > Gestione dati > Importa ed esporta. Evita i duplicati e tieni tutto in un unico posto.\n\nNota: gli allegati non sono inclusi nelle importazioni."
           }
         }
       }
@@ -21700,6 +21668,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In corso"
+          }
+        }
+      }
+    },
+    "In Settings > Data Management, you can choose after how many days attachments of completed tasks are automatically removed." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unter Settings > Datenverwaltung können Sie festlegen, nach wie vielen Tagen Anhänge abgeschlossener Aufgaben automatisch entfernt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En Settings > Gestión de datos puedes elegir después de cuántos días se eliminan automáticamente los archivos adjuntos de las tareas completadas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans Settings > Gestion des données, vous pouvez choisir après combien de jours les pièces jointes des tâches terminées sont automatiquement supprimées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In Settings > Gestione dati puoi scegliere dopo quanti giorni gli allegati delle attività completate vengono rimossi automaticamente."
           }
         }
       }
@@ -26960,30 +26956,30 @@
         }
       }
     },
-    "Only attachments of completed tasks are deleted automatically if the option is enabled in settings." : {
+    "Only attachments of completed tasks are deleted automatically if Auto-delete attachments is enabled in Settings > Data Management." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nur Anhänge abgeschlossener Aufgaben werden automatisch gelöscht, wenn die Option in den Einstellungen aktiviert ist."
+            "value" : "Nur Anhänge abgeschlossener Aufgaben werden automatisch gelöscht, wenn Anhänge automatisch löschen unter Settings > Datenverwaltung aktiviert ist."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Solo los archivos adjuntos de tareas completadas se eliminan automáticamente si la opción está activada en los ajustes."
+            "value" : "Solo se eliminan automáticamente los archivos adjuntos de las tareas completadas si la opción Eliminar automáticamente los archivos adjuntos está activada en Settings > Gestión de datos."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seules les pièces jointes des tâches terminées sont supprimées automatiquement si l’option est activée dans les réglages."
+            "value" : "Seules les pièces jointes des tâches terminées sont supprimées automatiquement si l’option Supprimer automatiquement les pièces jointes est activée dans Settings > Gestion des données."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Solo gli allegati delle attività completate vengono eliminati automaticamente se l’opzione è attiva nelle impostazioni"
+            "value" : "Solo gli allegati delle attività completate vengono eliminati automaticamente se l’opzione Elimina automaticamente gli allegati è attiva in Settings > Gestione dati."
           }
         }
       }
@@ -27270,6 +27266,34 @@
         }
       }
     },
+    "Open Settings > Appearance to personalize the app. Use Customize Task List to configure task rows, Customize Tab Bar to reorder tabs, and Tab Visibility to choose which tabs appear." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnen Sie Settings > Aussehen, um die App zu personalisieren. Verwenden Sie Aufgabenliste anpassen, um die Aufgabenzeilen zu konfigurieren, Tableiste anpassen, um die Tabs neu anzuordnen, und Tab-Sichtbarkeit, um auszuwählen, welche Tabs angezeigt werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Settings > Apariencia para personalizar la aplicación. Usa Personalizar la lista de tareas para configurar las filas de tareas, Personalizar la barra de pestañas para reordenar las pestañas y Visibilidad de las pestañas para elegir cuáles aparecen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrez Settings > Apparence pour personnaliser l’application. Utilisez Personnaliser la liste des tâches pour configurer les lignes des tâches, Personnaliser la barre d’onglets pour réorganiser les onglets et Visibilité des onglets pour choisir ceux qui apparaissent."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri Settings > Aspetto per personalizzare l’app. Usa Personalizza elenco attività per configurare le righe delle attività, Personalizza barra tabs per riordinare le tab e Visibilità tab per scegliere quali tab visualizzare."
+          }
+        }
+      }
+    },
     "Open Source Licenses" : {
       "localizations" : {
         "de" : {
@@ -27322,6 +27346,34 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apri sito web"
+          }
+        }
+      }
+    },
+    "Open your device's Settings app, then go to General > AutoFill & Passwords and enable ForMemo.\n\nOnce enabled, ForMemo can securely suggest credentials stored in the Vault when you sign in to supported apps and websites." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnen Sie die Settings-App Ihres Geräts und gehen Sie zu Allgemein > Automatisch ausfüllen und Passwörter. Aktivieren Sie dort ForMemo.\n\nNach der Aktivierung kann ForMemo sicher die im Tresor gespeicherten Anmeldedaten vorschlagen, wenn Sie sich bei unterstützten Apps und Websites anmelden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre Settings de tu dispositivo y ve a General > Autorrelleno y contraseñas. A continuación, activa ForMemo.\n\nUna vez activado, ForMemo puede sugerir de forma segura las credenciales guardadas en la Caja fuerte cuando inicies sesión en aplicaciones y sitios web compatibles.\n"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrez l’app Settings de votre appareil, puis accédez à Général > Remplissage automatique et mots de passe et activez ForMemo.\n\nUne fois cette option activée, ForMemo peut proposer en toute sécurité les identifiants enregistrés dans le Coffre-fort lorsque vous vous connectez à des apps et des sites web compatibles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri l’app Impostazioni del dispositivo, quindi vai in Generali > Riempimento automatico e password e attiva ForMemo.\n\nUna volta attivato, ForMemo può suggerire in modo sicuro le credenziali salvate nella Cassaforte quando accedi ad app e siti web supportati."
           }
         }
       }
@@ -31146,34 +31198,6 @@
         }
       }
     },
-    "Reorder the tabs in the navigation bar and personalize task rows by choosing their style, corners, borders, material, and height." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ordnen Sie die Tabs in der Navigationsleiste neu an und passen Sie Aufgabenzeilen an, indem Sie Stil, Ecken, Rahmen, Material und Höhe auswählen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reordena las pestañas de la barra de navegación y personaliza las filas de las tareas eligiendo su estilo, esquinas, bordes, material y altura."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Réorganisez les onglets de la barre de navigation et personnalisez les lignes de tâches en choisissant leur style, leurs coins, leurs bordures, leur matériau et leur hauteur."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Riordina le tabs della barra di navigazione e personalizza le righe delle attività scegliendone lo stile, gli angoli, i bordi, il materiale e l'altezza."
-          }
-        }
-      }
-    },
     "Repair" : {
       "localizations" : {
         "de" : {
@@ -33494,30 +33518,30 @@
         }
       }
     },
-    "Select your preferred navigation app in Settings. Open task locations with your favorite navigation app or choose which app to use each time." : {
+    "Select your preferred navigation app in Settings > General > Navigation app. Open task locations with your favorite navigation app or choose which app to use each time." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wählen Sie in den Einstellungen Ihre bevorzugte Navigations-App aus. Öffnen Sie Aufgabenstandorte mit Ihrer bevorzugten Navigations-App oder entscheiden Sie jedes Mal, welche App verwendet werden soll."
+            "value" : "Wählen Sie Ihre bevorzugte Navigations-App unter Settings > Allgemein > Navigations-App aus. Öffnen Sie Aufgabenstandorte mit Ihrer bevorzugten Navigations-App oder entscheiden Sie jedes Mal, welche App verwendet werden soll."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Selecciona tu aplicación de navegación preferida en Ajustes. Abre las ubicaciones de las tareas con tu aplicación de navegación favorita o elige qué aplicación utilizar cada vez."
+            "value" : "Selecciona tu aplicación de navegación preferida en Settings > General > App de navegación. Abre las ubicaciones de las tareas con tu aplicación de navegación favorita o elige qué aplicación utilizar cada vez."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sélectionnez votre application de navigation préférée dans les Réglages. Ouvrez les emplacements des tâches avec votre application de navigation favorite ou choisissez l’application à utiliser à chaque fois."
+            "value" : "Sélectionnez votre application de navigation préférée dans Settings > Général > App de navigation. Ouvrez les emplacements des tâches avec votre application de navigation préférée ou choisissez l’application à utiliser à chaque fois."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Seleziona la tua app di navigazione preferita nelle Impostazioni. Apri le posizioni delle attività con la tua app di navigazione preferita oppure scegli ogni volta quale app utilizzare."
+            "value" : "Seleziona la tua app di navigazione preferita in Settings > Generali > App di navigazione. Apri le posizioni delle attività con la tua app di navigazione preferita oppure scegli ogni volta quale app utilizzare."
           }
         }
       }
@@ -36357,7 +36381,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Guardado en: "
+            "value" : "Stocké dans : "
           }
         },
         "it" : {
@@ -38175,32 +38199,30 @@
         }
       }
     },
-    "Tasks with critical priority that are due today or overdue are highlighted automatically. You can customize highlight color in Settings." : {
-      "comment" : "Description of a task that is highlighted in the app.",
-      "isCommentAutoGenerated" : true,
+    "Tasks with critical priority that are due today or overdue are highlighted automatically. You can customize the highlight color in Settings > Appearance > Customize Task List." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aufgaben mit kritischer Priorität, die heute fällig oder überfällig sind, werden automatisch hervorgehoben. Sie können Farbe  der Hervorhebung in den Einstellungen anpassen."
+            "value" : "Aufgaben mit kritischer Priorität, deren Fälligkeit heute ist oder bereits überschritten wurde, werden automatisch hervorgehoben. Sie können die Hervorhebungsfarbe unter Settings > Aussehen > Aufgabenliste anpassen anpassen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las tareas con prioridad crítica que vencen hoy o están vencidas se resaltan automáticamente. Puedes personalizar el color del resaltado en Configuración."
+            "value" : "Selecciona tu aplicación de navegación preferida en Settings > General > App de navegación. Abre las ubicaciones de las tareas con tu aplicación de navegación favorita o elige qué aplicación utilizar cada vez."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les tâches avec une priorité critique qui sont dues aujourd’hui ou en retard sont mises en évidence automatiquement. Vous pouvez personnaliser la couleur dans les paramètres."
+            "value" : "Les tâches ayant une priorité critique et dont l’échéance est aujourd’hui ou dépassée sont automatiquement mises en évidence. Vous pouvez personnaliser la couleur de mise en évidence dans Settings > Apparence > Personnaliser la liste des tâches."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I task con priorità critica che sono in scadenza oggi o già scaduti vengono evidenziati automaticamente. Puoi personalizzare il colore dell’evidenziazione nelle Impostazioni."
+            "value" : "Le attività con priorità critica in scadenza oggi o già scadute vengono evidenziate automaticamente. Puoi personalizzare il colore dell’evidenziazione in Settings > Aspetto > Personalizza elenco attività."
           }
         }
       }
@@ -38485,30 +38507,30 @@
         }
       }
     },
-    "The app badge shows tasks that require attention based on the selected badge mode. In Settings > General, you can choose whether the badge updates when tasks reach their deadline or when their global early notification is triggered. For tasks excluded from the global early notification, the badge always updates at the deadline. If global early notifications are disabled, the badge updates only when tasks reach their deadlines." : {
+    "The app badge shows tasks that require attention based on the selected badge mode. In Settings > Notifications & Alarms > Global Notifications and Badges, you can choose whether the badge updates when tasks reach their deadline or when their global early notification is triggered. For tasks excluded from the global early notification, the badge always updates at the deadline. If global early notifications are disabled, the badge updates only when tasks reach their deadlines." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das App-Symbol zeigt abhängig vom ausgewählten Modus Aufgaben an, die Ihre Aufmerksamkeit erfordern. Unter „Einstellungen“ > „Allgemein“ können Sie festlegen, ob das App-Symbol aktualisiert wird, wenn Aufgaben fällig sind oder wenn ihre globale Vorabbenachrichtigung ausgelöst wird. Bei Aufgaben, die von der globalen Vorabbenachrichtigung ausgenommen sind, wird das App-Symbol immer zum Fälligkeitszeitpunkt aktualisiert. Sind globale Vorabbenachrichtigungen deaktiviert, erfolgt die Aktualisierung erst, wenn Aufgaben fällig sind."
+            "value" : "Das App-Kennzeichen zeigt entsprechend dem ausgewählten Kennzeichenmodus Aufgaben an, die Aufmerksamkeit erfordern. Unter Settings > Mitteilungen & Alarme > Globale Mitteilungen und Kennzeichen können Sie festlegen, ob das Kennzeichen aktualisiert wird, wenn Aufgaben fällig werden oder wenn ihre globale Vorabbenachrichtigung ausgelöst wird. Bei Aufgaben, die von der globalen Vorabbenachrichtigung ausgeschlossen sind, wird das Kennzeichen immer zum Fälligkeitszeitpunkt aktualisiert. Wenn globale Vorabbenachrichtigungen deaktiviert sind, wird das Kennzeichen nur aktualisiert, wenn Aufgaben fällig werden."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "El indicador de la app muestra las tareas que requieren atención según el modo seleccionado. En Ajustes > General, puedes elegir si el indicador se actualiza cuando las tareas llegan a su fecha límite o cuando se activa su notificación anticipada global. En las tareas excluidas de la notificación anticipada global, el indicador siempre se actualiza en la fecha límite. Si las notificaciones anticipadas globales están desactivadas, el indicador solo se actualiza cuando las tareas llegan a su fecha límite."
+            "value" : "El indicador de la app muestra las tareas que requieren atención según el modo de indicador seleccionado. En Settings > Notificaciones y alarmas > Notificaciones globales e indicadores, puedes elegir si el indicador se actualiza cuando las tareas llegan a su fecha de vencimiento o cuando se activa su notificación anticipada global. En las tareas excluidas de la notificación anticipada global, el indicador siempre se actualiza al vencimiento. Si las notificaciones anticipadas globales están desactivadas, el indicador solo se actualiza cuando vencen las tareas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le badge de l’app indique les tâches qui nécessitent votre attention, selon le mode sélectionné. Dans Réglages > Général, vous pouvez choisir si le badge est mis à jour lorsque les tâches arrivent à leur échéance ou lorsque leur notification anticipée globale est déclenchée. Pour les tâches exclues de la notification anticipée globale, le badge est toujours mis à jour à l’échéance. Si les notifications anticipées globales sont désactivées, le badge est mis à jour uniquement lorsque les tâches arrivent à leur échéance."
+            "value" : "Le badge de l’app affiche les tâches qui nécessitent votre attention, selon le mode de badge sélectionné. Dans Settings > Notifications et alarmes > Notifications globales et badges, vous pouvez choisir si le badge doit être mis à jour lorsque les tâches arrivent à échéance ou lorsque leur notification anticipée globale est déclenchée. Pour les tâches exclues de la notification anticipée globale, le badge est toujours mis à jour à l’échéance. Si les notifications anticipées globales sont désactivées, le badge est mis à jour uniquement lorsque les tâches arrivent à échéance."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il badge dell’app mostra le attività che richiedono attenzione in base alla modalità selezionata. In Impostazioni > Generali puoi scegliere se aggiornare il badge quando le attività raggiungono la scadenza oppure quando viene attivata la relativa notifica anticipata globale. Per le attività escluse dalla notifica anticipata globale, il badge si aggiorna sempre alla scadenza. Se le notifiche anticipate globali sono disattivate, il badge si aggiorna solo quando le attività raggiungono la scadenza."
+            "value" : "Il badge dell’app mostra le attività che richiedono attenzione in base alla modalità badge selezionata. In Settings > Notifiche e sveglie > Notifiche globali e badge puoi scegliere se aggiornare il badge quando le attività raggiungono la scadenza oppure quando viene attivata la relativa notifica anticipata globale. Per le attività escluse dalla notifica anticipata globale, il badge viene sempre aggiornato alla scadenza. Se le notifiche anticipate globali sono disattivate, il badge viene aggiornato solo quando le attività raggiungono la scadenza."
           }
         }
       }
@@ -40617,7 +40639,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Carte"
+            "value" : "Entradas"
           }
         },
         "fr" : {
@@ -43188,19 +43210,19 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "vault.unlock"
+            "value" : "Tresor entsperren"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "vault.unlock"
+            "value" : "Desbloquear la caja fuerte"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "vault.unlock"
+            "value" : "Déverrouiller le coffre-fort"
           }
         },
         "it" : {
@@ -45963,34 +45985,6 @@
         }
       }
     },
-    "Yes. If enabled in Settings, Siri can automatically add reminders based on the task deadline." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ja. Wenn diese Funktion in den Einstellungen aktiviert ist, kann Siri automatisch Erinnerungen basierend auf dem Fälligkeitsdatum der Aufgabe hinzufügen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sí. Si está habilitado en Ajustes, Siri puede añadir automáticamente recordatorios según la fecha límite de la tarea."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oui. Si cette option est activée dans les Réglages, Siri peut automatiquement ajouter des rappels en fonction de l’échéance de la tâche."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sì. Se abilitato nelle Impostazioni, Siri può aggiungere automaticamente promemoria in base alla scadenza dell’attività."
-          }
-        }
-      }
-    },
     "Yes. If Siri notification announcements are enabled in iOS Settings, Siri can read ForMemo notifications aloud on supported devices such as AirPods or CarPlay." : {
       "localizations" : {
         "de" : {
@@ -46047,30 +46041,30 @@
         }
       }
     },
-    "Yes. In Settings > General, you can choose whether the badge updates at the task deadline or when the global early notification is triggered. The second option is available only when global early notifications are enabled. Tasks excluded from the global early notification always update the badge at their deadline." : {
+    "Yes. In Settings > Notifications & Alarms > Global Notifications and Badges, you can choose whether the badge updates at the task deadline or when the global early notification is triggered. The second option is available only when global early notifications are enabled. Tasks excluded from the global early notification always update the badge at their deadline." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Unter „Einstellungen“ > „Allgemein“ können Sie festlegen, ob das App-Symbol zum Fälligkeitszeitpunkt der Aufgabe oder bei Auslösung der globalen Vorabbenachrichtigung aktualisiert wird. Die zweite Option ist nur verfügbar, wenn globale Vorabbenachrichtigungen aktiviert sind.\nAufgaben, die von der globalen Vorabbenachrichtigung ausgenommen sind, aktualisieren das App-Symbol immer zum Fälligkeitszeitpunkt."
+            "value" : "Ja. Unter Settings > Mitteilungen & Alarme > Globale Mitteilungen und Kennzeichen können Sie festlegen, ob das App-Kennzeichen zum Fälligkeitszeitpunkt der Aufgabe oder beim Auslösen der globalen Vorabbenachrichtigung aktualisiert wird. Die zweite Option ist nur verfügbar, wenn globale Vorabbenachrichtigungen aktiviert sind. Aufgaben, die von der globalen Vorabbenachrichtigung ausgeschlossen sind, aktualisieren das App-Kennzeichen immer zum Fälligkeitszeitpunkt."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. En Ajustes > General, puedes elegir si el indicador se actualiza en la fecha límite de la tarea o cuando se activa la notificación anticipada global. La segunda opción solo está disponible cuando las notificaciones anticipadas globales están activadas.\nLas tareas excluidas de la notificación anticipada global siempre actualizan el indicador en su fecha límite."
+            "value" : "Sí. En Settings > Notificaciones y alarmas > Notificaciones globales e indicadores, puedes elegir si el indicador de la app se actualiza cuando vence la tarea o cuando se activa la notificación anticipada global. La segunda opción solo está disponible cuando las notificaciones anticipadas globales están activadas. Las tareas excluidas de la notificación anticipada global siempre actualizan el indicador cuando vencen."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Oui. Dans Réglages > Général, vous pouvez choisir si le badge est mis à jour à l’échéance de la tâche ou lorsque la notification anticipée globale est déclenchée. La deuxième option est disponible uniquement lorsque les notifications anticipées globales sont activées.\nLes tâches exclues de la notification anticipée globale mettent toujours à jour le badge à leur échéance."
+            "value" : "Oui. Dans Settings > Notifications et alarmes > Notifications globales et badges, vous pouvez choisir si le badge doit être mis à jour à l’échéance de la tâche ou lorsque la notification anticipée globale est déclenchée. La deuxième option est disponible uniquement lorsque les notifications anticipées globales sont activées. Les tâches exclues de la notification anticipée globale mettent toujours le badge à jour à leur échéance."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sì. In Impostazioni > Generali puoi scegliere se aggiornare il badge alla scadenza dell’attività oppure quando viene attivata la notifica anticipata globale. La seconda opzione è disponibile solo quando le notifiche anticipate globali sono attive.\nLe attività escluse dalla notifica anticipata globale aggiornano sempre il badge alla scadenza."
+            "value" : "Sì. In Settings > Notifiche e sveglie > Notifiche globali e badge puoi scegliere se aggiornare il badge alla scadenza dell’attività oppure quando viene attivata la notifica anticipata globale. La seconda opzione è disponibile solo quando le notifiche anticipate globali sono attive. Le attività escluse dalla notifica anticipata globale aggiornano sempre il badge alla loro scadenza.\n"
           }
         }
       }
@@ -46211,6 +46205,146 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Note supporta il testo in grassetto, corsivo e sottolineato, oltre agli elenchi puntati, con trattini e numerati."
+          }
+        }
+      }
+    },
+    "Yes. Open Settings > Appearance > Customize Task List to customize the appearance of critical task highlights, including their color. You can also disable the highlight." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Öffnen Sie Settings > Darstellung > Aufgabenliste anpassen, um das Erscheinungsbild der Hervorhebungen kritischer Aufgaben einschließlich ihrer Farbe anzupassen. Sie können die Hervorhebung auch deaktivieren.\n"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Abre Settings > Apariencia > Personalizar la lista de tareas para personalizar el aspecto de los resaltados de las tareas críticas, incluido su color. También puedes desactivar el resaltado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Ouvrez Settings > Apparence > Personnaliser la liste des tâches pour personnaliser l’apparence des mises en évidence des tâches critiques, y compris leur couleur. Vous pouvez également désactiver cette mise en évidence."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Apri Settings > Aspetto > Personalizza elenco attività per personalizzare l’aspetto delle evidenziazioni delle attività critiche, incluso il colore. Puoi anche disattivare l’evidenziazione."
+          }
+        }
+      }
+    },
+    "Yes. Open Settings > Appearance > Customize Task List to customize the color and appearance of critical task highlights." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Öffnen Sie Settings > Darstellung > Aufgabenliste anpassen, um die Farbe und das Erscheinungsbild der Hervorhebungen kritischer Aufgaben anzupassen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Abre Settings > Apariencia > Personalizar la lista de tareas para personalizar el color y el aspecto de los resaltados de las tareas críticas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Ouvrez Settings > Apparence > Personnaliser la liste des tâches pour personnaliser la couleur et l’apparence des mises en évidence des tâches critiques."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Apri Settings > Aspetto > Personalizza elenco attività per personalizzare il colore e l’aspetto delle evidenziazioni delle attività critiche."
+          }
+        }
+      }
+    },
+    "Yes. Open Settings > Appearance > Customize Task List to personalize the appearance of task rows, including styles, rounded corners, borders, and materials." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Öffnen Sie Settings > Darstellung > Aufgabenliste anpassen, um das Erscheinungsbild der Aufgabenzeilen anzupassen, einschließlich Stilen, abgerundeten Ecken, Rahmen und Materialien."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Abre Settings > Apariencia > Personalizar la lista de tareas para personalizar el aspecto de las filas de tareas, incluidos los estilos, las esquinas redondeadas, los bordes y los materiales."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Ouvrez Settings > Apparence > Personnaliser la liste des tâches pour personnaliser l’apparence des lignes des tâches, notamment les styles, les coins arrondis, les bordures et les matériaux."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Apri Settings > Aspetto > Personalizza elenco attività per personalizzare l’aspetto delle righe delle attività, inclusi stili, angoli arrotondati, bordi e materiali."
+          }
+        }
+      }
+    },
+    "Yes. Open Settings > Data Management and select Delete all attachments now to manually remove all attachments of completed tasks." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Öffnen Sie Settings > Datenverwaltung und wählen Sie Alle Anhänge jetzt löschen, um alle Anhänge abgeschlossener Aufgaben manuell zu entfernen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Abre Settings > Gestión de datos y selecciona Eliminar todos los archivos adjuntos ahora para eliminar manualmente todos los archivos adjuntos de las tareas completadas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Ouvrez Settings > Gestion des données et sélectionnez Supprimer toutes les pièces jointes maintenant pour supprimer manuellement toutes les pièces jointes des tâches terminées."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Apri Settings > Gestione dati e seleziona Elimina tutti gli allegati ora per rimuovere manualmente tutti gli allegati delle attività completate."
+          }
+        }
+      }
+    },
+    "Yes. Open Settings > Siri & Shortcuts and enable Add reminders automatically. Siri can then add reminders based on the task deadline." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ja. Öffnen Sie Settings > Siri & Kurzbefehle und aktivieren Sie Erinnerungen automatisch hinzufügen. Siri kann dann anhand des Fälligkeitsdatums der Aufgabe Erinnerungen hinzufügen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí. Abre Settings > Siri y Atajos y activa Añadir recordatorios automáticamente. Siri podrá añadir recordatorios en función de la fecha de vencimiento de la tarea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui. Ouvrez Settings > Siri et Raccourcis et activez Ajouter automatiquement des rappels. Siri pourra alors ajouter des rappels en fonction de la date d’échéance de la tâche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì. Apri Settings > Siri e Comandi rapidi e attiva Aggiungi promemoria automaticamente. Siri potrà così aggiungere promemoria in base alla data di scadenza dell’attività."
           }
         }
       }
@@ -46444,7 +46578,7 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Verwende \"Prüfe ForMemo\" und nenne Zeiträume wie heute, morgen, diese Woche, nächste Woche, Wochenende, nächstes Wochenende oder ein bestimmtes Datum."
+            "value" : "Ja. Verwende \"ForMemo prüfen\" und nenne Zeiträume wie heute, morgen, diese Woche, nächste Woche, Wochenende, nächstes Wochenende oder ein bestimmtes Datum."
           }
         },
         "es" : {
@@ -46607,34 +46741,6 @@
         }
       }
     },
-    "Yes. You can choose both color for highlighting critical tasks in Settings." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ja. Sie können die Farbe der Hervorhebung kritischer Aufgaben in den Einstellungen auswählen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sí. Puedes elegir el color del resaltado de las tareas con prioridad crítica en Ajustes."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oui. Vous pouvez choisir la couleur de la mise en évidence des tâches critiques dans les Réglages."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sì. Puoi scegliere il colore dell’evidenziazione delle attività con priorità critica nelle Impostazioni."
-          }
-        }
-      }
-    },
     "Yes. You can combine category, priority, due date period, and other filters to quickly focus on the tasks that matter most." : {
       "localizations" : {
         "de" : {
@@ -46659,34 +46765,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Puoi combinare categoria, priorità, periodo di scadenza e altri filtri per concentrarti rapidamente sulle attività che contano di più."
-          }
-        }
-      }
-    },
-    "Yes. You can customize the highlight in Customize > Appearance by adjusting color and opacity, or disable it in Visible elements." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ja. Sie können die Hervorhebung unter Anpassung > Darstellung anpassen, indem Sie Farbe ändern, oder sie unter Sichtbare Elemente deaktivieren."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sí. Puedes personalizar el resaltado en Personalización > Apariencia ajustando el color o desactivarlo en Elementos visibles."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oui. Vous pouvez personnaliser la mise en évidence dans Personnalisation > Apparence en ajustant la couleur ou la désactiver dans Éléments visibles."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sì. Puoi scegliere l’evidenziazione in Personalizzazione > Aspetto regolando il colore oppure disattivarla in Elementi visibili."
           }
         }
       }
@@ -46771,62 +46849,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sì. Puoi importare un file di backup su un altro dispositivo compatibile per ripristinare attività, carte, biglietti, allegati, checklist, documenti e dati correlati."
-          }
-        }
-      }
-    },
-    "Yes. You can manually delete all attachments of completed tasks from settings." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ja. Du kannst alle Anhänge abgeschlossener Aufgaben manuell in den Einstellungen löschen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sí. Puedes eliminar manualmente todos los archivos adjuntos de tareas completadas desde los ajustes."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oui. Vous pouvez supprimer manuellement tous les fichiers des tâches terminées depuis les réglages."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sì. Puoi eliminare manualmente tutti gli allegati delle attività completate dalle impostazioni."
-          }
-        }
-      }
-    },
-    "Yes. You can personalize task rows by choosing different styles, rounded corners, borders, and materials to match your preferred appearance." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ja. Sie können die Aufgabenzeilen individuell gestalten, indem Sie verschiedene Stile, abgerundete Ecken, Rahmen und Materialien auswählen, die Ihrem bevorzugten Erscheinungsbild entsprechen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sí. Puedes personalizar las filas de las tareas eligiendo diferentes estilos, esquinas redondeadas, bordes y materiales para adaptar su aspecto a tus preferencias."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oui. Vous pouvez personnaliser les lignes des tâches en choisissant différents styles, des coins arrondis, des bordures et des matériaux afin d’adapter l’apparence à vos préférences."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sì. Puoi personalizzare le righe delle attività scegliendo diversi stili, angoli arrotondati, bordi e materiali per adattarne l’aspetto alle tue preferenze."
           }
         }
       }
@@ -46948,13 +46970,13 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ja. Du kannst Siri mit dem Befehl „Note ForMemo“ verwenden, um eine neue Notiz zu erstellen."
+            "value" : "Ja. Du kannst Siri mit dem Befehl „Notiz ForMemo“ verwenden, um eine neue Notiz zu erstellen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sí. Puedes usar Siri con el comando \"Note ForMemo\" para crear una nota nueva."
+            "value" : "Sí. Puedes usar Siri con el comando \"Nota ForMemo\" para crear una nota nueva."
           }
         },
         "fr" : {
@@ -47053,34 +47075,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Puoi allegare foto, documenti scansionati, file, PDF e registrazioni audio."
-          }
-        }
-      }
-    },
-    "You can choose after how many days attachments of completed tasks are automatically removed." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du kannst festlegen, nach wie vielen Tagen Anhänge abgeschlossener Aufgaben automatisch gelöscht werden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puedes elegir después de cuántos días se eliminan automáticamente los archivos adjuntos de tareas completadas."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vous pouvez choisir après combien de jours les pièces jointes des tâches terminées sont supprimées automatiquement."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Puoi scegliere dopo quanti giorni gli allegati delle attività completate vengono rimossi automaticamente."
           }
         }
       }

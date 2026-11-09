@@ -68,14 +68,14 @@ struct AppQuickGuideView: View {
         
         .init(
             title: String(localized:"Smart Priorities"),
-            description: String(localized:"Tasks with critical priority that are due today or overdue are highlighted automatically. You can customize highlight color in Settings."),
+            description: String(localized:"Tasks with critical priority that are due today or overdue are highlighted automatically. You can customize the highlight color in Settings > Appearance > Customize Task List."),
             icon: "exclamationmark.circle",
             tint: .red
         ),
         
         .init(
             title: String(localized:"Smart Badges"),
-            description: String(localized:"Choose what the app icon badge displays: overdue tasks or tasks that reached the global notification time. Inside the app, each task shows how many days are left."),
+            description: String(localized:"Choose what the app icon badge displays: overdue tasks or tasks that reached the global notification time in Settings > Notifications & Alarms > Global Notifications and Badges. Inside the app, each task shows how many days are left."),
             icon: "app.badge",
             tint: .orange
         ),
@@ -96,7 +96,7 @@ struct AppQuickGuideView: View {
         
         .init(
             title: String(localized:"Choose Your Map"),
-            description: String(localized:"Select your preferred navigation app in Settings. Open task locations with your favorite navigation app or choose which app to use each time."),
+            description: String(localized:"Select your preferred navigation app in Settings > General > Navigation app. Open task locations with your favorite navigation app or choose which app to use each time."),
             icon: "iphone.badge.location",
             tint: .green
         ),
@@ -191,7 +191,7 @@ struct AppQuickGuideView: View {
         
         .init(
             title: String(localized: "Smart Notifications"),
-            description: String(localized: "Every task with a due date automatically generates an alert at its deadline. You can choose whether to receive a notification or an alarm. A global early notification can be scheduled from 1 to 7 days before the deadline and excluded for individual tasks. You can also add custom reminders and location-based alerts."),
+            description: String(localized: "Every task with a due date automatically generates an alert at its deadline. You can choose whether to receive a notification or an alarm. Configure the global early notification in Settings > Notifications & Alarms > Global Notifications and Badges. It can be scheduled from 1 to 7 days before the deadline and excluded for individual tasks. You can also add custom reminders and location-based alerts."),
             icon: "deskclock",
             tint: .orange
         ),
@@ -247,7 +247,7 @@ struct AppQuickGuideView: View {
 
             .init(
                 title: String(localized: "Make ForMemo Yours"),
-                description: String(localized: "Reorder the tabs in the navigation bar and personalize task rows by choosing their style, corners, borders, material, and height."),
+                description: String(localized: "Open Settings > Appearance to personalize the app. Use Customize Task List to configure task rows, Customize Tab Bar to reorder tabs, and Tab Visibility to choose which tabs appear."),
                 icon: "slider.horizontal.3",
                 tint: .purple
             ),
@@ -269,32 +269,35 @@ struct AppQuickGuideView: View {
             .init(
                 title: String(localized:"Customize your task list"),
                 description: String(localized:"""
-            • Change the main task icon style
-            • Choose the days badge color
-            • Show or hide attachments, location and priority icons
-            • Preview changes before applying them
-            """),
+                            Customize your task list in Settings > Appearance > Customize Task List.
+
+                            • Change the main task icon style
+                            • Choose the days badge color
+                            • Show or hide attachments, location and priority icons
+                            • Configure critical task highlighting
+                            • Preview changes before applying them
+                            """),
                 icon: "list.bullet.circle",
                 tint: .indigo
             ),
         
             .init(
                 title: String(localized:"Import Your Data"),
-                description: String(localized:"Import tasks from Apple Reminders, Calendar or CSV files. Avoid duplicates and keep everything in one place.\n\nNote: attachments are not included in imports."),
+                description: String(localized:"Import tasks from Apple Reminders, Calendar or CSV files in Settings > Data Management > Import & Export. Avoid duplicates and keep everything in one place.\n\nNote: attachments are not included in imports."),
                 icon: "arrow.down.circle",
                 tint: .blue
             ),
         
             .init(
                 title: String(localized:"Export Anywhere"),
-                description: String(localized:"Export your tasks to Calendar, CSV or ICS format to share or reuse them in other apps.\n\nNote: attachments are not included in exports."),
+                description: String(localized:"Export your tasks to Calendar, CSV or ICS format from Settings > Data Management > Import & Export to share or reuse them in other apps.\n\nNote: attachments are not included in exports."),
                 icon: "arrow.up.circle",
                 tint: .purple
             ),
 
         .init(
             title: String(localized:"Backup & Restore"),
-            description: String(localized:"Create complete backups including tasks, reminders, attachments, cards, tickets, Checklists, documents, Vault items, and app settings. Vault data in a backup requires a password for restoration. Restore everything or only selected sections on the same or another device."),
+            description: String(localized:"Create complete backups in Settings > Data Management > Backup & Restore, including tasks, reminders, attachments, cards, tickets, Checklists, documents, Vault items, and app settings. Vault data in a backup requires a password for restoration. Restore everything or only selected sections on the same or another device."),
             icon: "externaldrive.badge.timemachine",
             tint: .indigo
         ),

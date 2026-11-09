@@ -93,7 +93,7 @@ struct FAQView: View {
         FAQSection(title: String(localized: "Notifications & Reminders"), items: [
             FAQItem(
                 question: String(localized:"How are notifications managed?"),
-                answer: String(localized: "Every task with a due date automatically generates an alert at its deadline. At the due time, you can choose whether to receive a notification or an alarm. In Settings, you can enable a global early notification from 1 to 7 days before the deadline. This notification applies to all tasks unless it is excluded for an individual task. You can also add custom reminders and location-based alerts.\n\nForMemo manages all task events through a single global chronological scheduling queue. It schedules the earliest upcoming events first, respecting the maximum number of events the system allows to be scheduled at once. Whenever a scheduled event is delivered and a slot becomes available, ForMemo adds the next earliest event waiting outside the scheduled queue. This rule applies across all tasks and recurring occurrences, ensuring that events are always selected in chronological order.")
+                answer: String(localized: "Every task with a due date automatically generates an alert at its deadline. At the due time, you can choose whether to receive a notification or an alarm. In Settings > Notifications & Alarms > Global Notifications and Badges, you can configure the global early notification from 1 to 7 days before the deadline. This notification applies to all tasks unless it is excluded for an individual task. You can also add custom reminders and location-based alerts.\n\nForMemo manages all task events through a single global chronological scheduling queue. It schedules the earliest upcoming events first, respecting the maximum number of events the system allows to be scheduled at once. Whenever a scheduled event is delivered and a slot becomes available, ForMemo adds the next earliest event waiting outside the scheduled queue. This rule applies across all tasks and recurring occurrences, ensuring that events are always selected in chronological order.")
             ),
             FAQItem(
                 question: String(localized:"Does every task generate a notification when it becomes overdue?"),
@@ -153,7 +153,7 @@ struct FAQView: View {
         FAQSection(title: String(localized: "Badges & Indicators"), items: [
             FAQItem(
                 question: String(localized:"How is the app badge calculated?"),
-                answer: String(localized: "The app badge shows tasks that require attention based on the selected badge mode. In Settings > General, you can choose whether the badge updates when tasks reach their deadline or when their global early notification is triggered. For tasks excluded from the global early notification, the badge always updates at the deadline. If global early notifications are disabled, the badge updates only when tasks reach their deadlines.")
+                answer: String(localized: "The app badge shows tasks that require attention based on the selected badge mode. In Settings > Notifications & Alarms > Global Notifications and Badges, you can choose whether the badge updates when tasks reach their deadline or when their global early notification is triggered. For tasks excluded from the global early notification, the badge always updates at the deadline. If global early notifications are disabled, the badge updates only when tasks reach their deadlines.")
             ),
             FAQItem(
                 question: String(localized:"Why does the badge change suddenly?"),
@@ -186,7 +186,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Can I choose how the app badge works?"),
-                answer: String(localized: "Yes. In Settings > General, you can choose whether the badge updates at the task deadline or when the global early notification is triggered. The second option is available only when global early notifications are enabled. Tasks excluded from the global early notification always update the badge at their deadline.")
+                answer: String(localized: "Yes. In Settings > Notifications & Alarms > Global Notifications and Badges, you can choose whether the badge updates at the task deadline or when the global early notification is triggered. The second option is available only when global early notifications are enabled. Tasks excluded from the global early notification always update the badge at their deadline.")
             ),
             FAQItem(
                 question: String(localized:"Why is the badge different from what I expect?"),
@@ -199,7 +199,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Can I disable the highlight for critical tasks?"),
-                answer: String(localized:"Yes. You can customize the highlight in Customize > Appearance by adjusting color and opacity, or disable it in Visible elements.")
+                answer: String(localized:"Yes. Open Settings > Appearance > Customize Task List to customize the appearance of critical task highlights, including their color. You can also disable the highlight.")
             ),
             FAQItem(
                 question: String(localized:"Can I view tasks on a map?"),
@@ -211,11 +211,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Can I customize task highlighting?"),
-                answer: String(localized:"Yes. You can choose both color for highlighting critical tasks in Settings.")
+                answer: String(localized:"Yes. Open Settings > Appearance > Customize Task List to customize the color and appearance of critical task highlights.")
             ),
             FAQItem(
                 question: String(localized:"Can I customize the appearance of task rows?"),
-                answer: String(localized:"Yes. You can personalize task rows by choosing different styles, rounded corners, borders, and materials to match your preferred appearance.")
+                answer: String(localized:"Yes. Open Settings > Appearance > Customize Task List to personalize the appearance of task rows, including styles, rounded corners, borders, and materials.")
             ),
             // --- END NEW FAQItems ---
         ]),
@@ -256,8 +256,8 @@ struct FAQView: View {
                 answer: String(localized:"When using Siri, if “Add reminders automatically” is enabled, Siri adds a reminder automatically based on the task. If disabled, Siri will ask you which reminder to set.")
             ),
             FAQItem(
-                question: String(localized:"How can I use Siri with ForMemo?"),
-                answer: String(localized:"ForMemo supports three main Siri commands:\n\n• “New ForMemo” creates a new task using natural language. The app can automatically assign a category and reminder based on your task title and deadline.\n• “Search ForMemo” lets you search tasks by keyword.\n• “Check ForMemo” reads tasks planned for a date or period such as today, tomorrow, weekends, weeks, or specific dates.\n\nAutomatic category and reminder assignment can be enabled in Settings for Siri-created tasks.")
+                question: String(localized: "How can I use Siri with ForMemo?"),
+                answer: String(localized: "ForMemo supports four main Siri commands:\n\n• “New ForMemo” creates a new task using natural language. The app can automatically assign a category and reminder based on your task title and deadline.\n• “Search ForMemo” lets you search tasks by keyword.\n• “Check ForMemo” reads tasks planned for a date or period such as today, tomorrow, weekends, weeks, or specific dates.\n• “Note ForMemo” creates a new note.\n\nAutomatic reminder assignment can be enabled in Settings > Siri & Shortcuts by turning on Add reminders automatically.")
             ),
             FAQItem(
                 question: String(localized:"Can Siri search tasks by keyword?"),
@@ -273,7 +273,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Can Siri automatically add reminders?"),
-                answer: String(localized:"Yes. If enabled in Settings, Siri can automatically add reminders based on the task deadline.")
+                answer: String(localized:"Yes. Open Settings > Siri & Shortcuts and enable Add reminders automatically. Siri can then add reminders based on the task deadline.")
             )
         ]),
         // MARK: - NOTES
@@ -332,15 +332,15 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Are attachments deleted automatically?"),
-                answer: String(localized:"Only attachments of completed tasks are deleted automatically if the option is enabled in settings.")
+                answer: String(localized:"Only attachments of completed tasks are deleted automatically if Auto-delete attachments is enabled in Settings > Data Management.")
             ),
             FAQItem(
                 question: String(localized:"After how many days are attachments deleted?"),
-                answer: String(localized:"You can choose after how many days attachments of completed tasks are automatically removed.")
+                answer: String(localized:"In Settings > Data Management, you can choose after how many days attachments of completed tasks are automatically removed.")
             ),
             FAQItem(
                 question: String(localized:"Can I delete all attachments at once?"),
-                answer: String(localized:"Yes. You can manually delete all attachments of completed tasks from settings.")
+                answer: String(localized:"Yes. Open Settings > Data Management and select Delete all attachments now to manually remove all attachments of completed tasks.")
             ),
             FAQItem(
                 question: String(localized:"Can I save multiple cards or tickets from the same provider?"),
@@ -391,7 +391,7 @@ struct FAQView: View {
                 question: String(localized: "How do I use AutoFill?"),
                 answer: String(localized:
             """
-            Enable ForMemo in Settings > General > AutoFill & Passwords.
+            Open your device's Settings app, then go to General > AutoFill & Passwords and enable ForMemo.
 
             Once enabled, ForMemo can securely suggest credentials stored in the Vault when you sign in to supported apps and websites.
             """
