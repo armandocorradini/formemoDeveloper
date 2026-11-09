@@ -149,7 +149,7 @@ struct AppShortcuts: AppShortcutsProvider {
                 AppShortcutPhrase("Nota \(.applicationName)"),
                 AppShortcutPhrase("Toma una nota en \(.applicationName)"),
                 AppShortcutPhrase("Toma una nota con \(.applicationName)"),
-                AppShortcutPhrase("Nota en \(.applicationName)")
+                AppShortcutPhrase("Apunta una nota en \(.applicationName)")
             ],
             shortTitle: LocalizedStringResource("Note ForMemo"),
             systemImageName: "note.text.badge.plus"

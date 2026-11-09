@@ -40837,7 +40837,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para desactivar Autorrelleno, ve a Ajustes > General > Autorrelleno y contraseñas y desactiva ForMemo."
+            "value" : "Para desactivar Autorrelleno, ve a Ajustes IOS  > General > Autorrelleno y contraseñas y desactiva ForMemo."
           }
         },
         "fr" : {
@@ -40849,7 +40849,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Per disattivare Inserimento automatico, vai in Impostazioni > Generali > Inserimento automatico e password, quindi disattiva ForMemo."
+            "value" : "Per disattivare Inserimento automatico, vai in Impostazioni IOS > Generali > Inserimento automatico e password, quindi disattiva ForMemo."
           }
         }
       }
@@ -40981,7 +40981,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para ocultar la Caja fuerte, ve primero a Ajustes > General > Autorrelleno y contraseñas y desactiva Autorrelleno de contraseñas y claves de acceso. Después vuelve aquí y desactiva la Caja fuerte."
+            "value" : "Para ocultar la Caja fuerte, ve primero a Ajustes IOS > General > Autorrelleno y contraseñas y desactiva Autorrelleno de contraseñas y claves de acceso. Después vuelve aquí y desactiva la Caja fuerte."
           }
         },
         "fr" : {
@@ -40993,7 +40993,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Per nascondere la Cassaforte, vai prima in Impostazioni > Generali > Inserimento automatico e password e disattiva Inserimento automatico di password e passkey. Poi torna qui e disattiva Cassaforte."
+            "value" : "Per nascondere la Cassaforte, vai prima in Impostazioni IOS > Generali > Inserimento automatico e password e disattiva Inserimento automatico di password e passkey. Poi torna qui e disattiva Cassaforte."
           }
         }
       }
@@ -41065,7 +41065,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para usar Autorrelleno, ve a Ajustes > General > Autorrelleno y contraseñas y, a continuación, activa ForMemo."
+            "value" : "Para usar Autorrelleno, ve a Ajustes IOS > General > Autorrelleno y contraseñas y, a continuación, activa ForMemo."
           }
         },
         "fr" : {
@@ -41077,7 +41077,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Per usare Inserimento automatico, vai in Impostazioni > Generali > Inserimento automatico e password, quindi attiva ForMemo."
+            "value" : "Per usare Inserimento automatico, vai in Impostazioni IOS > Generali > Inserimento automatico e password, quindi attiva ForMemo."
           }
         }
       }
