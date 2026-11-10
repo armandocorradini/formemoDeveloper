@@ -466,6 +466,12 @@ struct TaskTabView: View {
                     .presentationCompactAdaptation(.popover)
                 }
             }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 30)
+                    .onEnded { value in
+                        handleTabBarSwipe(value.translation)
+                    }
+            )
             .frame(height: 64)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 12)
@@ -726,6 +732,30 @@ struct TaskTabView: View {
         .buttonStyle(.plain)
     }
     
+    private func handleTabBarSwipe(_ translation: CGSize) {
+        let horizontalDistance = abs(translation.width)
+        let verticalDistance = abs(translation.height)
+
+        // Require a deliberate horizontal gesture to avoid accidental tab changes.
+        guard horizontalDistance >= 45,
+              horizontalDistance > verticalDistance * 1.2,
+              let currentIndex = visibleTabs.firstIndex(where: { $0.rawValue == selectedTab })
+        else {
+            return
+        }
+
+        // Left swipe advances; right swipe goes back. Do not wrap at either end.
+        let offset = translation.width < 0 ? 1 : -1
+        let nextIndex = currentIndex + offset
+
+        guard visibleTabs.indices.contains(nextIndex) else {
+            return
+        }
+
+        showMorePopover = false
+        selectTab(visibleTabs[nextIndex].rawValue)
+    }
+
     private func syncWeatherLocationPermission() {
         let status = CLLocationManager().authorizationStatus
         let hasWeatherPermission =

@@ -643,10 +643,10 @@
 		1C1C22F72F7E983A00A77282 = {
 			isa = PBXGroup;
 			children = (
-				1CFE8F1F3085645A00915A76 /* ForMemoWidgetExtensionRelease.entitlements */,
-				1C97EB0E3093EB1F00349CCE /* Sound */,
 				1C634D8B30220C9C0092DB89 /* ForMemo */,
+				1C97EB0E3093EB1F00349CCE /* Sound */,
 				1CFE8F3730860CDF00915A76 /* ForMemoWidget */,
+				1CFE8F1F3085645A00915A76 /* ForMemoWidgetExtensionRelease.entitlements */,
 				1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */,
 				1C8225F73040960600B77EC7 /* ForMemoShareExtension */,
 				1CF9847A3000EBA300E1D1A9 /* Frameworks */,

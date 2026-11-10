@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct StartView: View {
     
@@ -126,73 +127,115 @@ struct StartView: View {
             }
         }
         .fullScreenCover(isPresented: $isEasterEggPresented) {
-            ZStack(alignment: .topTrailing) {
-                Color.black
-                    .ignoresSafeArea()
+            GeometryReader { geometry in
+                ZStack(alignment: .topTrailing) {
+                    Color.black
+                        .ignoresSafeArea()
 
-                Image("easteregg")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .scaleEffect(easterEggScale)
-                    .offset(easterEggOffset)
-                    .contentShape(Rectangle())
-                    .gesture(
-                        SimultaneousGesture(
-                            MagnificationGesture()
-                                .onChanged { value in
-                                    easterEggScale = min(max(lastEasterEggScale * value, 1), 10)
-                                }
-                                .onEnded { _ in
-                                    lastEasterEggScale = easterEggScale
-                                    if easterEggScale <= 1 {
-                                        easterEggOffset = .zero
-                                        lastEasterEggOffset = .zero
-                                    }
-                                },
-                            DragGesture()
-                                .onChanged { value in
-                                    guard easterEggScale > 1 else { return }
-                                    easterEggOffset = CGSize(
-                                        width: lastEasterEggOffset.width + value.translation.width,
-                                        height: lastEasterEggOffset.height + value.translation.height
-                                    )
-                                }
-                                .onEnded { _ in
-                                    lastEasterEggOffset = easterEggOffset
-                                }
+                    Image("easteregg")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(
+                            width: geometry.size.width,
+                            height: geometry.size.height
                         )
-                    )
-                    .onTapGesture(count: 2) {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            easterEggScale = 1
-                            lastEasterEggScale = 1
-                            easterEggOffset = .zero
-                            lastEasterEggOffset = .zero
+                        .scaleEffect(easterEggScale)
+                        .offset(easterEggOffset)
+                        .contentShape(Rectangle())
+                        .gesture(
+                            SimultaneousGesture(
+                                MagnificationGesture()
+                                    .onChanged { value in
+                                        easterEggScale = min(
+                                            max(lastEasterEggScale * value, 1),
+                                            10
+                                        )
+                                    }
+                                    .onEnded { _ in
+                                        lastEasterEggScale = easterEggScale
+                                        if easterEggScale <= 1 {
+                                            easterEggOffset = .zero
+                                            lastEasterEggOffset = .zero
+                                        }
+                                    },
+                                DragGesture()
+                                    .onChanged { value in
+                                        guard easterEggScale > 1 else { return }
+                                        easterEggOffset = CGSize(
+                                            width: lastEasterEggOffset.width + value.translation.width,
+                                            height: lastEasterEggOffset.height + value.translation.height
+                                        )
+                                    }
+                                    .onEnded { _ in
+                                        lastEasterEggOffset = easterEggOffset
+                                    }
+                            )
+                        )
+                        .onTapGesture(count: 2) {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                let initialScale = easterEggFillScale(in: geometry.size)
+                                easterEggScale = initialScale
+                                lastEasterEggScale = initialScale
+                                easterEggOffset = .zero
+                                lastEasterEggOffset = .zero
+                            }
                         }
-                    }
 
-                Button {
-                    easterEggScale = 1
-                    lastEasterEggScale = 1
+                    Button {
+                        easterEggScale = 1
+                        lastEasterEggScale = 1
+                        easterEggOffset = .zero
+                        lastEasterEggOffset = .zero
+                        isEasterEggPresented = false
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 34, weight: .semibold))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.primary)
+                            .padding(12)
+//                            .background(.black.opacity(0.55), in: Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(String(localized: "Close"))
+                    .padding(.top, geometry.safeAreaInsets.top + 8)
+                    .padding(.trailing, 12)
+                    .zIndex(100)
+                }
+                .ignoresSafeArea()
+                .onAppear {
+                    let initialScale = easterEggFillScale(in: geometry.size)
+                    easterEggScale = initialScale
+                    lastEasterEggScale = initialScale
                     easterEggOffset = .zero
                     lastEasterEggOffset = .zero
-                    isEasterEggPresented = false
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 30))
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(.white)
-                        .padding(20)
-                        .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(String(localized: "Close"))
             }
             .preferredColorScheme(.dark)
         }
-
     }
+    private func easterEggFillScale(in containerSize: CGSize) -> CGFloat {
+        guard
+            let imageSize = UIImage(named: "easteregg")?.size,
+            imageSize.width > 0,
+            imageSize.height > 0,
+            containerSize.width > 0,
+            containerSize.height > 0
+        else {
+            return 1
+        }
+
+        let fitScale = min(
+            containerSize.width / imageSize.width,
+            containerSize.height / imageSize.height
+        )
+        let fillScale = max(
+            containerSize.width / imageSize.width,
+            containerSize.height / imageSize.height
+        )
+
+        return max(fillScale / fitScale, 1)
+    }
+
     private var appVersionString: String {
         let version =
             Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
