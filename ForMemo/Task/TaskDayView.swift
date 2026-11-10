@@ -106,6 +106,11 @@ struct TaskDayView: View {   //AGENDA
     
     var body: some View {
         VStack(spacing: 0) {
+            agendaDateHeader
+                .padding(.horizontal, 16)
+                .padding(.top, -9)
+                .padding(.bottom, 4)
+
             dateStrip
                 .padding(.bottom,20)
             Rectangle()
@@ -244,53 +249,35 @@ struct TaskDayView: View {   //AGENDA
                 .transition(.opacity)
             }
         }
-        .navigationTitle("")
+        .navigationTitle(String(localized: "Agenda"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .principal) {
-                Button {
-                    showCalendarPicker = true
-                } label: {
-                    HStack(spacing: 5) {
-                        Text(selectedDate.formatted(.dateTime.month(.wide).year(.twoDigits)).capitalized)
-                                        .font(.headline)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                        .allowsTightening(true)
+            ToolbarItem(placement: .topBarTrailing) {
+                HStack(spacing: 12) {
+                    Button {
+                        settings.dayHideCompletedTasks.toggle()
+                    } label: {
+                        Image(systemName: settings.dayHideCompletedTasks ? "eye" : "eye.slash")
+                    }
+                    .accessibilityLabel(
+                        String(localized: settings.dayHideCompletedTasks
+                            ? "Show completed tasks"
+                            : "Hide completed tasks")
+                    )
 
-                                    Image(systemName: "chevron.down")
-                                        .font(.caption2.weight(.semibold))
-                                        .fixedSize()
-                                }
-                                .frame(minWidth: 160, minHeight: 44)
-                                .contentShape(Rectangle())
-                            }
-                .buttonStyle(.plain)
-                .accessibilityLabel(String(localized: "Choose date"))
+                    Button {
+                        draftTask = makeNewTask(hour: 8, minute: 0)
+                    } label: {
+                        Image(systemName: draftTask == nil ? "plus.circle.fill" : "minus.circle.fill")
+                            .foregroundStyle(draftTask == nil ? .green : .gray)
+                            .font(.title2)
+                    }
+                    .accessibilityLabel(String(localized: "New task"))
+                }
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 6) {
-                    Button {
-                        selectedDate = calendar.startOfDay(for: .now)
-                    } label: {
-                        Image(systemName: "\(Calendar.current.component(.day, from: .now)).calendar")
-                            .font(.system(size: 20))
-                            .symbolRenderingMode(.palette)
-                            .foregroundStyle(
-                                HolidayProvider.holidays(in: .now, calendar: calendar)
-                                    .contains(calendar.startOfDay(for: .now))
-                                    || calendar.component(.weekday, from: .now) == 1
-                                    ? .red
-                                    : .primary,
-                                .blue
-                            )
-                            .frame(width: 36, height: 36)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(String(localized: "Today"))
-
+            ToolbarItem(placement: .topBarLeading) {
+                HStack(spacing: 12) {
                     Button {
                         NotificationCenter.default.post(
                             name: Notification.Name("TaskDayOpenCalendar"),
@@ -306,29 +293,15 @@ struct TaskDayView: View {   //AGENDA
                     .accessibilityLabel(String(localized: "Open calendar"))
 
                     Button {
-                        draftTask = makeNewTask(hour: 8, minute: 0)
+                        showDayOptions = true
                     } label: {
-                        Image(systemName: draftTask == nil ? "plus.circle.fill" : "minus.circle.fill")
-                            .foregroundStyle(draftTask == nil ? .green : .gray)
-                            .font(.system(size: 22))
-                            .frame(width: 36, height: 36)
-                            .contentShape(Rectangle())
+                        Image(systemName: "slider.horizontal.3")
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(String(localized: "New task"))
-                }
-            }
-
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    showDayOptions = true
-                } label: {
-                    Image(systemName: "slider.horizontal.3")
-                }
-                .accessibilityLabel(String(localized: "Agenda view options"))
-                .popover(isPresented: $showDayOptions, arrowEdge: .top) {
-                    dayOptionsPopover
-                        .presentationCompactAdaptation(.popover)
+                    .accessibilityLabel(String(localized: "Agenda view options"))
+                    .popover(isPresented: $showDayOptions, arrowEdge: .top) {
+                        dayOptionsPopover
+                            .presentationCompactAdaptation(.popover)
+                    }
                 }
             }
         }
@@ -548,11 +521,6 @@ struct TaskDayView: View {   //AGENDA
                     .lineLimit(2)
             }
 
-            Toggle(isOn: hideCompletedTasksBinding) {
-                Text(String(localized: "Hide completed tasks"))
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
         }
         .padding(16)
         .frame(minWidth: 260, alignment: .leading)
@@ -588,11 +556,84 @@ struct TaskDayView: View {   //AGENDA
         )
     }
 
-    private var hideCompletedTasksBinding: Binding<Bool> {
-        Binding(
-            get: { settings.dayHideCompletedTasks },
-            set: { settings.dayHideCompletedTasks = $0 }
-        )
+    private var agendaDateHeader: some View {
+        HStack(spacing: 8) {
+            Button {
+                showCalendarPicker = true
+            } label: {
+                HStack(spacing: 9) {
+                    Text(selectedDate.formatted(.dateTime.month(.wide).year(.defaultDigits)).capitalized)
+                        .font(.headline.bold())
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .allowsTightening(true)
+                    Image(systemName: "chevron.down")
+                        .font(.headline.bold())
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(String(localized: "Choose date"))
+
+            Spacer(minLength: 8)
+
+            HStack(spacing: 5) {
+                Button {
+                    changeSelectedDay(by: -1)
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.blue)
+                        .frame(width: 30, height: 42)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Previous day"))
+
+                Button {
+                    withAnimation(.snappy(duration: 0.2)) {
+                        selectedDate = calendar.startOfDay(for: .now)
+                    }
+                } label: {
+                    Image(systemName: "\(Calendar.current.component(.day, from: .now)).calendar")
+                        .font(.system(size: 26))
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(
+                            HolidayProvider.holidays(in: .now, calendar: calendar)
+                                .contains(calendar.startOfDay(for: .now))
+                                || calendar.component(.weekday, from: .now) == 1
+                                ? .red : .primary,
+                            .blue
+                        )
+                        .frame(minWidth: 42, minHeight: 42)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Today"))
+
+                Button {
+                    changeSelectedDay(by: 1)
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.blue)
+                        .frame(width: 30, height: 42)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "Next day"))
+            }
+        }
+        .frame(minHeight: 48)
+    }
+
+    private func changeSelectedDay(by offset: Int) {
+        guard let newDate = calendar.date(byAdding: .day, value: offset, to: selectedDate) else { return }
+        withAnimation(.snappy(duration: 0.2)) {
+            selectedDate = calendar.startOfDay(for: newDate)
+        }
     }
 
     private var dateStrip: some View {

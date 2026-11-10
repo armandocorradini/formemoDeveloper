@@ -1992,280 +1992,278 @@ struct TaskListView: View {
         }
 
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    withAnimation(.snappy) {
-                        showCompleted.toggle()
-                    }
+            
 
-                    if showCompleted {
-                        fetchCompletedTasks()
-                        updateCompletedTaskCount()
-                    } else {
-                        refreshActiveList()
+                ToolbarItem(placement: .topBarTrailing) {
+                    HStack(spacing: 12) {
+                        
+                    Button {
+                        withAnimation(.snappy) {
+                            showCompleted.toggle()
+                        }
+                        
+                        if showCompleted {
+                            fetchCompletedTasks()
+                            updateCompletedTaskCount()
+                        } else {
+                            refreshActiveList()
+                        }
+                    } label: {
+                        Image(systemName: showCompleted ? "eye.slash" : "eye")
                     }
-                } label: {
-                    Image(systemName: showCompleted ? "eye.slash" : "eye")
+                    //            }
+                    //
+                    //          ToolbarItem(placement: .topBarTrailing) {
+                    
+                    Button {
+                        
+                        withAnimation(.snappy) {
+                            
+                            draftTask = TodoTask()
+                            
+                        }
+                        
+                    } label: {
+                        
+                        Image(systemName: draftTask == nil ? "plus.circle.fill" : "minus.circle.fill")
+                        
+                            .foregroundStyle(draftTask == nil ? .green : .gray)
+                        
+                            .font(.title2)
+                        
+                    }
                 }
-            }
-
-          ToolbarItem(placement: .topBarTrailing) {
-
-            Button {
-
-              withAnimation(.snappy) {
-
-                draftTask = TodoTask()
-
-              }
-
-            } label: {
-
-              Image(systemName: draftTask == nil ? "plus.circle.fill" : "minus.circle.fill")
-
-                .foregroundStyle(draftTask == nil ? .green : .gray)
-
-                .font(.title2)
-
-            }
-
           }
 
           if databaseIsEmpty == false {
-            ToolbarItem(placement: .topBarLeading) {
-
-              Menu {
-
-                // Sezione per rimuovere tutti i filtri
-
-                if selectedTagFilter != .all || selectedPriorityFilter != nil || selectedPeriodFilter != nil {
-
-                  Button(role: .destructive) {
-
-                    selectedTagFilter = .all
-
-                    selectedPriorityFilter = nil
-
-                    selectedPeriodFilter = nil
-
+              ToolbarItem(placement: .topBarLeading) {
+                  HStack(spacing: 12) {
+                      Menu {
+                          
+                          // Sezione per rimuovere tutti i filtri
+                          
+                          if selectedTagFilter != .all || selectedPriorityFilter != nil || selectedPeriodFilter != nil {
+                              
+                              Button(role: .destructive) {
+                                  
+                                  selectedTagFilter = .all
+                                  
+                                  selectedPriorityFilter = nil
+                                  
+                                  selectedPeriodFilter = nil
+                                  
+                              } label: {
+                                  
+                                  Label(
+                                    
+                                    String(localized: "Remove Filters"),
+                                    
+                                    systemImage: "line.3.horizontal.decrease.circle"
+                                    
+                                  )
+                                  
+                              }
+                              
+                              Divider()
+                              
+                          }
+                          
+                          // MENU FILTRO TAG
+                          
+                          // Usiamo un Picker per gestire la selezione "esclusiva" in modo nativo
+                          
+                          Menu {
+                              
+                              Picker("Tags", selection: $selectedTagFilter) {
+                                  
+                                  Text("All")
+                                  
+                                      .tag(TaskTagFilter.all)
+                                  
+                                  Label("None", systemImage: "tag.slash")
+                                  
+                                      .tag(TaskTagFilter.none)
+                                  
+                                  ForEach(TaskMainTag.localizedSortedCases) { tag in
+                                      
+                                      Label(tag.localizedTitle, systemImage: tag.mainIcon)
+                                      
+                                          .tag(TaskTagFilter.tag(tag))
+                                      
+                                  }
+                                  
+                              }
+                              
+                          } label: {
+                              
+                              Label(
+                                
+                                String(localized: "Tags"),
+                                
+                                systemImage: "tag"
+                                
+                              )
+                              
+                          }
+                          
+                          // MENU FILTRO PRIORITÀ
+                          
+                          Menu {
+                              
+                              Picker("Priority", selection: $selectedPriorityFilter) {
+                                  
+                                  Text("All").tag(nil as TaskPriority?)
+                                  
+                                  ForEach(TaskPriority.allCases) { priority in
+                                      
+                                      // Utilizziamo l'icona della priorità o una stringa vuota se nil
+                                      
+                                      Label(priority.localizedTitle, systemImage: priority.systemImage ?? "ellipsis")
+                                      
+                                          .tag(priority as TaskPriority?)
+                                      
+                                  }
+                                  
+                              }
+                              
+                          } label: {
+                              
+                              Label(
+                                
+                                String(localized: "Priority"),
+                                
+                                systemImage: "exclamationmark.circle"
+                                
+                              )
+                              
+                          }
+                          
+                          // MENU FILTRO PERIODO
+                          
+                          Section {
+                              
+                              Button {
+                                  
+                                  selectedPeriodFilter = nil
+                                  
+                              } label: {
+                                  
+                                  Label(
+                                    
+                                    "All",
+                                    
+                                    systemImage: selectedPeriodFilter == nil
+                                    
+                                    ? "checkmark"
+                                    
+                                    : "circle"
+                                    
+                                  )
+                                  
+                              }
+                              
+                              ForEach(TaskPeriodFilter.allCases) { period in
+                                  
+                                  Button {
+                                      
+                                      selectedPeriodFilter = period
+                                      
+                                  } label: {
+                                      
+                                      Label(
+                                        
+                                        period.localizedTitle,
+                                        
+                                        systemImage: selectedPeriodFilter == period
+                                        
+                                        ? "checkmark"
+                                        
+                                        : period.systemImage
+                                        
+                                      )
+                                      
+                                  }
+                                  
+                              }
+                              
+                          } header: {
+                              
+                              Label(
+                                
+                                String(localized: "Period"),
+                                
+                                systemImage: "calendar"
+                                
+                              )
+                              
+                          }
+                          
+                      } label: {
+                          
+                          // Icona principale del Filtro nella Toolbar
+                          
+                          // Diventa blu se almeno un filtro è attivo
+                          
+                          Image(systemName: "line.3.horizontal.decrease.circle")
+                          
+                              .foregroundStyle(
+                                
+                                selectedTagFilter != .all ||
+                                
+                                selectedPriorityFilter != nil ||
+                                
+                                selectedPeriodFilter != nil
+                                
+                                ? .red
+                                
+                                : .primary.opacity(0.7)
+                                
+                              )
+                          
+                      }
+                      
+                  
+                  Menu {
+                      
+                      Section("Appearance") {
+                          
+                          Picker("Style", selection: listStyleBinding) {
+                              
+                              Label("Plain", systemImage: "list.bullet")
+                              
+                                  .tag(TaskListStyle.plain)
+                              
+                              Label("Grouped", systemImage: "square.on.square")
+                              
+                                  .tag(TaskListStyle.grouped)
+                              
+                          }
+                          
+                      }
+                      
+                      Section() {
+                          
+                          Toggle(isOn: showDateEveryRowBinding) {
+                              
+                              Label(
+                                
+                                "Show Date On Every Row",
+                                
+                                systemImage: "calendar.day.timeline.left.circle"
+                                
+                              )
+                          }
+                      }
+                      
                   } label: {
-
-                    Label(
-
-                      String(localized: "Remove Filters"),
-
-                      systemImage: "line.3.horizontal.decrease.circle"
-
-                    )
-
+                      
+                      Image(systemName: "ellipsis")
+                      
+                          .foregroundStyle(.primary.opacity(0.7))
+                      
                   }
-
-                  Divider()
-
-                }
-
-                // MENU FILTRO TAG
-
-                // Usiamo un Picker per gestire la selezione "esclusiva" in modo nativo
-
-                Menu {
-
-                  Picker("Tags", selection: $selectedTagFilter) {
-
-                    Text("All")
-
-                      .tag(TaskTagFilter.all)
-
-                    Label("None", systemImage: "tag.slash")
-
-                      .tag(TaskTagFilter.none)
-
-                    ForEach(TaskMainTag.localizedSortedCases) { tag in
-
-                      Label(tag.localizedTitle, systemImage: tag.mainIcon)
-
-                        .tag(TaskTagFilter.tag(tag))
-
-                    }
-
                   }
-
-                } label: {
-
-                  Label(
-
-                    String(localized: "Tags"),
-
-                    systemImage: "tag"
-
-                  )
-
-                }
-
-                // MENU FILTRO PRIORITÀ
-
-                Menu {
-
-                  Picker("Priority", selection: $selectedPriorityFilter) {
-
-                    Text("All").tag(nil as TaskPriority?)
-
-                    ForEach(TaskPriority.allCases) { priority in
-
-                      // Utilizziamo l'icona della priorità o una stringa vuota se nil
-
-                      Label(priority.localizedTitle, systemImage: priority.systemImage ?? "ellipsis")
-
-                        .tag(priority as TaskPriority?)
-
-                    }
-
-                  }
-
-                } label: {
-
-                  Label(
-
-                    String(localized: "Priority"),
-
-                    systemImage: "exclamationmark.circle"
-
-                  )
-
-                }
-
-                // MENU FILTRO PERIODO
-
-                Section {
-
-                  Button {
-
-                    selectedPeriodFilter = nil
-
-                  } label: {
-
-                    Label(
-
-                      "All",
-
-                      systemImage: selectedPeriodFilter == nil
-
-                      ? "checkmark"
-
-                      : "circle"
-
-                    )
-
-                  }
-
-                  ForEach(TaskPeriodFilter.allCases) { period in
-
-                    Button {
-
-                      selectedPeriodFilter = period
-
-                    } label: {
-
-                      Label(
-
-                        period.localizedTitle,
-
-                        systemImage: selectedPeriodFilter == period
-
-                        ? "checkmark"
-
-                        : period.systemImage
-
-                      )
-
-                    }
-
-                  }
-
-                } header: {
-
-                  Label(
-
-                    String(localized: "Period"),
-
-                    systemImage: "calendar"
-
-                  )
-
-                }
-
-              } label: {
-
-                // Icona principale del Filtro nella Toolbar
-
-                // Diventa blu se almeno un filtro è attivo
-
-                Image(systemName: "line.3.horizontal.decrease.circle")
-
-                  .foregroundStyle(
-
-                    selectedTagFilter != .all ||
-
-                    selectedPriorityFilter != nil ||
-
-                    selectedPeriodFilter != nil
-
-                    ? .red
-
-                    : .primary.opacity(0.7)
-
-                  )
-
               }
-
-            }
-
-          }
-
-          ToolbarItem(placement: .topBarLeading) {
-
-            Menu {
-
-              Section("Appearance") {
-
-                Picker("Style", selection: listStyleBinding) {
-
-                  Label("Plain", systemImage: "list.bullet")
-
-                    .tag(TaskListStyle.plain)
-
-                  Label("Grouped", systemImage: "square.on.square")
-
-                    .tag(TaskListStyle.grouped)
-
-                }
-
-              }
-
-              Section() {
-
-                Toggle(isOn: showDateEveryRowBinding) {
-
-                  Label(
-
-                    "Show Date On Every Row",
-
-                    systemImage: "calendar.day.timeline.left.circle"
-
-                  )
-
-                }
-
-              }
-
-            } label: {
-
-              Image(systemName: "ellipsis")
-
-                .foregroundStyle(.primary.opacity(0.7))
-
-            }
-
           }
 
         }

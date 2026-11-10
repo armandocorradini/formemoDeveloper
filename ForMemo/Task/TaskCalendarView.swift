@@ -205,22 +205,6 @@ struct TaskCalendarView: View {
 
                             Spacer()
 
-                            Button {
-                                showCompletedTasks.toggle()
-                            } label: {
-                                Image(systemName: showCompletedTasks ? "eye.slash" : "eye")
-                            }
-                            .labelStyle(.iconOnly)
-                            .padding(.trailing, 4)
-
-                            Button {
-                                prepareNewTask(on: selectedDate)
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title)
-                                    .foregroundStyle(.green)
-                            }
-                            .labelStyle(.iconOnly)
                         }
                         .padding(.horizontal)
                         .frame(maxHeight: .infinity, alignment: .center)
@@ -325,12 +309,12 @@ struct TaskCalendarView: View {
 
         .padding(.top, isLandscape || isExpanded ? 0 : -8)
 
-        .navigationTitle("Calendar")
+        .navigationTitle("")
 
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if settings.showDayTab {
-                ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .topBarLeading) {
+                if settings.showDayTab {
                     Button {
                         NotificationCenter.default.post(
                             name: Notification.Name("TaskCalendarOpenDay"),
@@ -338,14 +322,39 @@ struct TaskCalendarView: View {
                         )
                     } label: {
                         Image(systemName: "sun.horizon")
-                            .symbolRenderingMode(.palette)
-                            .foregroundStyle(.blue, .orange)
+                        //                                .symbolRenderingMode(.palette)
+                        //                                .foregroundStyle(.blue, .orange)
                             .font(.system(size: 19))
                             .frame(width: 36, height: 36)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(String(localized: "Open day view"))
+                }
+            }
+            ToolbarItem(placement: .principal) {
+                Text("Calendar")
+                    .font(.headline)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                HStack(spacing: 12) {
+                    Button {
+                        showCompletedTasks.toggle()
+                    } label: {
+                        Image(systemName: showCompletedTasks ? "eye.slash" : "eye")
+                    }
+                    .accessibilityLabel(
+                        String(localized: showCompletedTasks ? "Hide completed tasks" : "Show completed tasks")
+                    )
+
+                    Button {
+                        prepareNewTask(on: selectedDate)
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.green)
+                    }
+                    .accessibilityLabel(String(localized: "New task"))
                 }
             }
         }
@@ -571,7 +580,7 @@ struct TaskCalendarView: View {
 
             .foregroundStyle(.blue)
 
-            .frame(width: 44, height: 44) // Area di tocco standard Apple
+            .frame(width: 30, height: 42) // Area di tocco standard Apple
 
             .contentShape(Rectangle())
 

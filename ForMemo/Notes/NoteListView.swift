@@ -558,7 +558,7 @@ struct NoteListView: View {
             }
             
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 5) {
+                HStack(spacing: 12) {
                     Button {
                         showArchived.toggle()
                     } label: {
