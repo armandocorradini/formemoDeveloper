@@ -21,6 +21,8 @@ struct TaskDayView: View {   //AGENDA
     @State private var foregroundRefreshDate = Date.now
     @State private var dateStripHoldTask: Task<Void, Never>?
     @State private var dateStripDidHoldEdge = false
+    @State private var dateChevronHoldTask: Task<Void, Never>?
+    @State private var dateChevronDidHold = false
     @State private var taskRowFrameStore = TaskDaySwipeRowFrameStore()
     @State private var centralizedSwipeDrag: TaskDaySwipeDrag?
     @State private var centralizedSwipeAxis: TaskDaySwipeAxis?
@@ -257,7 +259,7 @@ struct TaskDayView: View {   //AGENDA
                     Button {
                         settings.dayHideCompletedTasks.toggle()
                     } label: {
-                        Image(systemName: settings.dayHideCompletedTasks ? "eye" : "eye.slash")
+                        Image(systemName: settings.dayHideCompletedTasks ? "eye.slash" : "eye")
                     }
                     .accessibilityLabel(
                         String(localized: settings.dayHideCompletedTasks
@@ -579,6 +581,10 @@ struct TaskDayView: View {   //AGENDA
 
             HStack(spacing: 5) {
                 Button {
+                    guard !dateChevronDidHold else {
+                        dateChevronDidHold = false
+                        return
+                    }
                     changeSelectedDay(by: -1)
                 } label: {
                     Image(systemName: "chevron.left")
@@ -589,6 +595,9 @@ struct TaskDayView: View {   //AGENDA
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .onLongPressGesture(minimumDuration: 0.35, pressing: { isPressing in
+                    handleDateChevronPress(direction: -1, isPressing: isPressing)
+                }, perform: {})
                 .accessibilityLabel(String(localized: "Previous day"))
 
                 Button {
@@ -613,6 +622,10 @@ struct TaskDayView: View {   //AGENDA
                 .accessibilityLabel(String(localized: "Today"))
 
                 Button {
+                    guard !dateChevronDidHold else {
+                        dateChevronDidHold = false
+                        return
+                    }
                     changeSelectedDay(by: 1)
                 } label: {
                     Image(systemName: "chevron.right")
@@ -623,6 +636,9 @@ struct TaskDayView: View {   //AGENDA
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .onLongPressGesture(minimumDuration: 0.35, pressing: { isPressing in
+                    handleDateChevronPress(direction: 1, isPressing: isPressing)
+                }, perform: {})
                 .accessibilityLabel(String(localized: "Next day"))
             }
         }
@@ -633,6 +649,38 @@ struct TaskDayView: View {   //AGENDA
         guard let newDate = calendar.date(byAdding: .day, value: offset, to: selectedDate) else { return }
         withAnimation(.snappy(duration: 0.2)) {
             selectedDate = calendar.startOfDay(for: newDate)
+        }
+    }
+
+    private func handleDateChevronPress(direction: Int, isPressing: Bool) {
+        if isPressing {
+            guard dateChevronHoldTask == nil else { return }
+            dateChevronHoldTask = Task { @MainActor in
+                do {
+                    // Preserve the normal single-day action for a short tap.
+                    try await Task.sleep(for: .milliseconds(350))
+                    guard !Task.isCancelled else { return }
+                    dateChevronDidHold = true
+
+                    while !Task.isCancelled {
+                        changeSelectedDay(by: direction)
+                        try await Task.sleep(for: .milliseconds(140))
+                    }
+                } catch {
+                    // Cancellation is expected when the finger is released.
+                }
+            }
+        } else {
+            dateChevronHoldTask?.cancel()
+            dateChevronHoldTask = nil
+            // Clear the suppression flag even if the long-press gesture
+            // prevents the Button action from being delivered on release.
+            if dateChevronDidHold {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(150))
+                    dateChevronDidHold = false
+                }
+            }
         }
     }
 
@@ -671,8 +719,7 @@ struct TaskDayView: View {   //AGENDA
                                 .font(.body.weight(isSelected ? .semibold : .regular))
                                 .foregroundStyle(
                                     isHoliday || calendar.component(.weekday, from: date) == 1
-                                        ? .red
-                                        : (isToday ? .white : .primary)
+                                        ? .red : .primary
                                 )
                                 .frame(width: 34, height: 34)
                                 .background {
@@ -727,6 +774,8 @@ struct TaskDayView: View {   //AGENDA
         .onDisappear {
             dateStripHoldTask?.cancel()
             dateStripHoldTask = nil
+            dateChevronHoldTask?.cancel()
+            dateChevronHoldTask = nil
         }
     }
 
@@ -750,7 +799,7 @@ struct TaskDayView: View {   //AGENDA
                                 selectedDate = calendar.startOfDay(for: nextDate)
                             }
                         }
-                        try await Task.sleep(for: .milliseconds(240))
+                        try await Task.sleep(for: .milliseconds(140))
                     }
                 } catch {
                     // Cancellation is expected when the finger is released.

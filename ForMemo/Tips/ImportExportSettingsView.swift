@@ -183,7 +183,7 @@ struct ImportExportSettingsView: View {
             )
 
         case .csv:
-            let tasks = fetchIncompleteTasks()
+            let tasks = fetchAllTasks()
 
             CSVExportSelectionView(
                 tasks: tasks,
@@ -198,7 +198,7 @@ struct ImportExportSettingsView: View {
             )
 
         case .ics:
-            let tasks = fetchIncompleteTasks()
+            let tasks = fetchAllTasks()
 
             CSVExportSelectionView(
                 tasks: tasks,
@@ -815,7 +815,7 @@ struct CSVExportSelectionView: View {
                         }
                     } label: {
                         let eyeColor: Color = showCompletedTasks ? .secondary : .blue
-                        Image(systemName: showCompletedTasks ? "eye.slash" : "eye")
+                        Image(systemName: showCompletedTasks ? "eye" : "eye.slash")
                             .foregroundStyle(eyeColor.opacity(showCompletedTasks ? 1 : 0.7))
                     }
 

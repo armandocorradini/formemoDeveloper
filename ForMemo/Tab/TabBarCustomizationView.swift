@@ -99,6 +99,7 @@ struct TabBarCustomizationView: View {
             }
             .scrollIndicators(.hidden)
         }
+        .contentMargins(.bottom, 70, for: .scrollContent)
         .navigationTitle("Customize Tab Bar")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

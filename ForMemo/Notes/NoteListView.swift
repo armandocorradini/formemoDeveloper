@@ -562,7 +562,7 @@ struct NoteListView: View {
                     Button {
                         showArchived.toggle()
                     } label: {
-                        Image(systemName: showArchived ? "eye.slash" : "eye")
+                        Image(systemName: showArchived ? "eye" : "eye.slash")
                     }
                     .accessibilityLabel(
                         showArchived

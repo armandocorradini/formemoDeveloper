@@ -44,7 +44,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .settings: "gear"
         case .notes: "note.text"
         case .recentlyDeleted: "trash"
-        case .agenda: "sun.horizon" //Agenda
+        case .agenda: "book.pages" //Agenda
         case .search: "magnifyingglass"
         }
     }

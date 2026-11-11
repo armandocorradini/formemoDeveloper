@@ -1454,7 +1454,7 @@ struct TabVisibilitySettingsView: View {
                         get: { settings.showDayTab },
                         set: { updateTabVisibility($0, tag: AppTab.agenda.rawValue) { settings.showDayTab = $0 } }
                     )) {
-                        tabLabel("Agenda", icon: "sun.horizon")
+                        tabLabel("Agenda", icon: "book.pages")
                     }
                 }
 

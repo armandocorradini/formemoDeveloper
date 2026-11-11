@@ -305,14 +305,14 @@ NavigationLink(value: card) {
             .scrollEdgeEffectHidden(true, for: .top)
 
             .toolbar {
-
+                
                 ToolbarItem(placement: .principal) {
-
+                    
                     VStack(spacing: 1) {
-
+                        
                         Text("Wallet")
                             .font(.headline)
-
+                        
                         Text(
                             "\(loyaltyCardCount) cards • \(ticketCount) tickets"
                         )
@@ -320,8 +320,9 @@ NavigationLink(value: card) {
                         .foregroundStyle(.secondary)
                     }
                 }
-
+                
                 ToolbarItemGroup(placement: .topBarLeading) {
+                    HStack(spacing: 2) {
                     Picker("Filter", selection: $walletFilter) {
                         Label("All", systemImage: "square.on.square").tag("all")
                         Label("Cards", systemImage: "creditcard").tag("cards")
@@ -330,7 +331,7 @@ NavigationLink(value: card) {
                     .pickerStyle(.menu)
                     .labelStyle(.iconOnly)
                     .labelsHidden()
-
+                    
                     Menu {
                         Picker(
                             String(localized: "Sorting"),
@@ -352,9 +353,9 @@ NavigationLink(value: card) {
                             Label(String(localized: "Custom"), systemImage: "line.3.horizontal")
                                 .tag("custom")
                         }
-
+                        
                         Divider()
-
+                        
                         Picker(
                             String(localized: "View"),
                             selection: Binding(
@@ -372,6 +373,7 @@ NavigationLink(value: card) {
                             .foregroundStyle(.primary.opacity(0.7))
                     }
                 }
+            }
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

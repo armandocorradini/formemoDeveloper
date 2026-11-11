@@ -2009,7 +2009,7 @@ struct TaskListView: View {
                             refreshActiveList()
                         }
                     } label: {
-                        Image(systemName: showCompleted ? "eye.slash" : "eye")
+                        Image(systemName: showCompleted ? "eye" : "eye.slash")
                     }
                     //            }
                     //

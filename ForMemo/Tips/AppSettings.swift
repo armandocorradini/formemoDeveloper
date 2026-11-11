@@ -215,6 +215,7 @@ final class AppSettings {
         dayEmptySlotHeight = defaults.object(forKey: "dayEmptySlotHeight") as? Double ?? 24
         dayHideEmptyNightHours = defaults.object(forKey: "dayHideEmptyNightHours") as? Bool ?? false
         dayHideCompletedTasks = defaults.object(forKey: "dayHideCompletedTasks") as? Bool ?? true
+        calendarHideCompletedTasks = defaults.object(forKey: "calendarHideCompletedTasks") as? Bool ?? true
         showDateEveryRow = defaults.object(forKey: "TaskListShowDateEveryRow") as? Bool ?? false
         confirmTaskDeletion = defaults.object(forKey: "confirmTaskDeletion") as? Bool ?? true
         taskWeekDays = defaults.object(forKey: "TaskWeekDays") as? Int ?? 3
@@ -307,6 +308,12 @@ final class AppSettings {
     var dayHideCompletedTasks: Bool {
         didSet {
             UserDefaults.standard.set(dayHideCompletedTasks, forKey: "dayHideCompletedTasks")
+        }
+    }
+
+    var calendarHideCompletedTasks: Bool {
+        didSet {
+            UserDefaults.standard.set(calendarHideCompletedTasks, forKey: "calendarHideCompletedTasks")
         }
     }
 
@@ -829,6 +836,7 @@ final class AppSettings {
         dayEmptySlotHeight = 24
         dayHideEmptyNightHours = false
         dayHideCompletedTasks = false
+        calendarHideCompletedTasks = false
         showDateEveryRow = false
         confirmTaskDeletion = true
         taskWeekDays = 3

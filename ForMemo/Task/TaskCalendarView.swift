@@ -33,7 +33,6 @@ struct TaskCalendarView: View {
 
     }
 
-    @State private var showCompletedTasks: Bool = false
 
     @State private var legacyRecurrenceTask: TodoTask?
 
@@ -321,7 +320,7 @@ struct TaskCalendarView: View {
                             object: calendar.startOfDay(for: selectedDate)
                         )
                     } label: {
-                        Image(systemName: "sun.horizon")
+                        Image(systemName: "book.pages")
                         //                                .symbolRenderingMode(.palette)
                         //                                .foregroundStyle(.blue, .orange)
                             .font(.system(size: 19))
@@ -339,12 +338,12 @@ struct TaskCalendarView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 HStack(spacing: 12) {
                     Button {
-                        showCompletedTasks.toggle()
+                        settings.calendarHideCompletedTasks.toggle()
                     } label: {
-                        Image(systemName: showCompletedTasks ? "eye.slash" : "eye")
+                        Image(systemName: settings.calendarHideCompletedTasks ? "eye.slash" : "eye")
                     }
                     .accessibilityLabel(
-                        String(localized: showCompletedTasks ? "Hide completed tasks" : "Show completed tasks")
+                        String(localized: settings.calendarHideCompletedTasks ? "Show completed tasks" : "Hide completed tasks")
                     )
 
                     Button {
@@ -869,15 +868,11 @@ private extension TaskCalendarView {
 
         let dayTasks = tasksCache[dayKey] ?? []
 
-        if showCompletedTasks {
-
-            return dayTasks
-
-        } else {
-
+        if settings.calendarHideCompletedTasks {
             return dayTasks.filter { !$0.isCompleted }
-
         }
+
+        return dayTasks
 
     }
 
