@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
 import Observation
+import os
 
 @Observable
 final class TripClipboard {
@@ -14,8 +15,12 @@ final class TripClipboard {
 // MARK: - Main View
 
 struct ChecklistListView: View {
-    
+
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+
+    var openCreationOnAppear: Bool = false
+    var onCreated: ((TripList) -> Void)? = nil
     @Environment(\.horizontalSizeClass) private var sizeClass
 
     @Query(sort: \TripList.sortOrder)
@@ -33,6 +38,8 @@ struct ChecklistListView: View {
     @State private var exportIncludeChecks = true
     @State private var exportDocument: FMTripDocument?
     @State private var categoryToExport: TripList?
+    @State private var createdCategory: TripList?
+    @State private var didAutoPresentCreation = false
 
     @AppStorage("tripsViewStyle")
     private var tripsViewStyle: String = "cards"
@@ -387,6 +394,13 @@ struct ChecklistListView: View {
                 }
             }
             .toolbar {
+                if openCreationOnAppear {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button(String(localized: "Close")) {
+                            dismiss()
+                        }
+                    }
+                }
                 ToolbarItem(placement: .topBarLeading) {
                     Menu {
                         Picker(
@@ -459,6 +473,19 @@ struct ChecklistListView: View {
                     }
                 }
             }
+            .navigationDestination(item: $createdCategory) { category in
+                ChecklistView(category: category)
+            }
+            .onAppear {
+                if openCreationOnAppear && !didAutoPresentCreation {
+                    didAutoPresentCreation = true
+                    editingCategory = nil
+                    isEditingCategory = false
+                    newCategoryName = ""
+                    selectedIcon = "list.bullet.clipboard"
+                    showNewCategorySheet = true
+                }
+            }
             .sheet(isPresented: $showNewCategorySheet) {
                 
                 NavigationStack {
@@ -497,9 +524,19 @@ struct ChecklistListView: View {
                                                 )
                                             }
                                         )
+                                        newCategory.lastOpenedAt = .now
                                         modelContext.insert(newCategory)
-                                        try? modelContext.save()
-                                        showNewCategorySheet = false
+                                        do {
+                                            try modelContext.save()
+                                            createdCategory = newCategory
+                                            onCreated?(newCategory)
+                                            showNewCategorySheet = false
+                                        } catch {
+                                            AppLogger.persistence.error(
+                                                "Checklist template creation failed: \(error.localizedDescription)"
+                                            )
+                                            modelContext.delete(newCategory)
+                                        }
                                     } label: {
                                         Label(
                                             localizedTripText(template.name),
@@ -623,6 +660,7 @@ struct ChecklistListView: View {
                                     return
                                 }
                                 
+                                var newlyCreatedCategory: TripList?
                                 do {
                                     if let editingCategory {
                                         let originalSystemName = editingCategory.systemTemplate.isEmpty
@@ -630,14 +668,14 @@ struct ChecklistListView: View {
                                         : TripTemplates.allCategories.first(where: {
                                                 $0.systemTemplate == editingCategory.systemTemplate
                                             })?.name
-                                        
+
                                         if let originalSystemName,
                                            localizedTripText(originalSystemName) == trimmedName {
                                             editingCategory.name = originalSystemName
                                         } else {
                                             editingCategory.name = trimmedName
                                         }
-                                        
+
                                         editingCategory.icon = selectedIcon
 
                                     } else {
@@ -657,18 +695,26 @@ struct ChecklistListView: View {
                                             checklistType: "custom",
                                             sections: []
                                         )
-
+                                        category.lastOpenedAt = .now
                                         withAnimation {
                                             modelContext.insert(category)
                                         }
-
+                                        newlyCreatedCategory = category
                                     }
-                                    
+
                                     try modelContext.save()
                                 } catch {
-                                    print("Failed to save trip category:", error)
+                                    AppLogger.persistence.error(
+                                        "Checklist creation failed: \(error.localizedDescription)"
+                                    )
+                                    return
                                 }
-                                
+
+                                if let newlyCreatedCategory {
+                                    createdCategory = newlyCreatedCategory
+                                    onCreated?(newlyCreatedCategory)
+                                }
+
                                 newCategoryName = ""
                                 selectedIcon = "list.bullet.clipboard"
                                 editingCategory = nil

@@ -7,6 +7,8 @@ import ZXingCpp
 
 struct AddLoyaltyCardView: View {
 
+    var onCreated: ((LoyaltyCard) -> Void)? = nil
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
 
@@ -486,6 +488,7 @@ struct AddLoyaltyCardView: View {
             notes: cleanedNotes.isEmpty ? nil : cleanedNotes,
             colorHex: colorHex
         )
+        card.lastOpenedAt = .now
         modelContext.insert(card)
 
         var createdAssets: [WalletAsset] = []
@@ -556,6 +559,7 @@ struct AddLoyaltyCardView: View {
             return
         }
 
+        onCreated?(card)
         dismiss()
     }
 }

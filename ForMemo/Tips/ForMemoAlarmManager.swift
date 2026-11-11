@@ -237,12 +237,21 @@ final class ForMemoAlarmManager {
             systemImageName: "stop.circle"
         )
 
+//        let snoozeButton = AlarmButton(
+//            text: LocalizedStringResource("Alarm.Snooze"),
+//            textColor: .white,
+//            systemImageName: "zzz"
+//        )
+
         let snoozeButton = AlarmButton(
-            text: LocalizedStringResource("Alarm.Snooze"),
+            text: LocalizedStringResource(
+                "Alarm.Snooze",
+                table: "Localizable",
+                bundle: .main
+            ),
             textColor: .white,
             systemImageName: "zzz"
         )
-
         let alertPresentation = AlarmPresentation.Alert(
             title: LocalizedStringResource(stringLiteral: title),
             stopButton: stopButton,

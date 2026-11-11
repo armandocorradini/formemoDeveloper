@@ -746,7 +746,6 @@
 				1C634CE130220C9C0092DB89 /* CredentialSavingRequest.swift */,
 				1C634D6330220C9C0092DB89 /* RecentlyDeletedVaultView.swift */,
 				1C634D3A30220C9C0092DB89 /* CredentialExchange */,
-				1C634E41302258620092DB89 /* Trips */,
 			);
 			path = Vault;
 			sourceTree = "<group>";
@@ -769,8 +768,9 @@
 			children = (
 				1C8477673023782000C4FA34 /* Core */,
 				1C8225EC303F2C8100B77EC7 /* Siri */,
-				1C634E43302331530092DB89 /* Tips */,
 				1C634E4230232A130092DB89 /* Tab */,
+				1C634E43302331530092DB89 /* Tips */,
+				1C634E41302258620092DB89 /* Trips */,
 				1CC57C083028E8D400E9C79F /* Delete */,
 				1C8225DF303B509100B77EC7 /* Notes */,
 				1C634E3C30220CAE0092DB89 /* Task */,

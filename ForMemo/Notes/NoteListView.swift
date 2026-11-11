@@ -583,12 +583,14 @@ struct NoteListView: View {
                 }
             }
         }
-        .navigationDestination(item: $newNote) { note in
-            NoteEditorView(
-                note: note,
-                noteEditorCoordinator: noteEditorCoordinator,
-                isNew: true
-            )
+        .sheet(item: $newNote) { note in
+            NavigationStack {
+                NoteEditorView(
+                    note: note,
+                    noteEditorCoordinator: noteEditorCoordinator,
+                    isNew: true
+                )
+            }
         }
         .confirmationDialog(
             String(localized: "Custom Order"),

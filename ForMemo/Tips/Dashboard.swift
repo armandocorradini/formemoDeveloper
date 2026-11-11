@@ -12,7 +12,7 @@ struct Dashboard: View {
     @State private var selectedLoyaltyCard: LoyaltyCard?
     @State private var selectedWeatherDate: Date?
     @State private var selectedNote: Note?
-    @State private var draftTask: TodoTask?
+    @State private var creationSheet: DashboardCreationSheet?
     @State private var recentWalletLogos: [String: Data] = [:]
     @State private var dashboardContinueItems: [ContinueItem] = []
     
@@ -32,6 +32,16 @@ struct Dashboard: View {
     
     private let weatherManager = WeatherManager.shared
     
+    private enum DashboardCreationSheet: String, Identifiable {
+        case task
+        case checklist
+        case note
+        case document
+        case wallet
+
+        var id: String { rawValue }
+    }
+
     private enum ContinueDestination {
         case trip(TripList)
         case document(DocumentItem)
@@ -738,23 +748,74 @@ struct Dashboard: View {
                         Image(systemName: "line.3.horizontal.button.angledtop.vertical.right")
                     }
 
-                    Button {
-                        draftTask = TodoTask()
+                    Menu {
+                        Button {
+                            creationSheet = .task
+                        } label: {
+                            Label(String(localized: "Tasks"), systemImage: "checklist")
+                        }
+
+                        Button {
+                            creationSheet = .checklist
+                        } label: {
+                            Label("Checklist", systemImage: "list.bullet.clipboard")
+                        }
+
+                        Button {
+                            creationSheet = .note
+                        } label: {
+                            Label(String(localized: "Note"), systemImage: "note.text")
+                        }
+
+                        Button {
+                            creationSheet = .document
+                        } label: {
+                            Label(String(localized: "Document"), systemImage: "doc.text")
+                        }
+
+                        Button {
+                            creationSheet = .wallet
+                        } label: {
+                            Label("Cards & Tickets", systemImage: "wallet.bifold")
+                        }
                     } label: {
-                        Image(systemName: draftTask == nil ? "plus.circle.fill" : "minus.circle.fill")
-                            .foregroundStyle(draftTask == nil ? .green : .gray)
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundStyle(.green)
                             .font(.system(size: 22))
                             .frame(width: 36, height: 36)
                             .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(String(localized: "New task"))
+                    .accessibilityLabel(String(localized: "Add"))
                 }
             }
             
         }
-        .sheet(item: $draftTask) { task in
-            NewTaskSheetView(draftTask: task)
+        .sheet(item: $creationSheet, onDismiss: {
+            refreshContinueItems()
+        }) { destination in
+            switch destination {
+            case .task:
+                NewTaskSheetView(draftTask: TodoTask())
+            case .checklist:
+                ChecklistListView(
+                    openCreationOnAppear: true,
+                    onCreated: { _ in
+                        refreshContinueItems()
+                    }
+                )
+            case .note:
+                NavigationStack {
+                    NoteEditorView(note: Note(), isNew: true)
+                }
+            case .document:
+                NavigationStack {
+                    DocumentDetailView(document: DocumentItem(name: ""))
+                }
+            case .wallet:
+                AddLoyaltyCardView(onCreated: { _ in
+                    refreshContinueItems()
+                })
+            }
         }
         .navigationDestination(item: $selectedTask) { task in
             TaskDetailView(task: task)

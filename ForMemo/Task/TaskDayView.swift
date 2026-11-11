@@ -165,7 +165,9 @@ struct TaskDayView: View {   //AGENDA
                                 ZStack {
                                     Rectangle().fill(Color.clear)
                                     Rectangle()
-                                        .fill(Color.secondary.opacity(0.32))
+                                        .fill(slotMinutes == 12 * 60
+                                              ? Color.secondary.opacity(0.80)
+                                              : Color.secondary.opacity(0.32))
                                         .frame(height: 1)
                                 }
                                 .frame(maxWidth: .infinity)
