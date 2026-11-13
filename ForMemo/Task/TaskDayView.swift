@@ -11,6 +11,7 @@ struct TaskDayView: View {   //AGENDA
     @Query(sort: \TodoTask.deadLine) private var tasks: [TodoTask]
 
     @State private var taskPendingDeletion: TodoTask?
+    @State private var showAttachmentSyncWarning = false
     @State private var showDeleteConfirmation = false
     @State private var draftTask: TodoTask?
     @State private var showDayOptions = false
@@ -345,11 +346,15 @@ struct TaskDayView: View {   //AGENDA
         .alert(
             String(localized: "Delete task?"),
             isPresented: Binding(
-                get: { taskPendingDeletion != nil },
-                set: { if !$0 { taskPendingDeletion = nil } }
+                get: { taskPendingDeletion != nil || showAttachmentSyncWarning },
+                set: { if !$0 { taskPendingDeletion = nil; showAttachmentSyncWarning = false } }
             )
         ) {
-            if let task = taskPendingDeletion,
+            if showAttachmentSyncWarning {
+                Button(String(localized: "OK"), role: .cancel) {
+                    showAttachmentSyncWarning = false
+                }
+            } else if let task = taskPendingDeletion,
                !task.isCompleted,
                task.recurrenceID != nil,
                hasFutureOccurrenceForDeletion(task) {
@@ -364,9 +369,8 @@ struct TaskDayView: View {   //AGENDA
 
                     Task { @MainActor in
                         await Task.yield()
-                        await deleteRecurringTaskAndFutureOccurrences(task, in: modelContext)
-                        modelContext.processPendingChanges()
-                        NotificationCenter.default.post(name: .taskDidChange, object: nil)
+                        let result = await deleteRecurringTaskAndFutureOccurrences(task, in: modelContext)
+                        handleDeletionResult(result)
                         isDeletingRecurrence = false
                     }
                 }
@@ -381,11 +385,17 @@ struct TaskDayView: View {   //AGENDA
                 }
             }
 
-            Button(String(localized: "Cancel"), role: .cancel) {
-                taskPendingDeletion = nil
+            if !showAttachmentSyncWarning {
+                Button(String(localized: "Cancel"), role: .cancel) {
+                    taskPendingDeletion = nil
+                }
             }
         } message: {
-            Text(String(localized: "This action cannot be undone."))
+            if showAttachmentSyncWarning {
+                Text(String(localized: "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task."))
+            } else {
+                Text(String(localized: "This action cannot be undone."))
+            }
         }
         .navigationDestination(item: $selectedTaskForNavigation) { task in
             TaskDetailView(task: task)
@@ -1049,10 +1059,35 @@ struct TaskDayView: View {   //AGENDA
 
     @MainActor
     private func deleteTaskAndRefresh(_ task: TodoTask) {
-        deleteTask(task, in: modelContext)
-        modelContext.processPendingChanges()
-        NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        handleDeletionResult(deleteTask(task, in: modelContext))
     }
+
+    @MainActor
+    private func presentAttachmentSyncWarning() {
+        taskPendingDeletion = nil
+        showDeleteConfirmation = false
+        showAttachmentSyncWarning = false
+
+        // Dismiss the deletion-confirmation alert before presenting the warning.
+        Task { @MainActor in
+            await Task.yield()
+            showAttachmentSyncWarning = true
+        }
+    }
+
+    @MainActor
+    private func handleDeletionResult(_ result: TaskDeletionResult) {
+        switch result {
+        case .deleted:
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        case .blockedByAttachmentSync:
+            presentAttachmentSyncWarning()
+        case .failed:
+            AppLogger.persistence.error("Task deletion failed.")
+        }
+    }
+
 
     @MainActor
     private func requestDeletion(of task: TodoTask) {

@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import AlarmKit
+import os
 
 
 struct RecentlyDeletedView: View {
@@ -18,6 +19,7 @@ struct RecentlyDeletedView: View {
     private var items: [DeletedItem]
     
     @State private var selection = Set<DeletedItem.ID>()
+    @State private var restoreAlertMessage: String?
 
     private var visibleItems: [DeletedItem] {
         items.filter { item in
@@ -204,12 +206,7 @@ var body: some View {
                         
                         Menu {
                             Button {
-                                if item.restore(in: context) {
-                                    context.delete(item)
-                                    context.safeSave(
-                                        operation: "RecentlyDeletedRestoreSingle"
-                                    )
-                                }
+                                restoreSingleItem(item)
                             } label: {
                                 Label(
                                     "Restore",
@@ -218,39 +215,7 @@ var body: some View {
                             }
                             
                             Button(role: .destructive) {
-                                if item.type == "task" {
-                                    
-                                    let relatedAttachments = items.filter {
-                                        $0.type == "attachment" &&
-                                        $0.taskID == item.taskID
-                                    }
-                                    
-                                    for att in relatedAttachments {
-                                        deleteFile(att)
-                                        context.delete(att)
-                                    }
-                                }
-                                
-                                if item.type == "document" {
-                                    
-                                    let relatedAssets = items.filter {
-                                        $0.type == "documentAsset" &&
-                                        $0.documentID == item.documentID
-                                    }
-                                    
-                                    for asset in relatedAssets {
-                                        deleteFile(asset)
-                                        context.delete(asset)
-                                    }
-                                }
-                                
-                                deleteRelatedWalletAssets(for: item)
-                                deleteFile(item)
-                                context.delete(item)
-                                
-                                context.safeSave(
-                                    operation: "RecentlyDeletedAction"
-                                )
+                                permanentlyDelete(item)
                             } label: {
                                 Label(
                                     "Delete",
@@ -291,10 +256,7 @@ var body: some View {
                     .swipeActions (edge: .leading) {
                         
                         Button {
-                            if item.restore(in: context) {
-                                context.delete(item)
-                                context.safeSave(operation: "RecentlyDeletedRestoreSingle")
-                            }
+                            restoreSingleItem(item)
                         } label: {
                             Label("Restore", systemImage: "arrow.uturn.backward")
                         }
@@ -303,36 +265,7 @@ var body: some View {
                     .swipeActions (edge: .trailing) {
                         Button(role: .destructive) {
                             
-                            if item.type == "task" {
-                                
-                                let relatedAttachments = items.filter {
-                                    $0.type == "attachment" &&
-                                    $0.taskID == item.taskID
-                                }
-                                
-                                for att in relatedAttachments {
-                                    deleteFile(att)     // 🔥 fondamentale
-                                    context.delete(att)
-                                }
-                            }
-                            if item.type == "document" {
-
-                                let relatedAssets = items.filter {
-                                    $0.type == "documentAsset" &&
-                                    $0.documentID == item.documentID
-                                }
-
-                                for asset in relatedAssets {
-                                    deleteFile(asset)
-                                    context.delete(asset)
-                                }
-                            }
-
-                            deleteRelatedWalletAssets(for: item)
-                            deleteFile(item)
-                            context.delete(item)
-                            
-                            context.safeSave(operation: "RecentlyDeletedAction")      // 🔥 stabilità
+                            permanentlyDelete(item)
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -343,6 +276,23 @@ var body: some View {
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
         .background(Color.clear)
+        .alert(
+            "Restore Unavailable",
+            isPresented: Binding(
+                get: { restoreAlertMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        restoreAlertMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("OK", role: .cancel) {
+                restoreAlertMessage = nil
+            }
+        } message: {
+            Text(restoreAlertMessage ?? "The item could not be restored.")
+        }
         .navigationTitle("Recently Deleted")
         .navigationBarTitleDisplayMode(.inline)
         .scrollEdgeEffectHidden(true, for: .top)
@@ -381,63 +331,71 @@ var body: some View {
                     }
                     
                     Button {
-                        var restoredTaskIDs = Set<UUID>()
-                        for id in selection {
-                            if let item = items.first(where: { $0.id == id }) {
-                                if let taskID = item.taskID,
-                                   restoredTaskIDs.contains(taskID) {
+                        Task { @MainActor in
+                            var attachmentUnavailable = false
+                            var restoreFailed = false
+
+                            let selectedItems = items
+                                .filter { selection.contains($0.id) }
+                                .sorted { lhs, rhs in
+                                    let parentTypes: Set<String> = ["task", "document", "loyaltycard"]
+                                    let childTypes: Set<String> = ["attachment", "documentAsset", "walletAsset"]
+                                    let lhsRank = parentTypes.contains(lhs.type) ? 0 : (childTypes.contains(lhs.type) ? 1 : 2)
+                                    let rhsRank = parentTypes.contains(rhs.type) ? 0 : (childTypes.contains(rhs.type) ? 1 : 2)
+                                    return lhsRank < rhsRank
+                                }
+
+                            let selectedTaskIDs = Set(selectedItems.compactMap { $0.type == "task" ? $0.taskID : nil })
+                            let selectedDocumentIDs = Set(selectedItems.compactMap { $0.type == "document" ? $0.documentID : nil })
+                            let selectedCardIDs = Set(selectedItems.compactMap { $0.type == "loyaltycard" ? $0.loyaltyCardID : nil })
+
+                            for item in selectedItems {
+                                // A selected task owns the restore operation for
+                                // all its attachment records. Never restore those
+                                // records separately in the same batch.
+                                if item.type == "attachment",
+                                   let taskID = item.taskID,
+                                   selectedTaskIDs.contains(taskID) {
                                     continue
                                 }
-                                if item.restore(in: context) {
-                                    if item.type == "task",
-                                       let taskID = item.taskID {
-                                        restoredTaskIDs.insert(taskID)
-                                    }
+                                if item.type == "documentAsset",
+                                   let documentID = item.documentID,
+                                   selectedDocumentIDs.contains(documentID) {
+                                    continue
+                                }
+                                if item.type == "walletAsset",
+                                   let cardID = item.loyaltyCardID,
+                                   selectedCardIDs.contains(cardID) {
+                                    continue
+                                }
 
+                                let result = await item.restoreWithResultAsync(in: context)
+                                if result.isSuccess {
                                     context.delete(item)
+                                } else {
+                                    restoreFailed = true
+                                    if case .attachmentUnavailable = result {
+                                        attachmentUnavailable = true
+                                    }
                                 }
                             }
+
+                            context.safeSave(operation: "RecentlyDeletedAction")
+                            selection.removeAll()
+
+                            if attachmentUnavailable {
+                                restoreAlertMessage = String(localized: "This attachment is not currently available on this device. Wait for iCloud synchronization and try again, or restore it from the device that originally deleted it. The item remains in Recently Deleted.")
+                            } else if restoreFailed {
+                                restoreAlertMessage = String(localized: "The item could not be restored. It may already exist or some required data may be unavailable. The item remains in Recently Deleted.")
+                            }
                         }
-                        context.safeSave(operation: "RecentlyDeletedAction")
-                        selection.removeAll()
                     } label: {
                         Label("Restore", systemImage: "arrow.uturn.backward")
                     }
 
                     Button(role: .destructive) {
-                        for id in selection {
-                            if let item = items.first(where: { $0.id == id }) {
-
-                                if item.type == "task" {
-                                    let relatedAttachments = items.filter {
-                                        $0.type == "attachment" &&
-                                        $0.taskID == item.taskID
-                                    }
-                                    for att in relatedAttachments {
-                                        deleteFile(att)
-                                        context.delete(att)
-                                    }
-                                }
-                                if item.type == "document" {
-
-                                    let relatedAssets = items.filter {
-                                        $0.type == "documentAsset" &&
-                                        $0.documentID == item.documentID
-                                    }
-
-                                    for asset in relatedAssets {
-                                        deleteFile(asset)
-                                        context.delete(asset)
-                                    }
-                                }
-                                
-
-                                deleteRelatedWalletAssets(for: item)
-                                deleteFile(item)
-                                context.delete(item)
-                            }
-                        }
-                        context.safeSave(operation: "RecentlyDeletedAction")
+                        let selectedItems = items.filter { selection.contains($0.id) }
+                        permanentlyDelete(selectedItems)
                         selection.removeAll()
                     } label: {
                         Label("Delete", systemImage: "trash")
@@ -452,73 +410,174 @@ var body: some View {
 
     // MARK: - Helpers
     
-    private func deleteRelatedWalletAssets(
-        for item: DeletedItem
-    ) {
-        guard item.type == "loyaltycard",
-              let cardID = item.loyaltyCardID
-        else {
+    private func restoreSingleItem(_ item: DeletedItem) {
+        Task { @MainActor in
+            let result = await item.restoreWithResultAsync(in: context)
+
+            if result.isSuccess {
+                context.delete(item)
+                context.safeSave(operation: "RecentlyDeletedRestoreSingle")
+            } else if case .attachmentUnavailable = result {
+                restoreAlertMessage = String(localized: "This attachment is not currently available on this device. Wait for iCloud synchronization and try again, or restore it from the device that originally deleted it. The item remains in Recently Deleted.")
+            } else {
+                restoreAlertMessage = String(localized: "The item could not be restored. It may already exist or some required data may be unavailable. The item remains in Recently Deleted.")
+            }
+        }
+    }
+
+    /// Permanently removes the selected Trash records and local Trash files.
+    /// Cloud mirrors are deleted only after the SwiftData transaction succeeds
+    /// and no active model or remaining DeletedItem references the same path.
+    private func permanentlyDelete(_ item: DeletedItem) {
+        permanentlyDelete([item])
+    }
+
+    private func permanentlyDelete(_ requestedItems: [DeletedItem]) {
+        var targets = requestedItems
+
+        for item in requestedItems {
+            if item.type == "task", let taskID = item.taskID {
+                targets.append(contentsOf: items.filter {
+                    $0.type == "attachment" && $0.taskID == taskID
+                })
+            }
+            if item.type == "document", let documentID = item.documentID {
+                targets.append(contentsOf: items.filter {
+                    $0.type == "documentAsset" && $0.documentID == documentID
+                })
+            }
+            if item.type == "loyaltycard", let cardID = item.loyaltyCardID {
+                targets.append(contentsOf: items.filter {
+                    $0.type == "walletAsset" && $0.loyaltyCardID == cardID
+                })
+            }
+        }
+
+        var uniqueTargets: [DeletedItem] = []
+        var seenIDs = Set<UUID>()
+        for target in targets where seenIDs.insert(target.id).inserted {
+            uniqueTargets.append(target)
+        }
+
+        var cloudCandidates = uniqueTargets.compactMap { item -> (String, String)? in
+            guard let path = item.relativePath, !path.isEmpty else { return nil }
+            switch item.type {
+            case "attachment": return ("task", path)
+            case "documentAsset": return ("document", path)
+            case "walletAsset": return ("wallet", path)
+            default: return nil
+            }
+        }
+        for item in uniqueTargets where item.type == "loyaltycard" {
+            for path in [item.loyaltyLogoRelativePath, item.loyaltyFrontRelativePath, item.loyaltyBackRelativePath].compactMap({ $0 }) where !path.isEmpty {
+                cloudCandidates.append(("wallet", path))
+            }
+        }
+
+        for target in uniqueTargets {
+            deleteLocalTrashFile(target)
+            context.delete(target)
+        }
+
+        context.processPendingChanges()
+        do {
+            try context.save()
+        } catch {
+            AppLogger.persistence.error(
+                "Recently Deleted permanent deletion could not be saved: \(error.localizedDescription)"
+            )
             return
         }
 
-        let relatedAssets = items.filter {
-            $0.type == "walletAsset" &&
-            $0.loyaltyCardID == cardID
+        let remainingDeletedItems: [DeletedItem]
+        let taskAttachments: [TaskAttachment]
+        let documentAssets: [DocumentAsset]
+        let walletAssets: [WalletAsset]
+        let activeCards: [LoyaltyCard]
+        do {
+            remainingDeletedItems = try context.fetch(FetchDescriptor<DeletedItem>())
+            taskAttachments = try context.fetch(FetchDescriptor<TaskAttachment>())
+            documentAssets = try context.fetch(FetchDescriptor<DocumentAsset>())
+            walletAssets = try context.fetch(FetchDescriptor<WalletAsset>())
+            activeCards = try context.fetch(FetchDescriptor<LoyaltyCard>())
+        } catch {
+            AppLogger.persistence.error(
+                "Permanent asset cleanup skipped because reference checks failed: \(error.localizedDescription)"
+            )
+            return
         }
 
-        for asset in relatedAssets {
-            deleteFile(asset)
-            context.delete(asset)
+        for candidate in Set(cloudCandidates.map { "\($0.0)|\($0.1)" }) {
+            let components = candidate.split(separator: "|", maxSplits: 1).map(String.init)
+            guard components.count == 2 else { continue }
+            let assetKind = components[0]
+            let relativePath = components[1]
+
+            let stillInTrash = remainingDeletedItems.contains { deleted in
+                if deleted.relativePath == relativePath {
+                    return (deleted.type == "attachment" && assetKind == "task") ||
+                        (deleted.type == "documentAsset" && assetKind == "document") ||
+                        (deleted.type == "walletAsset" && assetKind == "wallet")
+                }
+                if deleted.type == "loyaltycard", assetKind == "wallet" {
+                    return deleted.loyaltyLogoRelativePath == relativePath ||
+                        deleted.loyaltyFrontRelativePath == relativePath ||
+                        deleted.loyaltyBackRelativePath == relativePath
+                }
+                return false
+            }
+            guard !stillInTrash else { continue }
+
+            let stillActive: Bool
+            switch assetKind {
+            case "task":
+                stillActive = taskAttachments.contains { $0.relativePath == relativePath }
+            case "document":
+                stillActive = documentAssets.contains { $0.relativePath == relativePath }
+            case "wallet":
+                stillActive = walletAssets.contains { $0.relativePath == relativePath } ||
+                    activeCards.contains { $0.loyaltyLogoRelativePath == relativePath }
+            default:
+                stillActive = true
+            }
+            guard !stillActive else { continue }
+
+            switch assetKind {
+            case "task":
+                if let directory = TaskAttachment.attachmentsDirectory {
+                    try? FileManager.default.removeItem(at: directory.appendingPathComponent(relativePath))
+                }
+                TaskAttachment.deleteCloudMirror(relativePath: relativePath)
+            case "document":
+                DocumentAssetStore.delete(relativePath: relativePath)
+                DocumentAssetStore.deleteCloudMirror(relativePath: relativePath)
+            case "wallet":
+                WalletAssetStore.delete(relativePath: relativePath)
+                WalletAssetStore.deleteCloudMirror(relativePath: relativePath)
+            default: break
+            }
         }
     }
-    
-    private func deleteFile(_ item: DeletedItem) {
 
-        // Allegati Task
-        if let trashName = item.trashFileName,
-           let url = TaskAttachment.trashFileURL(
-               trashFileName: trashName
-           ) {
-
-            try? FileManager.default.removeItem(at: url)
+    private func deleteLocalTrashFile(_ item: DeletedItem) {
+        guard let trashName = item.trashFileName else { return }
+        let url: URL?
+        switch item.type {
+        case "attachment": url = TaskAttachment.trashFileURL(trashFileName: trashName)
+        case "walletAsset": url = WalletAssetStore.trashFileURL(trashFileName: trashName)
+        case "documentAsset": url = DocumentAssetStore.trashFileURL(trashFileName: trashName)
+        default: url = nil
         }
-
-        // Loyalty Card / Ticket
-        if item.type == "loyaltycard" {
-
-            WalletAssetStore.delete(
-                relativePath: item.loyaltyLogoRelativePath
-            )
-
-            WalletAssetStore.delete(
-                relativePath: item.loyaltyFrontRelativePath
-            )
-
-            WalletAssetStore.delete(
-                relativePath: item.loyaltyBackRelativePath
-            )
-        }
-        
-        if item.type == "walletAsset",
-           let trashName = item.trashFileName,
-           let url = WalletAssetStore.trashFileURL(
-               trashFileName: trashName
-           ) {
-
-            try? FileManager.default.removeItem(at: url)
-        }
-        
-        
-        if item.type == "documentAsset",
-           let trashName = item.trashFileName,
-           let url = DocumentAssetStore.trashFileURL(
-               trashFileName: trashName
-           ) {
-
-            try? FileManager.default.removeItem(at: url)
+        if let url {
+            do { try FileManager.default.removeItem(at: url) }
+            catch {
+                AppLogger.persistence.error(
+                    "Unable to permanently delete local Trash asset: \(error.localizedDescription)"
+                )
+            }
         }
     }
-   
+
     private func typeLabel(for item: DeletedItem) -> String {
         switch item.type {
         case "task":

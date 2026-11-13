@@ -326,10 +326,28 @@ enum RecurringAttachmentManager {
         for task: TodoTask,
         in context: ModelContext
     ) -> [TaskAttachment] {
-        var result = task.attachments ?? []
-        var seenIDs = Set<UUID>(
-            result.map { $0.id }
+        // Resolve local attachments through a fresh fetch instead of traversing
+        // task.attachments during SwiftUI rendering. This avoids dereferencing
+        // potentially stale SwiftData relationship objects.
+        let taskID = task.id
+        let localDescriptor = FetchDescriptor<TaskAttachment>(
+            predicate: #Predicate<TaskAttachment> { attachment in
+                attachment.task?.id == taskID
+            }
         )
+
+        var result: [TaskAttachment]
+        do {
+            result = try context.fetch(localDescriptor)
+        } catch {
+            // Do not silently report an empty list when the store lookup fails.
+            AppLogger.persistence.error(
+                "Local task attachment fetch failed: \(error.localizedDescription)"
+            )
+            return []
+        }
+
+        var seenIDs = Set(result.map(\.id))
 
         guard let recurrenceID = task.recurrenceID,
               let occurrenceIndex = task.occurrenceIndex else {
@@ -351,27 +369,32 @@ enum RecurringAttachmentManager {
                      occurrenceIndex <= (rule.propagationEndIndex ?? occurrenceIndex)) &&
                     !seenIDs.contains(rule.attachmentID)
                 }
-                .map { $0.attachmentID }
+                .map(\.attachmentID)
         )
 
         guard !inheritedAttachmentIDs.isEmpty else {
             return result.sorted(by: attachmentSort)
         }
 
-        // Fetch all inherited assets in one query instead of one query per
-        // attachment. The predicate uses only the primitive UUID attribute.
+        // Fetch inherited assets in one query, then merge by stable UUID.
         let attachmentIDs = Array(inheritedAttachmentIDs)
-        let descriptor = FetchDescriptor<TaskAttachment>(
+        let inheritedDescriptor = FetchDescriptor<TaskAttachment>(
             predicate: #Predicate<TaskAttachment> { attachment in
                 attachmentIDs.contains(attachment.id)
             }
         )
 
-        let inheritedAttachments = (try? context.fetch(descriptor)) ?? []
-        for attachment in inheritedAttachments {
-            guard !seenIDs.contains(attachment.id) else { continue }
-            seenIDs.insert(attachment.id)
-            result.append(attachment)
+        do {
+            let inheritedAttachments = try context.fetch(inheritedDescriptor)
+            for attachment in inheritedAttachments {
+                guard seenIDs.insert(attachment.id).inserted else { continue }
+                result.append(attachment)
+            }
+        } catch {
+            // Preserve locally owned attachments if inherited lookup fails.
+            AppLogger.persistence.error(
+                "Inherited task attachment fetch failed: \(error.localizedDescription)"
+            )
         }
 
         return result.sorted(by: attachmentSort)

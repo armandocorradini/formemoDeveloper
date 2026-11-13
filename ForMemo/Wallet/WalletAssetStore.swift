@@ -456,6 +456,146 @@ enum WalletAssetStore {
         }
     }
     
+    /// Materializes the retained iCloud mirror into this device's local Trash
+    /// so the existing restore transaction can move it into the canonical folder.
+    static func recoverCloudMirrorToTrashAsync(
+        relativePath: String,
+        preferredTrashFileName: String?
+    ) async -> String? {
+        guard isSafeRelativePath(relativePath),
+              let localTrashDirectory = trashDirectory else { return nil }
+        if let preferredTrashFileName,
+           let existingTrashURL = trashFileURL(trashFileName: preferredTrashFileName) {
+            let fileManager = FileManager.default
+            let resourceKeys: Set<URLResourceKey> = [
+                .isUbiquitousItemKey,
+                .ubiquitousItemDownloadingStatusKey,
+                .ubiquitousItemIsDownloadingKey
+            ]
+            if let values = try? existingTrashURL.resourceValues(forKeys: resourceKeys),
+               values.isUbiquitousItem == true {
+                if values.ubiquitousItemDownloadingStatus != .current &&
+                    values.ubiquitousItemDownloadingStatus != .downloaded {
+                    try? fileManager.startDownloadingUbiquitousItem(at: existingTrashURL)
+                }
+                let deadline = Date().addingTimeInterval(30)
+                while Date() < deadline {
+                    let current = try? existingTrashURL.resourceValues(forKeys: resourceKeys)
+                    if current?.ubiquitousItemDownloadingStatus == .current ||
+                        current?.ubiquitousItemDownloadingStatus == .downloaded {
+                        break
+                    }
+                    try? await Task.sleep(nanoseconds: 250_000_000)
+                }
+                let finalStatus = try? existingTrashURL.resourceValues(forKeys: resourceKeys).ubiquitousItemDownloadingStatus
+                guard finalStatus == .current || finalStatus == .downloaded else { return nil }
+            }
+            guard fileManager.isReadableFile(atPath: existingTrashURL.path),
+                  let size = (try? fileManager.attributesOfItem(atPath: existingTrashURL.path)[.size] as? NSNumber)?.int64Value,
+                  size > 0 else { return nil }
+            if existingTrashURL.deletingLastPathComponent() == localTrashDirectory {
+                return preferredTrashFileName
+            }
+            do {
+                try fileManager.createDirectory(at: localTrashDirectory, withIntermediateDirectories: true)
+                let localURL = localTrashDirectory.appendingPathComponent(preferredTrashFileName)
+                if !fileManager.fileExists(atPath: localURL.path) {
+                    try fileManager.copyItem(at: existingTrashURL, to: localURL)
+                }
+                return preferredTrashFileName
+            } catch {
+                AppLogger.persistence.error("Unable to materialize existing WalletAsset Trash file: \(error.localizedDescription)")
+                return nil
+            }
+        }
+        guard let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(for: .walletAssets) else {
+            return nil
+        }
+
+        let fileManager = FileManager.default
+        let sourceURL = cloudDirectory.appendingPathComponent(relativePath)
+        guard fileManager.fileExists(atPath: sourceURL.path) else {
+            return nil
+        }
+
+        let resourceKeys: Set<URLResourceKey> = [
+            .isUbiquitousItemKey,
+            .ubiquitousItemDownloadingStatusKey,
+            .ubiquitousItemIsDownloadingKey
+        ]
+
+        if let values = try? sourceURL.resourceValues(forKeys: resourceKeys),
+           values.isUbiquitousItem == true {
+            if values.ubiquitousItemDownloadingStatus != .current &&
+                values.ubiquitousItemDownloadingStatus != .downloaded {
+                try? fileManager.startDownloadingUbiquitousItem(at: sourceURL)
+            }
+
+            let deadline = Date().addingTimeInterval(30)
+            while Date() < deadline {
+                let current = try? sourceURL.resourceValues(forKeys: resourceKeys)
+                let size = (try? fileManager.attributesOfItem(atPath: sourceURL.path)[.size] as? NSNumber)?.int64Value ?? 0
+                if fileManager.isReadableFile(atPath: sourceURL.path), size > 0,
+                   current?.ubiquitousItemDownloadingStatus == .current ||
+                   current?.ubiquitousItemDownloadingStatus == .downloaded {
+                    break
+                }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+            }
+        }
+
+        let finalValues = try? sourceURL.resourceValues(forKeys: resourceKeys)
+        if finalValues?.isUbiquitousItem == true {
+            guard finalValues?.ubiquitousItemDownloadingStatus == .current ||
+                  finalValues?.ubiquitousItemDownloadingStatus == .downloaded else {
+                AppLogger.persistence.warning("\(relativePath) is still downloading from iCloud; restore deferred.")
+                return nil
+            }
+        }
+        guard fileManager.isReadableFile(atPath: sourceURL.path),
+              let sourceSize = (try? fileManager.attributesOfItem(atPath: sourceURL.path)[.size] as? NSNumber)?.int64Value,
+              sourceSize > 0 else {
+            return nil
+        }
+
+        do {
+            try fileManager.createDirectory(at: localTrashDirectory, withIntermediateDirectories: true)
+            let name = preferredTrashFileName ?? (UUID().uuidString + "-" + URL(fileURLWithPath: relativePath).lastPathComponent)
+            let destinationURL = localTrashDirectory.appendingPathComponent(name)
+            if fileManager.fileExists(atPath: destinationURL.path) {
+                let existingSize = (try? fileManager.attributesOfItem(atPath: destinationURL.path)[.size] as? NSNumber)?.int64Value ?? 0
+                if existingSize == sourceSize { return name }
+                return nil
+            }
+
+            var coordinationError: NSError?
+            var copyError: Error?
+            NSFileCoordinator().coordinate(
+                readingItemAt: sourceURL,
+                options: [],
+                writingItemAt: destinationURL,
+                options: .forReplacing,
+                error: &coordinationError
+            ) { coordinatedSource, coordinatedDestination in
+                do { try fileManager.copyItem(at: coordinatedSource, to: coordinatedDestination) }
+                catch { copyError = error }
+            }
+            if let coordinationError { throw coordinationError }
+            if let copyError { throw copyError }
+
+            let copiedSize = (try? fileManager.attributesOfItem(atPath: destinationURL.path)[.size] as? NSNumber)?.int64Value ?? 0
+            guard copiedSize == sourceSize, copiedSize > 0 else {
+                try? fileManager.removeItem(at: destinationURL)
+                return nil
+            }
+            AppLogger.persistence.notice("WalletAsset recovered from iCloud mirror into local Trash: \(relativePath)")
+            return name
+        } catch {
+            AppLogger.persistence.error("Unable to recover WalletAsset from iCloud mirror: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
     // MARK: - Restore From Trash
 
     @discardableResult

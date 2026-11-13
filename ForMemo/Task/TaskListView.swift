@@ -135,6 +135,7 @@ struct TaskListView: View {
   }
 
   @State private var taskPendingDeletion: TodoTask?
+  @State private var showAttachmentSyncWarning = false
 
   @State private var filteredTodoTasksCache: [TodoTask] = []
     @State private var activeOverdueOffset = 0
@@ -1663,6 +1664,9 @@ struct TaskListView: View {
             tasks: completedQuery,
             loadMoreTasks: loadMoreCompletedTasks,
             completedTaskCount: completedTaskCount,
+            onAttachmentSyncBlocked: {
+                presentAttachmentSyncWarning()
+            },
             refreshCompletedTasks: {
                 fetchCompletedTasks()
                 updateCompletedTaskCount()
@@ -1716,12 +1720,16 @@ struct TaskListView: View {
           .alert(
               String(localized: "Delete task?"),
               isPresented: Binding(
-                  get: { taskPendingDeletion != nil },
-                  set: { if !$0 { taskPendingDeletion = nil } }
+                  get: { taskPendingDeletion != nil || showAttachmentSyncWarning },
+                  set: { if !$0 { taskPendingDeletion = nil; showAttachmentSyncWarning = false } }
               )
           ) {
 
-              if let task = taskPendingDeletion,
+              if showAttachmentSyncWarning {
+                  Button(String(localized: "OK"), role: .cancel) {
+                      showAttachmentSyncWarning = false
+                  }
+              } else if let task = taskPendingDeletion,
                  !task.isCompleted,
                  task.recurrenceID != nil,
                  hasFutureOccurrenceForDeletion(task) {
@@ -1744,18 +1752,11 @@ struct TaskListView: View {
                       Task { @MainActor in
                           await Task.yield()
 
-                          await deleteRecurringTaskAndFutureOccurrences(
+                          let result = await deleteRecurringTaskAndFutureOccurrences(
                               task,
                               in: modelContext
                           )
-
-                          modelContext.processPendingChanges()
-
-                          NotificationCenter.default.post(
-                              name: .taskDidChange,
-                              object: nil
-                          )
-
+                          handleDeletionResult(result)
                           isDeletingRecurrence = false
                       }
                   }
@@ -1776,15 +1777,21 @@ struct TaskListView: View {
                   }
               }
 
-              Button(
-                  String(localized: "Cancel"),
-                  role: .cancel
-              ) {
-                  taskPendingDeletion = nil
+              if !showAttachmentSyncWarning {
+                  Button(
+                      String(localized: "Cancel"),
+                      role: .cancel
+                  ) {
+                      taskPendingDeletion = nil
+                  }
               }
 
           } message: {
-              Text(String(localized: "This action cannot be undone."))
+              if showAttachmentSyncWarning {
+                  Text(String(localized: "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task."))
+              } else {
+                  Text(String(localized: "This action cannot be undone."))
+              }
           }
           .contentMargins(
             .horizontal,
@@ -2338,15 +2345,33 @@ struct TaskListView: View {
     }
 
     @MainActor
+    private func presentAttachmentSyncWarning() {
+        taskPendingDeletion = nil
+        showAttachmentSyncWarning = false
+
+        // Dismiss the deletion-confirmation alert before presenting the warning.
+        Task { @MainActor in
+            await Task.yield()
+            showAttachmentSyncWarning = true
+        }
+    }
+
+    @MainActor
+    private func handleDeletionResult(_ result: TaskDeletionResult) {
+        switch result {
+        case .deleted:
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        case .blockedByAttachmentSync:
+            presentAttachmentSyncWarning()
+        case .failed:
+            AppLogger.persistence.error("Task deletion failed.")
+        }
+    }
+
+    @MainActor
     private func deleteTaskAndRefresh(_ task: TodoTask) {
-        deleteTask(task, in: modelContext)
-
-        modelContext.processPendingChanges()
-
-        NotificationCenter.default.post(
-            name: .taskDidChange,
-            object: nil
-        )
+        handleDeletionResult(deleteTask(task, in: modelContext))
     }
     
     @MainActor
@@ -4213,6 +4238,7 @@ struct CompletedTasksContainerView: View {
     let tasks: [TodoTask]
     let loadMoreTasks: () -> Void
     let completedTaskCount: Int
+    let onAttachmentSyncBlocked: () -> Void
     let refreshCompletedTasks: () -> Void
     
   var body: some View {
@@ -4222,6 +4248,7 @@ struct CompletedTasksContainerView: View {
           tasks: tasks,
           modelContext: modelContext,
           completedTaskCount: completedTaskCount,
+          onAttachmentSyncBlocked: onAttachmentSyncBlocked,
           loadMoreTasks: loadMoreTasks,
           refreshCompletedTasks: refreshCompletedTasks
       )
@@ -4253,6 +4280,7 @@ struct CompletedSectionView: View {
   let tasks: [TodoTask]
   let modelContext: ModelContext
   let completedTaskCount: Int
+  let onAttachmentSyncBlocked: () -> Void
     let loadMoreTasks: () -> Void
     let refreshCompletedTasks: () -> Void
     
@@ -4307,9 +4335,15 @@ struct CompletedSectionView: View {
 
   @MainActor
   private func deleteTaskAndRefresh(_ task: TodoTask) {
-    deleteTask(task, in: modelContext)
-    modelContext.processPendingChanges()
-    NotificationCenter.default.post(name: .taskDidChange, object: nil)
+    switch deleteTask(task, in: modelContext) {
+    case .deleted:
+      modelContext.processPendingChanges()
+      NotificationCenter.default.post(name: .taskDidChange, object: nil)
+    case .blockedByAttachmentSync:
+      onAttachmentSyncBlocked()
+    case .failed:
+      AppLogger.persistence.error("Completed task deletion failed.")
+    }
   }
     
 

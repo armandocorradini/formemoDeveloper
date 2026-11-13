@@ -2,9 +2,28 @@ import SwiftData
 import Foundation
 import os
 
+enum TaskDeletionResult: Equatable {
+    case deleted
+    case blockedByAttachmentSync
+    case failed
+}
+
 @MainActor
 
-func deleteTask(_ task: TodoTask, in context: ModelContext) {
+@discardableResult
+func deleteTask(
+    _ task: TodoTask,
+    in context: ModelContext
+) -> TaskDeletionResult {
+
+    guard TaskAttachment.attachmentsAreSafeToDelete(
+         task.attachments ?? []
+    ) else {
+        AppLogger.persistence.warning(
+            "Task deletion blocked because one or more attachments are not safely synchronized."
+        )
+        return .blockedByAttachmentSync
+    }
 
     TodoTask.createDeletedTaskRecord(
         from: task,
@@ -20,10 +39,6 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
     if let attachments = task.attachments {
         for attachment in attachments {
             let trashName = attachment.deleteFileIfNeeded()
-
-            TaskAttachment.deleteCloudMirror(
-                relativePath: attachment.relativePath
-            )
 
             let item = DeletedItem(type: "attachment")
             item.taskID = task.id
@@ -73,10 +88,6 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
 
         let trashName = attachment.deleteFileIfNeeded()
 
-        TaskAttachment.deleteCloudMirror(
-            relativePath: attachment.relativePath
-        )
-
         let item = DeletedItem(type: "attachment")
         item.taskID = task.id
         item.fileName = attachment.originalName
@@ -91,17 +102,18 @@ func deleteTask(_ task: TodoTask, in context: ModelContext) {
     context.safeSave(operation: "DeleteTask")
 
     NotificationManager.shared.refresh()
+    return .deleted
 }
 
 @MainActor
+@discardableResult
 func deleteRecurringTaskAndFutureOccurrences(
     _ task: TodoTask,
     in context: ModelContext
-) async {
+) async -> TaskDeletionResult {
     guard let recurrenceID = task.recurrenceID,
           let occurrenceIndex = task.occurrenceIndex else {
-        deleteTask(task, in: context)
-        return
+        return deleteTask(task, in: context)
     }
 
     // Treat this multi-batch deletion as an exclusive persistence operation.
@@ -113,7 +125,7 @@ func deleteRecurringTaskAndFutureOccurrences(
         AppLogger.persistence.error(
             "Recurring-task deletion refused because another persistence operation is active: \(error.localizedDescription)"
         )
-        return
+        return .failed
     }
     defer {
         PersistenceOperationCoordinator.shared.finish()
@@ -139,7 +151,7 @@ func deleteRecurringTaskAndFutureOccurrences(
         AppLogger.persistence.error(
             "Recurring-task deletion aborted because occurrence fetch failed: \(error.localizedDescription)"
         )
-        return
+        return .failed
     }
 
     let tasksToDelete = recurrenceTasks.filter { recurrenceTask in
@@ -152,7 +164,19 @@ func deleteRecurringTaskAndFutureOccurrences(
 
     guard !tasksToDelete.isEmpty else {
         NotificationManager.shared.refresh()
-        return
+        return .deleted
+    }
+
+    let attachmentsToCheck = tasksToDelete.flatMap {
+        $0.attachments ?? []
+    }
+    guard TaskAttachment.attachmentsAreSafeToDelete(
+         attachmentsToCheck
+    ) else {
+        AppLogger.persistence.warning(
+            "Recurring-task deletion blocked because one or more attachments are not safely synchronized."
+        )
+        return .blockedByAttachmentSync
     }
 
     // Do not change deletion fingerprints or attachment propagation until the
@@ -168,7 +192,7 @@ func deleteRecurringTaskAndFutureOccurrences(
         AppLogger.persistence.error(
             "Recurring-task deletion aborted because attachment propagation could not be updated: \(error.localizedDescription)"
         )
-        return
+        return .failed
     }
 
     DeletedFingerprintStore.markDeletedFromOccurrence(
@@ -178,6 +202,7 @@ func deleteRecurringTaskAndFutureOccurrences(
 
     var sharedAttachmentsToReconcile: [TaskAttachment] = []
     var sharedAttachmentIDs = Set<UUID>()
+    var permanentlyRemovedAttachmentFiles: [(relativePath: String, trashFileName: String?)] = []
 
     for batchStart in stride(
         from: 0,
@@ -210,11 +235,11 @@ func deleteRecurringTaskAndFutureOccurrences(
 
             if let attachments = recurrenceTask.attachments {
                 for attachment in attachments {
-                    _ = attachment.deleteFileIfNeeded()
-
-                    TaskAttachment.deleteCloudMirror(
-                        relativePath: attachment.relativePath
-                    )
+                    let trashName = attachment.deleteFileIfNeeded()
+                    permanentlyRemovedAttachmentFiles.append((
+                        relativePath: attachment.relativePath,
+                        trashFileName: trashName
+                    ))
                 }
             }
 
@@ -242,10 +267,11 @@ func deleteRecurringTaskAndFutureOccurrences(
             continue
         }
 
-        _ = attachment.deleteFileIfNeeded()
-        TaskAttachment.deleteCloudMirror(
-            relativePath: attachment.relativePath
-        )
+        let trashName = attachment.deleteFileIfNeeded()
+        permanentlyRemovedAttachmentFiles.append((
+            relativePath: attachment.relativePath,
+            trashFileName: trashName
+        ))
         context.delete(attachment)
     }
 
@@ -257,6 +283,30 @@ func deleteRecurringTaskAndFutureOccurrences(
     context.safeSave(
         operation: "DeleteRecurringTaskAndFutureOccurrences.sharedAttachments"
     )
+
+    // A physical mirror is removed only when no remaining TaskAttachment model
+    // references the same path. This protects assets still used outside the
+    // deleted occurrence range.
+    do {
+        let remainingAttachments = try context.fetch(FetchDescriptor<TaskAttachment>())
+        for candidate in permanentlyRemovedAttachmentFiles {
+            guard !remainingAttachments.contains(where: {
+                $0.relativePath == candidate.relativePath
+            }) else {
+                continue
+            }
+
+            TaskAttachment.deleteCloudMirror(relativePath: candidate.relativePath)
+            if let trashName = candidate.trashFileName,
+               let trashURL = TaskAttachment.trashFileURL(trashFileName: trashName) {
+                try? FileManager.default.removeItem(at: trashURL)
+            }
+        }
+    } catch {
+        AppLogger.persistence.error(
+            "Recurring-task asset cleanup skipped because remaining attachment references could not be checked: \(error.localizedDescription)"
+        )
+    }
 
     do {
         let remainingTasks = try context.fetch(FetchDescriptor<TodoTask>())
@@ -273,6 +323,7 @@ func deleteRecurringTaskAndFutureOccurrences(
     }
 
     NotificationManager.shared.refresh()
+    return .deleted
 }
 
 @MainActor
@@ -288,10 +339,6 @@ func deleteLoyaltyCard(
     for asset in card.assets ?? [] {
 
         let trashFileName = WalletAssetStore.moveToTrash(
-            relativePath: asset.relativePath
-        )
-
-        WalletAssetStore.deleteCloudMirror(
             relativePath: asset.relativePath
         )
 
@@ -346,18 +393,9 @@ func deleteDocument(
 
     for asset in document.sortedAssets {
 
-        guard let trashFileName =
-            DocumentAssetStore.moveToTrash(
-                relativePath: asset.relativePath
-            )
-        else {
-            AppLogger.persistence.error(
-                "Document asset deletion aborted: asset could not be moved to Trash."
-            )
-            continue
-        }
-
-        DocumentAssetStore.deleteCloudMirror(
+        // The cloud mirror remains intact while the document is in Recently Deleted.
+        // A missing local source is recoverable from that mirror during restore.
+        let trashFileName = DocumentAssetStore.moveToTrash(
             relativePath: asset.relativePath
         )
 

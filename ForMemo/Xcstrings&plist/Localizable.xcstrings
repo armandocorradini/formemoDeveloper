@@ -26956,6 +26956,9 @@
         }
       }
     },
+    "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task." : {
+
+    },
     "Only attachments of completed tasks are deleted automatically if Auto-delete attachments is enabled in Settings > Data Management." : {
       "localizations" : {
         "de" : {
@@ -31707,6 +31710,9 @@
           }
         }
       }
+    },
+    "Restore Unavailable" : {
+
     },
     "Restoring a backup may overwrite your current local data." : {
       "localizations" : {
@@ -39011,6 +39017,9 @@
         }
       }
     },
+    "The item could not be restored. It may already exist or some required data may be unavailable. The item remains in Recently Deleted." : {
+
+    },
     "The last scheduled occurrence in this series is complete. You can extend the same series without changing past occurrences." : {
       "localizations" : {
         "de" : {
@@ -39963,6 +39972,9 @@
           }
         }
       }
+    },
+    "This attachment is not currently available on this device. Wait for iCloud synchronization and try again, or restore it from the device that originally deleted it. The item remains in Recently Deleted." : {
+
     },
     "This attachment is shared with this recurrence. If you delete it, it will be removed from all past, current, and future occurrences and moved to Recently Deleted." : {
       "localizations" : {

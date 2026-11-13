@@ -25,6 +25,7 @@ struct WeeklyTasksView: View {
     
     
     @State private var taskPendingDeletion: TodoTask?
+    @State private var showAttachmentSyncWarning = false
     @State private var pendingDeletionShowsRecurrenceChoices = false
     @State private var draftTask: TodoTask?
     private struct SelectedWeatherDay: Identifiable {
@@ -100,10 +101,35 @@ struct WeeklyTasksView: View {
     
     @MainActor
     private func deleteTaskAndRefresh(_ task: TodoTask) {
-        deleteTask(task, in: modelContext)
-        modelContext.processPendingChanges()
-        NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        handleDeletionResult(deleteTask(task, in: modelContext))
     }
+
+    @MainActor
+    private func presentAttachmentSyncWarning() {
+        taskPendingDeletion = nil
+        pendingDeletionShowsRecurrenceChoices = false
+        showAttachmentSyncWarning = false
+
+        // Dismiss the deletion-confirmation alert before presenting the warning.
+        Task { @MainActor in
+            await Task.yield()
+            showAttachmentSyncWarning = true
+        }
+    }
+
+    @MainActor
+    private func handleDeletionResult(_ result: TaskDeletionResult) {
+        switch result {
+        case .deleted:
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        case .blockedByAttachmentSync:
+            presentAttachmentSyncWarning()
+        case .failed:
+            AppLogger.persistence.error("Task deletion failed.")
+        }
+    }
+
 
     @MainActor
     private func requestTaskDeletion(_ task: TodoTask) {
@@ -492,16 +518,21 @@ struct WeeklyTasksView: View {
             .alert(
                 "Delete task?",
                 isPresented: Binding(
-                    get: { taskPendingDeletion != nil },
+                    get: { taskPendingDeletion != nil || showAttachmentSyncWarning },
                     set: {
                         if !$0 {
                             taskPendingDeletion = nil
                             pendingDeletionShowsRecurrenceChoices = false
+                            showAttachmentSyncWarning = false
                         }
                     }
                 )
             ) {
-                if pendingDeletionShowsRecurrenceChoices {
+                if showAttachmentSyncWarning {
+                    Button(String(localized: "OK"), role: .cancel) {
+                        showAttachmentSyncWarning = false
+                    }
+                } else if pendingDeletionShowsRecurrenceChoices {
                     Button("Delete This Occurrence", role: .destructive) {
                         if let task = taskPendingDeletion {
                             withAnimation {
@@ -521,18 +552,11 @@ struct WeeklyTasksView: View {
                             Task { @MainActor in
                                 await Task.yield()
 
-                                await deleteRecurringTaskAndFutureOccurrences(
+                                let result = await deleteRecurringTaskAndFutureOccurrences(
                                     task,
                                     in: modelContext
                                 )
-
-                                modelContext.processPendingChanges()
-
-                                NotificationCenter.default.post(
-                                    name: .taskDidChange,
-                                    object: nil
-                                )
-
+                                handleDeletionResult(result)
                                 isDeletingRecurrence = false
                             }
                         } else {
@@ -552,12 +576,18 @@ struct WeeklyTasksView: View {
                     }
                 }
 
-                Button("Cancel", role: .cancel) {
-                    taskPendingDeletion = nil
-                    pendingDeletionShowsRecurrenceChoices = false
+                if !showAttachmentSyncWarning {
+                    Button("Cancel", role: .cancel) {
+                        taskPendingDeletion = nil
+                        pendingDeletionShowsRecurrenceChoices = false
+                    }
                 }
             } message: {
-                Text("This action cannot be undone.")
+                if showAttachmentSyncWarning {
+                    Text(String(localized: "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task."))
+                } else {
+                    Text("This action cannot be undone.")
+                }
             }
             
             if isDeletingRecurrence {

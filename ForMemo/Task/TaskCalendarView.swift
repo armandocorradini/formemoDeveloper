@@ -1518,34 +1518,29 @@ private extension TaskCalendarView {
 
             ForEach(days, id: \.self) { day in
 
+                let dayIsSelected = calendar.isDate(day, inSameDayAs: selectedDate)
+                let dayIsInDisplayedMonth = calendar.isDate(
+                    day,
+                    equalTo: displayedMonth,
+                    toGranularity: .month
+                )
+                let dayIsToday = calendar.isDateInToday(day)
+                let dayIsHoliday = holidayDates.contains(calendar.startOfDay(for: day))
+                let dayTasks = tasksForDay(day)
+
                 DayCell(
-
                     date: day,
-
                     now: .now,
-
-                    isSelected: calendar.isDate(day, inSameDayAs: selectedDate),
-
-                    isInDisplayedMonth: calendar.isDate(day, equalTo: displayedMonth, toGranularity: .month),
-
-                    isToday: calendar.isDateInToday(day),
-
-                    isHoliday: holidayDates.contains(calendar.startOfDay(for: day)),
-
-                    tasks: tasksForDay(day),
-                    
+                    isSelected: dayIsSelected,
+                    isInDisplayedMonth: dayIsInDisplayedMonth,
+                    isToday: dayIsToday,
+                    isHoliday: dayIsHoliday,
+                    tasks: dayTasks,
                     isExpanded: showExpandedCalendar,
-                    
                     isLandscape: isLandscape,
-
                     onSelect: { selectedDate = day },
-
                     onToggleCompleted: toggleCompleted,
-
-                    onDelete: { taskToDelete in deleteTask(taskToDelete, in: modelContext)},
-
                     onAdd: prepareNewTask
-
                 )
 
             }
@@ -1599,7 +1594,6 @@ private struct DayCell: View {
 
     let onToggleCompleted: (TodoTask) -> Void
 
-    let onDelete: (TodoTask) -> Void
 
     let onAdd: (Date) -> Void
 
@@ -1882,6 +1876,7 @@ private struct DayTasksInlineView: View {
     @Environment(AppSettings.self) private var settings
 
     @State private var taskPendingDeletion: TodoTask?
+    @State private var showAttachmentSyncWarning = false
     @State private var pendingDeletionHasFutureOccurrences = false
     
     @State private var isDeletingRecurrence = false
@@ -1973,6 +1968,36 @@ private struct DayTasksInlineView: View {
 
 
     @MainActor
+    private func presentAttachmentSyncWarning() {
+        taskPendingDeletion = nil
+        pendingDeletionHasFutureOccurrences = false
+        showAttachmentSyncWarning = false
+
+        // Dismiss the deletion-confirmation alert before presenting the warning.
+        Task { @MainActor in
+            await Task.yield()
+            showAttachmentSyncWarning = true
+        }
+    }
+
+    @MainActor
+    private func handleDeletionResult(_ result: TaskDeletionResult) {
+        switch result {
+        case .deleted:
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        case .blockedByAttachmentSync:
+            presentAttachmentSyncWarning()
+        case .failed:
+            AppLogger.persistence.error("Task deletion failed.")
+        }
+    }
+
+    @MainActor
+    private func deleteTaskAndRefresh(_ task: TodoTask) {
+        handleDeletionResult(deleteTask(task, in: modelContext))
+    }
+
     private func requestTaskDeletion(_ task: TodoTask) {
         // A completed occurrence is historical data: delete only this task.
         guard task.recurrenceID != nil, !task.isCompleted else {
@@ -1981,12 +2006,8 @@ private struct DayTasksInlineView: View {
                 taskPendingDeletion = task
             } else {
                 withAnimation {
-                    deleteTask(task, in: modelContext)
+                    deleteTaskAndRefresh(task)
                 }
-                NotificationCenter.default.post(
-                    name: .taskDidChange,
-                    object: nil
-                )
             }
             return
         }
@@ -2003,13 +2024,8 @@ private struct DayTasksInlineView: View {
                 taskPendingDeletion = task
             } else {
                 withAnimation {
-                    deleteTask(task, in: modelContext)
+                    deleteTaskAndRefresh(task)
                 }
-
-                NotificationCenter.default.post(
-                    name: .taskDidChange,
-                    object: nil
-                )
 
                 pendingDeletionHasFutureOccurrences = false
             }
@@ -2578,26 +2594,27 @@ private struct DayTasksInlineView: View {
             }
             .alert("Delete task?",
                    isPresented: Binding(
-                    get: { taskPendingDeletion != nil },
+                    get: { taskPendingDeletion != nil || showAttachmentSyncWarning },
                     set: {
                         if !$0 {
                             taskPendingDeletion = nil
                             pendingDeletionHasFutureOccurrences = false
+                            showAttachmentSyncWarning = false
                         }
                     }
                    )
             ) {
 
-                if let task = taskPendingDeletion, pendingDeletionHasFutureOccurrences {
+                if showAttachmentSyncWarning {
+                    Button(String(localized: "OK"), role: .cancel) {
+                        showAttachmentSyncWarning = false
+                    }
+                } else if let task = taskPendingDeletion, pendingDeletionHasFutureOccurrences {
 
                     Button("Delete This Occurrence", role: .destructive) {
                         withAnimation {
-                            deleteTask(task, in: modelContext)
+                            deleteTaskAndRefresh(task)
                         }
-                        NotificationCenter.default.post(
-                            name: .taskDidChange,
-                            object: nil
-                        )
                         taskPendingDeletion = nil
                         pendingDeletionHasFutureOccurrences = false
                     }
@@ -2610,18 +2627,11 @@ private struct DayTasksInlineView: View {
                         Task { @MainActor in
                             await Task.yield()
 
-                            await deleteRecurringTaskAndFutureOccurrences(
+                            let result = await deleteRecurringTaskAndFutureOccurrences(
                                 task,
                                 in: modelContext
                             )
-
-                            modelContext.processPendingChanges()
-
-                            NotificationCenter.default.post(
-                                name: .taskDidChange,
-                                object: nil
-                            )
-
+                            handleDeletionResult(result)
                             isDeletingRecurrence = false
                         }
                     }
@@ -2631,25 +2641,27 @@ private struct DayTasksInlineView: View {
                     Button("Delete", role: .destructive) {
                         if let task = taskPendingDeletion {
                             withAnimation {
-                                deleteTask(task, in: modelContext)
+                                deleteTaskAndRefresh(task)
                             }
-                            NotificationCenter.default.post(
-                                name: .taskDidChange,
-                                object: nil
-                            )
                         }
                         taskPendingDeletion = nil
                         pendingDeletionHasFutureOccurrences = false
                     }
                 }
 
-                Button("Cancel", role: .cancel) {
-                    taskPendingDeletion = nil
-                    pendingDeletionHasFutureOccurrences = false
+                if !showAttachmentSyncWarning {
+                    Button("Cancel", role: .cancel) {
+                        taskPendingDeletion = nil
+                        pendingDeletionHasFutureOccurrences = false
+                    }
                 }
 
             } message: {
-                Text("This action cannot be undone.")
+                if showAttachmentSyncWarning {
+                    Text(String(localized: "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task."))
+                } else {
+                    Text("This action cannot be undone.")
+                }
             }
 
         }

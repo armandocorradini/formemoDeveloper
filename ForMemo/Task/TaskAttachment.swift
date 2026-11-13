@@ -594,6 +594,106 @@ extension TaskAttachment {
         )
     }
     
+    /// Checks every attachment before any task-deletion mutation begins.
+    @MainActor
+    static func attachmentsAreSafeToDelete(
+        _ attachments: [TaskAttachment]
+    ) -> Bool {
+        attachments.allSatisfy { isSafeToDelete($0) }
+    }
+
+    /// Returns true only when the local recovery copy exists and, when an
+    /// iCloud identity is active, the corresponding iCloud asset is fully
+    /// uploaded and has no active transfer or unresolved conflict.
+    @MainActor
+    private static func isSafeToDelete(_ attachment: TaskAttachment) -> Bool {
+        guard !attachment.relativePath.isEmpty,
+              let localDirectory = attachmentsDirectory else {
+            return false
+        }
+
+        let fileManager = FileManager.default
+        let localURL = localDirectory.appendingPathComponent(
+            attachment.relativePath,
+            isDirectory: false
+        )
+
+        guard fileManager.fileExists(atPath: localURL.path),
+              let localAttributes = try? fileManager.attributesOfItem(
+                atPath: localURL.path
+              ),
+              let localSize = localAttributes[.size] as? NSNumber,
+              localSize.int64Value > 0 else {
+            return false
+        }
+
+        // With no iCloud identity, ForMemo is operating in local-first mode.
+        guard Persistence.hasICloudIdentity else {
+            return true
+        }
+
+        // An active iCloud identity means this asset is expected to have a
+        // cloud mirror. An unavailable container must fail closed.
+        guard let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
+            for: .taskAttachments
+        ) else {
+            return false
+        }
+
+        let canonicalCloudURL = cloudDirectory.appendingPathComponent(
+            attachment.relativePath,
+            isDirectory: false
+        )
+
+        let cloudURL: URL
+        if fileManager.fileExists(atPath: canonicalCloudURL.path) {
+            cloudURL = canonicalCloudURL
+        } else if let duplicateURL = duplicateCloudAttachmentDirectories()
+            .map({ $0.appendingPathComponent(attachment.relativePath, isDirectory: false) })
+            .first(where: { fileManager.fileExists(atPath: $0.path) }) {
+            cloudURL = duplicateURL
+        } else {
+            return false
+        }
+
+        return cloudFileIsFullyUploaded(at: cloudURL)
+    }
+
+    private static func cloudFileIsFullyUploaded(at url: URL) -> Bool {
+        let resourceKeys: Set<URLResourceKey> = [
+            .isUbiquitousItemKey,
+            .ubiquitousItemIsUploadedKey,
+            .ubiquitousItemIsUploadingKey,
+            .ubiquitousItemIsDownloadingKey,
+            .ubiquitousItemHasUnresolvedConflictsKey
+        ]
+
+        let coordinator = NSFileCoordinator()
+        var coordinationError: NSError?
+        var isReady = false
+
+        coordinator.coordinate(
+            readingItemAt: url,
+            options: [],
+            error: &coordinationError
+        ) { coordinatedURL in
+            guard let values = try? coordinatedURL.resourceValues(
+                forKeys: resourceKeys
+            ) else {
+                return
+            }
+
+            isReady =
+                values.isUbiquitousItem == true &&
+                values.ubiquitousItemIsUploaded == true &&
+                values.ubiquitousItemIsUploading == false &&
+                values.ubiquitousItemIsDownloading == false &&
+                values.ubiquitousItemHasUnresolvedConflicts == false
+        }
+
+        return coordinationError == nil && isReady
+    }
+
     var fileStatus: FileStatus {
         
         guard let url = fileURL else { return .missing }

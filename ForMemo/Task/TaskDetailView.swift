@@ -1646,11 +1646,21 @@ struct TaskDetailView: View {
                 }
             }
 
-            let attachmentIDs = Set(
+            let activeLinkedAttachmentIDs = Set(
                 currentLinks
                     .filter { $0.isActive }
                     .map { $0.attachmentID }
             )
+
+            // When converting a simple task into a recurring task, there are
+            // no recurring links yet. Preserve its existing attachments by
+            // creating propagation links for their IDs below. Existing
+            // recurring series continue to use only their active linked IDs.
+            let attachmentIDs: Set<UUID> = oldRecurrenceID == nil
+                ? activeLinkedAttachmentIDs.union(
+                    (task.attachments ?? []).map(\.id)
+                )
+                : activeLinkedAttachmentIDs
 
             guard task.recurrenceRule != nil else {
                 // The recurrence ends at the retained occurrence. Preserve
