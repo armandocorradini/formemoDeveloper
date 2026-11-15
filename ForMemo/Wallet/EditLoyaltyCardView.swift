@@ -18,6 +18,7 @@ struct EditLoyaltyCardView: View {
     @State private var capturedImage: UIImage?
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var showScanner = false
+    @State private var deletionAlertMessage: String?
 
     @State private var viewingImage: UIImage?
     @State private var showImageViewer = false
@@ -154,14 +155,15 @@ struct EditLoyaltyCardView: View {
                             if currentLogoData != nil {
 
                                 Button(role: .destructive) {
-                                    previewLogoData = nil
-
                                     if let asset = card.logoAsset {
-
-                                        WalletImportService.delete(
+                                        let result = WalletImportService.delete(
                                             asset,
                                             from: modelContext
                                         )
+                                        guard result == .deleted else {
+                                            deletionAlertMessage = result.errorMessage
+                                            return
+                                        }
                                     }
 
                                     previewLogoData = nil
@@ -352,11 +354,14 @@ struct EditLoyaltyCardView: View {
                         do {
 
                             if let asset = card.logoAsset {
-
-                                WalletImportService.delete(
+                                let result = WalletImportService.delete(
                                     asset,
                                     from: modelContext
                                 )
+                                guard result == .deleted else {
+                                    deletionAlertMessage = result.errorMessage
+                                    return
+                                }
                             }
 
                             try WalletImportService.importLogo(
@@ -442,11 +447,14 @@ struct EditLoyaltyCardView: View {
                     do {
 
                         if let asset = card.logoAsset {
-
-                            WalletImportService.delete(
+                            let result = WalletImportService.delete(
                                 asset,
                                 from: modelContext
                             )
+                            guard result == .deleted else {
+                                deletionAlertMessage = result.errorMessage
+                                return
+                            }
                         }
 
                         try WalletImportService.importLogo(
@@ -572,6 +580,17 @@ struct EditLoyaltyCardView: View {
                     )
                 }
             }
+        }
+        .alert(
+            Text(String(localized: "Unable to Delete")),
+            isPresented: Binding(
+                get: { deletionAlertMessage != nil },
+                set: { if !$0 { deletionAlertMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { deletionAlertMessage = nil }
+        } message: {
+            Text(deletionAlertMessage ?? "")
         }
     }
  

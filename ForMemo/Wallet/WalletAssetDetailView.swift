@@ -14,6 +14,7 @@ struct WalletAssetDetailView: View {
 
     @State
     private var showingDeleteConfirmation = false
+    @State private var deletionAlertMessage: String?
     @State
     private var image: UIImage?
     @State
@@ -90,18 +91,32 @@ struct WalletAssetDetailView: View {
                 role: .destructive
             ) {
 
-                WalletImportService.delete(
+                let result = WalletImportService.delete(
                     asset,
                     from: modelContext
                 )
-
-                dismiss()
+                if let message = result.errorMessage {
+                    deletionAlertMessage = message
+                } else {
+                    dismiss()
+                }
             }
 
             Button(
                 "Cancel",
                 role: .cancel
             ) { }
+        }
+        .alert(
+            Text(String(localized: "Unable to Delete")),
+            isPresented: Binding(
+                get: { deletionAlertMessage != nil },
+                set: { if !$0 { deletionAlertMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { deletionAlertMessage = nil }
+        } message: {
+            Text(deletionAlertMessage ?? "")
         }
     }
 }

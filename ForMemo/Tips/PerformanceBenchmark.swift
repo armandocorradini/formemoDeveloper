@@ -513,7 +513,7 @@ extension PerformanceBenchmark {
                     return count
                 }
 
-                if leadDays > 0 {
+                if leadDays > 0 && !task.excludeGlobalNotification {
                     let triggerDate = Calendar.current.date(
                         byAdding: .day,
                         value: -leadDays,
@@ -2954,6 +2954,32 @@ extension PerformanceBenchmark {
 
 
 
+// MARK: - Exportable benchmark report
+
+#if DEBUG
+private struct PerformanceBenchmarkReportDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.plainText] }
+
+    let text: String
+
+    init(text: String) {
+        self.text = text
+    }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents,
+              let value = String(data: data, encoding: .utf8) else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        text = value
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: Data(text.utf8))
+    }
+}
+#endif
+
 // MARK: - SwiftUI benchmark screen
 
 /// Schermata temporanea DEBUG per eseguire il benchmark senza console,
@@ -2971,11 +2997,30 @@ struct PerformanceBenchmarkView: View {
 
     @State private var report: String = ""
     @State private var isRunning = false
+    @State private var isExportingReport = false
     @State private var errorMessage: String?
 
     var body: some View {
         List {
             Section {
+                Button {
+                    runAllTests()
+                } label: {
+                    HStack {
+                        Label(
+                            isRunning ? "Esecuzione test in corso…" : "Esegui tutti i test",
+                            systemImage: "checkmark.seal"
+                        )
+
+                        Spacer()
+
+                        if isRunning {
+                            ProgressView()
+                        }
+                    }
+                }
+                .disabled(isRunning)
+
                 Button {
                     runBenchmark()
                 } label: {
@@ -3175,18 +3220,293 @@ struct PerformanceBenchmarkView: View {
 
                 Section("Report") {
 
+                    Button {
+                        isExportingReport = true
+                    } label: {
+                        Label("Esporta report (.txt)", systemImage: "square.and.arrow.up")
+                    }
+                    .disabled(isRunning || report.isEmpty)
+
                     TextEditor(text: .constant(report))
                         .font(.system(.caption, design: .monospaced))
                         .frame(minHeight: 250, maxHeight: 500)
+                        .textSelection(.enabled)
                 }
             }
         }
         .navigationTitle("Performance Benchmark")
         .contentMargins(.bottom, 70, for: .scrollContent)
+        .fileExporter(
+            isPresented: $isExportingReport,
+            document: PerformanceBenchmarkReportDocument(text: report),
+            contentType: .plainText,
+            defaultFilename: "ForMemo-Test-Report"
+        ) { result in
+            if case .failure(let error) = result {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
 
     
     
+    /// Esegue in sequenza tutti gli 11 benchmark e controlli presenti in questa schermata.
+    /// Ogni prova viene isolata: un errore non impedisce l'esecuzione delle successive.
+    private func runAllTests() {
+        guard !isRunning else { return }
+
+        isRunning = true
+        errorMessage = nil
+        report = ""
+
+        Task { @MainActor in
+            let startedAt = Date()
+            var sections: [String] = []
+            var completed = 0
+            var failed = 0
+            var skipped = 0
+
+            func append(_ title: String, report testReport: String, status: String) {
+                sections.append("""
+                ------------------------------------------------------------
+                \(title) — \(status)
+                ------------------------------------------------------------
+                \(testReport)
+                """)
+                completed += 1
+            }
+
+            func appendError(_ title: String, error: Error) {
+                sections.append("""
+                ------------------------------------------------------------
+                \(title) — ERRORE
+                ------------------------------------------------------------
+                \(error.localizedDescription)
+                """)
+                failed += 1
+            }
+
+            func appendSkipped(_ title: String, reason: String) {
+                sections.append("""
+                ------------------------------------------------------------
+                \(title) — NON ESEGUITO
+                ------------------------------------------------------------
+                \(reason)
+                """)
+                skipped += 1
+            }
+
+            let activeDescriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { !$0.isCompleted }
+            )
+
+            var activeTasks: [TodoTask] = []
+            do {
+                activeTasks = try modelContext.fetch(activeDescriptor)
+            } catch {
+                appendError("Lettura Task attivi", error: error)
+            }
+
+            // 1. SwiftData / lista Task
+            do {
+                let result = try PerformanceBenchmark.run(
+                    modelContext: modelContext,
+                    repetitions: 7,
+                    warmups: 2
+                )
+                append("Performance SwiftData", report: result.report, status: "COMPLETATO")
+            } catch {
+                appendError("Performance SwiftData", error: error)
+            }
+
+            // 2. Badge: confronto funzionale tra calcolo originale e indice ottimizzato
+            do {
+                let result = PerformanceBenchmark.runBadgeBenchmark(
+                    tasks: activeTasks,
+                    repetitions: 7,
+                    warmups: 2
+                )
+                let equivalent = result.classicIdentical &&
+                    result.globalIdentical &&
+                    result.edgeCasesIdentical
+                append(
+                    "Badge e ottimizzazione",
+                    report: result.report,
+                    status: equivalent ? "PASS" : "FAIL"
+                )
+                if !equivalent { failed += 1 }
+            }
+
+            // 3. Stress test del calcolo eventi su 20.000 Task sintetici in memoria
+            do {
+                let result = PerformanceBenchmark.runNotificationStressBenchmark(
+                    taskCount: 20_000,
+                    repetitions: 7,
+                    warmups: 2
+                )
+                append("Stress notifiche — 20.000 Task", report: result.report, status: "COMPLETATO")
+            }
+
+            // 4. Rebuild: benchmark computazionale sui primi 60 Task attivi
+            if activeTasks.isEmpty {
+                appendSkipped(
+                    "Performance rebuild notifiche",
+                    reason: "Non sono presenti Task attivi da usare come dataset."
+                )
+            } else {
+                do {
+                    let result = await PerformanceBenchmark.runNotificationRebuildBenchmark(
+                        tasks: Array(activeTasks.prefix(60)),
+                        repetitions: 7,
+                        warmups: 2
+                    )
+                    append("Performance rebuild notifiche", report: result.report, status: "COMPLETATO")
+                }
+            }
+
+            // 5. Simulazione della selezione cronologica globale: non usa il centro notifiche reale
+            do {
+                let result = await PerformanceBenchmark.runRealNotificationSchedulingTest()
+                append(
+                    "Logica coda globale — simulazione 100 Task",
+                    report: result.report,
+                    status: result.passed ? "PASS" : "FAIL"
+                )
+                if !result.passed { failed += 1 }
+            }
+
+            // 6. Controllo passivo delle notifiche attualmente presenti nel sistema
+            do {
+                let result = try await PerformanceBenchmark.runNotificationConsistencyCheck(
+                    modelContext: modelContext
+                )
+                append(
+                    "Coerenza notifiche schedulate",
+                    report: result.report,
+                    status: result.passed ? "PASS" : "FAIL"
+                )
+                if !result.passed { failed += 1 }
+            } catch {
+                appendError("Coerenza notifiche schedulate", error: error)
+            }
+
+            // 7. Confronto strategie di signature
+            if activeTasks.isEmpty {
+                appendSkipped(
+                    "Performance signature notifiche",
+                    reason: "Non sono presenti Task attivi da usare come dataset."
+                )
+            } else {
+                do {
+                    let result = PerformanceBenchmark.runSignatureStrategyBenchmark(
+                        tasks: activeTasks,
+                        repetitions: 7,
+                        warmups: 2
+                    )
+                    append("Performance signature notifiche", report: result.report, status: "COMPLETATO")
+                }
+            }
+
+            // 8. Stabilità dell'ordine dei fetch consecutivi
+            do {
+                let result = try PerformanceBenchmark.runFetchOrderStabilityTest(
+                    modelContext: modelContext,
+                    repetitions: 10
+                )
+                append(
+                    "Stabilità ordine SwiftData",
+                    report: result.report,
+                    status: result.passed ? "PASS" : "FAIL"
+                )
+                if !result.passed { failed += 1 }
+            } catch {
+                appendError("Stabilità ordine SwiftData", error: error)
+            }
+
+            // 9. Performance del nucleo refresh (fetch, signature e badge)
+            if activeTasks.isEmpty {
+                appendSkipped(
+                    "Performance refresh notifiche",
+                    reason: "Non sono presenti Task attivi da usare come dataset."
+                )
+            } else {
+                do {
+                    let result = try PerformanceBenchmark.runNotificationRefreshCoreBenchmark(
+                        modelContext: modelContext,
+                        repetitions: 7,
+                        warmups: 2
+                    )
+                    append("Performance refresh notifiche", report: result.report, status: "COMPLETATO")
+                } catch {
+                    appendError("Performance refresh notifiche", error: error)
+                }
+            }
+
+            // 10. Test insert/update/delete di un solo Task temporaneo
+            do {
+                let result = try PerformanceBenchmark.runFetchOrderMutationStabilityTest(
+                    modelContext: modelContext
+                )
+                append(
+                    "Stabilità ordine dopo mutazioni",
+                    report: result.report,
+                    status: result.passed ? "PASS" : "FAIL"
+                )
+                if !result.passed { failed += 1 }
+            } catch {
+                appendError("Stabilità ordine dopo mutazioni", error: error)
+            }
+
+            // 11. Stress test insert/update/delete ripetuto su Task temporanei
+            do {
+                let result = try PerformanceBenchmark.runFetchOrderStressStabilityTest(
+                    modelContext: modelContext,
+                    cycles: 20
+                )
+                append(
+                    "Stress stabilità ordine SwiftData",
+                    report: result.report,
+                    status: result.passed ? "PASS" : "FAIL"
+                )
+                if !result.passed { failed += 1 }
+            } catch {
+                appendError("Stress stabilità ordine SwiftData", error: error)
+            }
+
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+
+            let summary = """
+            ════════════════════════════════════════════════════════════
+            FORMEMO — REPORT COMPLETO TEST E PERFORMANCE
+            ════════════════════════════════════════════════════════════
+            Inizio: \(formatter.string(from: startedAt))
+            Fine:   \(formatter.string(from: Date()))
+            Prove completate: \(completed)
+            Prove con errore o FAIL: \(failed)
+            Prove non eseguite: \(skipped)
+
+            NOTA SULL'IMPATTO
+            ------------------------------------------------------------
+            I benchmark computazionali usano dati in memoria o letture SwiftData.
+            I test di stabilità inseriscono, modificano ed eliminano solo Task
+            temporanei identificati come debug; non modificano Task preesistenti.
+            Il controllo di coerenza legge le notifiche pendenti ma non le modifica.
+            La simulazione della coda non interagisce con UNUserNotificationCenter.
+            Il test badge ripristina i valori UserDefaults al termine della prova.
+
+            DETTAGLIO DELLE PROVE
+            ════════════════════════════════════════════════════════════
+
+            \(sections.joined(separator: "\n\n"))
+            """
+
+            report = summary
+            print(summary)
+            isRunning = false
+        }
+    }
+
     private func runFetchOrderStressStabilityTest() {
 
         isRunning = true

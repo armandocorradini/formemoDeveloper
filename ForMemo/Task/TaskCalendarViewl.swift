@@ -1,0 +1,2849 @@
+import SwiftUI
+
+import SwiftData
+
+import os
+
+struct TaskCalendarView: View {
+
+    @Binding var selectedDate: Date
+
+    @Environment(AppSettings.self)
+
+    private var settings
+
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
+    
+    @State private var calendarTasks: [TodoTask] = []
+
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    @State private var draftTask: TodoTask?
+
+    private var isLandscape: Bool {
+
+        verticalSizeClass == .compact
+
+    }
+
+    private var showExpandedCalendar: Bool {
+
+        isExpanded || isLandscape
+
+    }
+
+
+    @State private var legacyRecurrenceTask: TodoTask?
+
+    @State private var displayedMonth: Date = .now
+    
+    @State private var showMonthYearPicker = false
+    @State private var pickerMonth = Calendar.current.component(.month, from: .now)
+    @State private var pickerYear = Calendar.current.component(.year, from: .now)
+    
+    
+
+    @State private var newTaskSelection: NewTaskSelection?
+
+    @State private var monthDirection: Int = 0
+
+    @State private var timer: Timer? = nil
+
+    @State private var isLongPressing = false
+
+    // Expanded calendar state (scroll driven)
+
+    @State private var isExpanded: Bool = false
+    
+    
+    @State private var showDatePicker = false
+    @State private var datePickerSelection: Date = .now
+
+    private let expandThreshold: CGFloat = 40
+    @State private var isCalendarHidden: Bool = false
+
+    private let calendar: Calendar = {
+
+        var cal = Calendar.current
+
+        cal.firstWeekday = 2
+
+        return cal
+
+    }()
+
+    @State private var holidayDates: Set<Date> = []
+
+    @State private var tasksCache: [Date: [TodoTask]] = [:]
+    
+    @State private var calendarContainerSize: CGSize = .zero
+    
+    @State private var isDeletingRecurrence = false
+
+
+    private var availableYears: [Int] {
+        let currentYear = Calendar.current.component(.year, from: .now)
+        return Array((currentYear - 100)...(currentYear + 100))
+    }
+    
+    private var calendarMaxZoomScale: CGFloat {
+        guard calendarContainerSize.width > 0 else {
+            return 6
+        }
+
+        let longSide = max(
+            calendarContainerSize.width,
+            calendarContainerSize.height
+        )
+
+        let orientationRatio = longSide / calendarContainerSize.width
+
+        return 6 * orientationRatio
+    }
+    
+    var body: some View {
+
+        ZStack {
+
+            AppGlassBackground()
+
+            VStack(spacing: 0) {
+
+                if !isCalendarHidden || isLandscape {
+
+                    header
+                        .padding(.horizontal)
+                        .padding(.top, (isLandscape || isExpanded) ? 0 : 10)
+
+                    VStack(spacing: 5) {
+
+                        if isLandscape || isExpanded {
+
+                            ZoomableScrollView(
+                                minScale: 1,
+                                maxScale: calendarMaxZoomScale
+                            ) {
+                                VStack(spacing: 5) {
+
+                                    weekHeader
+
+                                    calendarGrid
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.top, 2)
+                                }
+                            }
+                            .id(
+                                isLandscape
+                                    ? "landscape_zoom_view"
+                                    : "portrait_zoom_view"
+                            )
+
+                        } else {
+
+                            VStack(spacing: 5) {
+                                weekHeader
+                                calendarGrid
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 4)
+                    .frame(
+                        height: isLandscape
+                            ? nil
+                            : (isExpanded ? 520 : 310),
+                        alignment: .top
+                    )
+                    .highPriorityGesture(
+                        isLandscape || isExpanded
+                            ? nil
+                            : monthSwipeGesture
+                    )
+                    .simultaneousGesture(
+                        isLandscape
+                            ? nil
+                            : DragGesture(minimumDistance: 30)
+                                .onChanged { value in
+                                    if abs(value.translation.height)
+                                        > abs(value.translation.width) {
+
+                                        updateExpandedState(
+                                            with: value.translation.height
+                                        )
+                                    }
+                                }
+                    )
+                }
+                
+                Divider()
+
+                if !showExpandedCalendar {
+
+                    ZStack(alignment: .top) {
+
+                        // Contenuto della row: centrato verticalmente
+                        HStack {
+                            Button {
+                                datePickerSelection = selectedDate
+                                showDatePicker = true
+                            } label: {
+                                Text(
+                                    selectedDate.formatted(
+                                        .dateTime
+                                            .weekday(.abbreviated)
+                                            .day()
+                                            .month(.abbreviated)
+                                            .year(.twoDigits)
+                                    )
+                                )
+                                .fontWeight(calendar.isDateInToday(selectedDate) ? .semibold : .regular)
+                                .foregroundStyle(calendar.isDateInToday(selectedDate) ? .blue : .primary)
+                            }
+                            .buttonStyle(.plain)
+
+                            Spacer()
+
+                        }
+                        .padding(.horizontal)
+                        .frame(maxHeight: .infinity, alignment: .center)
+
+                        // Maniglia: tap per mostrare/nascondere il calendario
+                        Button {
+                            withAnimation(.snappy(duration: 0.25)) {
+                                isCalendarHidden.toggle()
+                            }
+                        } label: {
+                            Image(systemName: isCalendarHidden ? "chevron.down" : "chevron.up")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                                .frame(width: 44, height: 30)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 8)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 52, alignment: .top)
+                    .background(
+                        Color(uiColor: .secondarySystemBackground)
+                            .opacity(0.4)
+                    )
+                    .contentShape(Rectangle())
+                    .simultaneousGesture(
+                        isLandscape ? nil :
+                            DragGesture(minimumDistance: 20)
+                                .onEnded { value in
+                                    let horizontal = abs(value.translation.width)
+                                    let vertical = abs(value.translation.height)
+
+                                    if horizontal > 45 && horizontal > vertical {
+                                        changeSelectedDay(by: value.translation.width < 0 ? 1 : -1)
+                                    } else if vertical > 40 && vertical > horizontal {
+                                        withAnimation(.snappy(duration: 0.25)) {
+                                            isCalendarHidden = value.translation.height < 0
+                                        }
+                                    }
+                                }
+                    )
+                    
+                    DayTasksInlineView(
+                        tasks: tasksForDay(selectedDate),
+                        onDaySwipe: changeSelectedDay,
+                        onDoubleTapToday: {
+                            let startOfToday = calendar.startOfDay(for: .now)
+                            withAnimation(.snappy) {
+                                displayedMonth = startOfToday
+                                selectedDate = startOfToday
+                            }
+                        },
+                        onCalendarSwipe: { shouldHideCalendar in
+                            guard !isLandscape else { return }
+                            withAnimation(.snappy(duration: 0.25)) {
+                                isCalendarHidden = shouldHideCalendar
+                            }
+                        },
+                        onLegacyRecurrenceCompletion: { task in
+                            legacyRecurrenceTask = task
+                        }
+                    )
+
+                }
+
+            }
+
+            if isDeletingRecurrence {
+                ZStack {
+                    Color.black.opacity(0.25)
+                        .ignoresSafeArea()
+
+                    VStack(spacing: 12) {
+                        ProgressView()
+
+                        Text(String(localized: "Deleting occurrences…"))
+                            .font(.headline)
+
+                        Text(String(localized: "Do not close ForMemo until the deletion is complete."))
+                            .font(.subheadline)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(24)
+                    .frame(maxWidth: 320)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+                }
+                .zIndex(100)
+            }
+            
+        }
+        
+        .onGeometryChange(for: CGSize.self) { proxy in
+            proxy.size
+        } action: { newSize in
+            calendarContainerSize = newSize
+        }
+        
+        
+        .id(verticalSizeClass)
+
+        .padding(.top, isLandscape || isExpanded ? 0 : -8)
+
+        .navigationTitle("")
+
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                HStack(spacing: 12) {
+                    if settings.showDayTab {
+                        Button {
+                            NotificationCenter.default.post(
+                                name: Notification.Name("TaskCalendarOpenDay"),
+                                object: calendar.startOfDay(for: selectedDate)
+                            )
+                        } label: {
+                            Image(systemName: "book.pages")
+                            //                                .symbolRenderingMode(.palette)
+                            //                                .foregroundStyle(.blue, .orange)
+                                .font(.system(size: 19))
+                                .frame(width: 36, height: 36)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(String(localized: "Open day view"))
+                    }
+
+                    if Persistence.hasICloudIdentity {
+                        Button {
+                            fetchCalendarTasks()
+                            Task { @MainActor in
+                                await loadHolidays(for: displayedMonth)
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 17))
+                                .frame(width: 36, height: 36)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(String(localized: "Refresh calendar"))
+                    }
+                }
+            }
+            ToolbarItem(placement: .principal) {
+                Text("Calendar")
+                    .font(.headline)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                HStack(spacing: 12) {
+                    Button {
+                        settings.calendarHideCompletedTasks.toggle()
+                    } label: {
+                        Image(systemName: settings.calendarHideCompletedTasks ? "eye.slash" : "eye")
+                    }
+                    .accessibilityLabel(
+                        String(localized: settings.calendarHideCompletedTasks ? "Show completed tasks" : "Hide completed tasks")
+                    )
+
+                    Button {
+                        prepareNewTask(on: selectedDate)
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.green)
+                    }
+                    .accessibilityLabel(String(localized: "New task"))
+                }
+            }
+        }
+
+        .padding(.top, -8)
+
+        .onAppear {
+            let selectedMonth = calendar.startOfDay(for: selectedDate)
+            displayedMonth = calendar.date(
+                from: calendar.dateComponents([.year, .month], from: selectedMonth)
+            ) ?? selectedMonth
+
+            Task { @MainActor in await loadHolidays(for: displayedMonth) }
+            fetchCalendarTasks()
+        }
+        
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                fetchCalendarTasks()
+            }
+        }
+        .onChange(of: displayedMonth) { _, newValue in
+            Task { @MainActor in await loadHolidays(for: newValue) }
+            fetchCalendarTasks()
+        }
+        
+        .onReceive(
+            NotificationCenter.default.publisher(for: .taskDidChange)
+        ) { _ in
+            fetchCalendarTasks()
+        }
+
+        .sheet(item: $draftTask) { task in
+
+            NewTaskSheetView(draftTask: task)
+
+        }
+
+        .sheet(item: $legacyRecurrenceTask) { task in
+            RecurrenceMigrationView(
+                task: task,
+                onMigrate: { task, futureCount, endDate, keepCurrentOccurrenceActive in
+                    migrateLegacyRecurrence(
+                        task,
+                        futureCount: futureCount,
+                        endDate: endDate,
+                        keepCurrentOccurrenceActive: keepCurrentOccurrenceActive
+                    )
+                },
+                onDeleteRecurrence: { task in
+                    deleteLegacyRecurrence(task)
+                }
+            )
+        }
+
+        .navigationDestination(for: TodoTask.self) { task in
+
+            TaskDetailView(task: task)
+
+        }
+        
+        .sheet(isPresented: $showDatePicker) {
+            NavigationStack {
+                DatePicker(
+                    "Select Date",
+                    selection: Binding(
+                        get: { datePickerSelection },
+                        set: { newDate in
+                            datePickerSelection = newDate
+
+                            withAnimation(.snappy) {
+                                selectedDate = newDate
+
+                                displayedMonth = calendar.date(
+                                    from: calendar.dateComponents(
+                                        [.year, .month],
+                                        from: newDate
+                                    )
+                                ) ?? newDate
+                            }
+                        }
+                    ),
+                    displayedComponents: .date
+                )
+                .datePickerStyle(.graphical)
+                .padding()
+                .navigationTitle("Select Date")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") {
+                            showDatePicker = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
+        }
+        .sheet(isPresented: $showMonthYearPicker) {
+            NavigationStack {
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
+
+                        Picker("Month", selection: $pickerMonth) {
+                            ForEach(1...12, id: \.self) { month in
+                                Text(calendar.monthSymbols[month - 1])
+                                    .tag(month)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(maxWidth: .infinity)
+
+                        Picker("Year", selection: $pickerYear) {
+                            ForEach(availableYears, id: \.self) { year in
+                                Text(String(year))
+                                    .tag(year)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .frame(maxWidth: .infinity)
+                    }
+                    .frame(height: 220)
+                }
+                .navigationTitle("Select Month")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            showMonthYearPicker = false
+                        }
+                    }
+
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") {
+                            let selectedDay = calendar.component(.day, from: selectedDate)
+
+                            var components = DateComponents()
+                            components.year = pickerYear
+                            components.month = pickerMonth
+                            components.day = 1
+
+                            guard let monthStart = calendar.date(from: components),
+                                  let range = calendar.range(of: .day, in: .month, for: monthStart)
+                            else {
+                                showMonthYearPicker = false
+                                return
+                            }
+
+                            let day = min(selectedDay, range.count)
+                            components.day = day
+
+                            if let newDate = calendar.date(from: components) {
+                                withAnimation(.snappy) {
+                                    displayedMonth = monthStart
+                                    selectedDate = newDate
+                                }
+                            }
+
+                            showMonthYearPicker = false
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.medium])
+        }
+
+    }
+
+    private func changeSelectedDay(by offset: Int) {
+        guard let newDate = calendar.date(byAdding: .day, value: offset, to: selectedDate) else {
+            return
+        }
+
+        withAnimation(.snappy(duration: 0.2)) {
+            selectedDate = newDate
+            displayedMonth = calendar.date(
+                from: calendar.dateComponents([.year, .month], from: newDate)
+            ) ?? newDate
+        }
+    }
+
+    private func prepareNewTask(on date: Date) {
+
+        let calendar = Calendar.current
+
+        let finalDate: Date
+
+        if calendar.isDateInToday(date) {
+
+            // Current time for today
+
+            finalDate = Date()
+
+        } else {
+
+            // Default morning time for future days
+
+            var components = calendar.dateComponents([.year, .month, .day], from: date)
+
+            components.hour = 8
+
+            components.minute = 0
+
+            finalDate = calendar.date(from: components) ?? date
+
+        }
+
+        let task = TodoTask()
+
+        task.deadLine = finalDate
+
+        draftTask = task
+
+    }
+
+    private func monthNavigationButton(systemName: String, direction: Int) -> some View {
+
+        Image(systemName: systemName)
+
+            .font(.title2)
+
+            .fontWeight(.semibold)
+
+            .foregroundStyle(.blue)
+
+            .frame(width: 30, height: 42) // Area di tocco standard Apple
+
+            .contentShape(Rectangle())
+
+            .onTapGesture {
+
+                // Single month navigation
+
+                changeMonth(by: direction)
+
+            }
+
+            .gesture(
+
+                LongPressGesture(minimumDuration: 0.4)
+
+                    .onEnded { _ in
+
+                        isLongPressing = true
+
+                        // Start rapid scrolling timer
+
+                        timer = Timer.scheduledTimer(withTimeInterval: 0.15, repeats: true) { _ in
+
+                            changeMonth(by: direction)
+
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+
+                        }
+
+                    }
+
+            )
+
+            // Stop rapid scrolling when gesture ends
+
+            .simultaneousGesture(
+
+                DragGesture(minimumDistance: 0)
+
+                    .onEnded { _ in
+
+                        timer?.invalidate()
+
+                        timer = nil
+
+                        isLongPressing = false
+
+                    }
+
+            )
+
+            .onDisappear {
+
+                timer?.invalidate()
+
+                timer = nil
+
+                isLongPressing = false
+
+            }
+
+    }
+
+    // Month navigation helper
+
+    private func changeMonth(by value: Int) {
+
+        monthDirection = value > 0 ? 1 : -1
+
+        withAnimation(.snappy(duration: 0.2)) {
+
+            if let newDate = Calendar.current.date(byAdding: .month, value: value, to: displayedMonth) {
+
+                displayedMonth = newDate
+
+            }
+
+        }
+
+    }
+
+}
+
+
+
+// MARK: - Scroll handling
+
+private extension TaskCalendarView {
+
+    func updateExpandedState(with offset: CGFloat) {
+
+        if offset > expandThreshold {
+
+            isExpanded = true
+
+        }
+
+        if offset < -expandThreshold {
+
+            isExpanded = false
+
+        }
+
+    }
+
+}
+
+// MARK: - Gestures
+
+private extension TaskCalendarView {
+
+    var monthSwipeGesture: some Gesture {
+
+        DragGesture(minimumDistance: 20)
+
+            .onEnded { value in
+
+                let threshold: CGFloat = 60
+
+                if value.translation.width < -threshold {
+
+                    monthDirection = 1
+
+                    withAnimation(.snappy) {
+
+                        if let nextMonth = calendar.date(byAdding: .month, value: 1, to: displayedMonth) {
+
+                            displayedMonth = nextMonth
+
+                        }
+
+                    }
+
+                } else if value.translation.width > threshold {
+
+                    monthDirection = -1
+
+                    withAnimation(.snappy) {
+
+                        if let previousMonth = calendar.date(byAdding: .month, value: -1, to: displayedMonth) {
+
+                            displayedMonth = previousMonth
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+    }
+
+}
+
+// MARK: - Header
+
+private extension TaskCalendarView {
+
+    var header: some View {
+
+        HStack {
+
+            Button {
+                pickerMonth = calendar.component(.month, from: displayedMonth)
+                pickerYear = calendar.component(.year, from: displayedMonth)
+                showMonthYearPicker = true
+            } label: {
+                Text(displayedMonth, format: .dateTime.month(.wide).year())
+                    .font(.headline.bold())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .allowsTightening(true)
+                    .foregroundStyle(.primary)
+                
+                Image(systemName: "chevron.down")
+            }
+            .buttonStyle(.plain)
+
+                .font(.headline.bold())
+
+            Spacer()
+
+            HStack(spacing: 5) {
+
+                monthNavigationButton(systemName: "chevron.left", direction: -1)
+
+                Button {
+
+                    let startOfToday = calendar.startOfDay(for: .now)
+
+                    withAnimation(.snappy) {
+
+                        displayedMonth = startOfToday
+
+                        selectedDate = startOfToday
+
+                    }
+
+                } label: {
+
+                    Image(systemName: "\(calendar.component(.day, from: .now)).calendar")
+
+                        .font(.system(size: 26))
+
+                        .symbolRenderingMode(.palette)
+
+                        .foregroundStyle(
+                            HolidayProvider.holidays(in: .now, calendar: calendar)
+                                .contains(calendar.startOfDay(for: .now))
+                                || calendar.component(.weekday, from: .now) == 1
+                                ? .red
+                                : .primary,
+                            .blue
+                        )
+
+                        .frame(width: 42, height: 42)
+
+                        .contentShape(Rectangle())
+
+                }
+
+                .buttonStyle(.plain)
+
+                .accessibilityLabel(String(localized: "Today"))
+
+                monthNavigationButton(systemName: "chevron.right", direction: 1)
+
+            }
+
+        }
+
+        .padding(.bottom, 5)
+
+        .contentShape(Rectangle()) // Assicura che i tocchi vengano intercettati
+
+        .zIndex(10) // Mantiene l'header sopra la griglia zoomabile
+
+    }
+
+
+
+    var weekHeader: some View {
+
+        let originalSymbols = calendar.shortStandaloneWeekdaySymbols
+
+        let mondayIndex = 1
+
+        let symbols =
+
+        Array(originalSymbols[mondayIndex..<originalSymbols.count]) +
+
+        Array(originalSymbols[0..<mondayIndex])
+
+        return HStack {
+
+            ForEach(symbols, id: \.self) { symbol in
+
+                Text(symbol)
+
+                    .font(.caption.bold())
+
+                    .foregroundStyle(.secondary)
+
+                    .frame(maxWidth: .infinity)
+
+            }
+
+        }
+
+    }
+
+}
+
+
+
+
+
+// MARK: - Helpers
+
+private extension TaskCalendarView {
+
+    func tasksForDay(_ day: Date) -> [TodoTask] {
+
+        let dayKey = calendar.startOfDay(for: day)
+
+        let dayTasks = tasksCache[dayKey] ?? []
+
+        if settings.calendarHideCompletedTasks {
+            return dayTasks.filter { !$0.isCompleted }
+        }
+
+        return dayTasks
+
+    }
+
+    @MainActor
+    func fetchCalendarTasks() {
+        guard
+            let currentMonthStart = calendar.date(
+                from: calendar.dateComponents(
+                    [.year, .month],
+                    from: displayedMonth
+                )
+            ),
+            let startDate = calendar.date(
+                byAdding: .month,
+                value: -1,
+                to: currentMonthStart
+            ),
+            let endDate = calendar.date(
+                byAdding: .month,
+                value: 2,
+                to: currentMonthStart
+            )
+        else {
+            calendarTasks = []
+            tasksCache = [:]
+            return
+        }
+
+        let predicate = #Predicate<TodoTask> { task in
+            task.deadLine != nil &&
+            task.deadLine! >= startDate &&
+            task.deadLine! < endDate
+        }
+
+        let descriptor = FetchDescriptor<TodoTask>(
+            predicate: predicate,
+            sortBy: [
+                SortDescriptor(\.deadLine, order: .forward)
+            ]
+        )
+
+        do {
+            let fetchedTasks = try modelContext.fetch(descriptor)
+            calendarTasks = fetchedTasks
+
+            var newCache: [Date: [TodoTask]] = [:]
+            newCache.reserveCapacity(93)
+
+            for task in fetchedTasks {
+                guard let deadline = task.deadLine else { continue }
+                let day = calendar.startOfDay(for: deadline)
+                newCache[day, default: []].append(task)
+            }
+
+            tasksCache = newCache
+        } catch {
+            AppLogger.persistence.error(
+                "Calendar task fetch failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+
+
+    func makeDaysForMonth(_ date: Date) -> [Date] {
+
+        guard
+
+            let startOfMonth = calendar.date(
+
+                from: calendar.dateComponents([.year, .month], from: date)
+
+            ),
+
+            let range = calendar.range(of: .day, in: .month, for: startOfMonth)
+
+        else {
+
+            return []
+
+        }
+
+        let firstWeekday = calendar.component(.weekday, from: startOfMonth)
+
+        var days: [Date] = []
+
+        let offset = (firstWeekday - calendar.firstWeekday + 7) % 7
+
+        for i in stride(from: offset, to: 0, by: -1) {
+
+            if let d = calendar.date(byAdding: .day, value: -i, to: startOfMonth) {
+
+                days.append(d)
+
+            }
+
+        }
+
+        for day in range {
+
+            if let d = calendar.date(byAdding: .day, value: day - 1, to: startOfMonth) {
+
+                days.append(d)
+
+            }
+
+        }
+
+        while days.count % 7 != 0 {
+
+            guard let last = days.last,
+
+                  let next = calendar.date(byAdding: .day, value: 1, to: last)
+
+            else { break }
+
+            days.append(next)
+
+        }
+
+        return days
+
+    }
+
+
+
+    @MainActor
+
+    func loadHolidays(for month: Date) async {
+
+        holidayDates = HolidayProvider.holidays(
+
+            in: month,
+
+            calendar: calendar
+
+        )
+
+    }
+
+}
+
+
+
+// MARK: - Holidays
+
+struct HolidayKey: Hashable {
+
+    let day: Int
+
+    let month: Int
+
+}
+
+enum HolidayProvider {
+
+    static func holidays(
+
+        in month: Date,
+
+        calendar: Calendar
+
+    ) -> Set<Date> {
+
+        let region = Locale.current.region?.identifier ?? "EU"
+
+        guard let start = calendar.date(
+
+            from: calendar.dateComponents([.year, .month], from: month)
+
+        ),
+
+        let range = calendar.range(of: .day, in: .month, for: start)
+
+        else {
+
+            AppLogger.persistence.error("Unable to calculate holiday calendar range")
+
+            return []
+
+        }
+
+        var result: Set<Date> = []
+
+        for day in range {
+
+            guard let date = calendar.date(byAdding: .day, value: day-1, to: start)
+
+            else { continue }
+
+            if isHoliday(date, region: region, calendar: calendar) {
+
+                result.insert(calendar.startOfDay(for: date))
+
+            }
+
+        }
+
+        return result
+
+    }
+
+}
+
+private extension HolidayProvider {
+
+    static func isHoliday(
+
+        _ date: Date,
+
+        region: String,
+
+        calendar: Calendar
+
+    ) -> Bool {
+
+        let comp = calendar.dateComponents([.day,.month,.year], from: date)
+
+        guard let day = comp.day,
+
+              let month = comp.month,
+
+              let year = comp.year
+
+        else { return false }
+
+        // festività europee comuni
+
+        if europeanFixed.contains(HolidayKey(day: day, month: month)) {
+
+            return true
+
+        }
+
+        // festività specifiche paese
+
+        if let local = countryFixed[region],
+
+           local.contains(HolidayKey(day: day, month: month)) {
+
+            return true
+
+        }
+
+        // festività mobili
+
+        let easter = easterDate(year: year, calendar: calendar)
+
+        if calendar.isDate(date, inSameDayAs: easter) { return true }
+
+        if let easterMonday = calendar.date(byAdding: .day, value: 1, to: easter),
+
+           calendar.isDate(date, inSameDayAs: easterMonday) { return true }
+
+        // Good Friday solo in alcuni paesi
+
+        if ["ES","DE","GB","UK"].contains(region) {
+
+            if let goodFriday = calendar.date(byAdding: .day, value: -2, to: easter),
+
+               calendar.isDate(date, inSameDayAs: goodFriday) {
+
+                return true
+
+            }
+
+        }
+
+        return false
+
+    }
+
+}
+
+// MARK: - Scroll preference
+
+private struct CalendarScrollOffsetKey: PreferenceKey {
+
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+
+        value = nextValue()
+
+    }
+
+}
+
+
+
+
+
+private extension HolidayProvider {
+
+    static let europeanFixed: Set<HolidayKey> = [
+
+        HolidayKey(day: 1, month: 1),   // Capodanno
+
+        HolidayKey(day: 1, month: 5),   // Festa del Lavoro
+
+        HolidayKey(day: 25, month: 12), // Natale
+
+        HolidayKey(day: 26, month: 12)  // Santo Stefano (comune a quasi tutti, tranne FR nazionale)
+
+    ]
+
+    static let countryFixed: [String: Set<HolidayKey>] = [
+
+        "IT": [ // Italia
+
+            HolidayKey(day: 6, month: 1), HolidayKey(day: 25, month: 4),
+
+            HolidayKey(day: 2, month: 6), HolidayKey(day: 15, month: 8),
+
+            HolidayKey(day: 4, month: 10), // San Francesco (Festivo dal 2026)
+
+            HolidayKey(day: 1, month: 11), HolidayKey(day: 8, month: 12)
+
+              ],
+
+        "AT": [ // Austria
+
+            HolidayKey(day: 6, month: 1), HolidayKey(day: 15, month: 8),
+
+            HolidayKey(day: 26, month: 10), // Festa Nazionale
+
+            HolidayKey(day: 1, month: 11), HolidayKey(day: 8, month: 12)
+
+              ],
+
+        "BE": [ // Belgio
+
+            HolidayKey(day: 21, month: 7), // Festa Nazionale
+
+            HolidayKey(day: 15, month: 8), HolidayKey(day: 1, month: 11),
+
+            HolidayKey(day: 11, month: 11) // Armistizio
+
+              ],
+
+        "DE": [ // Germania (Date fisse nazionali Federali)
+
+            HolidayKey(day: 3, month: 10)  // Giorno dell'Unità Tedesca
+
+            // Nota: 1/11 e 6/1 sono regionali (Länder), non federali.
+
+              ],
+
+        "ES": [ // Spagna
+
+            HolidayKey(day: 6, month: 1), HolidayKey(day: 15, month: 8),
+
+            HolidayKey(day: 12, month: 10), // Festa Nazionale (Hispanidad)
+
+            HolidayKey(day: 1, month: 11), HolidayKey(day: 6, month: 12),
+
+            HolidayKey(day: 8, month: 12)
+
+              ],
+
+        "FR": [ // Francia
+
+            HolidayKey(day: 8, month: 5),  // Vittoria 1945
+
+            HolidayKey(day: 14, month: 7), // Presa della Bastiglia
+
+            HolidayKey(day: 15, month: 8), HolidayKey(day: 1, month: 11),
+
+            HolidayKey(day: 11, month: 11) // Armistizio 1918
+
+              ],
+
+        "PT": [ // Portogallo
+
+            HolidayKey(day: 25, month: 4), // Rivoluzione dei Garofani
+
+            HolidayKey(day: 10, month: 6), // Giorno del Portogallo
+
+            HolidayKey(day: 15, month: 8), HolidayKey(day: 5, month: 10),
+
+            HolidayKey(day: 1, month: 11), HolidayKey(day: 1, month: 12),
+
+            HolidayKey(day: 8, month: 12)
+
+              ],
+
+        "PL": [ // Polonia
+
+            HolidayKey(day: 6, month: 1), HolidayKey(day: 3, month: 5), // Costituzione
+
+            HolidayKey(day: 15, month: 8), HolidayKey(day: 1, month: 11),
+
+            HolidayKey(day: 11, month: 11) // Indipendenza
+
+              ],
+
+        "GR": [ // Grecia
+
+            HolidayKey(day: 6, month: 1), HolidayKey(day: 25, month: 3), // Indipendenza
+
+            HolidayKey(day: 15, month: 8), HolidayKey(day: 28, month: 10) // Giorno del No
+
+              ],
+
+        "IE": [ // Irlanda
+
+            HolidayKey(day: 1, month: 2), // S. Brigida
+
+            HolidayKey(day: 17, month: 3) // S. Patrizio
+
+              ],
+
+        "NL": [ // Paesi Bassi
+
+            HolidayKey(day: 27, month: 4), // Giorno del Re (Koningsdag)
+
+            HolidayKey(day: 5, month: 5)   // Liberazione (Bevrijdingsdag - ogni 5 anni festivo)
+
+              ],
+
+        "SE": [ // Svezia
+
+            HolidayKey(day: 6, month: 1),  // Epifania
+
+            HolidayKey(day: 6, month: 6)   // Festa Nazionale
+
+              ],
+
+        "FI": [ // Finlandia
+
+            HolidayKey(day: 6, month: 1),  // Epifania
+
+            HolidayKey(day: 6, month: 12)  // Indipendenza
+
+              ]
+
+    ]
+
+}
+
+
+
+private extension HolidayProvider {
+
+    static func easterDate(
+
+        year: Int,
+
+        calendar: Calendar
+
+    ) -> Date {
+
+        let a = year % 19
+
+        let b = year / 100
+
+        let c = year % 100
+
+        let d = b / 4
+
+        let e = b % 4
+
+        let f = (b + 8) / 25
+
+        let g = (b - f + 1) / 3
+
+        let h = (19 * a + b - d - g + 15) % 30
+
+        let i = c / 4
+
+        let k = c % 4
+
+        let l = (32 + 2*e + 2*i - h - k) % 7
+
+        let m = (a + 11*h + 22*l) / 451
+
+        let month = (h + l - 7*m + 114) / 31
+
+        let day = ((h + l - 7*m + 114) % 31) + 1
+
+        var comp = DateComponents()
+
+        comp.year = year
+
+        comp.month = month
+
+        comp.day = day
+
+        return calendar.date(from: comp) ?? .now
+
+    }
+
+}
+
+// MARK: - Actions
+
+private extension TaskCalendarView {
+
+    @MainActor
+
+    func toggleCompleted(_ task: TodoTask) {
+
+        let wasCompleted = task.isCompleted
+
+        if task.recurrenceRule != nil {
+
+            if task.occurrenceIndex == nil {
+                legacyRecurrenceTask = task
+                return
+            }
+
+            if wasCompleted {
+                task.isCompleted = false
+                task.completedAt = nil
+                task.snoozeUntil = nil
+            } else {
+                task.completeRecurringTask()
+            }
+
+        } else {
+
+            task.isCompleted.toggle()
+
+            task.completedAt = task.isCompleted ? .now : nil
+
+            task.snoozeUntil = nil
+
+        }
+
+        do {
+
+            try modelContext.save()
+            RecurrenceCompletionNotice.postIfNeeded(
+                for: task,
+                wasCompleted: wasCompleted
+            )
+
+        } catch {
+
+            AppLogger.persistence.fault("Failed to save context: \(error)")
+
+        }
+
+        Task { @MainActor in
+            _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+        }
+
+        NotificationManager.shared.refresh(force: true)
+
+        NotificationCenter.default.post(
+            name: .taskDidChange,
+            object: nil
+        )
+
+    }
+
+    @MainActor
+    private func migrateLegacyRecurrence(
+        _ task: TodoTask,
+        futureCount: Int?,
+        endDate: Date?,
+        keepCurrentOccurrenceActive: Bool
+    ) {
+        do {
+            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+                for: task,
+                futureCount: futureCount,
+                endDate: endDate,keepCurrentOccurrenceActive: keepCurrentOccurrenceActive,
+                in: modelContext
+            )
+
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            NotificationManager.shared.refresh(force: false)
+
+            legacyRecurrenceTask = nil
+
+        } catch {
+            AppLogger.persistence.error(
+                "Legacy recurrence migration failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @MainActor
+    private func deleteLegacyRecurrence(_ task: TodoTask) {
+        task.isCompleted = true
+        task.completedAt = .now
+        task.snoozeUntil = nil
+
+        task.recurrenceRule = nil
+        task.recurrenceInterval = 1
+        task.recurrenceID = nil
+        task.occurrenceIndex = nil
+        task.recurrenceStartDate = nil
+        task.recurrenceEndDate = nil
+        task.recurrenceCount = nil
+
+        do {
+            try modelContext.save()
+            modelContext.processPendingChanges()
+
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+            }
+
+            NotificationCenter.default.post(
+                name: .taskDidChange,
+                object: nil
+            )
+
+            legacyRecurrenceTask = nil
+        } catch {
+            AppLogger.persistence.error(
+                "Legacy recurrence deletion failed: \(error)"
+            )
+        }
+    }
+
+}
+
+// MARK: - Calendar Grid
+
+private extension TaskCalendarView {
+
+    var calendarGrid: some View {
+
+        let days = makeDaysForMonth(displayedMonth)
+
+        return LazyVGrid(
+
+            columns: Array(repeating: GridItem(.flexible()), count: 7),
+
+            spacing: 6
+
+        ) {
+
+            ForEach(days, id: \.self) { day in
+
+                let dayIsSelected = calendar.isDate(day, inSameDayAs: selectedDate)
+                let dayIsInDisplayedMonth = calendar.isDate(
+                    day,
+                    equalTo: displayedMonth,
+                    toGranularity: .month
+                )
+                let dayIsToday = calendar.isDateInToday(day)
+                let dayIsHoliday = holidayDates.contains(calendar.startOfDay(for: day))
+                let dayTasks = tasksForDay(day)
+
+                DayCell(
+                    date: day,
+                    now: .now,
+                    isSelected: dayIsSelected,
+                    isInDisplayedMonth: dayIsInDisplayedMonth,
+                    isToday: dayIsToday,
+                    isHoliday: dayIsHoliday,
+                    tasks: dayTasks,
+                    isExpanded: showExpandedCalendar,
+                    isLandscape: isLandscape,
+                    onSelect: { selectedDate = day },
+                    onToggleCompleted: toggleCompleted,
+                    onAdd: prepareNewTask
+                )
+
+            }
+
+        }
+
+        .id(
+            calendar.component(.year, from: displayedMonth) * 100
+                + calendar.component(.month, from: displayedMonth)
+        )
+
+        .transition(
+
+            .asymmetric(
+
+                insertion: .move(edge: monthDirection > 0 ? .trailing : .leading),
+
+                removal: .move(edge: monthDirection > 0 ? .leading : .trailing)
+
+            )
+
+        )
+
+    }
+
+}
+
+// MARK: - Day Cell
+
+private struct DayCell: View {
+
+    let date: Date
+
+    let now: Date
+
+    let isSelected: Bool
+
+    let isInDisplayedMonth: Bool
+
+    let isToday: Bool
+
+    let isHoliday: Bool
+
+    let tasks: [TodoTask]
+
+    let isExpanded: Bool
+    
+    let isLandscape: Bool
+    
+    let onSelect: () -> Void
+
+    let onToggleCompleted: (TodoTask) -> Void
+
+
+    let onAdd: (Date) -> Void
+
+    private let calendar: Calendar = {
+
+        var cal = Calendar.current
+
+        cal.firstWeekday = 2
+
+        return cal
+
+    }()
+
+    @Environment(AppSettings.self) private var settings
+
+    private func iconColor(for task: TodoTask) -> Color {
+
+        if settings.iconStyle == .monochrome {
+
+            return .primary
+
+        } else {
+
+            return task.mainTag?.color ?? task.status.color
+
+        }
+
+    }
+
+
+
+    var body: some View {
+
+        VStack(spacing: 2) {
+
+            ZStack {
+
+                if isToday {
+
+                    Circle()
+
+                        .stroke(.blue, lineWidth: 2)
+
+                        .frame(width: 28, height: 28)
+
+                }
+
+                if isSelected {
+
+                    Circle()
+
+                        .stroke(.primary, lineWidth: 2)
+
+                        .frame(width: 34, height: 34)
+
+                }
+
+                let isSunday = calendar.component(.weekday, from: date) == 1
+
+                Text("\(calendar.component(.day, from: date))")
+
+                    .font(.callout.bold())
+
+                    .foregroundStyle(
+
+                        !isInDisplayedMonth
+
+                        ? .secondary
+
+                        : (isHoliday || isSunday ? Color.red : .primary)
+
+                    )
+
+                    .opacity(isInDisplayedMonth ? 1.0 : 0.4)
+
+            }
+
+            .frame(width: 34, height: 34)
+
+            if isExpanded {
+
+                expandedTitles
+
+            } else {
+
+                Circle()
+
+                    .fill(indicatorColor.opacity(indicatorColor == .clear ? 0 : 1))
+
+                    .frame(width: 6, height: 6)
+
+            }
+
+        }
+
+        .frame(maxHeight: .infinity, alignment: .top)
+
+        .contentShape(Rectangle())
+
+        .onTapGesture(coordinateSpace: .local) { location in
+
+            let dayHeaderHeight: CGFloat = 38
+
+            if location.y <= dayHeaderHeight {
+
+                onSelect()
+
+            }
+
+        }
+
+    }
+
+    private var hasOverdueTasks: Bool {
+
+        tasks.contains {
+
+            !$0.isCompleted &&
+
+            (($0.deadLine ?? .distantFuture) < now)
+
+        }
+
+    }
+
+    private var allCompleted: Bool {
+
+        !tasks.isEmpty && tasks.allSatisfy { $0.isCompleted }
+
+    }
+
+    private var hasActiveTasks: Bool {
+
+        tasks.contains { !$0.isCompleted }
+
+    }
+
+    private var indicatorColor: Color {
+
+        if hasOverdueTasks {
+
+            return .red
+
+        }
+
+        if allCompleted {
+
+            return .green
+
+        }
+
+        if hasActiveTasks {
+
+            return .blue
+
+        }
+
+        return .clear
+
+    }
+
+    @ViewBuilder
+
+    private var expandedTitles: some View {
+
+        VStack(
+            alignment: .leading,
+            spacing: isExpanded ? 3 : 1
+        ) {
+
+            let sortedTasks = tasks.sorted {
+                ($0.deadLine ?? .distantFuture) < ($1.deadLine ?? .distantFuture)
+            }
+
+            let visibleTasks = isExpanded
+                ? sortedTasks
+                : Array(sortedTasks.prefix(3))
+
+            ForEach(visibleTasks) { task in
+
+                NavigationLink(value: task) {
+
+                    VStack(alignment: .leading, spacing: 1) {
+
+                        if let deadline = task.deadLine {
+                            Text(deadline.formatted(.dateTime.hour().minute()))
+                                .font(.system(
+                                    size: isExpanded ? 7 : 5,
+                                    weight: .medium
+                                ))
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                                .underline()
+                                .lineLimit(1)
+                        }
+
+                        HStack(spacing: 3) {
+                            if isLandscape {
+                                Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
+                                    .font(.system(
+                                        size: isExpanded ? 7 : 5,
+                                        weight: .medium
+                                    ))
+                                    .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
+                                    .foregroundStyle(iconColor(for: task), .primary)
+                            }
+
+                            HStack(spacing: 3) {
+                                Text(task.title)
+                                    .font(.system(
+                                        size: isExpanded ? 7 : 4,
+                                        weight: .regular
+                                    ))
+                                    .lineLimit(isExpanded ? 2 : 1)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .foregroundStyle(task.isCompleted ? .secondary : .primary)
+                                    .overlay(alignment: .bottomLeading) {
+                                        if settings.showTodayExpiredLabel && isOverdue(task) {
+                                            Rectangle()
+                                                .fill(Color.red.opacity(0.75))
+                                                .frame(height: 0.8)
+                                                .offset(y: 1.5)
+                                        }
+                                    }
+                                    .strikethrough(task.isCompleted, color: .secondary)
+
+                                if isLandscape && task.recurrenceRule != nil {
+                                    Image(systemName: "arrow.triangle.2.circlepath")
+                                        .font(.system(size: 5))
+                                        .foregroundStyle(
+                                            task.occurrenceIndex == nil ? .red : .blue
+                                        )
+                                }
+                            }
+
+                            Spacer(minLength: 0)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, isExpanded ? 2 : 1)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+
+            if !isExpanded && tasks.count > 3 {
+                Text("…")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+
+        }
+
+        .frame(maxWidth: .infinity, alignment: .leading)
+
+    }
+
+}
+
+// MARK: - DayTasksInlineView
+
+private struct TaskCalendarRowFramesKey: PreferenceKey {
+    static var defaultValue: [CGRect] = []
+
+    static func reduce(value: inout [CGRect], nextValue: () -> [CGRect]) {
+        value.append(contentsOf: nextValue())
+    }
+}
+
+private struct DayTasksInlineView: View {
+
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
+
+    @State private var hasAnyTasks: Bool? = nil
+    @State private var taskRowFrames: [CGRect] = []
+
+    @Environment(AppSettings.self) private var settings
+
+    @State private var taskPendingDeletion: TodoTask?
+    @State private var showAttachmentSyncWarning = false
+    @State private var pendingDeletionHasFutureOccurrences = false
+    
+    @State private var isDeletingRecurrence = false
+
+    let tasks: [TodoTask]
+    let onDaySwipe: (Int) -> Void
+    let onDoubleTapToday: () -> Void
+    let onCalendarSwipe: (Bool) -> Void
+    let onLegacyRecurrenceCompletion: (TodoTask) -> Void
+
+    private var uniqueTasks: [TodoTask] {
+
+        let deduplicated = Array(
+
+            Dictionary(grouping: tasks, by: \.id)
+
+                .compactMap { $0.value.first }
+
+        )
+
+        return deduplicated.sorted {
+
+            let firstDate = $0.deadLine ?? .distantFuture
+
+            let secondDate = $1.deadLine ?? .distantFuture
+
+            if firstDate != secondDate {
+
+                return firstDate < secondDate
+
+            }
+
+            return $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending
+
+        }
+
+    }
+
+    private func iconColor(for task: TodoTask) -> Color {
+
+        if settings.iconStyle == .monochrome {
+
+            return .primary
+
+        } else {
+
+            return task.mainTag?.color ?? task.status.color
+
+        }
+
+    }
+
+    // Helper methods for highlight
+
+    private func shouldShowHighlight(for task: TodoTask) -> Bool {
+
+        guard settings.highlightEnabled else { return false }
+
+        let isCritical = task.priority.systemImage == "flame"
+
+        return isCritical && (
+
+            isOverdue(task) ||
+
+            Calendar.current.isDateInToday(task.deadLine ?? .distantPast)
+
+        )
+
+    }
+
+    private func highlightColor(for task: TodoTask) -> Color {
+
+        Color(hex: settings.highlightColorHex) ?? .red
+
+    }
+
+    @MainActor
+    private func refreshTaskExistence() {
+        var descriptor = FetchDescriptor<TodoTask>()
+        descriptor.fetchLimit = 1
+
+        do {
+            hasAnyTasks = !(try modelContext.fetch(descriptor).isEmpty)
+        } catch {
+            AppLogger.persistence.error("Failed to check task existence: \(error.localizedDescription)")
+        }
+    }
+
+
+
+    @MainActor
+    private func presentAttachmentSyncWarning() {
+        taskPendingDeletion = nil
+        pendingDeletionHasFutureOccurrences = false
+        showAttachmentSyncWarning = false
+
+        // Dismiss the deletion-confirmation alert before presenting the warning.
+        Task { @MainActor in
+            await Task.yield()
+            showAttachmentSyncWarning = true
+        }
+    }
+
+    @MainActor
+    private func handleDeletionResult(_ result: TaskDeletionResult) {
+        switch result {
+        case .deleted:
+            modelContext.processPendingChanges()
+            NotificationCenter.default.post(name: .taskDidChange, object: nil)
+        case .blockedByAttachmentSync:
+            presentAttachmentSyncWarning()
+        case .failed:
+            AppLogger.persistence.error("Task deletion failed.")
+        }
+    }
+
+    @MainActor
+    private func deleteTaskAndRefresh(_ task: TodoTask) {
+        handleDeletionResult(deleteTask(task, in: modelContext))
+    }
+
+    private func requestTaskDeletion(_ task: TodoTask) {
+        // A completed occurrence is historical data: delete only this task.
+        guard task.recurrenceID != nil, !task.isCompleted else {
+            pendingDeletionHasFutureOccurrences = false
+            if settings.confirmTaskDeletion {
+                taskPendingDeletion = task
+            } else {
+                withAnimation {
+                    deleteTaskAndRefresh(task)
+                }
+            }
+            return
+        }
+
+        do {
+            let hasFutureOccurrence = try RecurrenceEngine.hasFutureOccurrence(
+                for: task,
+                in: modelContext
+            )
+
+            pendingDeletionHasFutureOccurrences = hasFutureOccurrence
+
+            if hasFutureOccurrence || settings.confirmTaskDeletion {
+                taskPendingDeletion = task
+            } else {
+                withAnimation {
+                    deleteTaskAndRefresh(task)
+                }
+
+                pendingDeletionHasFutureOccurrences = false
+            }
+        } catch {
+            pendingDeletionHasFutureOccurrences = false
+            taskPendingDeletion = task
+
+            AppLogger.persistence.error(
+                "Calendar recurrence deletion check failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    var body: some View {
+
+        Group {
+
+        if tasks.isEmpty {
+
+            ContentUnavailableView {
+
+                Label {
+
+                    Text("")
+
+                        .font(.subheadline)
+
+                } icon: {
+
+                    Image(systemName: "tray")
+
+                        .resizable()
+
+                        .frame(width: 25, height: 25)
+
+                        .foregroundStyle(.secondary)
+
+                }
+
+            } description: {
+
+                Text(hasAnyTasks == false ? "Tap the green button to add a task." : "")
+
+                    .font(.subheadline)
+
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 60)
+                    .onEnded { value in
+                        let horizontal = abs(value.translation.width)
+                        let vertical = abs(value.translation.height)
+                        if horizontal > 60 && horizontal > vertical {
+                            onDaySwipe(value.translation.width < 0 ? 1 : -1)
+                        } else if vertical > 140 && vertical > horizontal * 2 {
+                            onCalendarSwipe(value.translation.height < 0)
+                        }
+                    }
+            )
+            .simultaneousGesture(
+                TapGesture(count: 2)
+                    .onEnded { onDoubleTapToday() }
+            )
+
+        } else {
+
+            List {
+
+                ForEach(uniqueTasks) { task in
+
+                NavigationLink(value: task) {
+
+                        HStack(spacing: 0) {
+
+                            Rectangle()
+
+                                .fill(
+
+                                    shouldShowHighlight(for: task)
+
+                                    ? highlightColor(for: task)
+
+                                    : Color.clear
+
+                                )
+
+                                .frame(width: 1.3)
+
+                                .frame(maxHeight: .infinity)
+
+                                .clipShape(RoundedRectangle(cornerRadius: 2))
+
+                                .padding(.vertical, 1)
+
+                                .padding(.trailing, 10)
+
+                            HStack(alignment: .center, spacing: 10) {
+
+                                Text(task.deadLine?.formatted(.dateTime.hour().minute()) ?? "")
+
+                                    .font(.subheadline.monospacedDigit())
+
+                                    .foregroundStyle(
+
+                                        isOverdue(task) ? .red : .secondary
+
+                                    )
+
+                                    .frame(width: 52, alignment: .leading)
+
+                                    .lineLimit(1)
+
+                                    .minimumScaleFactor(0.75)
+
+                                    .allowsTightening(true)
+
+                                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+
+                                HStack(spacing: 6) {
+
+                                    Text(task.title)
+
+                                        .font(.callout)
+
+                                        .foregroundStyle(task.isCompleted ? .secondary : .primary)
+
+                                .overlay(alignment: .bottomLeading) {
+
+                                    if settings.showTodayExpiredLabel && isOverdue(task) {
+
+                                        Rectangle()
+
+                                            .fill(Color.red.opacity(0.75))
+
+                                            .frame(height: 1)
+
+                                            .offset(y: 2)
+
+                                    }
+
+                                }
+
+                                        .strikethrough(task.isCompleted)
+
+                                    if task.recurrenceRule != nil {
+
+                                        Image(systemName: "arrow.triangle.2.circlepath")
+
+                                            .font(.caption)
+
+                                            .foregroundStyle(
+                                        task.occurrenceIndex == nil ? .red : .blue
+                                    )
+
+                                    }
+
+                                }
+
+                                Spacer()
+
+                                HStack(spacing: 6) {
+
+                                    if task.isCompleted {
+
+                                        Image(systemName: "checkmark")
+
+                                            .font(.headline)
+
+                                            .foregroundStyle(.green)
+
+                                    }
+
+                                    Image(systemName: task.mainTag?.mainIcon ?? task.status.icon)
+
+                                        .symbolRenderingMode(settings.iconStyle == .monochrome ? .monochrome : .palette)
+
+                                        .foregroundStyle(iconColor(for: task), .primary)
+
+                                        .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: 0.5, y: 0.5)
+
+                                        .shadow(color: Color.black.opacity(0.6), radius: 0.5, x: -0.5, y: -0.5)
+
+                                }
+
+                            }
+
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        }
+
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                        .contentShape(Rectangle())
+
+                        .padding(.vertical, 1)
+
+                    }
+
+                    .buttonStyle(.plain)
+
+                    .contentShape(Rectangle())
+                    .background {
+                        GeometryReader { proxy in
+                            Color.clear.preference(
+                                key: TaskCalendarRowFramesKey.self,
+                                value: [proxy.frame(in: .global)]
+                            )
+                        }
+                    }
+                    .listRowBackground(Color.clear)
+
+                    .swipeActions( edge: .leading, allowsFullSwipe: true) {
+
+                        Button {
+
+                            let wasCompleted = task.isCompleted
+
+                            if task.recurrenceRule != nil {
+
+                                if task.occurrenceIndex == nil {
+                                    onLegacyRecurrenceCompletion(task)
+                                    return
+                                }
+
+                                if wasCompleted {
+                                    task.isCompleted = false
+                                    task.completedAt = nil
+                                    task.snoozeUntil = nil
+                                } else {
+                                    // Complete and reschedule recurring task
+                                    task.completeRecurringTask()
+                                }
+
+                            } else {
+
+                                task.isCompleted.toggle()
+
+                                if task.isCompleted {
+
+                                    task.completedAt = .now
+
+                                    task.snoozeUntil = nil
+
+                                } else {
+
+                                    task.completedAt = nil
+
+                                    task.snoozeUntil = nil
+
+                                }
+
+                            }
+
+                            do {
+
+                                try modelContext.save()
+                                RecurrenceCompletionNotice.postIfNeeded(
+                                    for: task,
+                                    wasCompleted: wasCompleted
+                                )
+
+                            } catch {
+
+                                AppLogger.persistence.fault("Failed to save task completion: \(error)")
+
+                            }
+
+                            Task { @MainActor in
+                                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                            }
+
+                            NotificationManager.shared.refresh(force: true)
+                            
+                            NotificationCenter.default.post(
+                                name: .taskDidChange,
+                                object: nil
+                            )
+
+                        } label: {
+                            
+
+                            Label(
+
+                                task.isCompleted ? "To do" : "Complete",
+
+                                systemImage: task.isCompleted
+
+                                ? "arrow.uturn.backward"
+
+                                : "checkmark"
+
+                            )
+
+                        }
+
+                        .tint(.green)
+
+                    }
+
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+
+                        Button(role: .destructive) {
+                            requestTaskDeletion(task)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+
+                    }
+
+                    .contextMenu {
+
+                        Button(role: .destructive) {
+                            requestTaskDeletion(task)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+
+                        Divider()
+                        
+                        Button {
+                            let wasCompleted = task.isCompleted
+                            if task.recurrenceRule != nil {
+
+                                if task.occurrenceIndex == nil {
+                                    onLegacyRecurrenceCompletion(task)
+                                    return
+                                }
+
+                                if wasCompleted {
+                                    task.isCompleted = false
+                                    task.completedAt = nil
+                                    task.snoozeUntil = nil
+                                } else {
+                                    task.completeRecurringTask()
+                                }
+                                    
+                            } else {
+                                task.isCompleted.toggle()
+                                if task.isCompleted {
+                                    task.completedAt = .now
+                                    task.snoozeUntil = nil
+                                } else {
+                                    task.completedAt = nil
+                                    task.snoozeUntil = nil
+                                }
+                            }
+
+                            do {
+                                try modelContext.save()
+                                RecurrenceCompletionNotice.postIfNeeded(
+                                    for: task,
+                                    wasCompleted: wasCompleted
+                                )
+                            } catch {
+                                AppLogger.persistence.fault(
+                                    "Failed to save task completion from context menu: \(error)"
+                                )
+                            }
+
+                            Task { @MainActor in
+                                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                            }
+
+                            NotificationManager.shared.refresh(force: true)
+                            
+                            NotificationCenter.default.post(
+                                name: .taskDidChange,
+                                object: nil
+                            )
+                        } label: {
+                            Label(
+                                  task.isCompleted ? "To do" : "Complete",
+                                  systemImage: task.isCompleted
+                                      ? "arrow.uturn.backward"
+                                      : "checkmark.circle"
+                              )
+                        }
+                        .tint(.green)
+                        
+                        if task.deadLine != nil {
+                            Button {
+                                TaskSingleCalendarExport.shared.present(for: task)
+                            } label: {
+                                Label(
+                                    "Add to Calendar Apple",
+                                    systemImage: "calendar.badge.plus"
+                                )
+                            }
+                        }
+
+                        TaskRescheduleMenu(task: task)
+
+                        if let deadline = task.deadLine,
+                           deadline < Date() {
+                            Menu {
+                                Button {
+                                    NotificationActionProcessor.shared.applyManualSnooze(
+                                        to: task,
+                                        interval: 5 * 60,
+                                        using: modelContext
+                                    )
+                                } label: {
+                                    Label(
+                                        "5 minutes",
+                                        systemImage: "5.arrow.trianglehead.clockwise"
+                                    )
+                                }
+
+                                Button {
+                                    NotificationActionProcessor.shared.applyManualSnooze(
+                                        to: task,
+                                        interval: 15 * 60,
+                                        using: modelContext
+                                    )
+                                } label: {
+                                    Label(
+                                        "15 minutes",
+                                        systemImage: "15.arrow.trianglehead.clockwise"
+                                    )
+                                }
+
+                                Button {
+                                    NotificationActionProcessor.shared.applyManualSnooze(
+                                        to: task,
+                                        interval: 30 * 60,
+                                        using: modelContext
+                                    )
+                                } label: {
+                                    Label(
+                                        "30 minutes",
+                                        systemImage: "30.arrow.trianglehead.clockwise"
+                                    )
+                                }
+
+                                Button {
+                                    NotificationActionProcessor.shared.applyManualSnooze(
+                                        to: task,
+                                        interval: 60 * 60,
+                                        using: modelContext
+                                    )
+                                } label: {
+                                    Label(
+                                        "1 hour",
+                                        systemImage: "60.arrow.trianglehead.clockwise"
+                                    )
+                                }
+
+                                Button {
+                                    NotificationActionProcessor.shared.applyManualSnooze(
+                                        to: task,
+                                        interval: 3 * 60 * 60,
+                                        using: modelContext
+                                    )
+                                } label: {
+                                    Label(
+                                        "3 hours",
+                                        systemImage: "plus.arrow.trianglehead.clockwise"
+                                    )
+                                }
+                            } label: {
+                                Label("Snooze", systemImage: "timer")
+                            }
+                        }
+
+                        Menu {
+                            Button {
+                                do {
+                                    _ = try TaskDuplicationService.duplicate(
+                                        task,
+                                        using: modelContext,
+                                        includingAttachments: false
+                                    )
+                                    NotificationCenter.default.post(
+                                        name: .taskDidChange,
+                                        object: nil
+                                    )
+                                } catch {
+                                    AppLogger.persistence.error(
+                                        "Task duplication failed: \(error.localizedDescription)"
+                                    )
+                                }
+                            } label: {
+                                Label("Task", systemImage: "text.badge.checkmark")
+                            }
+
+                            if task.hasVisibleTaskAttachments {
+                                Button {
+                                    do {
+                                        _ = try TaskDuplicationService.duplicate(
+                                            task,
+                                            using: modelContext,
+                                            includingAttachments: true
+                                        )
+                                        NotificationCenter.default.post(
+                                            name: .taskDidChange,
+                                            object: nil
+                                        )
+                                    } catch {
+                                        AppLogger.persistence.error(
+                                            "Task duplication failed: \(error.localizedDescription)"
+                                        )
+                                    }
+                                } label: {
+                                    Label(
+                                        "Task & Attachments",
+                                        systemImage: "rectangle.and.paperclip"
+                                    )
+                                }
+                            }
+                        } label: {
+                            Label("Duplicate", systemImage: "plus.square.on.square")
+                        }
+
+                    }
+
+                }
+
+            }
+
+            .contentMargins(.bottom, 90, for: .scrollContent)
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+            .coordinateSpace(name: "dayTasksList")
+            .onPreferenceChange(TaskCalendarRowFramesKey.self) { taskRowFrames = $0 }
+            .overlay(alignment: .bottom) {
+                GeometryReader { proxy in
+                    let listFrame = proxy.frame(in: .global)
+                    let visibleRowBottom = taskRowFrames
+                        .filter { $0.maxY > listFrame.minY && $0.minY < listFrame.maxY }
+                        .map(\.maxY)
+                        .max() ?? listFrame.minY
+                    let blankAreaTop = min(
+                        max(visibleRowBottom - listFrame.minY, 0),
+                        proxy.size.height
+                    )
+                    let blankAreaHeight = proxy.size.height - blankAreaTop
+
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+
+                        if !taskRowFrames.isEmpty && blankAreaHeight > 1 {
+                            Color.clear
+                                .contentShape(Rectangle())
+                                .frame(height: blankAreaHeight)
+                                .gesture(
+                                    DragGesture(minimumDistance: 60)
+                                        .onEnded { value in
+                                            let horizontal = abs(value.translation.width)
+                                            let vertical = abs(value.translation.height)
+                                            if horizontal > 60 && horizontal > vertical {
+                                                onDaySwipe(value.translation.width < 0 ? 1 : -1)
+                                            } else if vertical > 140 && vertical > horizontal * 2 {
+                                                onCalendarSwipe(value.translation.height < 0)
+                                            }
+                                        }
+                                )
+                                .simultaneousGesture(
+                                    TapGesture(count: 2)
+                                        .onEnded { onDoubleTapToday() }
+                                )
+                        }
+                    }
+                    .frame(width: proxy.size.width, height: proxy.size.height, alignment: .bottom)
+                }
+            }
+            .alert(Text(String(localized: showAttachmentSyncWarning ? "Unable to delete task" : "Delete task?")),
+                   isPresented: Binding(
+                    get: { taskPendingDeletion != nil || showAttachmentSyncWarning },
+                    set: {
+                        if !$0 {
+                            taskPendingDeletion = nil
+                            pendingDeletionHasFutureOccurrences = false
+                            showAttachmentSyncWarning = false
+                        }
+                    }
+                   )
+            ) {
+
+                if showAttachmentSyncWarning {
+                    Button(String(localized: "OK"), role: .cancel) {
+                        showAttachmentSyncWarning = false
+                    }
+                } else if let task = taskPendingDeletion, pendingDeletionHasFutureOccurrences {
+
+                    Button("Delete This Occurrence", role: .destructive) {
+                        withAnimation {
+                            deleteTaskAndRefresh(task)
+                        }
+                        taskPendingDeletion = nil
+                        pendingDeletionHasFutureOccurrences = false
+                    }
+
+                    Button("Delete This & Future Occurrences", role: .destructive) {
+                        taskPendingDeletion = nil
+                        pendingDeletionHasFutureOccurrences = false
+                        isDeletingRecurrence = true
+
+                        Task { @MainActor in
+                            await Task.yield()
+
+                            let result = await deleteRecurringTaskAndFutureOccurrences(
+                                task,
+                                in: modelContext
+                            )
+                            handleDeletionResult(result)
+                            isDeletingRecurrence = false
+                        }
+                    }
+
+                } else {
+
+                    Button("Delete", role: .destructive) {
+                        if let task = taskPendingDeletion {
+                            withAnimation {
+                                deleteTaskAndRefresh(task)
+                            }
+                        }
+                        taskPendingDeletion = nil
+                        pendingDeletionHasFutureOccurrences = false
+                    }
+                }
+
+                if !showAttachmentSyncWarning {
+                    Button("Cancel", role: .cancel) {
+                        taskPendingDeletion = nil
+                        pendingDeletionHasFutureOccurrences = false
+                    }
+                }
+
+            } message: {
+                if showAttachmentSyncWarning {
+                    Text(String(localized: "One or more attachments are not available on this device. Restore the local files before deleting this task."))
+                } else {
+                    Text("This action cannot be undone.")
+                }
+            }
+
+        }
+
+        }
+        .onAppear {
+            refreshTaskExistence()
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(for: .taskDidChange)
+        ) { _ in
+            refreshTaskExistence()
+        }
+
+    }
+
+}
+
+
+
+// MARK: - NewTaskSelection
+
+struct NewTaskSelection: Identifiable {
+
+    let id = UUID()
+
+    let date: Date
+
+}
+
+private func isOverdue(_ task: TodoTask) -> Bool {
+
+    guard let deadline = task.deadLine else { return false }
+
+    return !task.isCompleted && deadline < .now
+
+}
+
+
+
+struct ZoomableScrollView<Content: View>: UIViewRepresentable {
+
+    let content: Content
+
+    let minScale: CGFloat
+
+    let maxScale: CGFloat
+
+    init(minScale: CGFloat = 1,
+
+         maxScale: CGFloat = 2,
+
+         @ViewBuilder content: () -> Content) {
+
+        self.content = content()
+
+        self.minScale = minScale
+
+        self.maxScale = maxScale
+
+    }
+
+    func makeCoordinator() -> Coordinator {
+
+        Coordinator()
+
+    }
+
+
+
+    func makeUIView(context: Context) -> UIScrollView {
+
+        let scrollView = UIScrollView()
+
+        scrollView.minimumZoomScale = minScale
+
+        scrollView.maximumZoomScale = maxScale
+
+        scrollView.bouncesZoom = true
+
+        scrollView.alwaysBounceVertical = true
+
+        scrollView.alwaysBounceHorizontal = true
+
+        // Improve pinch zoom responsiveness
+
+        scrollView.delaysContentTouches = false
+
+        scrollView.canCancelContentTouches = true
+
+        scrollView.panGestureRecognizer.cancelsTouchesInView = false
+
+        scrollView.pinchGestureRecognizer?.delaysTouchesBegan = false
+
+        scrollView.pinchGestureRecognizer?.cancelsTouchesInView = false
+
+        scrollView.decelerationRate = .fast
+
+        scrollView.showsVerticalScrollIndicator = false
+
+        scrollView.showsHorizontalScrollIndicator = false
+
+        scrollView.delegate = context.coordinator
+
+        scrollView.panGestureRecognizer.minimumNumberOfTouches = 2
+
+        scrollView.contentInset = .zero
+
+        scrollView.contentInsetAdjustmentBehavior = .never
+
+        let host = UIHostingController(rootView: content)
+
+        host.sizingOptions = .intrinsicContentSize
+
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+
+        host.view.backgroundColor = .clear
+
+        scrollView.addSubview(host.view)
+
+        context.coordinator.hostingController = host
+
+        NSLayoutConstraint.activate([
+
+            host.view.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+
+            host.view.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+
+            host.view.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+
+            host.view.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+
+            host.view.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
+
+        ])
+
+
+
+        return scrollView
+
+    }
+
+    func updateUIView(_ uiView: UIScrollView, context: Context) {
+
+        context.coordinator.hostingController?.rootView = content
+
+    }
+
+    class Coordinator: NSObject, UIScrollViewDelegate {
+
+        var hostingController: UIHostingController<Content>?
+
+        func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+
+            hostingController?.view
+
+        }
+
+        func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
+
+            scrollView.isScrollEnabled = true
+
+        }
+
+    }
+
+}

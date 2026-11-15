@@ -113,7 +113,10 @@ enum TaskRescheduler {
 
             // Keep the AlarmKit alarm aligned with the updated deadline.
             Task { @MainActor in
-                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                _ = await ForMemoAlarmManager.shared.synchronize(
+                    task: task,
+                    in: modelContext
+                )
             }
 
             NotificationCenter.default.post(name: .taskDidChange, object: nil)

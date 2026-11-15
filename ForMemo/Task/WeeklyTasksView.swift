@@ -441,6 +441,10 @@ struct WeeklyTasksView: View {
                     }
                 }
             }
+            .modifier(WeeklyTasksCloudRefreshModifier(isEnabled: Persistence.hasICloudIdentity) {
+                fetchWeeklyTasks()
+                await weatherManager.refreshIfNeeded()
+            })
             .contentMargins(.bottom, 70, for: .scrollContent)
             .contentMargins(
                 .horizontal,
@@ -516,7 +520,7 @@ struct WeeklyTasksView: View {
             .scrollEdgeEffectHidden(true, for: .top)
             // Shared delete confirmation alert
             .alert(
-                "Delete task?",
+                showAttachmentSyncWarning ? Text("Unable to delete task") : Text("Delete task?"),
                 isPresented: Binding(
                     get: { taskPendingDeletion != nil || showAttachmentSyncWarning },
                     set: {
@@ -584,7 +588,7 @@ struct WeeklyTasksView: View {
                 }
             } message: {
                 if showAttachmentSyncWarning {
-                    Text(String(localized: "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task."))
+                    Text(String(localized: "One or more attachments for this task are not available on this device. Wait until they are available before deleting the task."))
                 } else {
                     Text("This action cannot be undone.")
                 }
@@ -971,7 +975,7 @@ private struct WeeklyTaskRow: View {
                 wasCompleted: wasCompleted
             )
             Task { @MainActor in
-                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext)
             }
             NotificationManager.shared.refresh(force: true)
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
@@ -987,7 +991,7 @@ private struct WeeklyTaskRow: View {
         keepCurrentOccurrenceActive: Bool
     ) {
         do {
-            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+            let createdOccurrences = try RecurrenceEngine.migrateLegacyRecurrence(
                 for: task,
                 futureCount: futureCount,
                 endDate: endDate, keepCurrentOccurrenceActive: keepCurrentOccurrenceActive,
@@ -996,6 +1000,13 @@ private struct WeeklyTaskRow: View {
 
             try modelContext.save()
             modelContext.processPendingChanges()
+            
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(
+                    tasks: [task] + createdOccurrences,
+                    in: modelContext
+                )
+            }
 
             NotificationCenter.default.post(
                 name: .taskDidChange,
@@ -1032,7 +1043,7 @@ private struct WeeklyTaskRow: View {
             modelContext.processPendingChanges()
 
             Task { @MainActor in
-                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext)
             }
 
             NotificationCenter.default.post(
@@ -1053,3 +1064,21 @@ private struct WeeklyTaskRow: View {
 
 }
 
+
+
+@MainActor
+private struct WeeklyTasksCloudRefreshModifier: ViewModifier {
+    let isEnabled: Bool
+    let action: @MainActor () async -> Void
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.refreshable {
+                await action()
+            }
+        } else {
+            content
+        }
+    }
+}

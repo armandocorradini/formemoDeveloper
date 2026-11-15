@@ -1529,8 +1529,8 @@ struct TaskListView: View {
             // Synchronize AlarmKit for the migrated task and all generated occurrences.
             Task { @MainActor in
                 _ = await ForMemoAlarmManager.shared.synchronize(
-                    tasks: [task] + createdOccurrences
-                )
+                    tasks: [task] + createdOccurrences, in: modelContext)
+                
             }
 
             NotificationCenter.default.post(
@@ -1567,7 +1567,7 @@ struct TaskListView: View {
             modelContext.processPendingChanges()
 
             Task { @MainActor in
-                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext)
             }
 
             NotificationCenter.default.post(
@@ -1703,6 +1703,14 @@ struct TaskListView: View {
         }
         .id(showCompleted)
         .id(debouncedSearchText)
+        .modifier(TaskListCloudRefreshModifier(isEnabled: Persistence.hasICloudIdentity) {
+            if showCompleted {
+                fetchCompletedTasks()
+                updateCompletedTaskCount()
+            } else {
+                refreshActiveList()
+            }
+        })
     }
     
   var body: some View {
@@ -1718,7 +1726,7 @@ struct TaskListView: View {
           .background(Color.clear)
           .scrollEdgeEffectHidden(true, for: .top)
           .alert(
-              String(localized: "Delete task?"),
+              showAttachmentSyncWarning ? Text("Unable to delete task") : Text("Delete task?"),
               isPresented: Binding(
                   get: { taskPendingDeletion != nil || showAttachmentSyncWarning },
                   set: { if !$0 { taskPendingDeletion = nil; showAttachmentSyncWarning = false } }
@@ -1788,7 +1796,7 @@ struct TaskListView: View {
 
           } message: {
               if showAttachmentSyncWarning {
-                  Text(String(localized: "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task."))
+                  Text(String(localized: "One or more attachments for this task are not available on this device. Wait until they are available before deleting the task."))
               } else {
                   Text(String(localized: "This action cannot be undone."))
               }
@@ -4190,7 +4198,7 @@ struct TodoSectionView: View {
     }
 
     Task { @MainActor in
-      _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+      _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext)
     }
 
     NotificationManager.shared.refresh(force: false)
@@ -4502,7 +4510,7 @@ struct CompletedSectionView: View {
         refreshCompletedTasks()
 
         Task { @MainActor in
-            _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+            _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext)
         }
 
 
@@ -4514,4 +4522,22 @@ struct CompletedSectionView: View {
         NotificationManager.shared.refresh(force: false)
     }
 
+}
+
+
+@MainActor
+private struct TaskListCloudRefreshModifier: ViewModifier {
+    let isEnabled: Bool
+    let action: @MainActor () async -> Void
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.refreshable {
+                await action()
+            }
+        } else {
+            content
+        }
+    }
 }

@@ -37,6 +37,17 @@ struct DebugDiagnosticsView: View {
                 .disabled(isRunning)
 
                 Button {
+                    Task { await runOrphanAttachmentAuditOnRealStore() }
+                } label: {
+                    HStack {
+                        Label("Audit allegati orfani (sola lettura)", systemImage: "doc.text.magnifyingglass")
+                        Spacer()
+                        if isRunning { ProgressView() }
+                    }
+                }
+                .disabled(isRunning)
+
+                Button {
                     Task { await runAllTests() }
                 } label: {
                     HStack {
@@ -98,6 +109,7 @@ struct DebugDiagnosticsView: View {
                 }
             }
         }
+        .contentMargins(.bottom, 70, for: .scrollContent)
         .navigationTitle("Diagnostica ForMemo")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $shareReport) { report in
@@ -154,6 +166,36 @@ struct DebugDiagnosticsView: View {
         } catch {
             reportExportError = error.localizedDescription
         }
+    }
+
+    /// Performs a read-only orphan inventory against the persistent app store.
+    /// No file or SwiftData record is changed by this operation.
+    private func runOrphanAttachmentAuditOnRealStore() async {
+        guard !isRunning else { return }
+        isRunning = true
+        results = []
+        currentTestScope = "reale"
+        defer { isRunning = false }
+
+        await runTest("Audit allegati orfani — database reale, sola lettura") {
+            let candidates = try AttachmentMaintenanceManager.shared.findOrphanedPhysicalAssets(
+                context: modelContext
+            )
+
+            guard !candidates.isEmpty else {
+                return "Audit completato. Nessun file fisico privo di record TaskAttachment è stato trovato nelle directory TaskAttachments esistenti. Nessun dato è stato modificato."
+            }
+
+            let formatter = ISO8601DateFormatter()
+            let details = candidates.map { candidate in
+                let modified = candidate.modificationDate.map(formatter.string(from:)) ?? "data non disponibile"
+                return "\(candidate.relativePath) | \(candidate.fileSize) byte | \(modified) | \(candidate.directoryURL.lastPathComponent)"
+            }.joined(separator: "\\n")
+
+            return "Trovati \(candidates.count) file candidati orfani. Elenco informativo: nessun file è stato cancellato o spostato. Prima di qualsiasi eliminazione, verificare la sincronizzazione iCloud e l'assenza di riferimenti su tutti i dispositivi.\\n\\n\(details)"
+        }
+
+        appendCurrentReportToUnifiedFile()
     }
 
     /// Suite di integrazione sulla persistenza reale. Ogni prova usa ID univoci,
@@ -513,6 +555,9 @@ struct DebugDiagnosticsView: View {
         await runTest("Refill reale notifiche: libera slot e inserisce prossimo evento") { try await testNotificationRefillIntegration() }
         await runTest("Stato AlarmKit (sola lettura)") { try testAlarmKitReadableState() }
         await runTest("Integrazione AlarmKit: pianifica, verifica, cancella") { try await testAlarmKitCreateAndCancel() }
+        await runTest("AlarmKit: cancellazione idempotente di una sveglia assente") {
+            try await testAlarmKitIdempotentCancellation()
+        }
         await runTest("Calcolo eventi successivi di un task (puro)") { try testNextEventProgression() }
         await runTest("Coda globale produzione: limite 64 e refill") { try testGlobalQueueLimitAndRefillSimulation() }
         await runTest("Fallback sveglia senza autorizzazione AlarmKit") { try testAlarmAuthorizationFallback() }
@@ -528,6 +573,9 @@ struct DebugDiagnosticsView: View {
         await runTest("Coordinatore: rilascio dopo errore") { try testCoordinatorReleasedAfterError() }
         await runTest("Coordinatore: rilascio dopo cancellazione asincrona") { try await testCoordinatorReleasedAfterCancellation() }
         await runTest("Migrazione legacy ricorrenza: stato e occorrenze generate") { try testLegacyRecurrenceMigration() }
+        await runTest("AlarmKit: migrazione legacy e sincronizzazione delle occorrenze") {
+            try await testLegacyMigrationAlarmSynchronization()
+        }
         await runTest("Estensione ricorrenza finita: conteggio e indici") { try testFiniteRecurrenceExtension() }
         await runTest("Ultima occorrenza pianificata: serie coerente e incoerente") { try testFinalPlannedOccurrenceDetection() }
         await runTest("Ricorrenza: propagazione completa dei metadati") { try testRecurrenceMetadataPropagation() }
@@ -555,12 +603,25 @@ struct DebugDiagnosticsView: View {
         await runTest("AlarmKit produzione: sincronizzazione batch idempotente") { try await testAlarmBatchSynchronizationIdempotency() }
         await runTest("AlarmKit produzione: eleggibilità task e cancellazione mirata") { try await testAlarmEligibilityTransitions() }
         await runTest("AlarmKit produzione: TaskRescheduler aggiorna la scadenza") { try await testAlarmTaskReschedulerUpdatesDeadline() }
-        await runTest("AlarmKit produzione: restore non corregge una data già programmata") { try await testAlarmRestoreLeavesExistingDateUnchanged() }
+        
+        await runTest("AlarmKit produzione: restore riallinea una data già programmata") {
+            try await testAlarmRestoreCorrectsExistingDate()
+        }
 
         // Audit mirato delle quattro ipotesi di intervento.
         await runTest("Allegati: rollback dopo eliminazione fisica — riproducibilità") { try testAttachmentDeletionRollbackWindow() }
         await runTest("Allegati: cleanup automatico produzione — file e record") { try testAutomaticAttachmentCleanupConsistency() }
         await runTest("Allegati: eliminazione immediata produzione — file e record") { try testImmediateAttachmentCleanupConsistency() }
+        await runTest("Allegati: errore save cleanup automatico — rollback e file preservato") { try testAutomaticAttachmentCleanupSaveFailure() }
+        await runTest("Allegati: errore save cleanup immediato — rollback e file preservato") { try testImmediateAttachmentCleanupSaveFailure() }
+        await runTest("Allegati: errore cancellazione fisica post-save automatico") { try testAutomaticAttachmentPhysicalDeletionFailure() }
+        await runTest("Allegati: errore cancellazione fisica post-save immediato") { try testImmediateAttachmentPhysicalDeletionFailure() }
+        await runTest("Allegati: errore parziale con più file nel cleanup immediato") { try testPartialImmediateAttachmentPhysicalDeletionFailure() }
+        await runTest("Allegati ricorrenti: cleanup protegge allegato ancora condiviso") { try testCleanupPreservesSharedRecurringAttachment() }
+        await runTest("Allegati: cleanup automatico rispetta la retention") { try testAutomaticAttachmentCleanupRetentionBoundary() }
+        await runTest("Allegati: audit individua file orfani senza cancellarli") { try testOrphanAttachmentAssetAuditIsReadOnly() }
+        await runTest("Allegati iCloud: cancellazione mirror verificata e idempotente") { try testCloudMirrorDeletionSuccessAndMissing() }
+        await runTest("Allegati iCloud: errori e percorsi non validi propagati") { try testCloudMirrorDeletionFailureAndUnsafePath() }
         await runTest("AlarmKit: sovrapposizione sincronizzazione individuale e batch") { try await testAlarmIndividualBatchOverlap() }
         await runTest("AlarmKit: richieste concorrenti con configurazioni discordanti") { try await testAlarmConflictingConcurrentSnapshots() }
         await runTest("AlarmKit: stale batch snapshot must not overwrite the latest deadline") { try await testAlarmStaleBatchCannotOverwriteLatestDeadline() }
@@ -2051,6 +2112,33 @@ struct DebugDiagnosticsView: View {
         return "Sveglia AlarmKit di prova creata con UUID dedicato, verificata come programmata e cancellata; controllo finale senza sveglia di prova residua. Data prevista: \(ISO8601DateFormatter().string(from: fireDate))."
     }
 
+    private func testAlarmKitIdempotentCancellation() async throws -> String {
+        let manager = ForMemoAlarmManager.shared
+
+        guard manager.authorizationState() == .authorized else {
+            throw DiagnosticFailure.assertion(
+                "Test non eseguibile: AlarmKit non è autorizzato."
+            )
+        }
+
+        // UUID casuale che non è mai stato usato per programmare una sveglia.
+        let alarmID = UUID()
+
+        do {
+            try await manager.cancelAlarm(id: alarmID)
+            try assertDiagnosticAlarm(id: alarmID, shouldBeScheduled: false)
+
+            // La seconda cancellazione deve produrre lo stesso stato finale.
+            try await manager.cancelAlarm(id: alarmID)
+            try assertDiagnosticAlarm(id: alarmID, shouldBeScheduled: false)
+        } catch {
+            await manager.cancelAlarms(ids: [alarmID])
+            throw error
+        }
+
+        return "Due chiamate consecutive a cancelAlarm() su un UUID mai programmato. Entrambe completate correttamente; dopo ciascuna chiamata è stata verificata l'assenza di una sveglia programmata."
+    }
+
     private func testAlarmKitReadableState() throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard let count = manager.scheduledAlarmCount() else {
@@ -2144,6 +2232,127 @@ struct DebugDiagnosticsView: View {
         }
 
         return "Migrazione eseguita su store in-memory: identità originale conservata, 3 occorrenze create, indici 1–4, stato completato e snooze azzerato; seconda migrazione rifiutata."
+    }
+
+    private func testLegacyMigrationAlarmSynchronization() async throws -> String {
+        let manager = ForMemoAlarmManager.shared
+
+        guard manager.authorizationState() == .authorized else {
+            throw DiagnosticFailure.assertion(
+                "Test non eseguibile: AlarmKit non è autorizzato. Nessuna sveglia è stata creata."
+            )
+        }
+
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let start = Calendar.current.date(byAdding: .day, value: 3, to: Date())!
+        let task = TodoTask(
+            title: "DEBUG-ONLY legacy AlarmKit migration",
+            deadLine: start,
+            reminderOffsetMinutes: 45
+        )
+        task.isDebugTask = true
+        task.alarmEnabled = true
+        task.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        task.recurrenceInterval = 1
+        task.recurrenceCount = nil
+        context.insert(task)
+
+        var generated: [TodoTask] = []
+        var alarmIDs: Set<UUID> = [task.id]
+
+        do {
+            // 1. Esegue la migrazione legacy reale sullo store isolato.
+            generated = try RecurrenceEngine.migrateLegacyRecurrence(
+                for: task,
+                futureCount: 3,
+                endDate: nil,
+                keepCurrentOccurrenceActive: false,
+                in: context
+            )
+            generated.forEach { $0.isDebugTask = true }
+            alarmIDs.formUnion(generated.map(\.id))
+
+            try context.save()
+
+            guard generated.count == 3,
+                  task.isCompleted,
+                  task.completedAt != nil,
+                  generated.allSatisfy({ !$0.isCompleted && $0.alarmEnabled }) else {
+                throw DiagnosticFailure.assertion(
+                    "Migrazione legacy incoerente: attese tre occorrenze attive con sveglia e task originale completato."
+                )
+            }
+
+            // 2. Sincronizza il task originale e le occorrenze attraverso
+            //    il percorso batch di produzione.
+            guard await manager.synchronize(
+                tasks: [task] + generated,
+                in: context
+            ) else {
+                throw DiagnosticFailure.assertion(
+                    "La sincronizzazione batch AlarmKit dopo la migrazione ha restituito false."
+                )
+            }
+
+            try assertDiagnosticAlarm(id: task.id, shouldBeScheduled: false)
+
+            for occurrence in generated {
+                try assertDiagnosticAlarm(
+                    id: occurrence.id,
+                    shouldBeScheduled: true
+                )
+            }
+
+            // 3. Elimina una singola occorrenza e sincronizza il suo UUID.
+            let removedOccurrence = generated[1]
+            context.delete(removedOccurrence)
+            try context.save()
+
+            guard await manager.synchronize(
+                task: removedOccurrence,
+                in: context
+            ) else {
+                throw DiagnosticFailure.assertion(
+                    "La sincronizzazione dell'occorrenza eliminata ha restituito false."
+                )
+            }
+
+            try assertDiagnosticAlarm(
+                id: removedOccurrence.id,
+                shouldBeScheduled: false
+            )
+
+            // Le altre occorrenze devono mantenere le proprie sveglie.
+            for occurrence in generated where occurrence.id != removedOccurrence.id {
+                try assertDiagnosticAlarm(
+                    id: occurrence.id,
+                    shouldBeScheduled: true
+                )
+            }
+
+            // 4. Cleanup esclusivo degli UUID creati da questo test.
+            await manager.cancelAlarms(ids: Array(alarmIDs))
+            try assertDiagnosticAlarmIDs(
+                alarmIDs,
+                allShouldBeScheduled: false
+            )
+
+            context.delete(task)
+            generated.forEach { context.delete($0) }
+            try context.save()
+
+        } catch {
+            // Anche in caso di errore, cancella esclusivamente gli ID diagnostici.
+            await manager.cancelAlarms(ids: Array(alarmIDs))
+            context.delete(task)
+            generated.forEach { context.delete($0) }
+            try? context.save()
+            throw error
+        }
+
+        return "Migrazione legacy reale su SwiftData in-memory: tre occorrenze generate e sincronizzate con AlarmKit; task originale completato senza sveglia; eliminazione di una singola occorrenza con cancellazione della sola sveglia associata; sveglie delle altre occorrenze verificate come ancora programmate. Cleanup verificato su tutti gli UUID diagnostici."
     }
 
     private func testFiniteRecurrenceExtension() throws -> String {
@@ -2829,47 +3038,52 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let id = UUID()
-        let task = TodoTask(id: id, title: "DEBUG-ONLY AlarmKit deadline edit", deadLine: .now.addingTimeInterval(7_200))
+        let initialDeadline = Date.now.addingTimeInterval(7_200)
+        let task = TodoTask(
+            id: id,
+            title: "DEBUG-ONLY AlarmKit deadline edit",
+            deadLine: initialDeadline
+        )
         task.isDebugTask = true
         task.alarmEnabled = true
+        context.insert(task)
 
         do {
-            guard await manager.synchronize(task: task) else {
-                throw DiagnosticFailure.assertion("Fase 1 — prima sincronizzazione: synchronize(task:) ha restituito false.")
+            try context.save()
+            guard await manager.synchronize(task: task, in: context) else {
+                throw DiagnosticFailure.assertion("Fase 1 — prima sincronizzazione: synchronize(task:in:) ha restituito false.")
             }
-            do {
-                try assertDiagnosticAlarm(id: id, shouldBeScheduled: true)
-            } catch {
-                throw DiagnosticFailure.assertion("Fase 2 — verifica della prima sveglia (lettura AlarmKit): \(error.localizedDescription)")
-            }
+            try assertDiagnosticAlarmDate(id: id, expectedDate: initialDeadline)
 
-            task.deadLine = .now.addingTimeInterval(10_800)
-            guard await manager.synchronize(task: task) else {
-                throw DiagnosticFailure.assertion("Fase 3 — riprogrammazione dopo la modifica della scadenza: synchronize(task:) ha restituito false.")
+            let editedDeadline = Date.now.addingTimeInterval(10_800)
+            task.deadLine = editedDeadline
+            try context.save()
+            guard await manager.synchronize(task: task, in: context) else {
+                throw DiagnosticFailure.assertion("Fase 2 — riprogrammazione dopo la modifica della scadenza: synchronize(task:in:) ha restituito false.")
             }
-            do {
-                try assertDiagnosticAlarm(id: id, shouldBeScheduled: true)
-            } catch {
-                throw DiagnosticFailure.assertion("Fase 4 — verifica dopo la modifica della scadenza (lettura AlarmKit): \(error.localizedDescription)")
-            }
+            try assertDiagnosticAlarmDate(id: id, expectedDate: editedDeadline)
 
             task.isCompleted = true
-            guard await manager.synchronize(task: task) else {
-                throw DiagnosticFailure.assertion("Fase 5 — sincronizzazione dopo il completamento: synchronize(task:) ha restituito false.")
+            try context.save()
+            guard await manager.synchronize(task: task, in: context) else {
+                throw DiagnosticFailure.assertion("Fase 3 — sincronizzazione dopo il completamento: synchronize(task:in:) ha restituito false.")
             }
-            do {
-                try assertDiagnosticAlarm(id: id, shouldBeScheduled: false)
-            } catch {
-                throw DiagnosticFailure.assertion("Fase 6 — verifica della cancellazione per completamento (lettura AlarmKit): \(error.localizedDescription)")
-            }
+            try assertDiagnosticAlarm(id: id, shouldBeScheduled: false)
         } catch {
-            // Cleanup circoscritto all'UUID del test; non deve mascherare l'errore della fase originale.
-            try? await manager.cancelAlarm(id: id)
+            await manager.cancelAlarms(ids: [id])
+            context.delete(task)
+            try? context.save()
             throw error
         }
 
-        return "Percorso reale synchronize(task:): sveglia creata, sincronizzazione ripetuta dopo modifica della scadenza e cancellazione dopo il completamento, verificata tramite lo stato AlarmKit. Verificato esclusivamente l'UUID sintetico del test; nessuna pulizia globale eseguita."
+        await manager.cancelAlarms(ids: [id])
+        try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
+        context.delete(task)
+        try context.save()
+        return "Task sintetico inserito e salvato in uno store SwiftData in-memory. Verificate creazione, aggiornamento della data .fixed dopo modifica persistita e cancellazione dopo completamento. Pulizia limitata all'UUID del test."
     }
 
     /// Models a recurrence whose future occurrences become obsolete after a rule edit.
@@ -2880,6 +3094,8 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let base = Date.now.addingTimeInterval(7_200)
         let recurrenceID = UUID()
         let tasks: [TodoTask] = (1...6).map { index in
@@ -2890,25 +3106,27 @@ struct DebugDiagnosticsView: View {
             )
             task.isDebugTask = true
             task.alarmEnabled = true
-            task.recurrenceID = recurrenceID // Synthetic recurrence metadata; no persisted series is created.
+            task.recurrenceID = recurrenceID
             task.occurrenceIndex = index
             return task
         }
         let ids = tasks.map(\.id)
+        tasks.forEach { context.insert($0) }
 
         do {
+            try context.save()
             for task in tasks {
-                guard await manager.synchronize(task: task) else {
+                guard await manager.synchronize(task: task, in: context) else {
                     throw DiagnosticFailure.assertion("Fallita la sincronizzazione della ricorrenza sintetica #\(task.occurrenceIndex ?? 0).")
                 }
             }
             for id in ids { try assertDiagnosticAlarm(id: id, shouldBeScheduled: true) }
 
-            // Simulate three future occurrences being removed/invalidated by a rule change.
             let obsolete = Array(tasks.suffix(3))
+            obsolete.forEach { $0.isCompleted = true }
+            try context.save()
             for task in obsolete {
-                task.isCompleted = true
-                guard await manager.synchronize(task: task) else {
+                guard await manager.synchronize(task: task, in: context) else {
                     throw DiagnosticFailure.assertion("Fallita la sincronizzazione dell'occorrenza resa obsoleta.")
                 }
             }
@@ -2917,12 +3135,16 @@ struct DebugDiagnosticsView: View {
             for task in obsolete { try assertDiagnosticAlarm(id: task.id, shouldBeScheduled: false) }
         } catch {
             await manager.cancelAlarms(ids: ids)
+            tasks.forEach { context.delete($0) }
+            try? context.save()
             throw error
         }
 
         await manager.cancelAlarms(ids: ids)
-        for id in ids { try assertDiagnosticAlarm(id: id, shouldBeScheduled: false) }
-        return "Sei sveglie sintetiche programmate tramite synchronize(task:); tre occorrenze rese obsolete sono state cancellate tramite il percorso reale di sincronizzazione, mentre le altre tre sono rimaste programmate. Non verifica l'entry point UI che modifica la regola né invoca il cleanup globale degli orfani."
+        try assertDiagnosticAlarmIDs(Set(ids), allShouldBeScheduled: false)
+        tasks.forEach { context.delete($0) }
+        try context.save()
+        return "Sei occorrenze persistite in uno store SwiftData isolato. Verificata la programmazione iniziale e la cancellazione di tre occorrenze dopo aver salvato il loro stato completato; le altre tre sono rimaste programmate. Nessun cleanup globale."
     }
 
     private func testAlarmBatchSynchronizationIdempotency() async throws -> String {
@@ -2931,6 +3153,8 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let base = Date.now.addingTimeInterval(7_200)
         let tasks: [TodoTask] = (0..<8).map { index in
             let task = TodoTask(
@@ -2943,25 +3167,31 @@ struct DebugDiagnosticsView: View {
             return task
         }
         let ids = Set(tasks.map(\.id))
+        tasks.forEach { context.insert($0) }
 
         do {
-            guard await manager.synchronize(tasks: tasks) else {
-                throw DiagnosticFailure.assertion("Il batch di produzione non è stato verificato al primo passaggio.")
+            try context.save()
+            guard await manager.synchronize(tasks: tasks, in: context) else {
+                throw DiagnosticFailure.assertion("Il batch persistito di produzione non è stato verificato al primo passaggio.")
             }
             try assertDiagnosticAlarmIDs(ids, allShouldBeScheduled: true)
 
-            guard await manager.synchronize(tasks: tasks) else {
-                throw DiagnosticFailure.assertion("Il secondo batch non è stato verificato.")
+            guard await manager.synchronize(tasks: tasks, in: context) else {
+                throw DiagnosticFailure.assertion("Il secondo batch persistito non è stato verificato.")
             }
             try assertDiagnosticAlarmIDs(ids, allShouldBeScheduled: true)
         } catch {
             await manager.cancelAlarms(ids: Array(ids))
+            tasks.forEach { context.delete($0) }
+            try? context.save()
             throw error
         }
 
         await manager.cancelAlarms(ids: Array(ids))
         try assertDiagnosticAlarmIDs(ids, allShouldBeScheduled: false)
-        return "Otto task sintetici sincronizzati tramite synchronize(tasks:) due volte; tutte le otto sveglie risultano programmate dopo entrambi i passaggi e nessuna rimane dopo la pulizia mirata. Verifica batch/idempotenza su un campione sicuro, non il limite massimo di AlarmKit."
+        tasks.forEach { context.delete($0) }
+        try context.save()
+        return "Otto task inseriti e salvati in uno store SwiftData isolato, sincronizzati tramite il batch di produzione due volte. Tutte le sveglie sono state verificate dopo entrambi i passaggi e rimosse con cleanup mirato."
     }
 
     private func testAlarmEligibilityTransitions() async throws -> String {
@@ -2970,6 +3200,8 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let now = Date.now
         let future = now.addingTimeInterval(7_200)
         let eligible = TodoTask(id: UUID(), title: "DEBUG-ONLY eligible", deadLine: future)
@@ -2993,9 +3225,11 @@ struct DebugDiagnosticsView: View {
         noDeadline.alarmEnabled = true
 
         let tasks = [eligible, noAlarmPreference, completed, past, noDeadline]
-        let ids = tasks.map(\.id)
+        let ids = Set(tasks.map(\.id))
+        tasks.forEach { context.insert($0) }
         do {
-            guard await manager.synchronize(tasks: tasks) else {
+            try context.save()
+            guard await manager.synchronize(tasks: tasks, in: context) else {
                 throw DiagnosticFailure.assertion("La verifica batch dell'eleggibilità AlarmKit è fallita.")
             }
             try assertDiagnosticAlarm(id: eligible.id, shouldBeScheduled: true)
@@ -3003,13 +3237,17 @@ struct DebugDiagnosticsView: View {
                 try assertDiagnosticAlarm(id: task.id, shouldBeScheduled: false)
             }
         } catch {
-            await manager.cancelAlarms(ids: ids)
+            await manager.cancelAlarms(ids: Array(ids))
+            tasks.forEach { context.delete($0) }
+            try? context.save()
             throw error
         }
 
-        await manager.cancelAlarms(ids: ids)
-        try assertDiagnosticAlarmIDs(Set(ids), allShouldBeScheduled: false)
-        return "Il percorso batch reale ha programmato soltanto il task con sveglia attiva, non completato e scadenza futura. Preferenza disattivata, task completato, scadenza passata e scadenza assente non hanno lasciato sveglie. Pulizia limitata ai cinque UUID sintetici."
+        await manager.cancelAlarms(ids: Array(ids))
+        try assertDiagnosticAlarmIDs(ids, allShouldBeScheduled: false)
+        tasks.forEach { context.delete($0) }
+        try context.save()
+        return "Cinque task persistiti in uno store SwiftData isolato. Il percorso batch ha programmato soltanto il task con sveglia attiva, non completato e scadenza futura; gli altri quattro sono rimasti senza sveglia. Cleanup limitato ai cinque UUID sintetici."
     }
 
     /// Exercises TaskRescheduler.reschedule with an isolated SwiftData task and
@@ -3035,7 +3273,7 @@ struct DebugDiagnosticsView: View {
 
         do {
             try context.save()
-            guard await manager.synchronize(task: task) else {
+            guard await manager.synchronize(task: task, in: context) else {
                 throw DiagnosticFailure.assertion("La sveglia iniziale del task sintetico non è stata programmata.")
             }
             try assertDiagnosticAlarmDate(id: id, expectedDate: originalDeadline)
@@ -3080,12 +3318,14 @@ struct DebugDiagnosticsView: View {
 
     /// Characterizes restoreMissingConfiguredAlarms when an alarm already
     /// exists for the task but its fixed date no longer matches SwiftData.
-    private func testAlarmRestoreLeavesExistingDateUnchanged() async throws -> String {
+    private func testAlarmRestoreCorrectsExistingDate() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
             throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let id = UUID()
         let staleDeadline = Date.now.addingTimeInterval(7_200)
         let configuredDeadline = Date.now.addingTimeInterval(10_800)
@@ -3096,28 +3336,30 @@ struct DebugDiagnosticsView: View {
         )
         task.isDebugTask = true
         task.alarmEnabled = true
+        context.insert(task)
 
         do {
+            try context.save()
             try await manager.scheduleAlarm(
                 id: id,
                 date: staleDeadline,
                 title: "DEBUG-ONLY stale scheduled date"
             )
             try assertDiagnosticAlarmDate(id: id, expectedDate: staleDeadline)
-
             await manager.restoreMissingConfiguredAlarms(tasks: [task])
-
-            // Current production behavior intentionally leaves scheduled IDs untouched.
-            try assertDiagnosticAlarmDate(id: id, expectedDate: staleDeadline)
+            try assertDiagnosticAlarmDate(id: id, expectedDate: configuredDeadline)
         } catch {
             await manager.cancelAlarms(ids: [id])
+            context.delete(task)
+            try? context.save()
             throw error
         }
 
         await manager.cancelAlarms(ids: [id])
         try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
-
-        return "Caratterizzazione del comportamento attuale: restoreMissingConfiguredAlarms non corregge una sveglia già scheduled anche quando la data .fixed differisce dalla scadenza SwiftData. Il test passa perché verifica questa limitazione nota; non certifica l'allineamento delle date. Pulizia mirata completata."
+        context.delete(task)
+        try context.save()
+        return "Task di configurazione persistito in uno store SwiftData isolato. Verificato che restoreMissingConfiguredAlarms riallinea la data .fixed della sveglia AlarmKit alla scadenza autorevole salvata in SwiftData. Pulizia mirata completata."
     }
 
     /// Confronta lo stato persistito con le richieste già registrate in iOS.
@@ -3638,6 +3880,708 @@ struct DebugDiagnosticsView: View {
         return "Percorso reale deleteAllCompletedTaskAttachments verificato su store in-memory: file sintetico e record eliminati correttamente. Nessun task o allegato del database reale è stato letto o modificato."
     }
 
+    /// Injects a save failure through the automatic production cleanup path.
+    /// The persisted attachment record, task relationship and physical bytes
+    /// must all remain available after the manager rolls the context back.
+    private func testAutomaticAttachmentCleanupSaveFailure() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        guard let directory = AssetDirectoryCoordinator.localDirectory(for: .taskAttachments) else {
+            throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let relativePath = "diagnostics-save-failure-auto-\(UUID().uuidString).txt"
+        let fileURL = directory.appendingPathComponent(relativePath)
+        let payload = Data("automatic cleanup save failure payload".utf8)
+        try payload.write(to: fileURL, options: .atomic)
+
+        let task = TodoTask(title: "DEBUG-ONLY automatic cleanup save failure")
+        task.isDebugTask = true
+        task.isCompleted = true
+        task.completedAt = Calendar.current.date(byAdding: .day, value: -45, to: .now)
+
+        let attachment = TaskAttachment(
+            originalName: "automatic-save-failure.txt",
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+
+        let taskID = task.id
+        let attachmentID = attachment.id
+        defer {
+            try? FileManager.default.removeItem(at: fileURL)
+            if let item = try? context.fetch(
+                FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+            ).first {
+                context.delete(item)
+            }
+            if let item = try? context.fetch(
+                FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+            ).first {
+                context.delete(item)
+            }
+            try? context.save()
+        }
+
+        try context.save()
+        guard attachment.fileURL?.standardizedFileURL == fileURL.standardizedFileURL else {
+            throw DiagnosticFailure.assertion("Il resolver non individua il file sintetico del test automatico.")
+        }
+
+        var saveAttempts = 0
+        try AttachmentMaintenanceManager.shared.performAutomaticCleanup(
+            context: context,
+            retentionDays: 30,
+            saveOperation: {
+                saveAttempts += 1
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-AUTOMATIC")
+            }
+        )
+
+        let restoredAttachment = try context.fetch(
+            FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+        ).first
+        let restoredTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).first
+        let fileStillExists = FileManager.default.fileExists(atPath: fileURL.path)
+        let bytesAreReadable = (try? Data(contentsOf: fileURL)) == payload
+        let relationshipIsRestored = restoredTask?.attachments?.contains {
+            $0.id == attachmentID
+        } == true
+
+        guard saveAttempts == 1,
+              restoredAttachment != nil,
+              relationshipIsRestored,
+              fileStillExists,
+              bytesAreReadable else {
+            throw DiagnosticFailure.assertion(
+                "Automatic save failure: attempts=\(saveAttempts), record=\(restoredAttachment != nil), relationship=\(relationshipIsRestored), file=\(fileStillExists), bytes=\(bytesAreReadable)."
+            )
+        }
+
+        return "Errore save iniettato una volta nel percorso automatico di produzione. Dopo rollback, record SwiftData, relazione task-allegato e contenuto fisico sono rimasti disponibili; nessuna cancellazione fisica è stata eseguita."
+    }
+
+    /// Injects a save failure through the explicit production cleanup path.
+    /// The method must rollback its pending model deletions before rethrowing.
+    private func testImmediateAttachmentCleanupSaveFailure() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        guard let directory = AssetDirectoryCoordinator.localDirectory(for: .taskAttachments) else {
+            throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let relativePath = "diagnostics-save-failure-immediate-\(UUID().uuidString).txt"
+        let fileURL = directory.appendingPathComponent(relativePath)
+        let payload = Data("immediate cleanup save failure payload".utf8)
+        try payload.write(to: fileURL, options: .atomic)
+
+        let task = TodoTask(title: "DEBUG-ONLY immediate cleanup save failure")
+        task.isDebugTask = true
+        task.isCompleted = true
+        let attachment = TaskAttachment(
+            originalName: "immediate-save-failure.txt",
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+
+        let taskID = task.id
+        let attachmentID = attachment.id
+        defer {
+            try? FileManager.default.removeItem(at: fileURL)
+            if let item = try? context.fetch(
+                FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+            ).first {
+                context.delete(item)
+            }
+            if let item = try? context.fetch(
+                FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+            ).first {
+                context.delete(item)
+            }
+            try? context.save()
+        }
+
+        try context.save()
+        guard attachment.fileURL?.standardizedFileURL == fileURL.standardizedFileURL else {
+            throw DiagnosticFailure.assertion("Il resolver non individua il file sintetico del test immediato.")
+        }
+
+        var saveAttempts = 0
+        var injectedErrorWasPropagated = false
+        do {
+            try AttachmentMaintenanceManager.shared.deleteAllCompletedTaskAttachments(
+                context: context,
+                saveOperation: {
+                    saveAttempts += 1
+                    throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-IMMEDIATE")
+                }
+            )
+        } catch {
+            injectedErrorWasPropagated = error.localizedDescription.contains(
+                "SAVE-FAILURE-INJECTED-IMMEDIATE"
+            )
+        }
+
+        let restoredAttachment = try context.fetch(
+            FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+        ).first
+        let restoredTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).first
+        let fileStillExists = FileManager.default.fileExists(atPath: fileURL.path)
+        let bytesAreReadable = (try? Data(contentsOf: fileURL)) == payload
+        let relationshipIsRestored = restoredTask?.attachments?.contains {
+            $0.id == attachmentID
+        } == true
+
+        guard saveAttempts == 1,
+              injectedErrorWasPropagated,
+              restoredAttachment != nil,
+              relationshipIsRestored,
+              fileStillExists,
+              bytesAreReadable else {
+            throw DiagnosticFailure.assertion(
+                "Immediate save failure: attempts=\(saveAttempts), injectedErrorPropagated=\(injectedErrorWasPropagated), record=\(restoredAttachment != nil), relationship=\(relationshipIsRestored), file=\(fileStillExists), bytes=\(bytesAreReadable)."
+            )
+        }
+
+        return "Errore save iniettato una volta nel percorso immediato di produzione e propagato al chiamante. Prima della propagazione, rollback ha ripristinato record e relazione; il file e i suoi byte sono rimasti disponibili."
+    }
+
+    /// Injects a local/cloud physical deletion failure after the automatic
+    /// cleanup has committed its SwiftData changes. The expected outcome is an
+    /// orphaned physical asset, never a live record pointing to a deleted file.
+    private func testAutomaticAttachmentPhysicalDeletionFailure() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        guard let directory = AssetDirectoryCoordinator.localDirectory(for: .taskAttachments) else {
+            throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let relativePath = "diagnostics-physical-failure-auto-\(UUID().uuidString).txt"
+        let fileURL = directory.appendingPathComponent(relativePath)
+        let payload = Data("automatic physical deletion failure".utf8)
+        try payload.write(to: fileURL, options: .atomic)
+
+        let task = TodoTask(title: "DEBUG-ONLY automatic physical deletion failure")
+        task.isDebugTask = true
+        task.isCompleted = true
+        task.completedAt = Calendar.current.date(byAdding: .day, value: -45, to: .now)
+        let attachment = TaskAttachment(
+            originalName: "automatic-physical-failure.txt",
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+
+        let taskID = task.id
+        let attachmentID = attachment.id
+        defer {
+            try? FileManager.default.removeItem(at: fileURL)
+            if let item = try? context.fetch(FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })).first { context.delete(item) }
+            if let item = try? context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first { context.delete(item) }
+            try? context.save()
+        }
+
+        try context.save()
+        guard attachment.fileURL?.standardizedFileURL == fileURL.standardizedFileURL else {
+            throw DiagnosticFailure.assertion("Il resolver non individua il file sintetico del test automatico.")
+        }
+
+        var deletionAttempts = 0
+        try AttachmentMaintenanceManager.shared.performAutomaticCleanup(
+            context: context,
+            retentionDays: 30,
+            physicalDeletionOperation: { candidateURL, candidatePath in
+                deletionAttempts += 1
+                guard candidateURL?.standardizedFileURL == fileURL.standardizedFileURL,
+                      candidatePath == relativePath else {
+                    throw DiagnosticFailure.assertion("Il cleanup ha richiesto la cancellazione di un asset inatteso.")
+                }
+                throw DiagnosticFailure.assertion("PHYSICAL-DELETE-FAILURE-INJECTED-AUTOMATIC")
+            }
+        )
+
+        let remaining = try context.fetch(FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })).first
+        let savedTask = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first
+        let relationshipRemains = savedTask?.attachments?.contains { $0.id == attachmentID } == true
+        let bytesRemain = (try? Data(contentsOf: fileURL)) == payload
+
+        guard deletionAttempts == 1, remaining == nil, !relationshipRemains,
+              FileManager.default.fileExists(atPath: fileURL.path), bytesRemain else {
+            throw DiagnosticFailure.assertion(
+                "Automatic physical failure: attempts=\(deletionAttempts), record=\(remaining != nil), relationship=\(relationshipRemains), file=\(FileManager.default.fileExists(atPath: fileURL.path)), bytes=\(bytesRemain)."
+            )
+        }
+        return "Errore fisico iniettato dopo il commit automatico: record e relazione rimossi, file e byte conservati come asset orfano."
+    }
+
+    /// Same post-commit failure case through the explicit cleanup entry point.
+    private func testImmediateAttachmentPhysicalDeletionFailure() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        guard let directory = AssetDirectoryCoordinator.localDirectory(for: .taskAttachments) else {
+            throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let relativePath = "diagnostics-physical-failure-immediate-\(UUID().uuidString).txt"
+        let fileURL = directory.appendingPathComponent(relativePath)
+        let payload = Data("immediate physical deletion failure".utf8)
+        try payload.write(to: fileURL, options: .atomic)
+
+        let task = TodoTask(title: "DEBUG-ONLY immediate physical deletion failure")
+        task.isDebugTask = true
+        task.isCompleted = true
+        let attachment = TaskAttachment(originalName: "immediate-physical-failure.txt", relativePath: relativePath, contentType: "text/plain", task: task)
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+
+        let taskID = task.id
+        let attachmentID = attachment.id
+        defer {
+            try? FileManager.default.removeItem(at: fileURL)
+            if let item = try? context.fetch(FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })).first { context.delete(item) }
+            if let item = try? context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first { context.delete(item) }
+            try? context.save()
+        }
+
+        try context.save()
+        guard attachment.fileURL?.standardizedFileURL == fileURL.standardizedFileURL else {
+            throw DiagnosticFailure.assertion("Il resolver non individua il file sintetico del test immediato.")
+        }
+
+        var deletionAttempts = 0
+        try AttachmentMaintenanceManager.shared.deleteAllCompletedTaskAttachments(
+            context: context,
+            physicalDeletionOperation: { candidateURL, candidatePath in
+                deletionAttempts += 1
+                guard candidateURL?.standardizedFileURL == fileURL.standardizedFileURL,
+                      candidatePath == relativePath else {
+                    throw DiagnosticFailure.assertion("Il cleanup immediato ha richiesto un asset inatteso.")
+                }
+                throw DiagnosticFailure.assertion("PHYSICAL-DELETE-FAILURE-INJECTED-IMMEDIATE")
+            }
+        )
+
+        let remaining = try context.fetch(FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })).first
+        let savedTask = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first
+        let relationshipRemains = savedTask?.attachments?.contains { $0.id == attachmentID } == true
+        let bytesRemain = (try? Data(contentsOf: fileURL)) == payload
+
+        guard deletionAttempts == 1, remaining == nil, !relationshipRemains,
+              FileManager.default.fileExists(atPath: fileURL.path), bytesRemain else {
+            throw DiagnosticFailure.assertion(
+                "Immediate physical failure: attempts=\(deletionAttempts), record=\(remaining != nil), relationship=\(relationshipRemains), file=\(FileManager.default.fileExists(atPath: fileURL.path)), bytes=\(bytesRemain)."
+            )
+        }
+        return "Errore fisico iniettato dopo il commit immediato: il metodo non ripristina record già eliminati e lascia il file orfano disponibile."
+    }
+
+    /// One physical deletion fails while another succeeds. All metadata is
+    /// committed consistently; the failed asset remains for later reconciliation.
+    private func testPartialImmediateAttachmentPhysicalDeletionFailure() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        guard let directory = AssetDirectoryCoordinator.localDirectory(for: .taskAttachments) else {
+            throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let failedRelativePath = "diagnostics-partial-failure-\(UUID().uuidString).txt"
+        let successfulRelativePath = "diagnostics-partial-success-\(UUID().uuidString).txt"
+        let failedURL = directory.appendingPathComponent(failedRelativePath)
+        let successfulURL = directory.appendingPathComponent(successfulRelativePath)
+        let failedPayload = Data("failed asset bytes".utf8)
+        try failedPayload.write(to: failedURL, options: .atomic)
+        try Data("successful asset bytes".utf8).write(to: successfulURL, options: .atomic)
+
+        let task = TodoTask(title: "DEBUG-ONLY partial physical cleanup")
+        task.isDebugTask = true
+        task.isCompleted = true
+        let failedAttachment = TaskAttachment(originalName: "failed.txt", relativePath: failedRelativePath, contentType: "text/plain", task: task)
+        let successfulAttachment = TaskAttachment(originalName: "successful.txt", relativePath: successfulRelativePath, contentType: "text/plain", task: task)
+        task.attachments = [failedAttachment, successfulAttachment]
+        context.insert(task)
+        context.insert(failedAttachment)
+        context.insert(successfulAttachment)
+
+        let taskID = task.id
+        let failedID = failedAttachment.id
+        let successfulID = successfulAttachment.id
+        defer {
+            try? FileManager.default.removeItem(at: failedURL)
+            try? FileManager.default.removeItem(at: successfulURL)
+            if let item = try? context.fetch(FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == failedID })).first { context.delete(item) }
+            if let item = try? context.fetch(FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == successfulID })).first { context.delete(item) }
+            if let item = try? context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first { context.delete(item) }
+            try? context.save()
+        }
+
+        try context.save()
+        guard failedAttachment.fileURL?.standardizedFileURL == failedURL.standardizedFileURL,
+              successfulAttachment.fileURL?.standardizedFileURL == successfulURL.standardizedFileURL else {
+            throw DiagnosticFailure.assertion("I resolver non individuano entrambi i file sintetici.")
+        }
+
+        var attemptedPaths: Set<String> = []
+        try AttachmentMaintenanceManager.shared.deleteAllCompletedTaskAttachments(
+            context: context,
+            physicalDeletionOperation: { candidateURL, candidatePath in
+                guard let candidatePath, let candidateURL else {
+                    throw DiagnosticFailure.assertion("Percorso o URL fisico mancante nel cleanup multiplo.")
+                }
+                attemptedPaths.insert(candidatePath)
+                if candidatePath == failedRelativePath {
+                    throw DiagnosticFailure.assertion("PHYSICAL-DELETE-FAILURE-INJECTED-PARTIAL")
+                }
+                try FileManager.default.removeItem(at: candidateURL)
+            }
+        )
+
+        let remainingIDs = Set(try context.fetch(FetchDescriptor<TaskAttachment>()).map(\.id))
+        let savedTask = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first
+        let taskHasAttachments = !(savedTask?.attachments?.isEmpty ?? true)
+        let failedBytesRemain = (try? Data(contentsOf: failedURL)) == failedPayload
+
+        guard attemptedPaths == Set([failedRelativePath, successfulRelativePath]),
+              !remainingIDs.contains(failedID), !remainingIDs.contains(successfulID),
+              !taskHasAttachments,
+              FileManager.default.fileExists(atPath: failedURL.path), failedBytesRemain,
+              !FileManager.default.fileExists(atPath: successfulURL.path) else {
+            throw DiagnosticFailure.assertion(
+                "Partial cleanup: attempts=\(attemptedPaths), failedRecord=\(remainingIDs.contains(failedID)), successfulRecord=\(remainingIDs.contains(successfulID)), taskHasAttachments=\(taskHasAttachments), failedFile=\(FileManager.default.fileExists(atPath: failedURL.path)), successfulFile=\(FileManager.default.fileExists(atPath: successfulURL.path))."
+            )
+        }
+        return "Due asset elaborati: entrambi i record rimossi dopo il commit; il file con errore resta integro, l'altro viene eliminato."
+    }
+
+    /// Verifies that a propagated attachment is not removed while a future
+    /// occurrence in the same series still references it. Both cleanup entry
+    /// points are exercised with independent stores and unique physical files.
+    private func testCleanupPreservesSharedRecurringAttachment() throws -> String {
+        let modes = ["automatic", "immediate"]
+        for mode in modes {
+            let (container, context) = try makeIsolatedStore()
+            _ = container
+            guard let directory = AssetDirectoryCoordinator.localDirectory(for: .taskAttachments) else {
+                throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+            }
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+            let relativePath = "diagnostics-shared-\(mode)-\(UUID().uuidString).txt"
+            let fileURL = directory.appendingPathComponent(relativePath)
+            let payload = Data("shared recurring attachment".utf8)
+            try payload.write(to: fileURL, options: .atomic)
+
+            let seriesID = UUID()
+            let start = Calendar.current.date(byAdding: .day, value: 10, to: .now)!
+            let base = TodoTask(title: "DEBUG-ONLY shared cleanup \(mode)", deadLine: start)
+            base.isDebugTask = true
+            base.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+            base.recurrenceInterval = 1
+            base.recurrenceID = seriesID
+            base.occurrenceIndex = 1
+            base.recurrenceStartDate = start
+            base.recurrenceCount = 2
+            let attachment = TaskAttachment(originalName: "shared.txt", relativePath: relativePath, contentType: "text/plain", task: base)
+            base.attachments = [attachment]
+            context.insert(base)
+            context.insert(attachment)
+            try RecurringAttachmentManager.configurePropagation(for: [attachment], from: base, in: context)
+            let generated = try RecurrenceEngine.materializeFutureOccurrences(for: base, in: context)
+            generated.forEach { $0.isDebugTask = true }
+            guard generated.count == 1 else {
+                throw DiagnosticFailure.assertion("\(mode): attesa una sola occorrenza futura, ottenute \(generated.count).")
+            }
+            base.isCompleted = true
+            base.completedAt = Calendar.current.date(byAdding: .day, value: -45, to: .now)
+            try context.save()
+
+            let taskID = base.id
+            let attachmentID = attachment.id
+            defer {
+                try? FileManager.default.removeItem(at: fileURL)
+                if let item = try? context.fetch(FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })).first { context.delete(item) }
+                if let item = try? context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first { context.delete(item) }
+                for occurrence in generated { context.delete(occurrence) }
+                try? context.save()
+            }
+
+            RecurringAttachmentManager.invalidateRuleCache(for: seriesID, in: context)
+            var physicalDeletionAttempts = 0
+            if mode == "automatic" {
+                try AttachmentMaintenanceManager.shared.performAutomaticCleanup(
+                    context: context,
+                    retentionDays: 30,
+                    physicalDeletionOperation: { _, _ in physicalDeletionAttempts += 1 }
+                )
+            } else {
+                try AttachmentMaintenanceManager.shared.deleteAllCompletedTaskAttachments(
+                    context: context,
+                    physicalDeletionOperation: { _, _ in physicalDeletionAttempts += 1 }
+                )
+            }
+
+            let retained = try context.fetch(FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })).first
+            let future = generated[0]
+            let futureCanSeeAttachment = RecurringAttachmentManager.visibleAttachments(for: future, in: context).contains { $0.id == attachmentID }
+            guard physicalDeletionAttempts == 0, retained != nil,
+                  FileManager.default.fileExists(atPath: fileURL.path),
+                  (try? Data(contentsOf: fileURL)) == payload,
+                  futureCanSeeAttachment else {
+                throw DiagnosticFailure.assertion(
+                    "\(mode): physicalAttempts=\(physicalDeletionAttempts), record=\(retained != nil), file=\(FileManager.default.fileExists(atPath: fileURL.path)), futureVisibility=\(futureCanSeeAttachment)."
+                )
+            }
+        }
+        return "Cleanup automatico e immediato non eliminano un allegato propagato ancora visibile nell'occorrenza futura; record, file e byte restano disponibili."
+    }
+
+    /// The automatic cleanup must remove only completed tasks older than the
+    /// retention cutoff; recent completed and old-but-active tasks are retained.
+    private func testAutomaticAttachmentCleanupRetentionBoundary() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        guard let directory = AssetDirectoryCoordinator.localDirectory(for: .taskAttachments) else {
+            throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let oldPath = "diagnostics-retention-old-\(UUID().uuidString).txt"
+        let oldURL = directory.appendingPathComponent(oldPath)
+        try Data("old completed attachment".utf8).write(to: oldURL, options: .atomic)
+
+        let oldCompleted = TodoTask(title: "DEBUG-ONLY old completed")
+        oldCompleted.isDebugTask = true
+        oldCompleted.isCompleted = true
+        oldCompleted.completedAt = Calendar.current.date(byAdding: .day, value: -45, to: .now)
+        let oldAttachment = TaskAttachment(originalName: "old.txt", relativePath: oldPath, contentType: "text/plain", task: oldCompleted)
+        oldCompleted.attachments = [oldAttachment]
+
+        let recentCompleted = TodoTask(title: "DEBUG-ONLY recent completed")
+        recentCompleted.isDebugTask = true
+        recentCompleted.isCompleted = true
+        recentCompleted.completedAt = Calendar.current.date(byAdding: .day, value: -5, to: .now)
+        let recentAttachment = TaskAttachment(originalName: "recent.txt", relativePath: "diagnostics-retention-recent-\(UUID().uuidString).txt", contentType: "text/plain", task: recentCompleted)
+        recentCompleted.attachments = [recentAttachment]
+
+        let oldActive = TodoTask(title: "DEBUG-ONLY old active")
+        oldActive.isDebugTask = true
+        oldActive.isCompleted = false
+        oldActive.completedAt = Calendar.current.date(byAdding: .day, value: -60, to: .now)
+        let activeAttachment = TaskAttachment(originalName: "active.txt", relativePath: "diagnostics-retention-active-\(UUID().uuidString).txt", contentType: "text/plain", task: oldActive)
+        oldActive.attachments = [activeAttachment]
+
+        for task in [oldCompleted, recentCompleted, oldActive] { context.insert(task) }
+        for item in [oldAttachment, recentAttachment, activeAttachment] { context.insert(item) }
+        let taskIDs = [oldCompleted.id, recentCompleted.id, oldActive.id]
+        let attachmentIDs = [oldAttachment.id, recentAttachment.id, activeAttachment.id]
+        defer {
+            try? FileManager.default.removeItem(at: oldURL)
+            for id in attachmentIDs {
+                if let item = try? context.fetch(FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == id })).first { context.delete(item) }
+            }
+            for id in taskIDs {
+                if let item = try? context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == id })).first { context.delete(item) }
+            }
+            try? context.save()
+        }
+
+        try context.save()
+        try AttachmentMaintenanceManager.shared.performAutomaticCleanup(
+            context: context,
+            retentionDays: 30,
+            physicalDeletionOperation: { candidateURL, _ in
+                if let candidateURL { try FileManager.default.removeItem(at: candidateURL) }
+            }
+        )
+
+        let remainingIDs = Set(try context.fetch(FetchDescriptor<TaskAttachment>()).map(\.id))
+        guard !remainingIDs.contains(oldAttachment.id),
+              remainingIDs.contains(recentAttachment.id),
+              remainingIDs.contains(activeAttachment.id),
+              !FileManager.default.fileExists(atPath: oldURL.path) else {
+            throw DiagnosticFailure.assertion(
+                "Retention boundary: oldCompleted=\(remainingIDs.contains(oldAttachment.id)), recentCompleted=\(remainingIDs.contains(recentAttachment.id)), oldActive=\(remainingIDs.contains(activeAttachment.id)), oldFile=\(FileManager.default.fileExists(atPath: oldURL.path))."
+            )
+        }
+        return "Con retention 30 giorni viene eliminato soltanto l'allegato del task completato da 45 giorni; quello completato da 5 giorni e quello di un task non completato restano."
+    }
+
+    /// The audit must distinguish files with any SwiftData record from files
+    /// with no record, including nested paths, and must remain strictly read-only.
+    private func testOrphanAttachmentAssetAuditIsReadOnly() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        guard let rootDirectory = AssetDirectoryCoordinator.localDirectory(for: .taskAttachments) else {
+            throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+        }
+
+        let testFolderName = "diagnostics-orphan-audit-\(UUID().uuidString)"
+        let testFolder = rootDirectory.appendingPathComponent(testFolderName, isDirectory: true)
+        try FileManager.default.createDirectory(at: testFolder, withIntermediateDirectories: true)
+
+        let referencedRelativePath = "\(testFolderName)/referenced.txt"
+        let orphanRelativePath = "\(testFolderName)/orphan.txt"
+        let referencedURL = rootDirectory.appendingPathComponent(referencedRelativePath)
+        let orphanURL = rootDirectory.appendingPathComponent(orphanRelativePath)
+        let referencedPayload = Data("record-backed asset".utf8)
+        let orphanPayload = Data("unreferenced physical asset".utf8)
+        try referencedPayload.write(to: referencedURL, options: .atomic)
+        try orphanPayload.write(to: orphanURL, options: .atomic)
+
+        let recordWithoutTask = TaskAttachment(
+            originalName: "referenced.txt",
+            relativePath: referencedRelativePath,
+            contentType: "text/plain",
+            task: nil
+        )
+        context.insert(recordWithoutTask)
+        let recordID = recordWithoutTask.id
+
+        defer {
+            try? FileManager.default.removeItem(at: testFolder)
+            if let record = try? context.fetch(
+                FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == recordID })
+            ).first {
+                context.delete(record)
+            }
+            try? context.save()
+        }
+
+        try context.save()
+        let candidates = try AttachmentMaintenanceManager.shared.findOrphanedPhysicalAssets(
+            context: context
+        )
+        let testCandidates = candidates.filter {
+            $0.relativePath == referencedRelativePath ||
+            $0.relativePath == orphanRelativePath
+        }
+
+        guard testCandidates.count == 1,
+              testCandidates.first?.relativePath == orphanRelativePath,
+              FileManager.default.fileExists(atPath: referencedURL.path),
+              FileManager.default.fileExists(atPath: orphanURL.path),
+              (try? Data(contentsOf: referencedURL)) == referencedPayload,
+              (try? Data(contentsOf: orphanURL)) == orphanPayload else {
+            throw DiagnosticFailure.assertion(
+                "Audit orfani: candidates=\(testCandidates.map(\.relativePath)), referencedExists=\(FileManager.default.fileExists(atPath: referencedURL.path)), orphanExists=\(FileManager.default.fileExists(atPath: orphanURL.path))."
+            )
+        }
+
+        return "L'audit rileva il file fisico senza record, esclude il file con record SwiftData anche se il record non ha un task collegato e non modifica né elimina alcun file."
+    }
+
+    /// Exercises the real NSFileCoordinator deletion path against an isolated
+    /// temporary directory, then verifies idempotent handling of a missing file.
+    private func testCloudMirrorDeletionSuccessAndMissing() throws -> String {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ForMemo-CloudMirror-Test-\(UUID().uuidString)", isDirectory: true)
+        let relativePath = "nested/mirror.txt"
+        let fileURL = root.appendingPathComponent(relativePath)
+        let payload = Data("cloud mirror test payload".utf8)
+        try FileManager.default.createDirectory(
+            at: fileURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try payload.write(to: fileURL, options: .atomic)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let deletionResult = try TaskAttachment.deleteCloudMirrorVerified(
+            relativePath: relativePath,
+            cloudDirectory: root
+        )
+        let missingResult = try TaskAttachment.deleteCloudMirrorVerified(
+            relativePath: relativePath,
+            cloudDirectory: root
+        )
+
+        guard deletionResult == .deleted,
+              missingResult == .alreadyMissing,
+              !FileManager.default.fileExists(atPath: fileURL.path) else {
+            throw DiagnosticFailure.assertion(
+                "Cloud mirror deletion: first=\(deletionResult), second=\(missingResult), stillExists=\(FileManager.default.fileExists(atPath: fileURL.path))."
+            )
+        }
+
+        return "Cancellazione coordinata del mirror verificata su directory isolata; il secondo passaggio riconosce il file già assente senza errore."
+    }
+
+    /// A failed cloud deletion must be propagated and leave the mirror intact.
+    /// Traversal paths must be rejected before any filesystem operation.
+    private func testCloudMirrorDeletionFailureAndUnsafePath() throws -> String {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ForMemo-CloudMirror-Failure-\(UUID().uuidString)", isDirectory: true)
+        let relativePath = "mirror-failure.txt"
+        let fileURL = root.appendingPathComponent(relativePath)
+        let payload = Data("preserve on deletion error".utf8)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try payload.write(to: fileURL, options: .atomic)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        var injectedFailurePropagated = false
+        do {
+            _ = try TaskAttachment.deleteCloudMirrorVerified(
+                relativePath: relativePath,
+                cloudDirectory: root,
+                deletionOperation: { _ in
+                    throw NSError(
+                        domain: "ForMemo.CloudMirror.Test",
+                        code: 91,
+                        userInfo: [NSLocalizedDescriptionKey: "Injected cloud mirror deletion failure"]
+                    )
+                }
+            )
+        } catch {
+            injectedFailurePropagated = true
+        }
+
+        var unsafePathRejected = false
+        do {
+            _ = try TaskAttachment.deleteCloudMirrorVerified(
+                relativePath: "../outside.txt",
+                cloudDirectory: root
+            )
+        } catch TaskAttachment.CloudMirrorDeletionError.invalidRelativePath {
+            unsafePathRejected = true
+        }
+
+        guard injectedFailurePropagated,
+              unsafePathRejected,
+              FileManager.default.fileExists(atPath: fileURL.path),
+              (try? Data(contentsOf: fileURL)) == payload else {
+            throw DiagnosticFailure.assertion(
+                "Cloud mirror failure: propagated=\(injectedFailurePropagated), unsafeRejected=\(unsafePathRejected), filePreserved=\(FileManager.default.fileExists(atPath: fileURL.path))."
+            )
+        }
+
+        return "L'errore di cancellazione viene propagato senza perdere il file; i percorsi con traversal vengono rifiutati prima di accedere al filesystem."
+    }
+
     // MARK: - Focused audit: AlarmKit individual/batch coordination
 
     /// Starts an individual synchronization and a batch containing the same
@@ -3646,14 +4590,14 @@ struct DebugDiagnosticsView: View {
     private func testAlarmIndividualBatchOverlap() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion(
-                "Test unavailable: AlarmKit is not authorized; no alarm was created."
-            )
+            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let repetitions = 6
         var successfulRounds = 0
-        var allIDs: [UUID] = []
+        var allTasks: [TodoTask] = []
 
         do {
             for round in 0..<repetitions {
@@ -3674,30 +4618,32 @@ struct DebugDiagnosticsView: View {
                 companion.isDebugTask = true
                 companion.alarmEnabled = true
 
-                allIDs.append(contentsOf: [shared.id, companion.id])
+                context.insert(shared)
+                context.insert(companion)
+                allTasks.append(contentsOf: [shared, companion])
+                try context.save()
 
-                async let individualResult = manager.synchronize(task: shared)
-                async let batchResult = manager.synchronize(tasks: [shared, companion])
+                async let individualResult = manager.synchronize(task: shared, in: context)
+                async let batchResult = manager.synchronize(tasks: [shared, companion], in: context)
                 let (individualOK, batchOK) = await (individualResult, batchResult)
-
                 guard individualOK, batchOK else {
-                    throw DiagnosticFailure.assertion(
-                        "Round \(round + 1): esito individuale=\(individualOK), batch=\(batchOK)."
-                    )
+                    throw DiagnosticFailure.assertion("Round \(round + 1): esito individuale=\(individualOK), batch=\(batchOK).")
                 }
-
                 try assertDiagnosticAlarmIDs([shared.id, companion.id], allShouldBeScheduled: true)
                 successfulRounds += 1
             }
         } catch {
-            await manager.cancelAlarms(ids: allIDs)
+            await manager.cancelAlarms(ids: allTasks.map(\.id))
+            allTasks.forEach { context.delete($0) }
+            try? context.save()
             throw error
         }
 
-        await manager.cancelAlarms(ids: allIDs)
-        try assertDiagnosticAlarmIDs(Set(allIDs), allShouldBeScheduled: false)
-
-        return "\(successfulRounds)/\(repetitions) round completati: synchronize(task:) e synchronize(tasks:) avviati in concorrenza con un UUID condiviso; entrambi gli esiti positivi, tutte le sveglie attese presenti e cleanup mirato verificato. Il test controlla la coerenza finale, non misura direttamente l'overlap interno delle chiamate AlarmKit."
+        await manager.cancelAlarms(ids: allTasks.map(\.id))
+        try assertDiagnosticAlarmIDs(Set(allTasks.map(\.id)), allShouldBeScheduled: false)
+        allTasks.forEach { context.delete($0) }
+        try context.save()
+        return "\(successfulRounds)/\(repetitions) round completati con task persistiti in uno store isolato. Le chiamate individuale e batch sono state avviate in concorrenza sullo stesso UUID; entrambe hanno restituito esito positivo, entrambe le sveglie sono state verificate e il cleanup mirato è riuscito."
     }
 
     /// Deliberately races two snapshots for the same UUID: one eligible and
@@ -3707,25 +4653,33 @@ struct DebugDiagnosticsView: View {
     private func testAlarmConflictingConcurrentSnapshots() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion(
-                "Test unavailable: AlarmKit is not authorized; no alarm was created."
-            )
+            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let repetitions = 100
         var individualSuccesses = 0
         var batchSuccesses = 0
-        var scheduledOutcomes = 0
-        var unscheduledOutcomes = 0
-        var cleanupFailures = 0
 
         for round in 0..<repetitions {
             let id = UUID()
             let deadline = Date.now.addingTimeInterval(7_200)
+            let authoritativeTask = TodoTask(
+                id: id,
+                title: "DEBUG-ONLY authoritative ineligible task \(round)",
+                deadLine: deadline
+            )
+            authoritativeTask.isDebugTask = true
+            authoritativeTask.alarmEnabled = false
+            context.insert(authoritativeTask)
+            try context.save()
 
+            // These are deliberately discordant request snapshots. The manager
+            // must resolve the UUID against the persisted authoritative record.
             let eligibleSnapshot = TodoTask(
                 id: id,
-                title: "DEBUG-ONLY eligible snapshot \(round)",
+                title: "DEBUG-ONLY stale eligible snapshot \(round)",
                 deadLine: deadline
             )
             eligibleSnapshot.isDebugTask = true
@@ -3733,48 +4687,49 @@ struct DebugDiagnosticsView: View {
 
             let ineligibleSnapshot = TodoTask(
                 id: id,
-                title: "DEBUG-ONLY ineligible snapshot \(round)",
+                title: "DEBUG-ONLY matching ineligible snapshot \(round)",
                 deadLine: deadline
             )
             ineligibleSnapshot.isDebugTask = true
             ineligibleSnapshot.alarmEnabled = false
 
-            async let individualResult = manager.synchronize(task: eligibleSnapshot)
-            async let batchResult = manager.synchronize(tasks: [ineligibleSnapshot])
-            let (individualOK, batchOK) = await (individualResult, batchResult)
-            if individualOK { individualSuccesses += 1 }
-            if batchOK { batchSuccesses += 1 }
-
-            let alarms = try AlarmManager.shared.alarms
-            let isScheduled = alarms.contains { alarm in
-                guard alarm.id == id else { return false }
-                if case .scheduled = alarm.state { return true }
-                return false
-            }
-            if isScheduled {
-                scheduledOutcomes += 1
-            } else {
-                unscheduledOutcomes += 1
-            }
-
-            // Each round is isolated: remove only its UUID before starting the next.
-            await manager.cancelAlarms(ids: [id])
             do {
-                try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
+                async let individualResult = manager.synchronize(task: eligibleSnapshot, in: context)
+                async let batchResult = manager.synchronize(tasks: [ineligibleSnapshot], in: context)
+                let (individualOK, batchOK) = await (individualResult, batchResult)
+                if individualOK { individualSuccesses += 1 }
+                if batchOK { batchSuccesses += 1 }
+
+                guard individualOK, batchOK else {
+                    throw DiagnosticFailure.assertion(
+                        "Round \(round + 1)/\(repetitions): esito individuale=\(individualOK), batch=\(batchOK)."
+                    )
+                }
+                try assertDiagnosticAlarm(id: id, shouldBeScheduled: false)
             } catch {
-                cleanupFailures += 1
-                throw DiagnosticFailure.assertion(
-                    "Round \(round + 1): cleanup AlarmKit non riuscito per UUID sintetico \(id): \(error.localizedDescription)"
-                )
+                await manager.cancelAlarms(ids: [id])
+                context.delete(authoritativeTask)
+                try? context.save()
+                throw error
             }
+
+            await manager.cancelAlarms(ids: [id])
+            try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
+            context.delete(authoritativeTask)
+            try context.save()
         }
 
-        return "\(repetitions) round concorrenti completati. synchronize(task:) positivo: \(individualSuccesses)/\(repetitions); synchronize(tasks:) positivo: \(batchSuccesses)/\(repetitions). Stato osservato prima del cleanup: \(scheduledOutcomes) scheduled, \(unscheduledOutcomes) non scheduled. Cleanup verificato per ogni UUID; errori cleanup: \(cleanupFailures). Le due snapshot sono intenzionalmente discordanti; il test misura gli esiti e lo stato finale, senza imporre quale snapshot debba prevalere. Campione diagnostico, non stima statistica della frequenza in produzione."
+        guard individualSuccesses == repetitions, batchSuccesses == repetitions else {
+            throw DiagnosticFailure.assertion("Copertura incompleta: individuale \(individualSuccesses)/\(repetitions), batch \(batchSuccesses)/\(repetitions).")
+        }
+        return "\(repetitions)/\(repetitions) round completati. Per ogni UUID esisteva un solo record autorevole persistito con alarmEnabled=false; due snapshot concorrenti discordanti (individuale eleggibile e batch non eleggibile) sono state risolte contro quel record. Entrambi i metodi hanno restituito true e nessuna sveglia è rimasta programmata. Il test non accetta più 0/100 successi come esito valido."
     }
 
     /// Verifies the actual fixed date stored by AlarmKit, not only the presence
-    /// of the alarm UUID. This is intentionally stricter than the production
-    /// verifySynchronization methods in the current manager implementation.
+    /// of the alarm UUID. The production manager also verifies the effective
+    /// scheduled date after synchronization; this diagnostic assertion
+    /// independently checks the final system state.
+    ///
     private func assertDiagnosticAlarmDate(id: UUID, expectedDate: Date, tolerance: TimeInterval = 1) throws {
         let alarms = try AlarmManager.shared.alarms
         guard let alarm = alarms.first(where: { $0.id == id }),
@@ -3792,12 +4747,12 @@ struct DebugDiagnosticsView: View {
         }
     }
 
-    /// Reproduces the exact risk under investigation with two distinct task
-    /// objects sharing one UUID: the individual call receives the latest
-    /// deadline, then a later batch receives an older snapshot. The expected
-    /// invariant is that the newer deadline remains scheduled. The current
-    /// manager may fail this test because the batch trusts its supplied object
-    /// and the production verification checks UUID presence, not schedule date.
+    /// Inspects the actual AlarmKit state for a given UUID, including its
+    /// scheduled date when the schedule is fixed. The synchronization manager
+    /// resolves both individual and batch requests against the authoritative
+    /// persisted task, preventing stale supplied snapshots from overwriting
+    /// the current configuration.
+    /// 
     private func diagnosticAlarmStateDescription(id: UUID) throws -> String {
         let alarms = try AlarmManager.shared.alarms
         guard let alarm = alarms.first(where: { $0.id == id }) else {
@@ -3827,48 +4782,54 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let id = UUID()
         let now = Date.now
         let latestDeadline = now.addingTimeInterval(3 * 60 * 60)
         let staleDeadline = now.addingTimeInterval(2 * 60 * 60)
-        let latestTask = TodoTask(id: id, title: "DEBUG-ONLY latest individual deadline", deadLine: latestDeadline)
-        latestTask.isDebugTask = true
-        latestTask.alarmEnabled = true
+        let authoritativeTask = TodoTask(id: id, title: "DEBUG-ONLY authoritative latest deadline", deadLine: latestDeadline)
+        authoritativeTask.isDebugTask = true
+        authoritativeTask.alarmEnabled = true
+        context.insert(authoritativeTask)
+        try context.save()
+
         let staleBatchSnapshot = TodoTask(id: id, title: "DEBUG-ONLY stale batch snapshot", deadLine: staleDeadline)
         staleBatchSnapshot.isDebugTask = true
         staleBatchSnapshot.alarmEnabled = true
-
         var trace: [String] = [
             "UUID=\(id.uuidString)",
-            "latest individual request=\(latestDeadline.formatted(.iso8601))",
-            "stale batch request=\(staleDeadline.formatted(.iso8601))"
+            "authoritative persisted deadline=\(latestDeadline.formatted(.iso8601))",
+            "stale batch snapshot deadline=\(staleDeadline.formatted(.iso8601))"
         ]
+
         do {
-            trace.append("STEP 1 BEGIN synchronize(task:) latest")
-            let individualOK = await manager.synchronize(task: latestTask)
+            trace.append("STEP 1 BEGIN synchronize(task:) authoritative")
+            let individualOK = await manager.synchronize(task: authoritativeTask, in: context)
             trace.append("STEP 1 END result=\(individualOK); \(try diagnosticAlarmStateDescription(id: id))")
-            guard individualOK else { throw DiagnosticFailure.assertion("Individual synchronization returned false.") }
+            guard individualOK else { throw DiagnosticFailure.assertion("La sincronizzazione individuale del task persistito ha restituito false.") }
             try assertDiagnosticAlarmDate(id: id, expectedDate: latestDeadline)
 
-            trace.append("STEP 2 BEGIN synchronize(tasks:) stale batch")
-            let batchOK = await manager.synchronize(tasks: [staleBatchSnapshot])
+            trace.append("STEP 2 BEGIN synchronize(tasks:) stale snapshot")
+            let batchOK = await manager.synchronize(tasks: [staleBatchSnapshot], in: context)
             trace.append("STEP 2 END result=\(batchOK); \(try diagnosticAlarmStateDescription(id: id))")
-            guard batchOK else { throw DiagnosticFailure.assertion("Stale batch synchronization returned false.") }
-
-            trace.append("STEP 3 ASSERT latest date still scheduled; actual: \(try diagnosticAlarmStateDescription(id: id))")
+            guard batchOK else { throw DiagnosticFailure.assertion("La sincronizzazione batch dello snapshot obsoleto ha restituito false.") }
             try assertDiagnosticAlarmDate(id: id, expectedDate: latestDeadline)
         } catch {
             let failure = error.localizedDescription
             let finalState = (try? diagnosticAlarmStateDescription(id: id)) ?? "AlarmKit state unavailable"
             await manager.cancelAlarms(ids: [id])
-            try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
-            throw DiagnosticFailure.assertion("\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE: \(finalState)\nInterpretation: if STEP 1 matches latest and STEP 2 changes to stale, the later batch snapshot introduced the obsolete date.")
+            context.delete(authoritativeTask)
+            try? context.save()
+            throw DiagnosticFailure.assertion("\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE: \(finalState)")
         }
 
         let finalState = try diagnosticAlarmStateDescription(id: id)
         await manager.cancelAlarms(ids: [id])
         try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
-        return "PASS. Individual latest deadline followed by stale batch snapshot; latest fixed date retained.\n\(trace.joined(separator: "\n"))\nFinal before cleanup: \(finalState). Targeted cleanup verified."
+        context.delete(authoritativeTask)
+        try context.save()
+        return "PASS. Lo snapshot batch obsoleto non ha modificato la data del record autorevole persistito.\n\(trace.joined(separator: "\n"))\nStato prima del cleanup: \(finalState). Cleanup mirato verificato."
     }
 
     /// Same controlled sequence in the opposite direction: latest batch first,
@@ -3879,48 +4840,54 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let id = UUID()
         let now = Date.now
         let latestDeadline = now.addingTimeInterval(4 * 60 * 60)
         let staleDeadline = now.addingTimeInterval(90 * 60)
-        let latestTask = TodoTask(id: id, title: "DEBUG-ONLY latest batch deadline", deadLine: latestDeadline)
-        latestTask.isDebugTask = true
-        latestTask.alarmEnabled = true
+        let authoritativeTask = TodoTask(id: id, title: "DEBUG-ONLY authoritative latest deadline", deadLine: latestDeadline)
+        authoritativeTask.isDebugTask = true
+        authoritativeTask.alarmEnabled = true
+        context.insert(authoritativeTask)
+        try context.save()
+
         let staleIndividualSnapshot = TodoTask(id: id, title: "DEBUG-ONLY stale individual snapshot", deadLine: staleDeadline)
         staleIndividualSnapshot.isDebugTask = true
         staleIndividualSnapshot.alarmEnabled = true
-
         var trace: [String] = [
             "UUID=\(id.uuidString)",
-            "latest batch request=\(latestDeadline.formatted(.iso8601))",
-            "stale individual request=\(staleDeadline.formatted(.iso8601))"
+            "authoritative persisted deadline=\(latestDeadline.formatted(.iso8601))",
+            "stale individual snapshot deadline=\(staleDeadline.formatted(.iso8601))"
         ]
+
         do {
-            trace.append("STEP 1 BEGIN synchronize(tasks:) latest")
-            let batchOK = await manager.synchronize(tasks: [latestTask])
+            trace.append("STEP 1 BEGIN synchronize(tasks:) authoritative")
+            let batchOK = await manager.synchronize(tasks: [authoritativeTask], in: context)
             trace.append("STEP 1 END result=\(batchOK); \(try diagnosticAlarmStateDescription(id: id))")
-            guard batchOK else { throw DiagnosticFailure.assertion("Latest batch synchronization returned false.") }
+            guard batchOK else { throw DiagnosticFailure.assertion("La sincronizzazione batch del task persistito ha restituito false.") }
             try assertDiagnosticAlarmDate(id: id, expectedDate: latestDeadline)
 
-            trace.append("STEP 2 BEGIN synchronize(task:) stale individual")
-            let individualOK = await manager.synchronize(task: staleIndividualSnapshot)
+            trace.append("STEP 2 BEGIN synchronize(task:) stale snapshot")
+            let individualOK = await manager.synchronize(task: staleIndividualSnapshot, in: context)
             trace.append("STEP 2 END result=\(individualOK); \(try diagnosticAlarmStateDescription(id: id))")
-            guard individualOK else { throw DiagnosticFailure.assertion("Stale individual synchronization returned false.") }
-
-            trace.append("STEP 3 ASSERT latest date still scheduled; actual: \(try diagnosticAlarmStateDescription(id: id))")
+            guard individualOK else { throw DiagnosticFailure.assertion("La sincronizzazione individuale dello snapshot obsoleto ha restituito false.") }
             try assertDiagnosticAlarmDate(id: id, expectedDate: latestDeadline)
         } catch {
             let failure = error.localizedDescription
             let finalState = (try? diagnosticAlarmStateDescription(id: id)) ?? "AlarmKit state unavailable"
             await manager.cancelAlarms(ids: [id])
-            try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
-            throw DiagnosticFailure.assertion("\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE: \(finalState)\nInterpretation: if STEP 1 matches latest and STEP 2 changes to stale, the later individual snapshot introduced the obsolete date.")
+            context.delete(authoritativeTask)
+            try? context.save()
+            throw DiagnosticFailure.assertion("\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE: \(finalState)")
         }
 
         let finalState = try diagnosticAlarmStateDescription(id: id)
         await manager.cancelAlarms(ids: [id])
         try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
-        return "PASS. Latest batch deadline followed by stale individual snapshot; latest fixed date retained.\n\(trace.joined(separator: "\n"))\nFinal before cleanup: \(finalState). Targeted cleanup verified."
+        context.delete(authoritativeTask)
+        try context.save()
+        return "PASS. Lo snapshot individuale obsoleto non ha modificato la data del record autorevole persistito.\n\(trace.joined(separator: "\n"))\nStato prima del cleanup: \(finalState). Cleanup mirato verificato."
     }
 
     /// Starts individual and batch requests for the same UUID with conflicting
@@ -3932,56 +4899,61 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
+        let (container, context) = try makeIsolatedStore()
+        _ = container
         let id = UUID()
         let now = Date.now
-        let individualDeadline = now.addingTimeInterval(3 * 60 * 60)
-        let batchDeadline = now.addingTimeInterval(90 * 60)
-        let individualTask = TodoTask(id: id, title: "DEBUG-ONLY concurrent individual", deadLine: individualDeadline)
-        individualTask.isDebugTask = true
-        individualTask.alarmEnabled = true
-        let batchSnapshot = TodoTask(id: id, title: "DEBUG-ONLY concurrent stale batch", deadLine: batchDeadline)
+        let authoritativeDeadline = now.addingTimeInterval(3 * 60 * 60)
+        let individualSnapshotDeadline = now.addingTimeInterval(4 * 60 * 60)
+        let batchSnapshotDeadline = now.addingTimeInterval(90 * 60)
+        let authoritativeTask = TodoTask(id: id, title: "DEBUG-ONLY authoritative persisted task", deadLine: authoritativeDeadline)
+        authoritativeTask.isDebugTask = true
+        authoritativeTask.alarmEnabled = true
+        context.insert(authoritativeTask)
+        try context.save()
+
+        let individualSnapshot = TodoTask(id: id, title: "DEBUG-ONLY individual snapshot", deadLine: individualSnapshotDeadline)
+        individualSnapshot.isDebugTask = true
+        individualSnapshot.alarmEnabled = true
+        let batchSnapshot = TodoTask(id: id, title: "DEBUG-ONLY batch snapshot", deadLine: batchSnapshotDeadline)
         batchSnapshot.isDebugTask = true
         batchSnapshot.alarmEnabled = true
 
         var trace: [String] = [
             "UUID=\(id.uuidString)",
-            "individual requested deadline=\(individualDeadline.formatted(.iso8601))",
-            "batch requested deadline=\(batchDeadline.formatted(.iso8601))",
-            "Both calls are launched with async let; actual internal AlarmKit operation order is not exposed by the public API."
+            "authoritative persisted deadline=\(authoritativeDeadline.formatted(.iso8601))",
+            "individual supplied snapshot=\(individualSnapshotDeadline.formatted(.iso8601))",
+            "batch supplied snapshot=\(batchSnapshotDeadline.formatted(.iso8601))",
+            "Both requests target the same persisted UUID; the authoritative SwiftData record is the expected source of truth."
         ]
 
         do {
-            trace.append("LAUNCH individual synchronize(task:)")
-            async let individualResult = manager.synchronize(task: individualTask)
-            trace.append("LAUNCH batch synchronize(tasks:)")
-            async let batchResult = manager.synchronize(tasks: [batchSnapshot])
+            trace.append("LAUNCH individual synchronize(task:in:)")
+            async let individualResult = manager.synchronize(task: individualSnapshot, in: context)
+            trace.append("LAUNCH batch synchronize(tasks:in:)")
+            async let batchResult = manager.synchronize(tasks: [batchSnapshot], in: context)
             let (individualOK, batchOK) = await (individualResult, batchResult)
             trace.append("COMPLETE results: individual=\(individualOK), batch=\(batchOK)")
             trace.append("OBSERVED final schedule: \(try diagnosticAlarmStateDescription(id: id))")
-
             guard individualOK, batchOK else {
-                throw DiagnosticFailure.assertion("At least one synchronization returned false.")
+                throw DiagnosticFailure.assertion("Esiti non positivi: individual=\(individualOK), batch=\(batchOK).")
             }
-            let actual = try AlarmManager.shared.alarms.first(where: { $0.id == id })
-            guard let actual, case .fixed(let actualDate)? = actual.schedule else {
-                throw DiagnosticFailure.assertion("Alarm missing or schedule is not fixed.")
-            }
-            let individualDistance = abs(actualDate.timeIntervalSince(individualDeadline))
-            let batchDistance = abs(actualDate.timeIntervalSince(batchDeadline))
-            trace.append("DATE COMPARISON: distance from individual=\(String(format: "%.3f", individualDistance))s; distance from batch=\(String(format: "%.3f", batchDistance))s")
-            trace.append("WINNER: \(individualDistance <= batchDistance ? "individual snapshot" : "batch snapshot")")
+            try assertDiagnosticAlarmDate(id: id, expectedDate: authoritativeDeadline)
         } catch {
             let failure = error.localizedDescription
             let finalState = (try? diagnosticAlarmStateDescription(id: id)) ?? "AlarmKit state unavailable"
             await manager.cancelAlarms(ids: [id])
-            try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
+            context.delete(authoritativeTask)
+            try? context.save()
             throw DiagnosticFailure.assertion("\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE: \(finalState)")
         }
 
         let finalState = try diagnosticAlarmStateDescription(id: id)
         await manager.cancelAlarms(ids: [id])
         try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
-        return "Concurrent individual/batch diagnostic completed.\n\(trace.joined(separator: "\n"))\nFinal before cleanup: \(finalState). Targeted cleanup verified. This identifies the final winning snapshot, not the exact private await ordering inside the manager."
+        context.delete(authoritativeTask)
+        try context.save()
+        return "Concorrenza individuale/batch verificata con due snapshot discordanti e un record autorevole persistito. Entrambi i metodi hanno restituito true e AlarmKit ha mantenuto la deadline autorevole.\n\(trace.joined(separator: "\n"))\nStato prima del cleanup: \(finalState). Cleanup mirato verificato."
     }
 
     private func assertDiagnosticAlarm(id: UUID, shouldBeScheduled: Bool) throws {

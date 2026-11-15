@@ -658,7 +658,24 @@ struct TaskDetailView: View {
                 )
 
                 let ownerTaskID = attachment.task?.id ?? task.id
-                let trashName = attachment.deleteFileIfNeeded()
+                let trashName: String?
+                do {
+                    trashName = try attachment.deleteFileIfNeeded()
+                } catch {
+                    AppLogger.persistence.error("Attachment deletion stopped because moving the file to Trash failed: \(error.localizedDescription)")
+                    return
+                }
+                do {
+                    try RecurringAttachmentManager.deleteLinks(
+                        for: attachment,
+                        in: modelContext
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "Recurring attachment link cleanup failed: \(error.localizedDescription)"
+                    )
+                    return
+                }
                 TaskAttachment.deleteCloudMirror(relativePath: attachment.relativePath)
 
                 let item = DeletedItem(type: "attachment")
@@ -674,17 +691,6 @@ struct TaskDetailView: View {
                     $0.id == attachment.id
                 }
                 attachment.task = nil
-
-                do {
-                    try RecurringAttachmentManager.deleteLinks(
-                        for: attachment,
-                        in: modelContext
-                    )
-                } catch {
-                    AppLogger.persistence.error(
-                        "Recurring attachment link cleanup failed: \(error.localizedDescription)"
-                    )
-                }
 
                 modelContext.delete(attachment)
                 modelContext.processPendingChanges()
@@ -1028,24 +1034,35 @@ struct TaskDetailView: View {
         do {
             try modelContext.save()
             
-            if let recurrenceID = task.recurrenceID {
-                synchronizationTask = Task { @MainActor in
-                    _ = await ForMemoAlarmManager.shared.synchronize(task: task)
-                    
-                    let occurrences = (try? modelContext.fetch(
-                        FetchDescriptor<TodoTask>(
-                            predicate: #Predicate<TodoTask> {
-                                $0.recurrenceID == recurrenceID
-                            }
-                        )
-                    )) ?? []
-                    
-                    _ = await ForMemoAlarmManager.shared.synchronize(tasks: occurrences)
-                }
-            } else {
-                synchronizationTask = Task { @MainActor in
-                    _ = await ForMemoAlarmManager.shared.synchronize(task: task)
-                }
+//            if let recurrenceID = task.recurrenceID {
+//                synchronizationTask = Task { @MainActor in
+//                    _ = await ForMemoAlarmManager.shared.synchronize(task: task,
+//                                                                     in: modelContext)
+//                    
+//                    let occurrences = (try? modelContext.fetch(
+//                        FetchDescriptor<TodoTask>(
+//                            predicate: #Predicate<TodoTask> {
+//                                $0.recurrenceID == recurrenceID
+//                            }
+//                        )
+//                    )) ?? []
+//                    
+//                    _ = await ForMemoAlarmManager.shared.synchronize(tasks: occurrences,
+//                                                                     in: modelContext)
+//                }
+//            } else {
+//                synchronizationTask = Task { @MainActor in
+//                    _ = await ForMemoAlarmManager.shared.synchronize(task: task,
+//                                                                     in: modelContext)
+//                }
+//            }
+            
+            
+            synchronizationTask = Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(
+                    task: task,
+                    in: modelContext
+                )
             }
             
 
@@ -1079,7 +1096,8 @@ struct TaskDetailView: View {
         do {
             try modelContext.save()
 
-            _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+            _ = await ForMemoAlarmManager.shared.synchronize(task: task,
+                                                             in: modelContext)
 
             await NotificationManager.shared.refreshAndWait(force: true)
 
@@ -1332,7 +1350,8 @@ struct TaskDetailView: View {
             // when a non-forced refresh is throttled or already pending.
             Task { @MainActor in
                 _ = await ForMemoAlarmManager.shared.synchronize(
-                    tasks: [task] + createdOccurrences
+                    tasks: [task] + createdOccurrences,
+                    in: modelContext
                 )
 
                 await NotificationManager.shared.refreshAndWait(force: true)
@@ -1377,12 +1396,16 @@ struct TaskDetailView: View {
                 object: nil
             )
 
-            NotificationManager.shared.refresh(force: false)
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(
+                    task: task,
+                    in: modelContext
+                )
 
-            legacyRecurrenceTask = nil
-            isMigratingLegacyRecurrence = false
-            
-            DispatchQueue.main.async {
+                await NotificationManager.shared.refreshAndWait(force: true)
+
+                legacyRecurrenceTask = nil
+                isMigratingLegacyRecurrence = false
                 dismiss()
             }
 
@@ -1394,7 +1417,8 @@ struct TaskDetailView: View {
             )
         }
     }
-
+    
+    
     @MainActor
     private func finishDetailExit() {
         guard !isExitingDetail else { return }
@@ -1497,7 +1521,8 @@ struct TaskDetailView: View {
             modelContext.processPendingChanges()
 
             _ = await ForMemoAlarmManager.shared.synchronize(
-                tasks: futureOccurrences
+                tasks: futureOccurrences,
+                in: modelContext
             )
 
             NotificationCenter.default.post(
@@ -1807,7 +1832,8 @@ struct TaskDetailView: View {
                 )) ?? []
 
                 _ = await ForMemoAlarmManager.shared.synchronize(
-                    tasks: occurrences
+                    tasks: occurrences,
+                    in: modelContext
                 )
             }
 
@@ -2315,9 +2341,18 @@ struct TaskDetailView: View {
         do {
             let attachment = try await AttachmentImporter.addAttachment(
                 from: url,
-                to: task,
-                in: modelContext
+                to: task
             )
+
+            // AttachmentImporter now returns a detached model so NewTask
+            // can defer persistence until Save. In TaskDetail, the task
+            // already exists, so attach and insert the model immediately.
+            attachment.task = task
+            if task.attachments == nil {
+                task.attachments = []
+            }
+            task.attachments?.append(attachment)
+            modelContext.insert(attachment)
 
             if task.recurrenceID != nil,
                task.occurrenceIndex != nil {
@@ -2353,7 +2388,13 @@ AppLogger.notifications.info(
             return
         }
 
-        let trashName = attachment.deleteFileIfNeeded()
+        let trashName: String?
+        do {
+            trashName = try attachment.deleteFileIfNeeded()
+        } catch {
+            AppLogger.persistence.error("Attachment deletion stopped because moving the file to Trash failed: \(error.localizedDescription)")
+            return
+        }
 
         let item = DeletedItem(type: "attachment")
         item.taskID = task.id

@@ -318,7 +318,7 @@ private struct RecurrenceSeriesExtensionSheet: View {
                 modelContext.processPendingChanges()
 
                 _ = await ForMemoAlarmManager.shared.synchronize(
-                    tasks: createdOccurrences
+                    tasks: createdOccurrences, in: modelContext
                 )
                 await NotificationManager.shared.refreshAndWait(force: true)
 

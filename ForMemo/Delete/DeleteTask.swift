@@ -8,6 +8,23 @@ enum TaskDeletionResult: Equatable {
     case failed
 }
 
+enum AttachmentDeletionResult: Equatable {
+    case deleted
+    case attachmentUnavailable
+    case moveFailed
+
+    var errorMessage: String? {
+        switch self {
+        case .deleted:
+            return nil
+        case .attachmentUnavailable:
+            return String(localized: "One or more attachments have not finished downloading to this device. Wait for the download to complete, then try again.")
+        case .moveFailed:
+            return String(localized: "One or more attachments could not be moved to Recently Deleted. Make sure they are downloaded on this device, wait for any download to finish, then try again. Nothing was deleted.")
+        }
+    }
+}
+
 @MainActor
 
 @discardableResult
@@ -16,8 +33,34 @@ func deleteTask(
     in context: ModelContext
 ) -> TaskDeletionResult {
 
+    // Resolve the task again by its stable UUID before touching relationships
+    // or performing deletion side effects. A view may still hold a model
+    // instance that has already been removed from this context.
+    let taskID = task.id
+    let descriptor = FetchDescriptor<TodoTask>(
+        predicate: #Predicate<TodoTask> { candidate in
+            candidate.id == taskID
+        }
+    )
+
+    let currentTask: TodoTask
+    do {
+        guard let fetchedTask = try context.fetch(descriptor).first else {
+            // The task was already deleted (for example, by another device).
+            // Treat this as an idempotent no-op: do not create trash records,
+            // fingerprints, or touch attachment files.
+            return .deleted
+        }
+        currentTask = fetchedTask
+    } catch {
+        AppLogger.persistence.error(
+            "Task deletion aborted because the task could not be reloaded: \(error.localizedDescription)"
+        )
+        return .failed
+    }
+
     guard TaskAttachment.attachmentsAreSafeToDelete(
-         task.attachments ?? []
+        currentTask.attachments ?? []
     ) else {
         AppLogger.persistence.warning(
             "Task deletion blocked because one or more attachments are not safely synchronized."
@@ -25,23 +68,54 @@ func deleteTask(
         return .blockedByAttachmentSync
     }
 
+    // Move every owned file before changing SwiftData records. If any move
+    // fails, restore already moved files and leave the task untouched.
+    var movedFiles: [(source: URL, trash: URL)] = []
+    var trashNames: [UUID: String?] = [:]
+    do {
+        for attachment in currentTask.attachments ?? [] {
+            let isPropagated = RecurringAttachmentManager.attachmentIsPropagated(
+                attachment, in: context
+            )
+            let remainsUsedElsewhere = RecurringAttachmentManager.attachmentIsUsedByOtherOccurrences(
+                attachment,
+                excludingTaskID: taskID,
+                in: context
+            )
+            guard !isPropagated || !remainsUsedElsewhere else { continue }
+            guard let directory = TaskAttachment.attachmentsDirectory else {
+                throw CocoaError(.fileWriteNoPermission)
+            }
+            let source = directory.appendingPathComponent(attachment.relativePath)
+            let name = try attachment.deleteFileIfNeeded()
+            trashNames[attachment.id] = name
+            if let name, let trashURL = TaskAttachment.trashFileURL(trashFileName: name) {
+                movedFiles.append((source, trashURL))
+            }
+        }
+    } catch {
+        for file in movedFiles.reversed() { try? FileManager.default.moveItem(at: file.trash, to: file.source) }
+        AppLogger.persistence.error("Task deletion stopped because moving an attachment to Trash failed: \(error.localizedDescription)")
+        return .failed
+    }
+
     TodoTask.createDeletedTaskRecord(
-        from: task,
+        from: currentTask,
         in: context
     )
 
     let sharedAttachments =
         RecurringAttachmentManager.detachSharedAttachmentsBeforeTaskDeletion(
-            task,
+            currentTask,
             in: context
         )
 
-    if let attachments = task.attachments {
+    if let attachments = currentTask.attachments {
         for attachment in attachments {
-            let trashName = attachment.deleteFileIfNeeded()
+            let trashName = trashNames[attachment.id] ?? nil
 
             let item = DeletedItem(type: "attachment")
-            item.taskID = task.id
+            item.taskID = taskID
             item.fileName = attachment.originalName
             item.relativePath = attachment.relativePath
             item.trashFileName = trashName
@@ -50,23 +124,23 @@ func deleteTask(
         }
     }
 
-    if let recurrenceID = task.recurrenceID,
-       let occurrenceIndex = task.occurrenceIndex {
+    if let recurrenceID = currentTask.recurrenceID,
+       let occurrenceIndex = currentTask.occurrenceIndex {
         DeletedFingerprintStore.markDeletedOccurrence(
             recurrenceID: recurrenceID,
             occurrenceIndex: occurrenceIndex
         )
     } else {
-        DeletedFingerprintStore.markDeleted(task)
+        DeletedFingerprintStore.markDeleted(currentTask)
     }
 
-    let recurrenceID = task.recurrenceID
+    let recurrenceID = currentTask.recurrenceID
 
-    context.delete(task)
+    context.delete(currentTask)
     context.processPendingChanges()
 
     ForMemoAlarmManager.shared.cancelAlarmIfNeeded(
-        id: task.id
+        id: taskID
     )
 
     if let recurrenceID {
@@ -86,10 +160,10 @@ func deleteTask(
             in: context
         ) {
 
-        let trashName = attachment.deleteFileIfNeeded()
+        let trashName = trashNames[attachment.id] ?? nil
 
         let item = DeletedItem(type: "attachment")
-        item.taskID = task.id
+        item.taskID = taskID
         item.fileName = attachment.originalName
         item.relativePath = attachment.relativePath
         item.trashFileName = trashName
@@ -179,6 +253,34 @@ func deleteRecurringTaskAndFutureOccurrences(
         return .blockedByAttachmentSync
     }
 
+    // Stage every non-shared occurrence file before changing recurrence rules,
+    // fingerprints, or task records. A failed move restores prior files.
+    var recurrenceTrashNames: [UUID: String] = [:]
+    var recurrenceMovedFiles: [(source: URL, trash: URL)] = []
+    do {
+        guard let directory = TaskAttachment.attachmentsDirectory else {
+            throw CocoaError(.fileWriteNoPermission)
+        }
+        var seen = Set<UUID>()
+        for attachment in attachmentsToCheck where
+            seen.insert(attachment.id).inserted &&
+            !RecurringAttachmentManager.attachmentIsPropagated(attachment, in: context) {
+            let source = directory.appendingPathComponent(attachment.relativePath)
+            guard let name = try attachment.deleteFileIfNeeded(),
+                  let trashURL = TaskAttachment.trashFileURL(trashFileName: name) else {
+                throw CocoaError(.fileWriteUnknown)
+            }
+            recurrenceTrashNames[attachment.id] = name
+            recurrenceMovedFiles.append((source, trashURL))
+        }
+    } catch {
+        for file in recurrenceMovedFiles.reversed() {
+            try? FileManager.default.moveItem(at: file.trash, to: file.source)
+        }
+        AppLogger.persistence.error("Recurring-task deletion stopped before changing records because an attachment could not be moved to Trash: \(error.localizedDescription)")
+        return .failed
+    }
+
     // Do not change deletion fingerprints or attachment propagation until the
     // occurrence fetch succeeds and the propagation update can be applied.
     do {
@@ -235,7 +337,7 @@ func deleteRecurringTaskAndFutureOccurrences(
 
             if let attachments = recurrenceTask.attachments {
                 for attachment in attachments {
-                    let trashName = attachment.deleteFileIfNeeded()
+                    let trashName = recurrenceTrashNames[attachment.id]
                     permanentlyRemovedAttachmentFiles.append((
                         relativePath: attachment.relativePath,
                         trashFileName: trashName
@@ -267,7 +369,12 @@ func deleteRecurringTaskAndFutureOccurrences(
             continue
         }
 
-        let trashName = attachment.deleteFileIfNeeded()
+        let trashName: String?
+        do { trashName = try attachment.deleteFileIfNeeded() }
+        catch {
+            AppLogger.persistence.error("Recurring shared attachment cleanup stopped because moving the file to Trash failed: \(error.localizedDescription)")
+            return .failed
+        }
         permanentlyRemovedAttachmentFiles.append((
             relativePath: attachment.relativePath,
             trashFileName: trashName
@@ -330,23 +437,38 @@ func deleteRecurringTaskAndFutureOccurrences(
 func deleteLoyaltyCard(
     _ card: LoyaltyCard,
     in context: ModelContext
-) {
-    LoyaltyCard.createDeletedCardRecord(
-        from: card,
-        in: context
-    )
+) -> AttachmentDeletionResult {
+    let assets = card.assets ?? []
+    guard assets.allSatisfy({
+        WalletAssetStore.isLocallyAvailable(relativePath: $0.relativePath)
+    }) else {
+        AppLogger.persistence.error("Wallet card deletion stopped because an attached file is missing or incomplete locally.")
+        return .attachmentUnavailable
+    }
 
-    for asset in card.assets ?? [] {
+    var moved: [(relativePath: String, trashFileName: String)] = []
+    var movedPaths = Set<String>()
+    for asset in assets where movedPaths.insert(asset.relativePath).inserted {
+        guard let trashFileName = WalletAssetStore.moveToTrash(relativePath: asset.relativePath) else {
+            for file in moved.reversed() {
+                _ = WalletAssetStore.restoreFromTrash(trashFileName: file.trashFileName, relativePath: file.relativePath)
+            }
+            AppLogger.persistence.error("Wallet card deletion stopped because an attached file could not be moved to Trash.")
+            return .moveFailed
+        }
+        moved.append((asset.relativePath, trashFileName))
+    }
 
-        let trashFileName = WalletAssetStore.moveToTrash(
-            relativePath: asset.relativePath
-        )
+    let trashNames = Dictionary(moved.map { ($0.relativePath, $0.trashFileName) }, uniquingKeysWith: { first, _ in first })
+    LoyaltyCard.createDeletedCardRecord(from: card, in: context)
+
+    for asset in assets {
 
         let item = DeletedItem(type: "walletAsset")
 
         item.loyaltyCardID = card.id
         item.relativePath = asset.relativePath
-        item.trashFileName = trashFileName
+        item.trashFileName = trashNames[asset.relativePath]
         item.createdAt = asset.createdAt
 
         if asset.kind == .logo {
@@ -361,6 +483,7 @@ func deleteLoyaltyCard(
     context.safeSave(
         operation: "DeleteLoyaltyCard"
     )
+    return .deleted
 }
 @MainActor
 func deleteTrip(
@@ -384,26 +507,38 @@ func deleteTrip(
 func deleteDocument(
     _ document: DocumentItem,
     in context: ModelContext
-) {
+) -> AttachmentDeletionResult {
+    let assets = document.sortedAssets
+    guard assets.allSatisfy({
+        DocumentAssetStore.isLocallyAvailable(relativePath: $0.relativePath)
+    }) else {
+        AppLogger.persistence.error("Document deletion stopped because an attached file is missing or incomplete locally.")
+        return .attachmentUnavailable
+    }
 
-    DocumentItem.createDeletedDocumentRecord(
-        from: document,
-        in: context
-    )
+    var moved: [(relativePath: String, trashFileName: String)] = []
+    var movedPaths = Set<String>()
+    for asset in assets where movedPaths.insert(asset.relativePath).inserted {
+        guard let trashFileName = DocumentAssetStore.moveToTrash(relativePath: asset.relativePath) else {
+            for file in moved.reversed() {
+                _ = DocumentAssetStore.restoreFromTrash(trashFileName: file.trashFileName, relativePath: file.relativePath)
+            }
+            AppLogger.persistence.error("Document deletion stopped because an attached file could not be moved to Trash.")
+            return .moveFailed
+        }
+        moved.append((asset.relativePath, trashFileName))
+    }
 
-    for asset in document.sortedAssets {
+    let trashNames = Dictionary(moved.map { ($0.relativePath, $0.trashFileName) }, uniquingKeysWith: { first, _ in first })
+    DocumentItem.createDeletedDocumentRecord(from: document, in: context)
 
-        // The cloud mirror remains intact while the document is in Recently Deleted.
-        // A missing local source is recoverable from that mirror during restore.
-        let trashFileName = DocumentAssetStore.moveToTrash(
-            relativePath: asset.relativePath
-        )
+    for asset in assets {
 
         let item = DeletedItem(type: "documentAsset")
 
         item.documentID = document.id
         item.relativePath = asset.relativePath
-        item.trashFileName = trashFileName
+        item.trashFileName = trashNames[asset.relativePath]
 
         item.documentAssetKindRaw = asset.kindRaw
         item.documentPageIndex = asset.pageIndex
@@ -421,4 +556,5 @@ func deleteDocument(
         operation: "DeleteDocument"
     )
     NotificationManager.shared.refresh()
+    return .deleted
 }

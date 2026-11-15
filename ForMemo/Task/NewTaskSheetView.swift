@@ -188,6 +188,8 @@ struct NewTaskSheetView: View {
     @State private var showingAlarmAuthorizationAlert = false
     @State private var showingGlobalNotificationExplanation = false
     @State private var showingAlarmExplanation = false
+    @State private var didCommitDraft = false
+    @State private var didDiscardDraft = false
     
     init(draftTask: TodoTask) {
         self._draftTask = Bindable(wrappedValue: draftTask)
@@ -287,14 +289,15 @@ struct NewTaskSheetView: View {
             ZStack {
                 AppGlassBackground()
                 
-                List {
-                    mainInfoSection
-                    scheduleSection
-                    repeatSection
-                    contextSection
-                    attachmentsSection
-                }
-                .overlay {
+                ScrollViewReader { scrollProxy in
+                    List {
+                        mainInfoSection
+                        scheduleSection
+                        repeatSection.id("repeatSection")
+                        contextSection
+                        attachmentsSection
+                    }
+                    .overlay {
                     if isSynchronizing {
                         ZStack {
                             Color.black
@@ -331,6 +334,10 @@ struct NewTaskSheetView: View {
                     
                     isTitleFocused = true
                 }
+                .onDisappear {
+                    // Also covers interactive sheet dismissal (swipe down).
+                    discardDraftAttachments()
+                }
                 .scrollContentBackground(.hidden)
                 .scrollDismissesKeyboard(.immediately)
                 .navigationTitle("New Task")
@@ -339,6 +346,7 @@ struct NewTaskSheetView: View {
                     
                     ToolbarItem(placement: .cancellationAction) {
                         Button("Cancel") {
+                            discardDraftAttachments()
                             dismiss()
                         }
                         .disabled(isSynchronizing)
@@ -419,9 +427,11 @@ struct NewTaskSheetView: View {
                         isSynchronizing = true
 
                         Task { @MainActor in
-                            await saveTask()
+                            let didSave = await saveTask()
                             isSynchronizing = false
-                            dismiss()
+                            if didSave {
+                                dismiss()
+                            }
                         }
                     }
                 } message: {
@@ -454,13 +464,26 @@ struct NewTaskSheetView: View {
                     }
                 }
                 
-                .fileImporter(
-                    isPresented: $showingFileImporter,
-                    allowedContentTypes: [.item],
-                    allowsMultipleSelection: true
-                ) { result in
-                    guard case .success(let urls) = result else { return }
-                    Task { @MainActor in await importFiles(from: urls) }
+                    .fileImporter(
+                        isPresented: $showingFileImporter,
+                        allowedContentTypes: [.item],
+                        allowsMultipleSelection: true
+                    ) { result in
+                        guard case .success(let urls) = result else { return }
+                        Task { @MainActor in await importFiles(from: urls) }
+                    }
+                    .onChange(of: selectedRecurrence) { oldValue, newValue in
+                        guard oldValue == .none, newValue != .none else { return }
+
+                        Task { @MainActor in
+                            // Let SwiftUI lay out the expanded recurrence controls before scrolling.
+                            try? await Task.sleep(for: .milliseconds(250))
+
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                scrollProxy.scrollTo("repeatSection", anchor: .center)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1006,8 +1029,9 @@ struct NewTaskSheetView: View {
     @MainActor
     private func requestSaveTask() async {
         guard draftTask.recurrenceRule != nil else {
-            await saveTask()
-            dismiss()
+            if await saveTask() {
+                dismiss()
+            }
             return
         }
 
@@ -1022,8 +1046,9 @@ struct NewTaskSheetView: View {
             let rawRule = draftTask.recurrenceRule,
             let rule = RecurrenceEngine.Rule(rawValue: rawRule)
                 else {
-            await saveTask()
-            dismiss()
+            if await saveTask() {
+                dismiss()
+            }
             return
         }
         
@@ -1047,8 +1072,9 @@ struct NewTaskSheetView: View {
         let futureCount = max(0, dates.count - 1)
         
         guard futureCount > RecurrenceGenerationConfiguration.confirmationThreshold else {
-            await saveTask()
-            dismiss()
+            if await saveTask() {
+                dismiss()
+            }
             return
         }
         
@@ -1064,7 +1090,7 @@ struct NewTaskSheetView: View {
     }
     
     @MainActor
-    private func saveTask() async {
+    private func saveTask() async -> Bool {
         if draftTask.recurrenceRule != nil {
             switch recurrenceLimitMode {
             case .until:
@@ -1083,6 +1109,11 @@ struct NewTaskSheetView: View {
         if draftTask.modelContext == nil {
             modelContext.insert(draftTask)
         }
+
+        // Attachments are kept as in-memory draft models until this explicit commit.
+        for attachment in draftTask.attachments ?? [] where attachment.modelContext == nil {
+            modelContext.insert(attachment)
+        }
         if draftTask.recurrenceRule != nil {
             if draftTask.recurrenceID == nil {
                 draftTask.recurrenceID = UUID()
@@ -1093,6 +1124,7 @@ struct NewTaskSheetView: View {
         }
         do {
             try modelContext.save()
+            didCommitDraft = true
             
             if draftTask.recurrenceRule != nil {
                 _ = try RecurrenceEngine.materializeFutureOccurrences(
@@ -1119,6 +1151,23 @@ struct NewTaskSheetView: View {
             AppLogger.persistence.error(
                 "Save failed: \(error.localizedDescription)"
             )
+
+            // If the initial commit failed, remove only this draft's newly
+            // inserted models from the context. Do not roll back unrelated work.
+            if !didCommitDraft {
+                for attachment in draftTask.attachments ?? []
+                where attachment.modelContext != nil {
+                    modelContext.delete(attachment)
+                }
+
+                if draftTask.modelContext != nil {
+                    modelContext.delete(draftTask)
+                }
+
+                modelContext.processPendingChanges()
+            }
+
+            return didCommitDraft
         }
         
         let savedTaskID = draftTask.id
@@ -1134,7 +1183,7 @@ struct NewTaskSheetView: View {
             )) ?? []
 
             _ = await ForMemoAlarmManager.shared.synchronize(
-                tasks: occurrences
+                tasks: occurrences, in: modelContext
             )
         } else if let savedTask = try? modelContext.fetch(
             FetchDescriptor<TodoTask>(
@@ -1144,7 +1193,7 @@ struct NewTaskSheetView: View {
             )
         ).first {
             _ = await ForMemoAlarmManager.shared.synchronize(
-                task: savedTask
+                task: savedTask, in: modelContext
             )
         }
         
@@ -1153,6 +1202,8 @@ struct NewTaskSheetView: View {
         Task { @MainActor in
             NotificationManager.shared.refresh(force: true)
         }
+
+        return true
     }
     
     // MARK: - IMPORT (COME PRIMA)
@@ -1248,18 +1299,25 @@ struct NewTaskSheetView: View {
         
         do {
             
-            try await AttachmentImporter.addAttachment(
+            let attachment = try await AttachmentImporter.addAttachment(
                 from: url,
-                to: draftTask,
-                in: modelContext
+                to: draftTask
             )
-            
-            try modelContext.save()
-            
-            NotificationCenter.default.post(
-                name: .attachmentsShouldRefresh,
-                object: nil
-            )
+
+            // The user may have cancelled while the file was being copied.
+            // Never attach a late result to a discarded draft.
+            guard !didDiscardDraft, !didCommitDraft else {
+                AttachmentImporter.deleteUncommittedAttachmentFile(
+                    relativePath: attachment.relativePath
+                )
+                return
+            }
+
+            attachment.task = draftTask
+            if draftTask.attachments == nil {
+                draftTask.attachments = []
+            }
+            draftTask.attachments?.append(attachment)
             
         } catch {
             
@@ -1270,21 +1328,29 @@ struct NewTaskSheetView: View {
     }
     @MainActor
     private func deleteAttachment(_ attachment: TaskAttachment) {
-        
-        if let url = attachment.fileURL {
-            try? FileManager.default.removeItem(at: url)
-        }
-        
+        AttachmentImporter.deleteUncommittedAttachmentFile(
+            relativePath: attachment.relativePath
+        )
+
         attachment.task?.attachments?.removeAll { $0.id == attachment.id }
-        modelContext.delete(attachment)
-        modelContext.processPendingChanges() // 🔥 sync UI immediata
-        
-        try? modelContext.save()
-        
-        NotificationManager.shared.refresh(force: true)
-        
     }
-    
+
+    @MainActor
+    private func discardDraftAttachments() {
+        guard !didCommitDraft, !didDiscardDraft else { return }
+        didDiscardDraft = true
+
+        let draftAttachments = draftTask.attachments ?? []
+        for attachment in draftAttachments {
+            AttachmentImporter.deleteUncommittedAttachmentFile(
+                relativePath: attachment.relativePath
+            )
+            attachment.task = nil
+        }
+
+        draftTask.attachments = nil
+    }
+
 }
 
 extension RecurrenceUI {

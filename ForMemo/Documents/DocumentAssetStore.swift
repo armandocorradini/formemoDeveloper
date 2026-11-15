@@ -334,6 +334,19 @@ enum DocumentAssetStore {
         return FileManager.default.fileExists(atPath: url.path)
     }
 
+    /// Deletion is allowed only when a complete, readable local recovery copy exists.
+    static func isLocallyAvailable(relativePath: String) -> Bool {
+        guard isSafeRelativePath(relativePath),
+              let assetsDirectory else { return false }
+        let url = assetsDirectory.appendingPathComponent(relativePath)
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: url.path),
+              fm.isReadableFile(atPath: url.path),
+              let size = (try? fm.attributesOfItem(atPath: url.path)[.size] as? NSNumber)?.int64Value,
+              size > 0 else { return false }
+        return true
+    }
+
     // MARK: - Delete
 
     static func delete(
@@ -416,7 +429,8 @@ enum DocumentAssetStore {
 
         let fm = FileManager.default
 
-        guard fm.fileExists(atPath: sourceURL.path) else {
+        guard isLocallyAvailable(relativePath: relativePath),
+              fm.fileExists(atPath: sourceURL.path) else {
             return nil
         }
 
@@ -618,15 +632,15 @@ enum DocumentAssetStore {
         let destinationURL =
             assetsDirectory.appendingPathComponent(relativePath)
 
+        if fm.fileExists(atPath: destinationURL.path) {
+            return isLocallyAvailable(relativePath: relativePath)
+        }
+
         do {
             try fm.createDirectory(
                 at: destinationURL.deletingLastPathComponent(),
                 withIntermediateDirectories: true
             )
-
-            if fm.fileExists(atPath: destinationURL.path) {
-                try fm.removeItem(at: destinationURL)
-            }
 
             var coordinatorError: NSError?
             var moveError: Error?

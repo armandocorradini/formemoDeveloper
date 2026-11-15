@@ -313,22 +313,38 @@ struct TaskCalendarView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                if settings.showDayTab {
+                HStack(spacing: 12) {
+                    if settings.showDayTab {
+                        Button {
+                            NotificationCenter.default.post(
+                                name: Notification.Name("TaskCalendarOpenDay"),
+                                object: calendar.startOfDay(for: selectedDate)
+                            )
+                        } label: {
+                            Image(systemName: "book.pages")
+                            //                                .symbolRenderingMode(.palette)
+                            //                                .foregroundStyle(.blue, .orange)
+                                .font(.system(size: 19))
+                                .frame(width: 36, height: 36)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(String(localized: "Open day view"))
+                    }
+
                     Button {
-                        NotificationCenter.default.post(
-                            name: Notification.Name("TaskCalendarOpenDay"),
-                            object: calendar.startOfDay(for: selectedDate)
-                        )
+                        fetchCalendarTasks()
+                        Task { @MainActor in
+                            await loadHolidays(for: displayedMonth)
+                        }
                     } label: {
-                        Image(systemName: "book.pages")
-                        //                                .symbolRenderingMode(.palette)
-                        //                                .foregroundStyle(.blue, .orange)
-                            .font(.system(size: 19))
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 17))
                             .frame(width: 36, height: 36)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(String(localized: "Open day view"))
+                    .accessibilityLabel(String(localized: "Refresh calendar"))
                 }
             }
             ToolbarItem(placement: .principal) {
@@ -1417,7 +1433,7 @@ private extension TaskCalendarView {
         }
 
         Task { @MainActor in
-            _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+            _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext)
         }
 
         NotificationManager.shared.refresh(force: true)
@@ -1429,6 +1445,7 @@ private extension TaskCalendarView {
 
     }
 
+
     @MainActor
     private func migrateLegacyRecurrence(
         _ task: TodoTask,
@@ -1437,10 +1454,11 @@ private extension TaskCalendarView {
         keepCurrentOccurrenceActive: Bool
     ) {
         do {
-            _ = try RecurrenceEngine.migrateLegacyRecurrence(
+            let createdOccurrences = try RecurrenceEngine.migrateLegacyRecurrence(
                 for: task,
                 futureCount: futureCount,
-                endDate: endDate,keepCurrentOccurrenceActive: keepCurrentOccurrenceActive,
+                endDate: endDate,
+                keepCurrentOccurrenceActive: keepCurrentOccurrenceActive,
                 in: modelContext
             )
 
@@ -1452,9 +1470,16 @@ private extension TaskCalendarView {
                 object: nil
             )
 
-            NotificationManager.shared.refresh(force: false)
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(
+                    tasks: [task] + createdOccurrences,
+                    in: modelContext
+                )
 
-            legacyRecurrenceTask = nil
+                await NotificationManager.shared.refreshAndWait(force: true)
+
+                legacyRecurrenceTask = nil
+            }
 
         } catch {
             AppLogger.persistence.error(
@@ -1462,6 +1487,7 @@ private extension TaskCalendarView {
             )
         }
     }
+
 
     @MainActor
     private func deleteLegacyRecurrence(_ task: TodoTask) {
@@ -1482,7 +1508,7 @@ private extension TaskCalendarView {
             modelContext.processPendingChanges()
 
             Task { @MainActor in
-                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext)
             }
 
             NotificationCenter.default.post(
@@ -2295,7 +2321,7 @@ private struct DayTasksInlineView: View {
                             }
 
                             Task { @MainActor in
-                                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                                _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext)
                             }
 
                             NotificationManager.shared.refresh(force: true)
@@ -2387,7 +2413,7 @@ private struct DayTasksInlineView: View {
                             }
 
                             Task { @MainActor in
-                                _ = await ForMemoAlarmManager.shared.synchronize(task: task)
+                                _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext)
                             }
 
                             NotificationManager.shared.refresh(force: true)
@@ -2592,7 +2618,7 @@ private struct DayTasksInlineView: View {
                     .frame(width: proxy.size.width, height: proxy.size.height, alignment: .bottom)
                 }
             }
-            .alert("Delete task?",
+            .alert(Text(String(localized: showAttachmentSyncWarning ? "Unable to delete task" : "Delete task?")),
                    isPresented: Binding(
                     get: { taskPendingDeletion != nil || showAttachmentSyncWarning },
                     set: {
@@ -2658,7 +2684,7 @@ private struct DayTasksInlineView: View {
 
             } message: {
                 if showAttachmentSyncWarning {
-                    Text(String(localized: "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task."))
+                    Text(String(localized: "One or more attachments are not available on this device. Restore the local files before deleting this task."))
                 } else {
                     Text("This action cannot be undone.")
                 }

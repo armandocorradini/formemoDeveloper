@@ -13,6 +13,8 @@ struct Dashboard: View {
     @State private var selectedWeatherDate: Date?
     @State private var selectedNote: Note?
     @State private var creationSheet: DashboardCreationSheet?
+    @State private var draftTask: TodoTask?
+    
     @State private var recentWalletLogos: [String: Data] = [:]
     @State private var dashboardContinueItems: [ContinueItem] = []
     
@@ -33,7 +35,6 @@ struct Dashboard: View {
     private let weatherManager = WeatherManager.shared
     
     private enum DashboardCreationSheet: String, Identifiable {
-        case task
         case checklist
         case note
         case document
@@ -623,9 +624,19 @@ struct Dashboard: View {
                 }
                 .padding()
             }
+            .refreshable {
+                refreshContinueItems()
+                refreshTodayDashboard()
+                refreshTomorrowDashboard()
+                await weatherManager.refreshIfNeeded()
+                TaskWidgetSnapshotStore.scheduleRefresh(from: modelContext)
+            }
             .scrollContentBackground(.hidden)
             .scrollEdgeEffectHidden(true, for: .top)
             .background(Color.clear)
+        }
+        .sheet(item: $draftTask) { task in
+            NewTaskSheetView(draftTask: task)
         }
         .alert(
             "Attachment Recovery",
@@ -750,7 +761,7 @@ struct Dashboard: View {
 
                     Menu {
                         Button {
-                            creationSheet = .task
+                            draftTask = TodoTask()
                         } label: {
                             Label(String(localized: "Tasks"), systemImage: "checklist")
                         }
@@ -794,8 +805,7 @@ struct Dashboard: View {
             refreshContinueItems()
         }) { destination in
             switch destination {
-            case .task:
-                NewTaskSheetView(draftTask: TodoTask())
+
             case .checklist:
                 ChecklistListView(
                     openCreationOnAppear: true,

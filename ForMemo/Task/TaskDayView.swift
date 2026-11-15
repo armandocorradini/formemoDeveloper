@@ -208,6 +208,10 @@ struct TaskDayView: View {   //AGENDA
                 }
                 .padding(.bottom, 20)
             }
+            .modifier(TaskDayCloudRefreshModifier(isEnabled: Persistence.hasICloudIdentity) {
+                modelContext.processPendingChanges()
+                foregroundRefreshDate = .now
+            })
             .contentMargins(.bottom, 70, for: .scrollContent)
             .coordinateSpace(name: "TaskDayScrollSpace")
             .modifier(
@@ -344,7 +348,7 @@ struct TaskDayView: View {   //AGENDA
             .presentationDetents([.medium, .large])
         }
         .alert(
-            String(localized: "Delete task?"),
+            showAttachmentSyncWarning ? Text("Unable to delete task") : Text("Delete task?"),
             isPresented: Binding(
                 get: { taskPendingDeletion != nil || showAttachmentSyncWarning },
                 set: { if !$0 { taskPendingDeletion = nil; showAttachmentSyncWarning = false } }
@@ -392,7 +396,7 @@ struct TaskDayView: View {   //AGENDA
             }
         } message: {
             if showAttachmentSyncWarning {
-                Text(String(localized: "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task."))
+                Text(String(localized: "One or more attachments for this task are not available on this device. Wait until they are available before deleting the task."))
             } else {
                 Text(String(localized: "This action cannot be undone."))
             }
@@ -1134,7 +1138,7 @@ struct TaskDayView: View {   //AGENDA
             try modelContext.save()
             NotificationCenter.default.post(name: .taskDidChange, object: nil)
             RecurrenceCompletionNotice.postIfNeeded(for: task, wasCompleted: wasCompleted)
-            Task { @MainActor in _ = await ForMemoAlarmManager.shared.synchronize(task: task) }
+            Task { @MainActor in _ = await ForMemoAlarmManager.shared.synchronize(task: task, in: modelContext) }
             NotificationManager.shared.refresh(force: false)
         } catch {
             AppLogger.persistence.error("Day view task update failed: \(error.localizedDescription)")
@@ -1498,5 +1502,23 @@ private struct TaskDaySwipeRow<Content: View>: View {
         }
         .frame(height: rowHeight)
         .clipped()
+    }
+}
+
+
+@MainActor
+private struct TaskDayCloudRefreshModifier: ViewModifier {
+    let isEnabled: Bool
+    let action: @MainActor () async -> Void
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.refreshable {
+                await action()
+            }
+        } else {
+            content
+        }
     }
 }

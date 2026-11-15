@@ -10,6 +10,7 @@ struct DocumentsView: View {
 
     @State private var searchText = ""
     @State private var newDocument: DocumentItem?
+    @State private var deletionAlertMessage: String?
 
     @AppStorage("documentsViewStyle")
     private var documentsViewStyle: String = "cards"
@@ -124,10 +125,7 @@ struct DocumentsView: View {
                         
                         .contextMenu {
                             Button(role: .destructive) {
-                                deleteDocument(
-                                    document,
-                                    in: modelContext
-                                )
+                                requestDocumentDeletion(document)
                             } label: {
                                 Label(
                                     "Delete",
@@ -143,11 +141,12 @@ struct DocumentsView: View {
                     )
                 }
                 .onDelete { indexSet in
-                    for index in indexSet {
-                        deleteDocument(
-                            filteredDocuments[index],
-                            in: modelContext
-                        )
+                    let requestedDocuments = indexSet.compactMap { index in
+                        filteredDocuments.indices.contains(index) ? filteredDocuments[index] : nil
+                    }
+                    for document in requestedDocuments {
+                        let result = deleteDocument(document, in: modelContext)
+                        if let message = result.errorMessage { deletionAlertMessage = message }
                     }
                 }
             }
@@ -217,7 +216,23 @@ struct DocumentsView: View {
                     DocumentDetailView(document: document)
                 }
             }
+            .alert(
+                Text(String(localized: "Unable to Delete")),
+                isPresented: Binding(
+                    get: { deletionAlertMessage != nil },
+                    set: { if !$0 { deletionAlertMessage = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) { deletionAlertMessage = nil }
+            } message: {
+                Text(deletionAlertMessage ?? "")
+            }
         }
+    }
+
+    private func requestDocumentDeletion(_ document: DocumentItem) {
+        let result = deleteDocument(document, in: modelContext)
+        deletionAlertMessage = result.errorMessage
     }
 
     private func iconPrimaryColor(for document: DocumentItem) -> Color {

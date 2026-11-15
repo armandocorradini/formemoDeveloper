@@ -26956,8 +26956,92 @@
         }
       }
     },
-    "One or more attachments are still syncing with iCloud. Wait until synchronization is complete before deleting this task." : {
+    "One or more attachments are not available on this device. Restore the local files before deleting this task." : {
 
+    },
+    "One or more attachments could not be moved to Recently Deleted. Make sure they are downloaded on this device, wait for any download to finish, then try again. Nothing was deleted." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mindestens ein Anhang konnte nicht nach „Zuletzt gelöscht“ verschoben werden. Vergewissere dich, dass die Anhänge auf dieses Gerät geladen wurden. Warte, bis alle Downloads abgeschlossen sind, und versuche es erneut. Es wurde nichts gelöscht."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han podido mover uno o varios archivos adjuntos a «Eliminado recientemente». Comprueba que estén descargados en este dispositivo. Espera a que terminen las descargas en curso y vuelve a intentarlo. No se ha eliminado nada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de déplacer une ou plusieurs pièces jointes vers « Supprimés récemment ». Vérifiez qu’elles sont téléchargées sur cet appareil. Attendez la fin des téléchargements en cours, puis réessayez. Aucun élément n’a été supprimé."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile spostare uno o più allegati in “Eliminati di recente”. Verifica che siano scaricati su questo dispositivo. Attendi il completamento di eventuali download, poi riprova. Non è stato eliminato nulla."
+          }
+        }
+      }
+    },
+    "One or more attachments for this task are not available on this device. Wait until they are available before deleting the task." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein oder mehrere Anhänge für diese Aufgabe sind auf diesem Gerät nicht verfügbar. Warte, bis sie verfügbar sind, bevor du die Aufgabe löschst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uno o varios archivos adjuntos de esta tarea no están disponibles en este dispositivo. Espera a que estén disponibles antes de eliminar la tarea."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une ou plusieurs pièces jointes de cette tâche ne sont pas disponibles sur cet appareil. Attendez qu’elles le soient avant de supprimer la tâche."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uno o più allegati per questa attività non sono disponibili su questo dispositivo. Attendi che siano disponibili prima di eliminare l’attività."
+          }
+        }
+      }
+    },
+    "One or more attachments have not finished downloading to this device. Wait for the download to complete, then try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mindestens ein Anhang wurde noch nicht vollständig auf dieses Gerät geladen. Warte, bis der Download abgeschlossen ist, und versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no ha terminado la descarga de uno o varios archivos adjuntos en este dispositivo. Espera a que termine y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le téléchargement d’une ou plusieurs pièces jointes sur cet appareil n’est pas terminé. Attendez la fin du téléchargement, puis réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il download di uno o più allegati su questo dispositivo non è ancora terminato. Attendi il completamento, poi riprova."
+          }
+        }
+      }
     },
     "Only attachments of completed tasks are deleted automatically if Auto-delete attachments is enabled in Settings > Data Management." : {
       "localizations" : {
@@ -30976,6 +31060,34 @@
         }
       }
     },
+    "Refresh calendar" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalender aktualisieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualizar calendario"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actualiser le calendrier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiorna calendario"
+          }
+        }
+      }
+    },
     "remaining" : {
       "localizations" : {
         "de" : {
@@ -31712,7 +31824,32 @@
       }
     },
     "Restore Unavailable" : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiederherstellung nicht verfügbar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restauración no disponible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restauration indisponible"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristino non disponibile"
+          }
+        }
+      }
     },
     "Restoring a backup may overwrite your current local data." : {
       "localizations" : {
@@ -39018,7 +39155,32 @@
       }
     },
     "The item could not be restored. It may already exist or some required data may be unavailable. The item remains in Recently Deleted." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Objekt konnte nicht wiederhergestellt werden. Möglicherweise ist es bereits vorhanden oder erforderliche Daten sind nicht verfügbar. Das Objekt befindet sich weiterhin unter „Zuletzt gelöscht“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido restaurar el elemento. Es posible que ya exista o que algunos datos necesarios no estén disponibles. El elemento sigue en «Eliminado recientemente»."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de restaurer l’élément. Il existe peut-être déjà ou certaines données nécessaires sont indisponibles. L’élément se trouve toujours dans « Supprimés récemment »."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile ripristinare l’elemento. Potrebbe esistere già oppure alcuni dati necessari non sono disponibili. L’elemento si trova ancora in «Eliminati di recente».\n"
+          }
+        }
+      }
     },
     "The last scheduled occurrence in this series is complete. You can extend the same series without changing past occurrences." : {
       "localizations" : {
@@ -39974,7 +40136,32 @@
       }
     },
     "This attachment is not currently available on this device. Wait for iCloud synchronization and try again, or restore it from the device that originally deleted it. The item remains in Recently Deleted." : {
-
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser Anhang ist auf diesem Gerät derzeit nicht verfügbar. Warte auf die iCloud-Synchronisierung und versuche es erneut, oder stelle ihn auf dem Gerät wieder her, auf dem er ursprünglich gelöscht wurde. Das Objekt befindet sich weiterhin unter „Zuletzt gelöscht“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo adjunto no está disponible actualmente en este dispositivo. Espera a que se complete la sincronización con iCloud y vuelve a intentarlo, o restáuralo desde el dispositivo en el que se eliminó originalmente. El elemento sigue en «Eliminado recientemente»."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette pièce jointe n’est pas disponible sur cet appareil pour le moment. Attendez la synchronisation avec iCloud, puis réessayez, ou restaurez-la depuis l’appareil sur lequel elle a été supprimée. L’élément se trouve toujours dans « Supprimés récemment »."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questo allegato non è attualmente disponibile su questo dispositivo. Attendi la sincronizzazione con iCloud e riprova oppure ripristinalo dal dispositivo su cui è stato eliminato originariamente. L’elemento si trova ancora in «Eliminati di recente»."
+          }
+        }
+      }
     },
     "This attachment is shared with this recurrence. If you delete it, it will be removed from all past, current, and future occurrences and moved to Recently Deleted." : {
       "localizations" : {
@@ -42140,6 +42327,62 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impossibile accedere alla finestra dell'applicazione."
+          }
+        }
+      }
+    },
+    "Unable to Delete" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Löschen nicht möglich"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede eliminar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suppression impossible"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile eliminare"
+          }
+        }
+      }
+    },
+    "Unable to delete task" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgabe kann nicht gelöscht werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede eliminar la tarea"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de supprimer la tâche"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile eliminare l’attività"
           }
         }
       }

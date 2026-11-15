@@ -121,7 +121,11 @@ final class WalletImportService {
     static func delete(
         _ asset: WalletAsset,
         from context: ModelContext
-    ) {
+    ) -> AttachmentDeletionResult {
+
+        guard WalletAssetStore.isLocallyAvailable(relativePath: asset.relativePath) else {
+            return .attachmentUnavailable
+        }
 
         guard let trashFileName = WalletAssetStore.moveToTrash(
             relativePath: asset.relativePath
@@ -129,7 +133,7 @@ final class WalletImportService {
             AppLogger.persistence.error(
                 "Unable to move WalletAsset to Trash: \(asset.relativePath)"
             )
-            return
+            return .moveFailed
         }
 
         let deletedItem = DeletedItem(type: "walletAsset")
@@ -160,6 +164,7 @@ final class WalletImportService {
         )
 
         context.processPendingChanges()
+        return .deleted
     }
 }
 

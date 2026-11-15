@@ -103,7 +103,11 @@ final class DocumentImportService {
         _ asset: DocumentAsset,
         from document: DocumentItem,
         in context: ModelContext
-    ) {
+    ) -> AttachmentDeletionResult {
+
+        guard DocumentAssetStore.isLocallyAvailable(relativePath: asset.relativePath) else {
+            return .attachmentUnavailable
+        }
 
         guard let trashFileName = DocumentAssetStore.moveToTrash(
             relativePath: asset.relativePath
@@ -111,7 +115,7 @@ final class DocumentImportService {
             AppLogger.persistence.error(
                 "Document asset deletion aborted: asset could not be moved to Trash."
             )
-            return
+            return .moveFailed
         }
 
         let item = DeletedItem(type: "documentAsset")
@@ -144,5 +148,6 @@ final class DocumentImportService {
             operation: "ImportDocumentPDF"
         )
         context.processPendingChanges()
+        return .deleted
     }
 }

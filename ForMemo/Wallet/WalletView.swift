@@ -24,6 +24,7 @@ struct WalletView: View {
     @State private var pendingSortMode: String?
     @State private var showCustomSortInfo = false
     @State private var walletFilter = "all"
+    @State private var deletionAlertMessage: String?
 
     @AppStorage("walletSortMode")
     private var walletSortMode: String = "alphabetical"
@@ -410,6 +411,17 @@ NavigationLink(value: card) {
             } message: {
                 Text("Cards can always be reordered with drag and drop. Selecting A–Z restores alphabetical order.")
             }
+            .alert(
+                Text(String(localized: "Unable to Delete")),
+                isPresented: Binding(
+                    get: { deletionAlertMessage != nil },
+                    set: { if !$0 { deletionAlertMessage = nil } }
+                )
+            ) {
+                Button("OK", role: .cancel) { deletionAlertMessage = nil }
+            } message: {
+                Text(deletionAlertMessage ?? "")
+            }
         }
     }
     }
@@ -442,10 +454,11 @@ NavigationLink(value: card) {
     
     private func deleteCard(_ card: LoyaltyCard) {
 
-        deleteLoyaltyCard(
+        let result = deleteLoyaltyCard(
             card,
             in: modelContext
         )
+        deletionAlertMessage = result.errorMessage
     }
     
 
@@ -453,16 +466,12 @@ NavigationLink(value: card) {
 
     private func deleteCards(at offsets: IndexSet) {
 
-        for index in offsets {
-
-            guard filteredCards.indices.contains(index) else {
-                continue
-            }
-
-            deleteLoyaltyCard(
-                filteredCards[index],
-                in: modelContext
-            )
+        let requestedCards = offsets.compactMap { index in
+            filteredCards.indices.contains(index) ? filteredCards[index] : nil
+        }
+        for card in requestedCards {
+            let result = deleteLoyaltyCard(card, in: modelContext)
+            if let message = result.errorMessage { deletionAlertMessage = message }
         }
     }
     

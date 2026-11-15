@@ -602,9 +602,8 @@ extension TaskAttachment {
         attachments.allSatisfy { isSafeToDelete($0) }
     }
 
-    /// Returns true only when the local recovery copy exists and, when an
-    /// iCloud identity is active, the corresponding iCloud asset is fully
-    /// uploaded and has no active transfer or unresolved conflict.
+    /// A locally complete copy is sufficient for safe deletion. iCloud upload
+    /// state is independent: the local file can be recovered from Trash.
     @MainActor
     private static func isSafeToDelete(_ attachment: TaskAttachment) -> Bool {
         guard !attachment.relativePath.isEmpty,
@@ -627,36 +626,7 @@ extension TaskAttachment {
             return false
         }
 
-        // With no iCloud identity, ForMemo is operating in local-first mode.
-        guard Persistence.hasICloudIdentity else {
-            return true
-        }
-
-        // An active iCloud identity means this asset is expected to have a
-        // cloud mirror. An unavailable container must fail closed.
-        guard let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
-            for: .taskAttachments
-        ) else {
-            return false
-        }
-
-        let canonicalCloudURL = cloudDirectory.appendingPathComponent(
-            attachment.relativePath,
-            isDirectory: false
-        )
-
-        let cloudURL: URL
-        if fileManager.fileExists(atPath: canonicalCloudURL.path) {
-            cloudURL = canonicalCloudURL
-        } else if let duplicateURL = duplicateCloudAttachmentDirectories()
-            .map({ $0.appendingPathComponent(attachment.relativePath, isDirectory: false) })
-            .first(where: { fileManager.fileExists(atPath: $0.path) }) {
-            cloudURL = duplicateURL
-        } else {
-            return false
-        }
-
-        return cloudFileIsFullyUploaded(at: cloudURL)
+        return true
     }
 
     private static func cloudFileIsFullyUploaded(at url: URL) -> Bool {
@@ -725,12 +695,12 @@ extension TaskAttachment {
     }
     
     
-    func deleteFileIfNeeded() -> String? {
+    func deleteFileIfNeeded() throws -> String? {
         guard
             let attachmentsDirectory = Self.attachmentsDirectory,
             !relativePath.isEmpty
         else {
-            return nil
+            throw CocoaError(.fileNoSuchFile)
         }
 
         let sourceURL =
@@ -740,14 +710,14 @@ extension TaskAttachment {
 
         // Se il file non esiste già → nessuna azione
         guard fm.fileExists(atPath: sourceURL.path) else {
-            return nil
+            throw CocoaError(.fileWriteNoPermission)
         }
 
         guard let trashDir = Self.trashDirectory else {
             AppLogger.persistence.fault(
                 "Trash directory unavailable. Cleanup aborted."
             )
-            return nil
+            throw CocoaError(.fileWriteNoPermission)
         }
 
         do {
@@ -759,7 +729,7 @@ extension TaskAttachment {
             AppLogger.persistence.error(
                 "Unable to create TaskAttachments Trash directory: \(error.localizedDescription)"
             )
-            return nil
+            throw error
         }
         
         // Nome unico per evitare collisioni
@@ -803,39 +773,48 @@ extension TaskAttachment {
             AppLogger.persistence.fault(
                 "Attachment file coordination failed: \(coordError.localizedDescription)"
             )
+            throw coordError
         }
+
+        guard let result else { throw CocoaError(.fileWriteUnknown) }
 
         return result
     }
     
     // MARK: - Delete Cloud Mirror
 
-    static func deleteCloudMirror(
-        relativePath: String
-    ) {
-        guard
-            let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
-                for: .taskAttachments
-            ),
-            !relativePath.isEmpty
-        else {
-            return
+    enum CloudMirrorDeletionResult: Equatable {
+        case deleted
+        case alreadyMissing
+    }
+
+    enum CloudMirrorDeletionError: LocalizedError {
+        case invalidRelativePath(String)
+        case cloudDirectoryUnavailable
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidRelativePath:
+                return "The attachment relative path is invalid."
+            case .cloudDirectoryUnavailable:
+                return "The iCloud attachment directory is unavailable."
+            }
         }
+    }
 
-        let cloudURL =
-            cloudDirectory.appendingPathComponent(relativePath)
-
-        let fm = FileManager.default
-
-        guard fm.fileExists(atPath: cloudURL.path) else {
+    /// Compatibility wrapper for existing callers. New cleanup code should use
+    /// deleteCloudMirrorVerified so it can observe and handle failures.
+    static func deleteCloudMirror(relativePath: String) {
+        guard let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
+            for: .taskAttachments
+        ) else {
             return
         }
 
         do {
-            try fm.removeItem(at: cloudURL)
-
-            AppLogger.persistence.notice(
-                "TaskAttachment cloud mirror deleted: \(relativePath)"
+            _ = try deleteCloudMirrorVerified(
+                relativePath: relativePath,
+                cloudDirectory: cloudDirectory
             )
         } catch {
             AppLogger.persistence.error(
@@ -843,8 +822,108 @@ extension TaskAttachment {
             )
         }
     }
-    
-    
+
+    /// Deletes the canonical cloud copy and reports whether it was removed or
+    /// was already absent. A missing iCloud container and filesystem failures
+    /// are errors, not silent success.
+    @discardableResult
+    static func deleteCloudMirrorVerified(
+        relativePath: String,
+        cloudDirectory overrideDirectory: URL? = nil,
+        deletionOperation: ((URL) throws -> Void)? = nil
+    ) throws -> CloudMirrorDeletionResult {
+        guard isSafeRelativeAssetPath(relativePath) else {
+            throw CloudMirrorDeletionError.invalidRelativePath(relativePath)
+        }
+
+        guard let cloudDirectory = overrideDirectory
+                ?? AssetDirectoryCoordinator.cloudDirectory(for: .taskAttachments) else {
+            throw CloudMirrorDeletionError.cloudDirectoryUnavailable
+        }
+
+        let rootURL = cloudDirectory.standardizedFileURL
+        let cloudURL = rootURL
+            .appendingPathComponent(relativePath, isDirectory: false)
+            .standardizedFileURL
+        let rootPrefix = rootURL.path.hasSuffix("/")
+            ? rootURL.path
+            : rootURL.path + "/"
+
+        guard cloudURL.path.hasPrefix(rootPrefix) else {
+            throw CloudMirrorDeletionError.invalidRelativePath(relativePath)
+        }
+
+        let fm = FileManager.default
+        var ancestorURL = rootURL
+        let pathComponents = relativePath.split(separator: "/")
+        for component in pathComponents.dropLast() {
+            ancestorURL.appendPathComponent(String(component), isDirectory: true)
+            if fm.fileExists(atPath: ancestorURL.path) {
+                let values = try ancestorURL.resourceValues(forKeys: [
+                    .isDirectoryKey,
+                    .isSymbolicLinkKey
+                ])
+                guard values.isDirectory == true,
+                      values.isSymbolicLink != true else {
+                    throw CloudMirrorDeletionError.invalidRelativePath(relativePath)
+                }
+            }
+        }
+        guard fm.fileExists(atPath: cloudURL.path) else {
+            return .alreadyMissing
+        }
+
+        if let deletionOperation {
+            try deletionOperation(cloudURL)
+        } else {
+            var coordinationError: NSError?
+            var deletionError: Error?
+
+            NSFileCoordinator().coordinate(
+                writingItemAt: cloudURL,
+                options: .forDeleting,
+                error: &coordinationError
+            ) { coordinatedURL in
+                do {
+                    if fm.fileExists(atPath: coordinatedURL.path) {
+                        try fm.removeItem(at: coordinatedURL)
+                    }
+                } catch {
+                    deletionError = error
+                }
+            }
+
+            if let coordinationError {
+                throw coordinationError
+            }
+            if let deletionError {
+                throw deletionError
+            }
+        }
+
+        guard !fm.fileExists(atPath: cloudURL.path) else {
+            throw CocoaError(.fileWriteUnknown)
+        }
+
+        AppLogger.persistence.notice(
+            "TaskAttachment cloud mirror deleted: \(relativePath)"
+        )
+        return .deleted
+    }
+
+    static func isSafeRelativeAssetPath(_ relativePath: String) -> Bool {
+        guard !relativePath.isEmpty,
+              !relativePath.hasPrefix("/"),
+              !relativePath.contains("\0") else {
+            return false
+        }
+
+        let components = relativePath.split(separator: "/", omittingEmptySubsequences: false)
+        return !components.isEmpty &&
+            components.allSatisfy { !$0.isEmpty && $0 != "." && $0 != ".." } &&
+            !relativePath.contains("\\")
+    }
+
     static func removeAllPhysicalFiles(
         in directory: URL?
     ) throws {

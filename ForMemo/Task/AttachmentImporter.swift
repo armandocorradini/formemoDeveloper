@@ -9,8 +9,7 @@ final class AttachmentImporter {
     @discardableResult
     static func addAttachment(
         from originalURL: URL,
-        to task: TodoTask,
-        in context: ModelContext
+        to task: TodoTask
     ) async throws -> TaskAttachment {
         
         let access = originalURL.startAccessingSecurityScopedResource()
@@ -35,7 +34,7 @@ final class AttachmentImporter {
             originalName: originalURL.lastPathComponent,
             relativePath: fileName,
             contentType: contentType,
-            task: task
+            task: nil
         )
 
         // 🔥 Verify physical file before exposing attachment
@@ -65,25 +64,80 @@ final class AttachmentImporter {
             taskID: String(task.id.uuidString.prefix(8))
         )
         
-        context.insert(attachment)
-        
-        if task.attachments == nil {
-            task.attachments = []
-        }
-        task.attachments?.append(attachment)
-        
-        try context.save()
-        
-        context.processPendingChanges()
-
-        NotificationCenter.default.post(
-            name: .attachmentsShouldRefresh,
-            object: nil
-        )
-
+        // Return a detached model. NewTaskSheetView attaches it to the draft
+        // only after the asynchronous copy completes and the draft is still open.
+        // Persistence is deferred until the user explicitly presses Save.
         return attachment
     }
     
+    /// Removes a file belonging to an uncommitted NewTask draft.
+    /// Draft imports are mirrored locally and, when available, to iCloud.
+    static func deleteUncommittedAttachmentFile(relativePath: String) {
+        guard !relativePath.isEmpty else { return }
+
+        let fileManager = FileManager.default
+
+        func coordinatedDelete(at url: URL, location: String) {
+            guard fileManager.fileExists(atPath: url.path) else { return }
+
+            let coordinator = NSFileCoordinator()
+            var coordinationError: NSError?
+            var deletionError: Error?
+
+            coordinator.coordinate(
+                writingItemAt: url,
+                options: .forDeleting,
+                error: &coordinationError
+            ) { coordinatedURL in
+                do {
+                    if fileManager.fileExists(atPath: coordinatedURL.path) {
+                        try fileManager.removeItem(at: coordinatedURL)
+                    }
+                } catch {
+                    deletionError = error
+                }
+            }
+
+            if let coordinationError {
+                AppLogger.persistence.error(
+                    "Unable to coordinate deletion of uncommitted attachment at \(location): \(coordinationError.localizedDescription)"
+                )
+                return
+            }
+
+            if let deletionError {
+                AppLogger.persistence.error(
+                    "Unable to delete uncommitted attachment at \(location): \(deletionError.localizedDescription)"
+                )
+                return
+            }
+
+            AppLogger.persistence.notice(
+                "Uncommitted attachment file deleted from \(location): \(relativePath)"
+            )
+        }
+
+        if let localDirectory = AssetDirectoryCoordinator.localDirectory(
+            for: .taskAttachments
+        ) {
+            let localURL = localDirectory.appendingPathComponent(
+                relativePath,
+                isDirectory: false
+            )
+            coordinatedDelete(at: localURL, location: "local storage")
+        }
+
+        if let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(
+            for: .taskAttachments
+        ) {
+            let cloudURL = cloudDirectory.appendingPathComponent(
+                relativePath,
+                isDirectory: false
+            )
+            coordinatedDelete(at: cloudURL, location: "iCloud mirror")
+        }
+    }
+
     private static func copyToAttachmentsFolder(
         originalURL: URL
     ) async throws -> URL {

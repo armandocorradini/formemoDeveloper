@@ -164,6 +164,32 @@ extension DeletedItem {
         return true
     }
 
+    private func isRestorableWalletAssetFile() -> Bool {
+        guard let relativePath, !relativePath.isEmpty else { return false }
+        if let directory = WalletAssetStore.assetsDirectory,
+           isUsableAttachmentFile(at: directory.appendingPathComponent(relativePath)) {
+            return true
+        }
+        guard let trashFileName,
+              let trashURL = WalletAssetStore.trashFileURL(trashFileName: trashFileName) else {
+            return false
+        }
+        return isUsableAttachmentFile(at: trashURL)
+    }
+
+    private func isRestorableDocumentAssetFile() -> Bool {
+        guard let relativePath, !relativePath.isEmpty else { return false }
+        if let directory = DocumentAssetStore.assetsDirectory,
+           isUsableAttachmentFile(at: directory.appendingPathComponent(relativePath)) {
+            return true
+        }
+        guard let trashFileName,
+              let trashURL = DocumentAssetStore.trashFileURL(trashFileName: trashFileName) else {
+            return false
+        }
+        return isUsableAttachmentFile(at: trashURL)
+    }
+
     /// Recovers the physical file on this device before restoring its model.
     /// The source may be in this device's Trash or in the shared iCloud Drive
     /// attachment directory.
@@ -422,9 +448,15 @@ extension DeletedItem {
         // Parent restores recreate their child assets synchronously. Materialize
         // every child first so the parent is never restored without its files.
         if type == "loyaltycard", let cardID = loyaltyCardID {
-            let children = (try? context.fetch(FetchDescriptor<DeletedItem>()))?.filter {
-                $0.type == "walletAsset" && $0.loyaltyCardID == cardID
-            } ?? []
+            let children: [DeletedItem]
+            do {
+                children = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+                    $0.type == "walletAsset" && $0.loyaltyCardID == cardID
+                }
+            } catch {
+                AppLogger.persistence.error("Wallet card restore preflight failed: \(error.localizedDescription)")
+                return .failed
+            }
             for child in children {
                 guard await child.ensureWalletAssetAvailableAsync() else {
                     return .attachmentUnavailable
@@ -445,9 +477,15 @@ extension DeletedItem {
         }
 
         if type == "document", let currentDocumentID = documentID {
-            let children = (try? context.fetch(FetchDescriptor<DeletedItem>()))?.filter {
-                $0.type == "documentAsset" && $0.documentID == currentDocumentID
-            } ?? []
+            let children: [DeletedItem]
+            do {
+                children = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+                    $0.type == "documentAsset" && $0.documentID == currentDocumentID
+                }
+            } catch {
+                AppLogger.persistence.error("Document restore preflight failed: \(error.localizedDescription)")
+                return .failed
+            }
             for child in children {
                 guard await child.ensureDocumentAssetAvailableAsync() else {
                     return .attachmentUnavailable
@@ -460,8 +498,9 @@ extension DeletedItem {
 
     @MainActor
     private func ensureWalletAssetAvailableAsync() async -> Bool {
-        guard let relativePath, !relativePath.isEmpty,
-              let recoveredName = await WalletAssetStore.recoverCloudMirrorToTrashAsync(
+        guard let relativePath, !relativePath.isEmpty else { return false }
+        if WalletAssetStore.isLocallyAvailable(relativePath: relativePath) { return true }
+        guard let recoveredName = await WalletAssetStore.recoverCloudMirrorToTrashAsync(
                 relativePath: relativePath,
                 preferredTrashFileName: trashFileName
               ) else { return false }
@@ -471,8 +510,9 @@ extension DeletedItem {
 
     @MainActor
     private func ensureDocumentAssetAvailableAsync() async -> Bool {
-        guard let relativePath, !relativePath.isEmpty,
-              let recoveredName = await DocumentAssetStore.recoverCloudMirrorToTrashAsync(
+        guard let relativePath, !relativePath.isEmpty else { return false }
+        if DocumentAssetStore.isLocallyAvailable(relativePath: relativePath) { return true }
+        guard let recoveredName = await DocumentAssetStore.recoverCloudMirrorToTrashAsync(
                 relativePath: relativePath,
                 preferredTrashFileName: trashFileName
               ) else { return false }
@@ -788,8 +828,7 @@ extension DeletedItem {
 
         if type == "walletAsset",
            let cardID = loyaltyCardID,
-           let relativePath,
-           let trashFileName {
+           let relativePath {
 
             let descriptor = FetchDescriptor<LoyaltyCard>(
                 predicate: #Predicate { $0.id == cardID }
@@ -802,10 +841,18 @@ extension DeletedItem {
                 return .failed
             }
 
-            guard WalletAssetStore.restoreFromTrash(
-                trashFileName: trashFileName,
-                relativePath: relativePath
-            ) else {
+            let fileRestored: Bool
+            if WalletAssetStore.isLocallyAvailable(relativePath: relativePath) {
+                fileRestored = true
+            } else if let trashFileName {
+                fileRestored = WalletAssetStore.restoreFromTrash(
+                    trashFileName: trashFileName,
+                    relativePath: relativePath
+                )
+            } else {
+                fileRestored = false
+            }
+            guard fileRestored else {
                 AppLogger.persistence.error(
                     "Wallet asset restore failed: file could not be restored."
                 )
@@ -851,7 +898,6 @@ extension DeletedItem {
         if type == "documentAsset",
            let documentID,
            let relativePath,
-           let trashFileName,
            let kindRaw = documentAssetKindRaw {
 
             let descriptor = FetchDescriptor<DocumentItem>(
@@ -862,12 +908,18 @@ extension DeletedItem {
                 return .failed
             }
 
-            guard
-                DocumentAssetStore.restoreFromTrash(
+            let fileRestored: Bool
+            if DocumentAssetStore.isLocallyAvailable(relativePath: relativePath) {
+                fileRestored = true
+            } else if let trashFileName {
+                fileRestored = DocumentAssetStore.restoreFromTrash(
                     trashFileName: trashFileName,
                     relativePath: relativePath
                 )
-            else {
+            } else {
+                fileRestored = false
+            }
+            guard fileRestored else {
 
                 AppLogger.persistence.error(
                     "Document asset restore failed."
@@ -907,18 +959,36 @@ extension DeletedItem {
         
         
         if type == "loyaltycard" {
+            guard let cardID = loyaltyCardID else { return .failed }
+            let existingDescriptor = FetchDescriptor<LoyaltyCard>(
+                predicate: #Predicate<LoyaltyCard> { $0.id == cardID }
+            )
+            do {
+                guard try context.fetch(existingDescriptor).isEmpty else { return .failed }
+            } catch { return .failed }
 
-            if let existingID = loyaltyCardID {
-                let descriptor = FetchDescriptor<LoyaltyCard>()
-
-                if let cards = try? context.fetch(descriptor),
-                   cards.contains(where: { $0.id == existingID }) {
-                    return .failed
+            let walletAssets: [DeletedItem]
+            do {
+                walletAssets = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+                    $0.type == "walletAsset" && $0.loyaltyCardID == cardID
                 }
+            } catch {
+                AppLogger.persistence.error("Wallet card restore failed to load its asset records: \(error.localizedDescription)")
+                return .failed
+            }
+            guard walletAssets.allSatisfy({ $0.isRestorableWalletAssetFile() }) else {
+                return .attachmentUnavailable
+            }
+
+            let legacyPaths = [loyaltyLogoRelativePath, loyaltyFrontRelativePath, loyaltyBackRelativePath]
+                .compactMap { $0 }.filter { !$0.isEmpty }
+            if walletAssets.isEmpty,
+               legacyPaths.contains(where: { !WalletAssetStore.isLocallyAvailable(relativePath: $0) }) {
+                return .attachmentUnavailable
             }
 
             let card = LoyaltyCard(
-                id: loyaltyCardID ?? UUID(),
+                id: cardID,
                 storeName: storeName ?? "",
                 cardHolder: cardHolder,
                 barcodeValue: barcodeValue ?? "",
@@ -937,21 +1007,18 @@ extension DeletedItem {
                 card.assets = []
             }
 
-            let descriptor = FetchDescriptor<DeletedItem>()
-
-            let walletAssets =
-                (try? context.fetch(descriptor))?.filter {
-                    $0.type == "walletAsset" &&
-                    $0.loyaltyCardID == card.id
-                } ?? []
-
             if !walletAssets.isEmpty {
 
                 for assetItem in walletAssets {
-                    if assetItem.restore(in: context) {
-                        context.delete(assetItem)
+                    let result = assetItem.restoreWithResult(in: context)
+                    guard result.isSuccess else {
+                        for asset in card.assets ?? [] { context.delete(asset) }
+                        context.delete(card)
+                        context.processPendingChanges()
+                        return result
                     }
                 }
+                for assetItem in walletAssets { context.delete(assetItem) }
 
             } else {
 
@@ -1046,15 +1113,25 @@ extension DeletedItem {
         }
 
         if type == "document" {
+            guard let currentDocumentID = documentID else { return .failed }
+            let existingDescriptor = FetchDescriptor<DocumentItem>(
+                predicate: #Predicate<DocumentItem> { $0.id == currentDocumentID }
+            )
+            do {
+                guard try context.fetch(existingDescriptor).isEmpty else { return .failed }
+            } catch { return .failed }
 
-            if let existingID = documentID {
-
-                let descriptor = FetchDescriptor<DocumentItem>()
-
-                if let documents = try? context.fetch(descriptor),
-                   documents.contains(where: { $0.id == existingID }) {
-                    return .failed
+            let documentAssets: [DeletedItem]
+            do {
+                documentAssets = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+                    $0.type == "documentAsset" && $0.documentID == currentDocumentID
                 }
+            } catch {
+                AppLogger.persistence.error("Document restore failed to load its asset records: \(error.localizedDescription)")
+                return .failed
+            }
+            guard documentAssets.allSatisfy({ $0.isRestorableDocumentAssetFile() }) else {
+                return .attachmentUnavailable
             }
 
             let document = DocumentItem(
@@ -1074,21 +1151,16 @@ extension DeletedItem {
 
             context.insert(document)
             
-            guard let currentDocumentID = documentID else { return .failed }
-
-            let descriptor = FetchDescriptor<DeletedItem>()
-
-            if let deletedItems = try? context.fetch(descriptor) {
-
-                for item in deletedItems
-                where item.type == "documentAsset"
-                    && item.documentID == currentDocumentID {
-
-                    if item.restore(in: context) {
-                        context.delete(item)
-                    }
+            for item in documentAssets {
+                let result = item.restoreWithResult(in: context)
+                guard result.isSuccess else {
+                    for asset in document.assets ?? [] { context.delete(asset) }
+                    context.delete(document)
+                    context.processPendingChanges()
+                    return result
                 }
             }
+            for item in documentAssets { context.delete(item) }
 
             return .restored
         }

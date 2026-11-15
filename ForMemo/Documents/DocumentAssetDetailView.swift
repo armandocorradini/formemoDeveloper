@@ -14,6 +14,7 @@ struct DocumentAssetDetailView: View {
 
     @State
     private var showingDeleteConfirmation = false
+    @State private var deletionAlertMessage: String?
 
     @State private var shareURL: URL?
     @State private var isPreparingShare = true
@@ -79,19 +80,33 @@ struct DocumentAssetDetailView: View {
                 role: .destructive
             ) {
 
-                DocumentImportService.delete(
+                let result = DocumentImportService.delete(
                     asset,
                     from: document,
                     in: modelContext
                 )
-
-                dismiss()
+                if let message = result.errorMessage {
+                    deletionAlertMessage = message
+                } else {
+                    dismiss()
+                }
             }
 
             Button(
                 String(localized: "Cancel"),
                 role: .cancel
             ) { }
+        }
+        .alert(
+            Text(String(localized: "Unable to Delete")),
+            isPresented: Binding(
+                get: { deletionAlertMessage != nil },
+                set: { if !$0 { deletionAlertMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { deletionAlertMessage = nil }
+        } message: {
+            Text(deletionAlertMessage ?? "")
         }
     }
 
