@@ -158,6 +158,14 @@ final class ForMemoAlarmManager {
         let isCompleted: Bool
     }
 
+    @MainActor
+    private final class BatchDiagnostics {
+        var cancellationSeconds: TimeInterval = 0
+        var schedulingSeconds: TimeInterval = 0
+        var cancellationCount = 0
+        var schedulingCount = 0
+    }
+
     private func fetchAuthoritativeTask(
         id: UUID,
         in container: ModelContainer
@@ -221,16 +229,37 @@ final class ForMemoAlarmManager {
         }
     }
 
-    private func cancelAndVerifyNoScheduledAlarm(id: UUID) async -> Bool {
+    private func cancelIfPresent(id: UUID) async {
+        do {
+            let alarms = try alarmManager.alarms
+            let hasAlarmEntry = alarms.contains { $0.id == id }
+
+            guard hasAlarmEntry else {
+                AppLogger.notifications.debug(
+                    "AlarmKit cancellation skipped for task \(id.uuidString): no AlarmKit entry exists"
+                )
+                return
+            }
+        } catch {
+            // Preserve the previous cancellation attempt if the preliminary
+            // snapshot cannot be read. The caller still verifies the final state.
+            AppLogger.notifications.debug(
+                "AlarmKit pre-cancellation snapshot failed for task \(id.uuidString): \(error.localizedDescription)"
+            )
+        }
+
         do {
             try await cancelAlarmDirect(id: id)
         } catch {
-            // AlarmKit may report an error when the ID is already absent.
-            // The authoritative outcome is whether a scheduled entry remains.
+            // The final state verification remains authoritative.
             AppLogger.notifications.debug(
                 "AlarmKit cancellation returned for task \(id.uuidString): \(error.localizedDescription)"
             )
         }
+    }
+
+    private func cancelAndVerifyNoScheduledAlarm(id: UUID) async -> Bool {
+        await cancelIfPresent(id: id)
         return await verifyNoScheduledAlarm(id: id)
     }
 
@@ -274,9 +303,9 @@ final class ForMemoAlarmManager {
                 return await cancelAndVerifyNoScheduledAlarm(id: taskID)
             }
 
-            // Replace any existing AlarmKit entry, then reload once more.
+            // Replace an existing AlarmKit entry only when one is present.
             // A task may have been edited while cancellation was suspended.
-            try? await cancelAlarmDirect(id: taskID)
+            await cancelIfPresent(id: taskID)
 
             guard let latestTask = try fetchAuthoritativeTask(id: taskID, in: container) else {
                 return await cancelAndVerifyNoScheduledAlarm(id: taskID)
@@ -316,6 +345,225 @@ final class ForMemoAlarmManager {
     }
     
 
+    // Batch synchronization avoids repeating full SwiftData reads and AlarmKit
+    // snapshots for every task. Per-ID queue ordering is still preserved.
+    private func performBatchSynchronization(
+        taskID: UUID,
+        initialTask: AuthoritativeTaskState?,
+        hasExistingAlarm: Bool,
+        diagnostics: BatchDiagnostics,
+        in container: ModelContainer
+    ) async -> Bool {
+        guard authorizationState() == .authorized else {
+            guard hasExistingAlarm else { return true }
+            let cancellationStart = Date()
+            do {
+                try await cancelAlarmDirect(id: taskID)
+                diagnostics.cancellationCount += 1
+            } catch {
+                diagnostics.cancellationCount += 1
+                AppLogger.notifications.debug(
+                    "AlarmKit batch cancellation returned for task \(taskID.uuidString): \(error.localizedDescription)"
+                )
+            }
+            diagnostics.cancellationSeconds += Date().timeIntervalSince(cancellationStart)
+            return true
+        }
+
+        guard var task = initialTask, isEligibleForAlarm(task),
+              task.deadline != nil else {
+            guard hasExistingAlarm else { return true }
+            let cancellationStart = Date()
+            do {
+                try await cancelAlarmDirect(id: taskID)
+                diagnostics.cancellationCount += 1
+            } catch {
+                diagnostics.cancellationCount += 1
+                AppLogger.notifications.debug(
+                    "AlarmKit batch cancellation returned for task \(taskID.uuidString): \(error.localizedDescription)"
+                )
+            }
+            diagnostics.cancellationSeconds += Date().timeIntervalSince(cancellationStart)
+            return true
+        }
+
+        if hasExistingAlarm {
+            let cancellationStart = Date()
+            do {
+                try await cancelAlarmDirect(id: taskID)
+                diagnostics.cancellationCount += 1
+            } catch {
+                diagnostics.cancellationCount += 1
+                // Match the established synchronization behavior: reload the
+                // authoritative task after cancellation before scheduling.
+                AppLogger.notifications.debug(
+                    "AlarmKit batch replacement cancellation returned for task \(taskID.uuidString): \(error.localizedDescription)"
+                )
+            }
+            diagnostics.cancellationSeconds += Date().timeIntervalSince(cancellationStart)
+
+            do {
+                guard let latestTask = try fetchAuthoritativeTask(id: taskID, in: container) else {
+                    return true
+                }
+                guard isEligibleForAlarm(latestTask), latestTask.deadline != nil else {
+                    return true
+                }
+                task = latestTask
+            } catch {
+                AppLogger.notifications.error(
+                    "AlarmKit batch authoritative reload failed for task \(taskID.uuidString): \(error.localizedDescription)"
+                )
+                return false
+            }
+        }
+
+        guard let deadline = task.deadline else { return true }
+
+        let schedulingStart = Date()
+        diagnostics.schedulingCount += 1
+        do {
+            try await scheduleAlarmDirect(
+                id: taskID,
+                date: deadline,
+                title: task.title
+            )
+            diagnostics.schedulingSeconds += Date().timeIntervalSince(schedulingStart)
+            return true
+        } catch {
+            diagnostics.schedulingSeconds += Date().timeIntervalSince(schedulingStart)
+            AppLogger.notifications.error(
+                "ForMemo AlarmKit batch scheduling failed for task \(taskID.uuidString): \(error.localizedDescription)"
+            )
+            return false
+        }
+    }
+
+    private func verifyBatchSynchronization(
+        taskIDs: [UUID],
+        in container: ModelContainer
+    ) -> Bool {
+        do {
+            let context = ModelContext(container)
+            let storedTasks = try context.fetch(FetchDescriptor<TodoTask>())
+            let requestedIDs = Set(taskIDs)
+            var authoritativeTasks: [UUID: AuthoritativeTaskState] = [:]
+
+            for task in storedTasks where requestedIDs.contains(task.id) {
+                authoritativeTasks[task.id] = AuthoritativeTaskState(
+                    title: task.title,
+                    deadline: task.deadLine,
+                    alarmEnabled: task.alarmEnabled,
+                    isCompleted: task.isCompleted
+                )
+            }
+
+            let alarms = try alarmManager.alarms
+            let alarmsByID = Dictionary(
+                alarms.map { ($0.id, $0) },
+                uniquingKeysWith: { first, _ in first }
+            )
+
+            var mismatches = 0
+            for id in taskIDs {
+                let task = authoritativeTasks[id]
+                let shouldBeScheduled = task.map(isEligibleForAlarm) ?? false
+                let alarm = alarmsByID[id]
+
+                if shouldBeScheduled {
+                    guard let expectedDeadline = task?.deadline,
+                          let alarm,
+                          case .scheduled = alarm.state,
+                          let schedule = alarm.schedule,
+                          case .fixed(let actualDeadline) = schedule,
+                          abs(actualDeadline.timeIntervalSince(expectedDeadline)) < 1.0 else {
+                        mismatches += 1
+                        continue
+                    }
+                } else if let alarm, case .scheduled = alarm.state {
+                    mismatches += 1
+                }
+            }
+
+            if mismatches == 0 {
+                AppLogger.notifications.info(
+                    "✅ AlarmKit batch synchronization verified: \(taskIDs.count) tasks"
+                )
+                return true
+            }
+
+            AppLogger.notifications.error(
+                "❌ AlarmKit batch synchronization mismatch: \(mismatches) of \(taskIDs.count) tasks"
+            )
+            return false
+        } catch {
+            AppLogger.notifications.error(
+                "❌ AlarmKit batch synchronization verification failed: \(error.localizedDescription)"
+            )
+            return false
+        }
+    }
+
+    private func enqueueBatchSynchronization(
+        taskID: UUID,
+        initialTask: AuthoritativeTaskState?,
+        hasExistingAlarm: Bool,
+        diagnostics: BatchDiagnostics,
+        in container: ModelContainer
+    ) -> Task<Bool, Never> {
+        let previousSynchronization = synchronizationTasks[taskID]
+        let token = UUID()
+        synchronizationTokens[taskID] = token
+
+        AppLogger.notifications.info(
+            "AlarmKit DIAG batch enqueue: task=\(taskID.uuidString), token=\(token.uuidString), predecessor=\(previousSynchronization != nil)"
+        )
+
+        let operation = Task { @MainActor in
+            if let previousSynchronization {
+                AppLogger.notifications.info(
+                    "AlarmKit DIAG batch waiting for predecessor: task=\(taskID.uuidString), token=\(token.uuidString)"
+                )
+                _ = await previousSynchronization.value
+                AppLogger.notifications.info(
+                    "AlarmKit DIAG batch predecessor finished: task=\(taskID.uuidString), token=\(token.uuidString)"
+                )
+            }
+
+            // If another operation was already queued for this ID, discard the
+            // batch snapshot and use the established fresh-read synchronization.
+            let succeeded: Bool
+            if previousSynchronization != nil {
+                succeeded = await self.performSynchronization(
+                    taskID: taskID,
+                    in: container
+                )
+            } else {
+                succeeded = await self.performBatchSynchronization(
+                    taskID: taskID,
+                    initialTask: initialTask,
+                    hasExistingAlarm: hasExistingAlarm,
+                    diagnostics: diagnostics,
+                    in: container
+                )
+            }
+
+            AppLogger.notifications.info(
+                "AlarmKit DIAG batch operation finished: task=\(taskID.uuidString), token=\(token.uuidString), usedFreshSynchronization=\(previousSynchronization != nil), result=\(succeeded)"
+            )
+
+            if self.synchronizationTokens[taskID] == token {
+                self.synchronizationTasks[taskID] = nil
+                self.synchronizationTokens[taskID] = nil
+            }
+
+            return succeeded
+        }
+
+        synchronizationTasks[taskID] = operation
+        return operation
+    }
+
     private func enqueueCancellation(taskID: UUID) -> Task<Bool, Never> {
         let previousSynchronization = synchronizationTasks[taskID]
         let token = UUID()
@@ -343,7 +591,8 @@ final class ForMemoAlarmManager {
     
     private func enqueueOrphanCheck(
         taskID: UUID,
-        in container: ModelContainer
+        in container: ModelContainer,
+        verifyCancellation: Bool = true
     ) -> Task<Bool, Never> {
         let previousSynchronization = synchronizationTasks[taskID]
         let token = UUID()
@@ -359,8 +608,13 @@ final class ForMemoAlarmManager {
                     // A current task owns this alarm. Leave its existing schedule
                     // untouched; restoration is handled by the dedicated restore path.
                     result = true
-                } else {
+                } else if verifyCancellation {
                     result = await self.cancelAndVerifyNoScheduledAlarm(id: taskID)
+                } else {
+                    // Batch cleanup verifies the complete AlarmKit state after
+                    // the group. Skip cancellation when this ID is already absent.
+                    await self.cancelIfPresent(id: taskID)
+                    result = true
                 }
             } catch {
                 AppLogger.notifications.error(
@@ -487,12 +741,28 @@ final class ForMemoAlarmManager {
         let token = UUID()
         synchronizationTokens[taskID] = token
 
+        AppLogger.notifications.info(
+            "AlarmKit DIAG individual enqueue: task=\(taskID.uuidString), token=\(token.uuidString), predecessor=\(previousSynchronization != nil)"
+        )
+
         let operation = Task { @MainActor in
-            _ = await previousSynchronization?.value
+            if let previousSynchronization {
+                AppLogger.notifications.info(
+                    "AlarmKit DIAG individual waiting for predecessor: task=\(taskID.uuidString), token=\(token.uuidString)"
+                )
+                _ = await previousSynchronization.value
+                AppLogger.notifications.info(
+                    "AlarmKit DIAG individual predecessor finished: task=\(taskID.uuidString), token=\(token.uuidString)"
+                )
+            }
 
             let result = await self.performSynchronization(
                 taskID: taskID,
                 in: container
+            )
+
+            AppLogger.notifications.info(
+                "AlarmKit DIAG individual operation finished: task=\(taskID.uuidString), token=\(token.uuidString), result=\(result)"
             )
 
             if self.synchronizationTokens[taskID] == token {
@@ -663,22 +933,123 @@ final class ForMemoAlarmManager {
     }
 
     func synchronize(tasks: [TodoTask], in context: ModelContext) async -> Bool {
-        // Register all task IDs immediately. Individual and batch requests then
-        // share the exact same per-UUID operation chains.
+        let totalStart = Date()
         let container = context.container
-        let operations = tasks.map { task in
-            enqueueSynchronization(taskID: task.id, in: container)
+
+        var seenIDs = Set<UUID>()
+        let taskIDs = tasks.map(\.id).filter { seenIDs.insert($0).inserted }
+        guard !taskIDs.isEmpty else {
+            logScheduledAlarmsCount()
+            return true
         }
 
-        var allSucceeded = true
-        for operation in operations {
-            if !(await operation.value) {
-                allSucceeded = false
+        // Concurrent work means the initial batch snapshot may be stale. Keep
+        // the established serialized path in that exceptional case.
+        guard synchronizationTasks.isEmpty else {
+            var allSucceeded = true
+            for taskID in taskIDs {
+                let operation = enqueueSynchronization(taskID: taskID, in: container)
+                if !(await operation.value) { allSucceeded = false }
             }
+            logScheduledAlarmsCount()
+            AppLogger.notifications.info(
+                "AlarmKit DIAG batch serialized fallback result: tasks=\(taskIDs.count), allSucceeded=\(allSucceeded), pendingIDs=\(self.synchronizationTasks.keys.map(\.uuidString).sorted())"
+            )
+            AppLogger.notifications.info(
+                "⏱️ AlarmKit batch diagnostics (serialized fallback): tasks=\(taskIDs.count), total=\(Date().timeIntervalSince(totalStart))s"
+            )
+            return allSucceeded
         }
 
-        logScheduledAlarmsCount()
-        return allSucceeded
+        do {
+            let preparationStart = Date()
+            let batchContext = ModelContext(container)
+            let storedTasks = try batchContext.fetch(FetchDescriptor<TodoTask>())
+            let requestedIDs = Set(taskIDs)
+            var statesByID: [UUID: AuthoritativeTaskState] = [:]
+            for task in storedTasks where requestedIDs.contains(task.id) {
+                statesByID[task.id] = AuthoritativeTaskState(
+                    title: task.title,
+                    deadline: task.deadLine,
+                    alarmEnabled: task.alarmEnabled,
+                    isCompleted: task.isCompleted
+                )
+            }
+            let swiftDataPreparationSeconds = Date().timeIntervalSince(preparationStart)
+
+            let alarmSnapshotStart = Date()
+            let existingAlarmIDs = Set(try alarmManager.alarms.map(\.id))
+            let alarmSnapshotSeconds = Date().timeIntervalSince(alarmSnapshotStart)
+
+            let diagnostics = BatchDiagnostics()
+            // Controlled benchmark: reduce concurrent per-ID scheduling to 5.
+            // Per-ID serialization remains unchanged; compare elapsed wall time and failures.
+            let batchSize = 15
+            var allSucceeded = true
+            for batchStart in stride(from: 0, to: taskIDs.count, by: batchSize) {
+                let batchEnd = min(batchStart + batchSize, taskIDs.count)
+                let operations = taskIDs[batchStart..<batchEnd].map { taskID in
+                    enqueueBatchSynchronization(
+                        taskID: taskID,
+                        initialTask: statesByID[taskID],
+                        hasExistingAlarm: existingAlarmIDs.contains(taskID),
+                        diagnostics: diagnostics,
+                        in: container
+                    )
+                }
+                for operation in operations {
+                    if !(await operation.value) { allSucceeded = false }
+                }
+                await Task.yield()
+            }
+
+            let pendingIDsBeforeVerification = synchronizationTasks.keys
+                .map(\.uuidString)
+                .sorted()
+            AppLogger.notifications.info(
+                "AlarmKit DIAG batch before final verification: allSucceeded=\(allSucceeded), pendingIDs=\(pendingIDsBeforeVerification)"
+            )
+
+            // A newer per-task operation may have been enqueued while the batch
+            // was suspended. Drain only operations for IDs owned by this batch
+            // before verifying, so the verification observes the final serialized
+            // state rather than an intermediate AlarmKit snapshot.
+            var pendingOperationsSucceeded = true
+            while true {
+                let pendingOperations = taskIDs.compactMap { synchronizationTasks[$0] }
+                guard !pendingOperations.isEmpty else { break }
+
+                for operation in pendingOperations {
+                    if !(await operation.value) {
+                        pendingOperationsSucceeded = false
+                    }
+                }
+            }
+
+            // Keep this verification synchronous after the final queue check:
+            // no MainActor operation can enqueue between the stable check and
+            // the AlarmKit snapshot.
+            let verificationStart = Date()
+            let verified = verifyBatchSynchronization(taskIDs: taskIDs, in: container)
+            let verificationSeconds = Date().timeIntervalSince(verificationStart)
+
+            AppLogger.notifications.info(
+                "AlarmKit DIAG batch final result: allSucceeded=\(allSucceeded), verified=\(verified), pendingIDsAfterVerification=\(self.synchronizationTasks.keys.map(\.uuidString).sorted())"
+            )
+
+            let totalSeconds = Date().timeIntervalSince(totalStart)
+            AppLogger.notifications.info(
+                "⏱️ AlarmKit batch diagnostics: tasks=\(taskIDs.count), SwiftData preparation=\(swiftDataPreparationSeconds)s, AlarmKit initial snapshot=\(alarmSnapshotSeconds)s, cancellations=\(diagnostics.cancellationCount) in \(diagnostics.cancellationSeconds)s, schedules=\(diagnostics.schedulingCount) in \(diagnostics.schedulingSeconds)s, final verification=\(verificationSeconds)s, total before final count log=\(totalSeconds)s"
+            )
+
+            logScheduledAlarmsCount()
+            return allSucceeded && pendingOperationsSucceeded && verified
+        } catch {
+            AppLogger.notifications.error(
+                "AlarmKit batch preparation failed: \(error.localizedDescription)"
+            )
+            return false
+        }
     }
 
     func waitForPendingSynchronizations() async {
@@ -753,6 +1124,52 @@ final class ForMemoAlarmManager {
         }
     }
     
+    /// Verifies orphan cleanup with one authoritative SwiftData fetch and one
+    /// AlarmKit snapshot. A scheduled alarm is valid only while its task exists
+    /// and remains eligible for an alarm.
+    private func verifyNoOrphanedScheduledAlarms(
+        in container: ModelContainer
+    ) -> Bool {
+        do {
+            let context = ModelContext(container)
+            let tasks = try context.fetch(FetchDescriptor<TodoTask>())
+            let eligibleTaskIDs = Set(tasks.compactMap { task -> UUID? in
+                guard task.alarmEnabled,
+                      !task.isCompleted,
+                      task.deadLine.map({ $0 > .now }) ?? false else {
+                    return nil
+                }
+                return task.id
+            })
+
+            let alarms = try alarmManager.alarms
+            let orphanedIDs = alarms.compactMap { alarm -> UUID? in
+                guard case .scheduled = alarm.state,
+                      !eligibleTaskIDs.contains(alarm.id) else {
+                    return nil
+                }
+                return alarm.id
+            }
+
+            guard orphanedIDs.isEmpty else {
+                AppLogger.notifications.error(
+                    "AlarmKit orphan cleanup verification failed: \(orphanedIDs.count) scheduled orphan alarms remain"
+                )
+                return false
+            }
+
+            AppLogger.notifications.info(
+                "AlarmKit orphan cleanup batch verified: \(alarms.count) registered alarms"
+            )
+            return true
+        } catch {
+            AppLogger.notifications.error(
+                "AlarmKit orphan cleanup batch verification failed: \(error.localizedDescription)"
+            )
+            return false
+        }
+    }
+
     func removeOrphanedAlarms(tasks: [TodoTask]) async {
         guard authorizationState() == .authorized else {
             await cancelAllAlarmsWhenUnauthorized()
@@ -767,11 +1184,31 @@ final class ForMemoAlarmManager {
             }
 
             if let container = tasks.first?.modelContext?.container {
-                // Reconcile every registered alarm against the persisted task,
-                // through the same per-ID queue used by normal synchronization.
-                for id in alarmIDs {
-                    let operation = enqueueOrphanCheck(taskID: id, in: container)
-                    _ = await operation.value
+                // Keep per-ID serialization, but process a bounded number of
+                // orphan checks at a time. Each check reloads its task from the
+                // authoritative store; AlarmKit is verified once after all groups.
+                let batchSize = 50
+                for batchStart in stride(from: 0, to: alarmIDs.count, by: batchSize) {
+                    let batchEnd = min(batchStart + batchSize, alarmIDs.count)
+                    let operations = alarmIDs[batchStart..<batchEnd].map { id in
+                        enqueueOrphanCheck(
+                            taskID: id,
+                            in: container,
+                            verifyCancellation: false
+                        )
+                    }
+
+                    for operation in operations {
+                        _ = await operation.value
+                    }
+                    await Task.yield()
+                }
+
+                guard verifyNoOrphanedScheduledAlarms(in: container) else {
+                    AppLogger.notifications.error(
+                        "AlarmKit orphan cleanup completed with unresolved scheduled alarms"
+                    )
+                    return
                 }
             } else if tasks.isEmpty {
                 // Reset-all path: the caller has already removed every task.

@@ -532,7 +532,7 @@ struct SettingsView: View {
                                 get: { settings.maximumOccurrencesPerOperation },
                                 set: { settings.maximumOccurrencesPerOperation = $0 }
                             ),
-                            in: 50...2_000,
+                            in: 50...1_000,
                             step: 50
                         )
 

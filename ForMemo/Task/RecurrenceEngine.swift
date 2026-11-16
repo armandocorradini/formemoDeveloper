@@ -680,10 +680,6 @@ struct RecurrenceEngine {
             maximumDateCount: maximumDateCount
         )
 
-        guard dates.count > 1 else {
-            return []
-        }
-
         // Fetch only tasks belonging to this recurrence series.
         // The previous implementation fetched every TodoTask in the store
         // and filtered them in memory. That becomes unnecessarily expensive
@@ -701,6 +697,18 @@ struct RecurrenceEngine {
         )
 
         var createdTasks: [TodoTask] = []
+
+        if dates.count <= 1 {
+            if task.recurrenceCount == nil, task.recurrenceEndDate != nil {
+                let seriesTasks = existingTasks + [task]
+                if let effectiveEndDate = seriesTasks.compactMap(\.deadLine).max() {
+                    for occurrence in seriesTasks {
+                        occurrence.recurrenceEndDate = effectiveEndDate
+                    }
+                }
+            }
+            return []
+        }
 
         for (offset, occurrenceDate) in dates.dropFirst().enumerated() {
             guard createdTasks.count < maximumGeneratedFutureOccurrences else {
@@ -757,6 +765,19 @@ struct RecurrenceEngine {
 
             context.insert(occurrence)
             createdTasks.append(occurrence)
+        }
+
+        // For end-date-based series, recurrenceEndDate represents the last
+        // occurrence that actually exists, not the originally requested date.
+        // This also keeps the stored boundary correct when generation is capped
+        // or when some occurrence indexes are intentionally skipped.
+        if task.recurrenceCount == nil, task.recurrenceEndDate != nil {
+            let seriesTasks = existingTasks + createdTasks + [task]
+            if let effectiveEndDate = seriesTasks.compactMap(\.deadLine).max() {
+                for occurrence in seriesTasks {
+                    occurrence.recurrenceEndDate = effectiveEndDate
+                }
+            }
         }
 
         return createdTasks

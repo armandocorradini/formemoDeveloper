@@ -3,36 +3,42 @@ import os
 import Foundation
 
 extension ModelContext {
-    
+
     @MainActor
-    func safeSave(operation: String) {
+    @discardableResult
+    func safeSave(
+        operation: String,
+        saveOperation: (() throws -> Void)? = nil
+    ) -> Bool {
 
         guard hasChanges else {
-            return
+            return true
         }
 
         do {
             DebugLog.writeCloudKitEvent(
-                "Context save requested [\(operation)]"
+                "Context save requested [\\(operation)]"
             )
 
-            try self.save()
+            if let saveOperation {
+                try saveOperation()
+            } else {
+                try self.save()
+            }
+            return true
 
         } catch {
 
             DebugLog.writeCloudKitEvent(
-                "Context save failed [\(operation)]"
+                "Context save failed [\\(operation)]"
             )
 
             AppLogger.persistence.fault(
-                "Context save failed [\(operation)]: \(error.localizedDescription)"
+                "Context save failed [\\(operation)]: \\(error.localizedDescription)"
             )
 
             self.rollback()
-
-            #if DEBUG
-            assertionFailure("CRITICAL: \(operation) failed → rollback executed")
-            #endif
+            return false
         }
     }
 }

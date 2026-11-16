@@ -30,7 +30,8 @@ enum AttachmentDeletionResult: Equatable {
 @discardableResult
 func deleteTask(
     _ task: TodoTask,
-    in context: ModelContext
+    in context: ModelContext,
+    saveOperation: (() throws -> Void)? = nil
 ) -> TaskDeletionResult {
 
     // Resolve the task again by its stable UUID before touching relationships
@@ -124,30 +125,34 @@ func deleteTask(
         }
     }
 
-    if let recurrenceID = currentTask.recurrenceID,
-       let occurrenceIndex = currentTask.occurrenceIndex {
-        DeletedFingerprintStore.markDeletedOccurrence(
-            recurrenceID: recurrenceID,
-            occurrenceIndex: occurrenceIndex
-        )
-    } else {
-        DeletedFingerprintStore.markDeleted(currentTask)
-    }
-
     let recurrenceID = currentTask.recurrenceID
+    let occurrenceIndex = currentTask.occurrenceIndex
 
     context.delete(currentTask)
     context.processPendingChanges()
 
-    ForMemoAlarmManager.shared.cancelAlarmIfNeeded(
-        id: taskID
-    )
-
     if let recurrenceID {
-        try? RecurringAttachmentManager.pruneUnreferencedRules(
-            for: recurrenceID,
-            in: context
-        )
+        do {
+            try RecurringAttachmentManager.pruneUnreferencedRules(
+                for: recurrenceID,
+                in: context
+            )
+        } catch {
+            context.rollback()
+            for file in movedFiles.reversed() {
+                do {
+                    try FileManager.default.moveItem(at: file.trash, to: file.source)
+                } catch {
+                    AppLogger.persistence.fault(
+                        "Failed to restore an attachment after recurrence-rule pruning failed: \(error.localizedDescription)"
+                    )
+                }
+            }
+            AppLogger.persistence.error(
+                "Task deletion aborted because recurrence rules could not be pruned: \(error.localizedDescription)"
+            )
+            return .failed
+        }
     }
 
     // Shared source attachments stay alive while an active propagation rule
@@ -173,8 +178,33 @@ func deleteTask(
         context.delete(attachment)
     }
 
-    context.safeSave(operation: "DeleteTask")
+    guard context.safeSave(
+        operation: "DeleteTask",
+        saveOperation: saveOperation
+    ) else {
+        for file in movedFiles.reversed() {
+            do {
+                try FileManager.default.moveItem(at: file.trash, to: file.source)
+            } catch {
+                AppLogger.persistence.fault(
+                    "Failed to restore an attachment after task deletion save failed: \(error.localizedDescription)"
+                )
+            }
+        }
+        return .failed
+    }
 
+    // These effects are outside SwiftData and must happen only after commit.
+    if let recurrenceID, let occurrenceIndex {
+        DeletedFingerprintStore.markDeletedOccurrence(
+            recurrenceID: recurrenceID,
+            occurrenceIndex: occurrenceIndex
+        )
+    } else {
+        DeletedFingerprintStore.markDeleted(currentTask)
+    }
+
+    ForMemoAlarmManager.shared.cancelAlarmIfNeeded(id: taskID)
     NotificationManager.shared.refresh()
     return .deleted
 }
@@ -183,11 +213,12 @@ func deleteTask(
 @discardableResult
 func deleteRecurringTaskAndFutureOccurrences(
     _ task: TodoTask,
-    in context: ModelContext
+    in context: ModelContext,
+    saveOperation: (() throws -> Void)? = nil
 ) async -> TaskDeletionResult {
     guard let recurrenceID = task.recurrenceID,
           let occurrenceIndex = task.occurrenceIndex else {
-        return deleteTask(task, in: context)
+        return deleteTask(task, in: context, saveOperation: saveOperation)
     }
 
     // Treat this multi-batch deletion as an exclusive persistence operation.
@@ -205,7 +236,10 @@ func deleteRecurringTaskAndFutureOccurrences(
         PersistenceOperationCoordinator.shared.finish()
     }
 
-    let batchSize = 250
+    // Process large series in bounded in-memory batches, but commit the
+    // deletion once at the end so a failed save cannot leave a partially
+    // deleted recurrence series.
+    let batchSize = 1_000
 
     await ForMemoAlarmManager.shared.waitForPendingSynchronizations()
     
@@ -253,6 +287,24 @@ func deleteRecurringTaskAndFutureOccurrences(
         return .blockedByAttachmentSync
     }
 
+    // Resolve both propagation states with one query before mutating rules.
+    // This avoids repeated per-attachment fetchCount calls and avoids a second
+    // lookup after truncation, which could fail after the context was modified.
+    let propagationSnapshot: (beforeTruncation: Set<UUID>, afterTruncation: Set<UUID>)
+    do {
+        propagationSnapshot = try RecurringAttachmentManager.propagationSnapshot(
+            for: attachmentsToCheck,
+            truncating: recurrenceID,
+            endingAt: occurrenceIndex - 1,
+            in: context
+        )
+    } catch {
+        AppLogger.persistence.error(
+            "Recurring-task deletion aborted because attachment propagation could not be checked: \(error.localizedDescription)"
+        )
+        return .failed
+    }
+
     // Stage every non-shared occurrence file before changing recurrence rules,
     // fingerprints, or task records. A failed move restores prior files.
     var recurrenceTrashNames: [UUID: String] = [:]
@@ -264,7 +316,7 @@ func deleteRecurringTaskAndFutureOccurrences(
         var seen = Set<UUID>()
         for attachment in attachmentsToCheck where
             seen.insert(attachment.id).inserted &&
-            !RecurringAttachmentManager.attachmentIsPropagated(attachment, in: context) {
+            !propagationSnapshot.beforeTruncation.contains(attachment.id) {
             let source = directory.appendingPathComponent(attachment.relativePath)
             guard let name = try attachment.deleteFileIfNeeded(),
                   let trashURL = TaskAttachment.trashFileURL(trashFileName: name) else {
@@ -274,6 +326,7 @@ func deleteRecurringTaskAndFutureOccurrences(
             recurrenceMovedFiles.append((source, trashURL))
         }
     } catch {
+        context.rollback()
         for file in recurrenceMovedFiles.reversed() {
             try? FileManager.default.moveItem(at: file.trash, to: file.source)
         }
@@ -291,16 +344,20 @@ func deleteRecurringTaskAndFutureOccurrences(
             in: context
         )
     } catch {
+        for file in recurrenceMovedFiles.reversed() {
+            do {
+                try FileManager.default.moveItem(at: file.trash, to: file.source)
+            } catch {
+                AppLogger.persistence.fault(
+                    "Failed to restore an attachment after propagation truncation failed: \(error.localizedDescription)"
+                )
+            }
+        }
         AppLogger.persistence.error(
             "Recurring-task deletion aborted because attachment propagation could not be updated: \(error.localizedDescription)"
         )
         return .failed
     }
-
-    DeletedFingerprintStore.markDeletedFromOccurrence(
-        recurrenceID: recurrenceID,
-        occurrenceIndex: occurrenceIndex
-    )
 
     var sharedAttachmentsToReconcile: [TaskAttachment] = []
     var sharedAttachmentIDs = Set<UUID>()
@@ -321,6 +378,7 @@ func deleteRecurringTaskAndFutureOccurrences(
             let sharedAttachments =
                 RecurringAttachmentManager.detachSharedAttachmentsBeforeTaskDeletion(
                     recurrenceTask,
+                    propagatedAttachmentIDs: propagationSnapshot.afterTruncation,
                     in: context
                 )
 
@@ -348,48 +406,129 @@ func deleteRecurringTaskAndFutureOccurrences(
             context.delete(recurrenceTask)
         }
 
-        context.safeSave(
-            operation: "DeleteRecurringTaskAndFutureOccurrences.batch"
-        )
-        
         await Task.yield()
     }
 
+    // Commit all occurrence deletions together. The fingerprint and all
+    // AlarmKit/notification side effects remain deferred until this succeeds.
+    guard context.safeSave(
+        operation: "DeleteRecurringTaskAndFutureOccurrences.batch",
+        saveOperation: saveOperation
+    ) else {
+        context.rollback()
+        for file in recurrenceMovedFiles.reversed() {
+            do {
+                try FileManager.default.moveItem(at: file.trash, to: file.source)
+            } catch {
+                AppLogger.persistence.fault(
+                    "Failed to restore an attachment after recurring-task deletion save failed: \(error.localizedDescription)"
+                )
+            }
+        }
+        return .failed
+    }
+
+    // The deletion fingerprint is stored in UserDefaults, outside SwiftData.
+    // Write it only after the task-deletion batch has committed successfully.
+    DeletedFingerprintStore.markDeletedFromOccurrence(
+        recurrenceID: recurrenceID,
+        occurrenceIndex: occurrenceIndex
+    )
     // Shared assets are deleted only after all occurrence links in the
     // selected range have been removed. If another recurrence/task still
     // references the same TaskAttachment, the physical file is preserved.
     context.processPendingChanges()
 
+    var sharedAttachmentMovedFiles: [(source: URL, trash: URL)] = []
+    var sharedAttachmentMoveFailed = false
+
     for attachment in sharedAttachmentsToReconcile {
         guard attachment.task == nil,
-              !RecurringAttachmentManager.attachmentIsPropagated(
-                attachment,
-                in: context
-              ) else {
+              !propagationSnapshot.afterTruncation.contains(attachment.id) else {
             continue
         }
 
-        let trashName: String?
-        do { trashName = try attachment.deleteFileIfNeeded() }
-        catch {
-            AppLogger.persistence.error("Recurring shared attachment cleanup stopped because moving the file to Trash failed: \(error.localizedDescription)")
-            return .failed
+        do {
+            let trashName = try attachment.deleteFileIfNeeded()
+            if let trashName,
+               let directory = TaskAttachment.attachmentsDirectory,
+               let trashURL = TaskAttachment.trashFileURL(trashFileName: trashName) {
+                let sourceURL = directory.appendingPathComponent(attachment.relativePath)
+                sharedAttachmentMovedFiles.append((sourceURL, trashURL))
+            }
+
+            permanentlyRemovedAttachmentFiles.append((
+                relativePath: attachment.relativePath,
+                trashFileName: trashName
+            ))
+            context.delete(attachment)
+        } catch {
+            sharedAttachmentMoveFailed = true
+            for file in sharedAttachmentMovedFiles.reversed() {
+                do {
+                    try FileManager.default.moveItem(at: file.trash, to: file.source)
+                } catch {
+                    AppLogger.persistence.fault(
+                        "Failed to restore a shared attachment after cleanup staging failed: \(error.localizedDescription)"
+                    )
+                }
+            }
+            AppLogger.persistence.error(
+                "Recurring task occurrences were deleted, but shared attachment cleanup was deferred because a file could not be moved to Recently Deleted: \(error.localizedDescription)"
+            )
+            break
         }
-        permanentlyRemovedAttachmentFiles.append((
-            relativePath: attachment.relativePath,
-            trashFileName: trashName
-        ))
-        context.delete(attachment)
     }
 
-    try? RecurringAttachmentManager.pruneUnreferencedRules(
-        for: recurrenceID,
-        in: context
-    )
+    if sharedAttachmentMoveFailed {
+        context.rollback()
+        NotificationManager.shared.refresh()
+        return .deleted
+    }
 
-    context.safeSave(
+    do {
+        try RecurringAttachmentManager.pruneUnreferencedRules(
+            for: recurrenceID,
+            in: context
+        )
+    } catch {
+        context.rollback()
+        for file in sharedAttachmentMovedFiles.reversed() {
+            do {
+                try FileManager.default.moveItem(at: file.trash, to: file.source)
+            } catch {
+                AppLogger.persistence.fault(
+                    "Failed to restore a shared attachment after propagation-rule pruning failed: \(error.localizedDescription)"
+                )
+            }
+        }
+        AppLogger.persistence.error(
+            "Recurring task occurrences were deleted, but shared attachment cleanup was rolled back because propagation rules could not be pruned: \(error.localizedDescription)"
+        )
+        NotificationManager.shared.refresh()
+        return .deleted
+    }
+
+    // Task deletion has already committed. A failure in this secondary
+    // cleanup must not be reported as if the tasks were still present.
+    guard context.safeSave(
         operation: "DeleteRecurringTaskAndFutureOccurrences.sharedAttachments"
-    )
+    ) else {
+        for file in sharedAttachmentMovedFiles.reversed() {
+            do {
+                try FileManager.default.moveItem(at: file.trash, to: file.source)
+            } catch {
+                AppLogger.persistence.fault(
+                    "Failed to restore a shared attachment after its cleanup save failed: \(error.localizedDescription)"
+                )
+            }
+        }
+        AppLogger.persistence.error(
+            "Recurring task occurrences were deleted, but shared attachment cleanup was rolled back after its save failed."
+        )
+        NotificationManager.shared.refresh()
+        return .deleted
+    }
 
     // A physical mirror is removed only when no remaining TaskAttachment model
     // references the same path. This protects assets still used outside the

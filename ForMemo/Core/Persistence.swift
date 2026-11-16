@@ -117,6 +117,15 @@ enum Persistence {
         Note.self
     ])
 
+    /// Pure policy used to decide whether this container may attach CloudKit.
+    /// The local store remains the same regardless of this decision.
+    static func shouldUseCloudKit(
+        cloudKitEnabled: Bool,
+        hasICloudIdentity: Bool
+    ) -> Bool {
+        cloudKitEnabled && hasICloudIdentity
+    }
+
     static func makeModelContainer(
         cloudKitEnabled: Bool
     ) -> ModelContainer {
@@ -134,9 +143,10 @@ enum Persistence {
                 : "SwiftData container initialization (Local)"
             )
 
-            let useCloudKit =
-                cloudKitEnabled &&
-                hasICloudIdentity
+            let useCloudKit = shouldUseCloudKit(
+                cloudKitEnabled: cloudKitEnabled,
+                hasICloudIdentity: hasICloudIdentity
+            )
 
             let configuration = ModelConfiguration(
                 schema: schema,

@@ -2684,7 +2684,7 @@ private struct DayTasksInlineView: View {
 
             } message: {
                 if showAttachmentSyncWarning {
-                    Text(String(localized: "One or more attachments are not available on this device. Restore the local files before deleting this task."))
+                    Text(String(localized: "One or more attachments are missing from this device. Make sure the original files are available again through iCloud or your backup before deleting this task."))
                 } else {
                     Text("This action cannot be undone.")
                 }

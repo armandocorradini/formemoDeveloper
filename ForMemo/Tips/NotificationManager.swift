@@ -197,7 +197,7 @@ final class NotificationManager: NSObject {
             AppLogger.notifications.debug("Optimized refresh")
 #endif
             let tSecondFetch = ContinuousClock.now
-            guard let fetched = self.fetchNotificationTasks(using: context) else {
+            guard let fetched = await self.fetchNotificationTasks(using: context) else {
                 if generation == self.refreshGeneration {
                     self.lastTasksSignature = ""
                     self.pendingRefresh = false
@@ -376,24 +376,50 @@ final class NotificationManager: NSObject {
     private func fetchNotificationTasks(
         using context: ModelContext,
         fetchOperation: (() throws -> [TodoTask])? = nil
-    ) -> [TodoTask]? {
-        let descriptor = FetchDescriptor<TodoTask>(
-            predicate: #Predicate<TodoTask> {
-                !$0.isCompleted &&
-                !$0.isDebugTask &&
-                (
-                    $0.deadLine != nil ||
-                    $0.manualSnoozeUntil != nil ||
-                    $0.snoozeUntil != nil
-                )
-            }
-        )
-
+    ) async -> [TodoTask]? {
+        // Keep the injected diagnostic path unchanged. Production fetches are
+        // paginated so a large recurring series cannot monopolize the main actor
+        // in one unbounded SwiftData fetch.
         do {
             if let fetchOperation {
                 return try fetchOperation()
             }
-            return try context.fetch(descriptor)
+
+            let pageSize = 200
+            var offset = 0
+            var result: [TodoTask] = []
+
+            while true {
+                guard !Task.isCancelled else { return nil }
+
+                var descriptor = FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> {
+                        !$0.isCompleted &&
+                        !$0.isDebugTask &&
+                        (
+                            $0.deadLine != nil ||
+                            $0.manualSnoozeUntil != nil ||
+                            $0.snoozeUntil != nil
+                        )
+                    }
+                )
+                descriptor.fetchLimit = pageSize
+                descriptor.fetchOffset = offset
+
+                let page = try context.fetch(descriptor)
+                result.append(contentsOf: page)
+
+                if page.count < pageSize {
+                    break
+                }
+
+                offset += page.count
+                // Give SwiftUI and other main-actor work an opportunity to run
+                // between bounded fetches. The ModelContext remains on MainActor.
+                await Task.yield()
+            }
+
+            return result
         } catch {
             AppLogger.notifications.error(
                 "Notification rebuild skipped because task fetch failed: \(error.localizedDescription)"
@@ -934,7 +960,7 @@ final class NotificationManager: NSObject {
         fetchOperation: @escaping () throws -> [TodoTask],
         addOperation: ((UNNotificationRequest) async throws -> Void)? = nil
     ) async -> Bool {
-        guard let tasks = fetchNotificationTasks(
+        guard let tasks = await fetchNotificationTasks(
             using: context,
             fetchOperation: fetchOperation
         ) else {

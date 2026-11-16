@@ -458,6 +458,52 @@ enum RecurringAttachmentManager {
         }
     }
 
+    /// Resolves propagation state for a collection of attachments with one
+    /// SwiftData fetch, including the state that will remain after truncating
+    /// one recurrence. Inactive legacy links continue to count as propagated,
+    /// matching `attachmentIsPropagated` and the existing deletion safety rule.
+    static func propagationSnapshot(
+        for attachments: [TaskAttachment],
+        truncating recurrenceID: UUID,
+        endingAt lastIndex: Int,
+        in context: ModelContext
+    ) throws -> (beforeTruncation: Set<UUID>, afterTruncation: Set<UUID>) {
+        let attachmentIDs = Array(Set(attachments.map(\.id)))
+        guard !attachmentIDs.isEmpty else {
+            return ([], [])
+        }
+
+        let descriptor = FetchDescriptor<RecurringAttachmentLink>(
+            predicate: #Predicate<RecurringAttachmentLink> { link in
+                attachmentIDs.contains(link.attachmentID)
+            }
+        )
+
+        let links = try context.fetch(descriptor)
+        let before = Set(links.map(\.attachmentID))
+        let after = Set(links.compactMap { link -> UUID? in
+            guard link.recurrenceID == recurrenceID else {
+                return link.attachmentID
+            }
+
+            // `truncatePropagation` removes every link in this recurrence when
+            // the requested end precedes the first occurrence.
+            if lastIndex < 0 {
+                return nil
+            }
+
+            // For non-negative ends, only active links starting after the end
+            // are removed. Inactive legacy links remain and still protect files.
+            if link.isActive && link.propagationStartIndex > lastIndex {
+                return nil
+            }
+
+            return link.attachmentID
+        })
+
+        return (before, after)
+    }
+
     /// Returns true when another materialized occurrence of a recurrence still
     /// uses this propagated attachment. The current task is excluded so an
     /// attachment is protected only while another occurrence actually remains.
@@ -700,10 +746,14 @@ enum RecurringAttachmentManager {
     @discardableResult
     static func detachSharedAttachmentsBeforeTaskDeletion(
         _ task: TodoTask,
+        propagatedAttachmentIDs: Set<UUID>? = nil,
         in context: ModelContext
     ) -> [TaskAttachment] {
-        let shared = (task.attachments ?? []).filter {
-            attachmentIsPropagated($0, in: context)
+        let shared = (task.attachments ?? []).filter { attachment in
+            if let propagatedAttachmentIDs {
+                return propagatedAttachmentIDs.contains(attachment.id)
+            }
+            return attachmentIsPropagated(attachment, in: context)
         }
 
         for attachment in shared {

@@ -697,7 +697,7 @@ final class AppSettings {
     
     var maximumOccurrencesPerOperation: Int {
         didSet {
-            let normalized = min(max(maximumOccurrencesPerOperation, 1), 2_000)
+            let normalized = min(max(maximumOccurrencesPerOperation, 1), 1_000)
             if maximumOccurrencesPerOperation != normalized {
                 maximumOccurrencesPerOperation = normalized
                 return

@@ -68,18 +68,27 @@ enum AttachmentContainerRecovery {
 
         var result = AttachmentRecoveryResult()
 
-        let directories = attachmentDirectories(
-            container: container
-        )
-        .sorted {
-            $0.lastPathComponent < $1.lastPathComponent
+        let directories: [URL]
+        do {
+            directories = try attachmentDirectories(container: container).sorted {
+                $0.lastPathComponent < $1.lastPathComponent
+            }
+        } catch {
+            result.errors = 1
+            result.failedFiles.append("Directory scan failed: \(error.localizedDescription)")
+            AppLogger.persistence.error(
+                "Asset Recovery aborted for \(container.rawValue): \(error.localizedDescription, privacy: .public)"
+            )
+            return result
         }
 
         guard let mainDirectory = directories.first(where: {
             $0.lastPathComponent == container.rawValue
         }) else {
+            result.errors = 1
+            result.failedFiles.append("Canonical folder '\(container.rawValue)' not found")
             AppLogger.persistence.error(
-                "Asset Recovery: main folder '\(container.rawValue)' not found"
+                "Asset Recovery: main folder '\(container.rawValue)' not found; recovery aborted"
             )
             return result
         }
@@ -122,14 +131,18 @@ enum AttachmentContainerRecovery {
         )
 
         for directory in recoveryDirectories {
-            recoverFiles(
+            let folderWasScanned = recoverFiles(
                 from: directory,
                 to: mainDirectory,
                 validRelativePaths: validRelativePaths,
                 result: &result
             )
 
-            removeDuplicateDirectoryIfEmpty(directory)
+            // Never remove a duplicate directory if its contents could not be
+            // enumerated. A failed listing must not be interpreted as empty.
+            if folderWasScanned {
+                removeDuplicateDirectoryIfEmpty(directory)
+            }
         }
 
         let duration = Date().timeIntervalSince(startedAt)
@@ -197,47 +210,38 @@ enum AttachmentContainerRecovery {
         )
     }
     
-     static func attachmentDirectories(
+    static func attachmentDirectories(
         container: AssetContainer
-    ) -> [URL]{
-
-        guard let documents = cloudDocumentsDirectory() else {
-
-            AppLogger.persistence.error(
-                "Asset Recovery: iCloud container unavailable"
+    ) throws -> [URL] {
+        guard let cloudDocuments = cloudDocumentsDirectory() else {
+            throw NSError(
+                domain: "AttachmentContainerRecovery",
+                code: 10,
+                userInfo: [NSLocalizedDescriptionKey: "iCloud Documents container is unavailable."]
             )
-
-            return []
         }
 
-
-        let fm = FileManager.default
-
-        guard let items = try? fm.contentsOfDirectory(
-            at: documents,
+        let fileManager = FileManager.default
+        let items = try fileManager.contentsOfDirectory(
+            at: cloudDocuments,
             includingPropertiesForKeys: [.isDirectoryKey],
             options: [.skipsHiddenFiles]
-        ) else {
-            return []
-        }
+        )
 
-        return items.filter { url in
-
-            guard
-                let values = try? url.resourceValues(forKeys: [.isDirectoryKey]),
-                values.isDirectory == true
-            else {
-                return false
-            }
+        var matchingDirectories: [URL] = []
+        for url in items {
+            let values = try url.resourceValues(forKeys: [.isDirectoryKey])
+            guard values.isDirectory == true else { continue }
 
             let name = url.lastPathComponent
-
-            return name.hasPrefix(container.rawValue) &&
-                   !name.hasPrefix("\(container.rawValue)_Trash")
+            if name.hasPrefix(container.rawValue) &&
+                !name.hasPrefix("\(container.rawValue)_Trash") {
+                matchingDirectories.append(url)
+            }
         }
+        return matchingDirectories
     }
-    
-    
+
     private static func removeDuplicateDirectoryIfEmpty(
         _ directory: URL
     ) {
@@ -277,28 +281,36 @@ enum AttachmentContainerRecovery {
         to destination: URL,
         validRelativePaths: Set<String>,
         result: inout AttachmentRecoveryResult
-    ) {
+    ) -> Bool {
 
         let fm = FileManager.default
-
-        guard let files = try? fm.contentsOfDirectory(
-            at: source,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: [.skipsHiddenFiles]
-        ) else {
-            return
+        let files: [URL]
+        do {
+            files = try fm.contentsOfDirectory(
+                at: source,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            )
+        } catch {
+            result.errors += 1
+            result.failedFiles.append("\(source.lastPathComponent): directory enumeration failed")
+            AppLogger.persistence.error(
+                "Asset Recovery: unable to enumerate \(source.lastPathComponent): \(error.localizedDescription, privacy: .public)"
+            )
+            return false
         }
 
         for file in files {
 
-            guard
-                let values = try? file.resourceValues(
-                    forKeys: [.isDirectoryKey]
-                ),
-                values.isDirectory != true
-            else {
+            let values: URLResourceValues
+            do {
+                values = try file.resourceValues(forKeys: [.isDirectoryKey])
+            } catch {
+                result.errors += 1
+                result.failedFiles.append("\(file.lastPathComponent): metadata read failed")
                 continue
             }
+            guard values.isDirectory != true else { continue }
 
             result.scanned += 1
 
@@ -420,6 +432,7 @@ enum AttachmentContainerRecovery {
                 )
             }
         }
+        return true
     }
     
 }

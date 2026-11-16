@@ -6,6 +6,7 @@ import UserNotifications
 import AlarmKit
 import UniformTypeIdentifiers
 import os
+import CloudKit
 
 @MainActor
 struct DebugDiagnosticsView: View {
@@ -69,7 +70,7 @@ struct DebugDiagnosticsView: View {
                 }
                 .disabled(isRunning)
             } footer: {
-                Text("Test su database reale: inseriscono e salvano temporaneamente record diagnostici nel database persistente dell’app, verificano i percorsi di produzione compatibili e rimuovono esclusivamente i record creati dal test. Non eseguono rebuild globale delle notifiche né cancellazioni globali. Se iCloud è attivo, i record di prova potrebbero sincronizzarsi brevemente prima della pulizia. Test su database isolato: esegue la suite esistente su store temporanei, oltre ai test mirati delle notifiche e di AlarmKit.")
+                Text(String(localized: "Real database tests temporarily insert and save diagnostic records in the app's persistent database, exercise supported production paths, and remove only records created by the test. They do not run a global notification rebuild or global deletion. If iCloud is enabled, test records may sync briefly before cleanup. Most isolated database tests use in-memory SwiftData stores; the Cloud resilience test uses a UUID-named temporary on-disk store and removes it after the test. The four attachment restore tests create UUID-named synthetic files in TaskAttachments and TaskAttachments_Trash; the production restore path may also recreate an iCloud mirror when available. Tests remove only their own files, which may sync briefly."))
             }
 
             if !results.isEmpty {
@@ -531,6 +532,12 @@ struct DebugDiagnosticsView: View {
         currentTestScope = "isolato"
         defer { isRunning = false }
 
+        await runTest(String(localized: "CloudKit configuration policy: enabled/disabled and iCloud identity")) {
+            try testCloudKitConfigurationPolicy()
+        }
+        await runTest(String(localized: "Local persistence: survives simulated CloudKit offline, unavailable, and quota errors")) {
+            try testLocalStoreSurvivesSimulatedCloudKitFailures()
+        }
         await runTest("Calcolo eventi notifiche") { try testNotificationEventCalculation() }
         await runTest("Badge task") { try testBadgePolicy() }
         await runTest("Date ricorrenze") { try testRecurrenceDates() }
@@ -586,6 +593,18 @@ struct DebugDiagnosticsView: View {
         await runTest("Wallet: relazione e ordinamento asset") { try testWalletAssetRelationship() }
         await runTest("Vault: modello, segreti e campi organizzativi") { try testVaultModelAndSecrets() }
         await runTest("Vault: cifratura backup e password errata") { try testVaultBackupCryptoRoundTrip() }
+        await runTest("TaskTransferObject: Codable e compatibilità backup legacy") { try testTaskTransferObjectCodingCompatibility() }
+        await runTest("CSV: esportazione e parsing round-trip") { try testCSVExportParseRoundTrip() }
+        await runTest("CSV: importazione, duplicati e righe non valide") { try testCSVImportDeduplicationAndValidation() }
+        await runTest("ICS: esportazione, ricorrenze, promemoria e date all-day") { try testICSExportStructure() }
+        await runTest("Trips: persistenza sezioni e checklist incorporate") { try testTripSectionsPersistence() }
+        await runTest("Trips: payload .fmtrip Codable") { try testFMTripPayloadRoundTrip() }
+        await runTest("Asset Documenti/Wallet: rifiuto percorsi non sicuri") { try testDocumentAndWalletAssetPathValidation() }
+        await runTest("Password Generator: lunghezza, categorie e caratteri ambigui") { try testPasswordGeneratorConstraints() }
+        await runTest("Diagnostica: redazione dati personali e percorsi") { try testDiagnosticsRedaction() }
+        await runTest("Siri: parsing titolo, numero e inferenza tag") { try testSiriParsingAndTagInference() }
+        await runTest("Widget: snapshot Codable e compatibilità campi meteo opzionali") { try testWidgetSnapshotCodingCompatibility() }
+        await runTest("Barcode: generazione e decodifica Code128/QR") { try testBarcodeGenerateDecodeRoundTrip() }
         await runTest("Scadenza assente: nessun evento automatico") { try testNoDeadlineProducesNoEvents() }
         await runTest("Scadenza passata: nessun evento ordinario") { try testPastDeadlineProducesNoOrdinaryEvents() }
         await runTest("Snooze manuale prioritario rispetto allo snooze standard") { try testManualSnoozePriority() }
@@ -608,7 +627,40 @@ struct DebugDiagnosticsView: View {
             try await testAlarmRestoreCorrectsExistingDate()
         }
 
+        // Asset Recovery: fault injection sul coordinamento di produzione.
+        await runTest("Asset Recovery produzione: fetch fallito blocca ogni riparazione") {
+            try testAssetRecoveryProductionFetchFailureIsFailClosed()
+        }
+        await runTest("Asset Recovery produzione: whitelist complete prima delle riparazioni") {
+            try testAssetRecoveryProductionFetchPreflight()
+        }
         // Audit mirato delle quattro ipotesi di intervento.
+        await runTest("Eliminazione task: allegato locale mancante blocca l'operazione") { try testDeleteTaskBlockedByUnavailableAttachment() }
+        await runTest("Eliminazione ricorrenza: allegato locale mancante blocca l'operazione") { try await testDeleteRecurringTaskBlockedByUnavailableAttachment() }
+        await runTest("Eliminazione task: errore save — rollback e risultato failed") { try testDeleteTaskSaveFailureRollsBack() }
+        await runTest("Eliminazione ricorrenza: errore save batch — rollback delle occorrenze") { try await testRecurringDeletionSaveFailureRollsBack() }
+        await runTest("Eliminazione task: istanza già rimossa gestita in modo idempotente") { try testDeleteTaskAlreadyMissingIsIdempotent() }
+        await runTest(String(localized: "Recently Deleted: attachment restore filesystem failure preserves Trash")) {
+            try testAttachmentRestoreFilesystemMoveFailurePreservesTrash()
+        }
+        await runTest(String(localized: "Recently Deleted: partial task restore rolls back and can be retried")) {
+            try testTaskRestorePartialFilesystemFailureAndRetry()
+        }
+        await runTest(String(localized: "Recently Deleted: preflight blocks task restore when an attachment is missing")) {
+            try testTaskRestorePreflightMissingAttachmentDoesNotMoveFiles()
+        }
+        await runTest(String(localized: "Recently Deleted: invalid destination is never overwritten")) {
+            try testAttachmentRestoreDoesNotOverwriteInvalidDestination()
+        }
+        await runTest(String(localized: "Recently Deleted: simulated iCloud download failure preserves all records and files")) {
+            try await testTaskRestoreSimulatedCloudDownloadFailurePreservesState()
+        }
+        await runTest(String(localized: "Recently Deleted: injected file coordination failure preserves source")) {
+            try await testTaskRestoreInjectedCoordinationFailurePreservesSource()
+        }
+        await runTest(String(localized: "Recently Deleted: transient File Provider unavailability can be retried")) {
+            try await testTaskRestoreTransientProviderFailureCanBeRetried()
+        }
         await runTest("Allegati: rollback dopo eliminazione fisica — riproducibilità") { try testAttachmentDeletionRollbackWindow() }
         await runTest("Allegati: cleanup automatico produzione — file e record") { try testAutomaticAttachmentCleanupConsistency() }
         await runTest("Allegati: eliminazione immediata produzione — file e record") { try testImmediateAttachmentCleanupConsistency() }
@@ -631,11 +683,72 @@ struct DebugDiagnosticsView: View {
         appendCurrentReportToUnifiedFile()
     }
 
+    /// Exercises the same production orchestration used before Asset Recovery
+    /// invokes any filesystem repair. The injected failure is isolated and
+    /// verifies that no repair callback can run unless every fetch succeeds.
+    private func testAssetRecoveryProductionFetchFailureIsFailClosed() throws -> String {
+        var repairCalls: [AssetContainer] = []
+        let expectedContainers: [AssetContainer] = [.task, .wallet, .document]
+
+        var injectedFailurePropagated = false
+        do {
+            try AssetRecoveryCoordinator.executeRecoveryPlan(
+                for: expectedContainers,
+                fetchOperation: { container in
+                    if container == .wallet {
+                        throw DiagnosticFailure.assertion("Errore fetch Wallet iniettato.")
+                    }
+                    return ["DEBUG-\(container.rawValue).asset"]
+                },
+                repairOperation: { container, _ in
+                    repairCalls.append(container)
+                }
+            )
+        } catch {
+            injectedFailurePropagated = true
+        }
+
+        guard injectedFailurePropagated, repairCalls.isEmpty else {
+            throw DiagnosticFailure.assertion(
+                "Il fetch fallito non è stato propagato oppure è stata avviata una riparazione: \(repairCalls.map(\.rawValue).joined(separator: ", "))."
+            )
+        }
+        return "Percorso di coordinamento produzione invocato con fault injection sul fetch Wallet. L'errore è propagato e nessuna riparazione per Task, Wallet o Document viene avviata (0 callback). Nessun ModelContext reale, container iCloud o file fisico consultato o modificato."
+    }
+
+    private func testAssetRecoveryProductionFetchPreflight() throws -> String {
+        let expectedContainers: [AssetContainer] = [.task, .wallet, .document]
+        var fetched: [AssetContainer] = []
+        var repaired: [(AssetContainer, Set<String>)] = []
+
+        try AssetRecoveryCoordinator.executeRecoveryPlan(
+            for: expectedContainers,
+            fetchOperation: { container in
+                fetched.append(container)
+                return ["DEBUG-\(container.rawValue).asset"]
+            },
+            repairOperation: { container, paths in
+                repaired.append((container, paths))
+            }
+        )
+
+        guard fetched == expectedContainers,
+              repaired.map(\.0) == expectedContainers,
+              repaired.allSatisfy({ $0.1 == ["DEBUG-\($0.0.rawValue).asset"] }) else {
+            throw DiagnosticFailure.assertion(
+                "Il piano non ha completato tutti i fetch prima delle riparazioni o ha associato whitelist errate."
+            )
+        }
+
+        return "Tutti e tre i fetch sintetici sono completati prima della prima callback di riparazione; ogni whitelist è associata al container corretto. Testa il coordinamento di produzione senza eseguire operazioni sul file system."
+    }
+
     /// Ogni test con persistenza usa un database SwiftData in-memory indipendente.
     /// Non viene mai aperto o modificato il ModelContext reale dell'app.
     private func makeIsolatedStore() throws -> (ModelContainer, ModelContext) {
         let schema = Schema([
             TodoTask.self,
+            DeletedItem.self,
             TaskAttachment.self,
             RecurringAttachmentLink.self,
             DocumentItem.self,
@@ -644,7 +757,8 @@ struct DebugDiagnosticsView: View {
             LoyaltyCard.self,
             WalletAsset.self,
             VaultItem.self,
-            VaultSecret.self
+            VaultSecret.self,
+            TripList.self
         ])
         let configuration = ModelConfiguration(
             "ForMemoDiagnostics-\(UUID().uuidString)",
@@ -654,6 +768,146 @@ struct DebugDiagnosticsView: View {
         )
         let container = try ModelContainer(for: schema, configurations: [configuration])
         return (container, ModelContext(container))
+    }
+
+    /// Verifica la policy pura di selezione: CloudKit è scelto solo quando
+    /// l'integrazione è abilitata e l'identità iCloud è presente.
+    /// Non legge né modifica le impostazioni o l'account del dispositivo.
+    private func testCloudKitConfigurationPolicy() throws -> String {
+        let cases: [(String, Bool, Bool, Bool)] = [
+            ("enabled + identity present", true, true, true),
+            ("disabled + identity present", false, true, false),
+            ("enabled + identity absent", true, false, false),
+            ("disabled + identity absent", false, false, false)
+        ]
+
+        for (label, enabled, identity, expected) in cases {
+            let actual = Persistence.shouldUseCloudKit(
+                cloudKitEnabled: enabled,
+                hasICloudIdentity: identity
+            )
+            guard actual == expected else {
+                throw DiagnosticFailure.assertion(
+                    String(localized: "Incorrect CloudKit policy for '\(label)': expected \(String(describing: expected)), got \(String(describing: actual)).")
+                )
+            }
+        }
+
+        return String(localized: "Verified all 4 combinations. CloudKit is selected only when integration is enabled and an iCloud identity is present. No device settings were changed.")
+    }
+
+    /// Verifica la durabilità dello store locale su disco indipendentemente
+    /// dagli errori di sincronizzazione CloudKit. Gli errori sono sintetici:
+    /// SwiftData/CloudKit non espone un punto pubblico per iniettare questi
+    /// fault nel proprio processo interno di mirroring.
+    private func testLocalStoreSurvivesSimulatedCloudKitFailures() throws -> String {
+        let fileManager = FileManager.default
+        let testDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent("ForMemo-CloudResilience-\(UUID().uuidString)", isDirectory: true)
+        try fileManager.createDirectory(
+            at: testDirectory,
+            withIntermediateDirectories: true
+        )
+        defer { try? fileManager.removeItem(at: testDirectory) }
+
+        let storeURL = testDirectory.appendingPathComponent("diagnostics.store")
+        let taskID = UUID()
+        let initialTitle = "DEBUG-CLOUD-RESILIENCE-\(taskID.uuidString)"
+        let updatedTitle = "DEBUG-CLOUD-RESILIENCE-UPDATED-\(taskID.uuidString)"
+
+        func openLocalContainer() throws -> ModelContainer {
+            let configuration = ModelConfiguration(
+                "ForMemo-CloudResilience-\(taskID.uuidString)",
+                schema: Persistence.schema,
+                url: storeURL,
+                cloudKitDatabase: .none
+            )
+            return try ModelContainer(
+                for: Persistence.schema,
+                configurations: [configuration]
+            )
+        }
+
+        func readTaskTitle() throws -> String? {
+            let container = try openLocalContainer()
+            let context = ModelContext(container)
+            let descriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.id == taskID }
+            )
+            return try context.fetch(descriptor).first?.title
+        }
+
+        func saveInitialTask() throws {
+            let container = try openLocalContainer()
+            let context = ModelContext(container)
+            let task = TodoTask(id: taskID, title: initialTitle)
+            task.isDebugTask = true
+            context.insert(task)
+            try context.save()
+        }
+
+        func updateTask() throws {
+            let container = try openLocalContainer()
+            let context = ModelContext(container)
+            let descriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.id == taskID }
+            )
+            guard let task = try context.fetch(descriptor).first else {
+                throw DiagnosticFailure.assertion(String(localized: "Synthetic task was not found before update."))
+            }
+            task.title = updatedTitle
+            try context.save()
+        }
+
+        func deleteTask() throws {
+            let container = try openLocalContainer()
+            let context = ModelContext(container)
+            let descriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.id == taskID }
+            )
+            guard let task = try context.fetch(descriptor).first else {
+                throw DiagnosticFailure.assertion(String(localized: "Synthetic task was not found before deletion."))
+            }
+            context.delete(task)
+            try context.save()
+        }
+
+        try saveInitialTask()
+        guard try readTaskTitle() == initialTitle else {
+            throw DiagnosticFailure.assertion(String(localized: "Task was not found after the first store close and reopen."))
+        }
+
+        let simulatedCloudErrors: [(String, CKError)] = [
+            ("network unavailable", CKError(.networkUnavailable)),
+            ("service temporarily unavailable", CKError(.serviceUnavailable)),
+            ("quota exceeded", CKError(.quotaExceeded))
+        ]
+
+        for (label, simulatedError) in simulatedCloudErrors {
+            do {
+                throw simulatedError
+            } catch {
+                // Il fallimento della sincronizzazione non deve impedire
+                // la lettura dello store locale già salvato.
+                guard try readTaskTitle() == initialTitle else {
+                    throw DiagnosticFailure.assertion(
+                        String(localized: "After the simulated CloudKit error (\(label)), the local data is no longer readable.")
+                    )
+                }
+            }
+        }
+
+        try updateTask()
+        guard try readTaskTitle() == updatedTitle else {
+            throw DiagnosticFailure.assertion(String(localized: "The local update did not persist after reopening the store."))
+        }
+
+        try deleteTask()
+        guard try readTaskTitle() == nil else {
+            throw DiagnosticFailure.assertion(String(localized: "The local deletion did not persist after reopening the store."))
+        }
+
+        return String(localized: "Temporary persistent SwiftData store, isolated from app data: create, save, close/reopen, read after 3 synthetic CloudKit errors (network unavailable, service unavailable, quota exceeded), update, reopen, and delete verified. Faults are injected at the test boundary; this does not verify real CloudKit mirroring. The temporary directory is removed at the end.")
     }
 
     private func runTest(_ title: String, operation: () async throws -> String) async {
@@ -768,6 +1022,549 @@ struct DebugDiagnosticsView: View {
             )
         }
         return "Rebuild di produzione eseguito con contesto isolato; l'errore è iniettato al confine add, il rebuild restituisce esito negativo e la coda di sistema resta invariata. Nessuna richiesta personale rimossa. Non simula un errore generato internamente da UNUserNotificationCenter."
+    }
+
+    // MARK: - Cross-module serialization and import/export diagnostics
+
+    private func testTaskTransferObjectCodingCompatibility() throws -> String {
+        let task = TodoTask(
+            title: "DEBUG-ONLY transfer object",
+            taskDescription: "Synthetic transfer payload",
+            deadLine: Date(timeIntervalSince1970: 1_800_000_000),
+            reminderOffsetMinutes: 45,
+            locationName: "Bologna",
+            locationLatitude: 44.4949,
+            locationLongitude: 11.3426,
+            priorityRaw: TaskPriority.critical.rawValue
+        )
+        task.alarmEnabled = true
+        task.manualSnoozeUntil = Date(timeIntervalSince1970: 1_800_000_100)
+        task.recurrenceRule = RecurrenceEngine.Rule.weekly.rawValue
+        task.recurrenceInterval = 2
+        task.recurrenceID = UUID()
+        task.occurrenceIndex = 3
+        task.recurrenceStartDate = Date(timeIntervalSince1970: 1_799_000_000)
+        task.recurrenceCount = 8
+        task.locationReminderEnabled = true
+        task.mainTag = .work
+
+        let original = TaskTransferObject(task: task)
+        let encoded = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode(TaskTransferObject.self, from: encoded)
+
+        guard decoded.id == original.id,
+              decoded.title == original.title,
+              decoded.deadline == original.deadline,
+              decoded.alarmEnabled,
+              decoded.manualSnoozeUntil == original.manualSnoozeUntil,
+              decoded.recurrenceID == original.recurrenceID,
+              decoded.occurrenceIndex == 3,
+              decoded.recurrenceInterval == 2,
+              decoded.locationReminderEnabled == true,
+              decoded.priority == TaskPriority.critical.rawValue else {
+            throw DiagnosticFailure.assertion("Il round-trip Codable ha perso identità, scadenza, sveglia, snooze, ricorrenza o metadati.")
+        }
+
+        let legacyID = UUID()
+        let legacyJSON = """
+        {"id":"\(legacyID.uuidString)","title":"Legacy task","description":"Legacy payload","priority":0}
+        """
+        let legacy = try JSONDecoder().decode(TaskTransferObject.self, from: Data(legacyJSON.utf8))
+        guard legacy.id == legacyID,
+              legacy.title == "Legacy task",
+              !legacy.alarmEnabled,
+              legacy.manualSnoozeUntil == nil,
+              legacy.recurrenceID == nil else {
+            throw DiagnosticFailure.assertion("Un backup legacy privo dei nuovi campi non applica i default compatibili attesi.")
+        }
+
+        return "TaskTransferObject: round-trip completo verificato; decoder legacy verificato con campi opzionali assenti e alarmEnabled predefinito a false. Nessun dato persistente o Keychain coinvolto."
+    }
+
+    private func testCSVExportParseRoundTrip() throws -> String {
+        guard CSVExporter.export(items: []) == nil else {
+            throw DiagnosticFailure.assertion("CSVExporter deve rifiutare un'esportazione vuota.")
+        }
+
+        let deadline = Date(timeIntervalSince1970: 1_800_000_000)
+        let task = TodoTask(
+            title: "Review, \"Q4\"",
+            taskDescription: "Line one\nLine two",
+            deadLine: deadline,
+            reminderOffsetMinutes: 45,
+            locationName: "Bologna, Centro",
+            locationLatitude: 44.4949,
+            locationLongitude: 11.3426,
+            priorityRaw: TaskPriority.critical.rawValue
+        )
+        task.mainTag = .work
+        task.recurrenceRule = RecurrenceEngine.Rule.weekly.rawValue
+        task.recurrenceInterval = 2
+        task.locationReminderEnabled = true
+        task.isCompleted = true
+        task.completedAt = deadline.addingTimeInterval(300)
+        task.snoozeUntil = deadline.addingTimeInterval(600)
+
+        guard let url = CSVExporter.export(items: [TaskTransferObject(task: task)]) else {
+            throw DiagnosticFailure.assertion("CSVExporter non ha restituito un URL.")
+        }
+        let originalData = try? Data(contentsOf: url)
+        defer {
+            if let originalData {
+                try? originalData.write(to: url, options: .atomic)
+            } else {
+                try? FileManager.default.removeItem(at: url)
+            }
+        }
+
+        let parsed = try CSVImporter.parse(url: url)
+        guard parsed.count == 1, let item = parsed.first else {
+            throw DiagnosticFailure.assertion("Attesa una riga CSV valida; trovate \(parsed.count).")
+        }
+        guard item.title == task.title,
+              item.description == "Line one Line two",
+              item.deadline.map({ abs($0.timeIntervalSince(deadline)) < 1 }) == true,
+              item.reminder == 45,
+              item.tag == TaskMainTag.work.rawValue,
+              item.location == "Bologna, Centro",
+              item.priority == TaskPriority.critical.rawValue,
+              item.recurrenceRule == RecurrenceEngine.Rule.weekly.rawValue,
+              item.recurrenceInterval == 2,
+              item.locationReminderEnabled == true,
+              item.isCompleted == true else {
+            throw DiagnosticFailure.assertion("Il round-trip CSV ha perso campi, date o caratteri CSV quotati.")
+        }
+
+        return "CSV esportato su file temporaneo e riletto con CSVImporter: virgole, virgolette, testo multilinea normalizzato, date, reminder, tag, posizione, priorità, ricorrenza e stato verificati. Il file temporaneo preesistente, se presente, è stato ripristinato."
+    }
+
+    private func testCSVImportDeduplicationAndValidation() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let deadline = Date(timeIntervalSince1970: 1_800_000_000)
+        let existing = TodoTask(title: "DEBUG-CSV-DUPLICATE", deadLine: deadline)
+        context.insert(existing)
+        try context.save()
+
+        func item(
+            title: String,
+            deadline: Date?,
+            tag: String? = nil
+        ) -> CSVTask {
+            CSVTask(
+                title: title,
+                description: "Synthetic CSV import",
+                deadline: deadline,
+                reminder: nil,
+                tag: tag,
+                latitude: nil,
+                longitude: nil,
+                location: nil,
+                recurrenceRule: nil,
+                recurrenceInterval: nil,
+                locationReminderEnabled: nil,
+                isCompleted: nil,
+                createdAt: nil,
+                completedAt: nil,
+                snoozeUntil: nil,
+                priority: 2
+            )
+        }
+
+        let result = try CSVImporter.importTasks(
+            [
+                item(title: "DEBUG-CSV-DUPLICATE", deadline: deadline),
+                item(title: "   ", deadline: nil),
+                item(title: "DEBUG-CSV-NEW", deadline: nil, tag: TaskMainTag.work.rawValue)
+            ],
+            context: context
+        )
+
+        let saved = try context.fetch(FetchDescriptor<TodoTask>())
+        guard result.imported == 1,
+              result.skippedDuplicates == 1,
+              result.failed == 1,
+              saved.count == 2,
+              let imported = saved.first(where: { $0.title == "DEBUG-CSV-NEW" }),
+              imported.mainTag == .work,
+              imported.priorityRaw == 2 else {
+            throw DiagnosticFailure.assertion("CSV import: conteggi, deduplicazione o campi importati non coerenti. imported=\(result.imported), skipped=\(result.skippedDuplicates), failed=\(result.failed), saved=\(saved.count).")
+        }
+
+        return "Importazione in store SwiftData isolato: un duplicato ignorato, una riga senza titolo rifiutata e un nuovo task salvato con tag/priorità corretti. Nessun database reale modificato."
+    }
+
+    private func testICSExportStructure() throws -> String {
+        guard ICSExporter.export(items: []) == nil else {
+            throw DiagnosticFailure.assertion("ICSExporter deve rifiutare un'esportazione vuota.")
+        }
+
+        let calendar = Calendar.current
+        let timedDate = Date(timeIntervalSince1970: 1_800_000_000)
+        let timed = TodoTask(
+            title: "DEBUG-ICS Meeting, Q4;",
+            taskDescription: "Line one\nLine two",
+            deadLine: timedDate,
+            reminderOffsetMinutes: 30
+        )
+        timed.recurrenceRule = RecurrenceEngine.Rule.weekly.rawValue
+        timed.recurrenceInterval = 2
+
+        let occurrenceDate = timedDate.addingTimeInterval(86_400)
+        let occurrence = TodoTask(title: "DEBUG-ICS materialized", deadLine: occurrenceDate)
+        occurrence.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        occurrence.occurrenceIndex = 2
+
+        var dayComponents = DateComponents()
+        dayComponents.year = 2026
+        dayComponents.month = 11
+        dayComponents.day = 22
+        guard let rawAllDayDate = calendar.date(from: dayComponents) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data all-day sintetica.")
+        }
+        let allDayDate = calendar.startOfDay(for: rawAllDayDate)
+        let allDay = TodoTask(title: "DEBUG-ICS all day", deadLine: allDayDate)
+
+        let destination = FileManager.default.temporaryDirectory.appendingPathComponent("ForMemo.ics")
+        let originalData = try? Data(contentsOf: destination)
+        defer {
+            if let originalData {
+                try? originalData.write(to: destination, options: .atomic)
+            } else {
+                try? FileManager.default.removeItem(at: destination)
+            }
+        }
+
+        guard let url = ICSExporter.export(items: [
+            TaskTransferObject(task: timed),
+            TaskTransferObject(task: occurrence),
+            TaskTransferObject(task: allDay)
+        ]) else {
+            throw DiagnosticFailure.assertion("ICSExporter non ha restituito un URL.")
+        }
+        let content = try String(contentsOf: url, encoding: .utf8)
+        let events = content.components(separatedBy: "BEGIN:VEVENT").dropFirst()
+        guard events.count == 3,
+              content.contains("SUMMARY:DEBUG-ICS Meeting\\, Q4\\;"),
+              content.contains("RRULE:FREQ=WEEKLY;INTERVAL=2"),
+              content.contains("TRIGGER:-PT30M") else {
+            throw DiagnosticFailure.assertion("Struttura ICS, escaping, RRULE o VALARM non conformi.")
+        }
+
+        guard let occurrenceBlock = events.first(where: { $0.contains(occurrence.id.uuidString) }),
+              !occurrenceBlock.contains("RRULE:") else {
+            throw DiagnosticFailure.assertion("Un'occorrenza già materializzata è stata esportata anche come serie RRULE.")
+        }
+
+        let expectedYear = calendar.component(.year, from: allDayDate)
+        let expectedMonth = calendar.component(.month, from: allDayDate)
+        let expectedDay = calendar.component(.day, from: allDayDate)
+        let expectedAllDay = String(format: "%04d%02d%02d", expectedYear, expectedMonth, expectedDay)
+        guard content.contains("DTSTART;VALUE=DATE:\(expectedAllDay)") else {
+            throw DiagnosticFailure.assertion("La data all-day esportata non coincide con il giorno locale atteso \(expectedAllDay). Verificare il fuso orario usato da ICSExporter.")
+        }
+
+        return "ICS letto da file temporaneo: tre VEVENT, escaping, RRULE solo sulla definizione, VALARM e data all-day confrontata con il calendario locale. Il file temporaneo preesistente, se presente, è stato ripristinato."
+    }
+
+    private func testTripSectionsPersistence() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let item = TripItemData(
+            title: "Passport",
+            isChecked: true,
+            notes: "Keep in the document wallet",
+            quantity: 1,
+            isImportant: true,
+            url: "https://example.invalid",
+            locationName: "Home",
+            sortOrder: 1
+        )
+        let section = TripSectionData(
+            title: "Documents",
+            icon: "doc.text",
+            notes: "Before departure",
+            sortOrder: 0,
+            items: [item]
+        )
+        let trip = TripList(
+            name: "DEBUG-TRIP-PERSISTENCE",
+            icon: "suitcase.rolling",
+            colorHex: "#123456",
+            notes: "Synthetic trip",
+            systemTemplate: "custom",
+            checklistType: "travel",
+            sortOrder: 7,
+            sections: [section]
+        )
+        let id = trip.id
+        context.insert(trip)
+        try context.save()
+
+        guard let saved = try context.fetch(FetchDescriptor<TripList>(predicate: #Predicate<TripList> { $0.id == id })).first,
+              saved.sections.count == 1,
+              saved.sections.first?.title == "Documents",
+              saved.sections.first?.items.count == 1,
+              saved.sections.first?.items.first?.title == "Passport",
+              saved.sections.first?.items.first?.isChecked == true,
+              saved.sections.first?.items.first?.isImportant == true else {
+            throw DiagnosticFailure.assertion("TripList non ha persistito correttamente il payload JSON incorporato.")
+        }
+
+        var editedSections = saved.sections
+        editedSections[0].items[0].isChecked = false
+        editedSections[0].items[0].quantity = 2
+        saved.sections = editedSections
+        try context.save()
+
+        guard let updated = try context.fetch(FetchDescriptor<TripList>(predicate: #Predicate<TripList> { $0.id == id })).first,
+              updated.sections.first?.items.first?.isChecked == false,
+              updated.sections.first?.items.first?.quantity == 2 else {
+            throw DiagnosticFailure.assertion("La modifica delle checklist incorporate non è stata salvata e riletta.")
+        }
+
+        TripList.createDeletedTripRecord(from: updated, in: context)
+        try context.save()
+        guard let deletedTrip = try context.fetch(FetchDescriptor<DeletedItem>()).first(where: {
+            $0.type == "trip" && $0.tripID == id
+        }) else {
+            throw DiagnosticFailure.assertion("La creazione del record Recently Deleted per il viaggio non è riuscita.")
+        }
+
+        context.delete(updated)
+        try context.save()
+        guard case .restored = deletedTrip.restoreWithResult(in: context) else {
+            throw DiagnosticFailure.assertion("Il ripristino del viaggio dal record Recently Deleted non è riuscito.")
+        }
+        try context.save()
+
+        guard let restored = try context.fetch(FetchDescriptor<TripList>(predicate: #Predicate<TripList> { $0.id == id })).first,
+              restored.name == "DEBUG-TRIP-PERSISTENCE",
+              restored.sections.first?.items.first?.quantity == 2,
+              restored.sections.first?.items.first?.isChecked == false else {
+            throw DiagnosticFailure.assertion("Il viaggio ripristinato non ha conservato identità e contenuto checklist.")
+        }
+
+        guard case .failed = deletedTrip.restoreWithResult(in: context) else {
+            throw DiagnosticFailure.assertion("Il ripristino duplicato di un viaggio già presente non è stato rifiutato.")
+        }
+
+        context.delete(deletedTrip)
+        try context.save()
+
+        return "TripList: persistenza e modifica delle checklist, snapshot Recently Deleted, ripristino con identità invariata e rifiuto del doppio ripristino verificati in uno store SwiftData isolato."
+    }
+
+    private func testFMTripPayloadRoundTrip() throws -> String {
+        let payload = FMTripCollectionPayload(lists: [
+            FMTripPayload(
+                name: "DEBUG-FMTRIP",
+                icon: "airplane",
+                systemTemplate: "travel",
+                checklistType: "travel",
+                sections: [
+                    FMTripSection(
+                        title: "Before departure",
+                        items: [
+                            FMTripItem(title: "Passport", isChecked: true),
+                            FMTripItem(title: "Tickets", isChecked: false)
+                        ]
+                    )
+                ]
+            )
+        ])
+
+        let data = try JSONEncoder().encode(payload)
+        let decoded = try JSONDecoder().decode(FMTripCollectionPayload.self, from: data)
+        guard decoded.lists.count == 1,
+              decoded.lists[0].name == "DEBUG-FMTRIP",
+              decoded.lists[0].sections.count == 1,
+              decoded.lists[0].sections[0].items.map(\.isChecked) == [true, false] else {
+            throw DiagnosticFailure.assertion("Il payload .fmtrip non ha mantenuto liste, sezioni o stato checklist.")
+        }
+
+        return "Payload .fmtrip: codifica/decodifica JSON verificata con più elementi e stati checked distinti. Nessun file utente creato o sovrascritto."
+    }
+
+    private func testDocumentAndWalletAssetPathValidation() throws -> String {
+        let invalidPaths = [
+            "", ".", "..", "../outside.pdf", "/absolute.pdf",
+            "nested/file.pdf", "nested\\file.pdf"
+        ]
+
+        for path in invalidPaths {
+            guard DocumentAssetStore.fileURL(relativePath: path) == nil else {
+                throw DiagnosticFailure.assertion("DocumentAssetStore ha accettato un percorso non sicuro: \(path)")
+            }
+            guard WalletAssetStore.fileURL(relativePath: path) == nil else {
+                throw DiagnosticFailure.assertion("WalletAssetStore ha accettato un percorso non sicuro: \(path)")
+            }
+        }
+
+        guard let documentURL = DocumentAssetStore.fileURL(relativePath: "DEBUG-safe-document.pdf"),
+              documentURL.lastPathComponent == "DEBUG-safe-document.pdf",
+              let walletURL = WalletAssetStore.fileURL(relativePath: "DEBUG-safe-wallet.jpg"),
+              walletURL.lastPathComponent == "DEBUG-safe-wallet.jpg" else {
+            throw DiagnosticFailure.assertion("I percorsi relativi semplici non sono stati risolti correttamente.")
+        }
+
+        return "DocumentAssetStore e WalletAssetStore: traversal, path assoluti, separatori e componenti vuoti rifiutati; nomi relativi semplici accettati. Test di sola risoluzione URL, senza creare o cancellare file."
+    }
+
+    private func testPasswordGeneratorConstraints() throws -> String {
+        let options = PasswordOptions.default
+        let ambiguous: Set<Character> = ["O", "0", "I", "l", "1", "|"]
+
+        for _ in 0..<20 {
+            let generated = PasswordGenerator.generate(options: options)
+            let characters = Array(generated.value)
+            guard characters.count == options.length,
+                  generated.value.rangeOfCharacter(from: .uppercaseLetters) != nil,
+                  generated.value.rangeOfCharacter(from: .lowercaseLetters) != nil,
+                  generated.value.rangeOfCharacter(from: .decimalDigits) != nil,
+                  generated.value.rangeOfCharacter(from: .punctuationCharacters.union(.symbols)) != nil,
+                  characters.allSatisfy({ !ambiguous.contains($0) }),
+                  generated.entropy > 0 else {
+                throw DiagnosticFailure.assertion("Una password generata non rispetta lunghezza, categorie, esclusione caratteri ambigui o entropy.")
+            }
+        }
+
+        let lowercaseOnly = PasswordOptions(
+            length: 1,
+            includeUppercase: false,
+            includeLowercase: true,
+            includeNumbers: false,
+            includeSymbols: false,
+            excludeAmbiguousCharacters: true
+        )
+        let constrained = PasswordGenerator.generate(options: lowercaseOnly)
+        guard constrained.value.count == 1,
+              constrained.value.rangeOfCharacter(from: .lowercaseLetters) != nil,
+              let constrainedCharacter = constrained.value.first,
+              !ambiguous.contains(constrainedCharacter) else {
+            throw DiagnosticFailure.assertion("La configurazione a sola minuscola non rispetta i vincoli.")
+        }
+
+        let disabled = PasswordOptions(
+            length: 20,
+            includeUppercase: false,
+            includeLowercase: false,
+            includeNumbers: false,
+            includeSymbols: false,
+            excludeAmbiguousCharacters: true
+        )
+        let empty = PasswordGenerator.generate(options: disabled)
+        guard empty.value.isEmpty, empty.entropy == 0, empty.strength == .veryWeak else {
+            throw DiagnosticFailure.assertion("La configurazione senza categorie abilitate deve produrre un risultato vuoto e debole.")
+        }
+
+        return "20 password predefinite e due configurazioni limite verificate: categorie obbligatorie, lunghezza, esclusione caratteri ambigui, entropy e comportamento senza categorie abilitate."
+    }
+
+    private func testDiagnosticsRedaction() throws -> String {
+        let source = "Task: Private Appointment\nPath: /Users/alice/Library/Mobile Documents/iCloud~corradini~armando~ForMemo/TaskAttachments_Trash/private-scan.pdf"
+        let redacted = DiagnosticsRedactor.redact(source)
+
+        guard !redacted.contains("Private Appointment"),
+              !redacted.contains("alice"),
+              !redacted.contains("corradini.armando"),
+              !redacted.contains("private-scan.pdf"),
+              redacted.contains("[Cloud Trash]") else {
+            throw DiagnosticFailure.assertion("La redazione non ha rimosso tutti i dati sensibili o non ha riconosciuto TaskAttachments_Trash. Output: \(redacted)")
+        }
+
+        return "Redazione diagnostica verificata su titolo task, nome utente, identificativo iCloud, nome file e directory cestino allegati."
+    }
+
+    private func testSiriParsingAndTagInference() throws -> String {
+        let parsed = NaturalLanguageParser.parse("Add groceries")
+        guard parsed.title == "Groceries", parsed.date == nil else {
+            throw DiagnosticFailure.assertion("Il parser Siri non ha normalizzato correttamente un comando senza data: \(parsed.title).")
+        }
+
+        guard extractNumber(from: "remind me in 15 minutes") == 15 else {
+            throw DiagnosticFailure.assertion("L'estrazione di un numero espresso in cifre non è corretta.")
+        }
+        guard TagInference.infer(from: "meeting with client") == .work else {
+            throw DiagnosticFailure.assertion("L'inferenza del tag per parole chiave di lavoro non ha restituito .work.")
+        }
+
+        return "Siri: parsing di un titolo semplice, estrazione numerica e inferenza tag univoca verificati senza invocare Intent, permessi o servizi esterni."
+    }
+
+    private func testWidgetSnapshotCodingCompatibility() throws -> String {
+        let taskID = UUID()
+        let generatedAt = Date(timeIntervalSince1970: 1_800_000_000)
+        let snapshot = TaskWidgetSnapshot(
+            generatedAt: generatedAt,
+            tasks: [
+                TaskWidgetItem(
+                    id: taskID,
+                    title: "DEBUG-WIDGET",
+                    deadline: generatedAt.addingTimeInterval(3_600),
+                    isCompleted: false,
+                    priorityRaw: TaskPriority.high.rawValue
+                )
+            ],
+            overduePreviousDaysCount: 2,
+            weatherSymbolName: "cloud.sun",
+            weatherMinTemperature: 8,
+            weatherMaxTemperature: 16
+        )
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let data = try encoder.encode(snapshot)
+        let decoded = try decoder.decode(TaskWidgetSnapshot.self, from: data)
+        guard decoded.generatedAt == generatedAt,
+              decoded.tasks.count == 1,
+              decoded.tasks.first?.id == taskID,
+              decoded.tasks.first?.priorityRaw == TaskPriority.high.rawValue,
+              decoded.overduePreviousDaysCount == 2,
+              decoded.weatherSymbolName == "cloud.sun",
+              decoded.weatherMinTemperature == 8,
+              decoded.weatherMaxTemperature == 16 else {
+            throw DiagnosticFailure.assertion("Il round-trip dello snapshot widget ha perso dati.")
+        }
+
+        let legacyJSON = """
+        {"generatedAt":"2026-11-16T10:00:00Z","tasks":[],"overduePreviousDaysCount":0}
+        """
+        let legacy = try decoder.decode(TaskWidgetSnapshot.self, from: Data(legacyJSON.utf8))
+        guard legacy.weatherSymbolName == nil,
+              legacy.weatherMinTemperature == nil,
+              legacy.weatherMaxTemperature == nil else {
+            throw DiagnosticFailure.assertion("I campi meteo opzionali mancanti non sono compatibili con uno snapshot widget legacy.")
+        }
+
+        return "TaskWidgetSnapshot: round-trip completo e decodifica di uno snapshot legacy privo dei campi meteo verificati senza scrivere nell'App Group o ricaricare WidgetKit."
+    }
+
+    private func testBarcodeGenerateDecodeRoundTrip() throws -> String {
+        let cases = [
+            (value: "FORMEMO-DEBUG-128-12345", format: "Code128"),
+            (value: "FORMEMO-DEBUG-QR-67890", format: "QR Code")
+        ]
+
+        for testCase in cases {
+            guard let image = BarcodeGenerator().generate(
+                from: testCase.value,
+                format: testCase.format
+            ), let data = image.pngData() else {
+                throw DiagnosticFailure.assertion("ZXing non ha generato un'immagine per il formato \(testCase.format).")
+            }
+
+            let decoded = try BarcodePhotoDetector.detect(in: data)
+            guard decoded.value == testCase.value else {
+                throw DiagnosticFailure.assertion("Round-trip barcode \(testCase.format): atteso \(testCase.value), letto \(decoded.value).")
+            }
+        }
+
+        return "ZXing-C++: generazione immagine e rilettura del contenuto verificate per Code128 e QR. Le immagini sono in memoria e non vengono salvate nella libreria Wallet."
     }
 
     private func testNotificationEventCalculation() throws -> String {
@@ -1881,11 +2678,18 @@ struct DebugDiagnosticsView: View {
             "Data: \(formatter.string(from: .now))",
             "Ambiente: \(ProcessInfo.processInfo.operatingSystemVersionString)",
             "Esito: \(passed) superati, \(failed) falliti, \(results.count) totali",
-            "Ambito: \(currentTestScope == "reale" ? "suite di persistenza sul ModelContext dell'app: task, ricorrenze, allegati collegati, note, documenti, Wallet e Vault" : "suite diagnostica su store SwiftData isolati, con test mirati di notifiche e AlarmKit").",
+            "Ambito: \(currentTestScope == "reale" ? "suite di persistenza sul ModelContext dell'app: task, ricorrenze, allegati collegati, note, documenti, Wallet e Vault" : "suite diagnostica su store SwiftData isolati, con test mirati di notifiche, AlarmKit, import/export, Trips, Widget, Siri, Vault e barcode").",
             "Sicurezza: nessuna cancellazione globale; i test sul database reale usano ID univoci e rimuovono soltanto gli oggetti creati. Nessun rebuild globale delle notifiche viene eseguito.",
             currentTestScope == "reale" ? "ATTENZIONE: se iCloud è attivo, i record diagnostici sul database persistente possono sincronizzarsi brevemente prima della pulizia." : "I test SwiftData usano store in-memory; nessun dato persistente dell'utente viene modificato.",
-            "I test che usano allegati, asset o segreti creano soltanto metadati e payload sintetici; non scrivono file fisici e non usano credenziali o chiavi personali.",
+            "I test sugli allegati e sugli asset usano payload sintetici e percorsi UUID. I file locali e gli eventuali mirror cloud creati dal test di restore vengono rimossi nel defer; nessun file personale preesistente viene selezionato o cancellato e nessuna credenziale personale viene usata.",
             "I test di propagazione usano RecurrenceEngine e RecurringAttachmentManager; il test di stabilità ripete 20 volte un calcolo deterministico, ma non sostituisce la ripetizione manuale dell'intera suite.",
+            "",
+            "AUDIT P1 — COPERTURA E LIMITI RESIDUI",
+            "1. Asset Recovery: il coordinamento di produzione propaga gli errori fetch e completa tutti i fetch di TaskAttachment, WalletAsset e DocumentAsset prima delle riparazioni. I test verificano errore fetch = zero callback e percorso positivo = whitelist complete e correttamente associate. La scansione delle directory propaga gli errori e non interpreta un errore di enumerazione come directory vuota.",
+            "2. Eliminazione task singolo: il test con errore save sul percorso deleteTask() verifica .failed, task ripristinato e nessun record Recently Deleted persistito.",
+            "3. Eliminazione ricorrente a batch: il test con errore save verifica .failed, rollback di tutte le occorrenze e nessun fingerprint o cleanup AlarmKit successivo al commit fallito.",
+            "4. Ripristino allegati Recently Deleted: quattro test aggiuntivi esercitano il percorso restoreWithResult() con file fisici sintetici nelle directory locali TaskAttachments e TaskAttachments_Trash. Verificano errore reale di FileManager.moveItem, conservazione del file in Trash, rollback SwiftData dopo ripristino parziale, retry riuscito, preflight completo e protezione di una destinazione locale non valida.",
+            "Limite residuo: il test esercita il filesystem locale reale e ripulisce gli eventuali mirror cloud sintetici; non simula errori di download iCloud o NSFileCoordinator né un errore transitorio del provider File Provider.",
             ""
         ]
         for (index, result) in results.enumerated() {
@@ -2785,7 +3589,26 @@ struct DebugDiagnosticsView: View {
         } catch VaultBackupCryptoError.invalidPassword {
             // Expected: authentication must reject a wrong password.
         }
-        return "Backup Vault: pacchetto creato, chiave recuperata byte-per-byte e password errata rifiutata. Usa soltanto dati sintetici; nessuna chiave personale o voce Vault è stata letta."
+
+        var tamperedPayload = package.wrappedVaultKey
+        guard let lastIndex = tamperedPayload.indices.last else {
+            throw DiagnosticFailure.assertion("Il payload cifrato del backup Vault è vuoto.")
+        }
+        tamperedPayload[lastIndex] ^= 0x01
+        let tamperedPackage = VaultBackupPackage(
+            version: package.version,
+            kdf: package.kdf,
+            salt: package.salt,
+            wrappedVaultKey: tamperedPayload
+        )
+        do {
+            _ = try VaultBackupCrypto.unwrapKey(from: tamperedPackage, password: password)
+            throw DiagnosticFailure.assertion("Un payload Vault alterato ha superato il controllo di autenticità AES-GCM.")
+        } catch VaultBackupCryptoError.invalidPassword {
+            // Expected: AES-GCM authentication must reject modified ciphertext.
+        }
+
+        return "Backup Vault: round-trip byte-per-byte, password errata e payload alterato rifiutati dal controllo AES-GCM. Usa soltanto dati sintetici; nessuna chiave personale o voce Vault è stata letta."
     }
 
     private func testProductionRebuildSkipsCompletedTasks() async throws -> String {
@@ -3669,6 +4492,1039 @@ struct DebugDiagnosticsView: View {
         return formatter.string(from: date)
     }
 
+
+    // MARK: - Focused audit: production task deletion preflight
+
+    /// Exercises the production single-task deletion guard with an attachment
+    /// whose local asset is intentionally absent. The operation must stop
+    /// before moving files, changing SwiftData relationships, or refreshing
+    /// system notifications.
+    private func testDeleteTaskBlockedByUnavailableAttachment() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let relativePath = "diagnostics-missing-single-\(UUID().uuidString).txt"
+        guard let directory = TaskAttachment.attachmentsDirectory else {
+            throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+        }
+        let fileURL = directory.appendingPathComponent(relativePath)
+        guard !FileManager.default.fileExists(atPath: fileURL.path) else {
+            throw DiagnosticFailure.assertion("Collisione inattesa: il file sintetico risulta già presente.")
+        }
+
+        let task = TodoTask(title: "DEBUG-ONLY deletion blocked by unavailable attachment")
+        task.isDebugTask = true
+        let attachment = TaskAttachment(
+            originalName: "missing-single.txt",
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+        try context.save()
+
+        let taskID = task.id
+        let attachmentID = attachment.id
+        let result = deleteTask(task, in: context)
+
+        let savedTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate<TodoTask> { $0.id == taskID })
+        ).first
+        let savedAttachment = try context.fetch(
+            FetchDescriptor<TaskAttachment>(predicate: #Predicate<TaskAttachment> { $0.id == attachmentID })
+        ).first
+
+        guard result == .blockedByAttachmentSync,
+              savedTask != nil,
+              savedAttachment != nil,
+              savedTask?.attachments?.contains(where: { $0.id == attachmentID }) == true,
+              !FileManager.default.fileExists(atPath: fileURL.path) else {
+            throw DiagnosticFailure.assertion(
+                "Preflight single task non sicuro: result=\(result), task=\(savedTask != nil), attachment=\(savedAttachment != nil), file=\(FileManager.default.fileExists(atPath: fileURL.path))."
+            )
+        }
+
+        guard let savedTask, let savedAttachment else {
+            throw DiagnosticFailure.assertion("I record sintetici sono scomparsi prima del cleanup del test.")
+        }
+        context.delete(savedTask)
+        context.delete(savedAttachment)
+        try context.save()
+        return "deleteTask() di produzione restituisce blockedByAttachmentSync; task, relazione e record allegato restano invariati. Nessun file spostato e nessun refresh notifiche eseguito perché il guard interrompe il flusso prima degli effetti collaterali."
+    }
+
+    /// Exercises the recurring deletion preflight with one missing local asset.
+    /// It verifies that the recurrence and attachment remain intact and that
+    /// the production method exits before batch deletion begins.
+    private func testDeleteRecurringTaskBlockedByUnavailableAttachment() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let recurrenceID = UUID()
+        let start = Calendar.current.date(byAdding: .day, value: 5, to: .now)!
+        let relativePath = "diagnostics-missing-recurring-\(UUID().uuidString).txt"
+        guard let directory = TaskAttachment.attachmentsDirectory else {
+            throw DiagnosticFailure.assertion("Directory locale TaskAttachments non disponibile.")
+        }
+        let fileURL = directory.appendingPathComponent(relativePath)
+        guard !FileManager.default.fileExists(atPath: fileURL.path) else {
+            throw DiagnosticFailure.assertion("Collisione inattesa: il file sintetico ricorrente risulta già presente.")
+        }
+
+        let task = TodoTask(title: "DEBUG-ONLY recurring deletion blocked", deadLine: start)
+        task.isDebugTask = true
+        task.recurrenceID = recurrenceID
+        task.occurrenceIndex = 2
+        task.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        task.recurrenceInterval = 1
+        task.recurrenceStartDate = start
+        task.recurrenceCount = 3
+        let attachment = TaskAttachment(
+            originalName: "missing-recurring.txt",
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+        try context.save()
+
+        let taskID = task.id
+        let attachmentID = attachment.id
+        let result = await deleteRecurringTaskAndFutureOccurrences(task, in: context)
+
+        let savedTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate<TodoTask> { $0.id == taskID })
+        ).first
+        let savedAttachment = try context.fetch(
+            FetchDescriptor<TaskAttachment>(predicate: #Predicate<TaskAttachment> { $0.id == attachmentID })
+        ).first
+        let series = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate<TodoTask> { $0.recurrenceID == recurrenceID })
+        )
+
+        guard result == .blockedByAttachmentSync,
+              savedTask != nil,
+              savedAttachment != nil,
+              series.count == 1,
+              savedTask?.attachments?.contains(where: { $0.id == attachmentID }) == true,
+              !FileManager.default.fileExists(atPath: fileURL.path) else {
+            throw DiagnosticFailure.assertion(
+                "Preflight ricorrenza non sicuro: result=\(result), occurrences=\(series.count), task=\(savedTask != nil), attachment=\(savedAttachment != nil)."
+            )
+        }
+
+        guard let savedTask, let savedAttachment else {
+            throw DiagnosticFailure.assertion("I record sintetici sono scomparsi prima del cleanup del test.")
+        }
+        context.delete(savedTask)
+        context.delete(savedAttachment)
+        try context.save()
+        return "deleteRecurringTaskAndFutureOccurrences() restituisce blockedByAttachmentSync prima di truncatePropagation, fingerprint e batch delete; occorrenza e allegato restano persistiti. Nessun file spostato o sveglia cancellata."
+    }
+
+    /// Injects a save failure through the production single-task deletion entry point.
+    /// The task and Recently Deleted record must both be restored by rollback.
+    private func testDeleteTaskSaveFailureRollsBack() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let task = TodoTask(title: "DEBUG-ONLY single deletion save failure")
+        task.isDebugTask = true
+        context.insert(task)
+        try context.save()
+        let taskID = task.id
+
+        var saveAttempts = 0
+        let result = deleteTask(
+            task,
+            in: context,
+            saveOperation: {
+                saveAttempts += 1
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-SINGLE-DELETE")
+            }
+        )
+
+        let restoredTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate<TodoTask> { $0.id == taskID })
+        ).first
+        let deletedRecords = try context.fetch(
+            FetchDescriptor<DeletedItem>(predicate: #Predicate<DeletedItem> { $0.taskID == taskID })
+        )
+
+        guard saveAttempts == 1,
+              result == .failed,
+              restoredTask != nil,
+              deletedRecords.isEmpty else {
+            throw DiagnosticFailure.assertion(
+                "Single delete save failure: attempts=\(saveAttempts), result=\(result), taskRestored=\(restoredTask != nil), deletedRecords=\(deletedRecords.count)."
+            )
+        }
+
+        return "deleteTask() ha attraversato il percorso di produzione con errore save iniettato: un tentativo, risultato .failed, task ripristinato e nessun record Recently Deleted persistito. Nessun allegato o file fisico coinvolto."
+    }
+
+    /// Injects a failure at the production recurring batch save boundary.
+    /// All selected occurrences must remain after ModelContext.rollback().
+    private func testRecurringDeletionSaveFailureRollsBack() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let recurrenceID = UUID()
+        let start = Calendar.current.date(byAdding: .day, value: 5, to: .now)!
+        let tasks: [TodoTask] = (1...3).map { index in
+            let occurrence = TodoTask(
+                title: "DEBUG-ONLY recurring save failure #\(index)",
+                deadLine: Calendar.current.date(byAdding: .day, value: index - 1, to: start)
+            )
+            occurrence.isDebugTask = true
+            occurrence.recurrenceID = recurrenceID
+            occurrence.occurrenceIndex = index
+            occurrence.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+            occurrence.recurrenceInterval = 1
+            occurrence.recurrenceStartDate = start
+            occurrence.recurrenceCount = 3
+            return occurrence
+        }
+        tasks.forEach { context.insert($0) }
+        try context.save()
+
+        var saveAttempts = 0
+        let result = await deleteRecurringTaskAndFutureOccurrences(
+            tasks[1],
+            in: context,
+            saveOperation: {
+                saveAttempts += 1
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-RECURRING-DELETE")
+            }
+        )
+
+        let remaining = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate<TodoTask> { $0.recurrenceID == recurrenceID })
+        )
+        let remainingIndexes = Set(remaining.compactMap(\.occurrenceIndex))
+
+        guard saveAttempts == 1,
+              result == .failed,
+              remaining.count == 3,
+              remainingIndexes == Set([1, 2, 3]) else {
+            throw DiagnosticFailure.assertion(
+                "Recurring delete save failure: attempts=\(saveAttempts), result=\(result), occurrences=\(remaining.count), indexes=\(remainingIndexes.sorted())."
+            )
+        }
+
+        remaining.forEach { context.delete($0) }
+        try context.save()
+        return "deleteRecurringTaskAndFutureOccurrences() ha attraversato il percorso batch di produzione con errore save iniettato: un tentativo, risultato .failed e tutte e tre le occorrenze (indici 1–3) ripristinate. Nessuna fingerprint o cancellazione AlarmKit avviata dopo il commit mancato."
+    }
+
+    /// A stale view model must not create Recently Deleted metadata or touch
+    /// files when its task UUID is already absent from the supplied context.
+    private func testDeleteTaskAlreadyMissingIsIdempotent() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let staleTask = TodoTask(title: "DEBUG-ONLY stale task instance")
+        staleTask.isDebugTask = true
+        let result = deleteTask(staleTask, in: context)
+        let tasks = try context.fetch(FetchDescriptor<TodoTask>())
+        let attachments = try context.fetch(FetchDescriptor<TaskAttachment>())
+
+        guard result == .deleted, tasks.isEmpty, attachments.isEmpty else {
+            throw DiagnosticFailure.assertion(
+                "Eliminazione idempotente inattesa: result=\(result), tasks=\(tasks.count), attachments=\(attachments.count)."
+            )
+        }
+        return "Un'istanza non più presente nel contesto viene trattata come no-op idempotente: nessun record creato, nessun file e nessuna notifica toccati."
+    }
+
+    // MARK: - Focused audit: Recently Deleted attachment restore
+
+    /// Uses a real FileManager.moveItem failure: the destination's parent path
+    /// is occupied by a regular file. The source in Recently Deleted must remain
+    /// byte-for-byte intact and no SwiftData attachment may be created.
+    private func testAttachmentRestoreFilesystemMoveFailurePreservesTrash() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let fileManager = FileManager.default
+        guard let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory locali TaskAttachments o Trash non disponibili.")
+        }
+
+        let token = UUID().uuidString
+        let blockerName = "diagnostics-restore-blocker-\(token)"
+        let blockerURL = attachmentsDirectory.appendingPathComponent(blockerName)
+        let relativePath = "\(blockerName)/restored-\(token).txt"
+        let destinationURL = attachmentsDirectory.appendingPathComponent(relativePath)
+        let trashFileName = "diagnostics-restore-failure-\(token).txt"
+        let trashURL = trashDirectory.appendingPathComponent(trashFileName)
+        let payload = Data("restore source must survive filesystem failure \(token)".utf8)
+        defer {
+            try? fileManager.removeItem(at: blockerURL)
+            try? fileManager.removeItem(at: destinationURL)
+            try? fileManager.removeItem(at: trashURL)
+        }
+
+        try fileManager.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+
+        guard !fileManager.fileExists(atPath: blockerURL.path),
+              !fileManager.fileExists(atPath: trashURL.path),
+              !fileManager.fileExists(atPath: destinationURL.path) else {
+            throw DiagnosticFailure.assertion("Collisione inattesa nei percorsi univoci del test restore.")
+        }
+
+        try Data("regular file blocking destination directory".utf8).write(to: blockerURL, options: .atomic)
+        try payload.write(to: trashURL, options: .atomic)
+
+        let task = TodoTask(title: "DEBUG-ONLY restore filesystem failure")
+        task.isDebugTask = true
+        let deletedAttachment = DeletedItem(type: "attachment")
+        deletedAttachment.taskID = task.id
+        deletedAttachment.fileName = "restored-\(token).txt"
+        deletedAttachment.relativePath = relativePath
+        deletedAttachment.trashFileName = trashFileName
+        context.insert(task)
+        context.insert(deletedAttachment)
+
+        let taskID = task.id
+        let deletedID = deletedAttachment.id
+        defer {
+            if let item = try? context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == deletedID })).first {
+                context.delete(item)
+            }
+            if let item = try? context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first {
+                context.delete(item)
+            }
+            try? context.save()
+        }
+
+        try context.save()
+        let result = deletedAttachment.restoreWithResult(in: context)
+
+        let savedDeletedItem = try context.fetch(
+            FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == deletedID })
+        ).first
+        let savedTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).first
+        let restoredModels = try context.fetch(FetchDescriptor<TaskAttachment>()).filter {
+            $0.relativePath == relativePath
+        }
+        let trashBytesRemain = (try? Data(contentsOf: trashURL)) == payload
+        let destinationAbsent = !fileManager.fileExists(atPath: destinationURL.path)
+        var blockerIsDirectory: ObjCBool = false
+        let blockerIsRegularFile = fileManager.fileExists(
+            atPath: blockerURL.path,
+            isDirectory: &blockerIsDirectory
+        ) && !blockerIsDirectory.boolValue
+
+        guard case .attachmentUnavailable = result,
+              savedDeletedItem != nil,
+              savedTask != nil,
+              restoredModels.isEmpty,
+              trashBytesRemain,
+              destinationAbsent,
+              blockerIsRegularFile else {
+            throw DiagnosticFailure.assertion(
+                "Restore filesystem failure: result=\(result), deletedItem=\(savedDeletedItem != nil), task=\(savedTask != nil), models=\(restoredModels.count), trashBytes=\(trashBytesRemain), destinationAbsent=\(destinationAbsent), blockerRegularFile=\(blockerIsRegularFile)."
+            )
+        }
+
+        return "Errore reale di FileManager durante il ripristino: moveItem non può raggiungere la destinazione perché il componente parent è un file regolare. Il restore restituisce attachmentUnavailable; record Recently Deleted, task e byte originali nel cestino restano intatti; nessun TaskAttachment viene creato. Nessun errore simulato tramite closure."
+    }
+
+    /// Models a retry after a previous partial restore: one file is already in
+    /// the canonical local directory, while another remains in Trash. A real
+    /// filesystem obstruction makes the second restore fail. SwiftData must
+    /// roll back the task and attachment models without deleting either file;
+    /// after removing the obstruction, the same DeletedItem records must retry.
+    private func testTaskRestorePartialFilesystemFailureAndRetry() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let fileManager = FileManager.default
+        guard let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory locali TaskAttachments o Trash non disponibili.")
+        }
+
+        let token = UUID().uuidString
+        let alreadyRestoredPath = "diagnostics-restore-retry-ready-\(token).txt"
+        let alreadyRestoredURL = attachmentsDirectory.appendingPathComponent(alreadyRestoredPath)
+        let blockerName = "diagnostics-restore-retry-blocker-\(token)"
+        let blockerURL = attachmentsDirectory.appendingPathComponent(blockerName)
+        let blockedPath = "\(blockerName)/retry-\(token).txt"
+        let blockedDestinationURL = attachmentsDirectory.appendingPathComponent(blockedPath)
+        let blockedTrashName = "diagnostics-restore-retry-\(token).txt"
+        let blockedTrashURL = trashDirectory.appendingPathComponent(blockedTrashName)
+        let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(for: .taskAttachments)
+        let cloudAlreadyRestoredURL = cloudDirectory?.appendingPathComponent(alreadyRestoredPath)
+        let cloudBlockedURL = cloudDirectory?.appendingPathComponent(blockedPath)
+        let firstPayload = Data("already restored attachment \(token)".utf8)
+        let secondPayload = Data("attachment still in Recently Deleted \(token)".utf8)
+        defer {
+            try? fileManager.removeItem(at: alreadyRestoredURL)
+            try? fileManager.removeItem(at: blockerURL)
+            try? fileManager.removeItem(at: blockedDestinationURL)
+            try? fileManager.removeItem(at: blockedTrashURL)
+            if let cloudAlreadyRestoredURL {
+                try? fileManager.removeItem(at: cloudAlreadyRestoredURL)
+            }
+            if let cloudBlockedURL {
+                try? fileManager.removeItem(at: cloudBlockedURL)
+            }
+        }
+
+        try fileManager.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+        guard !fileManager.fileExists(atPath: alreadyRestoredURL.path),
+              !fileManager.fileExists(atPath: blockerURL.path),
+              !fileManager.fileExists(atPath: blockedTrashURL.path),
+              !fileManager.fileExists(atPath: blockedDestinationURL.path),
+              cloudAlreadyRestoredURL.map({ !fileManager.fileExists(atPath: $0.path) }) ?? true,
+              cloudBlockedURL.map({ !fileManager.fileExists(atPath: $0.path) }) ?? true else {
+            throw DiagnosticFailure.assertion("Collisione inattesa nei percorsi univoci del test retry.")
+        }
+
+        // This file represents an asset successfully moved out of Trash by an
+        // earlier interrupted restore. It must remain available for the retry.
+        try firstPayload.write(to: alreadyRestoredURL, options: .atomic)
+        try Data("regular file blocking nested destination".utf8).write(to: blockerURL, options: .atomic)
+        try secondPayload.write(to: blockedTrashURL, options: .atomic)
+
+        let taskID = UUID()
+        let deletedTask = DeletedItem(type: "task")
+        deletedTask.taskID = taskID
+        deletedTask.title = "DEBUG-ONLY restore retry task \(token)"
+        deletedTask.taskDescription = "Synthetic task used by restore diagnostics."
+
+        let firstAttachmentItem = DeletedItem(type: "attachment")
+        firstAttachmentItem.taskID = taskID
+        let secondAttachmentItem = DeletedItem(type: "attachment")
+        secondAttachmentItem.taskID = taskID
+
+        context.insert(deletedTask)
+        context.insert(firstAttachmentItem)
+        context.insert(secondAttachmentItem)
+
+        let deletedTaskID = deletedTask.id
+        let firstDeletedID = firstAttachmentItem.id
+        let secondDeletedID = secondAttachmentItem.id
+        defer {
+            for id in [deletedTaskID, firstDeletedID, secondDeletedID] {
+                if let item = try? context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == id })).first {
+                    context.delete(item)
+                }
+            }
+            for attachment in (try? context.fetch(FetchDescriptor<TaskAttachment>())) ?? []
+                where attachment.relativePath == alreadyRestoredPath || attachment.relativePath == blockedPath {
+                context.delete(attachment)
+            }
+            if let task = try? context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first {
+                context.delete(task)
+            }
+            try? context.save()
+        }
+
+        try context.save()
+
+        // Production restore fetches child DeletedItems without a sort
+        // descriptor. Assign the already-local file to the first row returned
+        // by that exact query, and the blocked Trash source to the second.
+        let childOrder = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+            $0.type == "attachment" && $0.taskID == taskID
+        }
+        guard childOrder.count == 2 else {
+            throw DiagnosticFailure.assertion("Il test non ha creato esattamente due record allegato Recently Deleted.")
+        }
+        childOrder[0].fileName = "already-restored-\(token).txt"
+        childOrder[0].relativePath = alreadyRestoredPath
+        childOrder[1].fileName = "retry-\(token).txt"
+        childOrder[1].relativePath = blockedPath
+        childOrder[1].trashFileName = blockedTrashName
+        try context.save()
+
+        let verifiedChildOrder = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+            $0.type == "attachment" && $0.taskID == taskID
+        }
+        guard verifiedChildOrder.map(\.id) == childOrder.map(\.id) else {
+            throw DiagnosticFailure.assertion("L'ordine del fetch DeletedItem è cambiato durante la preparazione del test.")
+        }
+
+        let firstResult = deletedTask.restoreWithResult(in: context)
+
+        let taskAfterFailure = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).first
+        let attachmentModelsAfterFailure = try context.fetch(FetchDescriptor<TaskAttachment>()).filter {
+            $0.relativePath == alreadyRestoredPath || $0.relativePath == blockedPath
+        }
+        let remainingDeletedChildren = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+            $0.type == "attachment" && $0.taskID == taskID
+        }
+        let firstFilePreserved = (try? Data(contentsOf: alreadyRestoredURL)) == firstPayload
+        let secondTrashPreserved = (try? Data(contentsOf: blockedTrashURL)) == secondPayload
+        let secondDestinationAbsent = !fileManager.fileExists(atPath: blockedDestinationURL.path)
+
+        guard case .attachmentUnavailable = firstResult,
+              taskAfterFailure == nil,
+              attachmentModelsAfterFailure.isEmpty,
+              remainingDeletedChildren.count == 2,
+              firstFilePreserved,
+              secondTrashPreserved,
+              secondDestinationAbsent else {
+            throw DiagnosticFailure.assertion(
+                "Partial restore rollback: result=\(firstResult), task=\(taskAfterFailure != nil), attachmentModels=\(attachmentModelsAfterFailure.count), deletedChildren=\(remainingDeletedChildren.count), firstFile=\(firstFilePreserved), secondTrash=\(secondTrashPreserved), secondDestinationAbsent=\(secondDestinationAbsent)."
+            )
+        }
+
+        // Remove only the synthetic obstruction, then retry the same parent
+        // DeletedItem. The already-local asset must be reused, not lost.
+        try fileManager.removeItem(at: blockerURL)
+        try fileManager.createDirectory(at: blockerURL, withIntermediateDirectories: true)
+        let retryResult = deletedTask.restoreWithResult(in: context)
+
+        let restoredTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).first
+        let restoredAttachments = try context.fetch(FetchDescriptor<TaskAttachment>()).filter {
+            $0.task?.id == taskID
+        }
+        let remainingChildren = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+            $0.type == "attachment" && $0.taskID == taskID
+        }
+        let firstBytesAfterRetry = (try? Data(contentsOf: alreadyRestoredURL)) == firstPayload
+        let secondBytesAfterRetry = (try? Data(contentsOf: blockedDestinationURL)) == secondPayload
+        let secondTrashConsumed = !fileManager.fileExists(atPath: blockedTrashURL.path)
+
+        guard case .restored = retryResult,
+              restoredTask != nil,
+              restoredAttachments.count == 2,
+              remainingChildren.isEmpty,
+              firstBytesAfterRetry,
+              secondBytesAfterRetry,
+              secondTrashConsumed else {
+            throw DiagnosticFailure.assertion(
+                "Restore retry: result=\(retryResult), task=\(restoredTask != nil), attachments=\(restoredAttachments.count), deletedChildren=\(remainingChildren.count), firstBytes=\(firstBytesAfterRetry), secondBytes=\(secondBytesAfterRetry), trashConsumed=\(secondTrashConsumed)."
+            )
+        }
+
+        for mirrorURL in [cloudAlreadyRestoredURL, cloudBlockedURL].compactMap({ $0 }) {
+            if fileManager.fileExists(atPath: mirrorURL.path) {
+                try fileManager.removeItem(at: mirrorURL)
+            }
+        }
+        let cloudMirrorsRemoved = [cloudAlreadyRestoredURL, cloudBlockedURL]
+            .compactMap({ $0 })
+            .allSatisfy { !fileManager.fileExists(atPath: $0.path) }
+        guard cloudMirrorsRemoved else {
+            throw DiagnosticFailure.assertion("Il test non è riuscito a rimuovere tutti i mirror cloud sintetici.")
+        }
+
+        return "Prima esecuzione: errore filesystem reale, task e modelli allegato rollbackati, due record figli Recently Deleted conservati; il file già ripristinato resta integro e l'altro rimane nel cestino. Dopo la rimozione dell'ostruzione, retry riuscito: task e due allegati ricreati, record figli rimossi e file verificati byte per byte. Gli eventuali mirror cloud UUID sono stati rimossi e verificati."
+    }
+
+    /// A task restore must preflight all child assets before moving any file.
+    /// If one source is missing, valid siblings must remain in Trash untouched.
+    private func testTaskRestorePreflightMissingAttachmentDoesNotMoveFiles() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let fileManager = FileManager.default
+        guard let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory locali TaskAttachments o Trash non disponibili.")
+        }
+
+        let token = UUID().uuidString
+        let validPath = "diagnostics-restore-preflight-valid-\(token).txt"
+        let validDestinationURL = attachmentsDirectory.appendingPathComponent(validPath)
+        let validTrashName = "diagnostics-restore-preflight-valid-\(token).txt"
+        let validTrashURL = trashDirectory.appendingPathComponent(validTrashName)
+        let missingPath = "diagnostics-restore-preflight-missing-\(token).txt"
+        let missingTrashName = "diagnostics-restore-preflight-missing-\(token).txt"
+        let validPayload = Data("valid sibling remains in Trash \(token)".utf8)
+        defer {
+            try? fileManager.removeItem(at: validDestinationURL)
+            try? fileManager.removeItem(at: validTrashURL)
+        }
+
+        try fileManager.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+        guard !fileManager.fileExists(atPath: validDestinationURL.path),
+              !fileManager.fileExists(atPath: validTrashURL.path),
+              !fileManager.fileExists(atPath: trashDirectory.appendingPathComponent(missingTrashName).path) else {
+            throw DiagnosticFailure.assertion("Collisione inattesa nei percorsi univoci del test preflight.")
+        }
+        try validPayload.write(to: validTrashURL, options: .atomic)
+
+        let taskID = UUID()
+        let deletedTask = DeletedItem(type: "task")
+        deletedTask.taskID = taskID
+        deletedTask.title = "DEBUG-ONLY restore preflight \(token)"
+
+        let validChild = DeletedItem(type: "attachment")
+        validChild.taskID = taskID
+        validChild.fileName = "valid-\(token).txt"
+        validChild.relativePath = validPath
+        validChild.trashFileName = validTrashName
+
+        let missingChild = DeletedItem(type: "attachment")
+        missingChild.taskID = taskID
+        missingChild.fileName = "missing-\(token).txt"
+        missingChild.relativePath = missingPath
+        missingChild.trashFileName = missingTrashName
+
+        context.insert(deletedTask)
+        context.insert(validChild)
+        context.insert(missingChild)
+
+        let ids = [deletedTask.id, validChild.id, missingChild.id]
+        defer {
+            for id in ids {
+                if let item = try? context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == id })).first {
+                    context.delete(item)
+                }
+            }
+            if let task = try? context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first {
+                context.delete(task)
+            }
+            try? context.save()
+        }
+
+        try context.save()
+        let result = deletedTask.restoreWithResult(in: context)
+        let taskWasNotCreated = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).isEmpty
+        let validSourceBytesRemain = (try? Data(contentsOf: validTrashURL)) == validPayload
+        let validDestinationAbsent = !fileManager.fileExists(atPath: validDestinationURL.path)
+        let deletedRecordsRemain = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+            $0.taskID == taskID
+        }
+
+        guard case .attachmentUnavailable = result,
+              taskWasNotCreated,
+              validSourceBytesRemain,
+              validDestinationAbsent,
+              deletedRecordsRemain.count == 3 else {
+            throw DiagnosticFailure.assertion(
+                "Preflight missing attachment: result=\(result), taskAbsent=\(taskWasNotCreated), validTrash=\(validSourceBytesRemain), validDestinationAbsent=\(validDestinationAbsent), deletedRecords=\(deletedRecordsRemain.count)."
+            )
+        }
+
+        return "Preflight task: un allegato disponibile e uno assente. Il restore viene bloccato prima di creare il task o spostare file; il file valido resta nel cestino byte per byte e tutti e tre i record Recently Deleted restano presenti."
+    }
+
+    /// An invalid but existing destination must not be overwritten by a valid
+    /// Trash source. The user data at both paths must remain available.
+    private func testAttachmentRestoreDoesNotOverwriteInvalidDestination() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let fileManager = FileManager.default
+        guard let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory locali TaskAttachments o Trash non disponibili.")
+        }
+
+        let token = UUID().uuidString
+        let relativePath = "diagnostics-restore-invalid-destination-\(token).txt"
+        let destinationURL = attachmentsDirectory.appendingPathComponent(relativePath)
+        let trashFileName = "diagnostics-restore-valid-source-\(token).txt"
+        let trashURL = trashDirectory.appendingPathComponent(trashFileName)
+        let trashPayload = Data("valid trash source \(token)".utf8)
+        defer {
+            try? fileManager.removeItem(at: destinationURL)
+            try? fileManager.removeItem(at: trashURL)
+        }
+
+        try fileManager.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+        guard !fileManager.fileExists(atPath: destinationURL.path),
+              !fileManager.fileExists(atPath: trashURL.path) else {
+            throw DiagnosticFailure.assertion("Collisione inattesa nei percorsi univoci del test destinazione.")
+        }
+
+        // A zero-byte file exists at the canonical destination but is not a
+        // usable attachment according to DeletedItem's production validation.
+        try Data().write(to: destinationURL, options: .atomic)
+        try trashPayload.write(to: trashURL, options: .atomic)
+
+        let task = TodoTask(title: "DEBUG-ONLY invalid restore destination")
+        task.isDebugTask = true
+        let deletedAttachment = DeletedItem(type: "attachment")
+        deletedAttachment.taskID = task.id
+        deletedAttachment.fileName = "invalid-destination-\(token).txt"
+        deletedAttachment.relativePath = relativePath
+        deletedAttachment.trashFileName = trashFileName
+        context.insert(task)
+        context.insert(deletedAttachment)
+
+        let taskID = task.id
+        let deletedID = deletedAttachment.id
+        defer {
+            if let item = try? context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == deletedID })).first {
+                context.delete(item)
+            }
+            if let item = try? context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })).first {
+                context.delete(item)
+            }
+            try? context.save()
+        }
+
+        try context.save()
+        let result = deletedAttachment.restoreWithResult(in: context)
+        let destinationStillEmpty = (try? Data(contentsOf: destinationURL)) == Data()
+        let trashStillIntact = (try? Data(contentsOf: trashURL)) == trashPayload
+        let restoredModels = try context.fetch(FetchDescriptor<TaskAttachment>()).filter {
+            $0.relativePath == relativePath
+        }
+        let deletedRecordRemains = try context.fetch(
+            FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == deletedID })
+        ).first != nil
+
+        guard case .attachmentUnavailable = result,
+              destinationStillEmpty,
+              trashStillIntact,
+              restoredModels.isEmpty,
+              deletedRecordRemains else {
+            throw DiagnosticFailure.assertion(
+                "Invalid destination protection: result=\(result), destinationPreserved=\(destinationStillEmpty), trashPreserved=\(trashStillIntact), models=\(restoredModels.count), deletedRecord=\(deletedRecordRemains)."
+            )
+        }
+
+        return "Destinazione locale esistente ma non valida (file vuoto): il restore non la sovrascrive e non consuma la sorgente valida nel cestino. Record Recently Deleted conservato e nessun TaskAttachment creato."
+    }
+
+
+    /// Exercises restoreWithResultAsync through the real task-level preflight.
+    /// The injected availability failure models an iCloud/File Provider item
+    /// that cannot be materialized yet; it does not claim to trigger an OS error.
+    private func testTaskRestoreSimulatedCloudDownloadFailurePreservesState() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let fileManager = FileManager.default
+        guard let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory locali TaskAttachments o Trash non disponibili.")
+        }
+
+        let token = UUID().uuidString
+        let relativePath = "diagnostics-restore-cloud-failure-\(token).txt"
+        let trashFileName = "diagnostics-restore-cloud-failure-\(token).txt"
+        let destinationURL = attachmentsDirectory.appendingPathComponent(relativePath)
+        let trashURL = trashDirectory.appendingPathComponent(trashFileName)
+        let payload = Data("synthetic iCloud materialization failure \(token)".utf8)
+
+        let taskID = UUID()
+        let deletedTask = DeletedItem(type: "task")
+        deletedTask.taskID = taskID
+        deletedTask.title = "DEBUG-ONLY cloud restore failure \(token)"
+
+        let deletedAttachment = DeletedItem(type: "attachment")
+        deletedAttachment.taskID = taskID
+        deletedAttachment.fileName = relativePath
+        deletedAttachment.relativePath = relativePath
+        deletedAttachment.trashFileName = trashFileName
+
+        let deletedTaskID = deletedTask.id
+        let deletedAttachmentID = deletedAttachment.id
+
+        DeletedItemRestoreTestingHooks.downloadAvailability = { _ in false }
+        defer {
+            DeletedItemRestoreTestingHooks.downloadAvailability = nil
+            DeletedItemRestoreTestingHooks.coordinatedCopy = nil
+            try? fileManager.removeItem(at: destinationURL)
+            try? fileManager.removeItem(at: trashURL)
+            for id in [deletedTaskID, deletedAttachmentID] {
+                if let item = try? context.fetch(
+                    FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == id })
+                ).first {
+                    context.delete(item)
+                }
+            }
+            if let task = try? context.fetch(
+                FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+            ).first {
+                context.delete(task)
+            }
+            try? context.save()
+        }
+
+        try fileManager.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+        guard !fileManager.fileExists(atPath: destinationURL.path),
+              !fileManager.fileExists(atPath: trashURL.path) else {
+            throw DiagnosticFailure.assertion("Collisione inattesa nei percorsi del test download failure.")
+        }
+        try payload.write(to: trashURL, options: .atomic)
+
+        context.insert(deletedTask)
+        context.insert(deletedAttachment)
+        try context.save()
+
+        let result = await deletedTask.restoreWithResultAsync(in: context)
+        let taskAbsent = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).isEmpty
+        let deletedRecords = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+            $0.taskID == taskID
+        }
+        let attachmentModels = try context.fetch(FetchDescriptor<TaskAttachment>()).filter {
+            $0.relativePath == relativePath
+        }
+        let trashPreserved = (try? Data(contentsOf: trashURL)) == payload
+        let destinationAbsent = !fileManager.fileExists(atPath: destinationURL.path)
+
+        guard case .attachmentUnavailable = result,
+              taskAbsent,
+              deletedRecords.count == 2,
+              attachmentModels.isEmpty,
+              trashPreserved,
+              destinationAbsent else {
+            throw DiagnosticFailure.assertion(
+                "Injected download failure: result=\(result), taskAbsent=\(taskAbsent), deletedRecords=\(deletedRecords.count), models=\(attachmentModels.count), trashPreserved=\(trashPreserved), destinationAbsent=\(destinationAbsent)."
+            )
+        }
+
+        return "restoreWithResultAsync ha rifiutato il restore del task quando la disponibilità iCloud/File Provider è stata simulata come non pronta. Task e modelli non creati; entrambi i record Recently Deleted e i byte sorgente restano intatti."
+    }
+
+    /// Injects a coordination-layer error immediately before the production
+    /// NSFileCoordinator copy. This is deterministic fault injection, not an
+    /// OS-generated NSFileCoordinator failure.
+    private func testTaskRestoreInjectedCoordinationFailurePreservesSource() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let fileManager = FileManager.default
+        guard let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory locali TaskAttachments o Trash non disponibili.")
+        }
+
+        let token = UUID().uuidString
+        let relativePath = "diagnostics-restore-coordination-failure-\(token).txt"
+        let trashFileName = "diagnostics-restore-coordination-failure-\(token).txt"
+        let destinationURL = attachmentsDirectory.appendingPathComponent(relativePath)
+        let trashURL = trashDirectory.appendingPathComponent(trashFileName)
+        let payload = Data("synthetic coordination failure \(token)".utf8)
+
+        let taskID = UUID()
+        let deletedTask = DeletedItem(type: "task")
+        deletedTask.taskID = taskID
+        deletedTask.title = "DEBUG-ONLY coordination restore failure \(token)"
+
+        let deletedAttachment = DeletedItem(type: "attachment")
+        deletedAttachment.taskID = taskID
+        deletedAttachment.fileName = relativePath
+        deletedAttachment.relativePath = relativePath
+        deletedAttachment.trashFileName = trashFileName
+
+        let deletedTaskID = deletedTask.id
+        let deletedAttachmentID = deletedAttachment.id
+        let injectedError = NSError(
+            domain: "NSFileCoordinator.TestInjection",
+            code: 17,
+            userInfo: [NSLocalizedDescriptionKey: "Deterministic coordination failure"]
+        )
+
+        DeletedItemRestoreTestingHooks.coordinatedCopy = { _, _ in
+            throw injectedError
+        }
+        defer {
+            DeletedItemRestoreTestingHooks.downloadAvailability = nil
+            DeletedItemRestoreTestingHooks.coordinatedCopy = nil
+            try? fileManager.removeItem(at: destinationURL)
+            try? fileManager.removeItem(at: trashURL)
+            for id in [deletedTaskID, deletedAttachmentID] {
+                if let item = try? context.fetch(
+                    FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == id })
+                ).first {
+                    context.delete(item)
+                }
+            }
+            if let task = try? context.fetch(
+                FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+            ).first {
+                context.delete(task)
+            }
+            try? context.save()
+        }
+
+        try fileManager.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+        guard !fileManager.fileExists(atPath: destinationURL.path),
+              !fileManager.fileExists(atPath: trashURL.path) else {
+            throw DiagnosticFailure.assertion("Collisione inattesa nei percorsi del test coordination failure.")
+        }
+        try payload.write(to: trashURL, options: .atomic)
+
+        context.insert(deletedTask)
+        context.insert(deletedAttachment)
+        try context.save()
+
+        let result = await deletedTask.restoreWithResultAsync(in: context)
+        let taskAbsent = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).isEmpty
+        let deletedRecords = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+            $0.taskID == taskID
+        }
+        let attachmentModels = try context.fetch(FetchDescriptor<TaskAttachment>()).filter {
+            $0.relativePath == relativePath
+        }
+        let trashPreserved = (try? Data(contentsOf: trashURL)) == payload
+        let destinationAbsent = !fileManager.fileExists(atPath: destinationURL.path)
+
+        guard case .attachmentUnavailable = result,
+              taskAbsent,
+              deletedRecords.count == 2,
+              attachmentModels.isEmpty,
+              trashPreserved,
+              destinationAbsent else {
+            throw DiagnosticFailure.assertion(
+                "Injected coordination failure: result=\(result), taskAbsent=\(taskAbsent), deletedRecords=\(deletedRecords.count), models=\(attachmentModels.count), trashPreserved=\(trashPreserved), destinationAbsent=\(destinationAbsent)."
+            )
+        }
+
+        return "restoreWithResultAsync ha attraversato il preflight e il livello di copia coordinata; l'errore di coordinamento iniettato ha bloccato il restore senza creare modelli o consumare il file in Recently Deleted."
+    }
+
+    /// The first File Provider availability check fails; the next succeeds.
+    /// The same task-level restore is retried and must complete without losing
+    /// either the source file or the Recently Deleted metadata.
+    private func testTaskRestoreTransientProviderFailureCanBeRetried() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let fileManager = FileManager.default
+        guard let attachmentsDirectory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory locali TaskAttachments o Trash non disponibili.")
+        }
+
+        let token = UUID().uuidString
+        let relativePath = "diagnostics-restore-provider-retry-\(token).txt"
+        let trashFileName = "diagnostics-restore-provider-retry-\(token).txt"
+        let destinationURL = attachmentsDirectory.appendingPathComponent(relativePath)
+        let trashURL = trashDirectory.appendingPathComponent(trashFileName)
+        let cloudDirectory = AssetDirectoryCoordinator.cloudDirectory(for: .taskAttachments)
+        let cloudURL = cloudDirectory?.appendingPathComponent(relativePath)
+        let payload = Data("transient File Provider availability \(token)".utf8)
+
+        let taskID = UUID()
+        let deletedTask = DeletedItem(type: "task")
+        deletedTask.taskID = taskID
+        deletedTask.title = "DEBUG-ONLY provider retry \(token)"
+
+        let deletedAttachment = DeletedItem(type: "attachment")
+        deletedAttachment.taskID = taskID
+        deletedAttachment.fileName = relativePath
+        deletedAttachment.relativePath = relativePath
+        deletedAttachment.trashFileName = trashFileName
+
+        let deletedTaskID = deletedTask.id
+        let deletedAttachmentID = deletedAttachment.id
+        var availabilityAttempts = 0
+
+        DeletedItemRestoreTestingHooks.downloadAvailability = { _ in
+            availabilityAttempts += 1
+            return availabilityAttempts >= 2
+        }
+        defer {
+            DeletedItemRestoreTestingHooks.downloadAvailability = nil
+            DeletedItemRestoreTestingHooks.coordinatedCopy = nil
+            try? fileManager.removeItem(at: destinationURL)
+            try? fileManager.removeItem(at: trashURL)
+            if let cloudURL {
+                try? fileManager.removeItem(at: cloudURL)
+            }
+            for id in [deletedTaskID, deletedAttachmentID] {
+                if let item = try? context.fetch(
+                    FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == id })
+                ).first {
+                    context.delete(item)
+                }
+            }
+            if let task = try? context.fetch(
+                FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+            ).first {
+                context.delete(task)
+            }
+            for attachment in (try? context.fetch(FetchDescriptor<TaskAttachment>())) ?? []
+                where attachment.relativePath == relativePath {
+                context.delete(attachment)
+            }
+            try? context.save()
+        }
+
+        try fileManager.createDirectory(at: attachmentsDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+        if let cloudDirectory {
+            try fileManager.createDirectory(at: cloudDirectory, withIntermediateDirectories: true)
+        }
+        guard !fileManager.fileExists(atPath: destinationURL.path),
+              !fileManager.fileExists(atPath: trashURL.path),
+              cloudURL.map({ !fileManager.fileExists(atPath: $0.path) }) ?? true else {
+            throw DiagnosticFailure.assertion("Collisione inattesa nei percorsi del test provider retry.")
+        }
+        try payload.write(to: trashURL, options: .atomic)
+
+        context.insert(deletedTask)
+        context.insert(deletedAttachment)
+        try context.save()
+
+        let firstResult = await deletedTask.restoreWithResultAsync(in: context)
+        let firstTaskAbsent = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).isEmpty
+        let firstRecordsRemain = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+            $0.taskID == taskID
+        }.count == 2
+        let firstSourcePreserved = (try? Data(contentsOf: trashURL)) == payload
+        let firstDestinationAbsent = !fileManager.fileExists(atPath: destinationURL.path)
+
+        guard case .attachmentUnavailable = firstResult,
+              firstTaskAbsent,
+              firstRecordsRemain,
+              firstSourcePreserved,
+              firstDestinationAbsent else {
+            throw DiagnosticFailure.assertion(
+                "First transient provider attempt: result=\(firstResult), taskAbsent=\(firstTaskAbsent), recordsRemain=\(firstRecordsRemain), sourcePreserved=\(firstSourcePreserved), destinationAbsent=\(firstDestinationAbsent)."
+            )
+        }
+
+        let retryResult = await deletedTask.restoreWithResultAsync(in: context)
+        let restoredTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).first
+        let restoredAttachments = try context.fetch(FetchDescriptor<TaskAttachment>()).filter {
+            $0.relativePath == relativePath
+        }
+        let restoredBytes = (try? Data(contentsOf: destinationURL)) == payload
+        let retryCount = availabilityAttempts
+
+        guard retryResult.isSuccess,
+              restoredTask != nil,
+              restoredAttachments.count == 1,
+              restoredBytes,
+              retryCount >= 2 else {
+            throw DiagnosticFailure.assertion(
+                "Transient provider retry: result=\(retryResult), taskRestored=\(restoredTask != nil), attachments=\(restoredAttachments.count), bytesRestored=\(restoredBytes), availabilityAttempts=\(retryCount)."
+            )
+        }
+
+        return "Primo tentativo bloccato in modo sicuro dal gate di disponibilità File Provider; al secondo tentativo il file viene copiato e task/allegato sono ripristinati. Sorgente Trash preservata durante il retry."
+    }
 
     // MARK: - Focused audit: attachment deletion atomicity
 
@@ -4593,57 +6449,146 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
         }
 
-        let (container, context) = try makeIsolatedStore()
-        _ = container
-        let repetitions = 6
+        let (_, context) = try makeIsolatedStore()
+        let repetitions = 20
         var successfulRounds = 0
-        var allTasks: [TodoTask] = []
+        var persistedTasks: [TodoTask] = []
+        var trace: [String] = []
+        var verifiedStates: [String] = []
 
         do {
             for round in 0..<repetitions {
                 let baseDate = Date.now.addingTimeInterval(7_200)
-                let shared = TodoTask(
-                    id: UUID(),
-                    title: "DEBUG-ONLY individual-batch overlap \(round)",
-                    deadLine: baseDate
+                let sharedID = UUID()
+                let authoritativeDeadline = baseDate
+                let individualSnapshotDeadline = baseDate.addingTimeInterval(900)
+                let batchSnapshotDeadline = baseDate.addingTimeInterval(-900)
+                let companionDeadline = baseDate.addingTimeInterval(300)
+
+                // The persisted record is the only source of truth. The two
+                // request snapshots deliberately disagree with it and each other.
+                let authoritativeTask = TodoTask(
+                    id: sharedID,
+                    title: "DEBUG-ONLY authoritative overlap \(round)",
+                    deadLine: authoritativeDeadline
                 )
-                shared.isDebugTask = true
-                shared.alarmEnabled = true
+                authoritativeTask.isDebugTask = true
+                authoritativeTask.alarmEnabled = true
 
                 let companion = TodoTask(
                     id: UUID(),
                     title: "DEBUG-ONLY batch companion \(round)",
-                    deadLine: baseDate.addingTimeInterval(300)
+                    deadLine: companionDeadline
                 )
                 companion.isDebugTask = true
                 companion.alarmEnabled = true
 
-                context.insert(shared)
+                context.insert(authoritativeTask)
                 context.insert(companion)
-                allTasks.append(contentsOf: [shared, companion])
+                persistedTasks.append(contentsOf: [authoritativeTask, companion])
                 try context.save()
 
-                async let individualResult = manager.synchronize(task: shared, in: context)
-                async let batchResult = manager.synchronize(tasks: [shared, companion], in: context)
+                let individualSnapshot = TodoTask(
+                    id: sharedID,
+                    title: "DEBUG-ONLY stale individual snapshot \(round)",
+                    deadLine: individualSnapshotDeadline
+                )
+                individualSnapshot.isDebugTask = true
+                individualSnapshot.alarmEnabled = true
+
+                let batchSnapshot = TodoTask(
+                    id: sharedID,
+                    title: "DEBUG-ONLY stale batch snapshot \(round)",
+                    deadLine: batchSnapshotDeadline
+                )
+                batchSnapshot.isDebugTask = true
+                batchSnapshot.alarmEnabled = true
+
+                trace.append(
+                    "ROUND \(round + 1)/\(repetitions) UUID=\(sharedID.uuidString); authoritative=\(authoritativeDeadline.formatted(.iso8601)); individual snapshot=\(individualSnapshotDeadline.formatted(.iso8601)); batch snapshot=\(batchSnapshotDeadline.formatted(.iso8601))"
+                )
+
+                async let individualResult = manager.synchronize(
+                    task: individualSnapshot,
+                    in: context
+                )
+                async let batchResult = manager.synchronize(
+                    tasks: [batchSnapshot, companion],
+                    in: context
+                )
                 let (individualOK, batchOK) = await (individualResult, batchResult)
+
+                trace.append(
+                    "ROUND \(round + 1) RESULTS individual=\(individualOK), batch=\(batchOK)"
+                )
+
+                // Drain any operation queued behind the overlapping request
+                // before inspecting the final system state.
+                await manager.waitForPendingSynchronizations()
+
+                let sharedState = try diagnosticAlarmStateDescription(id: sharedID)
+                let companionState = try diagnosticAlarmStateDescription(id: companion.id)
+                trace.append("ROUND \(round + 1) FINAL shared: \(sharedState)")
+                trace.append("ROUND \(round + 1) FINAL companion: \(companionState)")
+
                 guard individualOK, batchOK else {
-                    throw DiagnosticFailure.assertion("Round \(round + 1): esito individuale=\(individualOK), batch=\(batchOK).")
+                    throw DiagnosticFailure.assertion(
+                        "Round \(round + 1)/\(repetitions): esito individuale=\(individualOK), batch=\(batchOK)."
+                    )
                 }
-                try assertDiagnosticAlarmIDs([shared.id, companion.id], allShouldBeScheduled: true)
+
+                try assertDiagnosticAlarmIDs(
+                    [sharedID, companion.id],
+                    allShouldBeScheduled: true
+                )
+                try assertDiagnosticAlarmDate(
+                    id: sharedID,
+                    expectedDate: authoritativeDeadline
+                )
+                try assertDiagnosticAlarmDate(
+                    id: companion.id,
+                    expectedDate: companionDeadline
+                )
+
+                verifiedStates.append(
+                    "ROUND \(round + 1): shared=\(sharedState); companion=\(companionState)"
+                )
+
+                // Keep the system-alarm footprint bounded: each round removes
+                // only its own two alarms before the next pair is created.
+                let roundIDs: Set<UUID> = [sharedID, companion.id]
+                await manager.cancelAlarms(ids: Array(roundIDs))
+                try assertDiagnosticAlarmIDs(roundIDs, allShouldBeScheduled: false)
+                context.delete(authoritativeTask)
+                context.delete(companion)
+                try context.save()
+                persistedTasks.removeAll { roundIDs.contains($0.id) }
+
                 successfulRounds += 1
             }
         } catch {
-            await manager.cancelAlarms(ids: allTasks.map(\.id))
-            allTasks.forEach { context.delete($0) }
+            let failure = error.localizedDescription
+            await manager.waitForPendingSynchronizations()
+
+            let failureStates = persistedTasks.map { task in
+                let state = (try? diagnosticAlarmStateDescription(id: task.id)) ?? "AlarmKit state unavailable"
+                return "UUID=\(task.id.uuidString): \(state)"
+            }.joined(separator: "\n")
+
+            await manager.cancelAlarms(ids: persistedTasks.map(\.id))
+            try? assertDiagnosticAlarmIDs(
+                Set(persistedTasks.map(\.id)),
+                allShouldBeScheduled: false
+            )
+            persistedTasks.forEach { context.delete($0) }
             try? context.save()
-            throw error
+
+            throw DiagnosticFailure.assertion(
+                "\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE:\n\(failureStates)"
+            )
         }
 
-        await manager.cancelAlarms(ids: allTasks.map(\.id))
-        try assertDiagnosticAlarmIDs(Set(allTasks.map(\.id)), allShouldBeScheduled: false)
-        allTasks.forEach { context.delete($0) }
-        try context.save()
-        return "\(successfulRounds)/\(repetitions) round completati con task persistiti in uno store isolato. Le chiamate individuale e batch sono state avviate in concorrenza sullo stesso UUID; entrambe hanno restituito esito positivo, entrambe le sveglie sono state verificate e il cleanup mirato è riuscito."
+        return "\(successfulRounds)/\(repetitions) round completati. Ogni round ha sovrapposto synchronize(task:) e synchronize(tasks:) sullo stesso UUID, usando snapshot con deadline discordanti e un record autorevole persistito. Verificati entrambi gli esiti, la deadline .fixed autorevole, la sveglia del task compagno e la cancellazione mirata delle due sveglie prima del round successivo.\n\(trace.joined(separator: "\n"))\nStati verificati:\n\(verifiedStates.joined(separator: "\n"))"
     }
 
     /// Deliberately races two snapshots for the same UUID: one eligible and

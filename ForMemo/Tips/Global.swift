@@ -14,7 +14,7 @@ enum RecurrenceGenerationConfiguration {
     static var maximumOccurrencesPerOperation: Int {
         let storedValue = UserDefaults.standard.object(forKey: maximumOccurrencesKey) as? Int
             ?? defaultMaximumOccurrencesPerOperation
-        return min(max(storedValue, 1), 2_000)
+        return min(max(storedValue, 1), 1_000)
     }
 
     static var confirmationThreshold: Int {
@@ -24,7 +24,7 @@ enum RecurrenceGenerationConfiguration {
     }
 
     static func setMaximumOccurrencesPerOperation(_ value: Int) {
-        let maximum = min(max(value, 1), 2_000)
+        let maximum = min(max(value, 1), 1_000)
         UserDefaults.standard.set(maximum, forKey: maximumOccurrencesKey)
 
         let threshold = confirmationThreshold

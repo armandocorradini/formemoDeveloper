@@ -135,6 +135,16 @@ extension DeletedItem {
 }
 
 
+#if DEBUG
+/// Deterministic fault-injection points for the Recently Deleted restore path.
+/// These hooks exist only in diagnostic builds and are nil during normal use.
+@MainActor
+enum DeletedItemRestoreTestingHooks {
+    static var downloadAvailability: (@MainActor (URL) async -> Bool)?
+    static var coordinatedCopy: (@MainActor (URL, URL) throws -> Void)?
+}
+#endif
+
 enum DeletedItemRestoreResult {
     case restored
     case attachmentUnavailable
@@ -277,6 +287,12 @@ extension DeletedItem {
 
     @MainActor
     private static func waitUntilAttachmentIsDownloaded(at url: URL) async -> Bool {
+        #if DEBUG
+        if let override = DeletedItemRestoreTestingHooks.downloadAvailability {
+            return await override(url)
+        }
+        #endif
+
         let fileManager = FileManager.default
         let keys: Set<URLResourceKey> = [
             .isUbiquitousItemKey,
@@ -317,10 +333,18 @@ extension DeletedItem {
         return fileManager.isReadableFile(atPath: url.path) && finalSize > 0
     }
 
+    @MainActor
     private static func coordinatedCopyAttachment(
         from sourceURL: URL,
         to destinationURL: URL
     ) throws {
+        #if DEBUG
+        if let override = DeletedItemRestoreTestingHooks.coordinatedCopy {
+            try override(sourceURL, destinationURL)
+            return
+        }
+        #endif
+
         let fileManager = FileManager.default
         let coordinator = NSFileCoordinator()
         var coordinationError: NSError?

@@ -48,8 +48,8 @@ enum DiagnosticsRedactor {
 
         let mappings: [(String, String)] = [
 
-            ("TaskAttachments", "[Cloud Attachments]"),
             ("TaskAttachments_Trash", "[Cloud Trash]"),
+            ("TaskAttachments", "[Cloud Attachments]"),
             ("DocumentAssets", "[Document Assets]"),
             ("WalletAssets", "[Wallet Assets]"),
             ("GroupContainersAlias", "[App Group]"),
