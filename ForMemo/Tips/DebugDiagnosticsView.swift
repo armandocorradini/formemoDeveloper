@@ -70,7 +70,7 @@ struct DebugDiagnosticsView: View {
                 }
                 .disabled(isRunning)
             } footer: {
-                Text(String(localized: "Real database tests temporarily insert and save diagnostic records in the app's persistent database, exercise supported production paths, and remove only records created by the test. They do not run a global notification rebuild or global deletion. If iCloud is enabled, test records may sync briefly before cleanup. Most isolated database tests use in-memory SwiftData stores; the Cloud resilience test uses a UUID-named temporary on-disk store and removes it after the test. The four attachment restore tests create UUID-named synthetic files in TaskAttachments and TaskAttachments_Trash; the production restore path may also recreate an iCloud mirror when available. Tests remove only their own files, which may sync briefly."))
+                Text("I test sul database reale inseriscono e salvano temporaneamente record diagnostici nel database persistente dell'app, verificano i percorsi di produzione supportati e rimuovono esclusivamente i record creati dal test. Non eseguono ricostruzioni globali delle notifiche né eliminazioni globali. Se iCloud è attivo, i record di prova potrebbero sincronizzarsi brevemente prima della pulizia. La maggior parte dei test su database isolati utilizza archivi SwiftData in memoria; il test di resilienza CloudKit utilizza un archivio temporaneo su disco, identificato da un UUID, che viene rimosso al termine. I quattro test di ripristino degli allegati creano file sintetici con UUID nelle cartelle TaskAttachments e TaskAttachments_Trash; quando disponibile, il percorso di ripristino di produzione può ricreare anche una copia su iCloud. I test rimuovono esclusivamente i file creati da loro, che potrebbero sincronizzarsi brevemente.")
             }
 
             if !results.isEmpty {
@@ -532,10 +532,10 @@ struct DebugDiagnosticsView: View {
         currentTestScope = "isolato"
         defer { isRunning = false }
 
-        await runTest(String(localized: "CloudKit configuration policy: enabled/disabled and iCloud identity")) {
+        await runTest("Criteri di configurazione CloudKit: attivazione, disattivazione e account iCloud") {
             try testCloudKitConfigurationPolicy()
         }
-        await runTest(String(localized: "Local persistence: survives simulated CloudKit offline, unavailable, and quota errors")) {
+        await runTest("Persistenza locale: resistenza a errori CloudKit simulati di rete, servizio e quota") {
             try testLocalStoreSurvivesSimulatedCloudKitFailures()
         }
         await runTest("Calcolo eventi notifiche") { try testNotificationEventCalculation() }
@@ -548,6 +548,7 @@ struct DebugDiagnosticsView: View {
         await runTest("Riattivazione occorrenza ricorrente: identità e stato") { try testReactivateCompletedRecurringOccurrence() }
         await runTest("Riattivazione task singolo: reset stato") { try testReactivateCompletedStandaloneTask() }
         await runTest("Materializzazione ricorrenze") { try testRecurrenceMaterialization() }
+        await runTest("Ricorrenza: arretramento data finale dopo eliminazione coda") { try testRecurrenceEndDateMovesBackAfterDeletedTail() }
         await runTest("Ricorrenze: sveglia, reminder e globale") { try testRecurrenceNotificationMatrix() }
         await runTest("Ricorrenza: idempotenza materializzazione") { try testRecurrenceIdempotency() }
         await runTest("Ricorrenza: propagazione allegati reale") { try testRecurrenceAttachmentPropagation() }
@@ -584,7 +585,7 @@ struct DebugDiagnosticsView: View {
             try await testLegacyMigrationAlarmSynchronization()
         }
         await runTest("Estensione ricorrenza finita: conteggio e indici") { try testFiniteRecurrenceExtension() }
-        await runTest("Ultima occorrenza pianificata: serie coerente e incoerente") { try testFinalPlannedOccurrenceDetection() }
+        await runTest("Ultima occorrenza materializzata: serie finita e illimitata") { try testFinalPlannedOccurrenceDetection() }
         await runTest("Ricorrenza: propagazione completa dei metadati") { try testRecurrenceMetadataPropagation() }
         await runTest("Rebuild produzione: esclude task completati") { try await testProductionRebuildSkipsCompletedTasks() }
         await runTest("Note: CRUD, contenuto e stato") { try testNoteCRUDAndState() }
@@ -637,28 +638,28 @@ struct DebugDiagnosticsView: View {
         // Audit mirato delle quattro ipotesi di intervento.
         await runTest("Eliminazione task: allegato locale mancante blocca l'operazione") { try testDeleteTaskBlockedByUnavailableAttachment() }
         await runTest("Eliminazione ricorrenza: allegato locale mancante blocca l'operazione") { try await testDeleteRecurringTaskBlockedByUnavailableAttachment() }
-        await runTest("Eliminazione task: errore save — rollback e risultato failed") { try testDeleteTaskSaveFailureRollsBack() }
+        await runTest("Eliminazione attività: errore di salvataggio, annullamento delle modifiche ed esito negativo") { try testDeleteTaskSaveFailureRollsBack() }
         await runTest("Eliminazione ricorrenza: errore save batch — rollback delle occorrenze") { try await testRecurringDeletionSaveFailureRollsBack() }
         await runTest("Eliminazione task: istanza già rimossa gestita in modo idempotente") { try testDeleteTaskAlreadyMissingIsIdempotent() }
-        await runTest(String(localized: "Recently Deleted: attachment restore filesystem failure preserves Trash")) {
+        await runTest("Eliminati di recente: un errore del file system durante il ripristino conserva gli allegati nel cestino") {
             try testAttachmentRestoreFilesystemMoveFailurePreservesTrash()
         }
-        await runTest(String(localized: "Recently Deleted: partial task restore rolls back and can be retried")) {
+        await runTest("Eliminati di recente: il ripristino parziale dell'attività viene annullato e può essere ripetuto") {
             try testTaskRestorePartialFilesystemFailureAndRetry()
         }
-        await runTest(String(localized: "Recently Deleted: preflight blocks task restore when an attachment is missing")) {
+        await runTest("Eliminati di recente: il controllo preliminare blocca il ripristino se manca un allegato") {
             try testTaskRestorePreflightMissingAttachmentDoesNotMoveFiles()
         }
-        await runTest(String(localized: "Recently Deleted: invalid destination is never overwritten")) {
+        await runTest("Eliminati di recente: una destinazione non valida non viene mai sovrascritta") {
             try testAttachmentRestoreDoesNotOverwriteInvalidDestination()
         }
-        await runTest(String(localized: "Recently Deleted: simulated iCloud download failure preserves all records and files")) {
+        await runTest("Eliminati di recente: un errore simulato di download da iCloud conserva tutti i record e i file") {
             try await testTaskRestoreSimulatedCloudDownloadFailurePreservesState()
         }
-        await runTest(String(localized: "Recently Deleted: injected file coordination failure preserves source")) {
+        await runTest("Eliminati di recente: un errore simulato di coordinamento dei file conserva il file originale") {
             try await testTaskRestoreInjectedCoordinationFailurePreservesSource()
         }
-        await runTest(String(localized: "Recently Deleted: transient File Provider unavailability can be retried")) {
+        await runTest("Eliminati di recente: l'indisponibilità temporanea di File Provider consente un nuovo tentativo") {
             try await testTaskRestoreTransientProviderFailureCanBeRetried()
         }
         await runTest("Allegati: rollback dopo eliminazione fisica — riproducibilità") { try testAttachmentDeletionRollbackWindow() }
@@ -676,8 +677,8 @@ struct DebugDiagnosticsView: View {
         await runTest("Allegati iCloud: errori e percorsi non validi propagati") { try testCloudMirrorDeletionFailureAndUnsafePath() }
         await runTest("AlarmKit: sovrapposizione sincronizzazione individuale e batch") { try await testAlarmIndividualBatchOverlap() }
         await runTest("AlarmKit: richieste concorrenti con configurazioni discordanti") { try await testAlarmConflictingConcurrentSnapshots() }
-        await runTest("AlarmKit: stale batch snapshot must not overwrite the latest deadline") { try await testAlarmStaleBatchCannotOverwriteLatestDeadline() }
-        await runTest("AlarmKit: stale individual snapshot must not overwrite the latest deadline") { try await testAlarmStaleIndividualCannotOverwriteLatestDeadline() }
+        await runTest("AlarmKit: una copia batch obsoleta non deve sovrascrivere la scadenza più recente") { try await testAlarmStaleBatchCannotOverwriteLatestDeadline() }
+        await runTest("AlarmKit: una copia individuale obsoleta non deve sovrascrivere la scadenza più recente") { try await testAlarmStaleIndividualCannotOverwriteLatestDeadline() }
         await runTest("AlarmKit: overlap individual/batch con snapshot discordanti e cronologia dettagliata") { try await testAlarmIndividualBatchStaleSnapshotTimeline() }
 
         appendCurrentReportToUnifiedFile()
@@ -775,10 +776,10 @@ struct DebugDiagnosticsView: View {
     /// Non legge né modifica le impostazioni o l'account del dispositivo.
     private func testCloudKitConfigurationPolicy() throws -> String {
         let cases: [(String, Bool, Bool, Bool)] = [
-            ("enabled + identity present", true, true, true),
-            ("disabled + identity present", false, true, false),
-            ("enabled + identity absent", true, false, false),
-            ("disabled + identity absent", false, false, false)
+            ("attivo + account presente", true, true, true),
+            ("disattivato + account presente", false, true, false),
+            ("attivo + account assente", true, false, false),
+            ("disattivato + account assente", false, false, false)
         ]
 
         for (label, enabled, identity, expected) in cases {
@@ -788,12 +789,12 @@ struct DebugDiagnosticsView: View {
             )
             guard actual == expected else {
                 throw DiagnosticFailure.assertion(
-                    String(localized: "Incorrect CloudKit policy for '\(label)': expected \(String(describing: expected)), got \(String(describing: actual)).")
+                    "Criterio CloudKit non corretto per '\(label)': previsto \(String(describing: expected)), ottenuto \(String(describing: actual))."
                 )
             }
         }
 
-        return String(localized: "Verified all 4 combinations. CloudKit is selected only when integration is enabled and an iCloud identity is present. No device settings were changed.")
+        return "Verificate tutte e 4 le combinazioni. CloudKit viene selezionato soltanto se l’integrazione è attiva ed è presente un account iCloud. Nessuna impostazione del dispositivo è stata modificata."
     }
 
     /// Verifica la durabilità dello store locale su disco indipendentemente
@@ -853,7 +854,7 @@ struct DebugDiagnosticsView: View {
                 predicate: #Predicate<TodoTask> { $0.id == taskID }
             )
             guard let task = try context.fetch(descriptor).first else {
-                throw DiagnosticFailure.assertion(String(localized: "Synthetic task was not found before update."))
+                throw DiagnosticFailure.assertion("L’attività sintetica non è stata trovata prima della modifica.")
             }
             task.title = updatedTitle
             try context.save()
@@ -866,7 +867,7 @@ struct DebugDiagnosticsView: View {
                 predicate: #Predicate<TodoTask> { $0.id == taskID }
             )
             guard let task = try context.fetch(descriptor).first else {
-                throw DiagnosticFailure.assertion(String(localized: "Synthetic task was not found before deletion."))
+                throw DiagnosticFailure.assertion("L’attività sintetica non è stata trovata prima dell’eliminazione.")
             }
             context.delete(task)
             try context.save()
@@ -874,13 +875,13 @@ struct DebugDiagnosticsView: View {
 
         try saveInitialTask()
         guard try readTaskTitle() == initialTitle else {
-            throw DiagnosticFailure.assertion(String(localized: "Task was not found after the first store close and reopen."))
+            throw DiagnosticFailure.assertion("L’attività non è stata trovata dopo la prima chiusura e riapertura dell’archivio.")
         }
 
         let simulatedCloudErrors: [(String, CKError)] = [
-            ("network unavailable", CKError(.networkUnavailable)),
-            ("service temporarily unavailable", CKError(.serviceUnavailable)),
-            ("quota exceeded", CKError(.quotaExceeded))
+            ("rete non disponibile", CKError(.networkUnavailable)),
+            ("servizio temporaneamente non disponibile", CKError(.serviceUnavailable)),
+            ("quota superata", CKError(.quotaExceeded))
         ]
 
         for (label, simulatedError) in simulatedCloudErrors {
@@ -891,7 +892,7 @@ struct DebugDiagnosticsView: View {
                 // la lettura dello store locale già salvato.
                 guard try readTaskTitle() == initialTitle else {
                     throw DiagnosticFailure.assertion(
-                        String(localized: "After the simulated CloudKit error (\(label)), the local data is no longer readable.")
+                        "Dopo l’errore CloudKit simulato (\(label)), i dati locali non sono più leggibili."
                     )
                 }
             }
@@ -899,15 +900,15 @@ struct DebugDiagnosticsView: View {
 
         try updateTask()
         guard try readTaskTitle() == updatedTitle else {
-            throw DiagnosticFailure.assertion(String(localized: "The local update did not persist after reopening the store."))
+            throw DiagnosticFailure.assertion("La modifica locale non è stata salvata dopo la riapertura dell’archivio.")
         }
 
         try deleteTask()
         guard try readTaskTitle() == nil else {
-            throw DiagnosticFailure.assertion(String(localized: "The local deletion did not persist after reopening the store."))
+            throw DiagnosticFailure.assertion("L’eliminazione locale non è stata salvata dopo la riapertura dell’archivio.")
         }
 
-        return String(localized: "Temporary persistent SwiftData store, isolated from app data: create, save, close/reopen, read after 3 synthetic CloudKit errors (network unavailable, service unavailable, quota exceeded), update, reopen, and delete verified. Faults are injected at the test boundary; this does not verify real CloudKit mirroring. The temporary directory is removed at the end.")
+        return "Archivio SwiftData persistente temporaneo, isolato dai dati dell’app: verificati creazione, salvataggio, chiusura e riapertura, lettura dopo 3 errori CloudKit sintetici (rete non disponibile, servizio non disponibile, quota superata), modifica, nuova riapertura ed eliminazione. Gli errori sono simulati al confine del test; questa verifica non riguarda la sincronizzazione effettiva con CloudKit. La cartella temporanea viene rimossa al termine."
     }
 
     private func runTest(_ title: String, operation: () async throws -> String) async {
@@ -1833,6 +1834,145 @@ struct DebugDiagnosticsView: View {
     }
 
 
+
+
+    /// Verifica che recurrenceEndDate resti informativa per le serie basata sul conteggio:
+    /// arretra solo quando gli indici eliminati formano una coda consecutiva.
+    /// Usa UUID e fingerprint dedicati; ripristina integralmente UserDefaults.
+    private func testRecurrenceEndDateMovesBackAfterDeletedTail() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let defaults = UserDefaults.standard
+        let occurrenceKey = "deletedRecurrenceOccurrences"
+        let futureKey = "deletedRecurrenceFutureOccurrences"
+        let originalOccurrenceFingerprints = defaults.stringArray(forKey: occurrenceKey)
+        let originalFutureFingerprints = defaults.stringArray(forKey: futureKey)
+        defer {
+            if let originalOccurrenceFingerprints {
+                defaults.set(originalOccurrenceFingerprints, forKey: occurrenceKey)
+            } else {
+                defaults.removeObject(forKey: occurrenceKey)
+            }
+            if let originalFutureFingerprints {
+                defaults.set(originalFutureFingerprints, forKey: futureKey)
+            } else {
+                defaults.removeObject(forKey: futureKey)
+            }
+        }
+
+        struct Scenario {
+            let name: String
+            let deletedIndexes: [Int]
+            let expectedLastIndex: Int
+        }
+
+        let scenarios = [
+            Scenario(name: "singola occorrenza intermedia", deletedIndexes: [5], expectedLastIndex: 10),
+            Scenario(name: "ultime due occorrenze", deletedIndexes: [9, 10], expectedLastIndex: 8),
+            Scenario(name: "ultime tre occorrenze", deletedIndexes: [8, 9, 10], expectedLastIndex: 7)
+        ]
+
+        let calendar = Calendar(identifier: .gregorian)
+        guard let start = calendar.date(
+            from: DateComponents(year: 2032, month: 1, day: 1, hour: 12)
+        ) else {
+            throw DiagnosticFailure.assertion("Impossibile creare la data iniziale sintetica.")
+        }
+
+        for scenario in scenarios {
+            let recurrenceID = UUID()
+            let dates = RecurrenceEngine.occurrenceDates(
+                startDate: start,
+                rule: .daily,
+                interval: 1,
+                limit: .count(10),
+                calendar: calendar
+            )
+            guard dates.count == 10 else {
+                throw DiagnosticFailure.assertion("Impossibile preparare le 10 date sintetiche per \(scenario.name).")
+            }
+
+            var occurrences: [TodoTask] = []
+            for index in 1...10 {
+                let occurrence = TodoTask(
+                    title: "DEBUG-ONLY end-date \(scenario.name) #\(index)",
+                    deadLine: dates[index - 1]
+                )
+                occurrence.isDebugTask = true
+                occurrence.recurrenceID = recurrenceID
+                occurrence.occurrenceIndex = index
+                occurrence.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+                occurrence.recurrenceInterval = 1
+                occurrence.recurrenceStartDate = start
+                occurrence.recurrenceCount = 10
+                occurrence.recurrenceEndDate = dates[9]
+                context.insert(occurrence)
+                occurrences.append(occurrence)
+            }
+
+            for index in scenario.deletedIndexes {
+                DeletedFingerprintStore.markDeletedOccurrence(
+                    recurrenceID: recurrenceID,
+                    occurrenceIndex: index
+                )
+                if let occurrence = occurrences.first(where: { $0.occurrenceIndex == index }) {
+                    context.delete(occurrence)
+                }
+            }
+
+            try RecurrenceEngine.synchronizeCountBasedEndDateAfterDeletion(
+                recurrenceID: recurrenceID,
+                in: context,
+                calendar: calendar
+            )
+
+            let remaining = try context.fetch(
+                FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> { $0.recurrenceID == recurrenceID }
+                )
+            )
+            let expectedDate = dates[scenario.expectedLastIndex - 1]
+            guard !remaining.isEmpty,
+                  remaining.allSatisfy({ $0.recurrenceEndDate == expectedDate }) else {
+                throw DiagnosticFailure.assertion(
+                    "\(scenario.name): attesa data dell'occorrenza #\(scenario.expectedLastIndex) (\(expectedDate)), ma i task rimanenti non sono stati sincronizzati."
+                )
+            }
+        }
+
+        let dateBasedID = UUID()
+        guard let dateBasedEnd = calendar.date(byAdding: .day, value: 30, to: start) else {
+            throw DiagnosticFailure.assertion("Impossibile creare la data finale date-based sintetica.")
+        }
+        let dateBasedTask = TodoTask(
+            title: "DEBUG-ONLY date-based recurrence",
+            deadLine: start
+        )
+        dateBasedTask.isDebugTask = true
+        dateBasedTask.recurrenceID = dateBasedID
+        dateBasedTask.occurrenceIndex = 1
+        dateBasedTask.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        dateBasedTask.recurrenceInterval = 1
+        dateBasedTask.recurrenceStartDate = start
+        dateBasedTask.recurrenceCount = nil
+        dateBasedTask.recurrenceEndDate = dateBasedEnd
+        context.insert(dateBasedTask)
+
+        try RecurrenceEngine.synchronizeCountBasedEndDateAfterDeletion(
+            recurrenceID: dateBasedID,
+            in: context,
+            calendar: calendar
+        )
+        guard dateBasedTask.recurrenceEndDate == dateBasedEnd else {
+            throw DiagnosticFailure.assertion(
+                "Il ricalcolo count-based ha modificato la data finale di una ricorrenza date-based."
+            )
+        }
+
+        return "Verificati tre casi count-based su store in-memory: eliminare solo #5 mantiene la data #10; eliminare #9–#10 arretra a #8; eliminare #8–#10 arretra a #7. Tutti i task rimanenti condividono la stessa recurrenceEndDate. Una serie date-based resta invariata. I fingerprint diagnostici sono stati ripristinati."
+    }
+
     private func testRecurrenceRuleCoverage() throws -> String {
         let start = Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!
         let rules: [RecurrenceEngine.Rule] = [.hourly, .daily, .weekly, .monthly, .yearly]
@@ -2480,7 +2620,7 @@ struct DebugDiagnosticsView: View {
         try coordinator.begin(.restore)
         coordinator.finish()
 
-        return "Verificato: .delete acquisita; .restore e .reset rifiutate mentre è attiva; i rifiuti non liberano l'operazione originale; dopo finish() .restore viene accettata. Nessun dato, CloudKit, notifica o sveglia modificati."
+        return "Verificato: .delete acquisita; .restore e .reset rifiutate durante l'operazione; i rifiuti non liberano l'operazione originale; dopo finish() .restore viene accettata. Nessun dato, CloudKit, notifica o sveglia modificati."
     }
 
     /// Esegue una cancellazione a batch su uno store SwiftData in-memory e
@@ -2684,12 +2824,13 @@ struct DebugDiagnosticsView: View {
             "I test sugli allegati e sugli asset usano payload sintetici e percorsi UUID. I file locali e gli eventuali mirror cloud creati dal test di restore vengono rimossi nel defer; nessun file personale preesistente viene selezionato o cancellato e nessuna credenziale personale viene usata.",
             "I test di propagazione usano RecurrenceEngine e RecurringAttachmentManager; il test di stabilità ripete 20 volte un calcolo deterministico, ma non sostituisce la ripetizione manuale dell'intera suite.",
             "",
-            "AUDIT P1 — COPERTURA E LIMITI RESIDUI",
-            "1. Asset Recovery: il coordinamento di produzione propaga gli errori fetch e completa tutti i fetch di TaskAttachment, WalletAsset e DocumentAsset prima delle riparazioni. I test verificano errore fetch = zero callback e percorso positivo = whitelist complete e correttamente associate. La scansione delle directory propaga gli errori e non interpreta un errore di enumerazione come directory vuota.",
+            "VERIFICA PRIORITÀ 1 — COPERTURA E LIMITI RESIDUI",
+            "1. Recupero asset: il coordinamento di produzione propaga gli errori fetch e completa tutti i fetch di TaskAttachment, WalletAsset e DocumentAsset prima delle riparazioni. I test verificano errore fetch = zero callback e percorso positivo = whitelist complete e correttamente associate. La scansione delle directory propaga gli errori e non interpreta un errore di enumerazione come directory vuota.",
             "2. Eliminazione task singolo: il test con errore save sul percorso deleteTask() verifica .failed, task ripristinato e nessun record Recently Deleted persistito.",
             "3. Eliminazione ricorrente a batch: il test con errore save verifica .failed, rollback di tutte le occorrenze e nessun fingerprint o cleanup AlarmKit successivo al commit fallito.",
-            "4. Ripristino allegati Recently Deleted: quattro test aggiuntivi esercitano il percorso restoreWithResult() con file fisici sintetici nelle directory locali TaskAttachments e TaskAttachments_Trash. Verificano errore reale di FileManager.moveItem, conservazione del file in Trash, rollback SwiftData dopo ripristino parziale, retry riuscito, preflight completo e protezione di una destinazione locale non valida.",
-            "Limite residuo: il test esercita il filesystem locale reale e ripulisce gli eventuali mirror cloud sintetici; non simula errori di download iCloud o NSFileCoordinator né un errore transitorio del provider File Provider.",
+            "4. Ripristino allegati Eliminati di recente: quattro test aggiuntivi esercitano il percorso restoreWithResult() con file fisici sintetici nelle directory locali TaskAttachments e TaskAttachments_Trash. Verificano errore reale di FileManager.moveItem, conservazione del file in Trash, rollback SwiftData dopo ripristino parziale, retry riuscito, preflight completo e protezione di una destinazione locale non valida.",
+            "5. Data finale ricorrenza basata sul conteggio: il test dedicato verifica che recurrenceEndDate arretri soltanto quando le occorrenze eliminate formano una coda consecutiva; le eliminazioni intermedie non la modificano.",
+            "Limite residuo: i test di ripristino esercitano il filesystem locale reale e ripuliscono gli eventuali mirror cloud sintetici; non simulano errori di download iCloud o NSFileCoordinator né un errore transitorio del provider File Provider. Il test della data finale esercita il ricalcolo di produzione dopo la registrazione dei fingerprint, non l'intera interazione UI di eliminazione.",
             ""
         ]
         for (index, result) in results.enumerated() {
@@ -3265,11 +3406,11 @@ struct DebugDiagnosticsView: View {
         unlimited.recurrenceEndDate = nil
         context.insert(unlimited)
         let unlimitedSeriesIsFinal = try RecurrenceEngine.isFinalPlannedOccurrence(unlimited, in: context)
-        guard !unlimitedSeriesIsFinal else {
-            throw DiagnosticFailure.assertion("Una serie illimitata non deve essere classificata come ultima occorrenza pianificata.")
+        guard unlimitedSeriesIsFinal else {
+            throw DiagnosticFailure.assertion("L'ultima occorrenza materializzata di una serie illimitata deve poter essere estesa.")
         }
 
-        return "Rilevamento verificato per serie finita coerente, serie con indice oltre il limite e serie illimitata."
+        return "Rilevamento verificato per serie finita coerente, serie con indice oltre il limite e ultima occorrenza materializzata di una serie illimitata."
     }
 
     private func testRecurrenceMetadataPropagation() throws -> String {
@@ -3858,7 +3999,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmSynchronizationAndDeadlineEdit() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -3914,7 +4055,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmRecurringSeriesAndObsoleteOccurrences() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -3973,7 +4114,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmBatchSynchronizationIdempotency() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -4020,7 +4161,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmEligibilityTransitions() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -4078,7 +4219,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmTaskReschedulerUpdatesDeadline() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -4144,7 +4285,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmRestoreCorrectsExistingDate() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -4373,7 +4514,7 @@ struct DebugDiagnosticsView: View {
         var lines: [String] = []
         lines.append("Esecuzione: \(Self.diagnosticDate(now)); modalità esclusivamente di lettura.")
         lines.append("Task aperti considerati: \(tasks.count); documenti letti: \(documents.count).")
-        lines.append("Notifiche UN: \(pendingRequests.count) richieste pending totali; \(ownedPending.count) richieste ForMemo (task/documenti).")
+        lines.append("Notifiche UN: \(pendingRequests.count) richieste in attesa totali; \(ownedPending.count) richieste ForMemo (task/documenti).")
         lines.append("Coda globale attesa: \(orderedCandidates.count) eventi futuri unici; selezionati i primi \(selected.count)/64. Eventi oltre il limite: \(queuedOutsideCapacity).")
         lines.append("Eventi notifiche coerenti (ID atteso presente e data compatibile): \(coherentNotificationIDs.count).")
         lines.append("Notifiche mancanti nella selezione dei primi 64: \(missingNotifications.count).")
@@ -4396,8 +4537,8 @@ struct DebugDiagnosticsView: View {
         for (key, requests) in duplicateNotificationGroups.sorted(by: { $0.key < $1.key }).prefix(20) {
             lines.append("  Duplicato \(key): " + requests.map(\.identifier).joined(separator: ", "))
         }
-        lines.append("AlarmKit: autorizzazione \(alarmAuthorized ? "autorizzata" : "non autorizzata"); sveglie scheduled lette: \(scheduledAlarms.count); task eleggibili: \(eligibleAlarmIDs.count).")
-        lines.append("Sveglie AlarmKit coerenti (task eleggibile e ID scheduled presente): \(coherentAlarmIDs.count).")
+        lines.append("AlarmKit: autorizzazione \(alarmAuthorized ? "autorizzata" : "non autorizzata"); sveglie programmate lette: \(scheduledAlarms.count); task eleggibili: \(eligibleAlarmIDs.count).")
+        lines.append("Sveglie AlarmKit coerenti (task eleggibile e ID di una sveglia programmata presente): \(coherentAlarmIDs.count).")
         lines.append("Sveglie AlarmKit mancanti: \(missingAlarms.count).")
         if !missingAlarms.isEmpty {
             lines.append("  Mancanti: " + missingAlarms.prefix(30).map(\.uuidString).joined(separator: ", "))
@@ -5392,7 +5533,7 @@ struct DebugDiagnosticsView: View {
               trashPreserved,
               destinationAbsent else {
             throw DiagnosticFailure.assertion(
-                "Injected coordination failure: result=\(result), taskAbsent=\(taskAbsent), deletedRecords=\(deletedRecords.count), models=\(attachmentModels.count), trashPreserved=\(trashPreserved), destinationAbsent=\(destinationAbsent)."
+                "Errore di coordinamento iniettato: esito=\(result), taskAbsent=\(taskAbsent), deletedRecords=\(deletedRecords.count), models=\(attachmentModels.count), trashPreserved=\(trashPreserved), destinationAbsent=\(destinationAbsent)."
             )
         }
 
@@ -5499,7 +5640,7 @@ struct DebugDiagnosticsView: View {
               firstSourcePreserved,
               firstDestinationAbsent else {
             throw DiagnosticFailure.assertion(
-                "First transient provider attempt: result=\(firstResult), taskAbsent=\(firstTaskAbsent), recordsRemain=\(firstRecordsRemain), sourcePreserved=\(firstSourcePreserved), destinationAbsent=\(firstDestinationAbsent)."
+                "Primo tentativo con File Provider temporaneamente non disponibile: esito=\(firstResult), taskAbsent=\(firstTaskAbsent), recordsRemain=\(firstRecordsRemain), sourcePreserved=\(firstSourcePreserved), destinationAbsent=\(firstDestinationAbsent)."
             )
         }
 
@@ -5519,7 +5660,7 @@ struct DebugDiagnosticsView: View {
               restoredBytes,
               retryCount >= 2 else {
             throw DiagnosticFailure.assertion(
-                "Transient provider retry: result=\(retryResult), taskRestored=\(restoredTask != nil), attachments=\(restoredAttachments.count), bytesRestored=\(restoredBytes), availabilityAttempts=\(retryCount)."
+                "Nuovo tentativo con File Provider: esito=\(retryResult), taskRestored=\(restoredTask != nil), attachments=\(restoredAttachments.count), bytesRestored=\(restoredBytes), availabilityAttempts=\(retryCount)."
             )
         }
 
@@ -5818,7 +5959,7 @@ struct DebugDiagnosticsView: View {
               fileStillExists,
               bytesAreReadable else {
             throw DiagnosticFailure.assertion(
-                "Automatic save failure: attempts=\(saveAttempts), record=\(restoredAttachment != nil), relationship=\(relationshipIsRestored), file=\(fileStillExists), bytes=\(bytesAreReadable)."
+                "Errore di salvataggio automatico: tentativi=\(saveAttempts), record=\(restoredAttachment != nil), relationship=\(relationshipIsRestored), file=\(fileStillExists), bytes=\(bytesAreReadable)."
             )
         }
 
@@ -5911,7 +6052,7 @@ struct DebugDiagnosticsView: View {
               fileStillExists,
               bytesAreReadable else {
             throw DiagnosticFailure.assertion(
-                "Immediate save failure: attempts=\(saveAttempts), injectedErrorPropagated=\(injectedErrorWasPropagated), record=\(restoredAttachment != nil), relationship=\(relationshipIsRestored), file=\(fileStillExists), bytes=\(bytesAreReadable)."
+                "Errore di salvataggio immediato: tentativi=\(saveAttempts), injectedErrorPropagated=\(injectedErrorWasPropagated), record=\(restoredAttachment != nil), relationship=\(relationshipIsRestored), file=\(fileStillExists), bytes=\(bytesAreReadable)."
             )
         }
 
@@ -5985,7 +6126,7 @@ struct DebugDiagnosticsView: View {
         guard deletionAttempts == 1, remaining == nil, !relationshipRemains,
               FileManager.default.fileExists(atPath: fileURL.path), bytesRemain else {
             throw DiagnosticFailure.assertion(
-                "Automatic physical failure: attempts=\(deletionAttempts), record=\(remaining != nil), relationship=\(relationshipRemains), file=\(FileManager.default.fileExists(atPath: fileURL.path)), bytes=\(bytesRemain)."
+                "Errore di eliminazione fisica automatica: tentativi=\(deletionAttempts), record=\(remaining != nil), relationship=\(relationshipRemains), file=\(FileManager.default.fileExists(atPath: fileURL.path)), bytes=\(bytesRemain)."
             )
         }
         return "Errore fisico iniettato dopo il commit automatico: record e relazione rimossi, file e byte conservati come asset orfano."
@@ -6049,7 +6190,7 @@ struct DebugDiagnosticsView: View {
         guard deletionAttempts == 1, remaining == nil, !relationshipRemains,
               FileManager.default.fileExists(atPath: fileURL.path), bytesRemain else {
             throw DiagnosticFailure.assertion(
-                "Immediate physical failure: attempts=\(deletionAttempts), record=\(remaining != nil), relationship=\(relationshipRemains), file=\(FileManager.default.fileExists(atPath: fileURL.path)), bytes=\(bytesRemain)."
+                "Errore di eliminazione fisica immediata: tentativi=\(deletionAttempts), record=\(remaining != nil), relationship=\(relationshipRemains), file=\(FileManager.default.fileExists(atPath: fileURL.path)), bytes=\(bytesRemain)."
             )
         }
         return "Errore fisico iniettato dopo il commit immediato: il metodo non ripristina record già eliminati e lascia il file orfano disponibile."
@@ -6128,7 +6269,7 @@ struct DebugDiagnosticsView: View {
               FileManager.default.fileExists(atPath: failedURL.path), failedBytesRemain,
               !FileManager.default.fileExists(atPath: successfulURL.path) else {
             throw DiagnosticFailure.assertion(
-                "Partial cleanup: attempts=\(attemptedPaths), failedRecord=\(remainingIDs.contains(failedID)), successfulRecord=\(remainingIDs.contains(successfulID)), taskHasAttachments=\(taskHasAttachments), failedFile=\(FileManager.default.fileExists(atPath: failedURL.path)), successfulFile=\(FileManager.default.fileExists(atPath: successfulURL.path))."
+                "Pulizia parziale: tentativi=\(attemptedPaths), failedRecord=\(remainingIDs.contains(failedID)), successfulRecord=\(remainingIDs.contains(successfulID)), taskHasAttachments=\(taskHasAttachments), failedFile=\(FileManager.default.fileExists(atPath: failedURL.path)), successfulFile=\(FileManager.default.fileExists(atPath: successfulURL.path))."
             )
         }
         return "Due asset elaborati: entrambi i record rimossi dopo il commit; il file con errore resta integro, l'altro viene eliminato."
@@ -6281,7 +6422,7 @@ struct DebugDiagnosticsView: View {
               remainingIDs.contains(activeAttachment.id),
               !FileManager.default.fileExists(atPath: oldURL.path) else {
             throw DiagnosticFailure.assertion(
-                "Retention boundary: oldCompleted=\(remainingIDs.contains(oldAttachment.id)), recentCompleted=\(remainingIDs.contains(recentAttachment.id)), oldActive=\(remainingIDs.contains(activeAttachment.id)), oldFile=\(FileManager.default.fileExists(atPath: oldURL.path))."
+                "Limite di conservazione: completatoDaTempo=\(remainingIDs.contains(oldAttachment.id)), recentCompleted=\(remainingIDs.contains(recentAttachment.id)), oldActive=\(remainingIDs.contains(activeAttachment.id)), oldFile=\(FileManager.default.fileExists(atPath: oldURL.path))."
             )
         }
         return "Con retention 30 giorni viene eliminato soltanto l'allegato del task completato da 45 giorni; quello completato da 5 giorni e quello di un task non completato restano."
@@ -6345,7 +6486,7 @@ struct DebugDiagnosticsView: View {
               (try? Data(contentsOf: referencedURL)) == referencedPayload,
               (try? Data(contentsOf: orphanURL)) == orphanPayload else {
             throw DiagnosticFailure.assertion(
-                "Audit orfani: candidates=\(testCandidates.map(\.relativePath)), referencedExists=\(FileManager.default.fileExists(atPath: referencedURL.path)), orphanExists=\(FileManager.default.fileExists(atPath: orphanURL.path))."
+                "Verifica file orfani: candidati=\(testCandidates.map(\.relativePath)), referencedExists=\(FileManager.default.fileExists(atPath: referencedURL.path)), orphanExists=\(FileManager.default.fileExists(atPath: orphanURL.path))."
             )
         }
 
@@ -6380,7 +6521,7 @@ struct DebugDiagnosticsView: View {
               missingResult == .alreadyMissing,
               !FileManager.default.fileExists(atPath: fileURL.path) else {
             throw DiagnosticFailure.assertion(
-                "Cloud mirror deletion: first=\(deletionResult), second=\(missingResult), stillExists=\(FileManager.default.fileExists(atPath: fileURL.path))."
+                "Eliminazione del mirror iCloud: primo passaggio=\(deletionResult), second=\(missingResult), stillExists=\(FileManager.default.fileExists(atPath: fileURL.path))."
             )
         }
 
@@ -6431,7 +6572,7 @@ struct DebugDiagnosticsView: View {
               FileManager.default.fileExists(atPath: fileURL.path),
               (try? Data(contentsOf: fileURL)) == payload else {
             throw DiagnosticFailure.assertion(
-                "Cloud mirror failure: propagated=\(injectedFailurePropagated), unsafeRejected=\(unsafePathRejected), filePreserved=\(FileManager.default.fileExists(atPath: fileURL.path))."
+                "Errore eliminazione mirror iCloud: propagato=\(injectedFailurePropagated), unsafeRejected=\(unsafePathRejected), filePreserved=\(FileManager.default.fileExists(atPath: fileURL.path))."
             )
         }
 
@@ -6446,7 +6587,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmIndividualBatchOverlap() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (_, context) = try makeIsolatedStore()
@@ -6505,7 +6646,7 @@ struct DebugDiagnosticsView: View {
                 batchSnapshot.alarmEnabled = true
 
                 trace.append(
-                    "ROUND \(round + 1)/\(repetitions) UUID=\(sharedID.uuidString); authoritative=\(authoritativeDeadline.formatted(.iso8601)); individual snapshot=\(individualSnapshotDeadline.formatted(.iso8601)); batch snapshot=\(batchSnapshotDeadline.formatted(.iso8601))"
+                    "CICLO \(round + 1)/\(repetitions) UUID=\(sharedID.uuidString); scadenza autorevole=\(authoritativeDeadline.formatted(.iso8601)); copia individuale=\(individualSnapshotDeadline.formatted(.iso8601)); copia batch=\(batchSnapshotDeadline.formatted(.iso8601))"
                 )
 
                 async let individualResult = manager.synchronize(
@@ -6519,7 +6660,7 @@ struct DebugDiagnosticsView: View {
                 let (individualOK, batchOK) = await (individualResult, batchResult)
 
                 trace.append(
-                    "ROUND \(round + 1) RESULTS individual=\(individualOK), batch=\(batchOK)"
+                    "RISULTATI CICLO \(round + 1): individuale=\(individualOK), batch=\(batchOK)"
                 )
 
                 // Drain any operation queued behind the overlapping request
@@ -6533,7 +6674,7 @@ struct DebugDiagnosticsView: View {
 
                 guard individualOK, batchOK else {
                     throw DiagnosticFailure.assertion(
-                        "Round \(round + 1)/\(repetitions): esito individuale=\(individualOK), batch=\(batchOK)."
+                        "Ciclo \(round + 1)/\(repetitions): esito individuale=\(individualOK), batch=\(batchOK)."
                     )
                 }
 
@@ -6571,7 +6712,7 @@ struct DebugDiagnosticsView: View {
             await manager.waitForPendingSynchronizations()
 
             let failureStates = persistedTasks.map { task in
-                let state = (try? diagnosticAlarmStateDescription(id: task.id)) ?? "AlarmKit state unavailable"
+                let state = (try? diagnosticAlarmStateDescription(id: task.id)) ?? "Stato AlarmKit non disponibile"
                 return "UUID=\(task.id.uuidString): \(state)"
             }.joined(separator: "\n")
 
@@ -6584,7 +6725,7 @@ struct DebugDiagnosticsView: View {
             try? context.save()
 
             throw DiagnosticFailure.assertion(
-                "\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE:\n\(failureStates)"
+                "\(failure)\nCRONOLOGIA:\n\(trace.joined(separator: "\n"))\nSTATO IN CASO DI ERRORE:\n\(failureStates)"
             )
         }
 
@@ -6598,7 +6739,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmConflictingConcurrentSnapshots() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -6647,7 +6788,7 @@ struct DebugDiagnosticsView: View {
 
                 guard individualOK, batchOK else {
                     throw DiagnosticFailure.assertion(
-                        "Round \(round + 1)/\(repetitions): esito individuale=\(individualOK), batch=\(batchOK)."
+                        "Ciclo \(round + 1)/\(repetitions): esito individuale=\(individualOK), batch=\(batchOK)."
                     )
                 }
                 try assertDiagnosticAlarm(id: id, shouldBeScheduled: false)
@@ -6680,14 +6821,14 @@ struct DebugDiagnosticsView: View {
         guard let alarm = alarms.first(where: { $0.id == id }),
               case .fixed(let actualDate)? = alarm.schedule else {
             throw DiagnosticFailure.assertion(
-                "Diagnostic alarm \(id.uuidString) is missing or does not have a .fixed schedule."
+                "La sveglia diagnostica \(id.uuidString) è assente oppure non utilizza una pianificazione .fixed."
             )
         }
 
         let difference = abs(actualDate.timeIntervalSince(expectedDate))
         guard difference <= tolerance else {
             throw DiagnosticFailure.assertion(
-                "AlarmKit date mismatch for \(id.uuidString): expected \(expectedDate.formatted()), actual \(actualDate.formatted()), difference \(String(format: "%.3f", difference)) s."
+                "Data AlarmKit non corrispondente per \(id.uuidString): attesa \(expectedDate.formatted()), effettiva \(actualDate.formatted()), difference \(String(format: "%.3f", difference)) s."
             )
         }
     }
@@ -6701,21 +6842,21 @@ struct DebugDiagnosticsView: View {
     private func diagnosticAlarmStateDescription(id: UUID) throws -> String {
         let alarms = try AlarmManager.shared.alarms
         guard let alarm = alarms.first(where: { $0.id == id }) else {
-            return "AlarmKit state: MISSING"
+            return "Stato AlarmKit: sveglia non presente"
         }
 
         let stateDescription: String
         switch alarm.state {
         case .scheduled:
-            stateDescription = "scheduled"
+            stateDescription = "programmata"
         default:
             stateDescription = String(describing: alarm.state)
         }
 
         if case .fixed(let date)? = alarm.schedule {
-            return "AlarmKit state: \(stateDescription); fixedDate=\(date.formatted(.iso8601))"
+            return "Stato AlarmKit: \(stateDescription); data programmata=\(date.formatted(.iso8601))"
         }
-        return "AlarmKit state: \(stateDescription); schedule=non-fixed-or-unavailable"
+        return "Stato AlarmKit: \(stateDescription); pianificazione non fissa o non disponibile"
     }
 
     /// Applies the latest individual snapshot, then deliberately submits an
@@ -6724,7 +6865,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmStaleBatchCannotOverwriteLatestDeadline() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -6744,29 +6885,29 @@ struct DebugDiagnosticsView: View {
         staleBatchSnapshot.alarmEnabled = true
         var trace: [String] = [
             "UUID=\(id.uuidString)",
-            "authoritative persisted deadline=\(latestDeadline.formatted(.iso8601))",
-            "stale batch snapshot deadline=\(staleDeadline.formatted(.iso8601))"
+            "scadenza autorevole salvata=\(latestDeadline.formatted(.iso8601))",
+            "scadenza nella copia batch obsoleta=\(staleDeadline.formatted(.iso8601))"
         ]
 
         do {
-            trace.append("STEP 1 BEGIN synchronize(task:) authoritative")
+            trace.append("FASE 1 — avvio sincronizzazione individuale con dati autorevoli")
             let individualOK = await manager.synchronize(task: authoritativeTask, in: context)
-            trace.append("STEP 1 END result=\(individualOK); \(try diagnosticAlarmStateDescription(id: id))")
+            trace.append("FASE 1 — esito=\(individualOK); \(try diagnosticAlarmStateDescription(id: id))")
             guard individualOK else { throw DiagnosticFailure.assertion("La sincronizzazione individuale del task persistito ha restituito false.") }
             try assertDiagnosticAlarmDate(id: id, expectedDate: latestDeadline)
 
-            trace.append("STEP 2 BEGIN synchronize(tasks:) stale snapshot")
+            trace.append("FASE 2 — avvio sincronizzazione batch con copia obsoleta")
             let batchOK = await manager.synchronize(tasks: [staleBatchSnapshot], in: context)
-            trace.append("STEP 2 END result=\(batchOK); \(try diagnosticAlarmStateDescription(id: id))")
+            trace.append("FASE 2 — esito=\(batchOK); \(try diagnosticAlarmStateDescription(id: id))")
             guard batchOK else { throw DiagnosticFailure.assertion("La sincronizzazione batch dello snapshot obsoleto ha restituito false.") }
             try assertDiagnosticAlarmDate(id: id, expectedDate: latestDeadline)
         } catch {
             let failure = error.localizedDescription
-            let finalState = (try? diagnosticAlarmStateDescription(id: id)) ?? "AlarmKit state unavailable"
+            let finalState = (try? diagnosticAlarmStateDescription(id: id)) ?? "Stato AlarmKit non disponibile"
             await manager.cancelAlarms(ids: [id])
             context.delete(authoritativeTask)
             try? context.save()
-            throw DiagnosticFailure.assertion("\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE: \(finalState)")
+            throw DiagnosticFailure.assertion("\(failure)\nCRONOLOGIA:\n\(trace.joined(separator: "\n"))\nSTATO IN CASO DI ERRORE: \(finalState)")
         }
 
         let finalState = try diagnosticAlarmStateDescription(id: id)
@@ -6774,7 +6915,7 @@ struct DebugDiagnosticsView: View {
         try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
         context.delete(authoritativeTask)
         try context.save()
-        return "PASS. Lo snapshot batch obsoleto non ha modificato la data del record autorevole persistito.\n\(trace.joined(separator: "\n"))\nStato prima del cleanup: \(finalState). Cleanup mirato verificato."
+        return "SUPERATO.  La copia batch obsoleta non ha modificato la data del record autorevole salvato.\n\(trace.joined(separator: "\n"))\nStato prima del cleanup: \(finalState). Cleanup mirato verificato."
     }
 
     /// Same controlled sequence in the opposite direction: latest batch first,
@@ -6782,7 +6923,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmStaleIndividualCannotOverwriteLatestDeadline() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -6802,29 +6943,29 @@ struct DebugDiagnosticsView: View {
         staleIndividualSnapshot.alarmEnabled = true
         var trace: [String] = [
             "UUID=\(id.uuidString)",
-            "authoritative persisted deadline=\(latestDeadline.formatted(.iso8601))",
-            "stale individual snapshot deadline=\(staleDeadline.formatted(.iso8601))"
+            "scadenza autorevole salvata=\(latestDeadline.formatted(.iso8601))",
+            "scadenza nella copia individuale obsoleta=\(staleDeadline.formatted(.iso8601))"
         ]
 
         do {
-            trace.append("STEP 1 BEGIN synchronize(tasks:) authoritative")
+            trace.append("FASE 1 — avvio sincronizzazione batch con dati autorevoli")
             let batchOK = await manager.synchronize(tasks: [authoritativeTask], in: context)
-            trace.append("STEP 1 END result=\(batchOK); \(try diagnosticAlarmStateDescription(id: id))")
+            trace.append("FASE 1 — esito=\(batchOK); \(try diagnosticAlarmStateDescription(id: id))")
             guard batchOK else { throw DiagnosticFailure.assertion("La sincronizzazione batch del task persistito ha restituito false.") }
             try assertDiagnosticAlarmDate(id: id, expectedDate: latestDeadline)
 
-            trace.append("STEP 2 BEGIN synchronize(task:) stale snapshot")
+            trace.append("FASE 2 — avvio sincronizzazione individuale con copia obsoleta")
             let individualOK = await manager.synchronize(task: staleIndividualSnapshot, in: context)
-            trace.append("STEP 2 END result=\(individualOK); \(try diagnosticAlarmStateDescription(id: id))")
+            trace.append("FASE 2 — esito=\(individualOK); \(try diagnosticAlarmStateDescription(id: id))")
             guard individualOK else { throw DiagnosticFailure.assertion("La sincronizzazione individuale dello snapshot obsoleto ha restituito false.") }
             try assertDiagnosticAlarmDate(id: id, expectedDate: latestDeadline)
         } catch {
             let failure = error.localizedDescription
-            let finalState = (try? diagnosticAlarmStateDescription(id: id)) ?? "AlarmKit state unavailable"
+            let finalState = (try? diagnosticAlarmStateDescription(id: id)) ?? "Stato AlarmKit non disponibile"
             await manager.cancelAlarms(ids: [id])
             context.delete(authoritativeTask)
             try? context.save()
-            throw DiagnosticFailure.assertion("\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE: \(finalState)")
+            throw DiagnosticFailure.assertion("\(failure)\nCRONOLOGIA:\n\(trace.joined(separator: "\n"))\nSTATO IN CASO DI ERRORE: \(finalState)")
         }
 
         let finalState = try diagnosticAlarmStateDescription(id: id)
@@ -6832,7 +6973,7 @@ struct DebugDiagnosticsView: View {
         try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
         context.delete(authoritativeTask)
         try context.save()
-        return "PASS. Lo snapshot individuale obsoleto non ha modificato la data del record autorevole persistito.\n\(trace.joined(separator: "\n"))\nStato prima del cleanup: \(finalState). Cleanup mirato verificato."
+        return "SUPERATO.  La copia individuale obsoleta non ha modificato la data del record autorevole salvato.\n\(trace.joined(separator: "\n"))\nStato prima del cleanup: \(finalState). Cleanup mirato verificato."
     }
 
     /// Starts individual and batch requests for the same UUID with conflicting
@@ -6841,7 +6982,7 @@ struct DebugDiagnosticsView: View {
     private func testAlarmIndividualBatchStaleSnapshotTimeline() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
-            throw DiagnosticFailure.assertion("Test unavailable: AlarmKit is not authorized; no alarm was created.")
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
         }
 
         let (container, context) = try makeIsolatedStore()
@@ -6866,31 +7007,31 @@ struct DebugDiagnosticsView: View {
 
         var trace: [String] = [
             "UUID=\(id.uuidString)",
-            "authoritative persisted deadline=\(authoritativeDeadline.formatted(.iso8601))",
-            "individual supplied snapshot=\(individualSnapshotDeadline.formatted(.iso8601))",
-            "batch supplied snapshot=\(batchSnapshotDeadline.formatted(.iso8601))",
-            "Both requests target the same persisted UUID; the authoritative SwiftData record is the expected source of truth."
+            "scadenza autorevole salvata=\(authoritativeDeadline.formatted(.iso8601))",
+            "scadenza della copia individuale=\(individualSnapshotDeadline.formatted(.iso8601))",
+            "scadenza della copia batch=\(batchSnapshotDeadline.formatted(.iso8601))",
+            "Entrambe le richieste fanno riferimento allo stesso UUID persistito; il record autorevole di SwiftData deve essere la fonte dei dati."
         ]
 
         do {
-            trace.append("LAUNCH individual synchronize(task:in:)")
+            trace.append("AVVIO sincronizzazione individuale")
             async let individualResult = manager.synchronize(task: individualSnapshot, in: context)
-            trace.append("LAUNCH batch synchronize(tasks:in:)")
+            trace.append("AVVIO sincronizzazione batch")
             async let batchResult = manager.synchronize(tasks: [batchSnapshot], in: context)
             let (individualOK, batchOK) = await (individualResult, batchResult)
-            trace.append("COMPLETE results: individual=\(individualOK), batch=\(batchOK)")
-            trace.append("OBSERVED final schedule: \(try diagnosticAlarmStateDescription(id: id))")
+            trace.append("RISULTATI: individuale=\(individualOK), batch=\(batchOK)")
+            trace.append("PIANIFICAZIONE FINALE RILEVATA: \(try diagnosticAlarmStateDescription(id: id))")
             guard individualOK, batchOK else {
                 throw DiagnosticFailure.assertion("Esiti non positivi: individual=\(individualOK), batch=\(batchOK).")
             }
             try assertDiagnosticAlarmDate(id: id, expectedDate: authoritativeDeadline)
         } catch {
             let failure = error.localizedDescription
-            let finalState = (try? diagnosticAlarmStateDescription(id: id)) ?? "AlarmKit state unavailable"
+            let finalState = (try? diagnosticAlarmStateDescription(id: id)) ?? "Stato AlarmKit non disponibile"
             await manager.cancelAlarms(ids: [id])
             context.delete(authoritativeTask)
             try? context.save()
-            throw DiagnosticFailure.assertion("\(failure)\nTIMELINE:\n\(trace.joined(separator: "\n"))\nFAILURE STATE: \(finalState)")
+            throw DiagnosticFailure.assertion("\(failure)\nCRONOLOGIA:\n\(trace.joined(separator: "\n"))\nSTATO IN CASO DI ERRORE: \(finalState)")
         }
 
         let finalState = try diagnosticAlarmStateDescription(id: id)
@@ -6910,7 +7051,7 @@ struct DebugDiagnosticsView: View {
         }
         guard isScheduled == shouldBeScheduled else {
             throw DiagnosticFailure.assertion(
-                "Stato AlarmKit inatteso per UUID di test \(id.uuidString): atteso scheduled=\(shouldBeScheduled), effettivo=\(isScheduled)."
+                "Stato AlarmKit inatteso per UUID di test \(id.uuidString): programmazione attesa=\(shouldBeScheduled), effettivo=\(isScheduled)."
             )
         }
     }
@@ -6924,7 +7065,7 @@ struct DebugDiagnosticsView: View {
         let matching = scheduledIDs.intersection(ids)
         guard allShouldBeScheduled ? matching == ids : matching.isEmpty else {
             throw DiagnosticFailure.assertion(
-                "Stato batch AlarmKit inatteso: richieste \(ids.count), programmate tra gli ID di test \(matching.count), atteso scheduled=\(allShouldBeScheduled)."
+                "Stato batch AlarmKit inatteso: richieste \(ids.count), programmate tra gli ID di test \(matching.count), programmazione attesa=\(allShouldBeScheduled)."
             )
         }
     }

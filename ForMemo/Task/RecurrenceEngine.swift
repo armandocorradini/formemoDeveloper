@@ -385,7 +385,6 @@ struct RecurrenceEngine {
     ) throws -> Bool {
         guard task.isCompleted,
               task.recurrenceRule != nil,
-              task.recurrenceCount != nil || task.recurrenceEndDate != nil,
               let recurrenceID = task.recurrenceID,
               let currentIndex = task.occurrenceIndex,
               currentIndex > 0 else {
@@ -504,23 +503,16 @@ struct RecurrenceEngine {
         // "Additional occurrences" is an exact-count request regardless of
         // whether the series was originally bounded by a count or an end date.
         // Keeping recurrenceCount non-nil makes materializeFutureOccurrences
-        // use the count limit (which takes precedence over the end-of-day
-        // semantics of .until). Otherwise an hourly series can create many
-        // more occurrences than requested on the final calendar day.
-        guard completedTask.recurrenceCount != nil ||
-              completedTask.recurrenceEndDate != nil else {
-            // Unlimited series are not eligible for this interaction.
-            throw ExtensionError.invalidSeries
-        }
-
+        // use the exact-count limit (which takes precedence over the end-of-day
+        // semantics of .until). Extension eligibility is based on the last
+        // materialized occurrence, not on recurrenceEndDate.
         let newCount: Int? = newTotalCount
-        let newEndDate = completedTask.recurrenceEndDate
 
-        // Each occurrence stores a copy of the recurrence definition. Keep these
-        // fields synchronized so editing any occurrence later sees the extension.
+        // Each occurrence stores a copy of the recurrence definition. Keep the
+        // count synchronized here; materializeFutureOccurrences recalculates
+        // and propagates the informational end date for the extended series.
         for occurrence in occurrences {
             occurrence.recurrenceCount = newCount
-            occurrence.recurrenceEndDate = newEndDate
         }
 
         return try materializeFutureOccurrences(
@@ -699,14 +691,15 @@ struct RecurrenceEngine {
         var createdTasks: [TodoTask] = []
 
         if dates.count <= 1 {
-            if task.recurrenceCount == nil, task.recurrenceEndDate != nil {
-                let seriesTasks = existingTasks + [task]
-                if let effectiveEndDate = seriesTasks.compactMap(\.deadLine).max() {
-                    for occurrence in seriesTasks {
-                        occurrence.recurrenceEndDate = effectiveEndDate
-                    }
-                }
-            }
+            synchronizeRecurrenceEndDate(
+                for: task,
+                existingTasks: existingTasks,
+                createdTasks: createdTasks,
+                startDate: startDate,
+                rule: rule,
+                interval: safeInterval,
+                calendar: calendar
+            )
             return []
         }
 
@@ -767,20 +760,133 @@ struct RecurrenceEngine {
             createdTasks.append(occurrence)
         }
 
-        // For end-date-based series, recurrenceEndDate represents the last
-        // occurrence that actually exists, not the originally requested date.
-        // This also keeps the stored boundary correct when generation is capped
-        // or when some occurrence indexes are intentionally skipped.
-        if task.recurrenceCount == nil, task.recurrenceEndDate != nil {
-            let seriesTasks = existingTasks + createdTasks + [task]
-            if let effectiveEndDate = seriesTasks.compactMap(\.deadLine).max() {
-                for occurrence in seriesTasks {
-                    occurrence.recurrenceEndDate = effectiveEndDate
-                }
-            }
-        }
+        synchronizeRecurrenceEndDate(
+            for: task,
+            existingTasks: existingTasks,
+            createdTasks: createdTasks,
+            startDate: startDate,
+            rule: rule,
+            interval: safeInterval,
+            calendar: calendar
+        )
 
         return createdTasks
+    }
+
+    /// Recalculates the stored boundary after an occurrence has been deleted
+    /// and its deletion fingerprint has been committed.
+    ///
+    /// This is intentionally limited to count-based recurrences. Date-based
+    /// recurrence boundaries retain their existing deletion behavior.
+    @MainActor
+    static func synchronizeCountBasedEndDateAfterDeletion(
+        recurrenceID: UUID,
+        in context: ModelContext,
+        calendar: Calendar = .autoupdatingCurrent
+    ) throws {
+        let remainingTasks = try context.fetch(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { candidate in
+                    candidate.recurrenceID == recurrenceID
+                }
+            )
+        )
+
+        guard let anchorTask = remainingTasks.first,
+              anchorTask.recurrenceCount != nil,
+              let rawRule = anchorTask.recurrenceRule,
+              let rule = Rule(rawValue: rawRule),
+              let startDate = anchorTask.recurrenceStartDate ?? anchorTask.deadLine else {
+            return
+        }
+
+        synchronizeRecurrenceEndDate(
+            for: anchorTask,
+            existingTasks: remainingTasks,
+            createdTasks: [],
+            startDate: startDate,
+            rule: rule,
+            interval: max(1, anchorTask.recurrenceInterval),
+            calendar: calendar
+        )
+
+        try context.save()
+    }
+
+    /// Keeps the recurrence boundary synchronized on every occurrence.
+    /// Count-based series store the date of the last valid scheduled occurrence;
+    /// deleted indexes only move that date backwards when they form a deleted tail.
+    private static func synchronizeRecurrenceEndDate(
+        for task: TodoTask,
+        existingTasks: [TodoTask],
+        createdTasks: [TodoTask],
+        startDate: Date,
+        rule: Rule,
+        interval: Int,
+        calendar: Calendar
+    ) {
+        let seriesTasks = existingTasks + createdTasks + [task]
+
+        if let requestedCount = task.recurrenceCount {
+            let recurrenceID = task.recurrenceID
+            let existingByIndex = Dictionary(
+                seriesTasks.compactMap { occurrence -> (Int, TodoTask)? in
+                    guard let index = occurrence.occurrenceIndex else { return nil }
+                    return (index, occurrence)
+                },
+                uniquingKeysWith: { first, _ in first }
+            )
+
+            var lastValidIndex = requestedCount
+
+            while lastValidIndex > 0 {
+                // A materialized occurrence is valid even if a stale deletion
+                // fingerprint for the same index is still present.
+                if existingByIndex[lastValidIndex] != nil {
+                    break
+                }
+
+                guard let recurrenceID,
+                      DeletedFingerprintStore.isDeletedOccurrence(
+                        recurrenceID: recurrenceID,
+                        occurrenceIndex: lastValidIndex
+                      ) || DeletedFingerprintStore.isDeletedFromOccurrence(
+                        recurrenceID: recurrenceID,
+                        occurrenceIndex: lastValidIndex
+                      ) else {
+                    break
+                }
+
+                lastValidIndex -= 1
+            }
+
+            let effectiveEndDate = existingByIndex[lastValidIndex]?.deadLine
+                ?? scheduledOccurrenceDate(
+                    at: lastValidIndex,
+                    startDate: startDate,
+                    rule: rule,
+                    interval: interval,
+                    calendar: calendar
+                )
+
+            guard let effectiveEndDate else { return }
+
+            for occurrence in seriesTasks {
+                occurrence.recurrenceEndDate = effectiveEndDate
+            }
+            return
+        }
+
+        // Date-based series retain their existing behavior: the boundary is
+        // the latest deadline that has actually been materialized.
+        guard task.recurrenceEndDate != nil,
+              let effectiveEndDate = seriesTasks.compactMap(\.deadLine).max() else {
+            return
+        }
+
+        for occurrence in seriesTasks {
+            occurrence.recurrenceEndDate = effectiveEndDate
+        }
     }
     
     /// Calculates the canonical date for a 1-based occurrence index while

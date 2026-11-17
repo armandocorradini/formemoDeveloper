@@ -200,6 +200,17 @@ func deleteTask(
             recurrenceID: recurrenceID,
             occurrenceIndex: occurrenceIndex
         )
+
+        do {
+            try RecurrenceEngine.synchronizeCountBasedEndDateAfterDeletion(
+                recurrenceID: recurrenceID,
+                in: context
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Unable to synchronize recurrence end date after deleting an occurrence: \(error.localizedDescription)"
+            )
+        }
     } else {
         DeletedFingerprintStore.markDeleted(currentTask)
     }
@@ -434,6 +445,18 @@ func deleteRecurringTaskAndFutureOccurrences(
         recurrenceID: recurrenceID,
         occurrenceIndex: occurrenceIndex
     )
+
+    do {
+        try RecurrenceEngine.synchronizeCountBasedEndDateAfterDeletion(
+            recurrenceID: recurrenceID,
+            in: context
+        )
+    } catch {
+        AppLogger.persistence.error(
+            "Unable to synchronize recurrence end date after deleting future occurrences: \(error.localizedDescription)"
+        )
+    }
+
     // Shared assets are deleted only after all occurrence links in the
     // selected range have been removed. If another recurrence/task still
     // references the same TaskAttachment, the physical file is preserved.
