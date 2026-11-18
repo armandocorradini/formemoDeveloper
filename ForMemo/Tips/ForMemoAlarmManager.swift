@@ -151,6 +151,16 @@ final class ForMemoAlarmManager {
     private var synchronizationTasks: [UUID: Task<Bool, Never>] = [:]
     private var synchronizationTokens: [UUID: UUID] = [:]
 
+#if DEBUG
+    // One-shot fault injection used only by DebugDiagnosticsView.
+    private var debugScheduleFailuresRemaining: [UUID: Int] = [:]
+    var debugScheduleFailureObserver: ((UUID, String) -> Void)?
+
+    func debugFailNextSchedule(for id: UUID) {
+        debugScheduleFailuresRemaining[id, default: 0] += 1
+    }
+#endif
+
     private struct AuthoritativeTaskState {
         let title: String
         let deadline: Date?
@@ -340,6 +350,9 @@ final class ForMemoAlarmManager {
             AppLogger.notifications.error(
                 "ForMemo AlarmKit synchronization failed for task \(taskID.uuidString): \(error.localizedDescription)"
             )
+#if DEBUG
+            debugScheduleFailureObserver?(taskID, error.localizedDescription)
+#endif
             return false
         }
     }
@@ -805,6 +818,21 @@ final class ForMemoAlarmManager {
         guard authorizationState() == .authorized else {
             throw AlarmSchedulingError.authorizationUnavailable
         }
+
+#if DEBUG
+        if let remaining = debugScheduleFailuresRemaining[id], remaining > 0 {
+            if remaining == 1 {
+                debugScheduleFailuresRemaining[id] = nil
+            } else {
+                debugScheduleFailuresRemaining[id] = remaining - 1
+            }
+            throw NSError(
+                domain: "ForMemo.Debug.AlarmKit",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Injected AlarmKit schedule failure for diagnostic test."]
+            )
+        }
+#endif
 
         let stopButton = AlarmButton(
             text: "Stop",

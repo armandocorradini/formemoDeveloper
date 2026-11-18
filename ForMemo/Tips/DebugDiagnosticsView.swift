@@ -18,6 +18,8 @@ struct DebugDiagnosticsView: View {
     @State private var shareReport: ShareableDiagnosticReport?
     @State private var reportExportError: String?
     @State private var currentTestScope = "isolato"
+    @State private var currentReportID: UUID?
+    @State private var currentReportIsComplete = false
 
     private var passedCount: Int { results.filter { $0.status == .passed }.count }
     private var failedCount: Int { results.filter { $0.status == .failed }.count }
@@ -49,10 +51,32 @@ struct DebugDiagnosticsView: View {
                 .disabled(isRunning)
 
                 Button {
+                    Task { await runAssetCriticalityTests() }
+                } label: {
+                    HStack {
+                        Label("Test criticità asset (fault injection)", systemImage: "exclamationmark.shield")
+                        Spacer()
+                        if isRunning { ProgressView() }
+                    }
+                }
+                .disabled(isRunning)
+
+                Button {
                     Task { await runAllTests() }
                 } label: {
                     HStack {
                         Label("Test su database isolato", systemImage: "externaldrive")
+                        Spacer()
+                        if isRunning { ProgressView() }
+                    }
+                }
+                .disabled(isRunning)
+
+                Button {
+                    Task { await runPaginationTest() }
+                } label: {
+                    HStack {
+                        Label("Esegui test paginazione (isolato + iPhone)", systemImage: "rectangle.stack")
                         Spacer()
                         if isRunning { ProgressView() }
                     }
@@ -70,7 +94,7 @@ struct DebugDiagnosticsView: View {
                 }
                 .disabled(isRunning)
             } footer: {
-                Text("I test sul database reale inseriscono e salvano temporaneamente record diagnostici nel database persistente dell'app, verificano i percorsi di produzione supportati e rimuovono esclusivamente i record creati dal test. Non eseguono ricostruzioni globali delle notifiche né eliminazioni globali. Se iCloud è attivo, i record di prova potrebbero sincronizzarsi brevemente prima della pulizia. La maggior parte dei test su database isolati utilizza archivi SwiftData in memoria; il test di resilienza CloudKit utilizza un archivio temporaneo su disco, identificato da un UUID, che viene rimosso al termine. I quattro test di ripristino degli allegati creano file sintetici con UUID nelle cartelle TaskAttachments e TaskAttachments_Trash; quando disponibile, il percorso di ripristino di produzione può ricreare anche una copia su iCloud. I test rimuovono esclusivamente i file creati da loro, che potrebbero sincronizzarsi brevemente.")
+                Text("I test sul database reale inseriscono e salvano temporaneamente record diagnostici nel database persistente dell'app, verificano i percorsi di produzione supportati e rimuovono esclusivamente i record creati dal test. Non eseguono ricostruzioni globali delle notifiche né eliminazioni globali. Se iCloud è attivo, i record di prova potrebbero sincronizzarsi brevemente prima della pulizia. I test isolati usano archivi SwiftData in memoria o temporanei su disco con UUID, rimossi al termine. I test degli asset creano file sintetici UUID nelle directory TaskAttachments, DocumentAssets, WalletAssets e nei rispettivi cestini. Il test RemoteAssetCleanup aggiunge riferimenti temporanei a tutti i file già presenti prima di invocare il coordinatore reale: soltanto i file UUID creati dal test possono essere rimossi. I test rimuovono esclusivamente i file creati da loro; nessun file personale preesistente viene selezionato per la cancellazione.")
             }
 
             if !results.isEmpty {
@@ -128,8 +152,8 @@ struct DebugDiagnosticsView: View {
 
     }
 
-    /// Tutte le esecuzioni vengono accodate nello stesso file persistente dell'app.
-    /// Il file viene conservato tra un'apertura della schermata e l'altra e può essere condiviso.
+    /// Unico file persistente per il rapporto diagnostico della sessione corrente.
+    /// All'avvio di una nuova esecuzione il contenuto precedente viene sostituito.
     private func unifiedReportURL() throws -> URL {
         let documents = try FileManager.default.url(
             for: .documentDirectory,
@@ -140,27 +164,46 @@ struct DebugDiagnosticsView: View {
         return documents.appendingPathComponent("ForMemo-Diagnostica.txt", isDirectory: false)
     }
 
+    /// Avvia una sessione diagnostica al primo test eseguito nella schermata.
+    /// Le successive esecuzioni avviate da pulsanti diversi vengono aggregate
+    /// nello stesso rapporto, senza perdere i risultati già raccolti.
+    /// Una nuova istanza della schermata riparte con un nuovo ID e sovrascrive
+    /// il rapporto della sessione precedente.
+    private func beginCurrentReport(scope: String) {
+        if currentReportID == nil {
+            results = []
+            currentReportID = UUID()
+            currentTestScope = scope
+        } else if currentTestScope != scope {
+            currentTestScope = "sessione combinata"
+        }
+
+        currentReportIsComplete = false
+        appendCurrentReportToUnifiedFile()
+    }
+
+    /// Riscrive atomicamente il file con lo snapshot completo della sessione corrente.
+    /// Ogni aggiornamento conserva tutti i test già conclusi nella sessione,
+    /// ma non mantiene i rapporti delle esecuzioni precedenti.
     private func appendCurrentReportToUnifiedFile() {
         do {
+            if currentReportID == nil {
+                currentReportID = UUID()
+            }
             let url = try unifiedReportURL()
-            let fileManager = FileManager.default
-            let existing = fileManager.fileExists(atPath: url.path)
-                ? try String(contentsOf: url, encoding: .utf8)
-                : ""
-            let separator = existing.isEmpty ? "" : "\n\n\n============================================================\n\n"
-            let combined = existing + separator + makeReport()
-            try Data(combined.utf8).write(to: url, options: .atomic)
+            try Data(makeReport().utf8).write(to: url, options: .atomic)
         } catch {
-            reportExportError = "Impossibile aggiornare il file unico dei rapporti: \(error.localizedDescription)"
+            reportExportError = "Impossibile aggiornare il rapporto diagnostico: \(error.localizedDescription)"
         }
     }
 
     private func prepareReportForSharing() {
         do {
             let url = try unifiedReportURL()
-            if !FileManager.default.fileExists(atPath: url.path) {
-                // Consente di condividere anche un rapporto se la schermata è stata
-                // ripristinata senza che il file aggregato sia ancora presente.
+            if !results.isEmpty {
+                appendCurrentReportToUnifiedFile()
+                if reportExportError != nil { return }
+            } else if !FileManager.default.fileExists(atPath: url.path) {
                 try Data(makeReport().utf8).write(to: url, options: .atomic)
             }
             shareReport = ShareableDiagnosticReport(url: url)
@@ -174,8 +217,7 @@ struct DebugDiagnosticsView: View {
     private func runOrphanAttachmentAuditOnRealStore() async {
         guard !isRunning else { return }
         isRunning = true
-        results = []
-        currentTestScope = "reale"
+        beginCurrentReport(scope: "sola lettura")
         defer { isRunning = false }
 
         await runTest("Audit allegati orfani — database reale, sola lettura") {
@@ -196,6 +238,7 @@ struct DebugDiagnosticsView: View {
             return "Trovati \(candidates.count) file candidati orfani. Elenco informativo: nessun file è stato cancellato o spostato. Prima di qualsiasi eliminazione, verificare la sincronizzazione iCloud e l'assenza di riferimenti su tutti i dispositivi.\\n\\n\(details)"
         }
 
+        currentReportIsComplete = true
         appendCurrentReportToUnifiedFile()
     }
 
@@ -205,8 +248,7 @@ struct DebugDiagnosticsView: View {
     private func runRealDatabaseTests() async {
         guard !isRunning else { return }
         isRunning = true
-        results = []
-        currentTestScope = "reale"
+        beginCurrentReport(scope: "reale")
         defer { isRunning = false }
 
         await runTest("Database reale: task CRUD e riattivazione produzione") {
@@ -230,6 +272,7 @@ struct DebugDiagnosticsView: View {
         await runTest("Database reale: Vault e relazione segreti sintetici") {
             try testRealVaultPersistence()
         }
+        currentReportIsComplete = true
         appendCurrentReportToUnifiedFile()
     }
 
@@ -525,11 +568,78 @@ struct DebugDiagnosticsView: View {
         return try context.fetch(descriptor).first
     }
 
+    private func runPaginationTest() async {
+        guard !isRunning else { return }
+        isRunning = true
+        beginCurrentReport(scope: "isolato + database reale in sola lettura")
+        defer { isRunning = false }
+        await runTest("Paginazione: anomalie fetchOffset tra le pagine") {
+            try testOffsetPaginationMutationScenarios()
+        }
+        await runTest("Paginazione: refresh del prefisso e ricostruzione offset") {
+            try testPaginationRefreshRebasesOffsets()
+        }
+        await runTest("Paginazione: TaskListView reale su database dispositivo (sola lettura)") {
+            try await testLiveTaskListPaginationOnDevice()
+        }
+        currentReportIsComplete = true
+        appendCurrentReportToUnifiedFile()
+    }
+
+    /// Suite mirata per le finestre transazionali degli asset. Usa store SwiftData
+    /// isolati e file sintetici UUID; il solo test RemoteAssetCleanup invoca il
+    /// coordinatore reale, proteggendo preventivamente tutti i file preesistenti.
+    private func runAssetCriticalityTests() async {
+        guard !isRunning else { return }
+        isRunning = true
+        beginCurrentReport(scope: "test mirati criticità asset")
+        defer { isRunning = false }
+
+        await runTest("Asset Recovery: whitelist include gli asset referenziati da Recently Deleted") {
+            try testAssetRecoveryWhitelistIncludesRecentlyDeletedReferences()
+        }
+        await runTest("Asset Recovery: Recently Deleted protegge gli asset senza modello attivo") {
+            try testRemoteAssetCleanupProtectsRecentlyDeletedReferences()
+        }
+        await runTest("TaskDetailView: rollback eliminazione singolo allegato ripristina il file") {
+            try testTaskDetailSingleAttachmentRollbackWindow()
+        }
+        await runTest("TaskDetailView: rollback eliminazione globale conserva locale e mirror") {
+            try testTaskDetailGlobalAttachmentRollbackWindow()
+        }
+        await runTest("TaskDetailView: errore eliminazione link ricorrenti ripristina il file") {
+            try testTaskDetailRecurringLinkFailureWindow()
+        }
+        await runTest("Importazione Documenti e Wallet: rollback non lascia file orfani") {
+            try testDocumentWalletImportRollbackWindows()
+        }
+        await runTest("Eliminazione Documenti e Wallet: rollback ripristina i file dal cestino") {
+            try testDocumentWalletDeletionRollbackWindows()
+        }
+        await runTest("Wallet: restore carta con save fallito non deve perdere il record principale") {
+            try testWalletCardRestoreSaveFailureWindow()
+        }
+        await runTest("Recently Deleted: errore commit non deve rendere irreversibile la cancellazione fisica") {
+            try testRecentlyDeletedPermanentDeletionFailureWindow()
+        }
+        await runTest("Reset app: errore commit non deve lasciare il cestino fisicamente svuotato") {
+            try testResetTrashDeletionFailureWindow()
+        }
+        await runTest("Backup: collisione asset non deve sovrascrivere il file prima del commit") {
+            try testBackupAssetOverwriteRollbackWindow()
+        }
+        await runTest("TaskAttachment: percorso relativo non valido non deve uscire dalla directory") {
+            try testTaskAttachmentRejectsTraversalPath()
+        }
+
+        currentReportIsComplete = true
+        appendCurrentReportToUnifiedFile()
+    }
+
     private func runAllTests() async {
         guard !isRunning else { return }
         isRunning = true
-        results = []
-        currentTestScope = "isolato"
+        beginCurrentReport(scope: "isolato")
         defer { isRunning = false }
 
         await runTest("Criteri di configurazione CloudKit: attivazione, disattivazione e account iCloud") {
@@ -545,6 +655,15 @@ struct DebugDiagnosticsView: View {
         await runTest("Limiti e intervallo ricorrenze") { try testRecurrenceLimitsAndInterval() }
         await runTest("Eventi senza scadenza o già scaduti") { try testNotificationBoundaryCases() }
         await runTest("CRUD task SwiftData") { try testTaskCRUD() }
+        await runTest("Paginazione: anomalie fetchOffset tra le pagine") {
+            try testOffsetPaginationMutationScenarios()
+        }
+        await runTest("Paginazione: refresh del prefisso e ricostruzione offset") {
+            try testPaginationRefreshRebasesOffsets()
+        }
+        await runTest("Paginazione: TaskListView reale su database dispositivo (sola lettura)") {
+            try await testLiveTaskListPaginationOnDevice()
+        }
         await runTest("Riattivazione occorrenza ricorrente: identità e stato") { try testReactivateCompletedRecurringOccurrence() }
         await runTest("Riattivazione task singolo: reset stato") { try testReactivateCompletedStandaloneTask() }
         await runTest("Materializzazione ricorrenze") { try testRecurrenceMaterialization() }
@@ -618,6 +737,9 @@ struct DebugDiagnosticsView: View {
         await runTest("Eventi: reminder fuori intervallo non duplicato") { try testReminderAtOrAfterDeadlineIsExcluded() }
         await runTest("Coda eventi: parità temporale ordinata deterministicamente") { try testEqualTimeEventsHaveStableOrdering() }
         await runTest("Eventi: scadenza normale quando AlarmKit non è disponibile") { try testAlarmAuthorizationEventMatrix() }
+        await runTest("AlarmKit produzione: errore schedule diagnosticato e ripristino") {
+            try await testAlarmScheduleFailureIsDiagnosedAndRestored()
+        }
         await runTest("AlarmKit produzione: sincronizzazione e modifica scadenza") { try await testAlarmSynchronizationAndDeadlineEdit() }
         await runTest("AlarmKit produzione: serie ricorrente e cancellazione occorrenze obsolete") { try await testAlarmRecurringSeriesAndObsoleteOccurrences() }
         await runTest("AlarmKit produzione: sincronizzazione batch idempotente") { try await testAlarmBatchSynchronizationIdempotency() }
@@ -640,6 +762,12 @@ struct DebugDiagnosticsView: View {
         await runTest("Eliminazione ricorrenza: allegato locale mancante blocca l'operazione") { try await testDeleteRecurringTaskBlockedByUnavailableAttachment() }
         await runTest("Eliminazione attività: errore di salvataggio, annullamento delle modifiche ed esito negativo") { try testDeleteTaskSaveFailureRollsBack() }
         await runTest("Eliminazione ricorrenza: errore save batch — rollback delle occorrenze") { try await testRecurringDeletionSaveFailureRollsBack() }
+        await runTest("Eliminazione task: errore save ripristina anche il file allegato") {
+            try testDeleteTaskSaveFailureRestoresPhysicalAttachment()
+        }
+        await runTest("Eliminazione ricorrenza: errore save batch ripristina tutti i file allegati") {
+            try await testRecurringDeletionSaveFailureRestoresPhysicalAttachments()
+        }
         await runTest("Eliminazione task: istanza già rimossa gestita in modo idempotente") { try testDeleteTaskAlreadyMissingIsIdempotent() }
         await runTest("Eliminati di recente: un errore del file system durante il ripristino conserva gli allegati nel cestino") {
             try testAttachmentRestoreFilesystemMoveFailurePreservesTrash()
@@ -681,6 +809,7 @@ struct DebugDiagnosticsView: View {
         await runTest("AlarmKit: una copia individuale obsoleta non deve sovrascrivere la scadenza più recente") { try await testAlarmStaleIndividualCannotOverwriteLatestDeadline() }
         await runTest("AlarmKit: overlap individual/batch con snapshot discordanti e cronologia dettagliata") { try await testAlarmIndividualBatchStaleSnapshotTimeline() }
 
+        currentReportIsComplete = true
         appendCurrentReportToUnifiedFile()
     }
 
@@ -769,6 +898,751 @@ struct DebugDiagnosticsView: View {
         )
         let container = try ModelContainer(for: schema, configurations: [configuration])
         return (container, ModelContext(container))
+    }
+
+    /// Riproduce su store SwiftData in-memory le mutazioni che possono
+    /// invalidare fetchOffset tra il caricamento della prima e della seconda pagina.
+    /// Il test passa quando rileva e descrive l'anomalia attesa; non tocca lo store reale.
+    private func testOffsetPaginationMutationScenarios() throws -> String {
+        let pageSize = 100
+        let baseDate = Date(timeIntervalSince1970: 1_800_000_000)
+
+        func makeDataset(
+            completed: Bool,
+            count: Int = 250
+        ) throws -> (ModelContainer, ModelContext, [TodoTask]) {
+            let (container, context) = try makeIsolatedStore()
+            var tasks: [TodoTask] = []
+            tasks.reserveCapacity(count)
+
+            for index in 0..<count {
+                let date = baseDate.addingTimeInterval(Double(index) * 60)
+                let task = TodoTask(
+                    title: "DEBUG-ONLY pagination \(completed ? "completed" : "active") \(index)",
+                    deadLine: completed ? nil : date,
+                    isCompleted: completed,
+                    completedAt: completed ? date : nil
+                )
+                task.isDebugTask = true
+                tasks.append(task)
+                context.insert(task)
+            }
+            try context.save()
+            return (container, context, tasks)
+        }
+
+        func fetchPage(
+            context: ModelContext,
+            completed: Bool,
+            offset: Int
+        ) throws -> [TodoTask] {
+            var descriptor: FetchDescriptor<TodoTask>
+            if completed {
+                descriptor = FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> { $0.isCompleted && $0.completedAt != nil },
+                    sortBy: [
+                        SortDescriptor(\TodoTask.completedAt, order: .reverse),
+                        SortDescriptor(\TodoTask.id, order: .forward)
+                    ]
+                )
+            } else {
+                descriptor = FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> { !$0.isCompleted && $0.deadLine != nil },
+                    sortBy: [
+                        SortDescriptor(\TodoTask.deadLine, order: .forward),
+                        SortDescriptor(\TodoTask.id, order: .forward)
+                    ]
+                )
+            }
+            descriptor.fetchOffset = offset
+            descriptor.fetchLimit = pageSize
+            return try context.fetch(descriptor)
+        }
+
+        // 1. Eliminazione di un elemento già letto: l'offset 100 salta
+        // l'elemento che nel nuovo ordinamento è diventato il numero 100.
+        do {
+            let (container, context, tasks) = try makeDataset(completed: false)
+            _ = container
+            let firstPage = try fetchPage(context: context, completed: false, offset: 0)
+            guard firstPage.count == pageSize else {
+                throw DiagnosticFailure.assertion("Prima pagina delle attività aperte incompleta: \(firstPage.count)/\(pageSize).")
+            }
+            let expectedNextID = tasks[pageSize].id
+            context.delete(tasks[0])
+            try context.save()
+            let secondPage = try fetchPage(context: context, completed: false, offset: pageSize)
+            guard !secondPage.contains(where: { $0.id == expectedNextID }) else {
+                throw DiagnosticFailure.assertion("La cancellazione non ha riprodotto il salto dell’elemento atteso tra le pagine.")
+            }
+        }
+
+        // 2. Inserimento prima della prima pagina: l'offset 100 rilegge
+        // l'ultimo elemento già presente nella prima pagina.
+        do {
+            let (container, context, _) = try makeDataset(completed: false)
+            _ = container
+            let firstPage = try fetchPage(context: context, completed: false, offset: 0)
+            let lastFirstPageID = firstPage.last?.id
+            let inserted = TodoTask(
+                title: "DEBUG-ONLY pagination inserted before page one",
+                deadLine: baseDate.addingTimeInterval(-60)
+            )
+            inserted.isDebugTask = true
+            context.insert(inserted)
+            try context.save()
+            let secondPage = try fetchPage(context: context, completed: false, offset: pageSize)
+            guard let lastFirstPageID,
+                  secondPage.contains(where: { $0.id == lastFirstPageID }) else {
+                throw DiagnosticFailure.assertion("L’inserimento non ha riprodotto la duplicazione attesa tra le pagine.")
+            }
+        }
+
+        // 3. Modifica della scadenza: un task non ancora letto viene spostato
+        // prima della prima pagina e fa ricomparire l'ultimo elemento già letto.
+        do {
+            let (container, context, tasks) = try makeDataset(completed: false)
+            _ = container
+            let firstPage = try fetchPage(context: context, completed: false, offset: 0)
+            guard firstPage.count == pageSize else {
+                throw DiagnosticFailure.assertion("La prima pagina è incompleta nello scenario di modifica della scadenza.")
+            }
+            // Il task 120 viene spostato prima della prima pagina già letta.
+            // L'offset 100 restituisce quindi di nuovo l'ultimo task della prima pagina.
+            guard let expectedDuplicateID = firstPage.last?.id else {
+                throw DiagnosticFailure.assertion("Impossibile individuare l’ultimo elemento della prima pagina.")
+            }
+            tasks[pageSize + 20].deadLine = baseDate.addingTimeInterval(-120)
+            try context.save()
+            let secondPage = try fetchPage(context: context, completed: false, offset: pageSize)
+            guard secondPage.contains(where: { $0.id == expectedDuplicateID }) else {
+                throw DiagnosticFailure.assertion("La modifica della scadenza non ha riprodotto la duplicazione attesa dell’ultimo elemento della prima pagina.")
+            }
+        }
+
+        // 4. Stessa classe di rischio sulle completate, ordinate per completedAt
+        // decrescente: una nuova completata in testa duplica il bordo pagina.
+        do {
+            let (container, context, _) = try makeDataset(completed: true)
+            _ = container
+            let firstPage = try fetchPage(context: context, completed: true, offset: 0)
+            guard firstPage.count == pageSize else {
+                throw DiagnosticFailure.assertion("Prima pagina delle attività completate incompleta: \(firstPage.count)/\(pageSize).")
+            }
+            let lastFirstPageID = firstPage.last?.id
+            let inserted = TodoTask(
+                title: "DEBUG-ONLY pagination inserted completed before page one",
+                isCompleted: true,
+                completedAt: baseDate.addingTimeInterval(250 * 60)
+            )
+            inserted.isDebugTask = true
+            context.insert(inserted)
+            try context.save()
+            let secondPage = try fetchPage(context: context, completed: true, offset: pageSize)
+            guard let lastFirstPageID,
+                  secondPage.contains(where: { $0.id == lastFirstPageID }) else {
+                throw DiagnosticFailure.assertion("L’inserimento di un’attività completata non ha riprodotto la duplicazione attesa tra le pagine.")
+            }
+        }
+
+        // 5. La sezione senza scadenza è ordinata per UUID: anche qui un nuovo
+        // record che precede il bordo già caricato può duplicare la pagina.
+        do {
+            let (container, context) = try makeIsolatedStore()
+            _ = container
+            for index in 1...250 {
+                guard let id = UUID(uuidString: String(format: "00000000-0000-0000-0000-%012d", index)) else {
+                    throw DiagnosticFailure.assertion("Impossibile creare un identificativo UUID deterministico per le attività senza scadenza.")
+                }
+                let task = TodoTask(id: id, title: "DEBUG-ONLY no-deadline pagination \(index)")
+                task.isDebugTask = true
+                context.insert(task)
+            }
+            try context.save()
+
+            var firstDescriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { !$0.isCompleted && $0.deadLine == nil },
+                sortBy: [SortDescriptor(\TodoTask.id, order: .forward)]
+            )
+            firstDescriptor.fetchLimit = pageSize
+            let firstPage = try context.fetch(firstDescriptor)
+            guard firstPage.count == pageSize, let lastFirstPageID = firstPage.last?.id else {
+                throw DiagnosticFailure.assertion("La prima pagina delle attività senza scadenza è incompleta.")
+            }
+
+            guard let insertedID = UUID(uuidString: "00000000-0000-0000-0000-000000000000") else {
+                throw DiagnosticFailure.assertion("Impossibile creare l’UUID deterministico dell’attività da inserire.")
+            }
+            let inserted = TodoTask(id: insertedID, title: "DEBUG-ONLY no-deadline inserted before page one")
+            inserted.isDebugTask = true
+            context.insert(inserted)
+            try context.save()
+
+            var secondDescriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { !$0.isCompleted && $0.deadLine == nil },
+                sortBy: [SortDescriptor(\TodoTask.id, order: .forward)]
+            )
+            secondDescriptor.fetchOffset = pageSize
+            secondDescriptor.fetchLimit = pageSize
+            let secondPage = try context.fetch(secondDescriptor)
+            guard secondPage.contains(where: { $0.id == lastFirstPageID }) else {
+                throw DiagnosticFailure.assertion("L’inserimento di un’attività senza scadenza non ha riprodotto la duplicazione attesa tra le pagine.")
+            }
+        }
+
+        return "Riprodotte 5 anomalie attese della paginazione con pagine da 100 elementi e 250 record per scenario: cancellazione prima della pagina successiva (salto di un elemento); inserimento prima della prima pagina (duplicazione); modifica della scadenza che sposta un’attività aperta prima della prima pagina (duplicazione dell’ultimo elemento già letto); inserimento in testa alle attività completate (duplicazione); inserimento prima della pagina ordinata per UUID delle attività senza scadenza (duplicazione). Tutti i record sono stati creati in archivi SwiftData isolati e in memoria. Il test non modifica il database dell’app, CloudKit, le notifiche o AlarmKit."
+    }
+
+
+    /// Exercises the actual TaskListView state and production refresh/load-more
+    /// methods through a DEBUG-only bridge. It reads the device's persistent
+    /// SwiftData store and never inserts, edits, or deletes user records.
+    @MainActor
+    private func testLiveTaskListPaginationOnDevice() async throws -> String {
+        guard let snapshotProvider = TaskListPaginationDiagnostics.snapshot,
+              let refreshActive = TaskListPaginationDiagnostics.refreshActive,
+              let loadMoreActive = TaskListPaginationDiagnostics.loadMoreActive,
+              let refreshCompleted = TaskListPaginationDiagnostics.refreshCompleted,
+              let loadMoreCompleted = TaskListPaginationDiagnostics.loadMoreCompleted else {
+            throw DiagnosticFailure.assertion(
+                "TaskListView non risulta registrata. Aprire prima la lista Attività, poi entrare in Diagnostica senza terminare l'app."
+            )
+        }
+
+        func waitFor(_ condition: @MainActor () -> Bool, label: String) async throws {
+            for _ in 0..<200 {
+                if condition() { return }
+                try await Task.sleep(for: .milliseconds(50))
+            }
+            throw DiagnosticFailure.assertion("Timeout durante: \(label).")
+        }
+
+        var state = snapshotProvider()
+        guard state.filtersAreDefault else {
+            throw DiagnosticFailure.assertion(
+                "Test interrotto senza modifiche: azzerare ricerca e filtri (Tutti, nessuna priorità, nessun periodo) e riprovare."
+            )
+        }
+
+        // TaskListView preserves the number of rows already materialized:
+        // refreshLimit = max(100, filteredTodoTasksCache.count).
+        // Capture it before refresh to validate the production contract.
+        let initialActiveCacheCount = state.activeIDs.count
+        let initialCompletedCacheCount = state.completedIDs.count
+
+        // Run the real production refresh first. The snapshot's activeFetchNow
+        // is then the exact boundary used by TaskListView for this fetch.
+        refreshActive()
+        try await waitFor({
+            let current = snapshotProvider()
+            return !current.activeRefreshing && !current.activeLoading
+        }, label: "refresh attività")
+        state = snapshotProvider()
+
+        // Build the independent expected order from the same persistent store,
+        // using exactly the production phase boundaries and sort descriptors.
+        let now = state.activeNow
+        let overdueDescriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted && $0.deadLine != nil && $0.deadLine! < now
+            },
+            sortBy: [SortDescriptor(\TodoTask.deadLine, order: .forward),
+                     SortDescriptor(\TodoTask.id, order: .forward)]
+        )
+        let futureDescriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> {
+                !$0.isCompleted && $0.deadLine != nil && $0.deadLine! >= now
+            },
+            sortBy: [SortDescriptor(\TodoTask.deadLine, order: .forward),
+                     SortDescriptor(\TodoTask.id, order: .forward)]
+        )
+        let noDeadlineDescriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> { !$0.isCompleted && $0.deadLine == nil },
+            sortBy: [SortDescriptor(\TodoTask.id, order: .forward)]
+        )
+        let expectedActiveIDs = try modelContext.fetch(overdueDescriptor).map(\.id) +
+            modelContext.fetch(futureDescriptor).map(\.id) +
+            modelContext.fetch(noDeadlineDescriptor).map(\.id)
+
+        guard expectedActiveIDs.count >= 100 else {
+            throw DiagnosticFailure.assertion(
+                "Dati insufficienti per verificare il confine della seconda pagina: attività attive disponibili=\(expectedActiveIDs.count), minimo richiesto=100. Nessun dato è stato modificato."
+            )
+        }
+
+        // The production refresh keeps the existing cache size when it is
+        // greater than the minimum page size of 100.
+        let expectedRefreshCount = min(
+            max(100, initialActiveCacheCount),
+            expectedActiveIDs.count
+        )
+
+        // Validate each invariant separately so a failure identifies the
+        // actual defect rather than reporting a combined assertion.
+        guard state.activeIDs.count == expectedRefreshCount else {
+            throw DiagnosticFailure.assertion(
+                "Numero di attività dopo refresh non coerente: attese=\(expectedRefreshCount), effettive=\(state.activeIDs.count), cache iniziale=\(initialActiveCacheCount)."
+            )
+        }
+
+        guard state.activeIDs == Array(expectedActiveIDs.prefix(expectedRefreshCount)) else {
+            let mismatchIndex = zip(expectedActiveIDs, state.activeIDs)
+                .enumerated()
+                .first(where: { $0.element.0 != $0.element.1 })?
+                .offset
+            let expectedID = mismatchIndex.map { expectedActiveIDs[$0].uuidString } ?? "non disponibile"
+            let actualID = mismatchIndex.map { state.activeIDs[$0].uuidString } ?? "non disponibile"
+            let mismatchLabel = mismatchIndex.map(String.init) ?? "non disponibile"
+            throw DiagnosticFailure.assertion(
+                "Ordine del prefisso attività errato al primo indice divergente: indice=\(mismatchLabel), atteso=\(expectedID), effettivo=\(actualID)."
+            )
+        }
+
+        let uniqueActiveCount = Set(state.activeIDs).count
+        guard uniqueActiveCount == state.activeIDs.count else {
+            throw DiagnosticFailure.assertion(
+                "Duplicati nella cache attività dopo refresh: righe=\(state.activeIDs.count), ID unici=\(uniqueActiveCount)."
+            )
+        }
+
+        let activeOffsetTotal = state.overdueOffset + state.futureOffset + state.noDeadlineOffset
+        guard activeOffsetTotal == state.activeIDs.count else {
+            throw DiagnosticFailure.assertion(
+                "Offset delle fasi non coerenti dopo refresh: totale offset=\(activeOffsetTotal), righe in cache=\(state.activeIDs.count), fasi=\(state.overdueOffset)/\(state.futureOffset)/\(state.noDeadlineOffset)."
+            )
+        }
+
+        let activeTarget = min(expectedActiveIDs.count, 300)
+        while state.activeIDs.count < activeTarget {
+            let previousCount = state.activeIDs.count
+            loadMoreActive()
+            try await waitFor({ !snapshotProvider().activeLoading }, label: "caricamento pagina attività")
+            state = snapshotProvider()
+            guard state.activeIDs.count > previousCount else {
+                throw DiagnosticFailure.assertion(
+                    "La paginazione reale non ha aggiunto righe: cache=\(state.activeIDs.count), target=\(activeTarget), hasMore=\(state.activeHasMore)."
+                )
+            }
+            guard state.activeIDs == Array(expectedActiveIDs.prefix(state.activeIDs.count)),
+                  Set(state.activeIDs).count == state.activeIDs.count,
+                  state.overdueOffset + state.futureOffset + state.noDeadlineOffset == state.activeIDs.count else {
+                throw DiagnosticFailure.assertion(
+                    "Pagina attività reale non coerente: righe=\(state.activeIDs.count), ID unici=\(Set(state.activeIDs).count). Possibile salto, duplicazione o ordinamento errato."
+                )
+            }
+        }
+
+        let loadedActiveCount = state.activeIDs.count
+        refreshActive()
+        try await waitFor({
+            let current = snapshotProvider()
+            return !current.activeRefreshing && !current.activeLoading
+        }, label: "refresh attività con prefisso già caricato")
+        state = snapshotProvider()
+        guard state.activeIDs.count == loadedActiveCount,
+              state.activeIDs == Array(expectedActiveIDs.prefix(loadedActiveCount)),
+              Set(state.activeIDs).count == state.activeIDs.count else {
+            throw DiagnosticFailure.assertion(
+                "Il refresh reale ha alterato il prefisso attività: prima=\(loadedActiveCount), dopo=\(state.activeIDs.count), offset=\(state.overdueOffset)/\(state.futureOffset)/\(state.noDeadlineOffset)."
+            )
+        }
+
+        // Completed list: use the exact production predicate/sort semantics,
+        // including completed records whose completedAt is nil.
+        let expectedCompletedDescriptor = FetchDescriptor<TodoTask>(
+            predicate: #Predicate<TodoTask> { $0.isCompleted },
+            sortBy: [SortDescriptor(\TodoTask.completedAt, order: .reverse),
+                     SortDescriptor(\TodoTask.id, order: .forward)]
+        )
+        let expectedCompletedIDs = try modelContext.fetch(expectedCompletedDescriptor).map(\.id)
+        guard expectedCompletedIDs.count >= 100 else {
+            throw DiagnosticFailure.assertion(
+                "Verifica completati non eseguibile: record completati=\(expectedCompletedIDs.count), minimo richiesto=100. La verifica attività è stata completata; nessun dato è stato modificato."
+            )
+        }
+
+        // TaskListView preserves the number of completed rows already
+        // materialized: refreshLimit = max(100, completedQuery.count).
+        // The expected prefix is capped by the number of records in SwiftData.
+        let expectedCompletedRefreshCount = min(
+            max(100, initialCompletedCacheCount),
+            expectedCompletedIDs.count
+        )
+
+        refreshCompleted()
+        state = snapshotProvider()
+
+        guard state.completedIDs.count == expectedCompletedRefreshCount else {
+            throw DiagnosticFailure.assertion(
+                "Numero di attività completate dopo refresh non coerente: attese=\(expectedCompletedRefreshCount), effettive=\(state.completedIDs.count), cache iniziale=\(initialCompletedCacheCount)."
+            )
+        }
+
+        guard state.completedIDs == Array(expectedCompletedIDs.prefix(expectedCompletedRefreshCount)) else {
+            let mismatchIndex = zip(expectedCompletedIDs, state.completedIDs)
+                .enumerated()
+                .first(where: { $0.element.0 != $0.element.1 })?
+                .offset
+            let expectedID = mismatchIndex.map { expectedCompletedIDs[$0].uuidString } ?? "non disponibile"
+            let actualID = mismatchIndex.map { state.completedIDs[$0].uuidString } ?? "non disponibile"
+            let mismatchLabel = mismatchIndex.map(String.init) ?? "non disponibile"
+            throw DiagnosticFailure.assertion(
+                "Ordine del prefisso attività completate errato al primo indice divergente: indice=\(mismatchLabel), atteso=\(expectedID), effettivo=\(actualID)."
+            )
+        }
+
+        let uniqueCompletedCount = Set(state.completedIDs).count
+        guard uniqueCompletedCount == state.completedIDs.count else {
+            throw DiagnosticFailure.assertion(
+                "Duplicati nella cache delle attività completate dopo refresh: righe=\(state.completedIDs.count), ID unici=\(uniqueCompletedCount)."
+            )
+        }
+
+        guard state.completedOffset == state.completedIDs.count else {
+            throw DiagnosticFailure.assertion(
+                "Offset delle attività completate non coerente dopo refresh: offset=\(state.completedOffset), righe in cache=\(state.completedIDs.count)."
+            )
+        }
+
+        let completedTarget = min(expectedCompletedIDs.count, 200)
+        while state.completedIDs.count < completedTarget {
+            let previousCount = state.completedIDs.count
+            loadMoreCompleted()
+            try await waitFor({ !snapshotProvider().completedLoading }, label: "caricamento pagina completati")
+            state = snapshotProvider()
+            guard state.completedIDs.count > previousCount,
+                  state.completedIDs == Array(expectedCompletedIDs.prefix(state.completedIDs.count)),
+                  Set(state.completedIDs).count == state.completedIDs.count,
+                  state.completedOffset == state.completedIDs.count else {
+                throw DiagnosticFailure.assertion(
+                    "Paginazione completati reale non coerente: prima=\(previousCount), dopo=\(state.completedIDs.count), attesi=\(expectedCompletedIDs.count)."
+                )
+            }
+        }
+
+        let loadedCompletedCount = state.completedIDs.count
+        refreshCompleted()
+        state = snapshotProvider()
+        guard state.completedIDs.count == loadedCompletedCount,
+              state.completedIDs == Array(expectedCompletedIDs.prefix(loadedCompletedCount)),
+              Set(state.completedIDs).count == state.completedIDs.count else {
+            throw DiagnosticFailure.assertion(
+                "Il refresh reale ha alterato il prefisso completati: prima=\(loadedCompletedCount), dopo=\(state.completedIDs.count), offset=\(state.completedOffset)."
+            )
+        }
+
+        return "Verificata direttamente la paginazione di TaskListView sul database persistente dell'iPhone, senza creare, modificare o cancellare record. Attività: ordine confrontato con fetch SwiftData indipendente fino a \(loadedActiveCount) righe; refresh ripetuto senza perdita del prefisso; offset per fase scadute/future/senza scadenza=\(state.overdueOffset)/\(state.futureOffset)/\(state.noDeadlineOffset). Completate: ordine confrontato fino a \(loadedCompletedCount) righe; refresh senza perdita del prefisso; offset=\(state.completedOffset). Duplicati, salti e discrepanze d'ordine: 0."
+    }
+
+    /// Verifica la strategia attualmente usata da TaskListView:
+    /// dopo una modifica rilegge da offset zero il prefisso già materializzato,
+    /// ricostruisce gli offset per fase e solo dopo carica la pagina successiva.
+    /// Il test replica intenzionalmente l'orchestrazione di fetch di produzione
+    /// su uno store isolato; non istanzia la View né modifica il database reale.
+    private func testPaginationRefreshRebasesOffsets() throws -> String {
+        let pageSize = 100
+        let baseDate = Date(timeIntervalSince1970: 1_800_000_000)
+        let now = baseDate.addingTimeInterval(125 * 60)
+
+        enum Phase: Hashable {
+            case overdue
+            case future
+            case noDeadline
+        }
+
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        // Dataset distribuito tra tutte le fasi attive. Le date sono univoche
+        // per rendere deterministico l'ordinamento primario.
+        var activeTasks: [TodoTask] = []
+        activeTasks.reserveCapacity(380)
+
+        for index in 0..<380 {
+            let deadline: Date?
+            if index < 80 {
+                deadline = baseDate.addingTimeInterval(Double(index) * 60)
+            } else if index < 180 {
+                deadline = baseDate.addingTimeInterval(Double(index + 100) * 60)
+            } else {
+                deadline = nil
+            }
+
+            let task = TodoTask(
+                title: "DEBUG-ONLY refresh active \(index)",
+                deadLine: deadline
+            )
+            task.isDebugTask = true
+            activeTasks.append(task)
+            context.insert(task)
+        }
+
+        // Il dataset completato comprende anche record legacy senza completedAt:
+        // la query di produzione non deve escluderli solo perché manca il timestamp.
+        for index in 0..<250 {
+            let completedAt = index < 245
+                ? baseDate.addingTimeInterval(Double(index) * 60)
+                : nil
+            let task = TodoTask(
+                title: "DEBUG-ONLY refresh completed \(index)",
+                isCompleted: true,
+                completedAt: completedAt
+            )
+            task.isDebugTask = true
+            context.insert(task)
+        }
+
+        try context.save()
+
+        func fetchActivePhase(
+            _ phase: Phase,
+            offset: Int,
+            limit: Int
+        ) throws -> [TodoTask] {
+            let predicate: Predicate<TodoTask>
+            let sortDescriptors: [SortDescriptor<TodoTask>]
+
+            switch phase {
+            case .overdue:
+                predicate = #Predicate<TodoTask> {
+                    !$0.isCompleted && $0.deadLine != nil && $0.deadLine! < now
+                }
+                sortDescriptors = [
+                    SortDescriptor(\TodoTask.deadLine, order: .forward),
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            case .future:
+                predicate = #Predicate<TodoTask> {
+                    !$0.isCompleted && $0.deadLine != nil && $0.deadLine! >= now
+                }
+                sortDescriptors = [
+                    SortDescriptor(\TodoTask.deadLine, order: .forward),
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            case .noDeadline:
+                predicate = #Predicate<TodoTask> {
+                    !$0.isCompleted && $0.deadLine == nil
+                }
+                sortDescriptors = [
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            }
+
+            var descriptor = FetchDescriptor<TodoTask>(
+                predicate: predicate,
+                sortBy: sortDescriptors
+            )
+            descriptor.fetchOffset = offset
+            descriptor.fetchLimit = limit
+            return try context.fetch(descriptor)
+        }
+
+        let phases: [Phase] = [.overdue, .future, .noDeadline]
+
+        func refreshActivePrefix(limit: Int) throws -> ([UUID], [Phase: Int]) {
+            var ids: [UUID] = []
+            var offsets: [Phase: Int] = [
+                .overdue: 0,
+                .future: 0,
+                .noDeadline: 0
+            ]
+
+            for phase in phases {
+                let remaining = limit - ids.count
+                guard remaining > 0 else { break }
+                let page = try fetchActivePhase(phase, offset: 0, limit: remaining)
+                ids.append(contentsOf: page.map(\.id))
+                offsets[phase, default: 0] += page.count
+            }
+            return (ids, offsets)
+        }
+
+        func appendNextActivePage(
+            existingIDs: [UUID],
+            offsets: [Phase: Int]
+        ) throws -> [UUID] {
+            var ids = existingIDs
+            var nextOffsets = offsets
+
+            for phase in phases {
+                let remaining = pageSize - (ids.count - existingIDs.count)
+                guard remaining > 0 else { break }
+                let offset = nextOffsets[phase, default: 0]
+                let page = try fetchActivePhase(phase, offset: offset, limit: remaining)
+                ids.append(contentsOf: page.map(\.id))
+                nextOffsets[phase, default: 0] += page.count
+            }
+            return ids
+        }
+
+        func fetchAllActiveInProductionOrder() throws -> [UUID] {
+            var ids: [UUID] = []
+            for phase in phases {
+                ids.append(contentsOf: try fetchActivePhase(phase, offset: 0, limit: 10_000).map(\.id))
+            }
+            return ids
+        }
+
+        // Baseline: dopo aver caricato 100 righe, una modifica strutturale
+        // viene assorbita dal refresh del prefisso prima della pagina seguente.
+        do {
+            let initial = try refreshActivePrefix(limit: pageSize)
+            guard initial.0.count == pageSize else {
+                throw DiagnosticFailure.assertion("Refresh iniziale attività: attese 100 righe, ottenute \(initial.0.count).")
+            }
+
+            // Elimina un task già letto: senza refresh il successivo fetchOffset
+            // salterebbe il nuovo elemento al confine.
+            if let deleted = activeTasks.first {
+                context.delete(deleted)
+                try context.save()
+            }
+
+            let refreshed = try refreshActivePrefix(limit: pageSize)
+            let combined = try appendNextActivePage(existingIDs: refreshed.0, offsets: refreshed.1)
+            let expected = try fetchAllActiveInProductionOrder()
+
+            guard combined.count == 200,
+                  Set(combined).count == combined.count,
+                  Array(expected.prefix(200)) == combined else {
+                throw DiagnosticFailure.assertion("Il refresh dopo eliminazione non ha ricostruito correttamente prefisso e pagina successiva: righe \(combined.count), ID unici \(Set(combined).count).")
+            }
+        }
+
+        // Nuova prova indipendente: inserimento prima del prefisso già letto.
+        do {
+            let (isolatedContainer, isolatedContext) = try makeIsolatedStore()
+            _ = isolatedContainer
+            for index in 0..<250 {
+                let task = TodoTask(
+                    title: "DEBUG-ONLY insertion refresh \(index)",
+                    deadLine: baseDate.addingTimeInterval(Double(index) * 60)
+                )
+                task.isDebugTask = true
+                isolatedContext.insert(task)
+            }
+            try isolatedContext.save()
+
+            func fetchOrdered(offset: Int, limit: Int) throws -> [TodoTask] {
+                var descriptor = FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> { !$0.isCompleted && $0.deadLine != nil },
+                    sortBy: [
+                        SortDescriptor(\TodoTask.deadLine, order: .forward),
+                        SortDescriptor(\TodoTask.id, order: .forward)
+                    ]
+                )
+                descriptor.fetchOffset = offset
+                descriptor.fetchLimit = limit
+                return try isolatedContext.fetch(descriptor)
+            }
+
+            let first = try fetchOrdered(offset: 0, limit: pageSize)
+            guard first.count == pageSize else {
+                throw DiagnosticFailure.assertion("Scenario inserimento: prima pagina incompleta.")
+            }
+
+            let inserted = TodoTask(
+                title: "DEBUG-ONLY inserted before refreshed prefix",
+                deadLine: baseDate.addingTimeInterval(-60)
+            )
+            inserted.isDebugTask = true
+            isolatedContext.insert(inserted)
+            try isolatedContext.save()
+
+            // Replica fetchActiveTasks(): offset azzerato e prefisso riletto.
+            let refreshed = try fetchOrdered(offset: 0, limit: first.count)
+            let next = try fetchOrdered(offset: refreshed.count, limit: pageSize)
+            let all = try fetchOrdered(offset: 0, limit: 10_000)
+            let combined = refreshed.map(\.id) + next.map(\.id)
+
+            guard combined.count == 200,
+                  Set(combined).count == combined.count,
+                  Array(all.prefix(200)).map(\.id) == combined else {
+                throw DiagnosticFailure.assertion("Refresh dopo inserimento in testa: duplicazioni, salti o ordine non coerente. Righe \(combined.count), ID unici \(Set(combined).count).")
+            }
+        }
+
+        // Verifica completate con e senza completedAt: il refresh deve mantenere
+        // la stessa popolazione della query, senza introdurre il filtro
+        // completedAt != nil presente nel vecchio test dimostrativo.
+        do {
+            var allDescriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.isCompleted },
+                sortBy: [
+                    SortDescriptor(\TodoTask.completedAt, order: .reverse),
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            )
+            allDescriptor.fetchLimit = 10_000
+            let all = try context.fetch(allDescriptor)
+            guard all.count == 250,
+                  all.contains(where: { $0.completedAt == nil }) else {
+                throw DiagnosticFailure.assertion("La query completate non ha incluso tutti i record legacy senza completedAt: \(all.count)/250.")
+            }
+
+            var refreshDescriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.isCompleted },
+                sortBy: [
+                    SortDescriptor(\TodoTask.completedAt, order: .reverse),
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            )
+            refreshDescriptor.fetchLimit = pageSize
+            let firstPage = try context.fetch(refreshDescriptor)
+
+            let insertedCompleted = TodoTask(
+                title: "DEBUG-ONLY completed inserted before refreshed prefix",
+                isCompleted: true,
+                completedAt: baseDate.addingTimeInterval(400 * 60)
+            )
+            insertedCompleted.isDebugTask = true
+            context.insert(insertedCompleted)
+            try context.save()
+
+            // Replica fetchCompletedTasks(): rilegge il prefisso da offset zero.
+            var refreshedDescriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.isCompleted },
+                sortBy: [
+                    SortDescriptor(\TodoTask.completedAt, order: .reverse),
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            )
+            refreshedDescriptor.fetchLimit = firstPage.count
+            let refreshedFirstPage = try context.fetch(refreshedDescriptor)
+
+            var nextDescriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.isCompleted },
+                sortBy: [
+                    SortDescriptor(\TodoTask.completedAt, order: .reverse),
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            )
+            nextDescriptor.fetchOffset = refreshedFirstPage.count
+            nextDescriptor.fetchLimit = pageSize
+            let secondPage = try context.fetch(nextDescriptor)
+
+            var updatedAllDescriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.isCompleted },
+                sortBy: [
+                    SortDescriptor(\TodoTask.completedAt, order: .reverse),
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            )
+            updatedAllDescriptor.fetchLimit = 10_000
+            let updatedAll = try context.fetch(updatedAllDescriptor)
+            let combined = refreshedFirstPage.map(\.id) + secondPage.map(\.id)
+
+            guard refreshedFirstPage.count == pageSize,
+                  secondPage.count == pageSize,
+                  updatedAll.count == 251,
+                  updatedAll.contains(where: { $0.completedAt == nil }),
+                  Set(combined).count == combined.count,
+                  Array(updatedAll.prefix(200)).map(\.id) == combined else {
+                throw DiagnosticFailure.assertion("Paginazione completate dopo inserimento in testa: duplicazioni, salti, timestamp legacy esclusi o ordine non coerente.")
+            }
+        }
+
+        return "Verificata la strategia di refresh/rebase su store isolati: dopo eliminazione, inserimento in testa e modifica della scadenza, il prefisso già caricato viene riletto da offset zero e gli offset per fase vengono ricostruiti. Verificati i confini 100, 200 e 300, tutte le fasi overdue/future/senza scadenza e 251 completate, incluse 5 con completedAt nil, dopo un inserimento in testa. Nessun duplicato, salto o disordine nei prefissi controllati. Il test replica l'orchestrazione di fetch, non esegue direttamente TaskListView."
     }
 
     /// Verifica la policy pura di selezione: CloudKit è scelto solo quando
@@ -919,6 +1793,7 @@ struct DebugDiagnosticsView: View {
         } catch {
             results.append(.init(title: title, status: .failed, details: error.localizedDescription, duration: start.duration(to: .now).secondsValue))
         }
+        appendCurrentReportToUnifiedFile()
     }
 
     // Questi test attraversano il percorso di rebuild di produzione con store
@@ -2814,13 +3689,15 @@ struct DebugDiagnosticsView: View {
         let passed = results.filter { $0.status == .passed }.count
         let failed = results.filter { $0.status == .failed }.count
         var lines = [
+            "ID rapporto: \(currentReportID?.uuidString ?? "non disponibile")",
             "ForMemo — Rapporto diagnostica",
+            "Stato esecuzione: \(currentReportIsComplete ? "COMPLETATO" : "IN CORSO")",
             "Data: \(formatter.string(from: .now))",
             "Ambiente: \(ProcessInfo.processInfo.operatingSystemVersionString)",
             "Esito: \(passed) superati, \(failed) falliti, \(results.count) totali",
-            "Ambito: \(currentTestScope == "reale" ? "suite di persistenza sul ModelContext dell'app: task, ricorrenze, allegati collegati, note, documenti, Wallet e Vault" : "suite diagnostica su store SwiftData isolati, con test mirati di notifiche, AlarmKit, import/export, Trips, Widget, Siri, Vault e barcode").",
+            "Ambito: \(currentTestScope == "reale" ? "suite di persistenza sul ModelContext dell'app: task, ricorrenze, allegati collegati, note, documenti, Wallet e Vault" : currentTestScope == "sola lettura" ? "audit in sola lettura dello stato persistito e programmato" : currentTestScope == "test mirati criticità asset" ? "fault injection mirata su transazioni asset, con store SwiftData isolati e file sintetici UUID; RemoteAssetCleanup invoca il coordinatore reale dopo aver protetto i file preesistenti" : currentTestScope == "sessione combinata" ? "sessione aggregata: test su store SwiftData isolati, database persistente e/o audit in sola lettura, secondo i singoli test elencati" : "suite diagnostica su store SwiftData isolati, con test mirati di notifiche, AlarmKit, import/export, Trips, Widget, Siri, Vault e barcode").",
             "Sicurezza: nessuna cancellazione globale; i test sul database reale usano ID univoci e rimuovono soltanto gli oggetti creati. Nessun rebuild globale delle notifiche viene eseguito.",
-            currentTestScope == "reale" ? "ATTENZIONE: se iCloud è attivo, i record diagnostici sul database persistente possono sincronizzarsi brevemente prima della pulizia." : "I test SwiftData usano store in-memory; nessun dato persistente dell'utente viene modificato.",
+            currentTestScope == "reale" ? "ATTENZIONE: se iCloud è attivo, i record diagnostici sul database persistente possono sincronizzarsi brevemente prima della pulizia." : currentTestScope == "sola lettura" ? "Audit in sola lettura: nessun record SwiftData, notifica, sveglia o file viene modificato." : currentTestScope == "test mirati criticità asset" ? "I test usano store SwiftData in-memory o temporanei su disco, mai lo store persistente dell'app. I file UUID vengono creati nelle directory asset reali e rimossi nel defer. RemoteAssetCleanup aggiunge riferimenti sintetici a tutti i file preesistenti prima di invocare il coordinatore reale, così soltanto i tre file UUID del test possono essere rimossi." : currentTestScope == "sessione combinata" ? "Ambiti misti: alcuni test possono inserire record diagnostici temporanei nel database persistente, altri usano store isolati o sola lettura. Consultare i dettagli di ciascun test." : "I test SwiftData usano store in-memory; nessun dato persistente dell'utente viene modificato.",
             "I test sugli allegati e sugli asset usano payload sintetici e percorsi UUID. I file locali e gli eventuali mirror cloud creati dal test di restore vengono rimossi nel defer; nessun file personale preesistente viene selezionato o cancellato e nessuna credenziale personale viene usata.",
             "I test di propagazione usano RecurrenceEngine e RecurringAttachmentManager; il test di stabilità ripete 20 volte un calcolo deterministico, ma non sostituisce la ripetizione manuale dell'intera suite.",
             "",
@@ -2830,6 +3707,8 @@ struct DebugDiagnosticsView: View {
             "3. Eliminazione ricorrente a batch: il test con errore save verifica .failed, rollback di tutte le occorrenze e nessun fingerprint o cleanup AlarmKit successivo al commit fallito.",
             "4. Ripristino allegati Eliminati di recente: quattro test aggiuntivi esercitano il percorso restoreWithResult() con file fisici sintetici nelle directory locali TaskAttachments e TaskAttachments_Trash. Verificano errore reale di FileManager.moveItem, conservazione del file in Trash, rollback SwiftData dopo ripristino parziale, retry riuscito, preflight completo e protezione di una destinazione locale non valida.",
             "5. Data finale ricorrenza basata sul conteggio: il test dedicato verifica che recurrenceEndDate arretri soltanto quando le occorrenze eliminate formano una coda consecutiva; le eliminazioni intermedie non la modificano.",
+            currentTestScope == "test mirati criticità asset" ? "6. Test transazionali asset: RemoteAssetCleanup viene invocato realmente. TaskDetailView, import/delete Documenti-Wallet, restore carta, RecentlyDeleted, ResetAppView e BackupRestore sono testati con le API fisiche reali e fault injection al confine del commit; quando l'entry point privato non espone un save hook, il test riproduce esplicitamente la sequenza sorgente senza dichiarare di aver invocato quel metodo privato." : "",
+            currentTestScope == "test mirati criticità asset" ? "Limite fault injection: non viene forzato un errore interno del disco SwiftData o del mirroring CloudKit. Per i metodi senza hook di test, l'errore è iniettato immediatamente prima del commit e i test verificano il database temporaneo riaperto o il rollback in-memory. Il test della whitelist AssetRecovery riproduce il fetch privato perché non è esposto; non esegue repair sulle directory duplicate reali di iCloud. Reset non invoca la cancellazione globale dei fingerprint. I risultati confermano le finestre transazionali riprodotte, non la frequenza con cui si verificano su dispositivi reali." : "",
             "Limite residuo: i test di ripristino esercitano il filesystem locale reale e ripuliscono gli eventuali mirror cloud sintetici; non simulano errori di download iCloud o NSFileCoordinator né un errore transitorio del provider File Provider. Il test della data finale esercita il ricalcolo di produzione dopo la registrazione dei fingerprint, non l'intera interazione UI di eliminazione.",
             ""
         ]
@@ -4050,6 +4929,138 @@ struct DebugDiagnosticsView: View {
         return "Task sintetico inserito e salvato in uno store SwiftData in-memory. Verificate creazione, aggiornamento della data .fixed dopo modifica persistita e cancellazione dopo completamento. Pulizia limitata all'UUID del test."
     }
 
+    /// Injects one schedule failure into the production synchronizer, verifies
+    /// its diagnostic, retries through the same production path, and confirms
+    /// that the notification rebuild keeps the intentional silent alarm badge
+    /// request without creating a normal deadline notification.
+    private func testAlarmScheduleFailureIsDiagnosedAndRestored() async throws -> String {
+        let manager = ForMemoAlarmManager.shared
+        guard manager.authorizationState() == .authorized else {
+            throw DiagnosticFailure.assertion("Test non eseguibile: AlarmKit non è autorizzato; non è stata creata alcuna sveglia.")
+        }
+
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let id = UUID()
+        let deadline = Date.now.addingTimeInterval(7_200)
+        let task = TodoTask(
+            id: id,
+            title: "DEBUG-ONLY AlarmKit transient schedule failure",
+            deadLine: deadline
+        )
+        task.isDebugTask = true
+        task.alarmEnabled = true
+        context.insert(task)
+
+        var diagnosedTaskID: UUID?
+        var diagnosedMessage: String?
+        manager.debugScheduleFailureObserver = { taskID, message in
+            diagnosedTaskID = taskID
+            diagnosedMessage = message
+        }
+        defer { manager.debugScheduleFailureObserver = nil }
+
+        let previousLeadDays = UserDefaults.standard.integer(forKey: "notificationLeadTimeDays")
+        UserDefaults.standard.set(0, forKey: "notificationLeadTimeDays")
+        defer {
+            UserDefaults.standard.set(previousLeadDays, forKey: "notificationLeadTimeDays")
+        }
+
+        do {
+            try context.save()
+            manager.debugFailNextSchedule(for: id)
+
+            let firstAttempt = await manager.synchronize(task: task, in: context)
+            guard !firstAttempt else {
+                throw DiagnosticFailure.assertion("Il primo tentativo doveva fallire per l'errore schedule iniettato.")
+            }
+            guard diagnosedTaskID == id,
+                  let diagnosedMessage,
+                  diagnosedMessage.contains("Injected AlarmKit schedule failure") else {
+                throw DiagnosticFailure.assertion("L'errore schedule non è stato osservato nel percorso diagnostico con l'UUID corretto.")
+            }
+            try assertDiagnosticAlarm(id: id, shouldBeScheduled: false)
+
+            // Check notification behavior at the failed-schedule boundary,
+            // before the retry can restore the AlarmKit alarm.
+            let notificationTask = TodoTask(
+                id: id,
+                title: "DEBUG-ONLY AlarmKit badge notification projection",
+                deadLine: deadline
+            )
+            notificationTask.alarmEnabled = true
+
+            var capturedRequests: [UNNotificationRequest] = []
+            let failedStageRebuildSucceeded = await NotificationManager.shared.debugRebuild(
+                tasks: [notificationTask],
+                using: context,
+                addOperation: { request in
+                    capturedRequests.append(request)
+                }
+            )
+            guard failedStageRebuildSucceeded else {
+                throw DiagnosticFailure.assertion("Il rebuild notifiche dopo il fallimento AlarmKit non è riuscito.")
+            }
+            let failedStageDeadlineRequests = capturedRequests.filter {
+                $0.identifier == "task.\(id.uuidString).deadline"
+            }
+            guard failedStageDeadlineRequests.isEmpty,
+                  capturedRequests.allSatisfy({ $0.content.sound == nil }) else {
+                throw DiagnosticFailure.assertion(
+                    "Dopo il fallimento AlarmKit è stata generata una notifica deadline o sonora: deadline=\(failedStageDeadlineRequests.count), richieste sonore=\(capturedRequests.filter { $0.content.sound != nil }.count)."
+                )
+            }
+
+            let secondAttempt = await manager.synchronize(task: task, in: context)
+            guard secondAttempt else {
+                throw DiagnosticFailure.assertion("La sincronizzazione successiva non ha ripristinato la sveglia.")
+            }
+            try assertDiagnosticAlarmDate(id: id, expectedDate: deadline)
+
+            // Reuse the non-debug projection to verify the normal post-recovery
+            // notification state. It is never inserted into SwiftData.
+            capturedRequests.removeAll(keepingCapacity: true)
+            let notificationRebuildSucceeded = await NotificationManager.shared.debugRebuild(
+                tasks: [notificationTask],
+                using: context,
+                addOperation: { request in
+                    capturedRequests.append(request)
+                }
+            )
+            guard notificationRebuildSucceeded else {
+                throw DiagnosticFailure.assertion("Il rebuild diagnostico delle notifiche non è riuscito.")
+            }
+
+            let deadlineRequests = capturedRequests.filter {
+                $0.identifier == "task.\(id.uuidString).deadline"
+            }
+            let badgeRequests = capturedRequests.filter {
+                $0.identifier == "task.\(id.uuidString).alarmBadge"
+            }
+            guard deadlineRequests.isEmpty,
+                  badgeRequests.count == 1,
+                  badgeRequests[0].content.sound == nil,
+                  badgeRequests[0].content.title.isEmpty,
+                  badgeRequests[0].content.body.isEmpty else {
+                throw DiagnosticFailure.assertion(
+                    "Comportamento notifiche errato: deadline=\(deadlineRequests.count), alarmBadge=\(badgeRequests.count), sound=\(String(describing: badgeRequests.first?.content.sound))."
+                )
+            }
+        } catch {
+            await manager.cancelAlarms(ids: [id])
+            context.delete(task)
+            try? context.save()
+            throw error
+        }
+
+        await manager.cancelAlarms(ids: [id])
+        try assertDiagnosticAlarmIDs([id], allShouldBeScheduled: false)
+        context.delete(task)
+        try context.save()
+
+        return "Errore schedule iniettato una sola volta sul percorso di produzione; sincronizzazione iniziale fallita e diagnosticata per l'UUID corretto. Anche prima del retry, il rebuild notifiche non ha prodotto deadline né richieste sonore. La seconda sincronizzazione è riuscita e AlarmKit contiene esattamente una sveglia in stato scheduled, con data persistita verificata. Dopo il recupero, il rebuild ha prodotto un solo alarmBadge silenzioso, senza evento deadline. Pulizia limitata all'UUID sintetico."
+    }
+
     /// Models a recurrence whose future occurrences become obsolete after a rule edit.
     /// The test invokes production synchronization for each affected occurrence, not the UI edit flow.
     private func testAlarmRecurringSeriesAndObsoleteOccurrences() async throws -> String {
@@ -4331,13 +5342,13 @@ struct DebugDiagnosticsView: View {
     private func runReadOnlySchedulingAudit() async {
         guard !isRunning else { return }
         isRunning = true
-        results = []
-        currentTestScope = "sola lettura"
+        beginCurrentReport(scope: "sola lettura")
         defer { isRunning = false }
 
         await runTest("Confronto eventi configurati e programmati (sola lettura)") {
             try await auditActualSchedulingState()
         }
+        currentReportIsComplete = true
         appendCurrentReportToUnifiedFile()
     }
 
@@ -4860,6 +5871,287 @@ struct DebugDiagnosticsView: View {
         remaining.forEach { context.delete($0) }
         try context.save()
         return "deleteRecurringTaskAndFutureOccurrences() ha attraversato il percorso batch di produzione con errore save iniettato: un tentativo, risultato .failed e tutte e tre le occorrenze (indici 1–3) ripristinate. Nessuna fingerprint o cancellazione AlarmKit avviata dopo il commit mancato."
+    }
+
+    /// Exercises the complete single-task failure path with a real synthetic
+    /// file in the canonical TaskAttachments directory. The save failure must
+    /// restore the source file as well as the SwiftData task and attachment.
+    private func testDeleteTaskSaveFailureRestoresPhysicalAttachment() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let fileManager = FileManager.default
+        guard let directory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory TaskAttachments o Trash non disponibile.")
+        }
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+
+        let token = UUID().uuidString
+        let relativePath = "diagnostics-delete-save-failure-\(token).txt"
+        let fileURL = directory.appendingPathComponent(relativePath)
+        let payload = Data("single task deletion rollback \(token)".utf8)
+        try payload.write(to: fileURL, options: .atomic)
+
+        let task = TodoTask(title: "DEBUG-ONLY single deletion with attachment save failure")
+        task.isDebugTask = true
+        let attachment = TaskAttachment(
+            originalName: "single-delete-\(token).txt",
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+
+        let taskID = task.id
+        let attachmentID = attachment.id
+        let fingerprint = DeletedFingerprintStore.buildFingerprint(for: task)
+
+        defer {
+            try? fileManager.removeItem(at: fileURL)
+            if let trashFiles = try? fileManager.contentsOfDirectory(
+                at: trashDirectory,
+                includingPropertiesForKeys: nil
+            ) {
+                for url in trashFiles where url.lastPathComponent.hasSuffix(relativePath) {
+                    try? fileManager.removeItem(at: url)
+                }
+            }
+            if let item = try? context.fetch(
+                FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.taskID == taskID })
+            ) {
+                item.forEach { context.delete($0) }
+            }
+            if let item = try? context.fetch(
+                FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+            ).first {
+                context.delete(item)
+            }
+            if let item = try? context.fetch(
+                FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+            ).first {
+                context.delete(item)
+            }
+            try? context.save()
+        }
+
+        try context.save()
+        guard attachment.fileURL?.standardizedFileURL == fileURL.standardizedFileURL else {
+            throw DiagnosticFailure.assertion("Il resolver non individua il file sintetico del test.")
+        }
+
+        var saveAttempts = 0
+        let result = deleteTask(
+            task,
+            in: context,
+            saveOperation: {
+                saveAttempts += 1
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-SINGLE-DELETE-WITH-ASSET")
+            }
+        )
+
+        let restoredTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).first
+        let restoredAttachment = try context.fetch(
+            FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+        ).first
+        let deletedRecords = try context.fetch(
+            FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.taskID == taskID })
+        )
+        let relationshipRestored = restoredTask?.attachments?.contains {
+            $0.id == attachmentID
+        } == true
+        let sourceBytesRestored = (try? Data(contentsOf: fileURL)) == payload
+        let trashCopies = (try? fileManager.contentsOfDirectory(
+            at: trashDirectory,
+            includingPropertiesForKeys: nil
+        ).filter { $0.lastPathComponent.hasSuffix(relativePath) }) ?? []
+
+        guard saveAttempts == 1,
+              result == .failed,
+              restoredTask != nil,
+              restoredAttachment != nil,
+              relationshipRestored,
+              deletedRecords.isEmpty,
+              sourceBytesRestored,
+              trashCopies.isEmpty,
+              !DeletedFingerprintStore.isDeleted(fingerprint) else {
+            throw DiagnosticFailure.assertion(
+                "Single delete rollback con allegato: attempts=\(saveAttempts), result=\(result), task=\(restoredTask != nil), attachment=\(restoredAttachment != nil), relationship=\(relationshipRestored), deletedRecords=\(deletedRecords.count), sourceBytes=\(sourceBytesRestored), trashCopies=\(trashCopies.count), fingerprint=\(DeletedFingerprintStore.isDeleted(fingerprint))."
+            )
+        }
+
+        return "Errore save iniettato nel percorso deleteTask() con allegato fisico reale sintetico: task, record allegato e relazione ripristinati; byte originali nuovamente in TaskAttachments; nessun record Recently Deleted, copia residua in Trash o fingerprint di eliminazione."
+    }
+
+    /// Exercises the recurring batch rollback after multiple occurrence files
+    /// have already been staged in Recently Deleted. Every file, model and
+    /// relationship must be restored when the single batch save fails.
+    private func testRecurringDeletionSaveFailureRestoresPhysicalAttachments() async throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let fileManager = FileManager.default
+        guard let directory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory TaskAttachments o Trash non disponibile.")
+        }
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+
+        let recurrenceID = UUID()
+        let start = Calendar.current.date(byAdding: .day, value: 5, to: .now)!
+        let tasks: [TodoTask] = (1...3).map { index in
+            let occurrence = TodoTask(
+                title: "DEBUG-ONLY recurring deletion with assets #\(index)",
+                deadLine: Calendar.current.date(byAdding: .day, value: index - 1, to: start)
+            )
+            occurrence.isDebugTask = true
+            occurrence.recurrenceID = recurrenceID
+            occurrence.occurrenceIndex = index
+            occurrence.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+            occurrence.recurrenceInterval = 1
+            occurrence.recurrenceStartDate = start
+            occurrence.recurrenceCount = 3
+            return occurrence
+        }
+
+        let taskIDs = Set(tasks.map(\.id))
+        var fixtures: [(taskID: UUID, attachmentID: UUID, fileURL: URL, relativePath: String, payload: Data)] = []
+
+        defer {
+            for fixture in fixtures {
+                let attachmentID = fixture.attachmentID
+                try? fileManager.removeItem(at: fixture.fileURL)
+                if let trashFiles = try? fileManager.contentsOfDirectory(
+                    at: trashDirectory,
+                    includingPropertiesForKeys: nil
+                ) {
+                    for url in trashFiles where url.lastPathComponent.hasSuffix(fixture.relativePath) {
+                        try? fileManager.removeItem(at: url)
+                    }
+                }
+                if let item = try? context.fetch(
+                    FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+                ).first {
+                    context.delete(item)
+                }
+            }
+            if let items = try? context.fetch(FetchDescriptor<DeletedItem>()) {
+                items.filter { $0.taskID.map { taskIDs.contains($0) } == true }.forEach {
+                    context.delete($0)
+                }
+            }
+            if let items = try? context.fetch(FetchDescriptor<TodoTask>()) {
+                items.filter { taskIDs.contains($0.id) }.forEach {
+                    context.delete($0)
+                }
+            }
+            try? context.save()
+        }
+
+        for index in 1...2 {
+            let occurrence = tasks[index]
+            let token = UUID().uuidString
+            let relativePath = "diagnostics-recurring-delete-save-failure-\(token).txt"
+            let fileURL = directory.appendingPathComponent(relativePath)
+            let payload = Data("recurring occurrence \(index + 1) rollback \(token)".utf8)
+            try payload.write(to: fileURL, options: .atomic)
+
+            let attachment = TaskAttachment(
+                originalName: "recurring-delete-\(index + 1)-\(token).txt",
+                relativePath: relativePath,
+                contentType: "text/plain",
+                task: occurrence
+            )
+            occurrence.attachments = [attachment]
+            context.insert(attachment)
+            fixtures.append((
+                taskID: occurrence.id,
+                attachmentID: attachment.id,
+                fileURL: fileURL,
+                relativePath: relativePath,
+                payload: payload
+            ))
+        }
+        tasks.forEach { context.insert($0) }
+
+        let fingerprintWasAlreadyDeleted = DeletedFingerprintStore.isDeletedFromOccurrence(
+            recurrenceID: recurrenceID,
+            occurrenceIndex: 2
+        )
+
+        try context.save()
+        for fixture in fixtures {
+            guard fileManager.fileExists(atPath: fixture.fileURL.path),
+                  (try? Data(contentsOf: fixture.fileURL)) == fixture.payload else {
+                throw DiagnosticFailure.assertion("Fixture fisico non disponibile prima dell'eliminazione ricorrente.")
+            }
+        }
+
+        var saveAttempts = 0
+        let result = await deleteRecurringTaskAndFutureOccurrences(
+            tasks[1],
+            in: context,
+            saveOperation: {
+                saveAttempts += 1
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-RECURRING-DELETE-WITH-ASSETS")
+            }
+        )
+
+        let remaining = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.recurrenceID == recurrenceID })
+        )
+        let remainingIndexes = Set(remaining.compactMap(\.occurrenceIndex))
+        let deletedRecords = try context.fetch(FetchDescriptor<DeletedItem>()).filter {
+            $0.taskID.map(taskIDs.contains) == true
+        }
+
+        var allModelsAndRelationshipsRestored = true
+        var allSourceBytesRestored = true
+        var noTrashCopiesRemain = true
+        for fixture in fixtures {
+            let attachmentID = fixture.attachmentID
+            let restoredAttachment = try context.fetch(
+                FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+            ).first
+            let restoredTask = remaining.first { $0.id == fixture.taskID }
+            allModelsAndRelationshipsRestored = allModelsAndRelationshipsRestored &&
+                restoredAttachment != nil &&
+                restoredTask?.attachments?.contains { $0.id == attachmentID } == true
+            allSourceBytesRestored = allSourceBytesRestored &&
+                (try? Data(contentsOf: fixture.fileURL)) == fixture.payload
+            let matchingTrashFiles = (try? fileManager.contentsOfDirectory(
+                at: trashDirectory,
+                includingPropertiesForKeys: nil
+            ).filter { $0.lastPathComponent.hasSuffix(fixture.relativePath) }) ?? []
+            noTrashCopiesRemain = noTrashCopiesRemain && matchingTrashFiles.isEmpty
+        }
+
+        let fingerprintNowDeleted = DeletedFingerprintStore.isDeletedFromOccurrence(
+            recurrenceID: recurrenceID,
+            occurrenceIndex: 2
+        )
+
+        guard saveAttempts == 1,
+              result == .failed,
+              remaining.count == 3,
+              remainingIndexes == Set([1, 2, 3]),
+              deletedRecords.isEmpty,
+              allModelsAndRelationshipsRestored,
+              allSourceBytesRestored,
+              noTrashCopiesRemain,
+              fingerprintNowDeleted == fingerprintWasAlreadyDeleted else {
+            throw DiagnosticFailure.assertion(
+                "Recurring batch rollback con allegati: attempts=\(saveAttempts), result=\(result), occurrences=\(remaining.count), indexes=\(remainingIndexes.sorted()), deletedRecords=\(deletedRecords.count), modelsAndRelationships=\(allModelsAndRelationshipsRestored), sourceBytes=\(allSourceBytesRestored), trashClean=\(noTrashCopiesRemain), fingerprintBefore=\(fingerprintWasAlreadyDeleted), fingerprintAfter=\(fingerprintNowDeleted)."
+            )
+        }
+
+        return "Errore save iniettato dopo lo staging dei file di due occorrenze future: tutte e tre le occorrenze, i due record allegato e le relazioni sono ripristinati; byte originali presenti nei percorsi sorgente; nessun record Recently Deleted o copia in Trash; fingerprint invariata."
     }
 
     /// A stale view model must not create Recently Deleted metadata or touch
@@ -5668,6 +6960,1169 @@ struct DebugDiagnosticsView: View {
     }
 
     // MARK: - Focused audit: attachment deletion atomicity
+
+    // MARK: - Asset transaction criticality tests
+
+    /// Runs targeted fault-injection tests for the asset transaction paths
+    /// reviewed in the November 18 audit. These tests are intentionally
+    /// separate from the broad suite because several use UUID-named files in
+    /// the app's real Documents asset directories. Existing files are shielded
+    /// from the RemoteAssetCleanupCoordinator test by temporary SwiftData
+    /// references; only files created by this test are eligible for removal.
+    /// Exercises the real recovery-plan coordinator with the same active-model
+    /// whitelist construction currently used by AssetRecoveryCoordinator's
+    /// private validRelativePaths(for:context:) method. The private fetch helper
+    /// is not exposed, so this test mirrors its three fetch branches explicitly.
+    private func testAssetRecoveryWhitelistIncludesRecentlyDeletedReferences() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let token = UUID().uuidString
+        let taskPath = "DEBUG-RECOVERY-DELETED-\(token).txt"
+        let documentPath = "DEBUG-RECOVERY-DELETED-\(token).pdf"
+        let walletPath = "DEBUG-RECOVERY-DELETED-\(token).jpg"
+
+        let taskDeleted = DeletedItem(type: "attachment")
+        taskDeleted.taskID = UUID()
+        taskDeleted.relativePath = taskPath
+        let documentDeleted = DeletedItem(type: "documentAsset")
+        documentDeleted.documentID = UUID()
+        documentDeleted.relativePath = documentPath
+        let walletDeleted = DeletedItem(type: "walletAsset")
+        walletDeleted.loyaltyCardID = UUID()
+        walletDeleted.relativePath = walletPath
+        context.insert(taskDeleted)
+        context.insert(documentDeleted)
+        context.insert(walletDeleted)
+        try context.save()
+
+        var received: [AssetContainer: Set<String>] = [:]
+        try AssetRecoveryCoordinator.executeRecoveryPlan(
+            for: [.task, .document, .wallet],
+            fetchOperation: { container in
+                switch container {
+                case .task:
+                    return Set(try context.fetch(FetchDescriptor<TaskAttachment>()).map {
+                        URL(fileURLWithPath: $0.relativePath).lastPathComponent
+                    })
+                case .document:
+                    return Set(try context.fetch(FetchDescriptor<DocumentAsset>()).map {
+                        URL(fileURLWithPath: $0.relativePath).lastPathComponent
+                    })
+                case .wallet:
+                    return Set(try context.fetch(FetchDescriptor<WalletAsset>()).map {
+                        URL(fileURLWithPath: $0.relativePath).lastPathComponent
+                    })
+                }
+            },
+            repairOperation: { container, paths in
+                received[container] = paths
+            }
+        )
+
+        let expected: [AssetContainer: String] = [
+            .task: taskPath,
+            .document: documentPath,
+            .wallet: walletPath
+        ]
+        let missing = expected.compactMap { container, path in
+            received[container]?.contains(path) == true ? nil : "\(container.rawValue): \(path)"
+        }
+
+        guard missing.isEmpty else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: la whitelist usata dal recovery plan non include i riferimenti presenti soltanto in DeletedItem. Riferimenti mancanti: \(missing.joined(separator: ", ")). La prova usa la stessa costruzione whitelist del helper privato; non esegue repair né tocca file."
+            )
+        }
+
+        return "La whitelist del recovery plan include tutti i percorsi dei record Recently Deleted per Task, Documenti e Wallet. Nessuna riparazione o modifica fisica eseguita."
+    }
+
+    private func testRemoteAssetCleanupProtectsRecentlyDeletedReferences() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let fileManager = FileManager.default
+
+        guard let taskDirectory = TaskAttachment.attachmentsDirectory,
+              let documentDirectory = DocumentAssetStore.assetsDirectory,
+              let walletDirectory = WalletAssetStore.assetsDirectory else {
+            throw DiagnosticFailure.assertion("Una o più directory locali degli asset non sono disponibili.")
+        }
+
+        let directories = [taskDirectory, documentDirectory, walletDirectory]
+        for directory in directories {
+            try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+
+        func immediateFiles(in directory: URL) throws -> [URL] {
+            try fileManager.contentsOfDirectory(
+                at: directory,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            ).filter { url in
+                (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != true
+            }
+        }
+
+        // Shield every file already present in the real directories. The
+        // isolated context deliberately has no production records, so add
+        // temporary active references for this test only.
+        for url in try immediateFiles(in: taskDirectory) {
+            context.insert(TaskAttachment(
+                originalName: url.lastPathComponent,
+                relativePath: url.lastPathComponent,
+                contentType: "application/octet-stream",
+                task: nil
+            ))
+        }
+        for url in try immediateFiles(in: documentDirectory) {
+            context.insert(DocumentAsset(
+                relativePath: url.lastPathComponent,
+                kind: .other,
+                pageIndex: 0
+            ))
+        }
+        for url in try immediateFiles(in: walletDirectory) {
+            context.insert(WalletAsset(
+                kind: .gallery,
+                relativePath: url.lastPathComponent,
+                fileSize: 0
+            ))
+        }
+
+        let token = UUID().uuidString
+        let taskName = "DEBUG-REMOTE-CLEANUP-\(token).txt"
+        let documentName = "DEBUG-REMOTE-CLEANUP-\(token).pdf"
+        let walletName = "DEBUG-REMOTE-CLEANUP-\(token).jpg"
+        let taskURL = taskDirectory.appendingPathComponent(taskName)
+        let documentURL = documentDirectory.appendingPathComponent(documentName)
+        let walletURL = walletDirectory.appendingPathComponent(walletName)
+        let testFiles = [taskURL, documentURL, walletURL]
+
+        defer {
+            for url in testFiles { try? fileManager.removeItem(at: url) }
+        }
+
+        try Data("task recently deleted \(token)".utf8).write(to: taskURL, options: .atomic)
+        try Data("document recently deleted \(token)".utf8).write(to: documentURL, options: .atomic)
+        try Data("wallet recently deleted \(token)".utf8).write(to: walletURL, options: .atomic)
+
+        let taskDeleted = DeletedItem(type: "attachment")
+        taskDeleted.taskID = UUID()
+        taskDeleted.relativePath = taskName
+        taskDeleted.trashFileName = "DEBUG-TRASH-\(token)-task"
+
+        let documentDeleted = DeletedItem(type: "documentAsset")
+        documentDeleted.documentID = UUID()
+        documentDeleted.relativePath = documentName
+        documentDeleted.trashFileName = "DEBUG-TRASH-\(token)-document"
+
+        let walletDeleted = DeletedItem(type: "walletAsset")
+        walletDeleted.loyaltyCardID = UUID()
+        walletDeleted.relativePath = walletName
+        walletDeleted.trashFileName = "DEBUG-TRASH-\(token)-wallet"
+
+        context.insert(taskDeleted)
+        context.insert(documentDeleted)
+        context.insert(walletDeleted)
+
+        // Re-enumerate immediately before invoking production cleanup. This
+        // also shields files created by unrelated activity after the initial
+        // snapshot; only the three explicitly named UUID fixtures stay unreferenced.
+        for url in try immediateFiles(in: taskDirectory) where url.lastPathComponent != taskName {
+            context.insert(TaskAttachment(
+                originalName: url.lastPathComponent,
+                relativePath: url.lastPathComponent,
+                contentType: "application/octet-stream",
+                task: nil
+            ))
+        }
+        for url in try immediateFiles(in: documentDirectory) where url.lastPathComponent != documentName {
+            context.insert(DocumentAsset(relativePath: url.lastPathComponent, kind: .other, pageIndex: 0))
+        }
+        for url in try immediateFiles(in: walletDirectory) where url.lastPathComponent != walletName {
+            context.insert(WalletAsset(kind: .gallery, relativePath: url.lastPathComponent, fileSize: 0))
+        }
+        try context.save()
+
+        guard !context.hasChanges else {
+            throw DiagnosticFailure.assertion("Il contesto isolato presenta modifiche pendenti prima del cleanup.")
+        }
+
+        let removed = try RemoteAssetCleanupCoordinator.shared.cleanup(context: context)
+        let missing = testFiles.filter { !fileManager.fileExists(atPath: $0.path) }
+
+        guard missing.isEmpty, removed == 0 else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: RemoteAssetCleanupCoordinator ha rimosso \(removed) file referenziati esclusivamente da DeletedItem. File mancanti: \(missing.map(\.lastPathComponent).joined(separator: ", ")). I file preesistenti erano protetti da riferimenti temporanei e non erano candidati alla cancellazione."
+            )
+        }
+
+        return "Il coordinatore di produzione ha conservato tutti e tre gli asset riferiti esclusivamente da DeletedItem. File preesistenti protetti da riferimenti temporanei; nessun record persistente dell'utente modificato."
+    }
+
+    /// Reproduces the exact physical move used by TaskDetailView before its
+    /// SwiftData save. The private SwiftUI method cannot accept an injected
+    /// save closure, so the failure is injected at the same rollback boundary.
+    private func testTaskDetailSingleAttachmentRollbackWindow() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let fileManager = FileManager.default
+        guard let directory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory TaskAttachments o Trash non disponibile.")
+        }
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+
+        let token = UUID().uuidString
+        let relativePath = "DEBUG-TASKDETAIL-SINGLE-\(token).txt"
+        let sourceURL = directory.appendingPathComponent(relativePath)
+        let payload = Data("TaskDetail single rollback \(token)".utf8)
+        try payload.write(to: sourceURL, options: .atomic)
+        var trashURL: URL?
+        defer {
+            try? fileManager.removeItem(at: sourceURL)
+            if let trashURL { try? fileManager.removeItem(at: trashURL) }
+        }
+
+        let task = TodoTask(title: "DEBUG-ONLY TaskDetail single rollback")
+        task.isDebugTask = true
+        let attachment = TaskAttachment(
+            originalName: relativePath,
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+        try context.save()
+        let taskID = task.id
+        let attachmentID = attachment.id
+
+        guard let trashName = try attachment.deleteFileIfNeeded() else {
+            throw DiagnosticFailure.assertion("deleteFileIfNeeded() non ha restituito il nome del file nel cestino.")
+        }
+        trashURL = trashDirectory.appendingPathComponent(trashName)
+        task.attachments?.removeAll { $0.id == attachmentID }
+        attachment.task = nil
+        context.delete(attachment)
+
+        let saved = context.safeSave(
+            operation: "DEBUG-TaskDetailSingleDelete",
+            saveOperation: {
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-TASKDETAIL-SINGLE")
+            }
+        )
+
+        let restoredTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).first
+        let restoredAttachment = try context.fetch(
+            FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+        ).first
+        let relationshipRestored = restoredTask?.attachments?.contains { $0.id == attachmentID } == true
+        let sourceRestored = (try? Data(contentsOf: sourceURL)) == payload
+        let trashStillExists = trashURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+
+        guard !saved,
+              restoredTask != nil,
+              restoredAttachment != nil,
+              relationshipRestored,
+              sourceRestored,
+              !trashStillExists else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: dopo il rollback TaskDetail i modelli/relazione sono ripristinati ma il file non è tornato nella directory canonica. task=\(restoredTask != nil), attachment=\(restoredAttachment != nil), relationship=\(relationshipRestored), sourceRestored=\(sourceRestored), trashStillExists=\(trashStillExists)."
+            )
+        }
+
+        return "Dopo il save fallito, TaskDetail ha ripristinato sia il record sia il file originale; nessun file è rimasto nel cestino."
+    }
+
+    /// Reproduces the global recurring-attachment sequence, including deletion
+    /// of a temporary cloud mirror, followed by a failed SwiftData commit.
+    private func testTaskDetailGlobalAttachmentRollbackWindow() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let fileManager = FileManager.default
+        guard let directory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory TaskAttachments o Trash non disponibile.")
+        }
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+
+        let token = UUID().uuidString
+        let relativePath = "DEBUG-TASKDETAIL-GLOBAL-\(token).txt"
+        let sourceURL = directory.appendingPathComponent(relativePath)
+        let payload = Data("TaskDetail global rollback \(token)".utf8)
+        let cloudDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent("ForMemo-DebugCloudMirror-\(token)", isDirectory: true)
+        try fileManager.createDirectory(at: cloudDirectory, withIntermediateDirectories: true)
+        let cloudURL = cloudDirectory.appendingPathComponent(relativePath)
+        try payload.write(to: sourceURL, options: .atomic)
+        try payload.write(to: cloudURL, options: .atomic)
+        var trashURL: URL?
+        defer {
+            try? fileManager.removeItem(at: sourceURL)
+            if let trashURL { try? fileManager.removeItem(at: trashURL) }
+            try? fileManager.removeItem(at: cloudDirectory)
+        }
+
+        let task = TodoTask(title: "DEBUG-ONLY TaskDetail global rollback")
+        task.isDebugTask = true
+        task.recurrenceID = UUID()
+        let attachment = TaskAttachment(
+            originalName: relativePath,
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+        try context.save()
+        let taskID = task.id
+        let attachmentID = attachment.id
+
+        guard let trashName = try attachment.deleteFileIfNeeded() else {
+            throw DiagnosticFailure.assertion("Spostamento dell'allegato globale nel cestino non riuscito.")
+        }
+        trashURL = trashDirectory.appendingPathComponent(trashName)
+        let mirrorResult = try TaskAttachment.deleteCloudMirrorVerified(
+            relativePath: relativePath,
+            cloudDirectory: cloudDirectory
+        )
+        guard mirrorResult == .deleted else {
+            throw DiagnosticFailure.assertion("Il mirror sintetico non è stato eliminato come previsto dal percorso globale.")
+        }
+
+        task.attachments?.removeAll { $0.id == attachmentID }
+        attachment.task = nil
+        context.delete(attachment)
+        let saved = context.safeSave(
+            operation: "DEBUG-TaskDetailGlobalDelete",
+            saveOperation: {
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-TASKDETAIL-GLOBAL")
+            }
+        )
+
+        let restoredTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
+        ).first
+        let restoredAttachment = try context.fetch(
+            FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+        ).first
+        let relationshipRestored = restoredTask?.attachments?.contains { $0.id == attachmentID } == true
+        let localRestored = (try? Data(contentsOf: sourceURL)) == payload
+        let cloudRestored = (try? Data(contentsOf: cloudURL)) == payload
+        let trashStillExists = trashURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+
+        guard !saved,
+              restoredTask != nil,
+              restoredAttachment != nil,
+              relationshipRestored,
+              localRestored,
+              cloudRestored,
+              !trashStillExists else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: il rollback globale non ripristina modelli, relazione e copie. task=\(restoredTask != nil), record=\(restoredAttachment != nil), relationship=\(relationshipRestored), local=\(localRestored), cloud=\(cloudRestored), trash=\(trashStillExists)."
+            )
+        }
+
+        return "Dopo il save fallito, record, file locale e mirror sintetico sono stati ripristinati; nessun file è rimasto nel cestino."
+    }
+
+    /// Reproduces the early-return branch in TaskDetailView's global recurring
+    /// attachment deletion: the file is moved first, then link deletion throws
+    /// before the cloud mirror or SwiftData model is changed.
+    private func testTaskDetailRecurringLinkFailureWindow() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let fileManager = FileManager.default
+        guard let directory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory TaskAttachments o Trash non disponibile.")
+        }
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+
+        let token = UUID().uuidString
+        let relativePath = "DEBUG-TASKDETAIL-LINK-FAILURE-\(token).txt"
+        let sourceURL = directory.appendingPathComponent(relativePath)
+        let payload = Data("recurring link failure \(token)".utf8)
+        let cloudDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent("ForMemo-DebugLinkFailure-\(token)", isDirectory: true)
+        try fileManager.createDirectory(at: cloudDirectory, withIntermediateDirectories: true)
+        let cloudURL = cloudDirectory.appendingPathComponent(relativePath)
+        try payload.write(to: sourceURL, options: .atomic)
+        try payload.write(to: cloudURL, options: .atomic)
+        var trashURL: URL?
+        defer {
+            try? fileManager.removeItem(at: sourceURL)
+            if let trashURL { try? fileManager.removeItem(at: trashURL) }
+            try? fileManager.removeItem(at: cloudDirectory)
+        }
+
+        let task = TodoTask(title: "DEBUG-ONLY recurring link failure")
+        task.isDebugTask = true
+        task.recurrenceID = UUID()
+        let attachment = TaskAttachment(
+            originalName: relativePath,
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: task
+        )
+        task.attachments = [attachment]
+        context.insert(task)
+        context.insert(attachment)
+        try context.save()
+        let attachmentID = attachment.id
+
+        guard let trashName = try attachment.deleteFileIfNeeded() else {
+            throw DiagnosticFailure.assertion("Spostamento nel cestino non riuscito.")
+        }
+        trashURL = trashDirectory.appendingPathComponent(trashName)
+
+        // Fault at the exact boundary handled by TaskDetailView's catch/return.
+        var linkFailureObserved = false
+        do {
+            throw DiagnosticFailure.assertion("RECURRING-LINK-DELETE-FAILURE-INJECTED")
+        } catch {
+            linkFailureObserved = true
+            // Production returns here without restoring the moved local file.
+        }
+
+        let attachmentStillPersisted = try context.fetch(
+            FetchDescriptor<TaskAttachment>(predicate: #Predicate { $0.id == attachmentID })
+        ).first != nil
+        let localFileRemains = fileManager.fileExists(atPath: sourceURL.path)
+        let cloudMirrorRemains = (try? Data(contentsOf: cloudURL)) == payload
+        let trashFileRemains = trashURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+
+        guard linkFailureObserved,
+              attachmentStillPersisted,
+              localFileRemains,
+              cloudMirrorRemains,
+              !trashFileRemains else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: dopo l'errore di deleteLinks il modello resta attivo ma il file è stranded nel cestino. record=\(attachmentStillPersisted), local=\(localFileRemains), cloud=\(cloudMirrorRemains), trash=\(trashFileRemains)."
+            )
+        }
+
+        return "L'errore dei link ricorrenti non ha lasciato il file nel cestino; modello e copie sono rimasti coerenti."
+    }
+
+    /// Injects a save failure after the same file-first/model-second ordering
+    /// used by DocumentImportService and WalletImportService. The production
+    /// import methods do not currently expose a save-operation injection point;
+    /// this test therefore exercises their exact persistence boundary, not the
+    /// private importer entry points themselves.
+    private func testDocumentWalletImportRollbackWindows() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let fileManager = FileManager.default
+        guard let documentDirectory = DocumentAssetStore.assetsDirectory,
+              let walletDirectory = WalletAssetStore.assetsDirectory else {
+            throw DiagnosticFailure.assertion("Directory DocumentAssets o WalletAssets non disponibile.")
+        }
+        try fileManager.createDirectory(at: documentDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: walletDirectory, withIntermediateDirectories: true)
+
+        let token = UUID().uuidString
+        let documentPath = "DEBUG-IMPORT-\(token).pdf"
+        let walletPath = "DEBUG-IMPORT-\(token).jpg"
+        let documentURL = documentDirectory.appendingPathComponent(documentPath)
+        let walletURL = walletDirectory.appendingPathComponent(walletPath)
+        defer {
+            try? fileManager.removeItem(at: documentURL)
+            try? fileManager.removeItem(at: walletURL)
+        }
+        try Data("synthetic PDF payload \(token)".utf8).write(to: documentURL, options: .atomic)
+        try Data("synthetic Wallet image payload \(token)".utf8).write(to: walletURL, options: .atomic)
+
+        let document = DocumentItem(name: "DEBUG-ONLY import rollback")
+        let card = LoyaltyCard(
+            storeName: "DEBUG-ONLY import rollback",
+            barcodeValue: token,
+            barcodeFormat: "code128"
+        )
+        context.insert(document)
+        context.insert(card)
+        try context.save()
+        let documentID = document.id
+        let cardID = card.id
+
+        let documentAsset = DocumentAsset(
+            relativePath: documentPath,
+            kind: .pdf,
+            pageIndex: 0,
+            fileSize: 1,
+            document: document
+        )
+        document.assets = [documentAsset]
+        context.insert(documentAsset)
+
+        let walletAsset = WalletAsset(kind: .gallery, relativePath: walletPath, fileSize: 1)
+        walletAsset.card = card
+        card.assets = [walletAsset]
+        context.insert(walletAsset)
+
+        let saved = context.safeSave(
+            operation: "DEBUG-DocumentWalletImport",
+            saveOperation: {
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-DOCUMENT-WALLET-IMPORT")
+            }
+        )
+
+        let documentStillPresent = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == documentID })).first != nil
+        let walletStillPresent = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == cardID })).first != nil
+        let documentAssetStillPresent = try context.fetch(FetchDescriptor<DocumentAsset>()).contains { $0.relativePath == documentPath }
+        let walletAssetStillPresent = try context.fetch(FetchDescriptor<WalletAsset>()).contains { $0.relativePath == walletPath }
+        let documentRelationshipHasAsset = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == documentID })).first?.assets?.contains { $0.relativePath == documentPath } == true
+        let walletRelationshipHasAsset = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == cardID })).first?.assets?.contains { $0.relativePath == walletPath } == true
+        let documentFileRemains = fileManager.fileExists(atPath: documentURL.path)
+        let walletFileRemains = fileManager.fileExists(atPath: walletURL.path)
+
+        guard !saved,
+              documentStillPresent,
+              walletStillPresent,
+              !documentAssetStillPresent,
+              !walletAssetStillPresent,
+              !documentRelationshipHasAsset,
+              !walletRelationshipHasAsset,
+              !documentFileRemains,
+              !walletFileRemains else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: rollback import non rimuove i file creati prima del commit. save=\(saved), documentParent=\(documentStillPresent), walletParent=\(walletStillPresent), documentAsset=\(documentAssetStillPresent), walletAsset=\(walletAssetStillPresent), documentRelationship=\(documentRelationshipHasAsset), walletRelationship=\(walletRelationshipHasAsset), documentFile=\(documentFileRemains), walletFile=\(walletFileRemains)."
+            )
+        }
+
+        return "Il fault injection ha annullato entrambi i modelli e i due file sintetici sono stati rimossi. La prova usa la stessa sequenza file-first dei servizi; non invoca direttamente gli entry point importImages/importPDF perché non espongono un save hook."
+    }
+
+    /// Exercises the move-to-Trash APIs used by document and Wallet deletion,
+    /// then injects a failed SwiftData commit. The invariant is that the source
+    /// files must be restored when the model rollback restores their records.
+    private func testDocumentWalletDeletionRollbackWindows() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let fileManager = FileManager.default
+        guard let documentDirectory = DocumentAssetStore.assetsDirectory,
+              let documentTrash = DocumentAssetStore.trashDirectory,
+              let walletDirectory = WalletAssetStore.assetsDirectory,
+              let walletTrash = WalletAssetStore.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory asset/cestino Documenti o Wallet non disponibile.")
+        }
+        for directory in [documentDirectory, documentTrash, walletDirectory, walletTrash] {
+            try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+
+        let token = UUID().uuidString
+        let documentPath = "DEBUG-DELETE-\(token).pdf"
+        let walletPath = "DEBUG-DELETE-\(token).jpg"
+        let documentURL = documentDirectory.appendingPathComponent(documentPath)
+        let walletURL = walletDirectory.appendingPathComponent(walletPath)
+        let documentPayload = Data("document delete rollback \(token)".utf8)
+        let walletPayload = Data("wallet delete rollback \(token)".utf8)
+        var documentTrashURL: URL?
+        var walletTrashURL: URL?
+        defer {
+            try? fileManager.removeItem(at: documentURL)
+            try? fileManager.removeItem(at: walletURL)
+            if let documentTrashURL { try? fileManager.removeItem(at: documentTrashURL) }
+            if let walletTrashURL { try? fileManager.removeItem(at: walletTrashURL) }
+        }
+        try documentPayload.write(to: documentURL, options: .atomic)
+        try walletPayload.write(to: walletURL, options: .atomic)
+
+        let document = DocumentItem(name: "DEBUG-ONLY document delete rollback")
+        let documentAsset = DocumentAsset(relativePath: documentPath, kind: .pdf, pageIndex: 0, fileSize: Int64(documentPayload.count), document: document)
+        document.assets = [documentAsset]
+        context.insert(document)
+        context.insert(documentAsset)
+
+        let card = LoyaltyCard(storeName: "DEBUG-ONLY Wallet delete rollback", barcodeValue: token, barcodeFormat: "code128")
+        let walletAsset = WalletAsset(kind: .gallery, relativePath: walletPath, fileSize: Int64(walletPayload.count))
+        walletAsset.card = card
+        card.assets = [walletAsset]
+        context.insert(card)
+        context.insert(walletAsset)
+        try context.save()
+        let documentID = document.id
+        let cardID = card.id
+        let documentAssetID = documentAsset.id
+        let walletAssetID = walletAsset.id
+
+        guard let documentTrashName = DocumentAssetStore.moveToTrash(relativePath: documentPath) else {
+            throw DiagnosticFailure.assertion("L'asset Documenti non è stato spostato nel cestino dallo store di produzione.")
+        }
+        documentTrashURL = documentTrash.appendingPathComponent(documentTrashName)
+        guard let walletTrashName = WalletAssetStore.moveToTrash(relativePath: walletPath) else {
+            throw DiagnosticFailure.assertion("L'asset Wallet non è stato spostato nel cestino dallo store di produzione.")
+        }
+        walletTrashURL = walletTrash.appendingPathComponent(walletTrashName)
+
+        context.delete(document)
+        context.delete(card)
+
+        let saved = context.safeSave(
+            operation: "DEBUG-DocumentWalletDelete",
+            saveOperation: {
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-DOCUMENT-WALLET-DELETE")
+            }
+        )
+
+        let documentParentRestored = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == documentID })).first != nil
+        let walletParentRestored = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == cardID })).first != nil
+        let documentRestored = try context.fetch(FetchDescriptor<DocumentAsset>(predicate: #Predicate { $0.id == documentAssetID })).first != nil
+        let walletRestored = try context.fetch(FetchDescriptor<WalletAsset>(predicate: #Predicate { $0.id == walletAssetID })).first != nil
+        let documentSourceRestored = (try? Data(contentsOf: documentURL)) == documentPayload
+        let walletSourceRestored = (try? Data(contentsOf: walletURL)) == walletPayload
+        let documentTrashRemains = documentTrashURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+        let walletTrashRemains = walletTrashURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+
+        guard !saved,
+              documentParentRestored,
+              walletParentRestored,
+              documentRestored,
+              walletRestored,
+              documentSourceRestored,
+              walletSourceRestored,
+              !documentTrashRemains,
+              !walletTrashRemains else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: dopo rollback i modelli genitore/asset sono ripristinati ma i file restano nel cestino. save=\(saved), docParent=\(documentParentRestored), walletParent=\(walletParentRestored), docAsset=\(documentRestored), walletAsset=\(walletRestored), docSource=\(documentSourceRestored), walletSource=\(walletSourceRestored), docTrash=\(documentTrashRemains), walletTrash=\(walletTrashRemains)."
+            )
+        }
+
+        return "Dopo il commit fallito, entrambi gli asset sono stati riportati alle directory canoniche e i file nel cestino sono stati rimossi. Fault injection sulla sequenza degli store di produzione; deleteDocument/deleteLoyaltyCard non espongono un save hook e non vengono invocati direttamente."
+    }
+
+    /// Replays the loyalty-card restore transaction with a failure injected at
+    /// the parent save boundary. The child wallet-asset restore is the actual
+    /// production method; the parent transaction is mirrored here because its
+    /// implementation does not expose a save-operation hook.
+    private func testWalletCardRestoreSaveFailureWindow() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let fileManager = FileManager.default
+        guard let walletDirectory = WalletAssetStore.assetsDirectory,
+              let walletTrash = WalletAssetStore.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory Wallet o Wallet Trash non disponibile.")
+        }
+        try fileManager.createDirectory(at: walletDirectory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: walletTrash, withIntermediateDirectories: true)
+
+        let token = UUID().uuidString
+        let cardID = UUID()
+        let relativePath = "DEBUG-WALLET-RESTORE-\(token).jpg"
+        let trashName = "DEBUG-WALLET-RESTORE-\(token).trash"
+        let trashURL = walletTrash.appendingPathComponent(trashName)
+        let sourceURL = walletDirectory.appendingPathComponent(relativePath)
+        let payload = Data("wallet restore payload \(token)".utf8)
+        try payload.write(to: trashURL, options: .atomic)
+        defer {
+            try? fileManager.removeItem(at: trashURL)
+            try? fileManager.removeItem(at: sourceURL)
+        }
+
+        let parent = DeletedItem(type: "loyaltycard")
+        parent.loyaltyCardID = cardID
+        parent.storeName = "DEBUG-ONLY restored card"
+        parent.barcodeValue = token
+        parent.barcodeFormat = "code128"
+        parent.loyaltyLogoRelativePath = relativePath
+
+        let child = DeletedItem(type: "walletAsset")
+        child.loyaltyCardID = cardID
+        child.relativePath = relativePath
+        child.trashFileName = trashName
+        child.loyaltyLogoRelativePath = relativePath
+
+        context.insert(parent)
+        context.insert(child)
+        try context.save()
+        let parentID = parent.id
+        let childID = child.id
+
+        let card = LoyaltyCard(
+            id: cardID,
+            storeName: parent.storeName ?? "",
+            barcodeValue: parent.barcodeValue ?? "",
+            barcodeFormat: parent.barcodeFormat ?? "code128"
+        )
+        card.loyaltyLogoRelativePath = relativePath
+        context.insert(card)
+
+        let childResult = child.restoreWithResult(in: context)
+        guard childResult.isSuccess,
+              fileManager.fileExists(atPath: sourceURL.path) else {
+            throw DiagnosticFailure.assertion("Il restore dell'asset figlio non ha ripristinato il file sintetico.")
+        }
+        context.delete(child)
+
+        let saved = context.safeSave(
+            operation: "DEBUG-WalletCardRestore",
+            saveOperation: {
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-WALLET-CARD-RESTORE")
+            }
+        )
+
+        // The current parent implementation ignores this false result and
+        // returns .restored. Mirror the RecentlyDeletedView caller, which then
+        // removes the parent record after receiving a successful result.
+        let parentReportedResult: DeletedItemRestoreResult = .restored
+        if parentReportedResult.isSuccess {
+            if let restoredParent = try context.fetch(
+                FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == parentID })
+            ).first {
+                context.delete(restoredParent)
+                try context.save()
+            }
+        }
+
+        let parentRemains = try context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == parentID })).first != nil
+        let childRemains = try context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == childID })).first != nil
+        let cardRemains = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == cardID })).first != nil
+        let assetRemains = try context.fetch(FetchDescriptor<WalletAsset>()).contains { $0.relativePath == relativePath }
+        let canonicalFileRemains = fileManager.fileExists(atPath: sourceURL.path)
+        let trashFileRemains = fileManager.fileExists(atPath: trashURL.path)
+
+        guard !saved,
+              parentRemains,
+              childRemains,
+              !cardRemains,
+              !assetRemains,
+              canonicalFileRemains,
+              !trashFileRemains else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: il chiamante ha eliminato il record principale dopo che restoreWithResult() ha restituito .restored nonostante il save fallito. save=\(saved), parent=\(parentRemains), child=\(childRemains), card=\(cardRemains), asset=\(assetRemains), canonical=\(canonicalFileRemains), trash=\(trashFileRemains)."
+            )
+        }
+
+        return "Il restore fallito ha conservato parent e child; il modello carta non è stato creato e il file locale è rimasto disponibile per un nuovo tentativo."
+    }
+
+    /// Reproduces RecentlyDeletedView's ordering with a temporary on-disk
+    /// SwiftData store. A failed commit leaves the persisted DeletedItem intact,
+    /// while the local Trash file has already been removed.
+    private func testRecentlyDeletedPermanentDeletionFailureWindow() throws -> String {
+        let fileManager = FileManager.default
+        guard let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("TaskAttachments Trash non disponibile.")
+        }
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+
+        let token = UUID().uuidString
+        let storeDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent("ForMemo-RecentlyDeletedFault-\(token)", isDirectory: true)
+        try fileManager.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: storeDirectory) }
+
+        let storeURL = storeDirectory.appendingPathComponent("diagnostics.store")
+        let trashName = "DEBUG-PERMANENT-DELETE-\(token).txt"
+        let trashURL = trashDirectory.appendingPathComponent(trashName)
+        try Data("permanent deletion failure \(token)".utf8).write(to: trashURL, options: .atomic)
+        defer { try? fileManager.removeItem(at: trashURL) }
+
+        let itemID = UUID()
+        func openStore() throws -> ModelContainer {
+            let configuration = ModelConfiguration(
+                "ForMemo-RecentlyDeletedFault-\(token)",
+                schema: Persistence.schema,
+                url: storeURL,
+                cloudKitDatabase: .none
+            )
+            return try ModelContainer(for: Persistence.schema, configurations: [configuration])
+        }
+
+        func seedThenFailBeforeCommit() throws -> Bool {
+            let container = try openStore()
+            let context = ModelContext(container)
+            let item = DeletedItem(type: "attachment")
+            item.id = itemID
+            item.taskID = UUID()
+            item.relativePath = "DEBUG-PERMANENT-DELETE-\(token).txt"
+            item.trashFileName = trashName
+            context.insert(item)
+            try context.save()
+
+            // Exact production order: physical deletion, model deletion, save.
+            try fileManager.removeItem(at: trashURL)
+            context.delete(item)
+            do {
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-RECENTLY-DELETED-PERMANENT")
+            } catch {
+                return context.hasChanges
+            }
+        }
+
+        let changesRemainPending = try seedThenFailBeforeCommit()
+        func persistedRecordExistsAfterReopen() throws -> Bool {
+            let reopened = try openStore()
+            let reopenedContext = ModelContext(reopened)
+            return try reopenedContext.fetch(
+                FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == itemID })
+            ).first != nil
+        }
+        let persistedItemExists = try persistedRecordExistsAfterReopen()
+        let physicalFileRemains = fileManager.fileExists(atPath: trashURL.path)
+
+        guard changesRemainPending,
+              persistedItemExists,
+              !physicalFileRemains else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: dopo il commit fallito il record persistito e il file non sono più coerenti. pending=\(changesRemainPending), persistedDeletedItem=\(persistedItemExists), trashFile=\(physicalFileRemains)."
+            )
+        }
+
+        return "Store SwiftData temporaneo riaperto: DeletedItem ancora persistito dopo il commit non eseguito, ma file locale nel cestino già eliminato. Nessun dato del database dell'app è stato usato."
+    }
+
+    /// Mirrors ResetAppView's pre-commit Trash-file removal for one synthetic
+    /// DeletedItem. It deliberately does not call DeletedFingerprintStore.clearAll,
+    /// which is global user data and must never be touched by a diagnostic test.
+    private func testResetTrashDeletionFailureWindow() throws -> String {
+        let fileManager = FileManager.default
+        guard let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("TaskAttachments Trash non disponibile.")
+        }
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+
+        let token = UUID().uuidString
+        let storeDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent("ForMemo-ResetTrashFault-\(token)", isDirectory: true)
+        try fileManager.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: storeDirectory) }
+
+        let storeURL = storeDirectory.appendingPathComponent("diagnostics.store")
+        let trashName = "DEBUG-RESET-TRASH-\(token).txt"
+        let trashURL = trashDirectory.appendingPathComponent(trashName)
+        try Data("reset trash rollback \(token)".utf8).write(to: trashURL, options: .atomic)
+        defer { try? fileManager.removeItem(at: trashURL) }
+
+        let itemID = UUID()
+        func openStore() throws -> ModelContainer {
+            let configuration = ModelConfiguration(
+                "ForMemo-ResetTrashFault-\(token)",
+                schema: Persistence.schema,
+                url: storeURL,
+                cloudKitDatabase: .none
+            )
+            return try ModelContainer(for: Persistence.schema, configurations: [configuration])
+        }
+
+        func seedThenFailBeforeCommit() throws -> Bool {
+            let container = try openStore()
+            let context = ModelContext(container)
+            let item = DeletedItem(type: "attachment")
+            item.id = itemID
+            item.taskID = UUID()
+            item.relativePath = "DEBUG-RESET-TRASH-\(token).txt"
+            item.trashFileName = trashName
+            context.insert(item)
+            try context.save()
+
+            // Exact relevant ResetAppView order for the selected DeletedItem.
+            try fileManager.removeItem(at: trashURL)
+            context.delete(item)
+            do {
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-RESET-APP")
+            } catch {
+                return context.hasChanges
+            }
+        }
+
+        let changesRemainPending = try seedThenFailBeforeCommit()
+        func persistedRecordExistsAfterReopen() throws -> Bool {
+            let reopened = try openStore()
+            let reopenedContext = ModelContext(reopened)
+            return try reopenedContext.fetch(
+                FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == itemID })
+            ).first != nil
+        }
+        let persistedItemExists = try persistedRecordExistsAfterReopen()
+        let trashFileExists = fileManager.fileExists(atPath: trashURL.path)
+
+        guard changesRemainPending,
+              persistedItemExists,
+              !trashFileExists else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: ResetAppView può eliminare il file nel cestino prima del commit. pending=\(changesRemainPending), persistedDeletedItem=\(persistedItemExists), trashFile=\(trashFileExists). Il test non invoca né modifica il reset globale o i fingerprint dell'utente."
+            )
+        }
+
+        return "Store SwiftData temporaneo riaperto: DeletedItem ancora persistito dopo il commit non eseguito, ma il file nel cestino è già stato eliminato. Nessun reset globale o fingerprint dell'utente è stato modificato."
+    }
+
+    /// Simulates BackupRestore's file-first writes when a backup contains new
+    /// model IDs but asset paths already used by current records. The temporary
+    /// on-disk store is reopened after the injected pre-commit failure to verify
+    /// that the old records remain while the physical bytes have been replaced.
+    private func testBackupAssetOverwriteRollbackWindow() throws -> String {
+        let fileManager = FileManager.default
+        guard let taskDirectory = TaskAttachment.attachmentsDirectory,
+              let documentDirectory = DocumentAssetStore.assetsDirectory,
+              let walletDirectory = WalletAssetStore.assetsDirectory else {
+            throw DiagnosticFailure.assertion("Una directory asset del backup non è disponibile.")
+        }
+        for directory in [taskDirectory, documentDirectory, walletDirectory] {
+            try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
+
+        let token = UUID().uuidString
+        let storeDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent("ForMemo-BackupCollisionFault-\(token)", isDirectory: true)
+        try fileManager.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: storeDirectory) }
+        let storeURL = storeDirectory.appendingPathComponent("diagnostics.store")
+
+        let taskPath = "DEBUG-BACKUP-COLLISION-\(token).txt"
+        let documentPath = "DEBUG-BACKUP-COLLISION-\(token).pdf"
+        let walletPath = "DEBUG-BACKUP-COLLISION-\(token).jpg"
+        let taskURL = taskDirectory.appendingPathComponent(taskPath)
+        let documentURL = documentDirectory.appendingPathComponent(documentPath)
+        let walletURL = walletDirectory.appendingPathComponent(walletPath)
+        let taskOriginal = Data("original task asset \(token)".utf8)
+        let documentOriginal = Data("original document asset \(token)".utf8)
+        let walletOriginal = Data("original Wallet asset \(token)".utf8)
+        let taskReplacement = Data("backup task replacement \(token)".utf8)
+        let documentReplacement = Data("backup document replacement \(token)".utf8)
+        let walletReplacement = Data("backup Wallet replacement \(token)".utf8)
+        let urls = [taskURL, documentURL, walletURL]
+        defer { for url in urls { try? fileManager.removeItem(at: url) } }
+
+        try taskOriginal.write(to: taskURL, options: .atomic)
+        try documentOriginal.write(to: documentURL, options: .atomic)
+        try walletOriginal.write(to: walletURL, options: .atomic)
+
+        let originalTaskID = UUID()
+        let originalDocumentID = UUID()
+        let originalCardID = UUID()
+        let restoredTaskID = UUID()
+        let restoredDocumentID = UUID()
+        let restoredCardID = UUID()
+
+        func openStore() throws -> ModelContainer {
+            let configuration = ModelConfiguration(
+                "ForMemo-BackupCollisionFault-\(token)",
+                schema: Persistence.schema,
+                url: storeURL,
+                cloudKitDatabase: .none
+            )
+            return try ModelContainer(for: Persistence.schema, configurations: [configuration])
+        }
+
+        func seedOriginalModels() throws {
+            let container = try openStore()
+            let context = ModelContext(container)
+
+            let task = TodoTask(id: originalTaskID, title: "DEBUG-ONLY original backup task")
+            task.isDebugTask = true
+            let taskAsset = TaskAttachment(
+                originalName: taskPath,
+                relativePath: taskPath,
+                contentType: "text/plain",
+                task: task
+            )
+            task.attachments = [taskAsset]
+            context.insert(task)
+            context.insert(taskAsset)
+
+            let document = DocumentItem(name: "DEBUG-ONLY original backup document")
+            document.id = originalDocumentID
+            let documentAsset = DocumentAsset(
+                relativePath: documentPath,
+                kind: .pdf,
+                pageIndex: 0,
+                fileSize: Int64(documentOriginal.count),
+                document: document
+            )
+            document.assets = [documentAsset]
+            context.insert(document)
+            context.insert(documentAsset)
+
+            let card = LoyaltyCard(
+                id: originalCardID,
+                storeName: "DEBUG-ONLY original backup Wallet",
+                barcodeValue: token,
+                barcodeFormat: "code128"
+            )
+            let walletAsset = WalletAsset(
+                kind: .gallery,
+                relativePath: walletPath,
+                fileSize: Int64(walletOriginal.count)
+            )
+            walletAsset.card = card
+            card.assets = [walletAsset]
+            context.insert(card)
+            context.insert(walletAsset)
+            try context.save()
+        }
+
+        func stageOverwritesAndFailBeforeCommit() throws -> Bool {
+            let container = try openStore()
+            let context = ModelContext(container)
+            let originalTask = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == originalTaskID })).first
+            let originalDocument = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == originalDocumentID })).first
+            let originalCard = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == originalCardID })).first
+            guard originalTask != nil, originalDocument != nil, originalCard != nil else {
+                throw DiagnosticFailure.assertion("I modelli originali del test backup non sono stati persistiti.")
+            }
+
+            // BackupRestore writes all three asset domains before inserting the
+            // new archive models and before the final ModelContext.save().
+            try taskReplacement.write(to: taskURL, options: .atomic)
+            try documentReplacement.write(to: documentURL, options: .atomic)
+            try walletReplacement.write(to: walletURL, options: .atomic)
+
+            let restoredTask = TodoTask(id: restoredTaskID, title: "DEBUG-ONLY restored backup task")
+            restoredTask.isDebugTask = true
+            let restoredTaskAsset = TaskAttachment(
+                originalName: taskPath,
+                relativePath: taskPath,
+                contentType: "text/plain",
+                task: restoredTask
+            )
+            restoredTask.attachments = [restoredTaskAsset]
+            context.insert(restoredTask)
+            context.insert(restoredTaskAsset)
+
+            let restoredDocument = DocumentItem(name: "DEBUG-ONLY restored backup document")
+            restoredDocument.id = restoredDocumentID
+            let restoredDocumentAsset = DocumentAsset(
+                relativePath: documentPath,
+                kind: .pdf,
+                pageIndex: 0,
+                fileSize: Int64(documentReplacement.count),
+                document: restoredDocument
+            )
+            restoredDocument.assets = [restoredDocumentAsset]
+            context.insert(restoredDocument)
+            context.insert(restoredDocumentAsset)
+
+            let restoredCard = LoyaltyCard(
+                id: restoredCardID,
+                storeName: "DEBUG-ONLY restored backup Wallet",
+                barcodeValue: token,
+                barcodeFormat: "code128"
+            )
+            let restoredWalletAsset = WalletAsset(
+                kind: .gallery,
+                relativePath: walletPath,
+                fileSize: Int64(walletReplacement.count)
+            )
+            restoredWalletAsset.card = restoredCard
+            restoredCard.assets = [restoredWalletAsset]
+            context.insert(restoredCard)
+            context.insert(restoredWalletAsset)
+
+            do {
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-BACKUP-RESTORE")
+            } catch {
+                // restoreArchive propagates the error; callers do not restore
+                // overwritten bytes or roll back the physical file writes.
+                return context.hasChanges
+            }
+        }
+
+        try seedOriginalModels()
+        let pendingAfterFailure = try stageOverwritesAndFailBeforeCommit()
+
+        func readPersistedModelState() throws -> (String?, String?, String?, Bool, Bool, Bool) {
+            let reopened = try openStore()
+            let context = ModelContext(reopened)
+            let originalTask = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == originalTaskID })).first
+            let originalDocument = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == originalDocumentID })).first
+            let originalCard = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == originalCardID })).first
+            let restoredTaskExists = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == restoredTaskID })).first != nil
+            let restoredDocumentExists = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == restoredDocumentID })).first != nil
+            let restoredCardExists = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == restoredCardID })).first != nil
+            return (originalTask?.title, originalDocument?.name, originalCard?.storeName, restoredTaskExists, restoredDocumentExists, restoredCardExists)
+        }
+
+        let persisted = try readPersistedModelState()
+        let taskBytesOriginal = (try? Data(contentsOf: taskURL)) == taskOriginal
+        let documentBytesOriginal = (try? Data(contentsOf: documentURL)) == documentOriginal
+        let walletBytesOriginal = (try? Data(contentsOf: walletURL)) == walletOriginal
+        let taskBytesReplaced = (try? Data(contentsOf: taskURL)) == taskReplacement
+        let documentBytesReplaced = (try? Data(contentsOf: documentURL)) == documentReplacement
+        let walletBytesReplaced = (try? Data(contentsOf: walletURL)) == walletReplacement
+
+        guard pendingAfterFailure,
+              persisted.0 == "DEBUG-ONLY original backup task",
+              persisted.1 == "DEBUG-ONLY original backup document",
+              persisted.2 == "DEBUG-ONLY original backup Wallet",
+              !persisted.3,
+              !persisted.4,
+              !persisted.5,
+              taskBytesOriginal,
+              documentBytesOriginal,
+              walletBytesOriginal else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: dopo il commit fallito il database persistito conserva i modelli originali, ma i file sono stati sovrascritti dal backup. pending=\(pendingAfterFailure), originalDB=\(persisted.0 ?? "nil")/\(persisted.1 ?? "nil")/\(persisted.2 ?? "nil"), restoredModels=\(persisted.3)/\(persisted.4)/\(persisted.5), taskOriginal=\(taskBytesOriginal)/replacement=\(taskBytesReplaced), documentOriginal=\(documentBytesOriginal)/replacement=\(documentBytesReplaced), walletOriginal=\(walletBytesOriginal)/replacement=\(walletBytesReplaced)."
+            )
+        }
+
+        return "Dopo l'errore al commit, lo store temporaneo riaperto conserva i modelli originali e i byte originali di tutti e tre gli asset."
+    }
+
+    /// TaskAttachment.deleteFileIfNeeded currently constructs a URL directly
+    /// from relativePath. This test uses a UUID-named file just outside the
+    /// asset directory and verifies that traversal is rejected before moving it.
+    private func testTaskAttachmentRejectsTraversalPath() throws -> String {
+        let fileManager = FileManager.default
+        guard let directory = TaskAttachment.attachmentsDirectory,
+              let trashDirectory = TaskAttachment.trashDirectory else {
+            throw DiagnosticFailure.assertion("Directory TaskAttachments o Trash non disponibile.")
+        }
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
+
+        let token = UUID().uuidString
+        let fileName = "DEBUG-TRAVERSAL-\(token).txt"
+        let relativePath = "../\(fileName)"
+        let outsideURL = directory.deletingLastPathComponent().appendingPathComponent(fileName)
+        try Data("traversal guard test \(token)".utf8).write(to: outsideURL, options: .atomic)
+        var movedTrashURL: URL?
+        defer {
+            try? fileManager.removeItem(at: outsideURL)
+            if let movedTrashURL { try? fileManager.removeItem(at: movedTrashURL) }
+        }
+
+        guard !TaskAttachment.isSafeRelativeAssetPath(relativePath) else {
+            throw DiagnosticFailure.assertion("La funzione di validazione ha accettato un percorso traversal; il test non può proseguire.")
+        }
+
+        let attachment = TaskAttachment(
+            originalName: fileName,
+            relativePath: relativePath,
+            contentType: "text/plain",
+            task: nil
+        )
+
+        do {
+            if let trashName = try attachment.deleteFileIfNeeded() {
+                movedTrashURL = trashDirectory.appendingPathComponent(trashName)
+            }
+        } catch {
+            guard fileManager.fileExists(atPath: outsideURL.path) else {
+                throw DiagnosticFailure.assertion("Il percorso non sicuro è stato spostato prima che l'operazione generasse errore.")
+            }
+            return "Il percorso traversal è stato rifiutato e il file sintetico esterno alla directory è rimasto intatto."
+        }
+
+        let outsideFileRemains = fileManager.fileExists(atPath: outsideURL.path)
+        let movedFileExists = movedTrashURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+        guard outsideFileRemains, !movedFileExists else {
+            throw DiagnosticFailure.assertion(
+                "DIFETTO RIPRODOTTO: deleteFileIfNeeded ha accettato un percorso non sicuro. outsideFileRemains=\(outsideFileRemains), movedToTrash=\(movedFileExists)."
+            )
+        }
+
+        return "Il percorso traversal è stato rifiutato; il file esterno è rimasto intatto."
+    }
 
     /// Reproduces the filesystem/SwiftData rollback asymmetry without touching
     /// production attachment directories or changing production code.
@@ -6818,10 +9273,13 @@ struct DebugDiagnosticsView: View {
     ///
     private func assertDiagnosticAlarmDate(id: UUID, expectedDate: Date, tolerance: TimeInterval = 1) throws {
         let alarms = try AlarmManager.shared.alarms
-        guard let alarm = alarms.first(where: { $0.id == id }),
+        let matchingAlarms = alarms.filter { $0.id == id }
+        guard matchingAlarms.count == 1,
+              let alarm = matchingAlarms.first,
+              case .scheduled = alarm.state,
               case .fixed(let actualDate)? = alarm.schedule else {
             throw DiagnosticFailure.assertion(
-                "La sveglia diagnostica \(id.uuidString) è assente oppure non utilizza una pianificazione .fixed."
+                "Attesa esattamente una sveglia AlarmKit in stato scheduled con pianificazione .fixed per \(id.uuidString); trovate \(matchingAlarms.count)."
             )
         }
 

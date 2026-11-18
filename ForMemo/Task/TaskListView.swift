@@ -43,6 +43,33 @@ enum TaskTagFilter: Hashable, Identifiable {
 
 }
 
+#if DEBUG
+@MainActor
+enum TaskListPaginationDiagnostics {
+    struct Snapshot {
+        let activeIDs: [UUID]
+        let overdueOffset: Int
+        let futureOffset: Int
+        let noDeadlineOffset: Int
+        let activeHasMore: Bool
+        let activeLoading: Bool
+        let activeRefreshing: Bool
+        let activeNow: Date
+        let completedIDs: [UUID]
+        let completedOffset: Int
+        let completedHasMore: Bool
+        let completedLoading: Bool
+        let filtersAreDefault: Bool
+    }
+
+    static var snapshot: (() -> Snapshot)?
+    static var refreshActive: (() -> Void)?
+    static var loadMoreActive: (() -> Void)?
+    static var refreshCompleted: (() -> Void)?
+    static var loadMoreCompleted: (() -> Void)?
+}
+#endif
+
 // MARK: - TaskListView
 
 struct TaskListView: View {
@@ -1920,6 +1947,34 @@ struct TaskListView: View {
         }
         .onAppear {
             debouncedSearchText = searchText
+            #if DEBUG
+            TaskListPaginationDiagnostics.snapshot = {
+                TaskListPaginationDiagnostics.Snapshot(
+                    activeIDs: filteredTodoTasksCache.map(\.id),
+                    overdueOffset: activeOverdueOffset,
+                    futureOffset: activeFutureOffset,
+                    noDeadlineOffset: activeNoDeadlineOffset,
+                    activeHasMore: activeHasMore,
+                    activeLoading: isLoadingMoreActive,
+                    activeRefreshing: activeListRefreshInProgress,
+                    activeNow: activeFetchNow,
+                    completedIDs: completedQuery.map(\.id),
+                    completedOffset: completedOffset,
+                    completedHasMore: completedHasMore,
+                    completedLoading: isLoadingMoreCompleted,
+                    filtersAreDefault: searchText.isEmpty && debouncedSearchText.isEmpty &&
+                        selectedTagFilter == .all && selectedPriorityFilter == nil &&
+                        selectedPeriodFilter == nil
+                )
+            }
+            TaskListPaginationDiagnostics.refreshActive = { refreshActiveList() }
+            TaskListPaginationDiagnostics.loadMoreActive = { loadMoreActiveTasks() }
+            TaskListPaginationDiagnostics.refreshCompleted = {
+                fetchCompletedTasks()
+                updateCompletedTaskCount()
+            }
+            TaskListPaginationDiagnostics.loadMoreCompleted = { loadMoreCompletedTasks() }
+            #endif
             if databaseIsEmpty == nil {
                 checkDatabaseIsEmpty()
             }
