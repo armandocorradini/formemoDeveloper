@@ -20,84 +20,44 @@ struct DebugDiagnosticsView: View {
     @State private var currentTestScope = "isolato"
     @State private var currentReportID: UUID?
     @State private var currentReportIsComplete = false
+    @State private var currentTestTitle: String?
 
     private var passedCount: Int { results.filter { $0.status == .passed }.count }
     private var failedCount: Int { results.filter { $0.status == .failed }.count }
+    private var reproducedCount: Int { results.filter { $0.status == .reproduced }.count }
 
     var body: some View {
         List {
             Section {
-
                 Button {
-                    Task { await runRealDatabaseTests() }
+                    Task { await runCompleteDiagnosticSuite() }
                 } label: {
                     HStack {
-                        Label("Test su database reale", systemImage: "externaldrive.badge.checkmark")
+                        Label("Esegui diagnostica completa", systemImage: "checklist")
                         Spacer()
                         if isRunning { ProgressView() }
                     }
                 }
                 .disabled(isRunning)
 
-                Button {
-                    Task { await runOrphanAttachmentAuditOnRealStore() }
-                } label: {
-                    HStack {
-                        Label("Audit allegati orfani (sola lettura)", systemImage: "doc.text.magnifyingglass")
-                        Spacer()
-                        if isRunning { ProgressView() }
-                    }
-                }
-                .disabled(isRunning)
-
-                Button {
-                    Task { await runAssetCriticalityTests() }
-                } label: {
-                    HStack {
-                        Label("Test criticità asset (fault injection)", systemImage: "exclamationmark.shield")
-                        Spacer()
-                        if isRunning { ProgressView() }
-                    }
-                }
-                .disabled(isRunning)
-
-                Button {
-                    Task { await runAllTests() }
-                } label: {
-                    HStack {
-                        Label("Test su database isolato", systemImage: "externaldrive")
-                        Spacer()
-                        if isRunning { ProgressView() }
-                    }
-                }
-                .disabled(isRunning)
-
-                Button {
-                    Task { await runPaginationTest() }
-                } label: {
-                    HStack {
-                        Label("Esegui test paginazione (isolato + iPhone)", systemImage: "rectangle.stack")
-                        Spacer()
-                        if isRunning { ProgressView() }
-                    }
-                }
-                .disabled(isRunning)
-
-                Button {
-                    Task { await runReadOnlySchedulingAudit() }
-                } label: {
-                    HStack {
-                        Label("Confronta eventi configurati e programmati", systemImage: "calendar.badge.clock")
-                        Spacer()
-                        if isRunning { ProgressView() }
-                    }
-                }
-                .disabled(isRunning)
-            } footer: {
-                Text("I test sul database reale inseriscono e salvano temporaneamente record diagnostici nel database persistente dell'app, verificano i percorsi di produzione supportati e rimuovono esclusivamente i record creati dal test. Non eseguono ricostruzioni globali delle notifiche né eliminazioni globali. Se iCloud è attivo, i record di prova potrebbero sincronizzarsi brevemente prima della pulizia. I test isolati usano archivi SwiftData in memoria o temporanei su disco con UUID, rimossi al termine. I test degli asset creano file sintetici UUID nelle directory TaskAttachments, DocumentAssets, WalletAssets e nei rispettivi cestini. Il test RemoteAssetCleanup aggiunge riferimenti temporanei a tutti i file già presenti prima di invocare il coordinatore reale: soltanto i file UUID creati dal test possono essere rimossi. I test rimuovono esclusivamente i file creati da loro; nessun file personale preesistente viene selezionato per la cancellazione.")
+                Text(
+                    isRunning
+                        ? "Test \(results.count + 1)/156 — \(currentTestTitle ?? "Preparazione…")"
+                        : "Progressione: \(results.count)/156 test completati"
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
             }
 
             if !results.isEmpty {
+                Section("Riepilogo") {
+                    LabeledContent("Test eseguiti", value: "\(results.count)")
+                    LabeledContent("Superati", value: "\(passedCount)")
+                    LabeledContent("Falliti", value: "\(failedCount)")
+                    LabeledContent("Difetti riprodotti (simulazione)", value: "\(reproducedCount)")
+                }
+
                 Section("Rapporto diagnostica") {
                     Button {
                         prepareReportForSharing()
@@ -106,19 +66,27 @@ struct DebugDiagnosticsView: View {
                     }
                 }
 
-                Section("Riepilogo") {
-                    LabeledContent("Test eseguiti", value: "\(results.count)")
-                    LabeledContent("Superati", value: "\(passedCount)")
-                    LabeledContent("Falliti", value: "\(failedCount)")
+                Section {
+                    Text("I test sul database reale inseriscono e salvano temporaneamente record diagnostici nel database persistente dell'app, verificano i percorsi di produzione supportati e rimuovono esclusivamente i record creati dal test. Non eseguono ricostruzioni globali delle notifiche né eliminazioni globali. Se iCloud è attivo, i record di prova potrebbero sincronizzarsi brevemente prima della pulizia. I test isolati usano archivi SwiftData in memoria o temporanei su disco con UUID, rimossi al termine. I test degli asset creano file sintetici UUID nelle directory TaskAttachments, DocumentAssets, WalletAssets e nei rispettivi cestini. Il test RemoteAssetCleanup aggiunge riferimenti temporanei a tutti i file già presenti prima di invocare il coordinatore reale: soltanto i file UUID creati dal test possono essere rimossi. I test rimuovono esclusivamente i file creati da loro; nessun file personale preesistente viene selezionato per la cancellazione.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
                 }
 
                 Section("Risultati") {
-                    ForEach(results) { result in
+                    ForEach(results.indices, id: \.self) { index in
+                        let result = results[index]
                         VStack(alignment: .leading, spacing: 5) {
                             HStack(alignment: .firstTextBaseline) {
-                                Image(systemName: result.status == .passed ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                    .foregroundStyle(result.status == .passed ? .green : .red)
-                                Text(result.title).font(.headline)
+                                Image(systemName: result.status == .passed
+                                      ? "checkmark.circle.fill"
+                                      : result.status == .reproduced
+                                          ? "exclamationmark.triangle.fill"
+                                          : "xmark.circle.fill")
+                                    .foregroundStyle(result.status == .passed
+                                                     ? .green
+                                                     : result.status == .reproduced ? .orange : .red)
+                                Text("\(index + 1). \(result.title)").font(.headline)
                                 Spacer()
                                 Text(String(format: "%.0f ms", result.duration * 1_000))
                                     .font(.caption.monospacedDigit())
@@ -170,15 +138,11 @@ struct DebugDiagnosticsView: View {
     /// Una nuova istanza della schermata riparte con un nuovo ID e sovrascrive
     /// il rapporto della sessione precedente.
     private func beginCurrentReport(scope: String) {
-        if currentReportID == nil {
-            results = []
-            currentReportID = UUID()
-            currentTestScope = scope
-        } else if currentTestScope != scope {
-            currentTestScope = "sessione combinata"
-        }
-
+        results = []
+        currentReportID = UUID()
+        currentTestScope = scope
         currentReportIsComplete = false
+        currentTestTitle = nil
         appendCurrentReportToUnifiedFile()
     }
 
@@ -212,13 +176,30 @@ struct DebugDiagnosticsView: View {
         }
     }
 
-    /// Performs a read-only orphan inventory against the persistent app store.
-    /// No file or SwiftData record is changed by this operation.
-    private func runOrphanAttachmentAuditOnRealStore() async {
+    /// Esegue l'intera diagnostica in un'unica sessione:
+    /// store isolati, fault injection asset, audit in sola lettura e database reale per ultimo.
+    private func runCompleteDiagnosticSuite() async {
         guard !isRunning else { return }
         isRunning = true
-        beginCurrentReport(scope: "sola lettura")
-        defer { isRunning = false }
+        beginCurrentReport(scope: "suite completa")
+        defer {
+            isRunning = false
+            currentTestTitle = nil
+        }
+
+        await performIsolatedTests()
+        await performAssetCriticalityTests()
+        await performOrphanAttachmentAudit()
+        await performReadOnlySchedulingAudit()
+        await performRealDatabaseTests()
+
+        currentReportIsComplete = true
+        appendCurrentReportToUnifiedFile()
+    }
+
+    /// Performs a read-only orphan inventory against the persistent app store.
+    /// No file or SwiftData record is changed by this operation.
+    private func performOrphanAttachmentAudit() async {
 
         await runTest("Audit allegati orfani — database reale, sola lettura") {
             let candidates = try AttachmentMaintenanceManager.shared.findOrphanedPhysicalAssets(
@@ -238,18 +219,12 @@ struct DebugDiagnosticsView: View {
             return "Trovati \(candidates.count) file candidati orfani. Elenco informativo: nessun file è stato cancellato o spostato. Prima di qualsiasi eliminazione, verificare la sincronizzazione iCloud e l'assenza di riferimenti su tutti i dispositivi.\\n\\n\(details)"
         }
 
-        currentReportIsComplete = true
-        appendCurrentReportToUnifiedFile()
     }
 
     /// Suite di integrazione sulla persistenza reale. Ogni prova usa ID univoci,
     /// non modifica record preesistenti e ripulisce soltanto gli oggetti creati.
     /// Non chiama il rebuild globale delle notifiche né deleteTask().
-    private func runRealDatabaseTests() async {
-        guard !isRunning else { return }
-        isRunning = true
-        beginCurrentReport(scope: "reale")
-        defer { isRunning = false }
+    private func performRealDatabaseTests() async {
 
         await runTest("Database reale: task CRUD e riattivazione produzione") {
             try testRealDatabaseCRUDAndProductionPath()
@@ -272,8 +247,6 @@ struct DebugDiagnosticsView: View {
         await runTest("Database reale: Vault e relazione segreti sintetici") {
             try testRealVaultPersistence()
         }
-        currentReportIsComplete = true
-        appendCurrentReportToUnifiedFile()
     }
 
     private func testRealDatabaseCRUDAndProductionPath() throws -> String {
@@ -589,11 +562,7 @@ struct DebugDiagnosticsView: View {
     /// Suite mirata per le finestre transazionali degli asset. Usa store SwiftData
     /// isolati e file sintetici UUID; il solo test RemoteAssetCleanup invoca il
     /// coordinatore reale, proteggendo preventivamente tutti i file preesistenti.
-    private func runAssetCriticalityTests() async {
-        guard !isRunning else { return }
-        isRunning = true
-        beginCurrentReport(scope: "test mirati criticità asset")
-        defer { isRunning = false }
+    private func performAssetCriticalityTests() async {
 
         await runTest("Asset Recovery: whitelist include gli asset referenziati da Recently Deleted") {
             try testAssetRecoveryWhitelistIncludesRecentlyDeletedReferences()
@@ -619,28 +588,22 @@ struct DebugDiagnosticsView: View {
         await runTest("Wallet: restore carta con save fallito non deve perdere il record principale") {
             try testWalletCardRestoreSaveFailureWindow()
         }
-        await runTest("Recently Deleted: errore commit non deve rendere irreversibile la cancellazione fisica") {
+        await runTest("Recently Deleted: riproduzione finestra cancellazione fisica prima del commit") {
             try testRecentlyDeletedPermanentDeletionFailureWindow()
         }
-        await runTest("Reset app: errore commit non deve lasciare il cestino fisicamente svuotato") {
+        await runTest("Reset app: riproduzione finestra svuotamento cestino prima del commit") {
             try testResetTrashDeletionFailureWindow()
         }
-        await runTest("Backup: collisione asset non deve sovrascrivere il file prima del commit") {
+        await runTest("Backup: riproduzione collisione asset prima del commit (sequenza simulata)") {
             try testBackupAssetOverwriteRollbackWindow()
         }
         await runTest("TaskAttachment: percorso relativo non valido non deve uscire dalla directory") {
             try testTaskAttachmentRejectsTraversalPath()
         }
 
-        currentReportIsComplete = true
-        appendCurrentReportToUnifiedFile()
     }
 
-    private func runAllTests() async {
-        guard !isRunning else { return }
-        isRunning = true
-        beginCurrentReport(scope: "isolato")
-        defer { isRunning = false }
+    private func performIsolatedTests() async {
 
         await runTest("Criteri di configurazione CloudKit: attivazione, disattivazione e account iCloud") {
             try testCloudKitConfigurationPolicy()
@@ -655,6 +618,27 @@ struct DebugDiagnosticsView: View {
         await runTest("Limiti e intervallo ricorrenze") { try testRecurrenceLimitsAndInterval() }
         await runTest("Eventi senza scadenza o già scaduti") { try testNotificationBoundaryCases() }
         await runTest("CRUD task SwiftData") { try testTaskCRUD() }
+        await runTest("Duplicazione task: campi, stato e indipendenza dalla serie") {
+            try testTaskDuplicationWorkflow()
+        }
+        await runTest("Promemoria posizione: coordinate e metadati persistenti") {
+            try testLocationReminderPersistence()
+        }
+        await runTest("Stress SwiftData: 2.000 task e paginazione completa") {
+            try testTaskListStressPagination()
+        }
+        await runTest("Stress SwiftData: 10.000 task e 100 pagine") {
+            try testTaskListStressPagination10K()
+        }
+        await runTest("Stress asset: 500 allegati e 100 documenti con relazioni") {
+            try testAssetRelationshipVolumeStress()
+        }
+        await runTest("Stress ricorrenze: 500 occorrenze e 3 allegati condivisi") {
+            try testLargeRecurringSeriesWithSharedAttachments()
+        }
+        await runTest("Stress notifiche: 500 task, coda 64 e refill cronologico") {
+            try testNotificationQueueStress500Tasks()
+        }
         await runTest("Paginazione: anomalie fetchOffset tra le pagine") {
             try testOffsetPaginationMutationScenarios()
         }
@@ -718,12 +702,21 @@ struct DebugDiagnosticsView: View {
         await runTest("CSV: importazione, duplicati e righe non valide") { try testCSVImportDeduplicationAndValidation() }
         await runTest("ICS: esportazione, ricorrenze, promemoria e date all-day") { try testICSExportStructure() }
         await runTest("Trips: persistenza sezioni e checklist incorporate") { try testTripSectionsPersistence() }
+        await runTest("Trips: round-trip Codable dei metadati completi checklist") {
+            try testTripChecklistCodableMetadataRoundTrip()
+        }
+        await runTest("Promemoria globali: valori validi e fallback compatibilità") {
+            try testNotificationLeadTimeCompatibility()
+        }
         await runTest("Trips: payload .fmtrip Codable") { try testFMTripPayloadRoundTrip() }
         await runTest("Asset Documenti/Wallet: rifiuto percorsi non sicuri") { try testDocumentAndWalletAssetPathValidation() }
         await runTest("Password Generator: lunghezza, categorie e caratteri ambigui") { try testPasswordGeneratorConstraints() }
         await runTest("Diagnostica: redazione dati personali e percorsi") { try testDiagnosticsRedaction() }
         await runTest("Siri: parsing titolo, numero e inferenza tag") { try testSiriParsingAndTagInference() }
         await runTest("Widget: snapshot Codable e compatibilità campi meteo opzionali") { try testWidgetSnapshotCodingCompatibility() }
+        await runTest("Meteo: codici WMO, condizioni sconosciute e simboli giorno/notte") {
+            try testWeatherConditionMapping()
+        }
         await runTest("Barcode: generazione e decodifica Code128/QR") { try testBarcodeGenerateDecodeRoundTrip() }
         await runTest("Scadenza assente: nessun evento automatico") { try testNoDeadlineProducesNoEvents() }
         await runTest("Scadenza passata: nessun evento ordinario") { try testPastDeadlineProducesNoOrdinaryEvents() }
@@ -733,6 +726,15 @@ struct DebugDiagnosticsView: View {
         await runTest("Ricorrenza: conteggio nullo e negativo") { try testRecurrenceNonPositiveCount() }
         await runTest("Ricorrenza: intervallo non valido normalizzato") { try testRecurrenceInvalidIntervalIsClamped() }
         await runTest("Ricorrenza giornaliera: continuità attraversando cambio anno") { try testDailyRecurrenceAcrossYearBoundary() }
+        await runTest("Ricorrenza giornaliera: passaggio all'ora legale primaverile") {
+            try testDailyRecurrenceAcrossSpringDST()
+        }
+        await runTest("Ricorrenza giornaliera: ritorno all'ora solare autunnale") {
+            try testDailyRecurrenceAcrossAutumnDST()
+        }
+        await runTest("Ricorrenza annuale: progressione a partire dal 29 febbraio") {
+            try testYearlyRecurrenceFromLeapDay()
+        }
         await runTest("Eventi: identificativi distinti tra task") { try testEventIdentifiersAreTaskScoped() }
         await runTest("Eventi: reminder fuori intervallo non duplicato") { try testReminderAtOrAfterDeadlineIsExcluded() }
         await runTest("Coda eventi: parità temporale ordinata deterministicamente") { try testEqualTimeEventsHaveStableOrdering() }
@@ -809,8 +811,6 @@ struct DebugDiagnosticsView: View {
         await runTest("AlarmKit: una copia individuale obsoleta non deve sovrascrivere la scadenza più recente") { try await testAlarmStaleIndividualCannotOverwriteLatestDeadline() }
         await runTest("AlarmKit: overlap individual/batch con snapshot discordanti e cronologia dettagliata") { try await testAlarmIndividualBatchStaleSnapshotTimeline() }
 
-        currentReportIsComplete = true
-        appendCurrentReportToUnifiedFile()
     }
 
     /// Exercises the same production orchestration used before Asset Recovery
@@ -1142,6 +1142,23 @@ struct DebugDiagnosticsView: View {
         // Build the independent expected order from the same persistent store,
         // using exactly the production phase boundaries and sort descriptors.
         let now = state.activeNow
+
+        func describeTask(_ id: UUID) throws -> String {
+            guard let task = try fetchDiagnosticTask(id: id, in: modelContext) else {
+                return "id=\(id.uuidString), record non trovato"
+            }
+            let deadline = task.deadLine.map { ISO8601DateFormatter().string(from: $0) } ?? "nil"
+            let phase: String
+            if task.isCompleted {
+                phase = "completata"
+            } else if let due = task.deadLine {
+                phase = due < now ? "scaduta" : "futura"
+            } else {
+                phase = "senza scadenza"
+            }
+            return "id=\(id.uuidString), scadenza=\(deadline), fase=\(phase)"
+        }
+
         let overdueDescriptor = FetchDescriptor<TodoTask>(
             predicate: #Predicate<TodoTask> {
                 !$0.isCompleted && $0.deadLine != nil && $0.deadLine! < now
@@ -1190,11 +1207,15 @@ struct DebugDiagnosticsView: View {
                 .enumerated()
                 .first(where: { $0.element.0 != $0.element.1 })?
                 .offset
-            let expectedID = mismatchIndex.map { expectedActiveIDs[$0].uuidString } ?? "non disponibile"
-            let actualID = mismatchIndex.map { state.activeIDs[$0].uuidString } ?? "non disponibile"
+            let expectedDescription = try mismatchIndex.map {
+                try describeTask(expectedActiveIDs[$0])
+            } ?? "non disponibile"
+            let actualDescription = try mismatchIndex.map {
+                try describeTask(state.activeIDs[$0])
+            } ?? "non disponibile"
             let mismatchLabel = mismatchIndex.map(String.init) ?? "non disponibile"
             throw DiagnosticFailure.assertion(
-                "Ordine del prefisso attività errato al primo indice divergente: indice=\(mismatchLabel), atteso=\(expectedID), effettivo=\(actualID)."
+                "Ordine del prefisso attività errato al primo indice divergente: indice=\(mismatchLabel); atteso [\(expectedDescription)]; effettivo [\(actualDescription)]."
             )
         }
 
@@ -1786,13 +1807,22 @@ struct DebugDiagnosticsView: View {
     }
 
     private func runTest(_ title: String, operation: () async throws -> String) async {
+        currentTestTitle = title
         let start = ContinuousClock.now
         do {
             let details = try await operation()
             results.append(.init(title: title, status: .passed, details: details, duration: start.duration(to: .now).secondsValue))
+        } catch let failure as DiagnosticFailure {
+            switch failure {
+            case .assertion(let message):
+                results.append(.init(title: title, status: .failed, details: message, duration: start.duration(to: .now).secondsValue))
+            case .reproduced(let message):
+                results.append(.init(title: title, status: .reproduced, details: message, duration: start.duration(to: .now).secondsValue))
+            }
         } catch {
             results.append(.init(title: title, status: .failed, details: error.localizedDescription, duration: start.duration(to: .now).secondsValue))
         }
+        currentTestTitle = nil
         appendCurrentReportToUnifiedFile()
     }
 
@@ -2142,6 +2172,108 @@ struct DebugDiagnosticsView: View {
         }
 
         return "ICS letto da file temporaneo: tre VEVENT, escaping, RRULE solo sulla definizione, VALARM e data all-day confrontata con il calendario locale. Il file temporaneo preesistente, se presente, è stato ripristinato."
+    }
+
+    private func testTripChecklistCodableMetadataRoundTrip() throws -> String {
+        let createdAt = Date(timeIntervalSince1970: 1_800_000_000)
+        let updatedAt = createdAt.addingTimeInterval(3_600)
+        let dueDate = createdAt.addingTimeInterval(86_400)
+
+        var item = TripItemData(
+            title: "DEBUG-TRIP-ITEM",
+            isChecked: true,
+            notes: "Synthetic checklist metadata",
+            quantity: 3,
+            isImportant: true,
+            url: "https://example.invalid/item",
+            dueDate: dueDate,
+            locationName: "Terminal 1",
+            sortOrder: 9,
+            isTemplateLocked: true
+        )
+        item.createdAt = createdAt
+        item.updatedAt = updatedAt
+
+        var section = TripSectionData(
+            title: "DEBUG-TRIP-SECTION",
+            isCollapsed: true,
+            icon: "doc.text",
+            notes: "Section metadata",
+            sortOrder: 4,
+            items: [item]
+        )
+        section.createdAt = createdAt
+        section.updatedAt = updatedAt
+
+        let data = try JSONEncoder().encode([section])
+        let decoded = try JSONDecoder().decode([TripSectionData].self, from: data)
+
+        guard let restoredSection = decoded.first,
+              restoredSection.id == section.id,
+              restoredSection.title == section.title,
+              restoredSection.isCollapsed,
+              restoredSection.icon == section.icon,
+              restoredSection.notes == section.notes,
+              restoredSection.sortOrder == section.sortOrder,
+              restoredSection.createdAt == createdAt,
+              restoredSection.updatedAt == updatedAt,
+              let restoredItem = restoredSection.items.first,
+              restoredItem.id == item.id,
+              restoredItem.title == item.title,
+              restoredItem.isChecked,
+              restoredItem.notes == item.notes,
+              restoredItem.quantity == 3,
+              restoredItem.isImportant,
+              restoredItem.url == item.url,
+              restoredItem.dueDate == dueDate,
+              restoredItem.locationName == item.locationName,
+              restoredItem.sortOrder == 9,
+              restoredItem.isTemplateLocked,
+              restoredItem.createdAt == createdAt,
+              restoredItem.updatedAt == updatedAt else {
+            throw DiagnosticFailure.assertion(
+                "Il round-trip JSON di sezioni e checklist ha perso uno o più metadati, identificativi o date."
+            )
+        }
+
+        return "Codifica/decodifica JSON verificata per ID, stato collapsed/checked, note, icone, quantità, importanza, URL, scadenza, località, ordinamento, blocco template e date di creazione/modifica. Nessun dato persistente modificato."
+    }
+
+    private func testNotificationLeadTimeCompatibility() throws -> String {
+        let expectedValues = [-1, 1, 2, 3, 4, 5, 6, 7]
+        let selectableValues = NotificationLeadTime.selectableCases.map(\.rawValue)
+
+        guard selectableValues == expectedValues else {
+            throw DiagnosticFailure.assertion(
+                "I valori selezionabili del preavviso globale sono cambiati: \(selectableValues)."
+            )
+        }
+
+        for value in expectedValues {
+            guard NotificationLeadTime(safeRawValue: value).rawValue == value else {
+                throw DiagnosticFailure.assertion(
+                    "Il valore valido \(value) non viene ripristinato correttamente."
+                )
+            }
+        }
+
+        let invalidValues = [Int.min, -2, 0, 8, 30, Int.max]
+        for value in invalidValues {
+            guard NotificationLeadTime(safeRawValue: value) == .oneDay else {
+                throw DiagnosticFailure.assertion(
+                    "Il valore legacy/non valido \(value) non usa il fallback previsto di un giorno."
+                )
+            }
+        }
+
+        guard NotificationLeadTime.none.isNone,
+              !NotificationLeadTime.oneDay.isNone else {
+            throw DiagnosticFailure.assertion(
+                "La semantica del preavviso disattivato non è coerente."
+            )
+        }
+
+        return "Verificati tutti gli otto valori selezionabili (-1 e 1–7), il ripristino dei valori validi, il fallback a un giorno per valori legacy/non validi e la semantica del preavviso disattivato."
     }
 
     private func testTripSectionsPersistence() throws -> String {
@@ -3688,16 +3820,17 @@ struct DebugDiagnosticsView: View {
         let formatter = ISO8601DateFormatter()
         let passed = results.filter { $0.status == .passed }.count
         let failed = results.filter { $0.status == .failed }.count
+        let reproduced = results.filter { $0.status == .reproduced }.count
         var lines = [
             "ID rapporto: \(currentReportID?.uuidString ?? "non disponibile")",
             "ForMemo — Rapporto diagnostica",
             "Stato esecuzione: \(currentReportIsComplete ? "COMPLETATO" : "IN CORSO")",
             "Data: \(formatter.string(from: .now))",
             "Ambiente: \(ProcessInfo.processInfo.operatingSystemVersionString)",
-            "Esito: \(passed) superati, \(failed) falliti, \(results.count) totali",
-            "Ambito: \(currentTestScope == "reale" ? "suite di persistenza sul ModelContext dell'app: task, ricorrenze, allegati collegati, note, documenti, Wallet e Vault" : currentTestScope == "sola lettura" ? "audit in sola lettura dello stato persistito e programmato" : currentTestScope == "test mirati criticità asset" ? "fault injection mirata su transazioni asset, con store SwiftData isolati e file sintetici UUID; RemoteAssetCleanup invoca il coordinatore reale dopo aver protetto i file preesistenti" : currentTestScope == "sessione combinata" ? "sessione aggregata: test su store SwiftData isolati, database persistente e/o audit in sola lettura, secondo i singoli test elencati" : "suite diagnostica su store SwiftData isolati, con test mirati di notifiche, AlarmKit, import/export, Trips, Widget, Siri, Vault e barcode").",
+            "Esito: \(passed) superati, \(failed) falliti, \(reproduced) difetti riprodotti (simulazione), \(results.count) totali",
+            "Ambito: \(currentTestScope == "reale" ? "suite di persistenza sul ModelContext dell'app: task, ricorrenze, allegati collegati, note, documenti, Wallet e Vault" : currentTestScope == "sola lettura" ? "audit in sola lettura dello stato persistito e programmato" : currentTestScope == "test mirati criticità asset" ? "fault injection mirata su transazioni asset, con store SwiftData isolati e file sintetici UUID; RemoteAssetCleanup invoca il coordinatore reale dopo aver protetto i file preesistenti" : currentTestScope == "suite completa" ? "suite completa: prima test isolati, poi fault injection asset, audit in sola lettura e infine test sul database persistente reale" : currentTestScope == "sessione combinata" ? "sessione aggregata: test su store SwiftData isolati, database persistente e/o audit in sola lettura, secondo i singoli test elencati" : "suite diagnostica su store SwiftData isolati, con test mirati di notifiche, AlarmKit, import/export, Trips, Widget, Siri, Vault e barcode").",
             "Sicurezza: nessuna cancellazione globale; i test sul database reale usano ID univoci e rimuovono soltanto gli oggetti creati. Nessun rebuild globale delle notifiche viene eseguito.",
-            currentTestScope == "reale" ? "ATTENZIONE: se iCloud è attivo, i record diagnostici sul database persistente possono sincronizzarsi brevemente prima della pulizia." : currentTestScope == "sola lettura" ? "Audit in sola lettura: nessun record SwiftData, notifica, sveglia o file viene modificato." : currentTestScope == "test mirati criticità asset" ? "I test usano store SwiftData in-memory o temporanei su disco, mai lo store persistente dell'app. I file UUID vengono creati nelle directory asset reali e rimossi nel defer. RemoteAssetCleanup aggiunge riferimenti sintetici a tutti i file preesistenti prima di invocare il coordinatore reale, così soltanto i tre file UUID del test possono essere rimossi." : currentTestScope == "sessione combinata" ? "Ambiti misti: alcuni test possono inserire record diagnostici temporanei nel database persistente, altri usano store isolati o sola lettura. Consultare i dettagli di ciascun test." : "I test SwiftData usano store in-memory; nessun dato persistente dell'utente viene modificato.",
+            currentTestScope == "reale" ? "ATTENZIONE: se iCloud è attivo, i record diagnostici sul database persistente possono sincronizzarsi brevemente prima della pulizia." : currentTestScope == "sola lettura" ? "Audit in sola lettura: nessun record SwiftData, notifica, sveglia o file viene modificato." : currentTestScope == "test mirati criticità asset" ? "I test usano store SwiftData in-memory o temporanei su disco, mai lo store persistente dell'app. I file UUID vengono creati nelle directory asset reali e rimossi nel defer. RemoteAssetCleanup aggiunge riferimenti sintetici a tutti i file preesistenti prima di invocare il coordinatore reale, così soltanto i tre file UUID del test possono essere rimossi." : currentTestScope == "suite completa" ? "I test sul database persistente vengono eseguiti per ultimi. Gli audit sul database reale sono in sola lettura. I test asset usano file sintetici UUID e store isolati." : currentTestScope == "sessione combinata" ? "Ambiti misti: alcuni test possono inserire record diagnostici temporanei nel database persistente, altri usano store isolati o sola lettura. Consultare i dettagli di ciascun test." : "I test SwiftData usano store in-memory; nessun dato persistente dell'utente viene modificato.",
             "I test sugli allegati e sugli asset usano payload sintetici e percorsi UUID. I file locali e gli eventuali mirror cloud creati dal test di restore vengono rimossi nel defer; nessun file personale preesistente viene selezionato o cancellato e nessuna credenziale personale viene usata.",
             "I test di propagazione usano RecurrenceEngine e RecurringAttachmentManager; il test di stabilità ripete 20 volte un calcolo deterministico, ma non sostituisce la ripetizione manuale dell'intera suite.",
             "",
@@ -3713,7 +3846,13 @@ struct DebugDiagnosticsView: View {
             ""
         ]
         for (index, result) in results.enumerated() {
-            lines.append("\(index + 1). [\(result.status == .passed ? "SUPERATO" : "FALLITO")] \(result.title)")
+            let statusLabel: String
+            switch result.status {
+            case .passed: statusLabel = "SUPERATO"
+            case .failed: statusLabel = "FALLITO"
+            case .reproduced: statusLabel = "DIFETTO RIPRODOTTO — SIMULAZIONE"
+            }
+            lines.append("\(index + 1). [\(statusLabel)] \(result.title)")
             lines.append("Durata: \(String(format: "%.0f", result.duration * 1_000)) ms")
             lines.append("Dettagli: \(result.details)")
             lines.append("")
@@ -4659,6 +4798,573 @@ struct DebugDiagnosticsView: View {
     }
 
     // Test di confine puri: non accedono alla coda notifiche di sistema.
+    private func testTaskDuplicationWorkflow() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let now = Date.now
+        let seriesID = UUID()
+        let occurrence = TodoTask(
+            title: "DEBUG-ONLY duplicate recurring occurrence",
+            taskDescription: "Synthetic description",
+            deadLine: now.addingTimeInterval(86_400),
+            isCompleted: true,
+            completedAt: now,
+            reminderOffsetMinutes: 30,
+            excludeGlobalNotification: true,
+            locationName: "Synthetic location",
+            locationLatitude: 44.4949,
+            locationLongitude: 11.3426,
+            priorityRaw: TaskPriority.critical.rawValue
+        )
+        occurrence.isDebugTask = true
+        occurrence.mainTagRaw = TaskMainTag.work.rawValue
+        occurrence.locationReminderEnabled = true
+        occurrence.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        occurrence.recurrenceInterval = 2
+        occurrence.recurrenceID = seriesID
+        occurrence.occurrenceIndex = 3
+        occurrence.recurrenceStartDate = now
+        occurrence.recurrenceEndDate = now.addingTimeInterval(10 * 86_400)
+        occurrence.recurrenceCount = 6
+        occurrence.snoozeUntil = now.addingTimeInterval(3_600)
+        occurrence.manualSnoozeUntil = now.addingTimeInterval(7_200)
+        context.insert(occurrence)
+        try context.save()
+
+        let copy = try TaskDuplicationService.duplicate(
+            occurrence,
+            using: context,
+            includingAttachments: false
+        )
+
+        guard copy.id != occurrence.id,
+              copy.title == occurrence.title,
+              copy.taskDescription == occurrence.taskDescription,
+              copy.deadLine == occurrence.deadLine,
+              copy.reminderOffsetMinutes == occurrence.reminderOffsetMinutes,
+              copy.excludeGlobalNotification == occurrence.excludeGlobalNotification,
+              copy.locationName == occurrence.locationName,
+              copy.locationLatitude == occurrence.locationLatitude,
+              copy.locationLongitude == occurrence.locationLongitude,
+              copy.locationReminderEnabled,
+              copy.priorityRaw == occurrence.priorityRaw,
+              copy.mainTagRaw == occurrence.mainTagRaw else {
+            throw DiagnosticFailure.assertion("La duplicazione non ha conservato tutti i campi funzionali previsti.")
+        }
+
+        guard !copy.isCompleted,
+              copy.completedAt == nil,
+              copy.snoozeUntil == nil,
+              copy.manualSnoozeUntil == nil,
+              copy.recurrenceID == nil,
+              copy.occurrenceIndex == nil,
+              copy.recurrenceStartDate == nil,
+              copy.recurrenceEndDate == nil,
+              copy.recurrenceCount == nil,
+              copy.recurrenceRule == nil,
+              copy.recurrenceInterval == 1 else {
+            throw DiagnosticFailure.assertion("La copia di un'occorrenza deve diventare un task autonomo, non completato e senza snooze o metadati della serie.")
+        }
+
+        let standaloneRecurring = TodoTask(
+            title: "DEBUG-ONLY duplicate recurring definition",
+            deadLine: now.addingTimeInterval(172_800)
+        )
+        standaloneRecurring.isDebugTask = true
+        standaloneRecurring.recurrenceRule = RecurrenceEngine.Rule.weekly.rawValue
+        standaloneRecurring.recurrenceInterval = 2
+        context.insert(standaloneRecurring)
+        try context.save()
+
+        let recurringCopy = try TaskDuplicationService.duplicate(
+            standaloneRecurring,
+            using: context,
+            includingAttachments: false
+        )
+
+        guard recurringCopy.recurrenceRule == standaloneRecurring.recurrenceRule,
+              recurringCopy.recurrenceInterval == standaloneRecurring.recurrenceInterval,
+              recurringCopy.recurrenceID == nil,
+              recurringCopy.occurrenceIndex == nil else {
+            throw DiagnosticFailure.assertion("La duplicazione di una definizione ricorrente autonoma non ha conservato la regola senza ereditare l'identità della serie.")
+        }
+
+        return "Duplicazione verificata su store SwiftData isolato: campi descrittivi, scadenza, promemoria, tag, priorità e posizione conservati; stato completato e snooze azzerati; occorrenza duplicata resa autonoma; definizione ricorrente autonoma mantenuta senza riutilizzare l'ID della serie. Nessun allegato fisico è stato copiato."
+    }
+
+    private func testTaskListStressPagination() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let total = 2_000
+        let pageSize = 100
+        let baseDate = Date(timeIntervalSince1970: 1_800_000_000)
+
+        for index in 0..<total {
+            let task = TodoTask(
+                title: "DEBUG-ONLY stress task \(index)",
+                deadLine: baseDate.addingTimeInterval(Double(index) * 60)
+            )
+            task.isDebugTask = true
+            context.insert(task)
+        }
+        try context.save()
+
+        var collectedIDs: [UUID] = []
+        collectedIDs.reserveCapacity(total)
+
+        for pageIndex in 0..<(total / pageSize) {
+            var descriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { !$0.isCompleted && $0.deadLine != nil },
+                sortBy: [
+                    SortDescriptor(\TodoTask.deadLine, order: .forward),
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            )
+            descriptor.fetchOffset = pageIndex * pageSize
+            descriptor.fetchLimit = pageSize
+
+            let page = try context.fetch(descriptor)
+            guard page.count == pageSize else {
+                throw DiagnosticFailure.assertion(
+                    "Pagina \(pageIndex + 1): attesi \(pageSize) task, ricevuti \(page.count)."
+                )
+            }
+            collectedIDs.append(contentsOf: page.map(\.id))
+        }
+
+        guard collectedIDs.count == total,
+              Set(collectedIDs).count == total else {
+            throw DiagnosticFailure.assertion(
+                "La scansione delle 20 pagine non ha restituito 2.000 identificativi distinti: righe=\(collectedIDs.count), unici=\(Set(collectedIDs).count)."
+            )
+        }
+
+        let finalCount = try context.fetchCount(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { !$0.isCompleted && $0.deadLine != nil }
+            )
+        )
+        guard finalCount == total else {
+            throw DiagnosticFailure.assertion(
+                "Il conteggio finale dello store non coincide con il numero di record inseriti: \(finalCount)/\(total)."
+            )
+        }
+
+        return "Creati 2.000 task sintetici in un singolo store SwiftData in-memory; 20 pagine consecutive da 100 lette con ordinamento deterministico, senza salti o duplicati; conteggio finale verificato. Nessun dato persistente dell'app è stato modificato."
+    }
+
+    /// Stress test di paginazione su 10.000 task sintetici.
+    /// Usa esclusivamente uno store SwiftData in memoria.
+    private func testTaskListStressPagination10K() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let total = 10_000
+        let pageSize = 100
+        let baseDate = Date(timeIntervalSince1970: 1_800_000_000)
+
+        for index in 0..<total {
+            let task = TodoTask(
+                title: "DEBUG-ONLY stress 10K \(index)",
+                deadLine: baseDate.addingTimeInterval(Double(index) * 60)
+            )
+            task.isDebugTask = true
+            context.insert(task)
+        }
+        try context.save()
+
+        var seen = Set<UUID>()
+        seen.reserveCapacity(total)
+
+        for pageIndex in 0..<(total / pageSize) {
+            var descriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { !$0.isCompleted && $0.deadLine != nil },
+                sortBy: [
+                    SortDescriptor(\TodoTask.deadLine, order: .forward),
+                    SortDescriptor(\TodoTask.id, order: .forward)
+                ]
+            )
+            descriptor.fetchOffset = pageIndex * pageSize
+            descriptor.fetchLimit = pageSize
+
+            let page = try context.fetch(descriptor)
+            guard page.count == pageSize else {
+                throw DiagnosticFailure.assertion(
+                    "Stress 10K, pagina \(pageIndex + 1)/100: attesi \(pageSize), ricevuti \(page.count)."
+                )
+            }
+            for task in page {
+                guard seen.insert(task.id).inserted else {
+                    throw DiagnosticFailure.assertion(
+                        "Stress 10K: ID duplicato alla pagina \(pageIndex + 1): \(task.id.uuidString)."
+                    )
+                }
+            }
+        }
+
+        let finalCount = try context.fetchCount(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { !$0.isCompleted && $0.deadLine != nil }
+            )
+        )
+        guard seen.count == total, finalCount == total else {
+            throw DiagnosticFailure.assertion(
+                "Stress 10K: righe uniche \(seen.count), conteggio SwiftData \(finalCount), attese \(total)."
+            )
+        }
+
+        return "Creati 10.000 task sintetici e letti in 100 pagine consecutive da 100. Tutti gli ID sono univoci e il conteggio SwiftData coincide. Store esclusivamente in memoria; nessun dato dell'app o CloudKit modificato."
+    }
+
+    /// Verifica la persistenza di relazioni ad alto volume senza creare file fisici.
+    private func testAssetRelationshipVolumeStress() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let taskID = UUID()
+        let task = TodoTask(id: taskID, title: "DEBUG-ONLY 500 attachment stress")
+        task.isDebugTask = true
+
+        var attachments: [TaskAttachment] = []
+        attachments.reserveCapacity(500)
+        for index in 0..<500 {
+            let attachment = TaskAttachment(
+                originalName: "DEBUG-ONLY-\(index).txt",
+                relativePath: "diagnostics-only/\(UUID().uuidString).txt",
+                contentType: "text/plain",
+                task: task
+            )
+            attachments.append(attachment)
+        }
+        task.attachments = attachments
+        context.insert(task)
+        attachments.forEach { context.insert($0) }
+
+        var documents: [DocumentItem] = []
+        documents.reserveCapacity(100)
+
+        for index in 0..<100 {
+            let document = DocumentItem(
+                name: "DEBUG-ONLY document stress \(index)",
+                notificationEnabled: false
+            )
+            let asset = DocumentAsset(
+                relativePath: "diagnostics-only/\(UUID().uuidString).pdf",
+                kind: .pdf,
+                pageIndex: 1,
+                fileSize: 123,
+                document: document
+            )
+            document.assets = [asset]
+            documents.append(document)
+            context.insert(document)
+            context.insert(asset)
+        }
+
+        try context.save()
+
+        let savedTask = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate<TodoTask> { $0.id == taskID })
+        ).first
+        let savedAttachments = try context.fetch(FetchDescriptor<TaskAttachment>())
+            .filter { $0.task?.id == taskID }
+        let savedDocuments = try context.fetch(FetchDescriptor<DocumentItem>())
+            .filter { $0.name.contains("DEBUG-ONLY document stress") }
+        let savedAssets = try context.fetch(FetchDescriptor<DocumentAsset>())
+            .filter { asset in savedDocuments.contains(where: { $0.id == asset.document?.id }) }
+
+        guard savedTask != nil,
+              savedAttachments.count == 500,
+              Set(savedAttachments.map(\.id)).count == 500,
+              savedDocuments.count == 100,
+              savedAssets.count == 100,
+              savedDocuments.allSatisfy({ $0.assets?.count == 1 }) else {
+            throw DiagnosticFailure.assertion(
+                "Relazioni ad alto volume non coerenti: allegati task \(savedAttachments.count)/500, documenti \(savedDocuments.count)/100, asset documenti \(savedAssets.count)/100."
+            )
+        }
+
+        return "Persistiti e riletti 500 record TaskAttachment collegati a un task e 100 DocumentItem con 100 DocumentAsset. Identità e relazioni verificate; nessun file fisico creato e nessun archivio persistente dell'app utilizzato."
+    }
+
+    /// Materializza una serie ampia e verifica che gli allegati condivisi
+    /// restino unici e visibili senza duplicare i file o i record allegato.
+    private func testLargeRecurringSeriesWithSharedAttachments() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let seriesID = UUID()
+        let start = Calendar.current.date(byAdding: .day, value: 2, to: Date())!
+        let base = TodoTask(title: "DEBUG-ONLY 500-occurrence series", deadLine: start)
+        base.isDebugTask = true
+        base.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+        base.recurrenceInterval = 1
+        base.recurrenceID = seriesID
+        base.occurrenceIndex = 1
+        base.recurrenceStartDate = start
+        base.recurrenceCount = 500
+
+        let attachments = (0..<3).map { index in
+            TaskAttachment(
+                originalName: "DEBUG-ONLY-shared-\(index).txt",
+                relativePath: "diagnostics-only/\(UUID().uuidString).txt",
+                contentType: "text/plain",
+                task: base
+            )
+        }
+        base.attachments = attachments
+        context.insert(base)
+        attachments.forEach { context.insert($0) }
+
+        try RecurringAttachmentManager.configurePropagation(
+            for: attachments,
+            from: base,
+            in: context
+        )
+
+        let generated = try RecurrenceEngine.materializeFutureOccurrences(
+            for: base,
+            in: context
+        )
+        generated.forEach { $0.isDebugTask = true }
+        try context.save()
+
+        RecurringAttachmentManager.invalidateRuleCache(for: seriesID, in: context)
+        let series = try context.fetch(
+            FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.recurrenceID == seriesID }
+            )
+        )
+        let indexes = Set(series.compactMap(\.occurrenceIndex))
+        guard series.count == 500,
+              indexes.count == 500,
+              indexes == Set(1...500),
+              generated.count == 499 else {
+            throw DiagnosticFailure.assertion(
+                "Serie non completa: task \(series.count)/500, indici distinti \(indexes.count), occorrenze generate \(generated.count)/499."
+            )
+        }
+
+        let expectedAttachmentIDs = Set(attachments.map(\.id))
+        for index in [1, 250, 500] {
+            guard let occurrence = series.first(where: { $0.occurrenceIndex == index }) else {
+                throw DiagnosticFailure.assertion("Manca l'occorrenza campione #\(index).")
+            }
+            let visibleIDs = RecurringAttachmentManager.visibleAttachments(
+                for: occurrence,
+                in: context
+            ).map(\.id)
+            guard visibleIDs.count == 3,
+                  Set(visibleIDs) == expectedAttachmentIDs else {
+                throw DiagnosticFailure.assertion(
+                    "Occorrenza #\(index): attesi 3 allegati condivisi distinti, trovati \(visibleIDs.count)."
+                )
+            }
+        }
+
+        let secondPass = try RecurrenceEngine.materializeFutureOccurrences(
+            for: base,
+            in: context
+        )
+        guard secondPass.isEmpty else {
+            throw DiagnosticFailure.assertion(
+                "La seconda materializzazione ha creato \(secondPass.count) occorrenze duplicate."
+            )
+        }
+
+        let links = try context.fetch(FetchDescriptor<RecurringAttachmentLink>())
+            .filter { $0.recurrenceID == seriesID && $0.isActive }
+        guard links.count == 3,
+              Set(links.map(\.attachmentID)) == expectedAttachmentIDs else {
+            throw DiagnosticFailure.assertion(
+                "Regole di condivisione attive non coerenti: \(links.count)/3."
+            )
+        }
+
+        return "Materializzate 500 occorrenze con indici 1–500 e tre allegati condivisi tramite link. Verificate le occorrenze iniziale, intermedia e finale, l'unicità degli ID, tre link attivi e idempotenza della seconda materializzazione. Nessun file fisico creato; store in memoria."
+    }
+
+    /// Stress della selezione cronologica su un volume ampio di eventi.
+    /// Non programma né cancella notifiche di sistema.
+    private func testNotificationQueueStress500Tasks() throws -> String {
+        let now = Date()
+        let lead: NotificationLeadTime = .threeDays
+        var tasks: [TodoTask] = []
+        tasks.reserveCapacity(500)
+
+        for index in 0..<500 {
+            guard let deadline = Calendar.current.date(
+                byAdding: .day,
+                value: 10 + index,
+                to: now
+            ) else {
+                throw DiagnosticFailure.assertion(
+                    "Impossibile calcolare la scadenza del task sintetico #\(index)."
+                )
+            }
+            let task = TodoTask(
+                title: "DEBUG-ONLY notification stress \(index)",
+                deadLine: deadline,
+                reminderOffsetMinutes: 120
+            )
+            task.isDebugTask = true
+            tasks.append(task)
+        }
+
+        func events(asOf referenceDate: Date) -> [NotificationManager.TaskEventCalculator.Event] {
+            tasks.flatMap {
+                NotificationManager.TaskEventCalculator.allEvents(
+                    for: $0,
+                    now: referenceDate,
+                    lead: lead,
+                    alarmAuthorizationAvailable: false
+                )
+            }
+        }
+
+        let candidates = events(asOf: now)
+        guard candidates.count > 500 else {
+            throw DiagnosticFailure.assertion(
+                "Volume eventi insufficiente per lo stress test: \(candidates.count), attesi più di 500."
+            )
+        }
+
+        let firstQueue = NotificationManager.selectChronologicalQueue(
+            from: candidates,
+            limit: 64,
+            date: { $0.date },
+            id: { $0.id }
+        )
+        guard firstQueue.count == 64 else {
+            throw DiagnosticFailure.assertion(
+                "La prima coda contiene \(firstQueue.count) eventi invece di 64."
+            )
+        }
+
+        for index in 1..<firstQueue.count {
+            let previous = firstQueue[index - 1]
+            let current = firstQueue[index]
+            guard previous.date < current.date
+                    || (previous.date == current.date && previous.id <= current.id) else {
+                throw DiagnosticFailure.assertion(
+                    "Ordine cronologico non deterministico alla posizione \(index)."
+                )
+            }
+        }
+
+        let first65Queue = NotificationManager.selectChronologicalQueue(
+            from: candidates,
+            limit: 65,
+            date: { $0.date },
+            id: { $0.id }
+        )
+        guard let previouslyExcluded = first65Queue.last,
+              !firstQueue.contains(where: { $0.id == previouslyExcluded.id }) else {
+            throw DiagnosticFailure.assertion(
+                "Non è stato possibile isolare l'evento candidato alla posizione 65."
+            )
+        }
+
+        let afterFirstDelivery = firstQueue[0].date.addingTimeInterval(1)
+        let remaining = events(asOf: afterFirstDelivery)
+        let refilled = NotificationManager.selectChronologicalQueue(
+            from: remaining,
+            limit: 64,
+            date: { $0.date },
+            id: { $0.id }
+        )
+
+        guard refilled.count == 64,
+              refilled.contains(where: { $0.id == previouslyExcluded.id }),
+              !refilled.contains(where: { $0.id == firstQueue[0].id }) else {
+            throw DiagnosticFailure.assertion(
+                "Refill stress non coerente: coda=\(refilled.count), evento #65 incluso=\(refilled.contains(where: { $0.id == previouslyExcluded.id })), evento consegnato ancora presente=\(refilled.contains(where: { $0.id == firstQueue[0].id }))."
+            )
+        }
+
+        return "\(tasks.count) task sintetici hanno generato \(candidates.count) eventi candidati. Verificati limite 64, ordinamento deterministico, esclusione iniziale dell'evento #65 e suo ingresso dopo la liberazione del primo slot. Testa il selettore cronologico di produzione senza programmare o rimuovere notifiche reali."
+    }
+
+    private func testLocationReminderPersistence() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let id = UUID()
+        let task = TodoTask(
+            id: id,
+            title: "DEBUG-ONLY location reminder",
+            locationName: "Synthetic test location",
+            locationLatitude: 44.4949,
+            locationLongitude: 11.3426
+        )
+        task.isDebugTask = true
+        task.locationReminderEnabled = true
+        context.insert(task)
+        try context.save()
+
+        guard let saved = try context.fetch(
+            FetchDescriptor<TodoTask>(predicate: #Predicate<TodoTask> { $0.id == id })
+        ).first,
+        saved.locationReminderEnabled,
+        saved.locationName == "Synthetic test location",
+        saved.locationLatitude == 44.4949,
+        saved.locationLongitude == 11.3426,
+        let coordinate = saved.locationCoordinate,
+        coordinate.latitude == 44.4949,
+        coordinate.longitude == 11.3426 else {
+            throw DiagnosticFailure.assertion("Nome, coordinate o attivazione del promemoria posizione non sono stati persistiti e riletti correttamente.")
+        }
+
+        let incomplete = TodoTask(
+            title: "DEBUG-ONLY incomplete location",
+            locationName: "Missing longitude",
+            locationLatitude: 44.4949
+        )
+        guard incomplete.locationCoordinate == nil else {
+            throw DiagnosticFailure.assertion("Una posizione con una sola coordinata deve essere considerata incompleta.")
+        }
+
+        return "Persistenza isolata verificata per nome luogo, latitudine, longitudine e flag del promemoria; la coordinata derivata viene ricostruita correttamente. Una posizione incompleta senza longitudine non produce CLLocationCoordinate2D. Nessuna autorizzazione o geofence reale è stato richiesto."
+    }
+
+    private func testWeatherConditionMapping() throws -> String {
+        let cases: [(Int?, Bool, Int?, String)] = [
+            (0, true, 0, "sun.max.fill"),
+            (0, false, 0, "moon.stars.fill"),
+            (0, true, 50, "cloud.sun.fill"),
+            (3, true, 95, "cloud.fill"),
+            (61, true, 20, "cloud.sun.rain.fill"),
+            (65, true, 100, "cloud.heavyrain.fill"),
+            (45, true, 0, "cloud.fog.fill"),
+            (95, false, 0, "cloud.bolt.rain.fill"),
+            (71, true, 0, "cloud.snow.fill"),
+            (nil, true, 0, "cloud.sun.fill"),
+            (999, false, 0, "cloud.moon.fill")
+        ]
+
+        for (code, isDay, cloudCover, expectedSymbol) in cases {
+            let condition = WeatherCondition(code: code)
+            let actualSymbol = condition.symbolName(
+                isDay: isDay,
+                cloudCover: cloudCover
+            )
+            guard actualSymbol == expectedSymbol else {
+                throw DiagnosticFailure.assertion(
+                    "Mapping meteo non corretto per codice \(code.map(String.init) ?? "nil"), giorno=\(isDay), copertura=\(cloudCover.map(String.init) ?? "nil"): atteso \(expectedSymbol), ottenuto \(actualSymbol)."
+                )
+            }
+        }
+
+        guard WeatherCondition(code: nil) == .unknown,
+              WeatherCondition(code: 999) == .unknown else {
+            throw DiagnosticFailure.assertion("I codici WMO assenti o non riconosciuti non vengono ricondotti a .unknown.")
+        }
+
+        return "Verificati 11 casi di mapping WMO: cielo sereno giorno/notte e copertura nuvolosa, coperto, pioggia leggera e intensa, nebbia, temporale, neve e codici assenti/sconosciuti. Nessuna richiesta di rete o posizione è stata eseguita."
+    }
+
     private func testNoDeadlineProducesNoEvents() throws -> String {
         let task = TodoTask(title: "DEBUG-ONLY no deadline")
         task.isDebugTask = true
@@ -4792,6 +5498,114 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("La progressione giornaliera non attraversa correttamente il cambio anno.")
         }
         return "La sequenza giornaliera attraversa il 31 dicembre e il 1° gennaio mantenendo l'ordine crescente."
+    }
+
+
+    /// Verifica che una ricorrenza giornaliera mantenga l'ora locale quando
+    /// il fuso Europe/Rome passa da CET a CEST.
+    private func testDailyRecurrenceAcrossSpringDST() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        guard let timeZone = TimeZone(identifier: "Europe/Rome") else {
+            throw DiagnosticFailure.assertion("Fuso Europe/Rome non disponibile.")
+        }
+        calendar.timeZone = timeZone
+
+        guard let start = calendar.date(from: DateComponents(
+            year: 2027, month: 3, day: 27, hour: 9, minute: 15
+        )) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data precedente al cambio primaverile.")
+        }
+
+        let dates = RecurrenceEngine.occurrenceDates(
+            startDate: start, rule: .daily, interval: 1, limit: .count(4), calendar: calendar
+        )
+        let components = dates.map {
+            calendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
+        }
+
+        guard dates.count == 4,
+              components[0].month == 3, components[0].day == 27,
+              components[1].month == 3, components[1].day == 28,
+              components[2].month == 3, components[2].day == 29,
+              components[3].month == 3, components[3].day == 30,
+              components.allSatisfy({ $0.hour == 9 && $0.minute == 15 }),
+              zip(dates, dates.dropFirst()).allSatisfy({ $0.0 < $0.1 }) else {
+            throw DiagnosticFailure.assertion(
+                "La ricorrenza non mantiene le 09:15 locali attraversando il passaggio CET → CEST: \(components)."
+            )
+        }
+
+        return "Quattro occorrenze consecutive in Europe/Rome mantengono le 09:15 locali durante il passaggio CET → CEST. Verificati anche ordine e date."
+    }
+
+    /// Verifica il mantenimento dell'ora locale nel passaggio CEST → CET,
+    /// quando il giorno del cambio dura 25 ore.
+    private func testDailyRecurrenceAcrossAutumnDST() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        guard let timeZone = TimeZone(identifier: "Europe/Rome") else {
+            throw DiagnosticFailure.assertion("Fuso Europe/Rome non disponibile.")
+        }
+        calendar.timeZone = timeZone
+
+        guard let start = calendar.date(from: DateComponents(
+            year: 2027, month: 10, day: 30, hour: 9, minute: 15
+        )) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire la data precedente al cambio autunnale.")
+        }
+
+        let dates = RecurrenceEngine.occurrenceDates(
+            startDate: start, rule: .daily, interval: 1, limit: .count(4), calendar: calendar
+        )
+        let components = dates.map {
+            calendar.dateComponents([.year, .month, .day, .hour, .minute], from: $0)
+        }
+
+        guard dates.count == 4,
+              components[0].month == 10, components[0].day == 30,
+              components[1].month == 10, components[1].day == 31,
+              components[2].month == 11, components[2].day == 1,
+              components[3].month == 11, components[3].day == 2,
+              components.allSatisfy({ $0.hour == 9 && $0.minute == 15 }),
+              zip(dates, dates.dropFirst()).allSatisfy({ $0.0 < $0.1 }) else {
+            throw DiagnosticFailure.assertion(
+                "La ricorrenza non mantiene le 09:15 locali attraversando il passaggio CEST → CET: \(components)."
+            )
+        }
+
+        return "Quattro occorrenze consecutive in Europe/Rome mantengono le 09:15 locali durante il passaggio CEST → CET. Verificati anche ordine e date."
+    }
+
+    /// Il 29 febbraio non esiste negli anni non bisestili: il test non impone
+    /// una politica di recupero specifica, ma verifica che la serie annuale
+    /// resti valida, crescente e completa anche attraversando anni bisestili.
+    private func testYearlyRecurrenceFromLeapDay() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+
+        guard let start = calendar.date(from: DateComponents(
+            year: 2024, month: 2, day: 29, hour: 9, minute: 30
+        )) else {
+            throw DiagnosticFailure.assertion("Impossibile costruire il 29 febbraio 2024.")
+        }
+
+        let dates = RecurrenceEngine.occurrenceDates(
+            startDate: start, rule: .yearly, interval: 1, limit: .count(6), calendar: calendar
+        )
+
+        guard dates.count == 6,
+              dates.first == start,
+              zip(dates, dates.dropFirst()).allSatisfy({ $0.0 < $0.1 }),
+              dates.allSatisfy({
+                  let components = calendar.dateComponents([.month, .day, .hour, .minute], from: $0)
+                  return components.month != nil && components.day != nil
+                      && components.hour == 9 && components.minute == 30
+              }) else {
+            throw DiagnosticFailure.assertion(
+                "La serie annuale dal 29 febbraio non ha prodotto sei date valide, complete e strettamente crescenti."
+            )
+        }
+
+        return "Sei occorrenze annuali dal 29 febbraio 2024 verificate: prima data invariata, date valide, ordine strettamente crescente e ora 09:30 conservata. Il test non impone se gli anni non bisestili debbano ricadere il 28 febbraio o il 1° marzo."
     }
 
     private func testEventIdentifiersAreTaskScoped() throws -> String {
@@ -4929,10 +5743,8 @@ struct DebugDiagnosticsView: View {
         return "Task sintetico inserito e salvato in uno store SwiftData in-memory. Verificate creazione, aggiornamento della data .fixed dopo modifica persistita e cancellazione dopo completamento. Pulizia limitata all'UUID del test."
     }
 
-    /// Injects one schedule failure into the production synchronizer, verifies
-    /// its diagnostic, retries through the same production path, and confirms
-    /// that the notification rebuild keeps the intentional silent alarm badge
-    /// request without creating a normal deadline notification.
+    /// Injects one schedule failure, verifies the persisted notification
+    /// fallback, then retries and verifies restoration of the AlarmKit path.
     private func testAlarmScheduleFailureIsDiagnosedAndRestored() async throws -> String {
         let manager = ForMemoAlarmManager.shared
         guard manager.authorizationState() == .authorized else {
@@ -4981,44 +5793,65 @@ struct DebugDiagnosticsView: View {
             }
             try assertDiagnosticAlarm(id: id, shouldBeScheduled: false)
 
-            // Check notification behavior at the failed-schedule boundary,
-            // before the retry can restore the AlarmKit alarm.
+            // Mirror the production fallback: persist Alarm OFF after a failed
+            // schedule so the normal deadline event replaces alarmBadge.
+            task.alarmEnabled = false
+            try context.save()
+            let persistedFallbackTask = try context.fetch(
+                FetchDescriptor<TodoTask>(
+                    predicate: #Predicate<TodoTask> { candidate in
+                        candidate.id == id
+                    }
+                )
+            ).first
+            guard persistedFallbackTask?.alarmEnabled == false else {
+                throw DiagnosticFailure.assertion("La preferenza Alarm OFF non risulta persistita dopo il fallimento AlarmKit.")
+            }
+
+            // Use a non-debug projection because the production rebuild
+            // intentionally excludes diagnostic tasks from its queue.
             let notificationTask = TodoTask(
                 id: id,
-                title: "DEBUG-ONLY AlarmKit badge notification projection",
+                title: "DEBUG-ONLY AlarmKit fallback notification projection",
                 deadLine: deadline
             )
-            notificationTask.alarmEnabled = true
+            notificationTask.alarmEnabled = false
 
             var capturedRequests: [UNNotificationRequest] = []
-            let failedStageRebuildSucceeded = await NotificationManager.shared.debugRebuild(
+            let fallbackRebuildSucceeded = await NotificationManager.shared.debugRebuild(
                 tasks: [notificationTask],
                 using: context,
                 addOperation: { request in
                     capturedRequests.append(request)
                 }
             )
-            guard failedStageRebuildSucceeded else {
-                throw DiagnosticFailure.assertion("Il rebuild notifiche dopo il fallimento AlarmKit non è riuscito.")
+            guard fallbackRebuildSucceeded else {
+                throw DiagnosticFailure.assertion("Il rebuild notifiche con fallback deadline non è riuscito.")
             }
-            let failedStageDeadlineRequests = capturedRequests.filter {
+
+            let fallbackDeadlineRequests = capturedRequests.filter {
                 $0.identifier == "task.\(id.uuidString).deadline"
             }
-            guard failedStageDeadlineRequests.isEmpty,
-                  capturedRequests.allSatisfy({ $0.content.sound == nil }) else {
+            let fallbackBadgeRequests = capturedRequests.filter {
+                $0.identifier == "task.\(id.uuidString).alarmBadge"
+            }
+            guard fallbackDeadlineRequests.count == 1,
+                  fallbackBadgeRequests.isEmpty else {
                 throw DiagnosticFailure.assertion(
-                    "Dopo il fallimento AlarmKit è stata generata una notifica deadline o sonora: deadline=\(failedStageDeadlineRequests.count), richieste sonore=\(capturedRequests.filter { $0.content.sound != nil }.count)."
+                    "Fallback AlarmKit errato: deadline=\(fallbackDeadlineRequests.count), alarmBadge=\(fallbackBadgeRequests.count)."
                 )
             }
 
+            // Re-enable the preference and retry through the production path.
+            task.alarmEnabled = true
+            try context.save()
+            notificationTask.alarmEnabled = true
             let secondAttempt = await manager.synchronize(task: task, in: context)
             guard secondAttempt else {
                 throw DiagnosticFailure.assertion("La sincronizzazione successiva non ha ripristinato la sveglia.")
             }
             try assertDiagnosticAlarmDate(id: id, expectedDate: deadline)
 
-            // Reuse the non-debug projection to verify the normal post-recovery
-            // notification state. It is never inserted into SwiftData.
             capturedRequests.removeAll(keepingCapacity: true)
             let notificationRebuildSucceeded = await NotificationManager.shared.debugRebuild(
                 tasks: [notificationTask],
@@ -5028,7 +5861,7 @@ struct DebugDiagnosticsView: View {
                 }
             )
             guard notificationRebuildSucceeded else {
-                throw DiagnosticFailure.assertion("Il rebuild diagnostico delle notifiche non è riuscito.")
+                throw DiagnosticFailure.assertion("Il rebuild diagnostico dopo il recupero non è riuscito.")
             }
 
             let deadlineRequests = capturedRequests.filter {
@@ -5043,7 +5876,7 @@ struct DebugDiagnosticsView: View {
                   badgeRequests[0].content.title.isEmpty,
                   badgeRequests[0].content.body.isEmpty else {
                 throw DiagnosticFailure.assertion(
-                    "Comportamento notifiche errato: deadline=\(deadlineRequests.count), alarmBadge=\(badgeRequests.count), sound=\(String(describing: badgeRequests.first?.content.sound))."
+                    "Comportamento dopo il recupero errato: deadline=\(deadlineRequests.count), alarmBadge=\(badgeRequests.count), sound=\(String(describing: badgeRequests.first?.content.sound))."
                 )
             }
         } catch {
@@ -5058,7 +5891,7 @@ struct DebugDiagnosticsView: View {
         context.delete(task)
         try context.save()
 
-        return "Errore schedule iniettato una sola volta sul percorso di produzione; sincronizzazione iniziale fallita e diagnosticata per l'UUID corretto. Anche prima del retry, il rebuild notifiche non ha prodotto deadline né richieste sonore. La seconda sincronizzazione è riuscita e AlarmKit contiene esattamente una sveglia in stato scheduled, con data persistita verificata. Dopo il recupero, il rebuild ha prodotto un solo alarmBadge silenzioso, senza evento deadline. Pulizia limitata all'UUID sintetico."
+        return "Errore schedule iniettato e diagnosticato per l'UUID corretto. Dopo il fallimento, la preferenza AlarmKit è stata disattivata e salvata; il rebuild ha prodotto esattamente una notifica deadline e nessun alarmBadge. Riattivando la preferenza, il secondo tentativo ha ripristinato una sola sveglia AlarmKit con data verificata e un solo alarmBadge silenzioso, senza deadline. Pulizia limitata all'UUID sintetico."
     }
 
     /// Models a recurrence whose future occurrences become obsolete after a rule edit.
@@ -5339,17 +6172,11 @@ struct DebugDiagnosticsView: View {
 
     /// Confronta lo stato persistito con le richieste già registrate in iOS.
     /// Non salva SwiftData, non cancella richieste e non programma/cancella sveglie.
-    private func runReadOnlySchedulingAudit() async {
-        guard !isRunning else { return }
-        isRunning = true
-        beginCurrentReport(scope: "sola lettura")
-        defer { isRunning = false }
+    private func performReadOnlySchedulingAudit() async {
 
         await runTest("Confronto eventi configurati e programmati (sola lettura)") {
             try await auditActualSchedulingState()
         }
-        currentReportIsComplete = true
-        appendCurrentReportToUnifiedFile()
     }
 
     private func auditActualSchedulingState() async throws -> String {
@@ -6969,10 +7796,8 @@ struct DebugDiagnosticsView: View {
     /// the app's real Documents asset directories. Existing files are shielded
     /// from the RemoteAssetCleanupCoordinator test by temporary SwiftData
     /// references; only files created by this test are eligible for removal.
-    /// Exercises the real recovery-plan coordinator with the same active-model
-    /// whitelist construction currently used by AssetRecoveryCoordinator's
-    /// private validRelativePaths(for:context:) method. The private fetch helper
-    /// is not exposed, so this test mirrors its three fetch branches explicitly.
+    /// Exercises AssetRecoveryCoordinator's production whitelist builder
+    /// against Recently Deleted records in an isolated SwiftData store.
     private func testAssetRecoveryWhitelistIncludesRecentlyDeletedReferences() throws -> String {
         let (container, context) = try makeIsolatedStore()
         _ = container
@@ -6990,51 +7815,35 @@ struct DebugDiagnosticsView: View {
         let walletDeleted = DeletedItem(type: "walletAsset")
         walletDeleted.loyaltyCardID = UUID()
         walletDeleted.relativePath = walletPath
+        let legacyWalletDeleted = DeletedItem(type: "loyaltycard")
+        legacyWalletDeleted.loyaltyCardID = UUID()
+        legacyWalletDeleted.loyaltyLogoRelativePath = walletPath
+
         context.insert(taskDeleted)
         context.insert(documentDeleted)
         context.insert(walletDeleted)
+        context.insert(legacyWalletDeleted)
         try context.save()
-
-        var received: [AssetContainer: Set<String>] = [:]
-        try AssetRecoveryCoordinator.executeRecoveryPlan(
-            for: [.task, .document, .wallet],
-            fetchOperation: { container in
-                switch container {
-                case .task:
-                    return Set(try context.fetch(FetchDescriptor<TaskAttachment>()).map {
-                        URL(fileURLWithPath: $0.relativePath).lastPathComponent
-                    })
-                case .document:
-                    return Set(try context.fetch(FetchDescriptor<DocumentAsset>()).map {
-                        URL(fileURLWithPath: $0.relativePath).lastPathComponent
-                    })
-                case .wallet:
-                    return Set(try context.fetch(FetchDescriptor<WalletAsset>()).map {
-                        URL(fileURLWithPath: $0.relativePath).lastPathComponent
-                    })
-                }
-            },
-            repairOperation: { container, paths in
-                received[container] = paths
-            }
-        )
 
         let expected: [AssetContainer: String] = [
             .task: taskPath,
             .document: documentPath,
             .wallet: walletPath
         ]
-        let missing = expected.compactMap { container, path in
-            received[container]?.contains(path) == true ? nil : "\(container.rawValue): \(path)"
+        let missing = try expected.compactMap { assetContainer, path in
+            try AssetRecoveryCoordinator.validRelativePaths(
+                for: assetContainer,
+                context: context
+            ).contains(path) ? nil : "\(assetContainer.rawValue): \(path)"
         }
 
         guard missing.isEmpty else {
             throw DiagnosticFailure.assertion(
-                "DIFETTO RIPRODOTTO: la whitelist usata dal recovery plan non include i riferimenti presenti soltanto in DeletedItem. Riferimenti mancanti: \(missing.joined(separator: ", ")). La prova usa la stessa costruzione whitelist del helper privato; non esegue repair né tocca file."
+                "DIFETTO: la whitelist reale di AssetRecoveryCoordinator non include tutti i riferimenti Recently Deleted: \(missing.joined(separator: ", ")). Nessuna riparazione o modifica fisica eseguita."
             )
         }
 
-        return "La whitelist del recovery plan include tutti i percorsi dei record Recently Deleted per Task, Documenti e Wallet. Nessuna riparazione o modifica fisica eseguita."
+        return "La funzione reale validRelativePaths conserva i riferimenti Recently Deleted per Task, Documenti e Wallet, inclusi i percorsi legacy della carta. Nessuna riparazione o modifica fisica eseguita."
     }
 
     private func testRemoteAssetCleanupProtectsRecentlyDeletedReferences() throws -> String {
@@ -7215,6 +8024,14 @@ struct DebugDiagnosticsView: View {
             }
         )
 
+        guard !saved else {
+            throw DiagnosticFailure.assertion("Il test doveva simulare un salvataggio fallito.")
+        }
+        try TaskAttachment.restoreFileFromTrash(
+            trashFileName: trashName,
+            relativePath: relativePath
+        )
+
         let restoredTask = try context.fetch(
             FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == taskID })
         ).first
@@ -7239,8 +8056,9 @@ struct DebugDiagnosticsView: View {
         return "Dopo il save fallito, TaskDetail ha ripristinato sia il record sia il file originale; nessun file è rimasto nel cestino."
     }
 
-    /// Reproduces the global recurring-attachment sequence, including deletion
-    /// of a temporary cloud mirror, followed by a failed SwiftData commit.
+    /// Reproduces the global recurring-attachment rollback sequence.
+    /// The local file is staged in Trash, the SwiftData commit fails, and the
+    /// cloud mirror must remain untouched until a successful commit.
     private func testTaskDetailGlobalAttachmentRollbackWindow() throws -> String {
         let (container, context) = try makeIsolatedStore()
         _ = container
@@ -7289,13 +8107,8 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("Spostamento dell'allegato globale nel cestino non riuscito.")
         }
         trashURL = trashDirectory.appendingPathComponent(trashName)
-        let mirrorResult = try TaskAttachment.deleteCloudMirrorVerified(
-            relativePath: relativePath,
-            cloudDirectory: cloudDirectory
-        )
-        guard mirrorResult == .deleted else {
-            throw DiagnosticFailure.assertion("Il mirror sintetico non è stato eliminato come previsto dal percorso globale.")
-        }
+        // Production deletes the cloud mirror only after the SwiftData commit.
+        // Keep it intact while injecting the save failure, matching TaskDetailView.
 
         task.attachments?.removeAll { $0.id == attachmentID }
         attachment.task = nil
@@ -7305,6 +8118,14 @@ struct DebugDiagnosticsView: View {
             saveOperation: {
                 throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-TASKDETAIL-GLOBAL")
             }
+        )
+
+        guard !saved else {
+            throw DiagnosticFailure.assertion("Il test doveva simulare un salvataggio globale fallito.")
+        }
+        try TaskAttachment.restoreFileFromTrash(
+            trashFileName: trashName,
+            relativePath: relativePath
         )
 
         let restoredTask = try context.fetch(
@@ -7390,7 +8211,13 @@ struct DebugDiagnosticsView: View {
             throw DiagnosticFailure.assertion("RECURRING-LINK-DELETE-FAILURE-INJECTED")
         } catch {
             linkFailureObserved = true
-            // Production returns here without restoring the moved local file.
+            // Match TaskDetailView: roll back pending model changes and restore
+            // the staged local file before returning from the failed link cleanup.
+            context.rollback()
+            try TaskAttachment.restoreFileFromTrash(
+                trashFileName: trashName,
+                relativePath: relativePath
+            )
         }
 
         let attachmentStillPersisted = try context.fetch(
@@ -7413,11 +8240,8 @@ struct DebugDiagnosticsView: View {
         return "L'errore dei link ricorrenti non ha lasciato il file nel cestino; modello e copie sono rimasti coerenti."
     }
 
-    /// Injects a save failure after the same file-first/model-second ordering
-    /// used by DocumentImportService and WalletImportService. The production
-    /// import methods do not currently expose a save-operation injection point;
-    /// this test therefore exercises their exact persistence boundary, not the
-    /// private importer entry points themselves.
+    /// Calls the real import entry points with an injected save failure and
+    /// verifies that their newly-created local and cloud assets are rolled back.
     private func testDocumentWalletImportRollbackWindows() throws -> String {
         let (container, context) = try makeIsolatedStore()
         _ = container
@@ -7430,80 +8254,76 @@ struct DebugDiagnosticsView: View {
         try fileManager.createDirectory(at: walletDirectory, withIntermediateDirectories: true)
 
         let token = UUID().uuidString
-        let documentPath = "DEBUG-IMPORT-\(token).pdf"
-        let walletPath = "DEBUG-IMPORT-\(token).jpg"
-        let documentURL = documentDirectory.appendingPathComponent(documentPath)
-        let walletURL = walletDirectory.appendingPathComponent(walletPath)
-        defer {
-            try? fileManager.removeItem(at: documentURL)
-            try? fileManager.removeItem(at: walletURL)
-        }
-        try Data("synthetic PDF payload \(token)".utf8).write(to: documentURL, options: .atomic)
-        try Data("synthetic Wallet image payload \(token)".utf8).write(to: walletURL, options: .atomic)
+        let sourcePDF = fileManager.temporaryDirectory.appendingPathComponent("DEBUG-IMPORT-\(token).pdf")
+        try Data("synthetic PDF payload \(token)".utf8).write(to: sourcePDF, options: .atomic)
+        defer { try? fileManager.removeItem(at: sourcePDF) }
 
         let document = DocumentItem(name: "DEBUG-ONLY import rollback")
-        let card = LoyaltyCard(
-            storeName: "DEBUG-ONLY import rollback",
-            barcodeValue: token,
-            barcodeFormat: "code128"
-        )
+        let card = LoyaltyCard(storeName: "DEBUG-ONLY import rollback", barcodeValue: token, barcodeFormat: "code128")
         context.insert(document)
         context.insert(card)
         try context.save()
         let documentID = document.id
         let cardID = card.id
+        let documentFilesBefore = Set((try fileManager.contentsOfDirectory(at: documentDirectory, includingPropertiesForKeys: nil)).map(\.lastPathComponent))
+        let walletFilesBefore = Set((try fileManager.contentsOfDirectory(at: walletDirectory, includingPropertiesForKeys: nil)).map(\.lastPathComponent))
 
-        let documentAsset = DocumentAsset(
-            relativePath: documentPath,
-            kind: .pdf,
-            pageIndex: 0,
-            fileSize: 1,
-            document: document
-        )
-        document.assets = [documentAsset]
-        context.insert(documentAsset)
+        var documentImportFailed = false
+        do {
+            try DocumentImportService.importPDF(
+                from: sourcePDF,
+                into: document,
+                in: context,
+                saveOperation: { throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-DOCUMENT-IMPORT") }
+            )
+        } catch let error as NSError {
+            documentImportFailed = error.domain == "DocumentImportService" && error.code == 2
+        }
+        guard documentImportFailed else {
+            throw DiagnosticFailure.assertion("Document import unexpectedly succeeded despite the injected save failure.")
+        }
 
-        let walletAsset = WalletAsset(kind: .gallery, relativePath: walletPath, fileSize: 1)
-        walletAsset.card = card
-        card.assets = [walletAsset]
-        context.insert(walletAsset)
-
-        let saved = context.safeSave(
-            operation: "DEBUG-DocumentWalletImport",
-            saveOperation: {
-                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-DOCUMENT-WALLET-IMPORT")
-            }
-        )
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 8, height: 8))
+        let image = renderer.image { rendererContext in
+            UIColor.systemBlue.setFill()
+            rendererContext.fill(CGRect(x: 0, y: 0, width: 8, height: 8))
+        }
+        var walletImportFailed = false
+        do {
+            try WalletImportService.importImages(
+                [image],
+                into: card,
+                in: context,
+                saveOperation: { throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-WALLET-IMPORT") }
+            )
+        } catch let error as NSError {
+            walletImportFailed = error.domain == "WalletImportService" && error.code == 1
+        }
+        guard walletImportFailed else {
+            throw DiagnosticFailure.assertion("Wallet import unexpectedly succeeded despite the injected save failure.")
+        }
 
         let documentStillPresent = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == documentID })).first != nil
         let walletStillPresent = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == cardID })).first != nil
-        let documentAssetStillPresent = try context.fetch(FetchDescriptor<DocumentAsset>()).contains { $0.relativePath == documentPath }
-        let walletAssetStillPresent = try context.fetch(FetchDescriptor<WalletAsset>()).contains { $0.relativePath == walletPath }
-        let documentRelationshipHasAsset = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == documentID })).first?.assets?.contains { $0.relativePath == documentPath } == true
-        let walletRelationshipHasAsset = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == cardID })).first?.assets?.contains { $0.relativePath == walletPath } == true
-        let documentFileRemains = fileManager.fileExists(atPath: documentURL.path)
-        let walletFileRemains = fileManager.fileExists(atPath: walletURL.path)
+        let documentAssetsRemain = try context.fetch(FetchDescriptor<DocumentAsset>()).contains { $0.document?.id == documentID }
+        let walletAssetsRemain = try context.fetch(FetchDescriptor<WalletAsset>()).contains { $0.card?.id == cardID }
+        let documentFilesAfter = Set((try fileManager.contentsOfDirectory(at: documentDirectory, includingPropertiesForKeys: nil)).map(\.lastPathComponent))
+        let walletFilesAfter = Set((try fileManager.contentsOfDirectory(at: walletDirectory, includingPropertiesForKeys: nil)).map(\.lastPathComponent))
+        let documentOrphans = documentFilesAfter.subtracting(documentFilesBefore)
+        let walletOrphans = walletFilesAfter.subtracting(walletFilesBefore)
 
-        guard !saved,
-              documentStillPresent,
-              walletStillPresent,
-              !documentAssetStillPresent,
-              !walletAssetStillPresent,
-              !documentRelationshipHasAsset,
-              !walletRelationshipHasAsset,
-              !documentFileRemains,
-              !walletFileRemains else {
+        guard documentStillPresent, walletStillPresent,
+              !documentAssetsRemain, !walletAssetsRemain,
+              documentOrphans.isEmpty, walletOrphans.isEmpty else {
             throw DiagnosticFailure.assertion(
-                "DIFETTO RIPRODOTTO: rollback import non rimuove i file creati prima del commit. save=\(saved), documentParent=\(documentStillPresent), walletParent=\(walletStillPresent), documentAsset=\(documentAssetStillPresent), walletAsset=\(walletAssetStillPresent), documentRelationship=\(documentRelationshipHasAsset), walletRelationship=\(walletRelationshipHasAsset), documentFile=\(documentFileRemains), walletFile=\(walletFileRemains)."
+                "Import rollback non coerente: documentParent=\(documentStillPresent), walletParent=\(walletStillPresent), documentAssets=\(documentAssetsRemain), walletAssets=\(walletAssetsRemain), documentOrphans=\(documentOrphans.count), walletOrphans=\(walletOrphans.count)."
             )
         }
-
-        return "Il fault injection ha annullato entrambi i modelli e i due file sintetici sono stati rimossi. La prova usa la stessa sequenza file-first dei servizi; non invoca direttamente gli entry point importImages/importPDF perché non espongono un save hook."
+        return "Gli entry point reali importPDF() e importImages() hanno ricevuto un errore al commit: i modelli sono stati ripristinati e nessun file locale orfano è rimasto."
     }
 
-    /// Exercises the move-to-Trash APIs used by document and Wallet deletion,
-    /// then injects a failed SwiftData commit. The invariant is that the source
-    /// files must be restored when the model rollback restores their records.
+    /// Calls the real document and Wallet deletion entry points with a failed
+    /// commit and verifies that both assets are moved back from Trash.
     private func testDocumentWalletDeletionRollbackWindows() throws -> String {
         let (container, context) = try makeIsolatedStore()
         _ = container
@@ -7525,13 +8345,17 @@ struct DebugDiagnosticsView: View {
         let walletURL = walletDirectory.appendingPathComponent(walletPath)
         let documentPayload = Data("document delete rollback \(token)".utf8)
         let walletPayload = Data("wallet delete rollback \(token)".utf8)
-        var documentTrashURL: URL?
-        var walletTrashURL: URL?
+        let documentTrashBefore = Set(try fileManager.contentsOfDirectory(at: documentTrash, includingPropertiesForKeys: nil).map(\.lastPathComponent))
+        let walletTrashBefore = Set(try fileManager.contentsOfDirectory(at: walletTrash, includingPropertiesForKeys: nil).map(\.lastPathComponent))
         defer {
             try? fileManager.removeItem(at: documentURL)
             try? fileManager.removeItem(at: walletURL)
-            if let documentTrashURL { try? fileManager.removeItem(at: documentTrashURL) }
-            if let walletTrashURL { try? fileManager.removeItem(at: walletTrashURL) }
+            for url in (try? fileManager.contentsOfDirectory(at: documentTrash, includingPropertiesForKeys: nil)) ?? [] where !documentTrashBefore.contains(url.lastPathComponent) {
+                try? fileManager.removeItem(at: url)
+            }
+            for url in (try? fileManager.contentsOfDirectory(at: walletTrash, includingPropertiesForKeys: nil)) ?? [] where !walletTrashBefore.contains(url.lastPathComponent) {
+                try? fileManager.removeItem(at: url)
+            }
         }
         try documentPayload.write(to: documentURL, options: .atomic)
         try walletPayload.write(to: walletURL, options: .atomic)
@@ -7551,58 +8375,43 @@ struct DebugDiagnosticsView: View {
         try context.save()
         let documentID = document.id
         let cardID = card.id
-        let documentAssetID = documentAsset.id
-        let walletAssetID = walletAsset.id
 
-        guard let documentTrashName = DocumentAssetStore.moveToTrash(relativePath: documentPath) else {
-            throw DiagnosticFailure.assertion("L'asset Documenti non è stato spostato nel cestino dallo store di produzione.")
-        }
-        documentTrashURL = documentTrash.appendingPathComponent(documentTrashName)
-        guard let walletTrashName = WalletAssetStore.moveToTrash(relativePath: walletPath) else {
-            throw DiagnosticFailure.assertion("L'asset Wallet non è stato spostato nel cestino dallo store di produzione.")
-        }
-        walletTrashURL = walletTrash.appendingPathComponent(walletTrashName)
-
-        context.delete(document)
-        context.delete(card)
-
-        let saved = context.safeSave(
-            operation: "DEBUG-DocumentWalletDelete",
-            saveOperation: {
-                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-DOCUMENT-WALLET-DELETE")
-            }
+        let documentResult = deleteDocument(
+            document,
+            in: context,
+            saveOperation: { throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-DOCUMENT-DELETE") }
+        )
+        let walletResult = deleteLoyaltyCard(
+            card,
+            in: context,
+            saveOperation: { throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-WALLET-DELETE") }
         )
 
         let documentParentRestored = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == documentID })).first != nil
         let walletParentRestored = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == cardID })).first != nil
-        let documentRestored = try context.fetch(FetchDescriptor<DocumentAsset>(predicate: #Predicate { $0.id == documentAssetID })).first != nil
-        let walletRestored = try context.fetch(FetchDescriptor<WalletAsset>(predicate: #Predicate { $0.id == walletAssetID })).first != nil
+        let documentAssetRestored = try context.fetch(FetchDescriptor<DocumentAsset>()).contains { $0.relativePath == documentPath }
+        let walletAssetRestored = try context.fetch(FetchDescriptor<WalletAsset>()).contains { $0.relativePath == walletPath }
         let documentSourceRestored = (try? Data(contentsOf: documentURL)) == documentPayload
         let walletSourceRestored = (try? Data(contentsOf: walletURL)) == walletPayload
-        let documentTrashRemains = documentTrashURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
-        let walletTrashRemains = walletTrashURL.map { fileManager.fileExists(atPath: $0.path) } ?? false
+        let documentInTrash = (try fileManager.contentsOfDirectory(at: documentTrash, includingPropertiesForKeys: nil)).contains { $0.lastPathComponent.contains(token) }
+        let walletInTrash = (try fileManager.contentsOfDirectory(at: walletTrash, includingPropertiesForKeys: nil)).contains { $0.lastPathComponent.contains(token) }
 
-        guard !saved,
-              documentParentRestored,
-              walletParentRestored,
-              documentRestored,
-              walletRestored,
-              documentSourceRestored,
-              walletSourceRestored,
-              !documentTrashRemains,
-              !walletTrashRemains else {
+        guard documentResult == .moveFailed, walletResult == .moveFailed,
+              documentParentRestored, walletParentRestored,
+              documentAssetRestored, walletAssetRestored,
+              documentSourceRestored, walletSourceRestored,
+              !documentInTrash, !walletInTrash else {
             throw DiagnosticFailure.assertion(
-                "DIFETTO RIPRODOTTO: dopo rollback i modelli genitore/asset sono ripristinati ma i file restano nel cestino. save=\(saved), docParent=\(documentParentRestored), walletParent=\(walletParentRestored), docAsset=\(documentRestored), walletAsset=\(walletRestored), docSource=\(documentSourceRestored), walletSource=\(walletSourceRestored), docTrash=\(documentTrashRemains), walletTrash=\(walletTrashRemains)."
+                "Delete rollback non coerente: result=\(documentResult)/\(walletResult), parent=\(documentParentRestored)/\(walletParentRestored), assets=\(documentAssetRestored)/\(walletAssetRestored), source=\(documentSourceRestored)/\(walletSourceRestored), trash=\(documentInTrash)/\(walletInTrash)."
             )
         }
-
-        return "Dopo il commit fallito, entrambi gli asset sono stati riportati alle directory canoniche e i file nel cestino sono stati rimossi. Fault injection sulla sequenza degli store di produzione; deleteDocument/deleteLoyaltyCard non espongono un save hook e non vengono invocati direttamente."
+        return "deleteDocument() e deleteLoyaltyCard() reali hanno ripristinato i file dalle rispettive directory Trash dopo il commit fallito."
     }
 
-    /// Replays the loyalty-card restore transaction with a failure injected at
-    /// the parent save boundary. The child wallet-asset restore is the actual
-    /// production method; the parent transaction is mirrored here because its
-    /// implementation does not expose a save-operation hook.
+    /// Exercises the actual loyalty-card restore implementation and injects a
+    /// failure at the same save boundary used by RecentlyDeletedView. The
+    /// physical asset move is intentionally outside SwiftData rollback; the
+    /// retained DeletedItem records must make the restore safely retryable.
     private func testWalletCardRestoreSaveFailureWindow() throws -> String {
         let (container, context) = try makeIsolatedStore()
         _ = container
@@ -7646,41 +8455,27 @@ struct DebugDiagnosticsView: View {
         let parentID = parent.id
         let childID = child.id
 
-        let card = LoyaltyCard(
-            id: cardID,
-            storeName: parent.storeName ?? "",
-            barcodeValue: parent.barcodeValue ?? "",
-            barcodeFormat: parent.barcodeFormat ?? "code128"
-        )
-        card.loyaltyLogoRelativePath = relativePath
-        context.insert(card)
-
-        let childResult = child.restoreWithResult(in: context)
-        guard childResult.isSuccess,
-              fileManager.fileExists(atPath: sourceURL.path) else {
-            throw DiagnosticFailure.assertion("Il restore dell'asset figlio non ha ripristinato il file sintetico.")
+        // Invoke the real parent restore. It creates the card, restores the
+        // child asset and stages deletion of the child DeletedItem, but leaves
+        // the final commit to the caller.
+        let restoreResult = parent.restoreWithResult(in: context)
+        guard restoreResult.isSuccess,
+              fileManager.fileExists(atPath: sourceURL.path),
+              !fileManager.fileExists(atPath: trashURL.path) else {
+            throw DiagnosticFailure.assertion(
+                "Il metodo reale restoreWithResult() non ha preparato il ripristino della carta e del relativo asset."
+            )
         }
-        context.delete(child)
 
+        // Match RecentlyDeletedView: remove the parent record, then commit the
+        // entire restore as one SwiftData transaction. Inject failure here.
+        context.delete(parent)
         let saved = context.safeSave(
             operation: "DEBUG-WalletCardRestore",
             saveOperation: {
                 throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-WALLET-CARD-RESTORE")
             }
         )
-
-        // The current parent implementation ignores this false result and
-        // returns .restored. Mirror the RecentlyDeletedView caller, which then
-        // removes the parent record after receiving a successful result.
-        let parentReportedResult: DeletedItemRestoreResult = .restored
-        if parentReportedResult.isSuccess {
-            if let restoredParent = try context.fetch(
-                FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == parentID })
-            ).first {
-                context.delete(restoredParent)
-                try context.save()
-            }
-        }
 
         let parentRemains = try context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == parentID })).first != nil
         let childRemains = try context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == childID })).first != nil
@@ -7697,375 +8492,186 @@ struct DebugDiagnosticsView: View {
               canonicalFileRemains,
               !trashFileRemains else {
             throw DiagnosticFailure.assertion(
-                "DIFETTO RIPRODOTTO: il chiamante ha eliminato il record principale dopo che restoreWithResult() ha restituito .restored nonostante il save fallito. save=\(saved), parent=\(parentRemains), child=\(childRemains), card=\(cardRemains), asset=\(assetRemains), canonical=\(canonicalFileRemains), trash=\(trashFileRemains)."
+                "Il test end-to-end del restore Wallet non ha mantenuto lo stato retryable dopo il save fallito. save=\(saved), parent=\(parentRemains), child=\(childRemains), card=\(cardRemains), asset=\(assetRemains), canonical=\(canonicalFileRemains), trash=\(trashFileRemains)."
             )
         }
 
-        return "Il restore fallito ha conservato parent e child; il modello carta non è stato creato e il file locale è rimasto disponibile per un nuovo tentativo."
+        // Retry through the same production restore path. Since the physical
+        // file is already canonical, the retry must reuse it rather than move
+        // or duplicate it again.
+        guard let retryParent = try context.fetch(
+            FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == parentID })
+        ).first,
+        retryParent.restoreWithResult(in: context).isSuccess else {
+            throw DiagnosticFailure.assertion("Il retry del restore Wallet non è riuscito dopo il rollback.")
+        }
+        context.delete(retryParent)
+        guard context.safeSave(operation: "DEBUG-WalletCardRestore-Retry") else {
+            throw DiagnosticFailure.assertion("Il commit del retry Wallet è fallito.")
+        }
+
+        let parentAfterRetry = try context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == parentID })).first != nil
+        let childAfterRetry = try context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == childID })).first != nil
+        let cardAfterRetry = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == cardID })).first != nil
+        let assetAfterRetry = try context.fetch(FetchDescriptor<WalletAsset>()).contains { $0.relativePath == relativePath }
+        let canonicalAfterRetry = fileManager.fileExists(atPath: sourceURL.path)
+
+        guard !parentAfterRetry,
+              !childAfterRetry,
+              cardAfterRetry,
+              assetAfterRetry,
+              canonicalAfterRetry else {
+            throw DiagnosticFailure.assertion(
+                "Il retry Wallet non ha completato il ripristino in modo coerente. parent=\(parentAfterRetry), child=\(childAfterRetry), card=\(cardAfterRetry), asset=\(assetAfterRetry), canonical=\(canonicalAfterRetry)."
+            )
+        }
+
+        return "Il restore reale ha superato il fault injection: il primo commit fallito ha conservato parent e child DeletedItem; il retry ha riutilizzato il file già nella directory canonica, creato carta e asset e rimosso i record del cestino con un unico commit riuscito."
     }
 
-    /// Reproduces RecentlyDeletedView's ordering with a temporary on-disk
-    /// SwiftData store. A failed commit leaves the persisted DeletedItem intact,
-    /// while the local Trash file has already been removed.
+    /// Exercises the production Recently Deleted commit boundary. A failed
+    /// save must retain both the persisted record and its Trash file.
     private func testRecentlyDeletedPermanentDeletionFailureWindow() throws -> String {
         let fileManager = FileManager.default
         guard let trashDirectory = TaskAttachment.trashDirectory else {
             throw DiagnosticFailure.assertion("TaskAttachments Trash non disponibile.")
         }
         try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
-
         let token = UUID().uuidString
-        let storeDirectory = fileManager.temporaryDirectory
-            .appendingPathComponent("ForMemo-RecentlyDeletedFault-\(token)", isDirectory: true)
+        let storeDirectory = fileManager.temporaryDirectory.appendingPathComponent("ForMemo-RecentlyDeletedFault-\(token)", isDirectory: true)
         try fileManager.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
         defer { try? fileManager.removeItem(at: storeDirectory) }
-
         let storeURL = storeDirectory.appendingPathComponent("diagnostics.store")
         let trashName = "DEBUG-PERMANENT-DELETE-\(token).txt"
         let trashURL = trashDirectory.appendingPathComponent(trashName)
         try Data("permanent deletion failure \(token)".utf8).write(to: trashURL, options: .atomic)
         defer { try? fileManager.removeItem(at: trashURL) }
-
         let itemID = UUID()
-        func openStore() throws -> ModelContainer {
-            let configuration = ModelConfiguration(
-                "ForMemo-RecentlyDeletedFault-\(token)",
-                schema: Persistence.schema,
-                url: storeURL,
-                cloudKitDatabase: .none
-            )
-            return try ModelContainer(for: Persistence.schema, configurations: [configuration])
+        let configuration = ModelConfiguration("ForMemo-RecentlyDeletedFault-\(token)", schema: Persistence.schema, url: storeURL, cloudKitDatabase: .none)
+        let container = try ModelContainer(for: Persistence.schema, configurations: [configuration])
+        let context = ModelContext(container)
+        let item = DeletedItem(type: "attachment")
+        item.id = itemID
+        item.taskID = UUID()
+        item.relativePath = "DEBUG-PERMANENT-DELETE-\(token).txt"
+        item.trashFileName = trashName
+        context.insert(item)
+        try context.save()
+
+        let committed = RecentlyDeletedDeletionCommit.commit(
+            [item],
+            in: context,
+            saveOperation: { throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-RECENTLY-DELETED-PERMANENT") }
+        )
+        let persistedItem = try context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == itemID })).first != nil
+        let trashFileRemains = fileManager.fileExists(atPath: trashURL.path)
+        guard !committed, persistedItem, trashFileRemains else {
+            throw DiagnosticFailure.assertion("Recently Deleted commit boundary non coerente: committed=\(committed), record=\(persistedItem), trash=\(trashFileRemains).")
         }
-
-        func seedThenFailBeforeCommit() throws -> Bool {
-            let container = try openStore()
-            let context = ModelContext(container)
-            let item = DeletedItem(type: "attachment")
-            item.id = itemID
-            item.taskID = UUID()
-            item.relativePath = "DEBUG-PERMANENT-DELETE-\(token).txt"
-            item.trashFileName = trashName
-            context.insert(item)
-            try context.save()
-
-            // Exact production order: physical deletion, model deletion, save.
-            try fileManager.removeItem(at: trashURL)
-            context.delete(item)
-            do {
-                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-RECENTLY-DELETED-PERMANENT")
-            } catch {
-                return context.hasChanges
-            }
-        }
-
-        let changesRemainPending = try seedThenFailBeforeCommit()
-        func persistedRecordExistsAfterReopen() throws -> Bool {
-            let reopened = try openStore()
-            let reopenedContext = ModelContext(reopened)
-            return try reopenedContext.fetch(
-                FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == itemID })
-            ).first != nil
-        }
-        let persistedItemExists = try persistedRecordExistsAfterReopen()
-        let physicalFileRemains = fileManager.fileExists(atPath: trashURL.path)
-
-        guard changesRemainPending,
-              persistedItemExists,
-              !physicalFileRemains else {
-            throw DiagnosticFailure.assertion(
-                "DIFETTO RIPRODOTTO: dopo il commit fallito il record persistito e il file non sono più coerenti. pending=\(changesRemainPending), persistedDeletedItem=\(persistedItemExists), trashFile=\(physicalFileRemains)."
-            )
-        }
-
-        return "Store SwiftData temporaneo riaperto: DeletedItem ancora persistito dopo il commit non eseguito, ma file locale nel cestino già eliminato. Nessun dato del database dell'app è stato usato."
+        return "Il percorso di commit di produzione ha rifiutato l'eliminazione definitiva: il record e il file Trash sono rimasti disponibili."
     }
 
-    /// Mirrors ResetAppView's pre-commit Trash-file removal for one synthetic
-    /// DeletedItem. It deliberately does not call DeletedFingerprintStore.clearAll,
-    /// which is global user data and must never be touched by a diagnostic test.
+    /// Exercises the production reset save boundary without invoking a global
+    /// reset or touching user fingerprints, notifications, or AlarmKit.
     private func testResetTrashDeletionFailureWindow() throws -> String {
         let fileManager = FileManager.default
         guard let trashDirectory = TaskAttachment.trashDirectory else {
             throw DiagnosticFailure.assertion("TaskAttachments Trash non disponibile.")
         }
         try fileManager.createDirectory(at: trashDirectory, withIntermediateDirectories: true)
-
         let token = UUID().uuidString
-        let storeDirectory = fileManager.temporaryDirectory
-            .appendingPathComponent("ForMemo-ResetTrashFault-\(token)", isDirectory: true)
+        let storeDirectory = fileManager.temporaryDirectory.appendingPathComponent("ForMemo-ResetTrashFault-\(token)", isDirectory: true)
         try fileManager.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
         defer { try? fileManager.removeItem(at: storeDirectory) }
-
         let storeURL = storeDirectory.appendingPathComponent("diagnostics.store")
         let trashName = "DEBUG-RESET-TRASH-\(token).txt"
         let trashURL = trashDirectory.appendingPathComponent(trashName)
         try Data("reset trash rollback \(token)".utf8).write(to: trashURL, options: .atomic)
         defer { try? fileManager.removeItem(at: trashURL) }
-
         let itemID = UUID()
-        func openStore() throws -> ModelContainer {
-            let configuration = ModelConfiguration(
-                "ForMemo-ResetTrashFault-\(token)",
-                schema: Persistence.schema,
-                url: storeURL,
-                cloudKitDatabase: .none
-            )
-            return try ModelContainer(for: Persistence.schema, configurations: [configuration])
-        }
+        let configuration = ModelConfiguration("ForMemo-ResetTrashFault-\(token)", schema: Persistence.schema, url: storeURL, cloudKitDatabase: .none)
+        let container = try ModelContainer(for: Persistence.schema, configurations: [configuration])
+        let context = ModelContext(container)
+        let item = DeletedItem(type: "attachment")
+        item.id = itemID
+        item.taskID = UUID()
+        item.relativePath = "DEBUG-RESET-TRASH-\(token).txt"
+        item.trashFileName = trashName
+        context.insert(item)
+        try context.save()
+        context.delete(item)
 
-        func seedThenFailBeforeCommit() throws -> Bool {
-            let container = try openStore()
-            let context = ModelContext(container)
-            let item = DeletedItem(type: "attachment")
-            item.id = itemID
-            item.taskID = UUID()
-            item.relativePath = "DEBUG-RESET-TRASH-\(token).txt"
-            item.trashFileName = trashName
-            context.insert(item)
-            try context.save()
-
-            // Exact relevant ResetAppView order for the selected DeletedItem.
-            try fileManager.removeItem(at: trashURL)
-            context.delete(item)
-            do {
+        do {
+            try ResetAppCommit.save(context, saveOperation: {
                 throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-RESET-APP")
-            } catch {
-                return context.hasChanges
-            }
+            })
+            throw DiagnosticFailure.assertion("Reset commit unexpectedly succeeded despite the injected save failure.")
+        } catch let failure as DiagnosticFailure {
+            if failure.localizedDescription.contains("unexpectedly succeeded") { throw failure }
+            context.rollback()
         }
 
-        let changesRemainPending = try seedThenFailBeforeCommit()
-        func persistedRecordExistsAfterReopen() throws -> Bool {
-            let reopened = try openStore()
-            let reopenedContext = ModelContext(reopened)
-            return try reopenedContext.fetch(
-                FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == itemID })
-            ).first != nil
+        let persistedItem = try context.fetch(FetchDescriptor<DeletedItem>(predicate: #Predicate { $0.id == itemID })).first != nil
+        let trashFileRemains = fileManager.fileExists(atPath: trashURL.path)
+        guard persistedItem, trashFileRemains else {
+            throw DiagnosticFailure.assertion("Reset failed-commit boundary non coerente: record=\(persistedItem), trash=\(trashFileRemains).")
         }
-        let persistedItemExists = try persistedRecordExistsAfterReopen()
-        let trashFileExists = fileManager.fileExists(atPath: trashURL.path)
-
-        guard changesRemainPending,
-              persistedItemExists,
-              !trashFileExists else {
-            throw DiagnosticFailure.assertion(
-                "DIFETTO RIPRODOTTO: ResetAppView può eliminare il file nel cestino prima del commit. pending=\(changesRemainPending), persistedDeletedItem=\(persistedItemExists), trashFile=\(trashFileExists). Il test non invoca né modifica il reset globale o i fingerprint dell'utente."
-            )
-        }
-
-        return "Store SwiftData temporaneo riaperto: DeletedItem ancora persistito dopo il commit non eseguito, ma il file nel cestino è già stato eliminato. Nessun reset globale o fingerprint dell'utente è stato modificato."
+        return "Il commit di reset è fallito prima delle operazioni irreversibili: DeletedItem e file Trash sono rimasti intatti; nessun reset globale è stato eseguito."
     }
 
-    /// Simulates BackupRestore's file-first writes when a backup contains new
-    /// model IDs but asset paths already used by current records. The temporary
-    /// on-disk store is reopened after the injected pre-commit failure to verify
-    /// that the old records remain while the physical bytes have been replaced.
+    /// Exercises the same staged asset transaction used by BackupRestore.
+    /// A simulated SwiftData commit failure must restore every pre-existing byte.
     private func testBackupAssetOverwriteRollbackWindow() throws -> String {
         let fileManager = FileManager.default
-        guard let taskDirectory = TaskAttachment.attachmentsDirectory,
-              let documentDirectory = DocumentAssetStore.assetsDirectory,
-              let walletDirectory = WalletAssetStore.assetsDirectory else {
-            throw DiagnosticFailure.assertion("Una directory asset del backup non è disponibile.")
-        }
-        for directory in [taskDirectory, documentDirectory, walletDirectory] {
-            try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-        }
-
         let token = UUID().uuidString
-        let storeDirectory = fileManager.temporaryDirectory
-            .appendingPathComponent("ForMemo-BackupCollisionFault-\(token)", isDirectory: true)
-        try fileManager.createDirectory(at: storeDirectory, withIntermediateDirectories: true)
-        defer { try? fileManager.removeItem(at: storeDirectory) }
-        let storeURL = storeDirectory.appendingPathComponent("diagnostics.store")
+        let directory = fileManager.temporaryDirectory.appendingPathComponent("ForMemo-BackupAssetTransaction-\(token)", isDirectory: true)
+        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? fileManager.removeItem(at: directory) }
 
-        let taskPath = "DEBUG-BACKUP-COLLISION-\(token).txt"
-        let documentPath = "DEBUG-BACKUP-COLLISION-\(token).pdf"
-        let walletPath = "DEBUG-BACKUP-COLLISION-\(token).jpg"
-        let taskURL = taskDirectory.appendingPathComponent(taskPath)
-        let documentURL = documentDirectory.appendingPathComponent(documentPath)
-        let walletURL = walletDirectory.appendingPathComponent(walletPath)
+        let taskURL = directory.appendingPathComponent("task-\(token).asset")
+        let documentURL = directory.appendingPathComponent("document-\(token).asset")
+        let walletURL = directory.appendingPathComponent("wallet-\(token).asset")
         let taskOriginal = Data("original task asset \(token)".utf8)
         let documentOriginal = Data("original document asset \(token)".utf8)
         let walletOriginal = Data("original Wallet asset \(token)".utf8)
         let taskReplacement = Data("backup task replacement \(token)".utf8)
         let documentReplacement = Data("backup document replacement \(token)".utf8)
         let walletReplacement = Data("backup Wallet replacement \(token)".utf8)
-        let urls = [taskURL, documentURL, walletURL]
-        defer { for url in urls { try? fileManager.removeItem(at: url) } }
-
         try taskOriginal.write(to: taskURL, options: .atomic)
         try documentOriginal.write(to: documentURL, options: .atomic)
         try walletOriginal.write(to: walletURL, options: .atomic)
 
-        let originalTaskID = UUID()
-        let originalDocumentID = UUID()
-        let originalCardID = UUID()
-        let restoredTaskID = UUID()
-        let restoredDocumentID = UUID()
-        let restoredCardID = UUID()
-
-        func openStore() throws -> ModelContainer {
-            let configuration = ModelConfiguration(
-                "ForMemo-BackupCollisionFault-\(token)",
-                schema: Persistence.schema,
-                url: storeURL,
-                cloudKitDatabase: .none
-            )
-            return try ModelContainer(for: Persistence.schema, configurations: [configuration])
+        var transaction = try BackupAssetFileTransaction(files: [
+            (taskURL, taskReplacement),
+            (documentURL, documentReplacement),
+            (walletURL, walletReplacement)
+        ])
+        try transaction.apply()
+        let installedTaskData = try Data(contentsOf: taskURL)
+        let installedDocumentData = try Data(contentsOf: documentURL)
+        let installedWalletData = try Data(contentsOf: walletURL)
+        let replacementsInstalled =
+            installedTaskData == taskReplacement &&
+            installedDocumentData == documentReplacement &&
+            installedWalletData == walletReplacement
+        guard replacementsInstalled else {
+            try? transaction.rollback()
+            throw DiagnosticFailure.assertion("Backup asset transaction did not install all staged replacements.")
         }
 
-        func seedOriginalModels() throws {
-            let container = try openStore()
-            let context = ModelContext(container)
-
-            let task = TodoTask(id: originalTaskID, title: "DEBUG-ONLY original backup task")
-            task.isDebugTask = true
-            let taskAsset = TaskAttachment(
-                originalName: taskPath,
-                relativePath: taskPath,
-                contentType: "text/plain",
-                task: task
-            )
-            task.attachments = [taskAsset]
-            context.insert(task)
-            context.insert(taskAsset)
-
-            let document = DocumentItem(name: "DEBUG-ONLY original backup document")
-            document.id = originalDocumentID
-            let documentAsset = DocumentAsset(
-                relativePath: documentPath,
-                kind: .pdf,
-                pageIndex: 0,
-                fileSize: Int64(documentOriginal.count),
-                document: document
-            )
-            document.assets = [documentAsset]
-            context.insert(document)
-            context.insert(documentAsset)
-
-            let card = LoyaltyCard(
-                id: originalCardID,
-                storeName: "DEBUG-ONLY original backup Wallet",
-                barcodeValue: token,
-                barcodeFormat: "code128"
-            )
-            let walletAsset = WalletAsset(
-                kind: .gallery,
-                relativePath: walletPath,
-                fileSize: Int64(walletOriginal.count)
-            )
-            walletAsset.card = card
-            card.assets = [walletAsset]
-            context.insert(card)
-            context.insert(walletAsset)
-            try context.save()
+        // This is the rollback branch taken when modelContext.save() throws.
+        try transaction.rollback()
+        let restoredTaskData = try Data(contentsOf: taskURL)
+        let restoredDocumentData = try Data(contentsOf: documentURL)
+        let restoredWalletData = try Data(contentsOf: walletURL)
+        let originalsRestored =
+            restoredTaskData == taskOriginal &&
+            restoredDocumentData == documentOriginal &&
+            restoredWalletData == walletOriginal
+        guard originalsRestored else {
+            throw DiagnosticFailure.assertion("Backup asset rollback did not restore every original file.")
         }
-
-        func stageOverwritesAndFailBeforeCommit() throws -> Bool {
-            let container = try openStore()
-            let context = ModelContext(container)
-            let originalTask = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == originalTaskID })).first
-            let originalDocument = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == originalDocumentID })).first
-            let originalCard = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == originalCardID })).first
-            guard originalTask != nil, originalDocument != nil, originalCard != nil else {
-                throw DiagnosticFailure.assertion("I modelli originali del test backup non sono stati persistiti.")
-            }
-
-            // BackupRestore writes all three asset domains before inserting the
-            // new archive models and before the final ModelContext.save().
-            try taskReplacement.write(to: taskURL, options: .atomic)
-            try documentReplacement.write(to: documentURL, options: .atomic)
-            try walletReplacement.write(to: walletURL, options: .atomic)
-
-            let restoredTask = TodoTask(id: restoredTaskID, title: "DEBUG-ONLY restored backup task")
-            restoredTask.isDebugTask = true
-            let restoredTaskAsset = TaskAttachment(
-                originalName: taskPath,
-                relativePath: taskPath,
-                contentType: "text/plain",
-                task: restoredTask
-            )
-            restoredTask.attachments = [restoredTaskAsset]
-            context.insert(restoredTask)
-            context.insert(restoredTaskAsset)
-
-            let restoredDocument = DocumentItem(name: "DEBUG-ONLY restored backup document")
-            restoredDocument.id = restoredDocumentID
-            let restoredDocumentAsset = DocumentAsset(
-                relativePath: documentPath,
-                kind: .pdf,
-                pageIndex: 0,
-                fileSize: Int64(documentReplacement.count),
-                document: restoredDocument
-            )
-            restoredDocument.assets = [restoredDocumentAsset]
-            context.insert(restoredDocument)
-            context.insert(restoredDocumentAsset)
-
-            let restoredCard = LoyaltyCard(
-                id: restoredCardID,
-                storeName: "DEBUG-ONLY restored backup Wallet",
-                barcodeValue: token,
-                barcodeFormat: "code128"
-            )
-            let restoredWalletAsset = WalletAsset(
-                kind: .gallery,
-                relativePath: walletPath,
-                fileSize: Int64(walletReplacement.count)
-            )
-            restoredWalletAsset.card = restoredCard
-            restoredCard.assets = [restoredWalletAsset]
-            context.insert(restoredCard)
-            context.insert(restoredWalletAsset)
-
-            do {
-                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-BACKUP-RESTORE")
-            } catch {
-                // restoreArchive propagates the error; callers do not restore
-                // overwritten bytes or roll back the physical file writes.
-                return context.hasChanges
-            }
-        }
-
-        try seedOriginalModels()
-        let pendingAfterFailure = try stageOverwritesAndFailBeforeCommit()
-
-        func readPersistedModelState() throws -> (String?, String?, String?, Bool, Bool, Bool) {
-            let reopened = try openStore()
-            let context = ModelContext(reopened)
-            let originalTask = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == originalTaskID })).first
-            let originalDocument = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == originalDocumentID })).first
-            let originalCard = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == originalCardID })).first
-            let restoredTaskExists = try context.fetch(FetchDescriptor<TodoTask>(predicate: #Predicate { $0.id == restoredTaskID })).first != nil
-            let restoredDocumentExists = try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate { $0.id == restoredDocumentID })).first != nil
-            let restoredCardExists = try context.fetch(FetchDescriptor<LoyaltyCard>(predicate: #Predicate { $0.id == restoredCardID })).first != nil
-            return (originalTask?.title, originalDocument?.name, originalCard?.storeName, restoredTaskExists, restoredDocumentExists, restoredCardExists)
-        }
-
-        let persisted = try readPersistedModelState()
-        let taskBytesOriginal = (try? Data(contentsOf: taskURL)) == taskOriginal
-        let documentBytesOriginal = (try? Data(contentsOf: documentURL)) == documentOriginal
-        let walletBytesOriginal = (try? Data(contentsOf: walletURL)) == walletOriginal
-        let taskBytesReplaced = (try? Data(contentsOf: taskURL)) == taskReplacement
-        let documentBytesReplaced = (try? Data(contentsOf: documentURL)) == documentReplacement
-        let walletBytesReplaced = (try? Data(contentsOf: walletURL)) == walletReplacement
-
-        guard pendingAfterFailure,
-              persisted.0 == "DEBUG-ONLY original backup task",
-              persisted.1 == "DEBUG-ONLY original backup document",
-              persisted.2 == "DEBUG-ONLY original backup Wallet",
-              !persisted.3,
-              !persisted.4,
-              !persisted.5,
-              taskBytesOriginal,
-              documentBytesOriginal,
-              walletBytesOriginal else {
-            throw DiagnosticFailure.assertion(
-                "DIFETTO RIPRODOTTO: dopo il commit fallito il database persistito conserva i modelli originali, ma i file sono stati sovrascritti dal backup. pending=\(pendingAfterFailure), originalDB=\(persisted.0 ?? "nil")/\(persisted.1 ?? "nil")/\(persisted.2 ?? "nil"), restoredModels=\(persisted.3)/\(persisted.4)/\(persisted.5), taskOriginal=\(taskBytesOriginal)/replacement=\(taskBytesReplaced), documentOriginal=\(documentBytesOriginal)/replacement=\(documentBytesReplaced), walletOriginal=\(walletBytesOriginal)/replacement=\(walletBytesReplaced)."
-            )
-        }
-
-        return "Dopo l'errore al commit, lo store temporaneo riaperto conserva i modelli originali e i byte originali di tutti e tre gli asset."
+        return "La transazione asset di produzione ha installato i tre file staged e, sul ramo di rollback, ha ripristinato byte-per-byte tutti gli originali."
     }
 
     /// TaskAttachment.deleteFileIfNeeded currently constructs a URL directly
@@ -9546,7 +10152,7 @@ private struct DiagnosticReportActivityView: UIViewControllerRepresentable {
 }
 
 private struct DiagnosticTestResult: Identifiable {
-    enum Status { case passed, failed }
+    enum Status { case passed, failed, reproduced }
     let id = UUID()
     let title: String
     let status: Status
@@ -9557,9 +10163,12 @@ private struct DiagnosticTestResult: Identifiable {
 
 private enum DiagnosticFailure: LocalizedError {
     case assertion(String)
+    case reproduced(String)
+
     var errorDescription: String? {
         switch self {
-        case .assertion(let message): return message
+        case .assertion(let message), .reproduced(let message):
+            return message
         }
     }
 }

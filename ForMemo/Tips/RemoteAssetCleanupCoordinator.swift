@@ -34,15 +34,42 @@ final class RemoteAssetCleanupCoordinator {
         let walletAssets = try context.fetch(
             FetchDescriptor<WalletAsset>()
         )
+        // Recently Deleted is also an owning reference. If this fetch fails,
+        // propagate the error and do not begin any filesystem cleanup.
+        let deletedItems = try context.fetch(
+            FetchDescriptor<DeletedItem>()
+        )
 
         let taskPaths = Set(
-            taskAttachments.map(\.relativePath).filter { !$0.isEmpty }
+            (taskAttachments.map(\.relativePath) + deletedItems
+                .filter { $0.type == "attachment" }
+                .compactMap(\.relativePath))
+                .filter { !$0.isEmpty }
+                .map { URL(fileURLWithPath: $0).lastPathComponent }
         )
         let documentPaths = Set(
-            documentAssets.map(\.relativePath).filter { !$0.isEmpty }
+            (documentAssets.map(\.relativePath) + deletedItems
+                .filter { $0.type == "documentAsset" }
+                .compactMap(\.relativePath))
+                .filter { !$0.isEmpty }
+                .map { URL(fileURLWithPath: $0).lastPathComponent }
         )
+        let legacyWalletSnapshotPaths = deletedItems.flatMap { item -> [String] in
+            guard item.type == "loyaltycard" else { return [] }
+            return [item.loyaltyLogoRelativePath,
+                    item.loyaltyFrontRelativePath,
+                    item.loyaltyBackRelativePath].compactMap { $0 }
+        }
+        let walletDeletedPaths = deletedItems.flatMap { item -> [String] in
+            guard item.type == "walletAsset" else { return [] }
+            return [item.relativePath, item.loyaltyLogoRelativePath,
+                    item.loyaltyFrontRelativePath, item.loyaltyBackRelativePath]
+                .compactMap { $0 }
+        }
         let walletPaths = Set(
-            walletAssets.map(\.relativePath).filter { !$0.isEmpty }
+            (walletAssets.map(\.relativePath) + walletDeletedPaths + legacyWalletSnapshotPaths)
+                .filter { !$0.isEmpty }
+                .map { URL(fileURLWithPath: $0).lastPathComponent }
         )
 
         var removed = 0

@@ -20,30 +20,57 @@ enum AssetRecoveryCoordinator {
     }
     
     
-    private static func validRelativePaths(
+    static func validRelativePaths(
         for container: AssetContainer,
         context: ModelContext
     ) throws -> Set<String> {
 
+        // Recently Deleted records remain valid owners of their asset files
+        // until the user permanently removes them. Fetch failures propagate so
+        // executeRecoveryPlan aborts before repairing any container.
+        let deletedItems = try context.fetch(FetchDescriptor<DeletedItem>())
+
+        let activePaths: [String]
+        let deletedPaths: [String]
+
         switch container {
         case .task:
             let assets = try context.fetch(FetchDescriptor<TaskAttachment>())
-            return Set(assets.map(\.relativePath).filter { !$0.isEmpty }.map {
-                URL(fileURLWithPath: $0).lastPathComponent
-            })
+            activePaths = assets.map(\.relativePath)
+            deletedPaths = deletedItems
+                .filter { $0.type == "attachment" }
+                .compactMap(\.relativePath)
 
         case .wallet:
             let assets = try context.fetch(FetchDescriptor<WalletAsset>())
-            return Set(assets.map(\.relativePath).filter { !$0.isEmpty }.map {
-                URL(fileURLWithPath: $0).lastPathComponent
-            })
+            activePaths = assets.map(\.relativePath)
+            deletedPaths = deletedItems.flatMap { item -> [String] in
+                if item.type == "walletAsset" {
+                    return [item.relativePath, item.loyaltyLogoRelativePath,
+                            item.loyaltyFrontRelativePath, item.loyaltyBackRelativePath]
+                        .compactMap { $0 }
+                }
+                // Older card snapshots can contain asset paths directly,
+                // without a corresponding walletAsset child record.
+                if item.type == "loyaltycard" {
+                    return [item.loyaltyLogoRelativePath,
+                            item.loyaltyFrontRelativePath, item.loyaltyBackRelativePath]
+                        .compactMap { $0 }
+                }
+                return []
+            }
 
         case .document:
             let assets = try context.fetch(FetchDescriptor<DocumentAsset>())
-            return Set(assets.map(\.relativePath).filter { !$0.isEmpty }.map {
-                URL(fileURLWithPath: $0).lastPathComponent
-            })
+            activePaths = assets.map(\.relativePath)
+            deletedPaths = deletedItems
+                .filter { $0.type == "documentAsset" }
+                .compactMap(\.relativePath)
         }
+
+        return Set((activePaths + deletedPaths).filter { !$0.isEmpty }.map {
+            URL(fileURLWithPath: $0).lastPathComponent
+        })
     }
 
     /// Fetches every whitelist before allowing any container repair to begin.

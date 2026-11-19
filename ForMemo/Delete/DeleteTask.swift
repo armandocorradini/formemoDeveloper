@@ -598,7 +598,8 @@ func deleteRecurringTaskAndFutureOccurrences(
 @MainActor
 func deleteLoyaltyCard(
     _ card: LoyaltyCard,
-    in context: ModelContext
+    in context: ModelContext,
+    saveOperation: (() throws -> Void)? = nil
 ) -> AttachmentDeletionResult {
     let assets = card.assets ?? []
     guard assets.allSatisfy({
@@ -642,9 +643,25 @@ func deleteLoyaltyCard(
 
     context.delete(card)
 
-    context.safeSave(
-        operation: "DeleteLoyaltyCard"
-    )
+    guard context.safeSave(
+        operation: "DeleteLoyaltyCard",
+        saveOperation: saveOperation
+    ) else {
+        context.rollback()
+        for file in moved.reversed() {
+            let restored = WalletAssetStore.restoreFromTrash(
+                trashFileName: file.trashFileName,
+                relativePath: file.relativePath
+            )
+            if !restored {
+                AppLogger.persistence.fault(
+                    "Wallet asset could not be restored after loyalty-card deletion save failed: \(file.relativePath)"
+                )
+            }
+        }
+        return .moveFailed
+    }
+
     return .deleted
 }
 @MainActor
@@ -668,7 +685,8 @@ func deleteTrip(
 @MainActor
 func deleteDocument(
     _ document: DocumentItem,
-    in context: ModelContext
+    in context: ModelContext,
+    saveOperation: (() throws -> Void)? = nil
 ) -> AttachmentDeletionResult {
     let assets = document.sortedAssets
     guard assets.allSatisfy({
@@ -708,14 +726,29 @@ func deleteDocument(
         context.insert(item)
     }
 
-    NotificationManager.shared.removeDocumentNotification(
-        documentID: document.id
-    )
-
     context.delete(document)
 
-    context.safeSave(
-        operation: "DeleteDocument"
+    guard context.safeSave(
+        operation: "DeleteDocument",
+        saveOperation: saveOperation
+    ) else {
+        context.rollback()
+        for file in moved.reversed() {
+            let restored = DocumentAssetStore.restoreFromTrash(
+                trashFileName: file.trashFileName,
+                relativePath: file.relativePath
+            )
+            if !restored {
+                AppLogger.persistence.fault(
+                    "Document asset could not be restored after document deletion save failed: \(file.relativePath)"
+                )
+            }
+        }
+        return .moveFailed
+    }
+
+    NotificationManager.shared.removeDocumentNotification(
+        documentID: document.id
     )
     NotificationManager.shared.refresh()
     return .deleted

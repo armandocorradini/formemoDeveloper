@@ -652,10 +652,30 @@ struct TaskDetailView: View {
             Button("Delete", role: .destructive) {
                 guard let attachment = pendingRecurringAttachmentDeletion else { return }
 
-                let linkData = RecurringAttachmentManager.encodedSnapshots(
+                // Complete every fallible SwiftData read before moving the physical
+                // asset. A failed link fetch must leave the canonical file untouched.
+                guard let linkData = RecurringAttachmentManager.encodedSnapshots(
                     for: attachment,
                     in: modelContext
-                )
+                ) else {
+                    AppLogger.persistence.error(
+                        "Global attachment deletion stopped because link snapshots could not be read."
+                    )
+                    return
+                }
+
+                let linksToDelete: [RecurringAttachmentLink]
+                do {
+                    linksToDelete = try RecurringAttachmentManager.linksForDeletion(
+                        of: attachment,
+                        in: modelContext
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "Global attachment deletion stopped because recurrence links could not be fetched: \(error.localizedDescription)"
+                    )
+                    return
+                }
 
                 let ownerTaskID = attachment.task?.id ?? task.id
                 let trashName: String?
@@ -668,15 +688,28 @@ struct TaskDetailView: View {
                 do {
                     try RecurringAttachmentManager.deleteLinks(
                         for: attachment,
-                        in: modelContext
+                        in: modelContext,
+                        preFetchedLinks: linksToDelete
                     )
                 } catch {
+                    modelContext.rollback()
+                    if let trashName {
+                        do {
+                            try TaskAttachment.restoreFileFromTrash(
+                                trashFileName: trashName,
+                                relativePath: attachment.relativePath
+                            )
+                        } catch {
+                            AppLogger.persistence.fault(
+                                "Failed to restore attachment after recurrence-link deletion failed: \(error.localizedDescription)"
+                            )
+                        }
+                    }
                     AppLogger.persistence.error(
                         "Recurring attachment link cleanup failed: \(error.localizedDescription)"
                     )
                     return
                 }
-                TaskAttachment.deleteCloudMirror(relativePath: attachment.relativePath)
 
                 let item = DeletedItem(type: "attachment")
                 item.taskID = ownerTaskID
@@ -694,7 +727,36 @@ struct TaskDetailView: View {
 
                 modelContext.delete(attachment)
                 modelContext.processPendingChanges()
-                saveTask(userInitiated: true)
+
+                guard commitAttachmentDeletion() else {
+                    if let trashName {
+                        do {
+                            try TaskAttachment.restoreFileFromTrash(
+                                trashFileName: trashName,
+                                relativePath: attachment.relativePath
+                            )
+                        } catch {
+                            AppLogger.persistence.fault(
+                                "Failed to restore attachment after global deletion rollback: \(error.localizedDescription)"
+                            )
+                        }
+                    }
+                    return
+                }
+
+                // The cloud mirror is deliberately removed only after SwiftData
+                // confirms the deletion. A mirror-cleanup failure is non-destructive:
+                // the committed Recently Deleted item and its local Trash copy remain.
+                do {
+                    _ = try TaskAttachment.deleteCloudMirrorVerified(
+                        relativePath: attachment.relativePath
+                    )
+                } catch {
+                    AppLogger.persistence.error(
+                        "Committed attachment deletion but cloud mirror cleanup failed: \(error.localizedDescription)"
+                    )
+                }
+
                 initialEditSnapshot = TaskEditSnapshot(task: task)
 
                 NotificationCenter.default.post(
@@ -1089,6 +1151,41 @@ struct TaskDetailView: View {
     return synchronizationTask
 }
     
+    /// Commits attachment deletion without using saveTask's optional alarm-task
+    /// return value as a success signal. On failure, the caller restores the
+    /// staged physical file after this method rolls SwiftData back.
+    @MainActor
+    private func commitAttachmentDeletion() -> Bool {
+        do {
+            try modelContext.save()
+
+            Task { @MainActor in
+                _ = await ForMemoAlarmManager.shared.synchronize(
+                    task: task,
+                    in: modelContext
+                )
+            }
+
+            DebugLog.writeCloudKitEvent(
+                "TaskDetail attachment deletion commit completed"
+            )
+            NotificationManager.shared.refresh()
+#if DEBUG
+            AppLogger.notifications.info("Attachment deletion committed")
+#endif
+            return true
+        } catch {
+            DebugLog.writeCloudKitEvent(
+                "TaskDetail attachment deletion commit failed"
+            )
+            AppLogger.persistence.fault(
+                "Task detail attachment deletion commit failed: \(error.localizedDescription)"
+            )
+            modelContext.rollback()
+            return false
+        }
+    }
+
     @MainActor
     private func saveAndWaitForAlarmScheduling() async {
         guard modelContext.hasChanges else { return }
@@ -1096,8 +1193,32 @@ struct TaskDetailView: View {
         do {
             try modelContext.save()
 
-            _ = await ForMemoAlarmManager.shared.synchronize(task: task,
-                                                             in: modelContext)
+            let alarmScheduled = await ForMemoAlarmManager.shared.synchronize(
+                task: task,
+                in: modelContext
+            )
+
+            if !alarmScheduled && task.alarmEnabled {
+                // Do not leave the task marked as AlarmKit-enabled when no
+                // alarm was actually scheduled. Persisting OFF makes the
+                // existing notification calculator create a normal deadline
+                // notification instead of a silent alarmBadge request.
+                task.alarmEnabled = false
+
+                do {
+                    try modelContext.save()
+                    AppLogger.notifications.error(
+                        "AlarmKit scheduling failed; alarm preference disabled and deadline notification fallback enabled for task \(task.id.uuidString)."
+                    )
+                } catch {
+                    // Keep the in-memory fallback active for this rebuild.
+                    // The persistence failure is logged explicitly because it
+                    // can otherwise restore the unsafe state on next launch.
+                    AppLogger.persistence.fault(
+                        "CRITICAL: AlarmKit fallback preference could not be persisted for task \(task.id.uuidString): \(error.localizedDescription)"
+                    )
+                }
+            }
 
             await NotificationManager.shared.refreshAndWait(force: true)
 
@@ -2406,7 +2527,23 @@ AppLogger.notifications.info(
         task.attachments?.removeAll { $0.id == attachment.id }
         modelContext.delete(attachment)
         modelContext.processPendingChanges()
-        saveTask(userInitiated: true)
+
+        guard commitAttachmentDeletion() else {
+            if let trashName {
+                do {
+                    try TaskAttachment.restoreFileFromTrash(
+                        trashFileName: trashName,
+                        relativePath: attachment.relativePath
+                    )
+                } catch {
+                    AppLogger.persistence.fault(
+                        "Failed to restore attachment after deletion rollback: \(error.localizedDescription)"
+                    )
+                }
+            }
+            return
+        }
+
         initialEditSnapshot = TaskEditSnapshot(task: task)
 
         NotificationCenter.default.post(

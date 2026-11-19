@@ -698,15 +698,50 @@ extension TaskAttachment {
     func deleteFileIfNeeded() throws -> String? {
         guard
             let attachmentsDirectory = Self.attachmentsDirectory,
-            !relativePath.isEmpty
+            Self.isSafeRelativeAssetPath(relativePath)
         else {
             throw CocoaError(.fileNoSuchFile)
         }
 
-        let sourceURL =
-            attachmentsDirectory.appendingPathComponent(relativePath)
-
         let fm = FileManager.default
+        let rootURL = attachmentsDirectory.standardizedFileURL
+        let sourceURL = rootURL
+            .appendingPathComponent(relativePath, isDirectory: false)
+            .standardizedFileURL
+
+        // The resolved source must remain inside the canonical attachment directory.
+        let rootPrefix = rootURL.path.hasSuffix("/")
+            ? rootURL.path
+            : rootURL.path + "/"
+
+        guard sourceURL.path.hasPrefix(rootPrefix) else {
+            throw CocoaError(.fileWriteNoPermission)
+        }
+
+        // Reject symbolic-link ancestors so a valid-looking relative path cannot
+        // redirect the move outside the attachment directory.
+        var ancestorURL = rootURL
+        let pathComponents = relativePath.split(separator: "/")
+        for component in pathComponents.dropLast() {
+            ancestorURL.appendPathComponent(String(component), isDirectory: true)
+            if fm.fileExists(atPath: ancestorURL.path) {
+                let values = try ancestorURL.resourceValues(forKeys: [
+                    .isDirectoryKey,
+                    .isSymbolicLinkKey
+                ])
+                guard values.isDirectory == true,
+                      values.isSymbolicLink != true else {
+                    throw CocoaError(.fileWriteNoPermission)
+                }
+            }
+        }
+
+        if fm.fileExists(atPath: sourceURL.path) {
+            let values = try sourceURL.resourceValues(forKeys: [.isSymbolicLinkKey])
+            guard values.isSymbolicLink != true else {
+                throw CocoaError(.fileWriteNoPermission)
+            }
+        }
 
         // Se il file non esiste già → nessuna azione
         guard fm.fileExists(atPath: sourceURL.path) else {
@@ -781,6 +816,113 @@ extension TaskAttachment {
         return result
     }
     
+    /// Restores a staged attachment to its canonical local path. The operation
+    /// is idempotent when the file is already restored and the Trash copy is gone.
+    /// It never overwrites an existing destination or follows symlink ancestors.
+    static func restoreFileFromTrash(
+        trashFileName: String,
+        relativePath: String
+    ) throws {
+        guard !trashFileName.isEmpty,
+              !trashFileName.contains("/"),
+              !trashFileName.contains("\\"),
+              trashFileName != ".",
+              trashFileName != "..",
+              isSafeRelativeAssetPath(relativePath),
+              let attachmentsDirectory = attachmentsDirectory else {
+            throw CocoaError(.fileWriteNoPermission)
+        }
+
+        let fm = FileManager.default
+        let rootURL = attachmentsDirectory.standardizedFileURL
+        let destinationURL = rootURL
+            .appendingPathComponent(relativePath, isDirectory: false)
+            .standardizedFileURL
+        let rootPrefix = rootURL.path.hasSuffix("/")
+            ? rootURL.path
+            : rootURL.path + "/"
+
+        guard destinationURL.path.hasPrefix(rootPrefix) else {
+            throw CocoaError(.fileWriteNoPermission)
+        }
+
+        guard let sourceURL = trashFileURL(trashFileName: trashFileName)?.standardizedFileURL else {
+            // A prior restore may already have completed before a retry.
+            if fm.fileExists(atPath: destinationURL.path) {
+                return
+            }
+            throw CocoaError(.fileNoSuchFile)
+        }
+
+        if fm.fileExists(atPath: destinationURL.path) {
+            throw CocoaError(.fileWriteFileExists)
+        }
+
+        var ancestorURL = rootURL
+        let components = relativePath.split(separator: "/")
+        for component in components.dropLast() {
+            ancestorURL.appendPathComponent(String(component), isDirectory: true)
+            if fm.fileExists(atPath: ancestorURL.path) {
+                let values = try ancestorURL.resourceValues(forKeys: [
+                    .isDirectoryKey,
+                    .isSymbolicLinkKey
+                ])
+                guard values.isDirectory == true,
+                      values.isSymbolicLink != true else {
+                    throw CocoaError(.fileWriteNoPermission)
+                }
+            } else {
+                try fm.createDirectory(
+                    at: ancestorURL,
+                    withIntermediateDirectories: true
+                )
+            }
+        }
+
+        let sourceValues = try sourceURL.resourceValues(forKeys: [.isSymbolicLinkKey])
+        guard sourceValues.isSymbolicLink != true else {
+            throw CocoaError(.fileWriteNoPermission)
+        }
+
+        var coordinationError: NSError?
+        var moveError: Error?
+        NSFileCoordinator().coordinate(
+            writingItemAt: sourceURL,
+            options: .forMoving,
+            writingItemAt: destinationURL,
+            options: .forReplacing,
+            error: &coordinationError
+        ) { coordinatedSource, coordinatedDestination in
+            do {
+                guard !fm.fileExists(atPath: coordinatedDestination.path) else {
+                    throw CocoaError(.fileWriteFileExists)
+                }
+                try fm.moveItem(
+                    at: coordinatedSource,
+                    to: coordinatedDestination
+                )
+            } catch {
+                moveError = error
+            }
+        }
+
+        if let coordinationError {
+            throw coordinationError
+        }
+        if let moveError {
+            throw moveError
+        }
+
+        guard fm.fileExists(atPath: destinationURL.path),
+              !fm.fileExists(atPath: sourceURL.path) else {
+            throw CocoaError(.fileWriteUnknown)
+        }
+
+        AppLogger.persistence.notice(
+            "TaskAttachment restored from Trash: \(relativePath)"
+        )
+    }
+
     // MARK: - Delete Cloud Mirror
 
     enum CloudMirrorDeletionResult: Equatable {

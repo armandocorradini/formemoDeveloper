@@ -1089,10 +1089,9 @@ extension DeletedItem {
                 }
             }
 
-            context.safeSave(
-                operation: "RestoreLoyaltyCard"
-            )
-
+            // The caller owns the SwiftData transaction. The card, its assets,
+            // and the child DeletedItem removals are staged together; the
+            // caller must delete the parent DeletedItem and commit once.
             return .restored
         }
 

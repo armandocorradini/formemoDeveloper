@@ -444,7 +444,7 @@ final class NotificationManager: NSObject {
         let body = tasks
             .sorted { $0.id.uuidString < $1.id.uuidString }
             .map {
-                "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.alarmEnabled)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)-\($0.manualSnoozeUntil?.timeIntervalSince1970 ?? 0)"
+                "\($0.id.uuidString)-\($0.title)-\($0.deadLine?.timeIntervalSince1970 ?? 0)-\($0.reminderOffsetMinutes ?? 0)-\($0.excludeGlobalNotification)-\($0.alarmEnabled)-\($0.snoozeUntil?.timeIntervalSince1970 ?? 0)-\($0.manualSnoozeUntil?.timeIntervalSince1970 ?? 0)"
             }
             .joined(separator: "|")
 

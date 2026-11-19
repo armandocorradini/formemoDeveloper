@@ -5,6 +5,20 @@ import UserNotifications
 import os
 import CloudKit
 
+@MainActor
+enum ResetAppCommit {
+    static func save(
+        _ context: ModelContext,
+        saveOperation: (() throws -> Void)? = nil
+    ) throws {
+        if let saveOperation {
+            try saveOperation()
+        } else {
+            try context.save()
+        }
+    }
+}
+
 struct ResetAppView: View {
     
     @Environment(\.modelContext) private var modelContext
@@ -553,18 +567,9 @@ struct ResetAppView: View {
     ) async throws -> Bool {
 
         let center = UNUserNotificationCenter.current()
-        let fileManager = FileManager.default
         var didDeleteLocalData = false
         
         do {
-            
-            // 🔴 Notifiche
-            center.removeAllPendingNotificationRequests()
-            center.removeAllDeliveredNotifications()
-            
-            // 🔴 AlarmKit
-             await ForMemoAlarmManager.shared.removeOrphanedAlarms(tasks: [])
-            
             
             // 🔴 Recurring attachment propagation rules
             let recurringAttachmentLinks = try modelContext.fetch(
@@ -711,55 +716,50 @@ struct ResetAppView: View {
             }
             
             for item in deletedItems {
-                
-                // 🔥 remove trash files if present
-                
-                if let trashFileName = item.trashFileName {
-
-                    if let trashDir = directories.first(where: {
-                        $0.lastPathComponent == "TaskAttachments_Trash"
-                    }) {
-                        let trashURL = trashDir.appendingPathComponent(trashFileName)
-
-                        if fileManager.fileExists(atPath: trashURL.path) {
-                            try fileManager.removeItem(at: trashURL)
-                        }
-                    }
-
-                    if let trashDir = directories.first(where: {
-                        $0.lastPathComponent == "DocumentAssets_Trash"
-                    }) {
-                        let trashURL = trashDir.appendingPathComponent(trashFileName)
-
-                        if fileManager.fileExists(atPath: trashURL.path) {
-                            try fileManager.removeItem(at: trashURL)
-                        }
-                    }
-                }
+                // Keep Trash files intact until the SwiftData deletion commits.
+                // The directories are purged only after the successful save.
                 modelContext.delete(item)
             }
-            
-            // 🔴 Recurrence deletion fingerprints
+
+            // Commit the complete model reset before touching files, fingerprints,
+            // notifications, or AlarmKit. A failed save leaves those resources intact.
+            try ResetAppCommit.save(modelContext)
+
             DeletedFingerprintStore.clearAll()
-            
-            // 🔴 SAVE UNICO
-            try modelContext.save()
-      
+
+            center.removeAllPendingNotificationRequests()
+            center.removeAllDeliveredNotifications()
+            await ForMemoAlarmManager.shared.removeOrphanedAlarms(tasks: [])
+
+            // Physical cleanup is post-commit and may be retried by the reset
+            // verification/purge phase if a provider temporarily refuses access.
             for directory in directories {
-                try TaskAttachment.removeAllPhysicalFiles(
-                    in: directory
+                do {
+                    try TaskAttachment.removeAllPhysicalFiles(in: directory)
+                } catch {
+                    AppLogger.persistence.error(
+                        "Reset committed, but physical cleanup will be retried for \(directory.lastPathComponent): \(error.localizedDescription)"
+                    )
+                }
+            }
+
+            // 🔴 Badge. A badge-service error must not turn an already
+            // committed reset into a reported persistence failure.
+            do {
+                try await center.setBadgeCount(0)
+            } catch {
+                AppLogger.notifications.error(
+                    "Reset committed, but the app badge could not be cleared: \(error.localizedDescription)"
                 )
             }
-            
-            // 🔴 Badge
-            try await center.setBadgeCount(0)
-            
+
             // 🔴 Refresh
             NotificationManager.shared.refresh(force: true)
 
             return didDeleteLocalData
             
         } catch {
+            modelContext.rollback()
             deletionMessage = "Error deleting data: \(error.localizedDescription)"
             AppLogger.persistence.fault(
                 "Failed to delete data: \(error.localizedDescription)"

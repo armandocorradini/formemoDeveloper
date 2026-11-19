@@ -54,7 +54,6 @@
 		1C634DB230220C9C0092DB89 /* ImportExportCSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF530220C9C0092DB89 /* ImportExportCSV.swift */; };
 		1C634DB330220C9C0092DB89 /* LaunchCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF730220C9C0092DB89 /* LaunchCoordinator.swift */; };
 		1C634DB430220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF830220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift */; };
-		1C634DB530220C9C0092DB89 /* LegacyTaskRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */; };
 		1C634DB630220C9C0092DB89 /* LocationReminderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CFB30220C9C0092DB89 /* LocationReminderManager.swift */; };
 		1C634DB730220C9C0092DB89 /* LoyaltyCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CFC30220C9C0092DB89 /* LoyaltyCard.swift */; };
 		1C634DB830220C9C0092DB89 /* ModelContext+SafeSave.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634CFD30220C9C0092DB89 /* ModelContext+SafeSave.swift */; };
@@ -352,7 +351,6 @@
 		1C634CF630220C9C0092DB89 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		1C634CF730220C9C0092DB89 /* LaunchCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchCoordinator.swift; sourceTree = "<group>"; };
 		1C634CF830220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyLoyaltyCardLogoStore.swift; sourceTree = "<group>"; };
-		1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyTaskRecovery.swift; sourceTree = "<group>"; };
 		1C634CFB30220C9C0092DB89 /* LocationReminderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationReminderManager.swift; sourceTree = "<group>"; };
 		1C634CFC30220C9C0092DB89 /* LoyaltyCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoyaltyCard.swift; sourceTree = "<group>"; };
 		1C634CFD30220C9C0092DB89 /* ModelContext+SafeSave.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ModelContext+SafeSave.swift"; sourceTree = "<group>"; };
@@ -569,6 +567,7 @@
 				ForMemoWidget.swift,
 				ForMemoWidgetBundle.swift,
 				Info.plist,
+				PrivacyInfo.xcprivacy,
 			);
 			target = 1C8225F53040960600B77EC7 /* ForMemoShareExtension */;
 		};
@@ -579,6 +578,7 @@
 				ForMemoCalendarTasksWidget.swift,
 				ForMemoWidget.swift,
 				ForMemoWidgetBundle.swift,
+				PrivacyInfo.xcprivacy,
 			);
 			target = 1CFE8F0A3085631B00915A76 /* ForMemoWidgetExtension */;
 		};
@@ -809,7 +809,6 @@
 				1C634CDE30220C9C0092DB89 /* CalendarPickerView.swift */,
 				1C634D5730220C9C0092DB89 /* ExportToCalendarView.swift */,
 				1C634CF330220C9C0092DB89 /* ImportCalendar.swift */,
-				1C634CF930220C9C0092DB89 /* LegacyTaskRecovery.swift */,
 				1C634D5B30220C9C0092DB89 /* LocationPickerView.swift */,
 				1C634CFB30220C9C0092DB89 /* LocationReminderManager.swift */,
 				1C634CFF30220C9C0092DB89 /* Notification+Extensions.swift */,
@@ -1323,7 +1322,6 @@
 				1CED32613027760E00B16A50 /* DiagnosticsRedactor.swift in Sources */,
 				1C634DB330220C9C0092DB89 /* LaunchCoordinator.swift in Sources */,
 				1C634DB430220C9C0092DB89 /* LegacyLoyaltyCardLogoStore.swift in Sources */,
-				1C634DB530220C9C0092DB89 /* LegacyTaskRecovery.swift in Sources */,
 				1C634DB630220C9C0092DB89 /* LocationReminderManager.swift in Sources */,
 				1C634DB730220C9C0092DB89 /* LoyaltyCard.swift in Sources */,
 				1C634DB830220C9C0092DB89 /* ModelContext+SafeSave.swift in Sources */,

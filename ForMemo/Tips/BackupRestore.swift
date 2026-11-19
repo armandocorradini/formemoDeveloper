@@ -2,6 +2,7 @@ import SwiftUI
 import CryptoKit
 import SwiftData
 import UniformTypeIdentifiers
+import os
 
 struct BackupRestoreView: View {
     @Environment(\.modelContext) private var modelContext
@@ -1703,6 +1704,131 @@ private struct TripListTransferObject: Codable {
     }
 }
 
+/// Stages backup assets beside their destinations and preserves any existing
+/// bytes until the SwiftData restore transaction has committed.
+struct BackupAssetFileTransaction {
+    private struct Entry {
+        let destination: URL
+        let staged: URL
+        var backup: URL?
+        var installed: Bool
+    }
+
+    private var entries: [Entry] = []
+    private let fileManager = FileManager.default
+
+    init(files: [(url: URL, data: Data)]) throws {
+        var stagedEntries: [Entry] = []
+        do {
+            for file in files {
+                let parent = file.url.deletingLastPathComponent()
+                try fileManager.createDirectory(at: parent, withIntermediateDirectories: true)
+
+                if fileManager.fileExists(atPath: file.url.path),
+                   let existingData = try? Data(contentsOf: file.url),
+                   existingData == file.data {
+                    continue
+                }
+
+                let stagedURL = parent.appendingPathComponent(
+                    ".ForMemo-Restore-Stage-\(UUID().uuidString)"
+                )
+                try file.data.write(to: stagedURL, options: .atomic)
+                stagedEntries.append(Entry(
+                    destination: file.url,
+                    staged: stagedURL,
+                    backup: nil,
+                    installed: false
+                ))
+            }
+        } catch {
+            for entry in stagedEntries {
+                try? fileManager.removeItem(at: entry.staged)
+            }
+            throw error
+        }
+        entries = stagedEntries
+    }
+
+    mutating func apply() throws {
+        for index in entries.indices {
+            let destination = entries[index].destination
+            if fileManager.fileExists(atPath: destination.path) {
+                let backupURL = destination.deletingLastPathComponent().appendingPathComponent(
+                    ".ForMemo-Restore-Backup-\(UUID().uuidString)"
+                )
+                try fileManager.moveItem(at: destination, to: backupURL)
+                entries[index].backup = backupURL
+            }
+
+            do {
+                try fileManager.moveItem(at: entries[index].staged, to: destination)
+                entries[index].installed = true
+            } catch {
+                if let backup = entries[index].backup {
+                    do {
+                        try fileManager.moveItem(at: backup, to: destination)
+                        entries[index].backup = nil
+                    } catch {
+                        // Keep the backup URL recorded so the outer rollback
+                        // can retry restoration without losing the original.
+                    }
+                }
+                throw error
+            }
+        }
+    }
+
+    mutating func rollback() throws {
+        var firstError: Error?
+        for index in entries.indices.reversed() {
+            let destination = entries[index].destination
+            if entries[index].installed, fileManager.fileExists(atPath: destination.path) {
+                do {
+                    try fileManager.removeItem(at: destination)
+                    entries[index].installed = false
+                } catch {
+                    if firstError == nil { firstError = error }
+                }
+            }
+            if let backup = entries[index].backup,
+               fileManager.fileExists(atPath: backup.path) {
+                do {
+                    if fileManager.fileExists(atPath: destination.path) {
+                        try fileManager.removeItem(at: destination)
+                    }
+                    try fileManager.moveItem(at: backup, to: destination)
+                    entries[index].backup = nil
+                } catch {
+                    if firstError == nil { firstError = error }
+                }
+            }
+            let staged = entries[index].staged
+            if fileManager.fileExists(atPath: staged.path) {
+                do { try fileManager.removeItem(at: staged) }
+                catch { if firstError == nil { firstError = error } }
+            }
+        }
+        if let firstError { throw firstError }
+    }
+
+    func commit() {
+        for entry in entries {
+            if let backup = entry.backup {
+                do { try fileManager.removeItem(at: backup) }
+                catch {
+                    AppLogger.persistence.error(
+                        "Backup restore committed, but a temporary asset backup could not be removed: \(error.localizedDescription)"
+                    )
+                }
+            }
+            if fileManager.fileExists(atPath: entry.staged.path) {
+                try? fileManager.removeItem(at: entry.staged)
+            }
+        }
+    }
+}
+
 private enum BackupManager {
 
     private enum RestorePathError: LocalizedError {
@@ -2118,6 +2244,8 @@ private enum BackupManager {
             PersistenceOperationCoordinator.shared.finish()
         }
 
+        var settingsToApplyAfterCommit: [String: Any]?
+
         // Validate every selected asset path before changing SwiftData or writing
         // any files. Older backups use relative asset paths, which remain valid
         // as long as their standardized destination stays inside its asset root.
@@ -2228,89 +2356,6 @@ private enum BackupManager {
                 modelContext.insert(note)
             }
         }
-        if restoreActiveTasks || restoreCompletedTasks {
-            var createdAttachmentParents = Set<String>()
-
-            for (destinationURL, fileData) in attachmentRestoreFiles {
-
-                let parent = destinationURL.deletingLastPathComponent()
-                let parentKey = parent.standardizedFileURL.path
-
-                if !createdAttachmentParents.contains(parentKey) {
-                    try FileManager.default.createDirectory(
-                        at: parent,
-                        withIntermediateDirectories: true
-                    )
-                    createdAttachmentParents.insert(parentKey)
-                }
-
-                let shouldWrite: Bool
-
-                if FileManager.default.fileExists(atPath: destinationURL.path) {
-                    if let existingData = try? Data(contentsOf: destinationURL) {
-                        shouldWrite = existingData != fileData
-                    } else {
-                        shouldWrite = true
-                    }
-                } else {
-                    shouldWrite = true
-                }
-
-                if shouldWrite {
-                    try fileData.write(
-                        to: destinationURL,
-                        options: .atomic
-                    )
-                }
-            }
-        }
-
-        if restoreWalletCards {
-            var createdWalletParents = Set<String>()
-
-            for (destinationURL, fileData) in walletRestoreFiles {
-
-                let parent = destinationURL.deletingLastPathComponent()
-                let parentKey = parent.standardizedFileURL.path
-
-                if !createdWalletParents.contains(parentKey) {
-                    try FileManager.default.createDirectory(
-                        at: parent,
-                        withIntermediateDirectories: true
-                    )
-                    createdWalletParents.insert(parentKey)
-                }
-
-                try fileData.write(
-                    to: destinationURL,
-                    options: .atomic
-                )
-            }
-        }
-
-        if restoreDocuments {
-            var createdDocumentParents = Set<String>()
-
-            for (destinationURL, fileData) in documentRestoreFiles {
-
-                let parent = destinationURL.deletingLastPathComponent()
-                let parentKey = parent.standardizedFileURL.path
-
-                if !createdDocumentParents.contains(parentKey) {
-                    try FileManager.default.createDirectory(
-                        at: parent,
-                        withIntermediateDirectories: true
-                    )
-                    createdDocumentParents.insert(parentKey)
-                }
-
-                try fileData.write(
-                    to: destinationURL,
-                    options: .atomic
-                )
-            }
-        }
-        
         if restoreDocuments && !archive.documents.isEmpty {
             for dto in archive.documents {
 
@@ -2888,12 +2933,33 @@ private enum BackupManager {
                 restoredSettings[key] = value
             }
 
-            AppSettings.shared.importSettings(from: restoredSettings)
+            settingsToApplyAfterCommit = restoredSettings
         }
 
         modelContext.processPendingChanges()
 
-        try modelContext.save()
+        let restoreAssetFiles = attachmentRestoreFiles + walletRestoreFiles + documentRestoreFiles
+        var assetTransaction: BackupAssetFileTransaction?
+        do {
+            assetTransaction = try BackupAssetFileTransaction(files: restoreAssetFiles)
+            try assetTransaction?.apply()
+            try modelContext.save()
+            assetTransaction?.commit()
+        } catch {
+            modelContext.rollback()
+            do {
+                try assetTransaction?.rollback()
+            } catch {
+                AppLogger.persistence.fault(
+                    "Backup restore failed and one or more asset files could not be rolled back: \(error.localizedDescription)"
+                )
+            }
+            throw error
+        }
+
+        if let settingsToApplyAfterCommit {
+            AppSettings.shared.importSettings(from: settingsToApplyAfterCommit)
+        }
 
         if let vaultKeyToInstall {
             try VaultCrypto.installKey(vaultKeyToInstall)

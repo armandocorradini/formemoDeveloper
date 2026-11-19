@@ -380,10 +380,16 @@ var body: some View {
                                 }
                             }
 
-                            context.safeSave(operation: "RecentlyDeletedAction")
-                            selection.removeAll()
+                            let saved = context.safeSave(operation: "RecentlyDeletedAction")
+                            if saved {
+                                selection.removeAll()
+                            } else {
+                                restoreFailed = true
+                            }
 
-                            if attachmentUnavailable {
+                            if !saved {
+                                restoreAlertMessage = String(localized: "The item could not be restored. It may already exist or some required data may be unavailable. The item remains in Recently Deleted.")
+                            } else if attachmentUnavailable {
                                 restoreAlertMessage = String(localized: "This attachment is not currently available on this device. Wait for iCloud synchronization and try again, or restore it from the device that originally deleted it. The item remains in Recently Deleted.")
                             } else if restoreFailed {
                                 restoreAlertMessage = String(localized: "The item could not be restored. It may already exist or some required data may be unavailable. The item remains in Recently Deleted.")
@@ -416,7 +422,10 @@ var body: some View {
 
             if result.isSuccess {
                 context.delete(item)
-                context.safeSave(operation: "RecentlyDeletedRestoreSingle")
+                let saved = context.safeSave(operation: "RecentlyDeletedRestoreSingle")
+                if !saved {
+                    restoreAlertMessage = String(localized: "The item could not be restored. It may already exist or some required data may be unavailable. The item remains in Recently Deleted.")
+                }
             } else if case .attachmentUnavailable = result {
                 restoreAlertMessage = String(localized: "This attachment is not currently available on this device. Wait for iCloud synchronization and try again, or restore it from the device that originally deleted it. The item remains in Recently Deleted.")
             } else {
@@ -474,17 +483,12 @@ var body: some View {
             }
         }
 
-        for target in uniqueTargets {
-            deleteLocalTrashFile(target)
-            context.delete(target)
-        }
-
-        context.processPendingChanges()
-        do {
-            try context.save()
-        } catch {
+        guard RecentlyDeletedDeletionCommit.commit(
+            uniqueTargets,
+            in: context
+        ) else {
             AppLogger.persistence.error(
-                "Recently Deleted permanent deletion could not be saved: \(error.localizedDescription)"
+                "Recently Deleted permanent deletion could not be committed. Trash files were retained."
             )
             return
         }
@@ -555,25 +559,6 @@ var body: some View {
                 WalletAssetStore.delete(relativePath: relativePath)
                 WalletAssetStore.deleteCloudMirror(relativePath: relativePath)
             default: break
-            }
-        }
-    }
-
-    private func deleteLocalTrashFile(_ item: DeletedItem) {
-        guard let trashName = item.trashFileName else { return }
-        let url: URL?
-        switch item.type {
-        case "attachment": url = TaskAttachment.trashFileURL(trashFileName: trashName)
-        case "walletAsset": url = WalletAssetStore.trashFileURL(trashFileName: trashName)
-        case "documentAsset": url = DocumentAssetStore.trashFileURL(trashFileName: trashName)
-        default: url = nil
-        }
-        if let url {
-            do { try FileManager.default.removeItem(at: url) }
-            catch {
-                AppLogger.persistence.error(
-                    "Unable to permanently delete local Trash asset: \(error.localizedDescription)"
-                )
             }
         }
     }
@@ -862,6 +847,56 @@ struct DeletedLoyaltyCardPreviewView: View {
                 : .blue
         )
         .frame(width: 36, height: 36)
+    }
+}
+
+
+@MainActor
+enum RecentlyDeletedDeletionCommit {
+    @discardableResult
+    static func commit(
+        _ items: [DeletedItem],
+        in context: ModelContext,
+        saveOperation: (() throws -> Void)? = nil
+    ) -> Bool {
+        for item in items {
+            context.delete(item)
+        }
+        context.processPendingChanges()
+
+        guard context.safeSave(
+            operation: "RecentlyDeletedPermanentDeletion",
+            saveOperation: saveOperation
+        ) else {
+            context.rollback()
+            return false
+        }
+
+        // Trash files are irreversible and are removed only after the model
+        // records have committed successfully.
+        for item in items {
+            deleteLocalTrashFile(item)
+        }
+        return true
+    }
+
+    private static func deleteLocalTrashFile(_ item: DeletedItem) {
+        guard let trashName = item.trashFileName else { return }
+        let url: URL?
+        switch item.type {
+        case "attachment": url = TaskAttachment.trashFileURL(trashFileName: trashName)
+        case "walletAsset": url = WalletAssetStore.trashFileURL(trashFileName: trashName)
+        case "documentAsset": url = DocumentAssetStore.trashFileURL(trashFileName: trashName)
+        default: url = nil
+        }
+        guard let url else { return }
+        do {
+            try FileManager.default.removeItem(at: url)
+        } catch {
+            AppLogger.persistence.error(
+                "Unable to permanently delete local Trash asset: \(error.localizedDescription)"
+            )
+        }
     }
 }
 
