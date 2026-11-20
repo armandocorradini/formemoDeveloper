@@ -45,7 +45,10 @@ struct ForMemoApp: App {
     
     // MARK: - Persistence
 
-    private let container: ModelContainer
+    @State private var container: ModelContainer?
+    @State private var selectedStoreURL: URL?
+    @State private var startupError: String?
+    @State private var servicesStarted = false
 
     
     // MARK: - CloudKit Debounce
@@ -89,120 +92,123 @@ struct ForMemoApp: App {
             }
         }
 
-        // 🔥 SINGLE LOCAL-FIRST STORE
-        // Local database is the source of truth.
-        // CloudKit only syncs the same persistent store.
+        // SINGLE LOCAL-FIRST STORE. Keep the existing migration and store-selection flow.
         StoreMigrationManager.prepareMigrationIfNeeded()
         StoreMigrationManager.performMigrationIfNeeded()
-        let sharedContainer = Persistence.makeModelContainer(
-            cloudKitEnabled: true
-        )
 
-        self.container = sharedContainer
+        let startupStoreURL = Persistence.selectedStoreURLForStartup()
+        _selectedStoreURL = State(initialValue: startupStoreURL)
+
+        do {
+            let sharedContainer = try Persistence.makeModelContainer(
+                cloudKitEnabled: true,
+                at: startupStoreURL
+            )
+            _container = State(initialValue: sharedContainer)
+            _startupError = State(initialValue: nil)
+        } catch {
+            _container = State(initialValue: nil)
+            _startupError = State(initialValue: error.localizedDescription)
+            AppLogger.persistence.fault(
+                "SwiftData startup unavailable: \(error.localizedDescription)"
+            )
+            // The app has reached its recoverable error screen; this is not a process crash.
+            CrashDetector.markLaunchCompleted()
+        }
+        _servicesStarted = State(initialValue: false)
+    }
+    
+    
+    @MainActor
+    private func retryPersistence() {
+        guard container == nil, let selectedStoreURL else { return }
+
+        do {
+            let recoveredContainer = try Persistence.makeModelContainer(
+                cloudKitEnabled: true,
+                at: selectedStoreURL
+            )
+            container = recoveredContainer
+            startupError = nil
+            startServices(using: recoveredContainer)
+        } catch {
+            startupError = error.localizedDescription
+            AppLogger.persistence.fault(
+                "SwiftData retry failed: \(error.localizedDescription)"
+            )
+        }
+    }
+
+    @MainActor
+    private func startServices(using sharedContainer: ModelContainer) {
+        guard !servicesStarted else { return }
+        servicesStarted = true
+
         NotificationCenter.default.addObserver(
             forName: NSNotification.Name.NSUbiquityIdentityDidChange,
             object: nil,
             queue: .main
         ) { _ in
             Task { @MainActor in
-                guard Persistence.hasICloudIdentity else {
-                    return
-                }
-
+                guard Persistence.hasICloudIdentity else { return }
                 AttachmentMigration.syncLocalAssetsToCloud(
                     context: sharedContainer.mainContext
                 )
-
                 NotificationCenter.default.post(
                     name: .attachmentsShouldRefresh,
                     object: nil
                 )
             }
         }
-        let appSettings = AppSettings.shared
 
         NotificationManager.shared.modelContainer = sharedContainer
-
-        
         CloudSettingsSync.shared.start()
 
-        
+        let appSettings = AppSettings.shared
         Task { @MainActor in
             let context = sharedContainer.mainContext
-            
-//            AttachmentDiagnosticService.update(using: context)
-            
             let tAttachmentMigration = ContinuousClock.now
-
             AttachmentMigration.runIfNeeded(context: context)
-
             AppLogger.notifications.debug(
                 "⏱️ ACTIVE AttachmentMigration: \(ContinuousClock.now - tAttachmentMigration)"
             )
-
-            WalletMigrationService.runIfNeeded(
-                context: context
-            )
-
-            WalletAsset.normalizePersistedKinds(
-                in: context
-            )
-            
+            WalletMigrationService.runIfNeeded(context: context)
+            WalletAsset.normalizePersistedKinds(in: context)
             VaultAutoFillManager.shared.synchronize(using: context)
+
             if appSettings.autoDeleteCompletedAttachments {
-
                 let tAttachmentCleanup = ContinuousClock.now
-
                 try? AttachmentMaintenanceManager.shared.performAutomaticCleanup(
                     context: context,
                     retentionDays: appSettings.attachmentRetentionDays
                 )
-
                 AppLogger.notifications.debug(
                     "⏱️ ACTIVE AttachmentCleanup: \(ContinuousClock.now - tAttachmentCleanup)"
                 )
             }
 
-            // 1️⃣ Setup notifiche (PRIMA DI TUTTO)
             await NotificationManager.shared.configure()
-            
-            await ForMemoAlarmManager.shared.removeOrphanedAlarmsAtStartup(
-                context: context
-            )
-            
-            // 🔥 REGISTRA APP SHORTCUTS
+            await ForMemoAlarmManager.shared.removeOrphanedAlarmsAtStartup(context: context)
             AppShortcuts.updateAppShortcutParameters()
-            
-            // 2️⃣ Applica azioni da notifiche (app chiusa/background)
             NotificationActionProcessor.shared.processAll(using: context)
-
-            // Aggiorna il riepilogo condiviso del widget dopo le operazioni iniziali.
             TaskWidgetSnapshotStore.scheduleRefresh(from: context)
-            
-            
-            // 3️⃣ Aggiorna subito UI
-            NotificationCenter.default.post(
-                name: .attachmentsShouldRefresh,
-                object: nil
-            )
-     
-            // 5️⃣ Final notification rebuild
+            NotificationCenter.default.post(name: .attachmentsShouldRefresh, object: nil)
             NotificationManager.shared.refresh(force: true)
             CrashDetector.markLaunchCompleted()
         }
-        
-        // 6️⃣ CloudKit observer
-        startRemoteChangeObserver()
 
+        startRemoteChangeObserver(using: sharedContainer)
     }
-    
-    
+
     // MARK: - Body
     
     var body: some Scene {
         WindowGroup {
-            TaskTabView()
-                .modifier(RecurrenceSeriesExtensionPresenter())
+            Group {
+                if let container {
+                    TaskTabView()
+                        .modelContainer(container)
+                        .modifier(RecurrenceSeriesExtensionPresenter())
                 .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
                     
                     NotificationCenter.default.post(
@@ -255,11 +261,21 @@ struct ForMemoApp: App {
                         }
                     }
                 }
+                } else {
+                    PersistenceRecoveryView(
+                        errorMessage: startupError ?? String(localized: "Persistence.Startup.UnknownError"),
+                        retry: retryPersistence
+                    )
+                }
+            }
+            .onAppear {
+                if let container {
+                    startServices(using: container)
+                }
+            }
         }
-        
-        .modelContainer(container)
         .onChange(of: scenePhase) {
-            
+            guard let container else { return }
             switch scenePhase {
                 
             case .active:
@@ -297,7 +313,10 @@ struct ForMemoApp: App {
 
                     // Coalesce this refresh with any CloudKit store-change refresh
                     // arriving as the app becomes active.
-                    scheduleWidgetSnapshotRefresh()
+                    TaskWidgetSnapshotStore.scheduleRefresh(
+                        from: context,
+                        delay: .milliseconds(400)
+                    )
 
                     // 2️⃣ 🔥 CLEANUP RECENTLY DELETED (task + attachments)
                     
@@ -376,7 +395,7 @@ struct ForMemoApp: App {
     
     // MARK: - iCLOUD IDENTITY
 
-    private func startRemoteChangeObserver() {
+    private func startRemoteChangeObserver(using container: ModelContainer) {
 
         NotificationCenter.default.addObserver(
             forName: .NSPersistentStoreRemoteChange,
@@ -384,7 +403,10 @@ struct ForMemoApp: App {
             queue: .main
         ) { _ in
             Task { @MainActor in
-                self.scheduleWidgetSnapshotRefresh()
+                TaskWidgetSnapshotStore.scheduleRefresh(
+                    from: container.mainContext,
+                    delay: .milliseconds(400)
+                )
 
                 // Every store event extends the trailing debounce. Keep this
                 // outside the heavier-work throttle so the final refresh is not
@@ -403,7 +425,7 @@ struct ForMemoApp: App {
                 AppLogger.notifications.debug("📡 CloudKit push ricevuto")
 #endif
 
-                let context = self.container.mainContext
+                let context = container.mainContext
 
                 // Local First: a remote deletion removes the SwiftData record,
                 // but does not automatically remove our separately managed
@@ -463,15 +485,6 @@ struct ForMemoApp: App {
     }
     // MARK: - REMOTE ASSET CLEANUP
 
-    @MainActor
-    private func scheduleWidgetSnapshotRefresh() {
-        // CloudKit can emit several store-change notifications in a burst.
-        // The shared coordinator keeps only the final refresh after the store settles.
-        TaskWidgetSnapshotStore.scheduleRefresh(
-            from: container.mainContext,
-            delay: .milliseconds(400)
-        )
-    }
 
     @MainActor
     private static func scheduleRemoteAssetCleanup(
@@ -565,6 +578,37 @@ struct ForMemoApp: App {
     }
 }
 
+
+private struct PersistenceRecoveryView: View {
+    let errorMessage: String
+    let retry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "externaldrive.badge.exclamationmark")
+                .font(.system(size: 42))
+                .accessibilityHidden(true)
+            Text("Persistence.Startup.Title")
+                .font(.title2.weight(.semibold))
+                .multilineTextAlignment(.center)
+            Text("Persistence.Startup.Message")
+                .multilineTextAlignment(.center)
+            Text(errorMessage)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .textSelection(.enabled)
+            Button(action: retry) {
+                Text("Persistence.Startup.Retry")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding(24)
+        .frame(maxWidth: 440)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
 
 extension Notification.Name {
     static let locationPermissionAutoDisabled = Notification.Name("locationPermissionAutoDisabled")

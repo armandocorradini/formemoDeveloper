@@ -21,6 +21,11 @@ struct DebugDiagnosticsView: View {
     @State private var currentReportID: UUID?
     @State private var currentReportIsComplete = false
     @State private var currentTestTitle: String?
+    @State private var showPersistenceFailureConfirmation = false
+    @State private var showPersistenceFailurePreparedAlert = false
+
+    private static let persistenceFailureDebugKey =
+        "ForMemo.Debug.FailNextPersistenceInitialization"
 
     private var passedCount: Int { results.filter { $0.status == .passed }.count }
     private var failedCount: Int { results.filter { $0.status == .failed }.count }
@@ -42,10 +47,29 @@ struct DebugDiagnosticsView: View {
 
                 Text(
                     isRunning
-                        ? "Test \(results.count + 1)/156 — \(currentTestTitle ?? "Preparazione…")"
-                        : "Progressione: \(results.count)/156 test completati"
+                        ? "Test \(results.count + 1)/167 — \(currentTestTitle ?? "Preparazione…")"
+                        : "Progressione: \(results.count)/167 test completati"
                 )
                 .font(.caption)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+            }
+
+            Section("Test di recupero SwiftData") {
+                Button(role: .destructive) {
+                    showPersistenceFailureConfirmation = true
+                } label: {
+                    Label(
+                        "Simula errore di inizializzazione SwiftData",
+                        systemImage: "externaldrive.badge.exclamationmark"
+                    )
+                }
+                .disabled(isRunning)
+
+                Text(
+                    "Prepara un errore monouso alla prossima apertura di ForMemo. Dopo averlo attivato, chiudi completamente l’app e riaprila. Il database non viene modificato. La schermata di recupero dovrebbe consentire di riprovare l’inizializzazione."
+                )
+                .font(.footnote)
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)
             }
@@ -108,6 +132,32 @@ struct DebugDiagnosticsView: View {
         .sheet(item: $shareReport) { report in
             DiagnosticReportActivityView(activityItems: [report.url])
                 .ignoresSafeArea()
+        }
+        .confirmationDialog(
+            "Preparare il test di recupero SwiftData?",
+            isPresented: $showPersistenceFailureConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Prepara test", role: .destructive) {
+                UserDefaults.standard.set(
+                    true,
+                    forKey: Self.persistenceFailureDebugKey
+                )
+                DebugLog.write("DEBUG: one-shot SwiftData startup failure armed")
+                showPersistenceFailurePreparedAlert = true
+            }
+            Button("Annulla", role: .cancel) {}
+        } message: {
+            Text(
+                "Il prossimo tentativo di inizializzazione SwiftData fallirà intenzionalmente una sola volta. L’app dovrà essere chiusa completamente e riaperta. Non vengono eliminati né modificati dati."
+            )
+        }
+        .alert("Test di recupero preparato", isPresented: $showPersistenceFailurePreparedAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(
+                "Chiudi completamente ForMemo e riaprila. Dovrebbe apparire la schermata di recupero SwiftData. Tocca Riprova per verificare che l’inizializzazione successiva riesca."
+            )
         }
         .alert("Impossibile creare il rapporto", isPresented: Binding(
             get: { reportExportError != nil },
@@ -605,6 +655,32 @@ struct DebugDiagnosticsView: View {
 
     private func performIsolatedTests() async {
 
+        await runTest("SwiftData startup: errore simulato e consumo del flag monouso") {
+            try testPersistenceStartupFailureIsOneShot()
+        }
+        await runTest("SwiftData startup: retry e conservazione dati dopo riapertura dello store") {
+            try testPersistenceRetryPreservesPersistentData()
+        }
+        await runTest("Localizzazione errore simulato SwiftData") {
+            try testPersistenceStartupErrorLocalization()
+        }
+        await runTest("App Intents Siri: gestione errore inizializzazione SwiftData") {
+            try await testAppIntentsHandlePersistenceFailure()
+        }
+
+        await runTest("Wallet migration: logo legacy migrato, verificato e idempotente") {
+            try testWalletLegacyMigrationSuccessAndIdempotency()
+        }
+        await runTest("Wallet migration: logo realmente assente non blocca la migrazione") {
+            try testWalletLegacyMigrationMissingLogo()
+        }
+        await runTest("Wallet migration: file legacy presente ma illeggibile lascia il marker inattivo") {
+            try testWalletLegacyMigrationUnreadableFile()
+        }
+        await runTest("Wallet migration: errore save rimuove l'asset creato e consente il retry") {
+            try testWalletLegacyMigrationSaveFailureAndRetry()
+        }
+
         await runTest("Criteri di configurazione CloudKit: attivazione, disattivazione e account iCloud") {
             try testCloudKitConfigurationPolicy()
         }
@@ -659,6 +735,15 @@ struct DebugDiagnosticsView: View {
         await runTest("Ricorrenze: limite massimo generazione") { try testRecurrenceGenerationCap() }
         await runTest("Notifiche: ordine e unicità eventi") { try testNotificationEventOrderingAndUniqueness() }
         await runTest("Calcoli ripetuti: stabilità diagnostica") { try testRepeatedDeterministicCalculations() }
+        await runTest("Documenti: commit riuscito prima degli effetti collaterali") {
+            try testDocumentSaveCommitSuccess()
+        }
+        await runTest("Documenti: errore save su documento esistente — rollback e nessuna notifica") {
+            try testExistingDocumentSaveFailureRollsBackBeforeSideEffects()
+        }
+        await runTest("Documenti: errore save su nuovo documento — rollback e nessuna notifica") {
+            try testNewDocumentSaveFailureRollsBackBeforeSideEffects()
+        }
         await runTest("CRUD documento SwiftData") { try testDocumentCRUD() }
         await runTest("File allegato temporaneo: lettura e pulizia") { try await testAttachmentImportAndCleanup() }
         await runTest("Coda notifiche di sistema (sola lettura)") { try await testPendingNotifications() }
@@ -871,6 +956,170 @@ struct DebugDiagnosticsView: View {
         }
 
         return "Tutti e tre i fetch sintetici sono completati prima della prima callback di riparazione; ogni whitelist è associata al container corretto. Testa il coordinamento di produzione senza eseguire operazioni sul file system."
+    }
+
+    private func testWalletLegacyMigrationSuccessAndIdempotency() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let id = UUID()
+        let marker = "ForMemo.Debug.WalletMigration.\(id.uuidString)"
+        let fileName = "\(id.uuidString).jpg"
+        let payload = Data("synthetic-wallet-logo-\(id.uuidString)".utf8)
+        let documents = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        let legacyDirectory = documents.appendingPathComponent("LoyaltyCardLogos", isDirectory: true)
+        try FileManager.default.createDirectory(at: legacyDirectory, withIntermediateDirectories: true)
+        let legacyURL = legacyDirectory.appendingPathComponent(fileName)
+        try payload.write(to: legacyURL, options: .atomic)
+        let card = LoyaltyCard(id: id, storeName: "DEBUG-WALLET-MIGRATION-\(id.uuidString)",
+                               cardHolder: "Synthetic", barcodeValue: "DEBUG-\(id.uuidString)",
+                               barcodeFormat: "code128", itemType: "loyaltyCard", notes: "",
+                               colorHex: "#123456", sortOrder: 0)
+        card.loyaltyLogoRelativePath = fileName
+        context.insert(card)
+        defer {
+            UserDefaults.standard.removeObject(forKey: marker)
+            try? FileManager.default.removeItem(at: legacyURL)
+            if let asset = card.logoAsset {
+                WalletAssetStore.delete(relativePath: asset.relativePath)
+                context.delete(asset)
+            }
+            context.delete(card)
+            try? context.save()
+        }
+        try context.save()
+
+        guard WalletMigrationService.runIfNeeded(context: context, markerKey: marker),
+              UserDefaults.standard.bool(forKey: marker),
+              let asset = card.logoAsset,
+              asset.kind == .logo,
+              WalletAssetStore.loadData(relativePath: asset.relativePath) == payload else {
+            throw DiagnosticFailure.assertion("Il logo non è stato migrato, salvato e verificato integralmente.")
+        }
+        let assetID = asset.id
+        guard WalletMigrationService.runIfNeeded(context: context, markerKey: marker),
+              card.logoAsset?.id == assetID else {
+            throw DiagnosticFailure.assertion("La seconda esecuzione ha duplicato o alterato l'asset migrato.")
+        }
+        return "Logo sintetico migrato nel formato WalletAsset, relazione e contenuto fisico verificati; marker impostato soltanto dopo il commit. Seconda esecuzione idempotente."
+    }
+
+    private func testWalletLegacyMigrationMissingLogo() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let id = UUID()
+        let marker = "ForMemo.Debug.WalletMigration.Missing.\(id.uuidString)"
+        let card = LoyaltyCard(id: id, storeName: "DEBUG-WALLET-MISSING-\(id.uuidString)",
+                               cardHolder: "Synthetic", barcodeValue: "DEBUG-\(id.uuidString)",
+                               barcodeFormat: "code128", itemType: "loyaltyCard", notes: "",
+                               colorHex: "#123456", sortOrder: 0)
+        card.loyaltyLogoRelativePath = "missing-\(id.uuidString).jpg"
+        context.insert(card)
+        defer {
+            UserDefaults.standard.removeObject(forKey: marker)
+            context.delete(card)
+            try? context.save()
+        }
+        try context.save()
+        guard WalletMigrationService.runIfNeeded(context: context, markerKey: marker),
+              UserDefaults.standard.bool(forKey: marker), card.logoAsset == nil else {
+            throw DiagnosticFailure.assertion("Un logo realmente assente deve essere accettato senza creare asset.")
+        }
+        return "Entrambi i percorsi legacy risultano assenti: nessun asset creato e migrazione completata correttamente."
+    }
+
+    private func testWalletLegacyMigrationUnreadableFile() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let id = UUID()
+        let marker = "ForMemo.Debug.WalletMigration.Unreadable.\(id.uuidString)"
+        let fileName = "unreadable-\(id.uuidString).jpg"
+        let documents = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        let legacyDirectory = documents.appendingPathComponent("LoyaltyCardLogos", isDirectory: true)
+        try FileManager.default.createDirectory(at: legacyDirectory, withIntermediateDirectories: true)
+        let directoryAtFilePath = legacyDirectory.appendingPathComponent(fileName, isDirectory: true)
+        try FileManager.default.createDirectory(at: directoryAtFilePath, withIntermediateDirectories: true)
+        let card = LoyaltyCard(id: id, storeName: "DEBUG-WALLET-UNREADABLE-\(id.uuidString)",
+                               cardHolder: "Synthetic", barcodeValue: "DEBUG-\(id.uuidString)",
+                               barcodeFormat: "code128", itemType: "loyaltyCard", notes: "",
+                               colorHex: "#123456", sortOrder: 0)
+        card.loyaltyLogoRelativePath = fileName
+        context.insert(card)
+        defer {
+            UserDefaults.standard.removeObject(forKey: marker)
+            try? FileManager.default.removeItem(at: directoryAtFilePath)
+            context.delete(card)
+            try? context.save()
+        }
+        try context.save()
+        let completed = WalletMigrationService.runIfNeeded(context: context, markerKey: marker)
+        guard !completed, !UserDefaults.standard.bool(forKey: marker), card.logoAsset == nil else {
+            throw DiagnosticFailure.assertion("Un file esistente ma non leggibile è stato scambiato per un logo assente.")
+        }
+        return "Il percorso esiste ma la lettura fallisce: errore intercettato, nessun asset creato e marker lasciato inattivo per un retry."
+    }
+
+    private func testWalletLegacyMigrationSaveFailureAndRetry() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+        let id = UUID()
+        let marker = "ForMemo.Debug.WalletMigration.SaveFailure.\(id.uuidString)"
+        let fileName = "save-failure-\(id.uuidString).jpg"
+        let payload = Data("synthetic-save-failure-logo-\(id.uuidString)".utf8)
+        let documents = try FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        let legacyDirectory = documents.appendingPathComponent("LoyaltyCardLogos", isDirectory: true)
+        try FileManager.default.createDirectory(at: legacyDirectory, withIntermediateDirectories: true)
+        let legacyURL = legacyDirectory.appendingPathComponent(fileName)
+        try payload.write(to: legacyURL, options: .atomic)
+        let card = LoyaltyCard(id: id, storeName: "DEBUG-WALLET-SAVE-FAILURE-\(id.uuidString)",
+                               cardHolder: "Synthetic", barcodeValue: "DEBUG-\(id.uuidString)",
+                               barcodeFormat: "code128", itemType: "loyaltyCard", notes: "",
+                               colorHex: "#123456", sortOrder: 0)
+        card.loyaltyLogoRelativePath = fileName
+        context.insert(card)
+        defer {
+            UserDefaults.standard.removeObject(forKey: marker)
+            try? FileManager.default.removeItem(at: legacyURL)
+            if let asset = card.logoAsset {
+                WalletAssetStore.delete(relativePath: asset.relativePath)
+                context.delete(asset)
+            }
+            context.delete(card)
+            try? context.save()
+        }
+        try context.save()
+
+        var failedAttemptAssetPath: String?
+        let failed = WalletMigrationService.runIfNeeded(
+            context: context,
+            markerKey: marker,
+            saveOperation: { injectedContext in
+                failedAttemptAssetPath = try injectedContext.fetch(FetchDescriptor<WalletAsset>()).first?.relativePath
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-WALLET-MIGRATION")
+            }
+        )
+        let verificationContext = ModelContext(container)
+        let persistedAssetsAfterRollback = try verificationContext.fetch(FetchDescriptor<WalletAsset>())
+        let failedAttemptFileStillExists = failedAttemptAssetPath.map {
+            WalletAssetStore.loadData(relativePath: $0) != nil
+        } ?? false
+
+        guard !failed,
+              !UserDefaults.standard.bool(forKey: marker),
+              card.logoAsset == nil,
+              persistedAssetsAfterRollback.isEmpty,
+              !failedAttemptFileStillExists else {
+            throw DiagnosticFailure.assertion(
+                "Dopo il save fallito: marker=\(UserDefaults.standard.bool(forKey: marker)), relazione=\(card.logoAsset != nil), record persistiti=\(persistedAssetsAfterRollback.count), file temporaneo presente=\(failedAttemptFileStillExists)."
+            )
+        }
+
+        guard WalletMigrationService.runIfNeeded(context: context, markerKey: marker),
+              UserDefaults.standard.bool(forKey: marker),
+              let asset = card.logoAsset,
+              WalletAssetStore.loadData(relativePath: asset.relativePath) == payload else {
+            throw DiagnosticFailure.assertion("Il retry dopo il save fallito non ha completato la migrazione.")
+        }
+        return "Save fallito iniettato: il marker è rimasto inattivo; il record WalletAsset non è presente nello store isolato e il file temporaneo è stato rimosso solo dopo il salvataggio della compensazione. Il retry successivo ha migrato e verificato correttamente il logo."
     }
 
     /// Ogni test con persistenza usa un database SwiftData in-memory indipendente.
@@ -1669,6 +1918,205 @@ struct DebugDiagnosticsView: View {
     /// Verifica la policy pura di selezione: CloudKit è scelto solo quando
     /// l'integrazione è abilitata e l'identità iCloud è presente.
     /// Non legge né modifica le impostazioni o l'account del dispositivo.
+    private func testPersistenceStartupFailureIsOneShot() throws -> String {
+        let defaults = UserDefaults.standard
+        let key = Self.persistenceFailureDebugKey
+
+        guard !defaults.bool(forKey: key) else {
+            throw DiagnosticFailure.assertion(
+                "Il flag di errore SwiftData è già armato. Eseguire prima il riavvio di recupero oppure disarmarlo dalla diagnostica."
+            )
+        }
+
+        defaults.set(true, forKey: key)
+        defer { defaults.set(false, forKey: key) }
+
+        do {
+            _ = try Persistence.makeModelContainer(
+                cloudKitEnabled: false,
+                at: FileManager.default.temporaryDirectory
+                    .appendingPathComponent("ForMemo-Startup-Failure-\(UUID().uuidString).store")
+            )
+            throw DiagnosticFailure.assertion(
+                "L'inizializzazione è riuscita nonostante il flag di errore simulato."
+            )
+        } catch let failure as DiagnosticFailure {
+            throw failure
+        } catch {
+            let nsError = error as NSError
+            guard nsError.domain == "ForMemo.Persistence.Debug", nsError.code == 1 else {
+                throw DiagnosticFailure.assertion(
+                    "È stato restituito un errore diverso da quello previsto: \(error.localizedDescription)"
+                )
+            }
+        }
+
+        guard !defaults.bool(forKey: key) else {
+            throw DiagnosticFailure.assertion(
+                "Il flag monouso è rimasto attivo dopo il primo tentativo."
+            )
+        }
+
+        return "Il primo tentativo ha restituito l'errore simulato previsto e ha azzerato automaticamente il flag. Nessun database reale è stato aperto o modificato."
+    }
+
+    private func testPersistenceRetryPreservesPersistentData() throws -> String {
+        let defaults = UserDefaults.standard
+        let key = Self.persistenceFailureDebugKey
+
+        guard !defaults.bool(forKey: key) else {
+            throw DiagnosticFailure.assertion(
+                "Il flag di errore SwiftData è già armato. Non è possibile eseguire il test senza interferire con il test di riavvio."
+            )
+        }
+
+        let fileManager = FileManager.default
+        let directory = fileManager.temporaryDirectory
+            .appendingPathComponent("ForMemo-Persistence-Retry-\(UUID().uuidString)", isDirectory: true)
+        try fileManager.createDirectory(
+            at: directory,
+            withIntermediateDirectories: true
+        )
+        defer { try? fileManager.removeItem(at: directory) }
+
+        let storeURL = directory.appendingPathComponent("retry.store")
+        let taskID = UUID()
+        let taskTitle = "DEBUG-PERSISTENCE-RETRY-\(taskID.uuidString)"
+
+        defaults.set(true, forKey: key)
+        defer { defaults.set(false, forKey: key) }
+        do {
+            _ = try Persistence.makeModelContainer(
+                cloudKitEnabled: false,
+                at: storeURL
+            )
+            throw DiagnosticFailure.assertion(
+                "Il primo tentativo non ha generato il fallimento simulato."
+            )
+        } catch let failure as DiagnosticFailure {
+            throw failure
+        } catch {
+            let nsError = error as NSError
+            guard nsError.domain == "ForMemo.Persistence.Debug", nsError.code == 1 else {
+                throw DiagnosticFailure.assertion(
+                    "Il primo tentativo ha restituito un errore inatteso: \(error.localizedDescription)"
+                )
+            }
+        }
+
+        guard !defaults.bool(forKey: key) else {
+            throw DiagnosticFailure.assertion(
+                "Il flag monouso non è stato azzerato: il retry non sarebbe indipendente."
+            )
+        }
+
+        // The first successful container writes a synthetic record to a temporary store.
+        func writeProbe() throws {
+            let container = try Persistence.makeModelContainer(
+                cloudKitEnabled: false,
+                at: storeURL
+            )
+            let context = ModelContext(container)
+            let task = TodoTask(id: taskID, title: taskTitle)
+            task.isDebugTask = true
+            context.insert(task)
+            try context.save()
+        }
+
+        // A new container must be able to reopen the same store and read the record.
+        func readProbe() throws -> Bool {
+            let container = try Persistence.makeModelContainer(
+                cloudKitEnabled: false,
+                at: storeURL
+            )
+            let context = ModelContext(container)
+            let descriptor = FetchDescriptor<TodoTask>(
+                predicate: #Predicate<TodoTask> { $0.id == taskID }
+            )
+            guard let task = try context.fetch(descriptor).first else {
+                return false
+            }
+            return task.id == taskID && task.title == taskTitle && task.isDebugTask
+        }
+
+        try writeProbe()
+
+        guard try readProbe() else {
+            throw DiagnosticFailure.assertion(
+                "Il container è stato riaperto, ma il record diagnostico non è stato ritrovato o non conserva i dati."
+            )
+        }
+        return "Dopo il fallimento iniziale, il retry ha creato un container sullo stesso URL temporaneo. Un nuovo ModelContainer ha riaperto lo store e riletto il record sintetico. Nessun dato dell'archivio dell'app è stato coinvolto."
+    }
+
+    private func testPersistenceStartupErrorLocalization() throws -> String {
+        let key = "Persistence.Startup.SimulatedError"
+        let localized = String(
+            localized: LocalizedStringResource("Persistence.Startup.SimulatedError")
+        )
+
+        guard localized != key else {
+            throw DiagnosticFailure.assertion(
+                "La chiave \(key) non è stata risolta dal catalogo di localizzazione del target."
+            )
+        }
+
+        return "La chiave \(key) viene risolta in: \(localized)"
+    }
+
+    private func testAppIntentsHandlePersistenceFailure() async throws -> String {
+        let defaults = UserDefaults.standard
+        let key = Self.persistenceFailureDebugKey
+
+        guard !defaults.bool(forKey: key) else {
+            throw DiagnosticFailure.assertion(
+                "Il flag di errore SwiftData è già armato. Il test non lo sovrascrive."
+            )
+        }
+        defer { defaults.set(false, forKey: key) }
+
+        func armFailure() {
+            defaults.set(true, forKey: key)
+        }
+
+        func verifyConsumed(_ intentName: String) throws {
+            guard !defaults.bool(forKey: key) else {
+                throw DiagnosticFailure.assertion(
+                    "\(intentName) non ha raggiunto il percorso di gestione dell'errore previsto."
+                )
+            }
+        }
+
+        armFailure()
+        _ = try await AddTaskAutoIntent(input: "DEBUG persistence recovery").perform()
+        try verifyConsumed("AddTaskAutoIntent")
+
+        armFailure()
+        _ = try await AddTaskIntent(
+            input: "DEBUG persistence recovery",
+            date: Date.now.addingTimeInterval(3_600)
+        ).perform()
+        try verifyConsumed("AddTaskIntent")
+
+        armFailure()
+        _ = try await AddNoteIntent(input: "DEBUG persistence recovery note").perform()
+        try verifyConsumed("AddNoteIntent")
+
+        armFailure()
+        let getTasksIntent = GetTasksIntent()
+        getTasksIntent.query = "oggi"
+        _ = try await getTasksIntent.perform()
+        try verifyConsumed("GetTasksIntent")
+
+        armFailure()
+        let searchTasksIntent = SearchTasksIntent()
+        searchTasksIntent.query = "DEBUG"
+        _ = try await searchTasksIntent.perform()
+        try verifyConsumed("SearchTasksIntent")
+
+        return "Tutti e cinque gli App Intents hanno gestito l'errore di inizializzazione senza propagare il fallimento e hanno consumato il flag monouso. Il test non ha creato task o note."
+    }
+
     private func testCloudKitConfigurationPolicy() throws -> String {
         let cases: [(String, Bool, Bool, Bool)] = [
             ("attivo + account presente", true, true, true),
@@ -3858,6 +4306,106 @@ struct DebugDiagnosticsView: View {
             lines.append("")
         }
         return lines.joined(separator: "\n")
+    }
+
+    private func testDocumentSaveCommitSuccess() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let id = UUID()
+        let document = DocumentItem(name: "DEBUG-ONLY document commit success", notificationEnabled: false)
+        document.id = id
+        context.insert(document)
+
+        var afterCommitCalled = false
+        let saved = DocumentSaveCommit.save(document, in: context) {
+            afterCommitCalled = true
+            let persistedName = try? context.fetch(
+                FetchDescriptor<DocumentItem>(predicate: #Predicate<DocumentItem> { $0.id == id })
+            ).first?.name
+            if persistedName != "DEBUG-ONLY document commit success" {
+                afterCommitCalled = false
+            }
+        }
+
+        guard saved, afterCommitCalled,
+              try context.fetch(FetchDescriptor<DocumentItem>(predicate: #Predicate<DocumentItem> { $0.id == id })).first?.name == "DEBUG-ONLY document commit success" else {
+            throw DiagnosticFailure.assertion("Il commit del documento non è stato confermato prima dell'esecuzione degli effetti successivi.")
+        }
+
+        return "Il salvataggio SwiftData è riuscito; il callback post-commit è stato eseguito e ha potuto rileggere il documento già persistito."
+    }
+
+    private func testExistingDocumentSaveFailureRollsBackBeforeSideEffects() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let id = UUID()
+        let originalName = "DEBUG-ONLY existing document original"
+        let document = DocumentItem(name: originalName, notificationEnabled: false)
+        document.id = id
+        context.insert(document)
+        try context.save()
+
+        document.name = "DEBUG-ONLY existing document modified"
+        var afterCommitCalled = false
+        var saveAttempts = 0
+        let saved = DocumentSaveCommit.save(
+            document,
+            in: context,
+            saveOperation: {
+                saveAttempts += 1
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-DOCUMENT-UPDATE")
+            },
+            afterCommit: { afterCommitCalled = true }
+        )
+
+        let persisted = try context.fetch(
+            FetchDescriptor<DocumentItem>(predicate: #Predicate<DocumentItem> { $0.id == id })
+        ).first
+
+        guard !saved, saveAttempts == 1, !afterCommitCalled,
+              persisted?.name == originalName else {
+            throw DiagnosticFailure.assertion(
+                "Update document save failure: saved=\(saved), attempts=\(saveAttempts), callback=\(afterCommitCalled), restoredName=\(persisted?.name ?? "nil")."
+            )
+        }
+
+        return "Con errore save, il documento esistente è tornato al valore persistito; il callback post-commit non è stato eseguito, quindi la notifica precedente non viene modificata."
+    }
+
+    private func testNewDocumentSaveFailureRollsBackBeforeSideEffects() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let id = UUID()
+        let document = DocumentItem(name: "DEBUG-ONLY new document", notificationEnabled: false)
+        document.id = id
+        context.insert(document)
+
+        var afterCommitCalled = false
+        var saveAttempts = 0
+        let saved = DocumentSaveCommit.save(
+            document,
+            in: context,
+            saveOperation: {
+                saveAttempts += 1
+                throw DiagnosticFailure.assertion("SAVE-FAILURE-INJECTED-DOCUMENT-INSERT")
+            },
+            afterCommit: { afterCommitCalled = true }
+        )
+
+        let persisted = try context.fetch(
+            FetchDescriptor<DocumentItem>(predicate: #Predicate<DocumentItem> { $0.id == id })
+        ).first
+
+        guard !saved, saveAttempts == 1, !afterCommitCalled, persisted == nil else {
+            throw DiagnosticFailure.assertion(
+                "New document save failure: saved=\(saved), attempts=\(saveAttempts), callback=\(afterCommitCalled), recordPersisted=\(persisted != nil)."
+            )
+        }
+
+        return "Con errore save, il nuovo documento non è rimasto nello store e il callback post-commit non è stato eseguito; nessuna notifica può essere aggiornata."
     }
 
     private func testDocumentCRUD() throws -> String {

@@ -126,9 +126,23 @@ enum Persistence {
         cloudKitEnabled && hasICloudIdentity
     }
 
+    static func selectedStoreURLForStartup() -> URL {
+        storeURL()
+    }
+
     static func makeModelContainer(
         cloudKitEnabled: Bool
-    ) -> ModelContainer {
+    ) throws -> ModelContainer {
+        try makeModelContainer(
+            cloudKitEnabled: cloudKitEnabled,
+            at: storeURL()
+        )
+    }
+
+    static func makeModelContainer(
+        cloudKitEnabled: Bool,
+        at selectedURL: URL
+    ) throws -> ModelContainer {
 
         DebugLog.write(
             cloudKitEnabled
@@ -143,6 +157,25 @@ enum Persistence {
                 : "SwiftData container initialization (Local)"
             )
 
+            #if DEBUG
+            // One-shot fault injection for validating the startup recovery screen.
+            // Set this preference while the app is running, then relaunch the app.
+            let debugFailureKey = "ForMemo.Debug.FailNextPersistenceInitialization"
+            if UserDefaults.standard.bool(forKey: debugFailureKey) {
+                UserDefaults.standard.set(false, forKey: debugFailureKey)
+                throw NSError(
+                    domain: "ForMemo.Persistence.Debug",
+                    code: 1,
+                    userInfo: [
+                        NSLocalizedDescriptionKey:
+                            String(localized: LocalizedStringResource(
+                                "Persistence.Startup.SimulatedError"
+                            ))
+                    ]
+                )
+            }
+            #endif
+
             let useCloudKit = shouldUseCloudKit(
                 cloudKitEnabled: cloudKitEnabled,
                 hasICloudIdentity: hasICloudIdentity
@@ -150,7 +183,7 @@ enum Persistence {
 
             let configuration = ModelConfiguration(
                 schema: schema,
-                url: storeURL(),
+                url: selectedURL,
                 cloudKitDatabase:
                     useCloudKit
                     ? .private(cloudKitContainerID)
@@ -213,7 +246,7 @@ enum Persistence {
                 "SwiftData ModelContainer error: \(error.localizedDescription)"
             )
 
-            fatalError("SwiftData container initialization failed: \(error)")
+            throw error
         }
     }
 }

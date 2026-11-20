@@ -757,8 +757,8 @@
 				1C634D3D30220C9C0092DB89 /* AppQuickGuide.swift */,
 				1C634D3E30220C9C0092DB89 /* AppUnavailableView.swift */,
 				1C634D4E30220C9C0092DB89 /* DisclaimerView.swift */,
-				1C634D5830220C9C0092DB89 /* FAQView.swift */,
 				1C634D6830220C9C0092DB89 /* StartView.swift */,
+				1C634D5830220C9C0092DB89 /* FAQView.swift */,
 			);
 			path = OtherViews;
 			sourceTree = "<group>";
@@ -783,7 +783,6 @@
 				1C634D8830220C9C0092DB89 /* Assets.xcassets */,
 				1C634D8930220C9C0092DB89 /* ForMemo.entitlements */,
 				1C634D8A30220C9C0092DB89 /* Info.plist */,
-				1CA7F726309C957F008375D8 /* Widget */,
 			);
 			path = ForMemo;
 			sourceTree = "<group>";
@@ -1035,6 +1034,7 @@
 				1C97EB0B3093EB1F00349CCE /* turn-off.wav */,
 				1C97EB0C3093EB1F00349CCE /* two-note.mp3 */,
 				1C97EB0D3093EB1F00349CCE /* xylophone.wav */,
+				1CA7F726309C957F008375D8 /* Widget */,
 			);
 			path = Sound;
 			sourceTree = "<group>";

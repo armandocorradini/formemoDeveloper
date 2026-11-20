@@ -1,6 +1,7 @@
 import Foundation
 import AppIntents
 import SwiftData
+import os
 
 
 struct GetTasksIntent: AppIntent {
@@ -74,9 +75,21 @@ struct GetTasksIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
 
-        let container = Persistence.makeModelContainer(
-            cloudKitEnabled: true
-        )
+        let container: ModelContainer
+        do {
+            container = try Persistence.makeModelContainer(
+                cloudKitEnabled: true
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Siri intent could not initialize SwiftData: \(error.localizedDescription)"
+            )
+            return .result(
+                dialog: IntentDialog(
+                    stringLiteral: String(localized: "Persistence.Startup.IntentError")
+                )
+            )
+        }
         
         let context = container.mainContext
         let calendar = Calendar.autoupdatingCurrent

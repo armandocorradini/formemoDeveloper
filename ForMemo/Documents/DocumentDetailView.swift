@@ -19,6 +19,7 @@ struct DocumentDetailView: View {
     @State private var showingPDFImporter = false
     
     @State private var selectedAsset: DocumentAsset?
+    @State private var showingSaveError = false
     private var isEditing: Bool {
         document.modelContext != nil
     }
@@ -313,49 +314,49 @@ struct DocumentDetailView: View {
                             modelContext.insert(document)
                         }
                         
-                        if document.notificationEnabled,
-                           let expiryDate = document.expiryDate {
-                            
-                            NotificationManager.shared
-                                .removeDocumentNotification(
-                                    documentID: document.id
-                                )
-                            
-                            let triggerDate = Calendar.current.date(
-                                byAdding: .day,
-                                value: -document.notificationDaysBefore,
-                                to: expiryDate
+                        let didSave = DocumentSaveCommit.save(
+                            document,
+                            in: modelContext
+                        ) {
+                            // Notifications are changed only after SwiftData confirms the save.
+                            NotificationManager.shared.removeDocumentNotification(
+                                documentID: document.id
                             )
-                            
-                            if let triggerDate {
+
+                            if document.notificationEnabled,
+                               let expiryDate = document.expiryDate,
+                               let triggerDate = Calendar.current.date(
+                                    byAdding: .day,
+                                    value: -document.notificationDaysBefore,
+                                    to: expiryDate
+                               ) {
                                 Task {
-                                    await NotificationManager.shared
-                                        .scheduleDocumentNotification(
-                                            id: document.id,
-                                            title: document.name,
-                                            triggerDate: triggerDate
-                                        )
+                                    await NotificationManager.shared.scheduleDocumentNotification(
+                                        id: document.id,
+                                        title: document.name,
+                                        triggerDate: triggerDate
+                                    )
                                 }
                             }
-                            
-                        } else {
-                            
-                            NotificationManager.shared
-                                .removeDocumentNotification(
-                                    documentID: document.id
-                                )
                         }
-                        document.updatedAt = Date()
-                        modelContext.safeSave(
-                            operation: "SaveDocument"
-                        )
 
-                        modelContext.processPendingChanges()
+                        guard didSave else {
+                            showingSaveError = true
+                            return
+                        }
 
                         dismiss()
                     }
                     .disabled(!canSave)
                 }
+            }
+            .alert(
+                "Unable to Save Document",
+                isPresented: $showingSaveError
+            ) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Your changes could not be saved. Please try again.")
             }
             .onAppear {
                 document.lastOpenedAt = .now
@@ -515,5 +516,31 @@ struct DocumentDetailView: View {
             }
             
         }
+    }
+}
+
+
+/// Commits document changes before performing side effects such as notification updates.
+enum DocumentSaveCommit {
+    @MainActor
+    @discardableResult
+    static func save(
+        _ document: DocumentItem,
+        in context: ModelContext,
+        saveOperation: (() throws -> Void)? = nil,
+        afterCommit: () -> Void
+    ) -> Bool {
+        document.updatedAt = Date()
+
+        guard context.safeSave(
+            operation: "SaveDocument",
+            saveOperation: saveOperation
+        ) else {
+            return false
+        }
+
+        context.processPendingChanges()
+        afterCommit()
+        return true
     }
 }

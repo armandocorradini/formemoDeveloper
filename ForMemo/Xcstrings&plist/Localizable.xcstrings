@@ -28568,6 +28568,211 @@
         }
       }
     },
+    "Persistence.Startup.IntentError" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo konnte nicht auf deine Daten zugreifen. Öffne die App und versuche es erneut."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo couldn't access your data. Open the app and try again."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo no ha podido acceder a tus datos. Abre la app y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo n’a pas pu accéder à vos données. Ouvrez l’app et réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo non è riuscita ad accedere ai tuoi dati. Apri l’app e riprova."
+          }
+        }
+      }
+    },
+    "Persistence.Startup.Message" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo konnte den Datenspeicher nicht öffnen. Versuche es erneut, um wieder auf deine Daten zuzugreifen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo couldn't open its data store. Try again to restore access to your data."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo no ha podido abrir el almacén de datos. Vuelve a intentarlo para recuperar el acceso a tus datos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo n’a pas pu ouvrir son espace de stockage. Réessayez pour accéder à vos données."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo non è riuscita ad aprire l’archivio dei dati. Riprova per ripristinare l’accesso ai tuoi dati."
+          }
+        }
+      }
+    },
+    "Persistence.Startup.Retry" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erneut versuchen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Again"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volver a intentar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riprova"
+          }
+        }
+      }
+    },
+    "Persistence.Startup.SimulatedError" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulierter Fehler bei der Initialisierung von SwiftData."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulated SwiftData initialization failure."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Error simulado al inicializar SwiftData."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec simulé de l’initialisation de SwiftData."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Errore simulato durante l’inizializzazione di SwiftData."
+          }
+        }
+      }
+    },
+    "Persistence.Startup.Title" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ForMemo kann nicht geöffnet werden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to Open ForMemo"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede abrir ForMemo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’ouvrir ForMemo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile aprire ForMemo"
+          }
+        }
+      }
+    },
+    "Persistence.Startup.UnknownError" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beim Öffnen deiner Daten ist ein unerwarteter Fehler aufgetreten."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An unexpected error occurred while opening your data."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se ha producido un error inesperado al abrir tus datos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une erreur inattendue s’est produite lors de l’ouverture de vos données."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si è verificato un errore imprevisto durante l’apertura dei dati."
+          }
+        }
+      }
+    },
     "Personal" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -42553,6 +42758,9 @@
         }
       }
     },
+    "Unable to Save Document" : {
+
+    },
     "Unable to unlock the Vault encryption key." : {
       "localizations" : {
         "de" : {
@@ -47584,6 +47792,9 @@
           }
         }
       }
+    },
+    "Your changes could not be saved. Please try again." : {
+
     },
     "Your Data, Your Control" : {
       "localizations" : {

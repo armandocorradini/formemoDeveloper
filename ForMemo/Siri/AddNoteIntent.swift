@@ -2,6 +2,8 @@ import AppIntents
 import SwiftUI
 import SwiftData
 import Foundation
+import os
+import os
 
 // MARK: - Add Note Intent
 
@@ -43,9 +45,21 @@ struct AddNoteIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
 
-        let container = Persistence.makeModelContainer(
-            cloudKitEnabled: true
-        )
+        let container: ModelContainer
+        do {
+            container = try Persistence.makeModelContainer(
+                cloudKitEnabled: true
+            )
+        } catch {
+            AppLogger.persistence.error(
+                "Siri intent could not initialize SwiftData: \(error.localizedDescription)"
+            )
+            return .result(
+                dialog: IntentDialog(
+                    stringLiteral: String(localized: "Persistence.Startup.IntentError")
+                )
+            )
+        }
 
         let context = container.mainContext
 
