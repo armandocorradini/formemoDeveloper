@@ -207,8 +207,8 @@ struct ForMemoApp: App {
             Group {
                 if let container {
                     TaskTabView()
-                        .modelContainer(container)
                         .modifier(RecurrenceSeriesExtensionPresenter())
+                        .modelContainer(container)
                 .onReceive(NotificationCenter.default.publisher(for: .snoozeRejectedDueToDeadline)) { _ in
                     
                     NotificationCenter.default.post(

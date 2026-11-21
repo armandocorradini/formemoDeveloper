@@ -3834,24 +3834,10 @@ struct TodoSectionView: View {
     }
 
     do {
-      let recurrenceID = task.recurrenceID
-      let currentIndex = task.occurrenceIndex ?? 1
-
-      let occurrences = try modelContext.fetch(
-        FetchDescriptor<TodoTask>(
-          predicate: #Predicate<TodoTask> {
-            $0.recurrenceID == recurrenceID
-          }
-        )
+      let hasFutureOccurrence = try RecurrenceEngine.hasFutureOccurrence(
+        for: task,
+        in: modelContext
       )
-
-      let hasFutureOccurrence = occurrences.contains { occurrence in
-        guard occurrence.id != task.id,
-              let occurrenceIndex = occurrence.occurrenceIndex else {
-          return false
-        }
-        return occurrenceIndex > currentIndex
-      }
 
       if hasFutureOccurrence || confirmTaskDeletion {
         taskPendingDeletion = task
@@ -4362,24 +4348,10 @@ struct CompletedSectionView: View {
     }
 
     do {
-      let recurrenceID = task.recurrenceID
-      let currentIndex = task.occurrenceIndex ?? 1
-
-      let occurrences = try modelContext.fetch(
-        FetchDescriptor<TodoTask>(
-          predicate: #Predicate<TodoTask> {
-            $0.recurrenceID == recurrenceID
-          }
-        )
+      let hasFutureOccurrence = try RecurrenceEngine.hasFutureOccurrence(
+        for: task,
+        in: modelContext
       )
-
-      let hasFutureOccurrence = occurrences.contains { occurrence in
-        guard occurrence.id != task.id,
-              let occurrenceIndex = occurrence.occurrenceIndex else {
-          return false
-        }
-        return occurrenceIndex > currentIndex
-      }
 
       if hasFutureOccurrence || confirmTaskDeletion {
         taskPendingDeletion = task

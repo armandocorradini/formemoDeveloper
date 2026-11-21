@@ -133,7 +133,7 @@ struct WeeklyTasksView: View {
 
     @MainActor
     private func requestTaskDeletion(_ task: TodoTask) {
-        guard task.recurrenceID != nil else {
+        guard task.recurrenceID != nil, !task.isCompleted else {
             pendingDeletionShowsRecurrenceChoices = false
 
             if settings.confirmTaskDeletion {

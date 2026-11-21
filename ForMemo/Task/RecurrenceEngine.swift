@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import SwiftData
+import os
 
 /// Shared accelerated stepper for selecting a recurrence occurrence count.
 /// A short press changes the value by one; holding a control progressively
@@ -255,16 +256,16 @@ struct RecurrenceEngine {
         in context: ModelContext,
         calendar: Calendar = .autoupdatingCurrent
     ) throws -> ExtensionPreview {
-        guard try isFinalPlannedOccurrence(completedTask, in: context),
-              let rawRule = completedTask.recurrenceRule,
+        guard let anchor = try extensionAnchor(for: completedTask, in: context),
+              let rawRule = anchor.recurrenceRule,
               let rule = Rule(rawValue: rawRule),
-              let index = completedTask.occurrenceIndex,
-              let startDate = completedTask.recurrenceStartDate ?? completedTask.deadLine,
+              let index = anchor.occurrenceIndex,
+              let startDate = anchor.recurrenceStartDate ?? anchor.deadLine,
               let scheduledDate = scheduledOccurrenceDate(
                   at: index,
                   startDate: startDate,
                   rule: rule,
-                  interval: max(1, completedTask.recurrenceInterval),
+                  interval: max(1, anchor.recurrenceInterval),
                   calendar: calendar
               ) else {
             throw ExtensionError.notFinalOccurrence
@@ -280,7 +281,7 @@ struct RecurrenceEngine {
         guard let firstAdditionalDate = nextDate(
             from: scheduledDate,
             rule: rule,
-            interval: max(1, completedTask.recurrenceInterval),
+            interval: max(1, anchor.recurrenceInterval),
             calendar: calendar
         ), firstAdditionalDate <= endOfDay else {
             throw ExtensionError.invalidExtension
@@ -301,7 +302,7 @@ struct RecurrenceEngine {
             guard let next = nextDate(
                 from: candidateDate,
                 rule: rule,
-                interval: max(1, completedTask.recurrenceInterval),
+                interval: max(1, anchor.recurrenceInterval),
                 calendar: calendar
             ), next > candidateDate else {
                 throw ExtensionError.invalidExtension
@@ -334,9 +335,9 @@ struct RecurrenceEngine {
             calendar: calendar
         )
 
-        guard let recurrenceID = completedTask.recurrenceID,
-              let currentIndex = completedTask.occurrenceIndex else {
-            throw ExtensionError.invalidSeries
+        guard let anchor = try extensionAnchor(for: completedTask, in: context),
+              let recurrenceID = completedTask.recurrenceID else {
+            throw ExtensionError.notFinalOccurrence
         }
 
         let recurrenceIDValue = recurrenceID
@@ -352,14 +353,11 @@ struct RecurrenceEngine {
             throw ExtensionError.invalidSeries
         }
 
-        guard !occurrences.contains(where: { occurrence in
-            guard occurrence.id != completedTask.id,
-                  let index = occurrence.occurrenceIndex else {
-                return false
-            }
-            return index > currentIndex
-        }) else {
-            throw ExtensionError.notFinalOccurrence
+        // The extension is appended after the highest materialized index.
+        // Later completed occurrences remain part of the history and must not
+        // be recreated or cause the new batch to start from an occupied index.
+        guard occurrences.contains(where: { $0.id == anchor.id }) else {
+            throw ExtensionError.invalidSeries
         }
 
         // Keep the selected end date even when this operation reaches the configured
@@ -370,25 +368,25 @@ struct RecurrenceEngine {
         }
 
         return try materializeFutureOccurrences(
-            for: completedTask,
+            for: anchor,
             in: context,
             calendar: calendar
         )
     }
 
-    /// True when this completed occurrence is the last one currently materialized
-    /// in its series. The original count or end date does not prevent offering an
-    /// extension; further occurrences can be generated in subsequent batches.
-    static func isFinalPlannedOccurrence(
-        _ task: TodoTask,
+    /// Returns the latest materialized occurrence when the supplied completed
+    /// occurrence has no later active occurrence. Later completed occurrences
+    /// remain historical, but they still reserve their indexes and dates.
+    private static func extensionAnchor(
+        for completedTask: TodoTask,
         in context: ModelContext
-    ) throws -> Bool {
-        guard task.isCompleted,
-              task.recurrenceRule != nil,
-              let recurrenceID = task.recurrenceID,
-              let currentIndex = task.occurrenceIndex,
+    ) throws -> TodoTask? {
+        guard completedTask.isCompleted,
+              completedTask.recurrenceRule != nil,
+              let recurrenceID = completedTask.recurrenceID,
+              let currentIndex = completedTask.occurrenceIndex,
               currentIndex > 0 else {
-            return false
+            return nil
         }
 
         let occurrences = try context.fetch(
@@ -399,19 +397,51 @@ struct RecurrenceEngine {
             )
         )
 
-        guard occurrences.contains(where: { $0.id == task.id }) else {
-            return false
+        guard occurrences.contains(where: { $0.id == completedTask.id }) else {
+            return nil
         }
 
-        // Refuse to extend if another materialized occurrence exists at a
-        // higher index. This avoids treating a non-final batch item as the end.
-        return !occurrences.contains { occurrence in
-            guard occurrence.id != task.id,
-                  let occurrenceIndex = occurrence.occurrenceIndex else {
+        let hasLaterActiveOccurrence = occurrences.contains { occurrence in
+            guard occurrence.id != completedTask.id,
+                  !occurrence.isCompleted,
+                  let index = occurrence.occurrenceIndex else {
                 return false
             }
-            return occurrenceIndex > currentIndex
+            return index > currentIndex
         }
+
+        guard !hasLaterActiveOccurrence else {
+            return nil
+        }
+
+        return occurrences
+            .filter { $0.occurrenceIndex != nil }
+            .max { lhs, rhs in
+                (lhs.occurrenceIndex ?? 0) < (rhs.occurrenceIndex ?? 0)
+            }
+    }
+
+    /// True when this completed occurrence has no later active occurrence
+    /// in its series. The original count or end date does not prevent offering an
+    /// extension; further occurrences can be generated in subsequent batches.
+    static func isFinalPlannedOccurrence(
+        _ task: TodoTask,
+        in context: ModelContext
+    ) throws -> Bool {
+        try extensionAnchor(for: task, in: context) != nil
+    }
+
+    /// Resolves the next scheduled date from the actual end of the materialized
+    /// series, while still enforcing that no later occurrence is currently active.
+    static func nextScheduledOccurrenceDate(
+        after task: TodoTask,
+        in context: ModelContext,
+        calendar: Calendar = .autoupdatingCurrent
+    ) -> Date? {
+        guard let anchor = try? extensionAnchor(for: task, in: context) else {
+            return nil
+        }
+        return nextScheduledOccurrenceDate(after: anchor, calendar: calendar)
     }
 
     /// Extends the same recurrence definition without recreating existing tasks.
@@ -434,16 +464,16 @@ struct RecurrenceEngine {
             throw ExtensionError.maximumReached
         }
 
-        guard try isFinalPlannedOccurrence(completedTask, in: context),
+        guard let anchor = try extensionAnchor(for: completedTask, in: context),
               let recurrenceID = completedTask.recurrenceID,
-              let currentIndex = completedTask.occurrenceIndex,
-              let rawRule = completedTask.recurrenceRule,
+              let anchorIndex = anchor.occurrenceIndex,
+              let rawRule = anchor.recurrenceRule,
               let _ = Rule(rawValue: rawRule),
-              let _ = completedTask.recurrenceStartDate ?? completedTask.deadLine else {
-            throw ExtensionError.invalidSeries
+              let _ = anchor.recurrenceStartDate ?? anchor.deadLine else {
+            throw ExtensionError.notFinalOccurrence
         }
 
-        guard currentIndex <= Int.max - additionalOccurrences else {
+        guard anchorIndex <= Int.max - additionalOccurrences else {
             throw ExtensionError.maximumReached
         }
 
@@ -460,20 +490,15 @@ struct RecurrenceEngine {
             throw ExtensionError.invalidSeries
         }
 
-        guard !occurrences.contains(where: { occurrence in
-            guard occurrence.id != completedTask.id,
-                  let index = occurrence.occurrenceIndex else {
-                return false
-            }
-            return index > currentIndex
-        }) else {
-            throw ExtensionError.notFinalOccurrence
+        guard occurrences.contains(where: { $0.id == anchor.id }) else {
+            throw ExtensionError.invalidSeries
         }
 
-        // Count new, non-deleted occurrence indexes rather than simply adding
-        // the requested quantity to the current index. A deleted occurrence
+        // Count new, non-deleted occurrence indexes after the latest existing
+        // occurrence, not after the earlier occurrence that triggered the offer.
+        // A deleted occurrence
         // keeps its index reserved, so the next valid occurrence must be used.
-        var newTotalCount = currentIndex
+        var newTotalCount = anchorIndex
         var validAdditionalOccurrences = 0
 
         while validAdditionalOccurrences < additionalOccurrences {
@@ -516,10 +541,10 @@ struct RecurrenceEngine {
         }
 
         return try materializeFutureOccurrences(
-            for: completedTask,
+            for: anchor,
             in: context,
             calendar: calendar,
-            maximumDateCount: newTotalCount - currentIndex + 1
+            maximumDateCount: newTotalCount - anchorIndex + 1
         )
     }
 
@@ -527,7 +552,8 @@ struct RecurrenceEngine {
         for task: TodoTask,
         in context: ModelContext
     ) throws -> Bool {
-        guard let recurrenceID = task.recurrenceID,
+        guard !task.isCompleted,
+              let recurrenceID = task.recurrenceID,
               let currentIndex = task.occurrenceIndex else {
             return false
         }
@@ -542,6 +568,7 @@ struct RecurrenceEngine {
 
         return occurrences.contains { occurrence in
             guard occurrence.id != task.id,
+                  !occurrence.isCompleted,
                   let occurrenceIndex = occurrence.occurrenceIndex else {
                 return false
             }
@@ -994,17 +1021,28 @@ extension Notification.Name {
 enum RecurrenceCompletionNotice {
     @MainActor
     static func postIfNeeded(for task: TodoTask, wasCompleted: Bool) {
+        let taskID = task.id
+        let hasRecurrenceRule = task.recurrenceRule != nil
+        let hasRecurrenceID = task.recurrenceID != nil
+        let occurrenceIndex = task.occurrenceIndex
+
         guard !wasCompleted,
               task.isCompleted,
-              task.recurrenceRule != nil,
-              task.recurrenceID != nil,
-              task.occurrenceIndex != nil else {
+              hasRecurrenceRule,
+              hasRecurrenceID,
+              occurrenceIndex != nil else {
+            AppLogger.persistence.debug(
+                "[RecurrenceExtension] Signal skipped task=\(taskID.uuidString, privacy: .public) wasCompleted=\(wasCompleted) isCompleted=\(task.isCompleted) hasRule=\(hasRecurrenceRule) hasRecurrenceID=\(hasRecurrenceID) occurrenceIndex=\(occurrenceIndex ?? -1)"
+            )
             return
         }
 
+        AppLogger.persistence.debug(
+            "[RecurrenceExtension] Posting completion signal task=\(taskID.uuidString, privacy: .public) occurrenceIndex=\(occurrenceIndex ?? -1)"
+        )
         NotificationCenter.default.post(
             name: .recurrenceOccurrenceCompleted,
-            object: task.id
+            object: taskID
         )
     }
 }

@@ -16,17 +16,24 @@ struct RecurrenceSeriesExtensionPresenter: ViewModifier {
                 )
             ) { notification in
                 guard let taskID = notification.object as? UUID else {
+                    AppLogger.persistence.error(
+                        "[RecurrenceExtension] Received signal with invalid object type: \(String(describing: notification.object), privacy: .public)"
+                    )
                     return
                 }
 
-                // Wait for the completing view to finish its dismissal before
-                // presenting, especially when completion starts in TaskDetailView.
-                // The engine checks the last materialized occurrence, not the
-                // original recurrence count or end date.
+                AppLogger.persistence.debug(
+                    "[RecurrenceExtension] Presenter received signal task=\(taskID.uuidString, privacy: .public)"
+                )
+
+                // Allow the completing view to begin its dismissal before presenting.
                 Task { @MainActor in
                     await Task.yield()
 
                     guard pendingRecurrenceExtensionTask == nil else {
+                        AppLogger.persistence.debug(
+                            "[RecurrenceExtension] Presentation skipped: another extension sheet is already pending; incoming task=\(taskID.uuidString, privacy: .public)"
+                        )
                         return
                     }
 
@@ -38,24 +45,50 @@ struct RecurrenceSeriesExtensionPresenter: ViewModifier {
                     )
 
                     do {
-                        guard let completedTask = try modelContext.fetch(descriptor).first,
-                              try RecurrenceEngine.isFinalPlannedOccurrence(
-                                completedTask,
-                                in: modelContext
-                              ) else {
+                        guard let completedTask = try modelContext.fetch(descriptor).first else {
+                            AppLogger.persistence.error(
+                                "[RecurrenceExtension] Task not found in presenter ModelContext task=\(taskID.uuidString, privacy: .public)"
+                            )
                             return
                         }
 
+                        let isFinal = try RecurrenceEngine.isFinalPlannedOccurrence(
+                            completedTask,
+                            in: modelContext
+                        )
+
+                        guard isFinal else {
+                            AppLogger.persistence.debug(
+                                "[RecurrenceExtension] Task is not the final materialized occurrence task=\(taskID.uuidString, privacy: .public) completed=\(completedTask.isCompleted) hasRule=\(completedTask.recurrenceRule != nil) hasRecurrenceID=\(completedTask.recurrenceID != nil) occurrenceIndex=\(completedTask.occurrenceIndex ?? -1)"
+                            )
+                            return
+                        }
+
+                        AppLogger.persistence.debug(
+                            "[RecurrenceExtension] Final occurrence confirmed; scheduling presentation task=\(taskID.uuidString, privacy: .public)"
+                        )
                         pendingRecurrenceExtensionTask = completedTask
                     } catch {
                         AppLogger.persistence.error(
-                            "Final recurrence occurrence check failed: \(error.localizedDescription)"
+                            "[RecurrenceExtension] Final occurrence check failed task=\(taskID.uuidString, privacy: .public): \(error.localizedDescription, privacy: .public)"
                         )
                     }
                 }
             }
-            .fullScreenCover(item: $pendingRecurrenceExtensionTask) { task in
+            .fullScreenCover(
+                item: $pendingRecurrenceExtensionTask,
+                onDismiss: {
+                    AppLogger.persistence.debug(
+                        "[RecurrenceExtension] Extension sheet dismissed"
+                    )
+                }
+            ) { task in
                 RecurrenceSeriesExtensionSheet(task: task)
+                    .onAppear {
+                        AppLogger.persistence.debug(
+                            "[RecurrenceExtension] Extension sheet appeared task=\(task.id.uuidString, privacy: .public)"
+                        )
+                    }
             }
     }
 }
@@ -102,7 +135,10 @@ private struct RecurrenceSeriesExtensionSheet: View {
     }
 
     private var minimumExtensionEndDate: Date {
-        let nextDate = RecurrenceEngine.nextScheduledOccurrenceDate(after: task)
+        let nextDate = RecurrenceEngine.nextScheduledOccurrenceDate(
+            after: task,
+            in: modelContext
+        ) ?? RecurrenceEngine.nextScheduledOccurrenceDate(after: task)
             ?? task.deadLine
             ?? .now
         return Calendar.current.startOfDay(for: nextDate)
@@ -230,6 +266,11 @@ private struct RecurrenceSeriesExtensionSheet: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .onAppear {
+            if Calendar.current.startOfDay(for: extensionEndDate) < minimumExtensionEndDate {
+                extensionEndDate = minimumExtensionEndDate
+            }
+        }
     }
 
     @MainActor

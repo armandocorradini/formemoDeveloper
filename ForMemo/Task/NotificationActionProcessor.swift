@@ -57,6 +57,7 @@ final class NotificationActionProcessor {
             return
         }
 
+        let wasCompleted = task.isCompleted
         task.isCompleted = true
         task.completedAt = .now
         task.snoozeUntil = nil
@@ -65,6 +66,10 @@ final class NotificationActionProcessor {
         do {
             try context.save()
             context.processPendingChanges()
+            RecurrenceCompletionNotice.postIfNeeded(
+                for: task,
+                wasCompleted: wasCompleted
+            )
             NotificationManager.shared.refresh(force: true)
             NotificationCenter.default.post(
                 name: .taskDidChange,

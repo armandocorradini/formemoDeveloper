@@ -211,6 +211,7 @@ func deleteTask(
                 "Unable to synchronize recurrence end date after deleting an occurrence: \(error.localizedDescription)"
             )
         }
+
     } else {
         DeletedFingerprintStore.markDeleted(currentTask)
     }
@@ -456,6 +457,7 @@ func deleteRecurringTaskAndFutureOccurrences(
             "Unable to synchronize recurrence end date after deleting future occurrences: \(error.localizedDescription)"
         )
     }
+
 
     // Shared assets are deleted only after all occurrence links in the
     // selected range have been removed. If another recurrence/task still

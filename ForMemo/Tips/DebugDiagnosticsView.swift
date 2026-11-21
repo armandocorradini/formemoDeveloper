@@ -47,8 +47,8 @@ struct DebugDiagnosticsView: View {
 
                 Text(
                     isRunning
-                        ? "Test \(results.count + 1)/167 — \(currentTestTitle ?? "Preparazione…")"
-                        : "Progressione: \(results.count)/167 test completati"
+                        ? "Test \(results.count + 1)/168 — \(currentTestTitle ?? "Preparazione…")"
+                        : "Progressione: \(results.count)/168 test completati"
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -774,6 +774,7 @@ struct DebugDiagnosticsView: View {
         }
         await runTest("Estensione ricorrenza finita: conteggio e indici") { try testFiniteRecurrenceExtension() }
         await runTest("Ultima occorrenza materializzata: serie finita e illimitata") { try testFinalPlannedOccurrenceDetection() }
+        await runTest("Ricorrenze: storico completato, riattivazione, estensione e cancellazione") { try testRecurrenceCompletedHistoryAndReactivationRules() }
         await runTest("Ricorrenza: propagazione completa dei metadati") { try testRecurrenceMetadataPropagation() }
         await runTest("Rebuild produzione: esclude task completati") { try await testProductionRebuildSkipsCompletedTasks() }
         await runTest("Note: CRUD, contenuto e stato") { try testNoteCRUDAndState() }
@@ -4925,6 +4926,178 @@ struct DebugDiagnosticsView: View {
         }
 
         return "Estensione verificata su store in-memory: le occorrenze esistenti mantengono identità e stato; create #3 e #4; recurrenceCount aggiornato a 4 su tutta la serie."
+    }
+
+    /// Verifica le regole condivise tra proposta di estensione, conferma
+    /// dell'estensione e decisione se una cancellazione debba includere il futuro.
+    /// Tutti i record appartengono a uno store SwiftData in-memory.
+    private func testRecurrenceCompletedHistoryAndReactivationRules() throws -> String {
+        let (container, context) = try makeIsolatedStore()
+        _ = container
+
+        let calendar = Calendar(identifier: .gregorian)
+        let start = calendar.startOfDay(for: Date())
+        guard let day2 = calendar.date(byAdding: .day, value: 1, to: start),
+              let day3 = calendar.date(byAdding: .day, value: 2, to: start),
+              let day4 = calendar.date(byAdding: .day, value: 3, to: start) else {
+            throw DiagnosticFailure.assertion("Impossibile preparare le date sintetiche della ricorrenza.")
+        }
+
+        func makeOccurrence(
+            seriesID: UUID,
+            index: Int,
+            date: Date,
+            completed: Bool,
+            count: Int = 3
+        ) -> TodoTask {
+            let task = TodoTask(
+                title: "DEBUG-ONLY recurrence rule #\(index)",
+                deadLine: date,
+                isCompleted: completed,
+                completedAt: completed ? date : nil
+            )
+            task.isDebugTask = true
+            task.recurrenceID = seriesID
+            task.occurrenceIndex = index
+            task.recurrenceRule = RecurrenceEngine.Rule.daily.rawValue
+            task.recurrenceInterval = 1
+            task.recurrenceStartDate = start
+            task.recurrenceCount = count
+            return task
+        }
+
+        // 1. Le occorrenze completate successive sono storico: non bloccano
+        //    l'estensione e non devono essere considerate futuro attivo in cancellazione.
+        let historicalSeriesID = UUID()
+        let historicalFirst = makeOccurrence(
+            seriesID: historicalSeriesID, index: 1, date: start, completed: false
+        )
+        let historicalSecond = makeOccurrence(
+            seriesID: historicalSeriesID, index: 2, date: day2, completed: true
+        )
+        let historicalThird = makeOccurrence(
+            seriesID: historicalSeriesID, index: 3, date: day3, completed: true
+        )
+        [historicalFirst, historicalSecond, historicalThird].forEach { context.insert($0) }
+
+        guard try !RecurrenceEngine.hasFutureOccurrence(for: historicalFirst, in: context) else {
+            throw DiagnosticFailure.assertion("La cancellazione della prima occorrenza non deve proporre anche il futuro quando tutte le successive sono completate.")
+        }
+        guard try RecurrenceEngine.isFinalPlannedOccurrence(historicalSecond, in: context) else {
+            throw DiagnosticFailure.assertion("Le occorrenze #2 e #3 completate devono consentire di proporre l'estensione da #2.")
+        }
+
+        let preview = try RecurrenceEngine.previewExtension(
+            after: historicalSecond,
+            until: day4,
+            in: context,
+            calendar: calendar
+        )
+        guard preview.additionalOccurrences == 1, !preview.exceedsOperationLimit else {
+            throw DiagnosticFailure.assertion("L'anteprima deve calcolare una sola nuova occorrenza dopo l'ultima già materializzata.")
+        }
+
+        let originalFirstID = historicalFirst.id
+        let originalSecondID = historicalSecond.id
+        let originalThirdID = historicalThird.id
+        let generated = try RecurrenceEngine.extendSeries(
+            after: historicalSecond,
+            by: 1,
+            in: context,
+            calendar: calendar
+        )
+        let historicalSeries = try context.fetch(FetchDescriptor<TodoTask>())
+            .filter { $0.recurrenceID == historicalSeriesID }
+            .sorted { ($0.occurrenceIndex ?? 0) < ($1.occurrenceIndex ?? 0) }
+
+        guard generated.count == 1,
+              historicalSeries.count == 4,
+              historicalSeries.compactMap(\.occurrenceIndex) == [1, 2, 3, 4],
+              Set(historicalSeries.compactMap(\.occurrenceIndex)).count == 4,
+              historicalSeries[0].id == originalFirstID,
+              historicalSeries[1].id == originalSecondID,
+              historicalSeries[2].id == originalThirdID,
+              historicalSeries[1].isCompleted,
+              historicalSeries[2].isCompleted,
+              !historicalSeries[3].isCompleted,
+              historicalSeries[3].deadLine == day4,
+              historicalSeries.allSatisfy({ $0.recurrenceCount == 4 }) else {
+            throw DiagnosticFailure.assertion("L'estensione deve preservare lo storico e le identità, creare soltanto #4 dopo l'indice occupato #3 e sincronizzare recurrenceCount.")
+        }
+
+        // 2. Simula il tempo tra apertura del foglio e conferma: la #3 è
+        //    completata all'apertura, poi viene riattivata dall'utente.
+        let reactivationSeriesID = UUID()
+        let reactivationFirst = makeOccurrence(
+            seriesID: reactivationSeriesID, index: 1, date: start, completed: false
+        )
+        let reactivationSecond = makeOccurrence(
+            seriesID: reactivationSeriesID, index: 2, date: day2, completed: true
+        )
+        let reactivationThird = makeOccurrence(
+            seriesID: reactivationSeriesID, index: 3, date: day3, completed: true
+        )
+        [reactivationFirst, reactivationSecond, reactivationThird].forEach { context.insert($0) }
+
+        guard try !RecurrenceEngine.hasFutureOccurrence(for: reactivationFirst, in: context),
+              try RecurrenceEngine.isFinalPlannedOccurrence(reactivationSecond, in: context) else {
+            throw DiagnosticFailure.assertion("Prima della riattivazione, le occorrenze successive completate non devono bloccare estensione o cancellazione singola.")
+        }
+
+        let racePreview = try RecurrenceEngine.previewExtension(
+            after: reactivationSecond,
+            until: day4,
+            in: context,
+            calendar: calendar
+        )
+        guard racePreview.additionalOccurrences == 1 else {
+            throw DiagnosticFailure.assertion("L'anteprima iniziale dell'estensione non è stata preparata correttamente.")
+        }
+
+        guard try CompletedTaskReactivation.reactivate(reactivationThird, in: context),
+              !reactivationThird.isCompleted,
+              reactivationThird.completedAt == nil else {
+            throw DiagnosticFailure.assertion("La riattivazione dell'occorrenza futura non ha ripristinato lo stato attivo.")
+        }
+
+        guard try RecurrenceEngine.hasFutureOccurrence(for: reactivationFirst, in: context),
+              try !RecurrenceEngine.isFinalPlannedOccurrence(reactivationSecond, in: context) else {
+            throw DiagnosticFailure.assertion("Dopo la riattivazione, l'occorrenza #3 deve tornare a essere futuro attivo e bloccare estensione e cancellazione singola.")
+        }
+
+        let countBeforeRejectedConfirmation = reactivationSecond.recurrenceCount
+        do {
+            _ = try RecurrenceEngine.extendSeries(
+                after: reactivationSecond,
+                by: 1,
+                in: context,
+                calendar: calendar
+            )
+            throw DiagnosticFailure.assertion("La conferma dell'estensione doveva essere rifiutata dopo la riattivazione della #3.")
+        } catch RecurrenceEngine.ExtensionError.notFinalOccurrence {
+            // Esito atteso: la condizione viene ricontrollata al momento della conferma.
+        }
+
+        let reactivationSeries = try context.fetch(FetchDescriptor<TodoTask>())
+            .filter { $0.recurrenceID == reactivationSeriesID }
+        guard reactivationSeries.count == 3,
+              reactivationSeries.compactMap(\.occurrenceIndex).sorted() == [1, 2, 3],
+              reactivationSecond.recurrenceCount == countBeforeRejectedConfirmation else {
+            throw DiagnosticFailure.assertion("Un'estensione rifiutata non deve creare task né modificare i metadati della serie.")
+        }
+
+        // 3. L'ultima occorrenza attiva non ha futuro: la cancellazione deve
+        //    restare singola e non richiedere la scelta 'questa e future'.
+        let lastOnlySeriesID = UUID()
+        let lastOnly = makeOccurrence(
+            seriesID: lastOnlySeriesID, index: 3, date: day3, completed: false
+        )
+        context.insert(lastOnly)
+        guard try !RecurrenceEngine.hasFutureOccurrence(for: lastOnly, in: context) else {
+            throw DiagnosticFailure.assertion("L'ultima occorrenza attiva senza indici successivi non deve essere considerata come avente occorrenze future.")
+        }
+
+        return "Verificate in memoria: completate successive trattate come storico; estensione consentita e generata dopo il massimo indice occupato; riattivazione che ripristina l'eleggibilità come futuro attivo; estensione rifiutata al momento della conferma se la serie cambia; cancellazione singola quando non esistono occorrenze successive attive. Nessun dato persistente dell'app o sveglia AlarmKit modificati."
     }
 
     private func testFinalPlannedOccurrenceDetection() throws -> String {
