@@ -3,6 +3,7 @@ import CryptoKit
 import SwiftData
 import UniformTypeIdentifiers
 import os
+import AlarmKit
 
 struct BackupRestoreView: View {
     @Environment(\.modelContext) private var modelContext
@@ -2973,6 +2974,32 @@ private enum BackupManager {
             name: .taskDidChange,
             object: nil
         )
+
+        // Reconcile AlarmKit immediately after restoring the saved task state.
+        // This mirrors the existing app-activation refresh without restarting the app.
+        let alarmManager = ForMemoAlarmManager.shared
+        if alarmManager.authorizationState() == .authorized {
+            do {
+                let configuredAlarmTasks = try modelContext.fetch(
+                    FetchDescriptor<TodoTask>(
+                        predicate: #Predicate<TodoTask> { $0.alarmEnabled }
+                    )
+                )
+                await alarmManager.restoreMissingConfiguredAlarms(
+                    tasks: configuredAlarmTasks
+                )
+            } catch {
+                AppLogger.notifications.error(
+                    "Failed to fetch configured tasks after backup restore for AlarmKit restoration: \(error.localizedDescription)"
+                )
+            }
+        } else {
+            // Preserve the existing startup/activation behavior when authorization
+            // is unavailable; the manager removes scheduled alarms without changing
+            // the saved alarm preferences on tasks.
+            await alarmManager.restoreMissingConfiguredAlarms(tasks: [])
+        }
+
         NotificationManager.shared.refresh(force: true)
     }
     
