@@ -848,7 +848,7 @@ final class ForMemoAlarmManager {
 
         let snoozeButton = AlarmButton(
             text: LocalizedStringResource(
-                "Alarm.Snooze",
+                "Snooze ",
                 table: "Localizable",
                 bundle: .main
             ),

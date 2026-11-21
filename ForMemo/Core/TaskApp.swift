@@ -53,7 +53,7 @@ struct ForMemoApp: App {
     
     // MARK: - CloudKit Debounce
     
-    private static var lastRemoteChange = Date.distantPast
+    private static var remoteChangeDebounceTask: Task<Void, Never>?
     private static var remoteAssetCleanupTask: Task<Void, Never>?
 
     
@@ -408,47 +408,51 @@ struct ForMemoApp: App {
                     delay: .milliseconds(400)
                 )
 
-                // Every store event extends the trailing debounce. Keep this
-                // outside the heavier-work throttle so the final refresh is not
-                // scheduled from an earlier event in a burst.
+                // Keep lightweight CloudKit-dependent services responsive to
+                // every store event, while coalescing UI and maintenance work.
                 NotificationManager.shared.refreshFromCloudKit()
 
-                let now = Date()
+                // A true trailing debounce: every incoming event cancels and
+                // restarts the pending refresh. The final event in a burst is
+                // therefore guaranteed to schedule one UI refresh.
+                Self.remoteChangeDebounceTask?.cancel()
+                Self.remoteChangeDebounceTask = Task { @MainActor in
+                    do {
+                        try await Task.sleep(for: .milliseconds(600))
+                        try Task.checkCancellation()
+                    } catch {
+                        return
+                    }
 
-                guard now.timeIntervalSince(Self.lastRemoteChange) > 2 else {
-                    return
-                }
-
-                Self.lastRemoteChange = now
-                // 🔥 CloudKit remote change
+                    // 🔥 CloudKit remote change
 #if DEBUG
-                AppLogger.notifications.debug("📡 CloudKit push ricevuto")
+                    AppLogger.notifications.debug("📡 CloudKit remote change settled")
 #endif
 
-                let context = container.mainContext
+                    let context = container.mainContext
 
-                // Local First: a remote deletion removes the SwiftData record,
-                // but does not automatically remove our separately managed
-                // local asset file. Reconcile physical assets only after the
-                // remote change has had time to settle.
-                Self.scheduleRemoteAssetCleanup(context: context)
-                
-                NotificationActionProcessor.shared.processAll(
-                    using: context
-                )
-                VaultAutoFillManager.shared.synchronize(using: context)
+                    // Local First: a remote deletion removes the SwiftData record,
+                    // but does not automatically remove our separately managed
+                    // local asset file. Reconcile physical assets only after the
+                    // remote change has had time to settle.
+                    Self.scheduleRemoteAssetCleanup(context: context)
 
-                // Refresh task lists after SwiftData reports a persistent-store change.
-                NotificationCenter.default.post(
-                    name: .taskDidChange,
-                    object: nil
-                )
+                    NotificationActionProcessor.shared.processAll(
+                        using: context
+                    )
+                    VaultAutoFillManager.shared.synchronize(using: context)
 
-                // ✅ trigger UI
-                NotificationCenter.default.post(
-                    name: .attachmentsShouldRefresh,
-                    object: nil
-                )
+                    // Refresh every task view after the final imported transaction.
+                    NotificationCenter.default.post(
+                        name: .taskDidChange,
+                        object: nil
+                    )
+
+                    NotificationCenter.default.post(
+                        name: .attachmentsShouldRefresh,
+                        object: nil
+                    )
+                }
             }
         }
     }

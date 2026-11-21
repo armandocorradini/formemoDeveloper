@@ -241,6 +241,10 @@ struct TaskDayView: View {   //AGENDA
                 foregroundRefreshDate = .now
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .taskDidChange)) { _ in
+            modelContext.processPendingChanges()
+            foregroundRefreshDate = .now
+        }
         .background(AppGlassBackground())
         .overlay {
             if isDeletingRecurrence {
