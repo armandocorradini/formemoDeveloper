@@ -60,6 +60,10 @@ struct FAQView: View {
                 answer: String(localized:"Set tasks to repeat hourly, daily, weekly, monthly, or yearly. When you create a recurrence, ForMemo creates the selected occurrences as individual tasks. Each occurrence can be completed, edited, rescheduled, or deleted independently. You can define when the recurrence starts, when it ends, or how many occurrences should be created. When you complete the last scheduled occurrence, you can extend the same series by adding more occurrences. The recurrence rule and interval are preserved, and past tasks and their completion status remain unchanged.")
             ),
             FAQItem(
+                question: String(localized:"How do I create a recurring task on multiple days of the week?"),
+                answer: String(localized:"Create a separate weekly recurrence for each day. For example, if you want the same activity to repeat every Wednesday and Sunday, create one weekly recurrence for Wednesday and another for Sunday. Each recurrence has its own schedule, so you can set a different time and reminders for each day.")
+            ),
+            FAQItem(
                 question: String(localized:"Can I extend a recurring series?"),
                 answer: String(localized:"Yes. When you complete the last scheduled occurrence, ForMemo lets you extend the same series by adding more occurrences. You can choose how many additional occurrences to add. The recurrence rule and interval are preserved, and past tasks and their completion status remain unchanged.")
             ),

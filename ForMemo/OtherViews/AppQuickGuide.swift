@@ -17,6 +17,8 @@ struct AppQuickGuide: Identifiable {
 struct AppQuickGuideView: View {
     
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedPage = 0
+    @State private var isFAQPresented = false
     
     // let start: GuideStart
     
@@ -306,6 +308,12 @@ struct AppQuickGuideView: View {
             description: String(localized:"Your appearance preferences, navigation settings, weather options, badge settings and other supported preferences can be included in backups and restored independently from your data."),
             icon: "gearshape.2",
             tint: .gray
+        ),
+        .init(
+            title: String(localized:"Explore the FAQs"),
+            description: String(localized:"Find more information about ForMemo’s features and how to use them. Browse the frequently asked questions for detailed explanations and practical guidance."),
+            icon: "questionmark.circle",
+            tint: .blue
         )
     ]
     
@@ -324,11 +332,10 @@ struct AppQuickGuideView: View {
                     .padding(.vertical, 8)
                     .foregroundStyle(.secondary)
                 
-                TabView {
+                TabView(selection: $selectedPage) {
                     
-                    ForEach(steps.indices, id: \.self) { index in
-                        
-                        let step = steps[index]
+                    ForEach(steps) { step in
+                        let index = steps.firstIndex(where: { $0.id == step.id }) ?? 0
                         
                         VStack(spacing: 16) {
                             
@@ -346,12 +353,27 @@ struct AppQuickGuideView: View {
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(index == steps.count - 1 ? .leading : .center)
                                 .padding(.horizontal, 32)
+
+                            if index == steps.count - 1 {
+                                Button {
+                                    isFAQPresented = true
+                                } label: {
+                                    Label("View FAQs", systemImage: "arrow.up.right")
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 12)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .padding(.horizontal, 40)
+                                .padding(.top, 8)
+                            }
                         }
+                        .tag(index)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 
-                Button("Get Started") {
+                Button("Done") {
                     dismiss()
                 }
                 .font(.headline)
@@ -359,6 +381,11 @@ struct AppQuickGuideView: View {
                 .padding()
                 .padding(.horizontal, 40)
                 .padding(.vertical, 24)
+            }
+        }
+        .sheet(isPresented: $isFAQPresented) {
+            NavigationStack {
+                FAQView()
             }
         }
     }

@@ -81,6 +81,8 @@ struct PendingNotificationInfo: Identifiable {
 struct NotificationView: View {
     
     @State private var pending: [PendingNotificationInfo] = []
+    @State private var searchText = ""
+    @State private var isInfoPresented = false
     @State private var isLoading = true
     @State private var hasLoadedNotifications = false
     @Query private var documents: [DocumentItem]
@@ -110,58 +112,122 @@ struct NotificationView: View {
                 } else {
                     VStack(spacing: 0) {
                         
-                        HStack {
-                            Label(
-                                "\(pending.count)",
-                                systemImage: "bell.badge"
-                            )
-                            .font(.headline)
-                            .padding(.leading, 24)
-                            .foregroundStyle(.blue)
-                            
-                            Spacer()
-                            
-                            Button {
-                                Task {
-                                    await refreshAndReload()
+                        ZStack {
+                            HStack {
+                                Label(
+                                    "\(pending.count)",
+                                    systemImage: "bell.badge"
+                                )
+                                .font(.headline)
+                                .foregroundStyle(.blue)
+
+                                Spacer()
+
+                                Button {
+                                    Task {
+                                        await refreshAndReload()
+                                    }
+                                } label: {
+                                    Image(systemName: "arrow.clockwise")
                                 }
-                            } label: {
-                                Image(systemName: "arrow.clockwise")
+                                .accessibilityLabel(
+                                    String(localized: "Refresh Notifications")
+                                )
                             }
-                            .padding(.trailing, 24)
+                            .padding(.horizontal, 24)
+
+                            Button {
+                                isInfoPresented = true
+                            } label: {
+                                Label(
+                                    String(localized: "Info"),
+                                    systemImage: "info.circle"
+                                )
+                                .font(.subheadline)
+                            }
+                            .buttonStyle(.plain)
+                            .popover(isPresented: $isInfoPresented) {
+                                ScrollView {
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        Text(String(localized: "Upcoming Notifications"))
+                                            .font(.headline)
+
+                                        Text(
+                                            String(
+                                                localized: "These are the next notifications currently scheduled on your device. The time shown below each item indicates when the next alert will appear. Additional reminders, deadlines, and document expiration alerts will be scheduled automatically as needed."
+                                            )
+                                        )
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding()
+                                }
+                                .frame(width: 320, height: 240)
+                                .scrollIndicators(.hidden)
+                                .presentationCompactAdaptation(.popover)
+                            }
                         }
                         .padding(.vertical, 12)
                         .background(.ultraThinMaterial)
-                        
+
+                        HStack(spacing: 10) {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundStyle(.secondary)
+
+                            TextField(
+                                String(localized: "Search"),
+                                text: $searchText
+                            )
+                            .textInputAutocapitalization(.never)
+                            .autocorrectionDisabled()
+
+                            if !searchText.isEmpty {
+                                Button {
+                                    searchText = ""
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityLabel(
+                                    String(localized: "Clear Search")
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(
+                            .thinMaterial,
+                            in: RoundedRectangle(cornerRadius: 12)
+                        )
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+
                         List {
                             Section {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    Text(
-                                        String(localized: "Upcoming Notifications")
-                                    )
-                                    .font(.subheadline.bold())
-                                    
-                                    Text(
-                                        String(
-                                            localized: "These are the next notifications currently scheduled on your device. The time shown below each item indicates when the next alert will appear. Additional reminders, deadlines, and document expiration alerts will be scheduled automatically as needed."
+                                if filteredPending.isEmpty {
+                                    ContentUnavailableView {
+                                        Label(
+                                            String(localized: "No Results"),
+                                            systemImage: "magnifyingglass"
                                         )
-                                    )
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                                    .fixedSize(
-                                        horizontal: false,
-                                        vertical: true
-                                    )
-                                }
-                            }
-                            .listRowBackground(Color.clear)
-                            
-                            Section {
-                                ForEach(pending) { item in
-                                    NotificationRow(
-                                        item: item,
-                                        documents: documents
-                                    )
+                                    } description: {
+                                        Text(
+                                            String(
+                                                localized: "No notifications match your search."
+                                            )
+                                        )
+                                    }
+                                    .listRowBackground(Color.clear)
+                                } else {
+                                    ForEach(filteredPending) { item in
+                                        NotificationRow(
+                                            item: item,
+                                            documents: documents
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -216,6 +282,19 @@ struct NotificationView: View {
         }
     }
     
+    private var filteredPending: [PendingNotificationInfo] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return pending }
+
+        return pending.filter { item in
+            item.title.localizedStandardContains(query)
+                || item.body.localizedStandardContains(query)
+                || item.notificationType.localizedStandardContains(query)
+                || item.identifier.localizedStandardContains(query)
+                || item.categoryIdentifier.localizedStandardContains(query)
+        }
+    }
+
     // MARK: - Date Formatting
     
     private func triggerText(for date: Date?) -> String {
@@ -628,18 +707,22 @@ private struct NotificationRow: View {
         let calendar = Calendar.current
         
         if calendar.isDateInToday(date) {
+            let weekday = date.formatted(
+                .dateTime.weekday(.abbreviated)
+            )
             let time = date.formatted(
                 date: .omitted,
                 time: .shortened
             )
-            
+
             return String(
-                localized: "Today • \(time)"
+                localized: "Today • \(weekday) \(time)"
             )
         }
         
         return date.formatted(
             .dateTime
+                .weekday(.abbreviated)
                 .day()
                 .month(.abbreviated)
                 .year()
@@ -658,18 +741,22 @@ private struct NotificationRow: View {
         let calendar = Calendar.current
         
         if calendar.isDateInToday(date) {
+            let weekday = date.formatted(
+                .dateTime.weekday(.abbreviated)
+            )
             let time = date.formatted(
                 date: .omitted,
                 time: .shortened
             )
-            
+
             return String(
-                localized: "Today • \(time)"
+                localized: "Today • \(weekday) \(time)"
             )
         }
         
         return date.formatted(
             .dateTime
+                .weekday(.abbreviated)
                 .day()
                 .month(.abbreviated)
                 .year()
