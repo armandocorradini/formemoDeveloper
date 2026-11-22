@@ -47,8 +47,8 @@ struct DebugDiagnosticsView: View {
 
                 Text(
                     isRunning
-                        ? "Test \(results.count + 1)/168 — \(currentTestTitle ?? "Preparazione…")"
-                        : "Progressione: \(results.count)/168 test completati"
+                        ? "Test \(results.count + 1)/219 — \(currentTestTitle ?? "Preparazione…")"
+                        : "Progressione: \(results.count)/219 test completati"
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -735,6 +735,31 @@ struct DebugDiagnosticsView: View {
         await runTest("Ricorrenze: limite massimo generazione") { try testRecurrenceGenerationCap() }
         await runTest("Notifiche: ordine e unicità eventi") { try testNotificationEventOrderingAndUniqueness() }
         await runTest("Calcoli ripetuti: stabilità diagnostica") { try testRepeatedDeterministicCalculations() }
+        await runTest("Ricorrenza oraria: intervallo e componenti temporali") { try testHourlyRecurrenceIntervalAndComponents() }
+        await runTest("Ricorrenza giornaliera: conservazione dell'orario locale") { try testDailyRecurrencePreservesWallClockTime() }
+        await runTest("Ricorrenza settimanale: intervallo e giorno della settimana") { try testWeeklyRecurrenceIntervalAndWeekday() }
+        await runTest("Ricorrenza mensile: progressione da fine mese") { try testMonthlyRecurrenceEndOfMonthProgression() }
+        await runTest("Ricorrenza annuale: intervallo pluriennale") { try testYearlyRecurrenceInterval() }
+        await runTest("Ricorrenza: limite massimo esplicito delle date") { try testRecurrenceMaximumDateCountCap() }
+        await runTest("Ricorrenza: limite massimo negativo") { try testRecurrenceNegativeMaximumDateCount() }
+        await runTest("Ricorrenza: conteggio unitario include solo l'ancora") { try testRecurrenceSingleCountIncludesAnchorOnly() }
+        await runTest("Ricorrenza: limite operativo inferiore al conteggio") { try testRecurrenceDateLimitStopsBeforeNextOccurrence() }
+        await runTest("Ricorrenza mensile: intervallo di due mesi") { try testRecurrenceIntervalTwoMonthlyAdvancesCalendarMonths() }
+        await runTest("Notifiche: snooze standard esclusivo") { try testNotificationStandardSnoozeIsExclusive() }
+        await runTest("Notifiche: snooze scaduto non blocca la scadenza") { try testExpiredStandardSnoozeDoesNotSuppressDeadline() }
+        await runTest("Notifiche: esclusione globale conserva gli altri eventi") { try testGlobalNotificationExclusionPreservesOtherEvents() }
+        await runTest("Notifiche: offset reminder zero non duplica la scadenza") { try testZeroReminderOffsetIsExcluded() }
+        await runTest("Notifiche: offset reminder negativo escluso") { try testNegativeReminderOffsetIsExcluded() }
+        await runTest("Notifiche: global e reminder coincidenti restano distinti") { try testGlobalAndReminderSameTimestampRemainDistinct() }
+        await runTest("Notifiche: nextEvent coincide con il primo evento") { try testNextEventMatchesFirstChronologicalEvent() }
+        await runTest("Notifiche: identificativi stabili tra calcoli identici") { try testEventIdentifiersRemainStableAcrossCalculations() }
+        await runTest("AlarmKit: preferenza preservata nella matrice autorizzazione") { try testAlarmPreferencePreservedAcrossAuthorizationMatrix() }
+        await runTest("Notifiche: ordinamento cronologico degli eventi misti") { try testEventOrderingAcrossMixedTypesIsStrictlyChronological() }
+        await runTest("Notifiche: eventi sempre futuri e non oltre la scadenza") {
+            let futureResult = try testEventDatesAreStrictlyFuture()
+            let deadlineResult = try testEventDatesDoNotExceedTaskDeadline()
+            return "\(futureResult) \(deadlineResult)"
+        }
         await runTest("Documenti: commit riuscito prima degli effetti collaterali") {
             try testDocumentSaveCommitSuccess()
         }
@@ -896,6 +921,38 @@ struct DebugDiagnosticsView: View {
         await runTest("AlarmKit: una copia batch obsoleta non deve sovrascrivere la scadenza più recente") { try await testAlarmStaleBatchCannotOverwriteLatestDeadline() }
         await runTest("AlarmKit: una copia individuale obsoleta non deve sovrascrivere la scadenza più recente") { try await testAlarmStaleIndividualCannotOverwriteLatestDeadline() }
         await runTest("AlarmKit: overlap individual/batch con snapshot discordanti e cronologia dettagliata") { try await testAlarmIndividualBatchStaleSnapshotTimeline() }
+
+        // Nuovi test modello, configurazioni e compatibilità.
+        await runTest("Modello task: valori iniziali") { try testTaskDefaultValues() }
+        await runTest("Modello task: round-trip di tutte le priorità") { try testTaskPriorityAllCasesRoundTrip() }
+        await runTest("Modello task: fallback priorità non valida") { try testTaskInvalidPriorityFallback() }
+        await runTest("Modello task: round-trip di tutti i tag") { try testTaskMainTagAllCasesRoundTrip() }
+        await runTest("Modello task: fallback tag non valido") { try testTaskInvalidMainTagFallback() }
+        await runTest("Posizione task: coordinate complete") { try testTaskLocationCoordinateComplete() }
+        await runTest("Posizione task: latitudine mancante") { try testTaskLocationCoordinateMissingLatitude() }
+        await runTest("Posizione task: longitudine mancante") { try testTaskLocationCoordinateMissingLongitude() }
+        await runTest("Ricorrenza task: regola assente") { try testTaskNextRecurrenceMissingRule() }
+        await runTest("Ricorrenza task: intervallo orario") { try testTaskNextRecurrenceHourly() }
+        await runTest("Ricorrenza task: intervallo giornaliero") { try testTaskNextRecurrenceDaily() }
+        await runTest("Ricorrenza task: intervallo settimanale") { try testTaskNextRecurrenceWeekly() }
+        await runTest("Ricorrenza task: intervallo mensile") { try testTaskNextRecurrenceMonthly() }
+        await runTest("Ricorrenza task: intervallo annuale") { try testTaskNextRecurrenceYearly() }
+        await runTest("Ricorrenza task: regola sconosciuta") { try testTaskNextRecurrenceUnknownRule() }
+        await runTest("Promemoria globali: casi selezionabili") { try testNotificationLeadTimeSelectableCases() }
+        await runTest("Promemoria globali: valori validi") { try testNotificationLeadTimeSafeValidValues() }
+        await runTest("Promemoria globali: fallback valori non validi") { try testNotificationLeadTimeInvalidFallback() }
+        await runTest("Promemoria globali: flag nessun anticipo") { try testNotificationLeadTimeNoneFlag() }
+        await runTest("Promemoria globali: identificativi stabili") { try testNotificationLeadTimeIdentity() }
+        await runTest("Impostazioni: round-trip stili sfondo") { try testAppBackgroundStyleCodableRoundTrip() }
+        await runTest("Impostazioni: round-trip pattern sfondo") { try testAppBackgroundPatternCodableRoundTrip() }
+        await runTest("Impostazioni: asset pattern sfondo") { try testAppBackgroundPatternAssetNames() }
+        await runTest("Impostazioni: nomi localizzati pattern") { try testAppBackgroundPatternLocalizedNames() }
+        await runTest("Wallet: round-trip stile visualizzazione") { try testWalletViewStyleCodableRoundTrip() }
+        await runTest("Task: stato senza scadenza") { try testTaskStatusNoDeadline() }
+        await runTest("Task: completamento prevale sulla scadenza") { try testTaskStatusCompletedOverridesDeadline() }
+        await runTest("Task: badge assente senza scadenza") { try testTaskDaysRemainingNoDeadline() }
+        await runTest("Task: badge attività completata") { try testTaskDaysRemainingCompletedBadge() }
+        await runTest("Viaggi: round-trip collezione .fmtrip vuota") { try testFMTripEmptyCollectionRoundTrip() }
 
     }
 
@@ -1125,6 +1182,310 @@ struct DebugDiagnosticsView: View {
 
     /// Ogni test con persistenza usa un database SwiftData in-memory indipendente.
     /// Non viene mai aperto o modificato il ModelContext reale dell'app.
+    private func testTaskDefaultValues() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY defaults")
+
+        // Ogni proprietà viene verificata separatamente per identificare con precisione
+        // l'eventuale default non conforme, senza modificare il modello di produzione.
+        let mismatches: [String] = [
+            task.isCompleted == false ? nil : "isCompleted: atteso false, trovato \(task.isCompleted)",
+            task.completedAt == nil ? nil : "completedAt: atteso nil, trovato \(String(describing: task.completedAt))",
+            task.deadLine == nil ? nil : "deadLine: atteso nil, trovato \(String(describing: task.deadLine))",
+            task.reminderOffsetMinutes == nil ? nil : "reminderOffsetMinutes: atteso nil, trovato \(String(describing: task.reminderOffsetMinutes))",
+            task.excludeGlobalNotification == false ? nil : "excludeGlobalNotification: atteso false, trovato \(task.excludeGlobalNotification)",
+            task.alarmEnabled == false ? nil : "alarmEnabled: atteso false, trovato \(task.alarmEnabled)",
+            task.locationReminderEnabled == false ? nil : "locationReminderEnabled: atteso false, trovato \(task.locationReminderEnabled)",
+            task.recurrenceRule == nil ? nil : "recurrenceRule: atteso nil, trovato \(String(describing: task.recurrenceRule))",
+            task.recurrenceInterval == 1 ? nil : "recurrenceInterval: atteso 1, trovato \(task.recurrenceInterval)",
+            task.recurrenceID == nil ? nil : "recurrenceID: atteso nil, trovato \(String(describing: task.recurrenceID))",
+            task.occurrenceIndex == nil ? nil : "occurrenceIndex: atteso nil, trovato \(String(describing: task.occurrenceIndex))",
+            (task.attachments?.isEmpty ?? true) ? nil : "attachments: atteso vuoto, trovati \(task.attachments?.count ?? 0)"
+        ].compactMap { $0 }
+
+        guard mismatches.isEmpty else {
+            throw DiagnosticFailure.assertion(
+                "Default TodoTask non conformi: " + mismatches.joined(separator: "; ")
+            )
+        }
+
+        return "Tutti i 12 default verificati singolarmente senza persistenza."
+    }
+
+    private func testTaskPriorityAllCasesRoundTrip() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY priority")
+        for priority in TaskPriority.allCases {
+            task.priority = priority
+            guard task.priorityRaw == priority.rawValue, task.priority == priority else {
+                throw DiagnosticFailure.assertion("Round-trip priorità fallito per \(priority.rawValue).")
+            }
+        }
+        return "Tutte le priorità hanno superato il round-trip rawValue."
+    }
+
+    private func testTaskInvalidPriorityFallback() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY invalid priority", priorityRaw: 999)
+        guard task.priority == .none else {
+            throw DiagnosticFailure.assertion("Una priorità raw non valida non ricade su .none.")
+        }
+        return "Il valore raw non riconosciuto ricade su TaskPriority.none."
+    }
+
+    private func testTaskMainTagAllCasesRoundTrip() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY tags")
+        for tag in TaskMainTag.allCases {
+            task.mainTag = tag
+            guard task.mainTagRaw == tag.rawValue, task.mainTag == tag else {
+                throw DiagnosticFailure.assertion("Round-trip tag fallito per \(tag.rawValue).")
+            }
+        }
+        return "Tutti i tag hanno superato il round-trip rawValue."
+    }
+
+    private func testTaskInvalidMainTagFallback() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY invalid tag")
+        task.mainTagRaw = "unknown-debug-tag"
+        guard task.mainTag == nil else {
+            throw DiagnosticFailure.assertion("Un tag non riconosciuto non restituisce nil.")
+        }
+        return "Un tag raw sconosciuto viene ignorato senza crash."
+    }
+
+    private func testTaskLocationCoordinateComplete() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY coordinate", locationLatitude: 44.4949, locationLongitude: 11.3426)
+        guard let coordinate = task.locationCoordinate,
+              abs(coordinate.latitude - 44.4949) < 0.000001,
+              abs(coordinate.longitude - 11.3426) < 0.000001 else {
+            throw DiagnosticFailure.assertion("Le coordinate complete non vengono ricostruite correttamente.")
+        }
+        return "Coordinate complete ricostruite dal modello."
+    }
+
+    private func testTaskLocationCoordinateMissingLatitude() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY coordinate", locationLongitude: 11.3426)
+        guard task.locationCoordinate == nil else {
+            throw DiagnosticFailure.assertion("Coordinate parziali accettate senza latitudine.")
+        }
+        return "Una posizione senza latitudine non produce una coordinata."
+    }
+
+    private func testTaskLocationCoordinateMissingLongitude() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY coordinate", locationLatitude: 44.4949)
+        guard task.locationCoordinate == nil else {
+            throw DiagnosticFailure.assertion("Coordinate parziali accettate senza longitudine.")
+        }
+        return "Una posizione senza longitudine non produce una coordinata."
+    }
+
+    private func testTaskNextRecurrenceMissingRule() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY no recurrence")
+        guard task.nextRecurrenceDate(from: Date(timeIntervalSince1970: 1_800_000_000)) == nil else {
+            throw DiagnosticFailure.assertion("Un task senza regola ha prodotto una ricorrenza.")
+        }
+        return "Un task senza regola non genera una data successiva."
+    }
+
+    private func testTaskNextRecurrenceHourly() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY hourly")
+        task.recurrenceRule = "hourly"
+        task.recurrenceInterval = 3
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        guard task.nextRecurrenceDate(from: start) == start.addingTimeInterval(10_800) else {
+            throw DiagnosticFailure.assertion("La ricorrenza oraria non aggiunge tre ore.")
+        }
+        return "Intervallo orario di tre ore verificato."
+    }
+
+    private func testTaskNextRecurrenceDaily() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY daily")
+        task.recurrenceRule = "daily"
+        task.recurrenceInterval = 2
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        guard task.nextRecurrenceDate(from: start) == Calendar.current.date(byAdding: .day, value: 2, to: start) else {
+            throw DiagnosticFailure.assertion("La ricorrenza giornaliera non aggiunge due giorni.")
+        }
+        return "Intervallo giornaliero di due giorni verificato."
+    }
+
+    private func testTaskNextRecurrenceWeekly() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY weekly")
+        task.recurrenceRule = "weekly"
+        task.recurrenceInterval = 2
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        guard task.nextRecurrenceDate(from: start) == Calendar.current.date(byAdding: .weekOfYear, value: 2, to: start) else {
+            throw DiagnosticFailure.assertion("La ricorrenza settimanale non aggiunge due settimane.")
+        }
+        return "Intervallo settimanale di due settimane verificato."
+    }
+
+    private func testTaskNextRecurrenceMonthly() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY monthly")
+        task.recurrenceRule = "monthly"
+        task.recurrenceInterval = 3
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        guard task.nextRecurrenceDate(from: start) == Calendar.current.date(byAdding: .month, value: 3, to: start) else {
+            throw DiagnosticFailure.assertion("La ricorrenza mensile non aggiunge tre mesi.")
+        }
+        return "Intervallo mensile di tre mesi verificato."
+    }
+
+    private func testTaskNextRecurrenceYearly() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY yearly")
+        task.recurrenceRule = "yearly"
+        task.recurrenceInterval = 2
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        guard task.nextRecurrenceDate(from: start) == Calendar.current.date(byAdding: .year, value: 2, to: start) else {
+            throw DiagnosticFailure.assertion("La ricorrenza annuale non aggiunge due anni.")
+        }
+        return "Intervallo annuale di due anni verificato."
+    }
+
+    private func testTaskNextRecurrenceUnknownRule() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY unknown recurrence")
+        task.recurrenceRule = "unknown"
+        guard task.nextRecurrenceDate(from: Date(timeIntervalSince1970: 1_800_000_000)) == nil else {
+            throw DiagnosticFailure.assertion("Una regola sconosciuta ha prodotto una data.")
+        }
+        return "Una regola di ricorrenza sconosciuta viene rifiutata."
+    }
+
+    private func testNotificationLeadTimeSelectableCases() throws -> String {
+        let expected = [-1, 1, 2, 3, 4, 5, 6, 7]
+        guard NotificationLeadTime.selectableCases.map(\.rawValue) == expected else {
+            throw DiagnosticFailure.assertion("L'elenco dei lead time selezionabili è cambiato o non è ordinato.")
+        }
+        return "Gli otto valori selezionabili del promemoria globale sono presenti nell'ordine previsto."
+    }
+
+    private func testNotificationLeadTimeSafeValidValues() throws -> String {
+        for value in NotificationLeadTime.selectableCases.map(\.rawValue) {
+            guard NotificationLeadTime(safeRawValue: value).rawValue == value else {
+                throw DiagnosticFailure.assertion("Il valore valido \(value) non viene preservato.")
+            }
+        }
+        return "Tutti i valori validi NotificationLeadTime sono preservati."
+    }
+
+    private func testNotificationLeadTimeInvalidFallback() throws -> String {
+        for value in [0, -2, 8, 99, Int.min, Int.max] {
+            guard NotificationLeadTime(safeRawValue: value) == .oneDay else {
+                throw DiagnosticFailure.assertion("Il valore non valido \(value) non ricade su .oneDay.")
+            }
+        }
+        return "Valori fuori dominio ricondotti al fallback compatibile di un giorno."
+    }
+
+    private func testNotificationLeadTimeNoneFlag() throws -> String {
+        guard NotificationLeadTime.none.isNone,
+              !NotificationLeadTime.oneDay.isNone,
+              !NotificationLeadTime.sevenDays.isNone else {
+            throw DiagnosticFailure.assertion("La proprietà isNone non distingue correttamente il valore none.")
+        }
+        return "La proprietà isNone è coerente con i casi limite."
+    }
+
+    private func testNotificationLeadTimeIdentity() throws -> String {
+        guard NotificationLeadTime.selectableCases.allSatisfy({ $0.id == $0.rawValue }) else {
+            throw DiagnosticFailure.assertion("L'identificativo del lead time non coincide con rawValue.")
+        }
+        return "Gli identificativi dei casi coincidono con i valori persistibili."
+    }
+
+    private func testAppBackgroundStyleCodableRoundTrip() throws -> String {
+        for style in [AppBackgroundStyle.system, .gradient, .theme] {
+            let data = try JSONEncoder().encode(style)
+            let decoded = try JSONDecoder().decode(AppBackgroundStyle.self, from: data)
+            guard decoded == style else {
+                throw DiagnosticFailure.assertion("Round-trip AppBackgroundStyle fallito per \(style.rawValue).")
+            }
+        }
+        return "Tutti gli stili di sfondo superano il round-trip Codable."
+    }
+
+    private func testAppBackgroundPatternCodableRoundTrip() throws -> String {
+        for pattern in [AppBackgroundPattern.none, AppBackgroundPattern.time, AppBackgroundPattern.essential, AppBackgroundPattern.organizer, AppBackgroundPattern.geometric, AppBackgroundPattern.notes, AppBackgroundPattern.flow, AppBackgroundPattern.minimal, AppBackgroundPattern.balanced, AppBackgroundPattern.dense, AppBackgroundPattern.packed, AppBackgroundPattern.saturated, AppBackgroundPattern.sea, AppBackgroundPattern.mountain, AppBackgroundPattern.countryside, AppBackgroundPattern.space, AppBackgroundPattern.solarsystem, AppBackgroundPattern.blackhole, AppBackgroundPattern.pets, AppBackgroundPattern.alice, AppBackgroundPattern.love] {
+            let data = try JSONEncoder().encode(pattern)
+            let decoded = try JSONDecoder().decode(AppBackgroundPattern.self, from: data)
+            guard decoded == pattern else {
+                throw DiagnosticFailure.assertion("Round-trip AppBackgroundPattern fallito per \(pattern.rawValue).")
+            }
+        }
+        return "Tutti i pattern di sfondo superano il round-trip Codable."
+    }
+
+    private func testAppBackgroundPatternAssetNames() throws -> String {
+        guard AppBackgroundPattern.none.assetName == nil else {
+            throw DiagnosticFailure.assertion("Il pattern none non deve avere un asset.")
+        }
+        for pattern in [AppBackgroundPattern.none, AppBackgroundPattern.time, AppBackgroundPattern.essential, AppBackgroundPattern.organizer, AppBackgroundPattern.geometric, AppBackgroundPattern.notes, AppBackgroundPattern.flow, AppBackgroundPattern.minimal, AppBackgroundPattern.balanced, AppBackgroundPattern.dense, AppBackgroundPattern.packed, AppBackgroundPattern.saturated, AppBackgroundPattern.sea, AppBackgroundPattern.mountain, AppBackgroundPattern.countryside, AppBackgroundPattern.space, AppBackgroundPattern.solarsystem, AppBackgroundPattern.blackhole, AppBackgroundPattern.pets, AppBackgroundPattern.alice, AppBackgroundPattern.love] where pattern != AppBackgroundPattern.none {
+            guard let name = pattern.assetName, !name.isEmpty else {
+                throw DiagnosticFailure.assertion("Asset mancante per il pattern \(pattern.rawValue).")
+            }
+        }
+        return "I pattern diversi da none espongono un nome asset non vuoto."
+    }
+
+    private func testAppBackgroundPatternLocalizedNames() throws -> String {
+        for pattern in [AppBackgroundPattern.none, AppBackgroundPattern.time, AppBackgroundPattern.essential, AppBackgroundPattern.organizer, AppBackgroundPattern.geometric, AppBackgroundPattern.notes, AppBackgroundPattern.flow, AppBackgroundPattern.minimal, AppBackgroundPattern.balanced, AppBackgroundPattern.dense, AppBackgroundPattern.packed, AppBackgroundPattern.saturated, AppBackgroundPattern.sea, AppBackgroundPattern.mountain, AppBackgroundPattern.countryside, AppBackgroundPattern.space, AppBackgroundPattern.solarsystem, AppBackgroundPattern.blackhole, AppBackgroundPattern.pets, AppBackgroundPattern.alice, AppBackgroundPattern.love] {
+            guard !pattern.localizedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                throw DiagnosticFailure.assertion("Nome localizzato vuoto per \(pattern.rawValue).")
+            }
+        }
+        return "Tutti i pattern espongono una chiave/nome localizzato non vuoto."
+    }
+
+    private func testWalletViewStyleCodableRoundTrip() throws -> String {
+        for style in [WalletViewStyle.list, .cards] {
+            let data = try JSONEncoder().encode(style)
+            let decoded = try JSONDecoder().decode(WalletViewStyle.self, from: data)
+            guard decoded == style else {
+                throw DiagnosticFailure.assertion("Round-trip WalletViewStyle fallito per \(style.rawValue).")
+            }
+        }
+        return "Gli stili Wallet list e cards superano il round-trip Codable."
+    }
+
+    private func testTaskStatusNoDeadline() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY status no deadline")
+        guard task.status.icon == "sleep.circle.fill" else {
+            throw DiagnosticFailure.assertion("Il task senza scadenza non usa l'icona prevista.")
+        }
+        return "Stato visivo del task senza scadenza verificato."
+    }
+
+    private func testTaskStatusCompletedOverridesDeadline() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY completed status", deadLine: Date(timeIntervalSince1970: 1_700_000_000), isCompleted: true)
+        guard task.status.icon == "checkmark.circle.fill" else {
+            throw DiagnosticFailure.assertion("Lo stato completato non prevale sulla scadenza passata.")
+        }
+        return "Lo stato completato prevale sulla scadenza scaduta."
+    }
+
+    private func testTaskDaysRemainingNoDeadline() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY no deadline badge")
+        guard task.daysRemainingBadgeText == nil else {
+            throw DiagnosticFailure.assertion("Un task senza scadenza mostra un badge giorni.")
+        }
+        return "Nessun badge temporale per task senza scadenza."
+    }
+
+    private func testTaskDaysRemainingCompletedBadge() throws -> String {
+        let task = TodoTask(title: "DEBUG-ONLY completed badge", deadLine: Date(), isCompleted: true)
+        guard task.daysRemainingBadgeText == "✓" else {
+            throw DiagnosticFailure.assertion("Il task completato non mostra il badge previsto.")
+        }
+        return "Il badge dei task completati è verificato."
+    }
+
+    private func testFMTripEmptyCollectionRoundTrip() throws -> String {
+        let payload = FMTripCollectionPayload(lists: [])
+        let data = try JSONEncoder().encode(payload)
+        let decoded = try JSONDecoder().decode(FMTripCollectionPayload.self, from: data)
+        guard decoded.lists.isEmpty else {
+            throw DiagnosticFailure.assertion("Una collezione .fmtrip vuota non viene preservata.")
+        }
+        return "Collezione .fmtrip vuota codificata e decodificata correttamente."
+    }
+
     private func makeIsolatedStore() throws -> (ModelContainer, ModelContext) {
         let schema = Schema([
             TodoTask.self,
@@ -3772,6 +4133,266 @@ struct DebugDiagnosticsView: View {
 
     /// Verifica soltanto il calcolo puro degli eventi successivi di un task.
     /// Non descrive la regola della coda globale e non modifica notifiche di sistema.
+    // MARK: - Additional deterministic edge-case diagnostics
+
+    private func testHourlyRecurrenceIntervalAndComponents() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 15, hour: 8, minute: 17, second: 23))!
+        let dates = RecurrenceEngine.occurrenceDates(startDate: start, rule: .hourly, interval: 3, limit: .count(4), calendar: calendar)
+        guard dates.count == 4 else { throw DiagnosticFailure.assertion("Attese quattro date orarie; ottenute \(dates.count).") }
+        for (index, date) in dates.enumerated() {
+            let c = calendar.dateComponents([.hour, .minute, .second], from: date)
+            let expectedHour = (8 + index * 3) % 24
+            guard c.hour == expectedHour, c.minute == 17, c.second == 23 else {
+                throw DiagnosticFailure.assertion("Ricorrenza oraria #\(index + 1): componenti inattese \(c).")
+            }
+        }
+        return "Quattro occorrenze orarie ogni tre ore; minuti e secondi dell'ancora preservati."
+    }
+
+    private func testDailyRecurrencePreservesWallClockTime() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let start = calendar.date(from: DateComponents(year: 2026, month: 2, day: 27, hour: 6, minute: 42, second: 11))!
+        let dates = RecurrenceEngine.occurrenceDates(startDate: start, rule: .daily, interval: 2, limit: .count(5), calendar: calendar)
+        guard dates.count == 5,
+              dates.allSatisfy({
+                  let c = calendar.dateComponents([.hour, .minute, .second], from: $0)
+                  return c.hour == 6 && c.minute == 42 && c.second == 11
+              }) else {
+            throw DiagnosticFailure.assertion("La ricorrenza giornaliera non ha mantenuto l'orario dell'ancora.")
+        }
+        return "Cinque date giornaliere a intervallo di due giorni con orario locale invariato."
+    }
+
+    private func testWeeklyRecurrenceIntervalAndWeekday() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 7, hour: 9, minute: 30))!
+        let dates = RecurrenceEngine.occurrenceDates(startDate: start, rule: .weekly, interval: 2, limit: .count(6), calendar: calendar)
+        guard dates.count == 6 else { throw DiagnosticFailure.assertion("Attese sei occorrenze settimanali; ottenute \(dates.count).") }
+        let weekdays = dates.map { calendar.component(.weekday, from: $0) }
+        let gaps = zip(dates, dates.dropFirst()).map { calendar.dateComponents([.day], from: $0.0, to: $0.1).day ?? -1 }
+        guard weekdays.allSatisfy({ $0 == weekdays[0] }), gaps.allSatisfy({ $0 == 14 }) else {
+            throw DiagnosticFailure.assertion("Intervallo settimanale non coerente: weekday=\(weekdays), giorni=\(gaps).")
+        }
+        return "Sei occorrenze ogni due settimane; giorno della settimana e intervallo di 14 giorni verificati."
+    }
+
+    private func testMonthlyRecurrenceEndOfMonthProgression() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 31, hour: 10, minute: 15))!
+        let dates = RecurrenceEngine.occurrenceDates(startDate: start, rule: .monthly, interval: 1, limit: .count(6), calendar: calendar)
+        guard dates.count == 6,
+              zip(dates, dates.dropFirst()).allSatisfy({ $0.0 < $0.1 }) else {
+            throw DiagnosticFailure.assertion("Progressione mensile da fine mese non valida: \(dates.count) date.")
+        }
+        var expected = start
+        for index in 1..<dates.count {
+            expected = calendar.date(byAdding: .month, value: 1, to: expected)!
+            guard dates[index] == expected else {
+                throw DiagnosticFailure.assertion("La data #\(index + 1) non segue la semantica mensile iterativa del calendario.")
+            }
+        }
+        return "Progressione mensile da 31 gennaio confrontata con l'aggiunta calendariale iterativa, senza salti o riordinamenti."
+    }
+
+    private func testYearlyRecurrenceInterval() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let start = calendar.date(from: DateComponents(year: 2024, month: 5, day: 12, hour: 14, minute: 5))!
+        let dates = RecurrenceEngine.occurrenceDates(startDate: start, rule: .yearly, interval: 3, limit: .count(5), calendar: calendar)
+        guard dates.count == 5 else { throw DiagnosticFailure.assertion("Attese cinque occorrenze annuali; ottenute \(dates.count).") }
+        let years = dates.map { calendar.component(.year, from: $0) }
+        guard years == [2024, 2027, 2030, 2033, 2036] else {
+            throw DiagnosticFailure.assertion("Anni generati non corretti: \(years).")
+        }
+        return "Intervallo annuale di tre anni verificato su cinque occorrenze."
+    }
+
+    private func testRecurrenceMaximumDateCountCap() throws -> String {
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        let dates = RecurrenceEngine.occurrenceDates(startDate: start, rule: .daily, interval: 1, limit: .unlimited, maximumDateCount: 7)
+        guard dates.count == 7 else { throw DiagnosticFailure.assertion("Il limite massimo locale 7 ha prodotto \(dates.count) date.") }
+        return "Il parametro maximumDateCount limita esattamente a sette le date generate, anche con limite illimitato."
+    }
+
+    private func testRecurrenceNegativeMaximumDateCount() throws -> String {
+        let dates = RecurrenceEngine.occurrenceDates(startDate: Date(), rule: .daily, interval: 1, limit: .unlimited, maximumDateCount: -4)
+        guard dates.isEmpty else { throw DiagnosticFailure.assertion("Un massimo negativo ha prodotto \(dates.count) date.") }
+        return "Un massimo negativo viene normalizzato a zero e non genera occorrenze."
+    }
+
+    private func testRecurrenceSingleCountIncludesAnchorOnly() throws -> String {
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        let dates = RecurrenceEngine.occurrenceDates(startDate: start, rule: .weekly, interval: 1, limit: .count(1))
+        guard dates == [start] else { throw DiagnosticFailure.assertion("count(1) deve includere soltanto l'ancora; ottenute \(dates.count) date.") }
+        return "count(1) include la data iniziale e non crea date future."
+    }
+
+    private func testRecurrenceDateLimitStopsBeforeNextOccurrence() throws -> String {
+        let start = Date(timeIntervalSince1970: 1_800_000_000)
+        let dates = RecurrenceEngine.occurrenceDates(startDate: start, rule: .daily, interval: 1, limit: .count(4), maximumDateCount: 3)
+        guard dates.count == 3, dates.first == start else {
+            throw DiagnosticFailure.assertion("Il limite più restrittivo non è stato rispettato: \(dates.count) date.")
+        }
+        return "Il limite operativo più restrittivo prevale sul conteggio richiesto senza produrre una data sentinella."
+    }
+
+    private func testRecurrenceIntervalTwoMonthlyAdvancesCalendarMonths() throws -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let start = calendar.date(from: DateComponents(year: 2026, month: 1, day: 15, hour: 11))!
+        let dates = RecurrenceEngine.occurrenceDates(startDate: start, rule: .monthly, interval: 2, limit: .count(5), calendar: calendar)
+        guard dates.count == 5 else { throw DiagnosticFailure.assertion("Attese cinque date bimestrali; ottenute \(dates.count).") }
+        let months = dates.map { calendar.component(.month, from: $0) }
+        let years = dates.map { calendar.component(.year, from: $0) }
+        guard Array(zip(years, months).map { $0.0 * 12 + $0.1 }) == [2026 * 12 + 1, 2026 * 12 + 3, 2026 * 12 + 5, 2026 * 12 + 7, 2026 * 12 + 9] else {
+            throw DiagnosticFailure.assertion("Mesi generati non coerenti con intervallo 2: \(years)-\(months).")
+        }
+        return "Intervallo mensile di due mesi verificato attraverso cinque occorrenze."
+    }
+
+    private func testNotificationStandardSnoozeIsExclusive() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let task = TodoTask(title: "DEBUG-ONLY standard snooze", deadLine: now.addingTimeInterval(86_400), reminderOffsetMinutes: 30)
+        task.snoozeUntil = now.addingTimeInterval(900)
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        guard events.count == 1, events.first?.type == "snooze", events.first?.date == task.snoozeUntil else {
+            throw DiagnosticFailure.assertion("Lo snooze standard non è esclusivo: \(events.map(\.type)).")
+        }
+        return "Uno snooze standard attivo sostituisce tutti gli altri eventi del task."
+    }
+
+    private func testExpiredStandardSnoozeDoesNotSuppressDeadline() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let deadline = now.addingTimeInterval(86_400)
+        let task = TodoTask(title: "DEBUG-ONLY expired snooze", deadLine: deadline)
+        task.snoozeUntil = now.addingTimeInterval(-60)
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .none)
+        guard events.count == 1, events.first?.type == "deadline", events.first?.date == deadline else {
+            throw DiagnosticFailure.assertion("Uno snooze scaduto ha alterato gli eventi: \(events.map(\.type)).")
+        }
+        return "Uno snooze standard già scaduto viene ignorato e la scadenza ordinaria resta programmabile."
+    }
+
+    private func testGlobalNotificationExclusionPreservesOtherEvents() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let deadline = now.addingTimeInterval(10 * 86_400)
+        let task = TodoTask(title: "DEBUG-ONLY excluded global", deadLine: deadline, reminderOffsetMinutes: 120)
+        task.excludeGlobalNotification = true
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        let types = Set(events.map(\.type))
+        guard !types.contains("global"), types.contains("reminder"), types.contains("deadline") else {
+            throw DiagnosticFailure.assertion("Esclusione globale ha alterato eventi non correlati: \(types).")
+        }
+        return "L'esclusione della notifica globale rimuove solo global e conserva reminder e deadline."
+    }
+
+    private func testZeroReminderOffsetIsExcluded() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let deadline = now.addingTimeInterval(86_400)
+        let task = TodoTask(title: "DEBUG-ONLY zero reminder", deadLine: deadline, reminderOffsetMinutes: 0)
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .none)
+        guard events.count == 1, events.first?.type == "deadline" else {
+            throw DiagnosticFailure.assertion("Il reminder a offset zero non deve duplicare la deadline: \(events.map(\.type)).")
+        }
+        return "Un reminder con offset zero non genera un secondo evento coincidente con la scadenza."
+    }
+
+    private func testNegativeReminderOffsetIsExcluded() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let task = TodoTask(title: "DEBUG-ONLY negative reminder", deadLine: now.addingTimeInterval(86_400), reminderOffsetMinutes: -15)
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .none)
+        guard events.count == 1, events.first?.type == "deadline" else {
+            throw DiagnosticFailure.assertion("Un reminder negativo non deve essere programmato dopo la scadenza: \(events.map(\.type)).")
+        }
+        return "Un offset negativo non crea un reminder successivo alla scadenza."
+    }
+
+    private func testGlobalAndReminderSameTimestampRemainDistinct() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let deadline = now.addingTimeInterval(10 * 86_400)
+        let task = TodoTask(title: "DEBUG-ONLY equal event dates", deadLine: deadline, reminderOffsetMinutes: 3 * 24 * 60)
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        let sameDate = events.filter { $0.date == deadline.addingTimeInterval(-3 * 86_400) }
+        guard sameDate.count == 2, Set(sameDate.map(\.type)) == Set(["global", "reminder"]), Set(sameDate.map(\.id)).count == 2 else {
+            throw DiagnosticFailure.assertion("Eventi coincidenti non distinti correttamente: \(sameDate.map(\.type)).")
+        }
+        return "Global e reminder alla stessa data restano due eventi distinti con identificativi differenti."
+    }
+
+    private func testNextEventMatchesFirstChronologicalEvent() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let task = TodoTask(title: "DEBUG-ONLY next event projection", deadLine: now.addingTimeInterval(8 * 86_400), reminderOffsetMinutes: 60)
+        let all = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        let next = NotificationManager.TaskEventCalculator.nextEvent(for: task, now: now, lead: .threeDays)
+        guard let first = all.first, let next, first.id == next.id, first.date == next.date, first.type == next.type else {
+            throw DiagnosticFailure.assertion("nextEvent non coincide con il primo elemento di allEvents.")
+        }
+        return "nextEvent restituisce esattamente il primo evento della sequenza cronologica completa."
+    }
+
+    private func testEventIdentifiersRemainStableAcrossCalculations() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let task = TodoTask(title: "DEBUG-ONLY stable event identifiers", deadLine: now.addingTimeInterval(9 * 86_400), reminderOffsetMinutes: 90)
+        let first = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        let second = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        guard first.map(\.id) == second.map(\.id), first.map(\.type) == second.map(\.type), first.map(\.date) == second.map(\.date) else {
+            throw DiagnosticFailure.assertion("Ricalcoli identici hanno prodotto eventi o identificativi differenti.")
+        }
+        return "Due calcoli con identici input restituiscono date, tipi e identificativi identici."
+    }
+
+    private func testAlarmPreferencePreservedAcrossAuthorizationMatrix() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let deadline = now.addingTimeInterval(86_400)
+        let task = TodoTask(title: "DEBUG-ONLY alarm preference matrix", deadLine: deadline)
+        task.alarmEnabled = true
+        let authorized = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .none, alarmAuthorizationAvailable: true)
+        let unavailable = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .none, alarmAuthorizationAvailable: false)
+        guard authorized.map(\.type) == ["alarmBadge"], unavailable.map(\.type) == ["deadline"], task.alarmEnabled else {
+            throw DiagnosticFailure.assertion("La matrice autorizzazione ha alterato la preferenza o generato eventi errati.")
+        }
+        return "La preferenza Alarm resta attiva in entrambi gli scenari; cambia soltanto il tipo di evento generato."
+    }
+
+    private func testEventOrderingAcrossMixedTypesIsStrictlyChronological() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let task = TodoTask(title: "DEBUG-ONLY mixed chronological events", deadLine: now.addingTimeInterval(12 * 86_400), reminderOffsetMinutes: 2 * 24 * 60)
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        guard events.count == 3, zip(events, events.dropFirst()).allSatisfy({ $0.0.date <= $0.1.date }) else {
+            throw DiagnosticFailure.assertion("Sequenza mista non ordinata o incompleta: \(events.map(\.type)).")
+        }
+        guard events.map(\.type).contains("global"), events.map(\.type).contains("reminder"), events.map(\.type).contains("deadline") else {
+            throw DiagnosticFailure.assertion("La sequenza mista non contiene global, reminder e deadline.")
+        }
+        return "Sequenza con tre tipi di evento verificata in ordine cronologico crescente."
+    }
+
+    private func testEventDatesAreStrictlyFuture() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let task = TodoTask(title: "DEBUG-ONLY future event boundary", deadLine: now.addingTimeInterval(3 * 86_400), reminderOffsetMinutes: 60)
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        guard events.allSatisfy({ $0.date > now }) else {
+            throw DiagnosticFailure.assertion("È stato generato un evento al presente o nel passato: \(events.map(\.date)).")
+        }
+        return "Tutti gli eventi generati sono strettamente successivi all'istante di riferimento."
+    }
+
+    private func testEventDatesDoNotExceedTaskDeadline() throws -> String {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let deadline = now.addingTimeInterval(7 * 86_400)
+        let task = TodoTask(title: "DEBUG-ONLY event deadline upper bound", deadLine: deadline, reminderOffsetMinutes: 60)
+        let events = NotificationManager.TaskEventCalculator.allEvents(for: task, now: now, lead: .threeDays)
+        guard events.allSatisfy({ $0.date <= deadline }) else {
+            throw DiagnosticFailure.assertion("È stato generato un evento oltre la scadenza.")
+        }
+        return "Nessun evento globale, reminder o deadline supera la scadenza del task."
+    }
+
     private func testNextEventProgression() throws -> String {
         let calendar = Calendar.current
         let now = Date()
@@ -10901,3 +11522,4 @@ private extension Duration {
     }
 }
 #endif
+
