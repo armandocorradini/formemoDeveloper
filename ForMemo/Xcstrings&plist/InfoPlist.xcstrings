@@ -243,31 +243,31 @@
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo verwendet Ihren Standort im Hintergrund, um Wettervorhersagen bereitzustellen und Sie zu benachrichtigen, wenn Sie einen gespeicherten Aufgabenort erreichen."
+            "value" : "ForMemo verwendet Ihren Standort im Hintergrund, um Sie zu benachrichtigen, wenn Sie einen gespeicherten Aufgabenort erreichen.\n"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo uses your location in the background to provide weather forecasts and notify you when you arrive at a saved task location."
+            "value" : "ForMemo uses your location in the background to notify you when you arrive at a saved task location."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo utiliza tu ubicación en segundo plano para proporcionar previsiones meteorológicas y avisarte cuando llegues a una ubicación guardada de una tarea."
+            "value" : "ForMemo utiliza tu ubicación en segundo plano para avisarte cuando llegues a una ubicación guardada de una tarea."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo utilise votre position en arrière-plan pour fournir des prévisions météo et vous avertir lorsque vous arrivez à l’emplacement enregistré d’une tâche."
+            "value" : "ForMemo utilise votre position en arrière-plan pour vous avertir lorsque vous arrivez à l’emplacement enregistré d’une tâche."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ForMemo utilizza la tua posizione in background per fornire previsioni meteo e notificarti quando arrivi in una posizione salvata di un’attività."
+            "value" : "ForMemo utilizza la tua posizione in background per notificarti quando arrivi in una posizione salvata di un’attività."
           }
         }
       }

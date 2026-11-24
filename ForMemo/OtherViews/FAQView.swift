@@ -25,11 +25,11 @@ struct FAQView: View {
         FAQSection(title: String(localized: "General"), items: [
             FAQItem(
                 question: String(localized:"What features does this app offer?"),
-                answer: String(localized:"ForMemo lets you create, organize, and manage tasks and notes in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. At the due time, you can choose whether to receive a notification or an alarm. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards and tickets, with barcode and QR code scanning and quick access to your saved items.\n\nYou can create and manage Checklists, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nWeather forecasts are integrated, including detailed weekly and hourly views to help you plan your activities.\n\nComplete backup and restore is available, including tasks, reminders, attachments, cards, tickets, checklists, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data stays on your device (or iCloud, if enabled). No account required and no tracking.")
+                answer: String(localized:"ForMemo lets you create, organize, and manage tasks and notes in a simple and intuitive way.\n\nYou can quickly create tasks, even with Siri. Attachments (photos, documents, audio) can be added directly within the app.\n\nWhen you set a due date, the app automatically schedules a notification: at the due time or in advance (from 1 to 7 days), based on your settings. At the due time, you can choose whether to receive a notification or an alarm. You can also add a custom reminder and a location-based notification.\n\nWith reminders, you can choose when to be notified or, using Siri, let them be set automatically.\n\nYou can associate a location with a task and receive a notification when you arrive, with the option to open navigation apps to reach it.\n\nThe app offers customization options, light and dark mode, and different viewing layouts.\n\nYou can import tasks from Calendar, Apple Reminders, or CSV files, and export them to Calendar, CSV, or ICS format.\n\nThe app also includes a Wallet section for loyalty cards and tickets, with barcode and QR code scanning and quick access to your saved items.\n\nYou can create and manage Checklists, and keep track of important documents and their expiration dates in the Documents section. You can attach photos, documents, PDFs, audio recordings, and scanned pages directly to tasks.\n\nComplete backup and restore is available, including tasks, reminders, attachments, cards, tickets, checklists, documents, and app settings.\n\nAvailable in English, Italian, French, German, and Spanish.\n\nYour data is stored on your device and may be synchronized through your personal iCloud account when iCloud synchronization is enabled. ForMemo does not require a separate account and does not use advertising tracking. Location-based reminders continue to use Apple location services.")
             ),
             FAQItem(
                 question: String(localized:"What is the Dashboard?"),
-                answer: String(localized:"The Dashboard gives you a quick overview of what needs your attention. It highlights overdue tasks, tasks due today, upcoming activities, weather forecasts, and recently opened items from Wallet, Documents, and Checklists, helping you access important information from a single screen.")
+                answer: String(localized:"The Dashboard gives you a quick overview of what needs your attention. It highlights overdue tasks, tasks due today, upcoming activities, and recently opened items from Wallet, Documents, and Checklists, helping you access important information from a single screen.")
             ),
             FAQItem(
                 question: String(localized:"What is the Overview?"),
@@ -49,7 +49,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Does the app work offline?"),
-                answer: String(localized:"Most features work offline. Weather forecasts, cloud synchronization, and some online services require an internet connection.")
+                answer: String(localized:"Most features work offline. Cloud synchronization and some online services require an internet connection.")
+            ),
+            FAQItem(
+                question: String(localized:"Why are weather forecasts no longer available?"),
+                answer: String(localized:"Weather forecasts have been removed from ForMemo to avoid sending your location coordinates to an external weather provider. Location-based reminders are still available and continue to use Apple location services.")
             ),
             FAQItem(
                 question: String(localized:"Can I organize checklists?"),
@@ -66,22 +70,6 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"Can I extend a recurring series?"),
                 answer: String(localized:"Yes. When you complete the last scheduled occurrence, ForMemo lets you extend the same series by adding more occurrences. You can choose how many additional occurrences to add. The recurrence rule and interval are preserved, and past tasks and their completion status remain unchanged.")
-            ),
-            FAQItem(
-                question: String(localized:"Does the app include weather forecasts?"),
-                answer: String(localized:"Yes. ForMemo can display weather forecasts directly inside task views and weekly planning views to help you organize your activities more easily. Tap the weather info to open the detailed weekly weather forecast view.")
-            ),
-            FAQItem(
-                question: String(localized:"Can I view hourly weather conditions?"),
-                answer: String(localized:"Yes. The detailed forecast view includes weather conditions throughout the day to help you better plan your activities.")
-            ),
-            FAQItem(
-                question: String(localized:"Why is weather information different from other weather apps?"),
-                answer: String(localized:"Weather data is provided by Open-Meteo. Different weather providers may use different forecasting models and update schedules.")
-            ),
-            FAQItem(
-                question: String(localized:"Do weather forecasts require location access?"),
-                answer: String(localized:"Yes. Weather forecasts depend on your device location. If location access is disabled, weather information may not be available.")
             ),
             FAQItem(
                 question: String(localized:"Does the app include a Wallet for cards and tickets?"),
@@ -247,10 +235,6 @@ struct FAQView: View {
                 question: String(localized:"Can I open navigation apps from a task?"),
                 answer: String(localized:"Yes. Tasks with a saved location can be opened directly in supported navigation apps.")
             ),
-            FAQItem(
-                question: String(localized:"Why is weather information not visible?"),
-                answer: String(localized:"Weather information requires location access. Make sure location permissions are enabled and weather forecasts are activated in app settings.")
-            )
         ]),
 
         // MARK: - SIRI & AUTOMATIONS
@@ -297,10 +281,6 @@ struct FAQView: View {
             FAQItem(
                 question: String(localized:"Can I import notes?"),
                 answer: String(localized:"Yes. Notes can be imported from Apple Notes using the supported import feature.")
-            ),
-            FAQItem(
-                question: String(localized:"Are Notes included in backups?"),
-                answer: String(localized:"Yes. Notes are included in supported backups and can be restored together with other compatible data.")
             ),
             FAQItem(
                 question: String(localized:"Are Notes synchronized with iCloud?"),
@@ -389,7 +369,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized: "How is Vault content protected?"),
-                answer: String(localized: "Sensitive Vault information is encrypted. Access to the Vault and password visibility may require Face ID, Touch ID, or your device passcode. ForMemo does not receive or store biometric data.")
+                answer: String(localized: "Vault passwords, PINs, and custom secret labels and values are encrypted using AES-GCM. Descriptive information such as titles, categories, usernames, email addresses, websites, notes, and tags is not encrypted by this Vault encryption. Access to the Vault and password visibility may require Face ID, Touch ID, or your device passcode. ForMemo does not receive or store biometric data.")
             ),
             FAQItem(
                 question: String(localized: "How do I use AutoFill?"),
@@ -407,7 +387,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized: "Are Vault credentials included in backups?"),
-                answer: String(localized: "Yes. When a backup includes Vault data, you create a password that is required to restore the Vault on a device. Keep this password safe: it cannot be recovered by ForMemo.")
+                answer: String(localized: "Yes. When a backup includes Vault data, you create a password that protects the encrypted package containing the Vault encryption key. This password is required to restore the Vault on a device, but it does not encrypt the entire backup file. Keep this password safe: it cannot be recovered by ForMemo.")
             ),
             FAQItem(
                 question: String(localized: "Can I restore only Vault data from a backup?"),
@@ -415,7 +395,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized: "Can I recover a forgotten Vault backup password?"),
-                answer: String(localized: "No. For security reasons, ForMemo cannot recover or reset the password used to restore Vault data from a backup.")
+                answer: String(localized: "No. For security reasons, ForMemo cannot recover or reset the password used to unlock the encrypted Vault key package in a backup.")
             ),
             FAQItem(
                 question: String(localized: "Can I import credentials into the Vault?"),
@@ -452,10 +432,18 @@ struct FAQView: View {
                 )
             ),
             FAQItem(
+                question: String(localized: "Can I export Vault credentials?"),
+                answer: String(localized: "Where available, ForMemo supports exporting credentials through Apple's credential exchange technologies. The fields transferred depend on the source and destination apps and the supported exchange format. Custom fields, notes, or all metadata may not be included. Check the exported result and protect the exported file as sensitive information.")
+            ),
+            FAQItem(
+                question: String(localized: "Does credential export include every custom field?"),
+                answer: String(localized: "Not necessarily. Credential exchange transfers only the fields supported by the exchange format and the participating apps. Always review the exported credentials before relying on the transfer.")
+            ),
+            FAQItem(
                 question: String(localized: "Are imported passwords encrypted?"),
                 answer: String(localized:
             """
-            Yes. As soon as credentials are imported into the Vault, they are securely encrypted before being stored.
+            Passwords, PINs, and custom secret labels and values are encrypted using AES-GCM when stored in the Vault. Descriptive information such as usernames, email addresses, websites, titles, and notes is not encrypted by this Vault encryption.
             """
                 )
             ),
@@ -470,6 +458,24 @@ struct FAQView: View {
         ]),
 
         // MARK: - DATA
+        FAQSection(title: String(localized: "Important Information"), items: [
+            FAQItem(
+                question: String(localized: "Is ForMemo free?"),
+                answer: String(localized: "Yes. ForMemo is a personal, non-commercial project provided free of charge. It has no advertising, subscriptions, in-app purchases, donations, or profit-making purpose.")
+            ),
+            FAQItem(
+                question: String(localized: "Can I rely on ForMemo for emergencies or critical activities?"),
+                answer: String(localized: "No. ForMemo must not be used for emergencies or critical activities, or as the sole means of monitoring health, medication, personal safety, security, dependent persons or animals, or deadlines where a missed, delayed, or inaccurate alert could cause harm. Use dedicated and, where required, certified systems.")
+            ),
+            FAQItem(
+                question: String(localized: "Does the developer provide support or recover lost data?"),
+                answer: String(localized: "The developer can be contacted by email, but does not provide professional support, guaranteed response times, or a personal data recovery service. The developer does not retain copies of users' backups and cannot restore data stored only on a user's device, personal iCloud account, or chosen storage location. Keep independent backups.")
+            ),
+            FAQItem(
+                question: String(localized: "Will ForMemo always be updated and available?"),
+                answer: String(localized: "No future updates or permanent availability are promised. As a personal project, development, maintenance, updates, or distribution may be discontinued, subject to applicable law and obligations that cannot be excluded.")
+            )
+        ]),
         FAQSection(title: String(localized: "Data & Recovery"), items: [
             FAQItem(
                 question: String(localized:"What is Recently Deleted?"),
@@ -501,11 +507,11 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Can I restore backups on another device?"),
-                answer: String(localized:"Yes. You can import a backup file on another compatible device to restore your tasks, cards, tickets, attachments, checklists, documents, and related data.")
+                answer: String(localized:"Yes. You can import a backup file on another compatible device to restore supported data, which may include tasks, notes, reminders, recurrence rules, attachments, cards, tickets, checklists, documents, Vault data, and app settings. The result depends on backup contents, app compatibility, and the integrity of the backup file.")
             ),
             FAQItem(
                 question: String(localized:"Can I restore only specific data from a backup?"),
-                answer: String(localized:"Yes. During restore, you can choose which sections to restore, such as tasks, cards, tickets, Checklists, documents, and app settings. This allows you to recover only the data you need without restoring everything.")
+                answer: String(localized:"Yes. During restore, you can choose among the supported data categories included in the backup, such as tasks, notes, reminders, attachments, cards, tickets, checklists, documents, Vault data, and app settings. The available choices depend on the backup contents and compatibility.")
             ),
             FAQItem(
                 question: String(localized:"Can I transfer my data to another device?"),
@@ -521,7 +527,7 @@ struct FAQView: View {
             ),
             FAQItem(
                 question: String(localized:"Are app settings included in backups?"),
-                answer: String(localized:"Yes. Backups can include app settings such as appearance preferences, navigation preferences, weather settings, badge options, attachment management settings, and other supported preferences. During restore, app settings can be restored separately from your data.")
+                answer: String(localized:"Yes. Backups can include app settings such as appearance preferences, navigation preferences, badge options, attachment management settings, and other supported preferences. During restore, app settings can be restored separately from your data.")
             )
         ])
     ]

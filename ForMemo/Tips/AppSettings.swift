@@ -221,7 +221,6 @@ final class AppSettings {
         taskWeekDays = defaults.object(forKey: "TaskWeekDays") as? Int ?? 3
         startupTab = defaults.object(forKey: "startupTab") as? Int ?? 1
         notificationLeadTimeDays = defaults.object(forKey: "notificationLeadTimeDays") as? Int ?? 1
-        showWeatherForecast = defaults.object(forKey: "showWeatherForecast") as? Bool ?? true
         tabOrder = Self.normalizedTabOrder(
             defaults.array(forKey: "tabOrder") as? [Int] ?? AppTab.defaultOrder.map(\.rawValue)
         )
@@ -535,15 +534,6 @@ final class AppSettings {
         }
     }
     
-    var showWeatherForecast: Bool {
-        didSet {
-            UserDefaults.standard.set(
-                showWeatherForecast,
-                forKey: "showWeatherForecast"
-            )
-        }
-    }
-
     var showVault: Bool {
         didSet {
             UserDefaults.standard.set(
@@ -842,7 +832,6 @@ final class AppSettings {
         taskWeekDays = 3
         startupTab = 1
         notificationLeadTimeDays = 1
-        showWeatherForecast = true
         showVault = true
         showDashboardTab = true
         showSearchTab = true

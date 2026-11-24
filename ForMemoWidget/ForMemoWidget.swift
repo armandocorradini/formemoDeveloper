@@ -144,13 +144,6 @@ struct ForMemoWidgetEntryView: View {
         family == .systemSmall || family == .systemMedium
     }
 
-    private var weatherAvailable: Bool {
-        guard let snapshot = entry.snapshot else { return false }
-        return snapshot.weatherSymbolName != nil
-            && snapshot.weatherMinTemperature != nil
-            && snapshot.weatherMaxTemperature != nil
-    }
-
     var body: some View {
         widgetContent
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -237,29 +230,6 @@ struct ForMemoWidgetEntryView: View {
 
             Spacer(minLength: 2)
 
-            if weatherAvailable,
-               let symbol = entry.snapshot?.weatherSymbolName,
-               let minimum = entry.snapshot?.weatherMinTemperature,
-               let maximum = entry.snapshot?.weatherMaxTemperature {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Image(systemName: symbol)
-                        .symbolRenderingMode(.multicolor)
-                        .font(.system(size: family == .systemSmall ? 17 : 20))
-
-                    HStack(spacing: 3) {
-                        Text("\(minimum)°")
-                            .foregroundStyle(.secondary)
-                        Text("/")
-                            .foregroundStyle(.tertiary)
-                        Text("\(maximum)°")
-                            .foregroundStyle(.primary)
-                    }
-                    .font(.system(size: family == .systemSmall ? 9 : 10, weight: .medium))
-                    .monospacedDigit()
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                }
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

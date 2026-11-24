@@ -1,5 +1,4 @@
 import SwiftUI
-import CoreLocation
 import SwiftData
 import os
 
@@ -7,7 +6,6 @@ struct TaskTabView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var sizeClass
     @Environment(AppSettings.self) private var settings
-    @Environment(\.scenePhase) private var scenePhase
 
 //    @Query private var tasks: [TodoTask]
 //    @Query private var documents: [DocumentItem]
@@ -35,7 +33,6 @@ struct TaskTabView: View {
     @State private var vaultPath = NavigationPath()
     @State private var TripsPath = NavigationPath()
     @State private var documentsPath = NavigationPath()
-    @State private var weatherPath = NavigationPath()
     @State private var settingsPath = NavigationPath()
     @State private var notesPath = NavigationPath()
     @StateObject private var noteEditorCoordinator = NoteEditorCoordinator()
@@ -49,8 +46,6 @@ struct TaskTabView: View {
                 GlobalSearchView(noteEditorCoordinator: noteEditorCoordinator)
             }
             .onAppear {
-                syncWeatherLocationPermission()
-
                 selectedTab = 0
 
 
@@ -150,11 +145,6 @@ struct TaskTabView: View {
                     selectedTab = previousTab == 11 ? 10 : previousTab
                 }
             }
-            .onChange(of: settings.showWeatherForecast) { _, enabled in
-                if !enabled && selectedTab == AppTab.forecast.rawValue {
-                    selectedTab = fallbackVisibleTab()
-                }
-            }
             .onChange(of: settings.showDashboardTab) { _, enabled in
                 if !enabled && selectedTab == AppTab.dashboard.rawValue {
                     selectedTab = fallbackVisibleTab()
@@ -180,17 +170,6 @@ struct TaskTabView: View {
                     selectedTab = fallbackVisibleTab()
                 }
             }
-            .onReceive(
-                NotificationCenter.default.publisher(for: .locationPermissionChanged)
-            ) { _ in
-                syncWeatherLocationPermission()
-            }
-            .onChange(of: scenePhase) { _, newPhase in
-                if newPhase == .active {
-                    syncWeatherLocationPermission()
-                }
-            }
-        
             .onChange(of: settings.showVault) { _, enabled in
                 if !enabled && selectedTab == AppTab.vault.rawValue {
                     selectedTab = fallbackVisibleTab()
@@ -566,11 +545,6 @@ struct TaskTabView: View {
             }
         case 15:
             GlobalSearchView(noteEditorCoordinator: noteEditorCoordinator)
-        case 9:
-            NavigationStack(path: $weatherPath) {
-                WeatherForecastView()
-            }
-            
         case 2:
             NavigationStack(path: $settingsPath) {
                 SettingsView()
@@ -756,19 +730,6 @@ struct TaskTabView: View {
         selectTab(visibleTabs[nextIndex].rawValue)
     }
 
-    private func syncWeatherLocationPermission() {
-        let status = CLLocationManager().authorizationStatus
-        let hasWeatherPermission =
-            status == .authorizedAlways || status == .authorizedWhenInUse
-
-        guard !hasWeatherPermission else {
-            return
-        }
-
-        settings.showWeatherForecast = false
-        WeatherManager.shared.locationPermissionWasRevoked()
-    }
-
     private func resetTab(_ tab: Int) {
         
         switch tab {
@@ -829,11 +790,6 @@ struct TaskTabView: View {
             if !documentsPath.isEmpty {
                 documentsPath = NavigationPath()
             }
-        case 9:
-            if !weatherPath.isEmpty {
-                weatherPath = NavigationPath()
-            }
-            
         case 2:
             if !settingsPath.isEmpty {
                 settingsPath = NavigationPath()

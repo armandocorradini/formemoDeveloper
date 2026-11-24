@@ -2,8 +2,6 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 import Observation
-import WeatherKit
-import CoreLocation
 import os
 
 extension Notification.Name {
@@ -86,14 +84,6 @@ struct TaskListView: View {
   @State private var draftTask: TodoTask?
     @State private var completedQuery: [TodoTask] = []
     
-  private struct SelectedWeatherDay: Identifiable {
-
-    let date: Date
-
-    var id: Date { date }
-
-  }
-
   @State private var searchText = ""
 
   @State private var debouncedSearchText = ""
@@ -103,10 +93,6 @@ struct TaskListView: View {
   @State private var showNewTask = false
 
   @State private var showQuickGuide = false
-
-  @State private var showWeatherForecast = false
-
-  @State private var selectedWeatherDay: SelectedWeatherDay?
 
   @State private var selectedTagFilter: TaskTagFilter = .all
 
@@ -1711,9 +1697,6 @@ struct TaskListView: View {
             } else {
                 TodoSectionView(
                     taskPendingDeletion: $taskPendingDeletion,
-                    openWeatherForecast: { date in
-                        selectedWeatherDay = SelectedWeatherDay(date: date)
-                    },
                     tasks: filteredTodoTasksCache,
                     activeTaskCount: activeTaskCount,
                     modelContext: modelContext,
@@ -2028,28 +2011,6 @@ struct TaskListView: View {
             )
 
         .navigationBarTitleDisplayMode(.inline)
-
-        .sheet(item: $selectedWeatherDay) { selectedDay in
-
-          NavigationStack {
-
-            WeatherDayView(
-
-              date: selectedDay.date,
-
-              showsCloseButton: true,
-
-              closeAction: {
-
-                selectedWeatherDay = nil
-
-              }
-
-            )
-
-          }
-
-        }
 
         .sheet(
             item: $draftTask,
@@ -3173,85 +3134,7 @@ struct TodoSectionView: View {
 
   @Environment(AppSettings.self) private var settings
 
-  @Environment(\.colorScheme) private var colorScheme
-
-  @State private var weatherManager = WeatherManager.shared
-
-  @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
-
     
-  @ViewBuilder
-
-  private func weatherCapsuleView(
-
-    weather: DailyWeatherInfo,
-
-    isTodayGroup: Bool
-
-  ) -> some View {
-
-    HStack(spacing: 7) {
-
-      Image(systemName: isTodayGroup
-
-         ? weatherManager.representativeSymbol(for: weather.date)
-
-         : weather.symbolName)
-
-        .symbolRenderingMode(.multicolor)
-
-        .saturation(colorScheme == .light ? 1.25 : 1.0)
-
-        .brightness(colorScheme == .light ? -0.2 : 0.0)
-
-        .font(.subheadline.weight(.medium))
-
-      Text("\(weather.minTemperature)°")
-
-        .font(.caption.weight(.medium))
-
-        .foregroundStyle(
-
-          weather.minTemperature >= 35 ? .red :
-
-          weather.minTemperature >= 30 ? .orange :
-
-          weather.minTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
-
-          .primary.opacity(0.55)
-
-        )
-
-        .monospacedDigit()
-
-      Text("/")
-
-        .font(.caption2.weight(.medium))
-
-        .foregroundStyle(.secondary.opacity(0.6))
-
-      Text("\(weather.maxTemperature)°")
-
-        .font(.caption.weight(.semibold))
-
-        .foregroundStyle(
-
-          weather.maxTemperature >= 35 ? .red :
-
-          weather.maxTemperature >= 30 ? .orange :
-
-          weather.maxTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
-
-          .primary.opacity(0.90)
-
-        )
-
-        .monospacedDigit()
-
-    }
-
-  }
-
   @ViewBuilder
 
   private func groupedHeaderView(
@@ -3261,8 +3144,6 @@ struct TodoSectionView: View {
   ) -> some View {
 
     if let title = group.relativeTitle {
-
-      let _ = weatherManager.refreshID
 
       let isTodayGroup = Calendar.current.isDateInToday(group.date)
 
@@ -3293,37 +3174,6 @@ struct TodoSectionView: View {
               .glassEffect(.clear)
 
           }
-
-        Spacer(minLength: 0)
-
-        if (locationAuthorizationStatus == .authorizedAlways
-
-          || locationAuthorizationStatus == .authorizedWhenInUse),
-
-         let weather = weatherManager.weather(for: group.date) {
-
-          Button {
-
-            openWeatherForecast(group.date)
-
-          } label: {
-
-            // Patch: use representative symbol for today, else weather.symbolName
-
-            weatherCapsuleView(
-
-              weather: weather,
-
-              isTodayGroup: isTodayGroup
-
-            )
-
-          }
-
-          .buttonStyle(.plain)
-
-        }
-
       }
 
       .padding(.horizontal, 14)
@@ -3452,7 +3302,6 @@ struct TodoSectionView: View {
 
   @Binding var taskPendingDeletion: TodoTask?
 
-    let openWeatherForecast: (Date) -> Void
     let tasks: [TodoTask]
     let activeTaskCount: Int
     let modelContext: ModelContext
@@ -3772,21 +3621,6 @@ struct TodoSectionView: View {
 
     .task {
       rebuildGroupedTasksCache()
-
-      DispatchQueue.main.asyncAfter(
-
-        deadline: .now() + 15
-
-      ) {
-
-        Task {
-
-          await weatherManager.refreshIfNeeded()
-
-        }
-
-      }
-
     }
 
     .onChange(of: tasks) { _, _ in
@@ -3802,22 +3636,6 @@ struct TodoSectionView: View {
       guard signature != groupedTasksSignature else { return }
       rebuildGroupedTasksCache()
     }
-
-    .onReceive(
-
-      NotificationCenter.default.publisher(
-
-        for: .locationPermissionChanged
-
-      )
-
-    ) { _ in
-
-      locationAuthorizationStatus = CLLocationManager().authorizationStatus
-
-    }
-
-
   }
 
   @MainActor

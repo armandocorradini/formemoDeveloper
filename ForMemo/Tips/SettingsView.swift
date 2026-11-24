@@ -190,8 +190,6 @@ struct SettingsView: View {
             return String(localized: "Notes")
         case AppTab.map.rawValue:
             return String(localized: "Map")
-        case AppTab.forecast.rawValue:
-            return String(localized: "Weather Forecast")
         case AppTab.vault.rawValue:
             return String(localized: "Vault")
         default:
@@ -1063,22 +1061,6 @@ Attivazione: \(triggerInfo)
                                 OpenSourceLicensesView()
                             }
 
-                        VStack(alignment: .leading, spacing: 6) {
-                            Link(destination: URL(string: "https://open-meteo.com/")!) {
-                                Label {
-                                    Text("Weather Data")
-                                        .tint(.blue)
-                                } icon: {
-                                    Image(systemName: "cloud.sun")
-                                        .foregroundStyle(.blue)
-                                }
-                            }
-//                            .foregroundStyle(.primary)
-
-                            Text("Weather data provided by Open-Meteo.")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
                     } header: {
                         Text("About")
                     }
@@ -1236,12 +1218,6 @@ Attivazione: \(triggerInfo)
             status == .authorizedAlways
         settings.locationRemindersEnabled = hasPermission
 
-        let hasWeatherPermission =
-            status == .authorizedAlways || status == .authorizedWhenInUse
-        if !hasWeatherPermission {
-            settings.showWeatherForecast = false
-            WeatherManager.shared.locationPermissionWasRevoked()
-        }
     }
     
     private func handleLocationReminderToggle(_ newValue: Bool) {
@@ -1395,7 +1371,6 @@ Attivazione: \(triggerInfo)
 struct TabVisibilitySettingsView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(\.dismiss) private var dismiss
-    @State private var showWeatherPermissionAlert = false
     @State private var showAutoFillDisableAlert = false
     @State private var showStartupTabVisibilityAlert = false
     @State private var startupTabVisibilityAlertName = ""
@@ -1455,25 +1430,6 @@ struct TabVisibilitySettingsView: View {
                         set: { updateTabVisibility($0, tag: AppTab.agenda.rawValue) { settings.showDayTab = $0 } }
                     )) {
                         tabLabel("Agenda", icon: "book.pages")
-                    }
-                }
-
-                startupProtectedToggle(tag: AppTab.forecast.rawValue) {
-                    Toggle(isOn: Binding(
-                        get: { settings.showWeatherForecast },
-                        set: { updateTabVisibility($0, tag: AppTab.forecast.rawValue) { updateWeatherVisibility(to: $0) } }
-                    )) {
-                        tabLabel("Weather Forecast", icon: "cloud.sun")
-                    }
-                    .alert("Location Access Required", isPresented: $showWeatherPermissionAlert) {
-                        Button("Open Settings") {
-                            if let url = URL(string: UIApplication.openSettingsURLString) {
-                                UIApplication.shared.open(url)
-                            }
-                        }
-                        Button("Cancel", role: .cancel) {}
-                    } message: {
-                        Text("Weather Forecast requires location access. Enable location access in Settings, then return to ForMemo to turn it on.")
                     }
                 }
 
@@ -1586,30 +1542,9 @@ struct TabVisibilitySettingsView: View {
         case AppTab.today.rawValue: return String(localized: "\(settings.taskWeekDays) days")
         case AppTab.map.rawValue: return String(localized: "Map")
         case AppTab.agenda.rawValue: return String(localized: "Agenda")
-        case AppTab.forecast.rawValue: return String(localized: "Weather Forecast")
         case AppTab.vault.rawValue: return String(localized: "Vault")
         default: return String(localized: "Tab")
         }
-    }
-
-    private func updateWeatherVisibility(to isVisible: Bool) {
-        guard isVisible else {
-            settings.showWeatherForecast = false
-            WeatherManager.shared.disableForecast()
-            return
-        }
-
-        let status = CLLocationManager().authorizationStatus
-        let hasWeatherPermission = status == .authorizedAlways || status == .authorizedWhenInUse
-        guard hasWeatherPermission else {
-            settings.showWeatherForecast = false
-            WeatherManager.shared.disableForecast()
-            showWeatherPermissionAlert = true
-            return
-        }
-
-        settings.showWeatherForecast = true
-        Task { await WeatherManager.shared.refresh() }
     }
 
     private func updateVaultVisibility(to isVisible: Bool) {

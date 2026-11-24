@@ -91,18 +91,11 @@ extension TaskWidgetSnapshotStore {
                     )
                 }
 
-            let weather = WeatherManager.shared.weather(for: now)
-            let weatherSymbolName = weather.map {_ in 
-                WeatherManager.shared.representativeSymbol(for: now)
-            }
 
             let snapshot = TaskWidgetSnapshot(
                 generatedAt: now,
                 tasks: snapshotTasks,
-                overduePreviousDaysCount: overduePreviousDaysCount,
-                weatherSymbolName: weatherSymbolName,
-                weatherMinTemperature: weather?.minTemperature,
-                weatherMaxTemperature: weather?.maxTemperature
+                overduePreviousDaysCount: overduePreviousDaysCount
             )
 
             guard let defaults = UserDefaults(
@@ -121,15 +114,6 @@ extension TaskWidgetSnapshotStore {
                 if existingSnapshot.overduePreviousDaysCount != snapshot.overduePreviousDaysCount {
                     changedFields.append("overduePreviousDaysCount")
                 }
-                if existingSnapshot.weatherSymbolName != snapshot.weatherSymbolName {
-                    changedFields.append("weatherSymbolName")
-                }
-                if existingSnapshot.weatherMinTemperature != snapshot.weatherMinTemperature {
-                    changedFields.append("weatherMinTemperature")
-                }
-                if existingSnapshot.weatherMaxTemperature != snapshot.weatherMaxTemperature {
-                    changedFields.append("weatherMaxTemperature")
-                }
 
                 guard !changedFields.isEmpty else {
                     return
@@ -147,58 +131,6 @@ extension TaskWidgetSnapshotStore {
         } catch {
             #if DEBUG
             print("ForMemo widget snapshot update failed: \(error)")
-            #endif
-        }
-    }
-}
-
-extension TaskWidgetSnapshotStore {
-    /// Updates only the weather fields in the existing shared snapshot.
-    /// Task data remains unchanged; if no snapshot exists yet, the regular
-    /// context-based refresh will populate it when available.
-    @MainActor
-    static func updateWeather(
-        symbolName: String?,
-        minTemperature: Int?,
-        maxTemperature: Int?
-    ) {
-        guard
-            let defaults = UserDefaults(suiteName: appGroupID),
-            let data = defaults.data(forKey: "todayTasksSnapshot")
-        else {
-            return
-        }
-
-        do {
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-            let existingSnapshot = try decoder.decode(TaskWidgetSnapshot.self, from: data)
-
-            // Weather refreshes can be frequent; do not persist or reload timelines
-            // when the values already displayed by the widgets are unchanged.
-            guard existingSnapshot.weatherSymbolName != symbolName
-                    || existingSnapshot.weatherMinTemperature != minTemperature
-                    || existingSnapshot.weatherMaxTemperature != maxTemperature else {
-                return
-            }
-
-            let updatedSnapshot = TaskWidgetSnapshot(
-                generatedAt: existingSnapshot.generatedAt,
-                tasks: existingSnapshot.tasks,
-                overduePreviousDaysCount: existingSnapshot.overduePreviousDaysCount,
-                weatherSymbolName: symbolName,
-                weatherMinTemperature: minTemperature,
-                weatherMaxTemperature: maxTemperature
-            )
-
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            defaults.set(try encoder.encode(updatedSnapshot), forKey: "todayTasksSnapshot")
-            WidgetCenter.shared.reloadTimelines(ofKind: "ForMemoWidget")
-            WidgetCenter.shared.reloadTimelines(ofKind: "ForMemoAgendaWidget")
-        } catch {
-            #if DEBUG
-            print("ForMemo widget weather snapshot update failed: \(error)")
             #endif
         }
     }

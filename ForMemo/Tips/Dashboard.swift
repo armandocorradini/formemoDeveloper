@@ -4,13 +4,11 @@ import os
 
 struct Dashboard: View {
     @Environment(AppSettings.self) private var settings
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.modelContext) private var modelContext
     @State private var selectedTask: TodoTask?
     @State private var selectedTrip: TripList?
     @State private var selectedDocument: DocumentItem?
     @State private var selectedLoyaltyCard: LoyaltyCard?
-    @State private var selectedWeatherDate: Date?
     @State private var selectedNote: Note?
     @State private var creationSheet: DashboardCreationSheet?
     @State private var draftTask: TodoTask?
@@ -31,8 +29,6 @@ struct Dashboard: View {
     @State private var dashboardTomorrowTasks: [TodoTask] = []
     @State private var dashboardTomorrowTasksCount = 0
     
-    
-    private let weatherManager = WeatherManager.shared
     
     private enum DashboardCreationSheet: String, Identifiable {
         case checklist
@@ -368,17 +364,6 @@ struct Dashboard: View {
         }
     }
     
-    private var todayWeatherIcon: some View {
-        let symbol = weatherManager.representativeSymbol(for: .now)
-        let saturation: Double = colorScheme == .light ? 1.25 : 1.0
-        let brightness: Double = colorScheme == .light ? -0.2 : 0.0
-
-        return Image(systemName: symbol)
-            .symbolRenderingMode(.multicolor)
-            .saturation(saturation)
-            .brightness(brightness)
-            .font(.title.weight(.medium))
-    }
 
     var body: some View {
         ZStack {
@@ -403,58 +388,8 @@ struct Dashboard: View {
                             HStack(alignment: .top) {
                                 Text("Today")
                                     .font(.title.bold())
-                                
+
                                 Spacer()
-                                
-                                if settings.showWeatherForecast {
-                                    Group {
-                                        if let weather = weatherManager.weather(for: Date()) {
-                                            VStack(alignment: .trailing, spacing: 4) {
-                                                Button {
-                                                    selectedWeatherDate = .now
-                                                } label: {
-                                                    todayWeatherIcon
-                                                }
-                                                .buttonStyle(.plain)
-                                                
-                                                HStack(spacing: 4) {
-                                                    Text("\(weather.minTemperature)°")
-                                                        .foregroundStyle(
-                                                            weather.minTemperature >= 35 ? .red :
-                                                                weather.minTemperature >= 30 ? .orange :
-                                                                weather.minTemperature <= 0
-                                                            ? Color(
-                                                                red: 0.65,
-                                                                green: 0.88,
-                                                                blue: 1.00
-                                                            )
-                                                            : .primary.opacity(0.75)
-                                                        )
-                                                    
-                                                    Text("/")
-                                                        .foregroundStyle(.secondary)
-                                                    
-                                                    Text("\(weather.maxTemperature)°")
-                                                        .foregroundStyle(
-                                                            weather.maxTemperature >= 35 ? .red :
-                                                                weather.maxTemperature >= 30 ? .orange :
-                                                                weather.maxTemperature <= 0
-                                                            ? Color(
-                                                                red: 0.65,
-                                                                green: 0.88,
-                                                                blue: 1.00
-                                                            )
-                                                            : .primary
-                                                        )
-                                                }
-                                                .font(.caption)
-                                            }
-                                        } else {
-                                            Color.clear
-                                        }
-                                    }
-                                    .frame(width: 60, height: 48, alignment: .topTrailing)
-                                }
                             }
                             .foregroundStyle(.primary)
                             
@@ -538,34 +473,7 @@ struct Dashboard: View {
                                     
                                     Spacer()
                                     
-                                    if settings.showWeatherForecast,
-                                       let tomorrowDate = Calendar.current.date(
-                                        byAdding: .day,
-                                        value: 1,
-                                        to: Date()
-                                       ),
-                                       let tomorrowWeather = weatherManager.weather(
-                                        for: tomorrowDate
-                                       ) {
-                                        
-                                        HStack(spacing: 5) {
-                                            let tomorrowSymbol = weatherManager.representativeSymbol(
-                                                for: tomorrowDate
-                                            )
-                                            Image(systemName: tomorrowSymbol)
-                                            .symbolRenderingMode(.multicolor)
-                                            .font(.subheadline)
-                                            
-                                            Text("\(tomorrowWeather.minTemperature)°")
-                                                .foregroundStyle(.secondary)
-                                            
-                                            Text("/")
-                                                .foregroundStyle(.secondary)
-                                            
-                                            Text("\(tomorrowWeather.maxTemperature)°")
-                                        }
-                                        .font(.caption)
-                                    }
+
                                 }
                                 
                                 Text(tomorrowScheduledTasksText)
@@ -628,7 +536,6 @@ struct Dashboard: View {
                 refreshContinueItems()
                 refreshTodayDashboard()
                 refreshTomorrowDashboard()
-                await weatherManager.refreshIfNeeded()
                 TaskWidgetSnapshotStore.scheduleRefresh(from: modelContext)
             }
             .scrollContentBackground(.hidden)
@@ -842,14 +749,6 @@ struct Dashboard: View {
         .navigationDestination(item: $selectedNote) { note in
             NoteEditorView(note: note)
         }
-        .navigationDestination(item: $selectedWeatherDate) {
-            date in
-            WeatherDayView(
-                date: date,
-                showsCloseButton: false,
-                cameFromForecast: false
-            )
-        }
         .onAppear {
             refreshContinueItems()
             refreshTodayDashboard()
@@ -859,7 +758,6 @@ struct Dashboard: View {
         .task {
             try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled else { return }
-            await weatherManager.refreshIfNeeded()
             TaskWidgetSnapshotStore.scheduleRefresh(from: modelContext)
         }
         .onReceive(
@@ -877,7 +775,6 @@ struct Dashboard: View {
             selectedTrip = nil
             selectedDocument = nil
             selectedLoyaltyCard = nil
-            selectedWeatherDate = nil
         }
     }
     

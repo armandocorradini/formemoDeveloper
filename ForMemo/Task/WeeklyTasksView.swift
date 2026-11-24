@@ -2,7 +2,6 @@
 import SwiftUI
 import SwiftData
 import os
-import CoreLocation
 
 struct WeeklyTasksView: View {
 
@@ -15,25 +14,16 @@ struct WeeklyTasksView: View {
     
     @Environment(\.locale) private var appLocale
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
     
     
-    @State private var weatherManager = WeatherManager.shared
     
-    @State private var locationAuthorizationStatus: CLAuthorizationStatus = CLLocationManager().authorizationStatus
     
     
     @State private var taskPendingDeletion: TodoTask?
     @State private var showAttachmentSyncWarning = false
     @State private var pendingDeletionShowsRecurrenceChoices = false
     @State private var draftTask: TodoTask?
-    private struct SelectedWeatherDay: Identifiable {
-        let date: Date
-        var id: Date { date }
-    }
-
-    @State private var selectedWeatherDay: SelectedWeatherDay?
 
     
     @State private var weeklyTasks: [TodoTask] = []
@@ -238,12 +228,9 @@ struct WeeklyTasksView: View {
     @ViewBuilder
     private func groupedHeaderView(for group: GroupedDay) -> some View {
         if let title = relativeHeaderTitle(for: group.date) {
-            let _ = weatherManager.refreshID
-
             let isTodayGroup = Calendar.current.isDateInToday(group.date)
 
             HStack(spacing: TaskRowLayout.dateToContentSpacing) {
-
                 Text(title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(Color.primary.opacity(0.82))
@@ -259,56 +246,6 @@ struct WeeklyTasksView: View {
                             .glassEffect(.clear)
                     }
 
-                Spacer(minLength: 0)
-
-                if (locationAuthorizationStatus == .authorizedAlways
-                    || locationAuthorizationStatus == .authorizedWhenInUse),
-                   let weather = weatherManager.weather(for: group.date) {
-
-                    Button {
-                        selectedWeatherDay = SelectedWeatherDay(date: group.date)
-                    } label: {
-
-                        HStack(spacing: 7) {
-
-                            Image(
-                                systemName:
-                                    isTodayGroup
-                                    ? weatherManager.representativeSymbol(for: group.date)
-                                    : weather.symbolName
-                            )
-                            .symbolRenderingMode(.multicolor)
-                            .saturation(colorScheme == .light ? 1.25 : 1.0)
-                            .brightness(colorScheme == .light ? -0.2 : 0.0)
-                            .font(.subheadline.weight(.medium))
-
-                            Text("\(weather.minTemperature)°")
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(
-                                    weather.minTemperature >= 35 ? .red :
-                                    weather.minTemperature >= 30 ? .orange :
-                                    weather.minTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
-                                    .primary.opacity(0.55)
-                                )
-                                .monospacedDigit()
-
-                            Text("/")
-                                .font(.caption2.weight(.medium))
-                                .foregroundStyle(.secondary.opacity(0.6))
-
-                            Text("\(weather.maxTemperature)°")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(
-                                    weather.maxTemperature >= 35 ? .red :
-                                    weather.maxTemperature >= 30 ? .orange :
-                                    weather.maxTemperature <= 0 ? Color(red: 0.65, green: 0.88, blue: 1.00) :
-                                    .primary.opacity(0.90)
-                                )
-                                .monospacedDigit()
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
             }
             .padding(.horizontal, TaskRowMetrics.groupedLeadingPadding)
             .padding(.vertical, isTodayGroup ? 12 : 9)
@@ -325,24 +262,19 @@ struct WeeklyTasksView: View {
                                 : Color.white.opacity(0.015)
                             )
                     }
-                    .clipShape(
-                        Capsule(style: .continuous)
-                    )
+                    .clipShape(Capsule(style: .continuous))
             }
             .overlay {
                 Capsule(style: .continuous)
-                    .strokeBorder(
-                        .white.opacity(0.12),
-                        lineWidth: 0.8
-                    )
+                    .strokeBorder(.white.opacity(0.12), lineWidth: 0.8)
             }
-//posizione capsula giorno (oggi, domani, ieri, ....
+            // Posizione capsula giorno (oggi, domani, ieri, ...)
             .padding(.top, -8)
             .padding(.leading, TaskRowMetrics.groupedLeadingPadding - 24)
-
             .padding(.bottom, -(TaskRowMetrics.weeklyVerticalPadding / 7))
         }
     }
+
     var body: some View {
         ZStack {
             AppGlassBackground()
@@ -443,7 +375,6 @@ struct WeeklyTasksView: View {
             }
             .modifier(WeeklyTasksCloudRefreshModifier(isEnabled: Persistence.hasICloudIdentity) {
                 fetchWeeklyTasks()
-                await weatherManager.refreshIfNeeded()
             })
             .contentMargins(.bottom, 70, for: .scrollContent)
             .contentMargins(
@@ -457,7 +388,6 @@ struct WeeklyTasksView: View {
             .animation(.smooth(duration: 0.18), value: groupedTasksByDay.count)
             .task {
                 fetchWeeklyTasks()
-                await weatherManager.refreshIfNeeded()
             }
             .onChange(of: scenePhase) { _, newPhase in
                 if newPhase == .active {
@@ -471,13 +401,6 @@ struct WeeklyTasksView: View {
                 NotificationCenter.default.publisher(for: .taskDidChange)
             ) { _ in
                 fetchWeeklyTasks()
-            }
-            .onReceive(
-                NotificationCenter.default.publisher(
-                    for: .locationPermissionChanged
-                )
-            ) { _ in
-                locationAuthorizationStatus = CLLocationManager().authorizationStatus
             }
             .safeAreaInset(edge: .top, spacing: 0) {
                 headerView
@@ -503,17 +426,6 @@ struct WeeklyTasksView: View {
             }
             .sheet(item: $draftTask) { task in
                 NewTaskSheetView(draftTask: task)
-            }
-            .sheet(item: $selectedWeatherDay) { selectedDay in
-                NavigationStack {
-                    WeatherDayView(
-                        date: selectedDay.date,
-                        showsCloseButton: true,
-                        closeAction: {
-                            selectedWeatherDay = nil
-                        }
-                    )
-                }
             }
             .scrollContentBackground(.hidden)
             .containerBackground(.clear, for: .navigation)

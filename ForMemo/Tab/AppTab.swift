@@ -11,7 +11,6 @@ enum AppTab: Int, CaseIterable, Identifiable {
     case trips = 7
     case documents = 8
     case today = 4
-    case forecast = 9
     case map = 5
     case settings = 2
     case notes = 12
@@ -23,7 +22,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
     static let defaultOrder: [AppTab] = [
         .dashboard, .tasks, .notes, .wallet, .search,
         .start, .vault, .trips, .documents,
-        .calendar, .agenda, .today, .map, .forecast, .recentlyDeleted, .settings
+        .calendar, .agenda, .today, .map, .recentlyDeleted, .settings
     ]
 
     var id: Int { rawValue }
@@ -39,7 +38,6 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .trips: "list.bullet.clipboard"
         case .documents: "doc.text"
         case .today: "calendar.day.timeline.right"
-        case .forecast: "cloud.sun"
         case .map: "map"
         case .settings: "gear"
         case .notes: "note.text"
@@ -63,7 +61,6 @@ enum AppTab: Int, CaseIterable, Identifiable {
             settings.taskWeekDays == 1
                 ? String(localized: "today_tab")
                 : String(localized: "\(settings.taskWeekDays) days_tab")
-        case .forecast: String(localized: "Weather")
         case .map: String(localized: "map_tab")
         case .settings: String(localized: "settings_tab")
         case .notes: String(localized: "Notes")
@@ -76,7 +73,6 @@ enum AppTab: Int, CaseIterable, Identifiable {
     func isVisible(using settings: AppSettings) -> Bool {
         switch self {
         case .vault: settings.showVault
-        case .forecast: settings.showWeatherForecast
         case .dashboard: settings.showDashboardTab
         case .today: settings.showWeekTab
         case .map: settings.showMapTab

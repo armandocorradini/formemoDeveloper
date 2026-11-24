@@ -156,9 +156,6 @@ struct TabBarCustomizationView: View {
         .onChange(of: settings.showVault) { _, _ in
             tabs = settings.orderedTabs
         }
-        .onChange(of: settings.showWeatherForecast) { _, _ in
-            tabs = settings.orderedTabs
-        }
         .onChange(of: settings.showDashboardTab) { _, _ in
             tabs = settings.orderedTabs
         }

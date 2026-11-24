@@ -182,7 +182,6 @@ struct StartupTabSelectionView: View {
                 startupOption(String(localized: "Documents"), tag: AppTab.documents.rawValue)
                 startupOption(String(localized: "Notes"), tag: AppTab.notes.rawValue)
                 startupOption(String(localized: "Map"), tag: AppTab.map.rawValue)
-                startupOption(String(localized: "Weather Forecast"), tag: AppTab.forecast.rawValue)
                 startupOption(String(localized: "Vault"), tag: AppTab.vault.rawValue)
             }
         }

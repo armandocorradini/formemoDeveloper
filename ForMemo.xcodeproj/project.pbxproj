@@ -98,7 +98,6 @@
 		1C634DE030220C9C0092DB89 /* WalletImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2630220C9C0092DB89 /* WalletImportService.swift */; };
 		1C634DE130220C9C0092DB89 /* WalletMigrationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2730220C9C0092DB89 /* WalletMigrationService.swift */; };
 		1C634DE230220C9C0092DB89 /* WalletViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2830220C9C0092DB89 /* WalletViewerView.swift */; };
-		1C634DE330220C9C0092DB89 /* WeatherManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2930220C9C0092DB89 /* WeatherManager.swift */; };
 		1C634DE430220C9C0092DB89 /* AppleCredentialExchangeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2B30220C9C0092DB89 /* AppleCredentialExchangeProvider.swift */; };
 		1C634DE530220C9C0092DB89 /* AppleCredentialExportMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2C30220C9C0092DB89 /* AppleCredentialExportMapper.swift */; };
 		1C634DE630220C9C0092DB89 /* AppleCredentialImportMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2D30220C9C0092DB89 /* AppleCredentialImportMapper.swift */; };
@@ -183,8 +182,6 @@
 		1C634E3630220C9C0092DB89 /* VaultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8130220C9C0092DB89 /* VaultView.swift */; };
 		1C634E3730220C9C0092DB89 /* WalletAssetThumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8230220C9C0092DB89 /* WalletAssetThumbnail.swift */; };
 		1C634E3830220C9C0092DB89 /* WalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8330220C9C0092DB89 /* WalletView.swift */; };
-		1C634E3930220C9C0092DB89 /* WeatherDayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8430220C9C0092DB89 /* WeatherDayView.swift */; };
-		1C634E3A30220C9C0092DB89 /* WeatherForecastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */; };
 		1C634E3B30220C9C0092DB89 /* WeeklyTasksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */; };
 		1C634E3D30220D580092DB89 /* WalletAssetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C634D2330220C9C0092DB89 /* WalletAssetDetailView.swift */; };
 		1C716EF23059795C006C6178 /* TaskSingleCalendarExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C716EF13059795B006C6178 /* TaskSingleCalendarExport.swift */; };
@@ -397,7 +394,6 @@
 		1C634D2630220C9C0092DB89 /* WalletImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletImportService.swift; sourceTree = "<group>"; };
 		1C634D2730220C9C0092DB89 /* WalletMigrationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletMigrationService.swift; sourceTree = "<group>"; };
 		1C634D2830220C9C0092DB89 /* WalletViewerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletViewerView.swift; sourceTree = "<group>"; };
-		1C634D2930220C9C0092DB89 /* WeatherManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherManager.swift; sourceTree = "<group>"; };
 		1C634D2B30220C9C0092DB89 /* AppleCredentialExchangeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCredentialExchangeProvider.swift; sourceTree = "<group>"; };
 		1C634D2C30220C9C0092DB89 /* AppleCredentialExportMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCredentialExportMapper.swift; sourceTree = "<group>"; };
 		1C634D2D30220C9C0092DB89 /* AppleCredentialImportMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleCredentialImportMapper.swift; sourceTree = "<group>"; };
@@ -482,8 +478,6 @@
 		1C634D8130220C9C0092DB89 /* VaultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultView.swift; sourceTree = "<group>"; };
 		1C634D8230220C9C0092DB89 /* WalletAssetThumbnail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletAssetThumbnail.swift; sourceTree = "<group>"; };
 		1C634D8330220C9C0092DB89 /* WalletView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletView.swift; sourceTree = "<group>"; };
-		1C634D8430220C9C0092DB89 /* WeatherDayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherDayView.swift; sourceTree = "<group>"; };
-		1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherForecastView.swift; sourceTree = "<group>"; };
 		1C634D8630220C9C0092DB89 /* WeeklyTasksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeeklyTasksView.swift; sourceTree = "<group>"; };
 		1C634D8830220C9C0092DB89 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1C634D8930220C9C0092DB89 /* ForMemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ForMemo.entitlements; sourceTree = "<group>"; };
@@ -645,6 +639,7 @@
 			children = (
 				1C634D8B30220C9C0092DB89 /* ForMemo */,
 				1C97EB0E3093EB1F00349CCE /* Sound */,
+				1CA7F726309C957F008375D8 /* Widget */,
 				1CFE8F3730860CDF00915A76 /* ForMemoWidget */,
 				1CFE8F1F3085645A00915A76 /* ForMemoWidgetExtensionRelease.entitlements */,
 				1CF9847D3000EBA300E1D1A9 /* ForMemoCredentialProvider */,
@@ -778,7 +773,6 @@
 				1C634D3B30220C9C0092DB89 /* Vault */,
 				1C634E3E3022556C0092DB89 /* Wallet */,
 				1C634D8730220C9C0092DB89 /* OtherViews */,
-				1C634E40302257D50092DB89 /* Weather */,
 				1C634D2A30220C9C0092DB89 /* Xcstrings&plist */,
 				1C634D8830220C9C0092DB89 /* Assets.xcassets */,
 				1C634D8930220C9C0092DB89 /* ForMemo.entitlements */,
@@ -897,16 +891,6 @@
 				1C634D5330220C9C0092DB89 /* DocumentViewerView.swift */,
 			);
 			path = Documents;
-			sourceTree = "<group>";
-		};
-		1C634E40302257D50092DB89 /* Weather */ = {
-			isa = PBXGroup;
-			children = (
-				1C634D2930220C9C0092DB89 /* WeatherManager.swift */,
-				1C634D8430220C9C0092DB89 /* WeatherDayView.swift */,
-				1C634D8530220C9C0092DB89 /* WeatherForecastView.swift */,
-			);
-			path = Weather;
 			sourceTree = "<group>";
 		};
 		1C634E41302258620092DB89 /* Trips */ = {
@@ -1034,7 +1018,6 @@
 				1C97EB0B3093EB1F00349CCE /* turn-off.wav */,
 				1C97EB0C3093EB1F00349CCE /* two-note.mp3 */,
 				1C97EB0D3093EB1F00349CCE /* xylophone.wav */,
-				1CA7F726309C957F008375D8 /* Widget */,
 			);
 			path = Sound;
 			sourceTree = "<group>";
@@ -1374,7 +1357,6 @@
 				1C634DE030220C9C0092DB89 /* WalletImportService.swift in Sources */,
 				1C634DE130220C9C0092DB89 /* WalletMigrationService.swift in Sources */,
 				1C634DE230220C9C0092DB89 /* WalletViewerView.swift in Sources */,
-				1C634DE330220C9C0092DB89 /* WeatherManager.swift in Sources */,
 				1C634DE430220C9C0092DB89 /* AppleCredentialExchangeProvider.swift in Sources */,
 				1CF0C783307AAB6F0083664A /* RecurrenceSeriesExtensionPresenter.swift in Sources */,
 				1C634DE530220C9C0092DB89 /* AppleCredentialExportMapper.swift in Sources */,
@@ -1476,8 +1458,6 @@
 				1C634E3730220C9C0092DB89 /* WalletAssetThumbnail.swift in Sources */,
 				1CA7F72B30A0FDFD008375D8 /* GlobalSearchView.swift in Sources */,
 				1C634E3830220C9C0092DB89 /* WalletView.swift in Sources */,
-				1C634E3930220C9C0092DB89 /* WeatherDayView.swift in Sources */,
-				1C634E3A30220C9C0092DB89 /* WeatherForecastView.swift in Sources */,
 				1C634E3B30220C9C0092DB89 /* WeeklyTasksView.swift in Sources */,
 			);
 		};

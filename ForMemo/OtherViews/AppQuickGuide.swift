@@ -63,7 +63,7 @@ struct AppQuickGuideView: View {
         ),
         .init(
             title: String(localized:"Dashboard"),
-            description: String(localized:"The Dashboard automatically highlights what needs your attention first. View overdue tasks, tasks due today, upcoming activities, weather forecasts and recently opened items from Wallet, Documents and Checklists in one place."),
+            description: String(localized:"The Dashboard automatically highlights what needs your attention first. View overdue tasks, tasks due today, upcoming activities and recently opened items from Wallet, Documents and Checklists in one place."),
             icon: "house",
             tint: .blue
         ),
@@ -107,13 +107,6 @@ struct AppQuickGuideView: View {
             description: String(localized:"View tasks directly on the map. Tasks with a location appear as pins. Tap a pin to open task details. The map automatically fits all tasks on first load and preserves your zoom level afterward."),
             icon: "map",
             tint: .green
-        ),
-
-        .init(
-            title: String(localized:"Integrated Weather"),
-            description: String(localized:"Weather forecasts are available for today, tomorrow and the day after tomorrow directly inside task views and weekly planning. Tap the weather information to open the detailed forecast view with weekly and hourly conditions."),
-            icon: "cloud.sun",
-            tint: .cyan
         ),
 
         .init(
@@ -169,7 +162,7 @@ struct AppQuickGuideView: View {
         
             .init(
                 title: String(localized:"Your Data, Your Control"),
-                description: String(localized:"Your tasks and attachments are stored on your device and, when iCloud is enabled, synchronized with your personal iCloud account. The developer does not run any server and cannot access your data."),
+                description: String(localized:"Your tasks and attachments are stored on your device and, when iCloud synchronization is enabled, synchronized through your personal iCloud account. The developer does not operate a ForMemo account service or backend that collects and stores your task data, and does not have direct access to your private iCloud data. Location-based reminders use Apple location services and require the relevant location permissions."),
                 icon: "lock.shield",
                 tint: .indigo
             ),
@@ -235,8 +228,8 @@ struct AppQuickGuideView: View {
             tint: .green
         ),
         .init(
-            title: String(localized: "Import Credentials"),
-            description: String(localized: "Import supported credential files from compatible password managers into the Vault to quickly transfer your existing accounts."),
+            title: String(localized: "Import and Export Credentials"),
+            description: String(localized: "Import credentials from compatible password managers and, where supported, export credentials using Apple's credential exchange technologies. The fields transferred depend on format and app compatibility; custom fields and all metadata may not be included. Verify exported data and protect exported files."),
             icon: "square.and.arrow.down",
             tint: .blue
         ),
@@ -299,15 +292,21 @@ struct AppQuickGuideView: View {
 
         .init(
             title: String(localized:"Backup & Restore"),
-            description: String(localized:"Create complete backups in Settings > Data Management > Backup & Restore, including tasks, reminders, attachments, cards, tickets, Checklists, documents, Vault items, and app settings. Vault data in a backup requires a password for restoration. Restore everything or only selected sections on the same or another device."),
+            description: String(localized:"Create complete backups in Settings > Data Management > Backup & Restore, including tasks, notes, reminders, attachments, cards, tickets, Checklists, documents, Vault items, and supported app settings. When a backup includes Vault data, a password protects the encrypted package containing the Vault encryption key; the password does not encrypt the entire backup file. Restore everything or only selected sections on the same or another device."),
             icon: "externaldrive.badge.timemachine",
             tint: .indigo
         ),
         .init(
             title: String(localized:"Settings Backup"),
-            description: String(localized:"Your appearance preferences, navigation settings, weather options, badge settings and other supported preferences can be included in backups and restored independently from your data."),
+            description: String(localized:"Your appearance preferences, navigation settings, badge settings and other supported preferences can be included in backups and restored independently from your data."),
             icon: "gearshape.2",
             tint: .gray
+        ),
+        .init(
+            title: String(localized: "Free Personal Project and Important Use Limits"),
+            description: String(localized: "ForMemo is a personal, non-commercial project provided free of charge, without advertising, subscriptions, in-app purchases, donations, or profit-making purposes. It must not be used for emergencies, critical activities, or as the sole means of monitoring health, safety, medication, dependants, security, or deadlines where a missed or delayed alert could cause harm. The developer does not provide professional support, guaranteed response times, or personal data recovery, and may discontinue development or distribution subject to applicable law. Keep independent backups of important information."),
+            icon: "exclamationmark.shield",
+            tint: .orange
         ),
         .init(
             title: String(localized:"Explore the FAQs"),

@@ -47,8 +47,8 @@ struct DebugDiagnosticsView: View {
 
                 Text(
                     isRunning
-                        ? "Test \(results.count + 1)/219 — \(currentTestTitle ?? "Preparazione…")"
-                        : "Progressione: \(results.count)/219 test completati"
+                        ? "Test \(results.count + 1)/218 — \(currentTestTitle ?? "Preparazione…")"
+                        : "Progressione: \(results.count)/218 test completati"
                 )
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -824,10 +824,7 @@ struct DebugDiagnosticsView: View {
         await runTest("Password Generator: lunghezza, categorie e caratteri ambigui") { try testPasswordGeneratorConstraints() }
         await runTest("Diagnostica: redazione dati personali e percorsi") { try testDiagnosticsRedaction() }
         await runTest("Siri: parsing titolo, numero e inferenza tag") { try testSiriParsingAndTagInference() }
-        await runTest("Widget: snapshot Codable e compatibilità campi meteo opzionali") { try testWidgetSnapshotCodingCompatibility() }
-        await runTest("Meteo: codici WMO, condizioni sconosciute e simboli giorno/notte") {
-            try testWeatherConditionMapping()
-        }
+        await runTest("Widget: snapshot Codable e compatibilità snapshot legacy") { try testWidgetSnapshotCodingCompatibility() }
         await runTest("Barcode: generazione e decodifica Code128/QR") { try testBarcodeGenerateDecodeRoundTrip() }
         await runTest("Scadenza assente: nessun evento automatico") { try testNoDeadlineProducesNoEvents() }
         await runTest("Scadenza passata: nessun evento ordinario") { try testPastDeadlineProducesNoOrdinaryEvents() }
@@ -3326,10 +3323,7 @@ struct DebugDiagnosticsView: View {
                     priorityRaw: TaskPriority.high.rawValue
                 )
             ],
-            overduePreviousDaysCount: 2,
-            weatherSymbolName: "cloud.sun",
-            weatherMinTemperature: 8,
-            weatherMaxTemperature: 16
+            overduePreviousDaysCount: 2
         )
 
         let encoder = JSONEncoder()
@@ -3342,24 +3336,22 @@ struct DebugDiagnosticsView: View {
               decoded.tasks.count == 1,
               decoded.tasks.first?.id == taskID,
               decoded.tasks.first?.priorityRaw == TaskPriority.high.rawValue,
-              decoded.overduePreviousDaysCount == 2,
-              decoded.weatherSymbolName == "cloud.sun",
-              decoded.weatherMinTemperature == 8,
-              decoded.weatherMaxTemperature == 16 else {
+              decoded.overduePreviousDaysCount == 2 else {
             throw DiagnosticFailure.assertion("Il round-trip dello snapshot widget ha perso dati.")
         }
 
+        // Older snapshots may still contain weather keys. The current model
+        // must ignore those unknown fields while preserving task data.
         let legacyJSON = """
-        {"generatedAt":"2026-11-16T10:00:00Z","tasks":[],"overduePreviousDaysCount":0}
+        {"generatedAt":"2026-11-16T10:00:00Z","tasks":[],"overduePreviousDaysCount":0,"weatherSymbolName":"cloud.sun","weatherMinTemperature":8,"weatherMaxTemperature":16}
         """
         let legacy = try decoder.decode(TaskWidgetSnapshot.self, from: Data(legacyJSON.utf8))
-        guard legacy.weatherSymbolName == nil,
-              legacy.weatherMinTemperature == nil,
-              legacy.weatherMaxTemperature == nil else {
-            throw DiagnosticFailure.assertion("I campi meteo opzionali mancanti non sono compatibili con uno snapshot widget legacy.")
+        guard legacy.tasks.isEmpty,
+              legacy.overduePreviousDaysCount == 0 else {
+            throw DiagnosticFailure.assertion("Uno snapshot widget legacy con campi non più supportati non è stato decodificato correttamente.")
         }
 
-        return "TaskWidgetSnapshot: round-trip completo e decodifica di uno snapshot legacy privo dei campi meteo verificati senza scrivere nell'App Group o ricaricare WidgetKit."
+        return "TaskWidgetSnapshot: round-trip dei campi correnti e compatibilità con snapshot legacy contenenti chiavi meteo obsolete verificate senza scrivere nell'App Group o ricaricare WidgetKit."
     }
 
     private func testBarcodeGenerateDecodeRoundTrip() throws -> String {
@@ -6669,42 +6661,6 @@ struct DebugDiagnosticsView: View {
         }
 
         return "Persistenza isolata verificata per nome luogo, latitudine, longitudine e flag del promemoria; la coordinata derivata viene ricostruita correttamente. Una posizione incompleta senza longitudine non produce CLLocationCoordinate2D. Nessuna autorizzazione o geofence reale è stato richiesto."
-    }
-
-    private func testWeatherConditionMapping() throws -> String {
-        let cases: [(Int?, Bool, Int?, String)] = [
-            (0, true, 0, "sun.max.fill"),
-            (0, false, 0, "moon.stars.fill"),
-            (0, true, 50, "cloud.sun.fill"),
-            (3, true, 95, "cloud.fill"),
-            (61, true, 20, "cloud.sun.rain.fill"),
-            (65, true, 100, "cloud.heavyrain.fill"),
-            (45, true, 0, "cloud.fog.fill"),
-            (95, false, 0, "cloud.bolt.rain.fill"),
-            (71, true, 0, "cloud.snow.fill"),
-            (nil, true, 0, "cloud.sun.fill"),
-            (999, false, 0, "cloud.moon.fill")
-        ]
-
-        for (code, isDay, cloudCover, expectedSymbol) in cases {
-            let condition = WeatherCondition(code: code)
-            let actualSymbol = condition.symbolName(
-                isDay: isDay,
-                cloudCover: cloudCover
-            )
-            guard actualSymbol == expectedSymbol else {
-                throw DiagnosticFailure.assertion(
-                    "Mapping meteo non corretto per codice \(code.map(String.init) ?? "nil"), giorno=\(isDay), copertura=\(cloudCover.map(String.init) ?? "nil"): atteso \(expectedSymbol), ottenuto \(actualSymbol)."
-                )
-            }
-        }
-
-        guard WeatherCondition(code: nil) == .unknown,
-              WeatherCondition(code: 999) == .unknown else {
-            throw DiagnosticFailure.assertion("I codici WMO assenti o non riconosciuti non vengono ricondotti a .unknown.")
-        }
-
-        return "Verificati 11 casi di mapping WMO: cielo sereno giorno/notte e copertura nuvolosa, coperto, pioggia leggera e intensa, nebbia, temporale, neve e codici assenti/sconosciuti. Nessuna richiesta di rete o posizione è stata eseguita."
     }
 
     private func testNoDeadlineProducesNoEvents() throws -> String {

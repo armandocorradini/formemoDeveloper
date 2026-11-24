@@ -15,10 +15,6 @@ struct TaskWidgetSnapshot: Codable {
     let tasks: [TaskWidgetItem]
     /// Conteggio calcolato al momento dello snapshot; mantenuto per compatibilità.
     let overduePreviousDaysCount: Int
-    /// Dati meteo opzionali, condivisi con l'estensione tramite App Group.
-    let weatherSymbolName: String?
-    let weatherMinTemperature: Int?
-    let weatherMaxTemperature: Int?
 }
 
 enum TaskWidgetSnapshotStore {
